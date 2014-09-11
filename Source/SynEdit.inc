@@ -104,6 +104,8 @@
 (* SYN_DELPHI_XE5_UP    : Delphi XE5  or higher is being used.                *)
 (* SYN_DELPHI_XE6       : Delphi XE6  is being used.                          *)
 (* SYN_DELPHI_XE6_UP    : Delphi XE6  or higher is being used.                *)
+(* SYN_DELPHI_XE7       : Delphi XE7  is being used.                          *)
+(* SYN_DELPHI_XE7_UP    : Delphi XE7  or higher is being used.                *)
 (* SYN_KYLIX            : Kylix 1.0 is being using.                           *)
 (* SYN_CLX              : A CLX application is being created.                 *)
 (******************************************************************************)
@@ -149,6 +151,12 @@
 {------------------------------------------------------------------------------}
 { VERXXX to SYN_COMPILERX, SYN_DELPHIX and SYN_CPPBX mappings                  }
 {------------------------------------------------------------------------------}
+
+{$IFDEF VER280}
+  {$DEFINE SYN_COMPILER_20}
+  {$DEFINE SYN_DELPHI}
+  {$DEFINE SYN_DELPHI_XE7}
+{$ENDIF}
 
 {$IFDEF VER270}
   {$DEFINE SYN_COMPILER_20}
@@ -757,6 +765,28 @@
   {$DEFINE SYN_DELPHI_XE4_UP}
   {$DEFINE SYN_DELPHI_XE5_UP}
   {$DEFINE SYN_DELPHI_XE6_UP}
+{$ENDIF}
+
+{$IFDEF SYN_DELPHI_XE7}
+  {$DEFINE SYN_DELPHI_2_UP}
+  {$DEFINE SYN_DELPHI_3_UP}
+  {$DEFINE SYN_DELPHI_4_UP}
+  {$DEFINE SYN_DELPHI_5_UP}
+  {$DEFINE SYN_DELPHI_6_UP}
+  {$DEFINE SYN_DELPHI_7_UP}
+  {$DEFINE SYN_DELPHI_8_UP}
+  {$DEFINE SYN_DELPHI_2005_UP}
+  {$DEFINE SYN_DELPHI_2006_UP}
+  {$DEFINE SYN_DELPHI_2007_UP}
+  {$DEFINE SYN_DELPHI_2009_UP}
+  {$DEFINE SYN_DELPHI_2010_UP}
+  {$DEFINE SYN_DELPHI_XE_UP}
+  {$DEFINE SYN_DELPHI_XE2_UP}
+  {$DEFINE SYN_DELPHI_XE3_UP}
+  {$DEFINE SYN_DELPHI_XE4_UP}
+  {$DEFINE SYN_DELPHI_XE5_UP}
+  {$DEFINE SYN_DELPHI_XE6_UP}
+  {$DEFINE SYN_DELPHI_XE7_UP}
 {$ENDIF}
 
 {$IFDEF SYN_CPPB_6}
