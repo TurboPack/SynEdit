@@ -1,0 +1,16 @@
+syntax: glob
+*.local
+*.dsk
+*identcache
+*.~dsk
+*.tvsconfig
+__history
+Win32
+Win64
+iOSSimulator
+Android
+OSX32
+Debug
+Release
+*.exe
+*.otares
