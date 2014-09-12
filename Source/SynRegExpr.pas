@@ -42,8 +42,6 @@ interface
 {$INCLUDE SynEdit.inc}
 
 // ======== Determine compiler
-{$IFDEF VER80} Sorry, TRegExpr is for 32-bits Delphi only. Delphi 1 is not supported (and whos really care today?!). {$ENDIF}
-
 // ======== Define base compiler options
 {$BOOLEVAL OFF}
 {$EXTENDEDSYNTAX ON}
@@ -55,13 +53,9 @@ interface
 {$WARN UNSAFE_CODE OFF} // Suppress .Net warnings
 
 // ======== Define options for TRegExpr engine
-{$DEFINE SynRegUniCode} // Unicode support
 {$DEFINE RegExpPCodeDump} // p-code dumping (see Dump method)
  {$DEFINE reRealExceptionAddr} // exceptions will point to appropriate source line, not to Error procedure
 {$DEFINE ComplexBraces} // support braces in complex cases
-{$IFNDEF SynRegUniCode} // the option applicable only for non-UniCode mode
- {$DEFINE UseSetOfChar} // Significant optimization by using set of char
-{$ENDIF}
 {$IFDEF UseSetOfChar}
  {$DEFINE UseFirstCharSet} // Fast skip between matches for r.e. that starts with determined set of chars
 {$ENDIF}
@@ -84,15 +78,9 @@ uses
   SysUtils; // Exception
 
 type
- {$IFDEF SynRegUniCode}
  PRegExprChar = PWideChar;
  RegExprString = UnicodeString;
  REChar = WideChar;
- {$ELSE}
- PRegExprChar = PChar;
- RegExprString = AnsiString; //###0.952 was string
- REChar = Char;
- {$ENDIF}
  TREOp = REChar; // internal p-code type //###0.933
  PREOp = ^TREOp;
  TRENextOff = integer; // internal Next "pointer" (offset to current p-code) //###0.933
@@ -124,7 +112,7 @@ const
   + 'abcdefghijklmnopqrstuvwxyz'
   + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_';
   RegExprLineSeparators : RegExprString =// default value for LineSeparators
-   #$d#$a{$IFDEF SynRegUniCode}+#$b#$c#$2028#$2029#$85{$ENDIF}; //###0.947
+   #$d#$a+#$b#$c#$2028#$2029#$85; //###0.947
   RegExprLinePairedSeparator : RegExprString =// default value for LinePairedSeparator
    #$d#$a;
   { if You need Unix-styled line separators (only \n), then use:
@@ -244,9 +232,6 @@ type
     fLinePairedSeparatorAssigned : boolean;
     fLinePairedSeparatorHead,
     fLinePairedSeparatorTail : REChar;
-    {$IFNDEF SynRegUniCode}
-    fLineSeparatorsSet : set of REChar;
-    {$ENDIF}
 
     procedure InvalidateProgramm;
     // Mark programm as have to be [re]compiled
@@ -627,17 +612,11 @@ const
  MaskModM = 16; // -"- /m
  MaskModX = 32; // -"- /x
 
- {$IFDEF SynRegUniCode}
  XIgnoredChars = ' '#9#$d#$a;
- {$ELSE}
- XIgnoredChars = [' ', #9, #$d, #$a];
- {$ENDIF}
 
 {=============================================================}
 {=================== UnicodeString functions ====================}
 {=============================================================}
-
-{$IFDEF SynRegUniCode}
 
 function StrPCopy (Dest: PRegExprChar; const Source: RegExprString): PRegExprChar;
  var
@@ -702,8 +681,6 @@ function StrScan (Str: PRegExprChar; Chr: WideChar): PRegExprChar;
    then Result := Str;
  end; { of function StrScan
 --------------------------------------------------------------}
-
-{$ENDIF}
 
 
 {=============================================================}
@@ -1146,11 +1123,9 @@ destructor TRegExpr.Destroy;
 
 class function TRegExpr.InvertCaseFunction (const Ch : REChar) : REChar;
  begin
-  {$IFDEF SynRegUniCode}
   if Ch >= #128
    then Result := Ch
   else
-  {$ENDIF}
    begin
     Result := REChar (CharUpper (PChar (Ch)));
     if Result = Ch
@@ -1181,11 +1156,7 @@ procedure TRegExpr.SetExpression (const s : RegExprString);
       Len := length (s); //###0.950
       GetMem (fExpression, (Len + 1) * SizeOf (REChar));
 //      StrPCopy (fExpression, s); //###0.950 replaced due to StrPCopy limitation of 255 chars
-      {$IFDEF SynRegUniCode}
       StrPCopy (fExpression, Copy (s, 1, Len)); //###0.950
-      {$ELSE}
-      StrLCopy (fExpression, PRegExprChar (s), Len); //###0.950
-      {$ENDIF SynRegUniCode}
 
       InvalidateProgramm; //###0.941
      end;
@@ -1378,23 +1349,12 @@ procedure TRegExpr.Compile; //###0.941
 --------------------------------------------------------------}
 
 function TRegExpr.IsProgrammOk : boolean;
- {$IFNDEF SynRegUniCode}
- var
-  i : integer;
- {$ENDIF}
  begin
   Result := false;
 
   // check modifiers
   if fModifiers <> fProgModifiers //###0.941
    then InvalidateProgramm;
-
-  // can we optimize line separators by using sets?
-  {$IFNDEF SynRegUniCode}
-  fLineSeparatorsSet := [];
-  for i := 1 to length (fLineSeparators)
-   do System.Include (fLineSeparatorsSet, fLineSeparators [i]);
-  {$ENDIF}
 
   // [Re]compile if needed
   if programm = nil
@@ -1533,7 +1493,6 @@ const
   '^', '$', '.', '[', '(', ')', '|', '?', '+', '*', EscChar, '{', #0);
  // Any modification must be synchronized with QuoteRegExprMetaChars !!!
 
-{$IFDEF SynRegUniCode}
  RusRangeLo : array [0 .. 33] of REChar =
   (#$430,#$431,#$432,#$433,#$434,#$435,#$451,#$436,#$437,
    #$438,#$439,#$43A,#$43B,#$43C,#$43D,#$43E,#$43F,
@@ -1548,14 +1507,6 @@ const
  RusRangeLoHigh = #$44F{'ÿ'};
  RusRangeHiLow = #$410{'À'};
  RusRangeHiHigh = #$42F{'ß'};
-{$ELSE}
- RusRangeLo = 'àáâãäå¸æçèéêëìíîïðñòóôõö÷øùúûüýþÿ';
- RusRangeHi = 'ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß';
- RusRangeLoLow = 'à';
- RusRangeLoHigh = 'ÿ';
- RusRangeHiLow = 'À';
- RusRangeHiHigh = 'ß';
-{$ENDIF}
 
 function TRegExpr.CompileRegExpr (exp : PRegExprChar) : boolean;
 // compile a regular expression into internal code
@@ -2277,13 +2228,9 @@ function TRegExpr.ParseAtom (var flagp : integer) : PRegExprChar;
              inc (regparse);
              RangeEnd := regparse^;
              if RangeEnd = EscChar then begin
-               {$IFDEF SynRegUniCode} //###0.935
                if (ord ((regparse + 1)^) < 256)
                   and (ansichar ((regparse + 1)^)
                         in ['d', 'D', 's', 'S', 'w', 'W']) then begin
-               {$ELSE}
-               if (regparse + 1)^ in ['d', 'D', 's', 'S', 'w', 'W'] then begin
-               {$ENDIF}
                  EmitRangeC ('-'); // or treat as error ?!!
                  CONTINUE;
                 end;
@@ -2465,8 +2412,8 @@ function TRegExpr.ParseAtom (var flagp : integer) : PRegExprChar;
       dec (regparse);
       if ((fCompModifiers and MaskModX) <> 0) and // check for eXtended syntax
           ((regparse^ = '#')
-           or ({$IFDEF SynRegUniCode}StrScan (XIgnoredChars, regparse^) <> nil //###0.947
-               {$ELSE}regparse^ in XIgnoredChars{$ENDIF})) then begin //###0.941 \x
+           or (StrScan (XIgnoredChars, regparse^) <> nil)) //###0.947
+               then begin //###0.941 \x
          if regparse^ = '#' then begin // Skip eXtended comment
             // find comment terminator (group of \n and/or \r)
             while (regparse^ <> #0) and (regparse^ <> #$d) and (regparse^ <> #$a)
@@ -2475,8 +2422,7 @@ function TRegExpr.ParseAtom (var flagp : integer) : PRegExprChar;
              do inc (regparse); // attempt to support different type of line separators
            end
           else begin // Skip the blanks!
-            while {$IFDEF SynRegUniCode}StrScan (XIgnoredChars, regparse^) <> nil //###0.947
-                  {$ELSE}regparse^ in XIgnoredChars{$ENDIF}
+            while StrScan (XIgnoredChars, regparse^) <> nil //###0.947
              do inc (regparse);
            end;
          ret := EmitNode (COMMENT); // comment
@@ -2502,8 +2448,7 @@ function TRegExpr.ParseAtom (var flagp : integer) : PRegExprChar;
          while (len > 0)
           and (((fCompModifiers and MaskModX) = 0) or (regparse^ <> '#')) do begin
            if ((fCompModifiers and MaskModX) = 0) or not ( //###0.941
-              {$IFDEF SynRegUniCode}StrScan (XIgnoredChars, regparse^) <> nil //###0.947
-              {$ELSE}regparse^ in XIgnoredChars{$ENDIF} )
+              StrScan (XIgnoredChars, regparse^) <> nil) //###0.947
             then EmitC (regparse^);
            inc (regparse);
            dec (len);
@@ -2799,11 +2744,7 @@ function TRegExpr.MatchPrim (prog : PRegExprChar) : boolean;
                  and (reginput^ = fLinePairedSeparatorTail)
                 then EXIT; // don't stop between paired separator
                if
-                 {$IFNDEF SynRegUniCode}
-                 not (nextch in fLineSeparatorsSet)
-                 {$ELSE}
                  (pos (nextch, fLineSeparators) <= 0)
-                 {$ENDIF}
                 then EXIT;
               end;
            end;
@@ -2817,11 +2758,7 @@ function TRegExpr.MatchPrim (prog : PRegExprChar) : boolean;
                  and ((reginput - 1)^ = fLinePairedSeparatorHead)
                 then EXIT; // don't stop between paired separator
                if
-                 {$IFNDEF SynRegUniCode}
-                 not (nextch in fLineSeparatorsSet)
-                 {$ELSE}
                  (pos (nextch, fLineSeparators) <= 0)
-                 {$ENDIF}
                 then EXIT;
               end;
            end;
@@ -2834,8 +2771,7 @@ function TRegExpr.MatchPrim (prog : PRegExprChar) : boolean;
             if (reginput^ = #0)
              or ((reginput^ = fLinePairedSeparatorHead)
                  and ((reginput + 1)^ = fLinePairedSeparatorTail))
-             or {$IFNDEF SynRegUniCode} (reginput^ in fLineSeparatorsSet)
-                {$ELSE} (pos (reginput^, fLineSeparators) > 0) {$ENDIF}
+             or (pos (reginput^, fLineSeparators) > 0)
              then EXIT;
             inc (reginput);
            end;
@@ -3556,12 +3492,8 @@ procedure TRegExpr.SetInputString (const AInputString : RegExprString);
    then GetMem (fInputString, (Len + 1) * SizeOf (REChar));
 
   // copy input string into buffer
-  {$IFDEF SynRegUniCode}
 //  StrPCopy (fInputString, Copy (AInputString, 1, Len)); //###0.927
   StrPCopy (fInputString, AInputString); //KV Copy above is wastefull.  Do not really understand why is there.
-  {$ELSE}
-  StrLCopy (fInputString, PRegExprChar (AInputString), Len);
-  {$ENDIF}
 
   {
   fInputString : string;
@@ -3618,15 +3550,11 @@ procedure TRegExpr.SetLinePairedSeparator (const AStr : RegExprString);
 function TRegExpr.GetLinePairedSeparator : RegExprString;
  begin
   if fLinePairedSeparatorAssigned then begin
-     {$IFDEF SynRegUniCode}
      // Here is some UniCode 'magic'
      // If You do know better decision to concatenate
      // two WideChars, please, let me know!
      Result := fLinePairedSeparatorHead; //###0.947
      Result := Result + fLinePairedSeparatorTail;
-     {$ELSE}
-     Result := fLinePairedSeparatorHead + fLinePairedSeparatorTail;
-     {$ENDIF}
     end
    else Result := '';
  end; { of function TRegExpr.GetLinePairedSeparator
@@ -3660,11 +3588,7 @@ function TRegExpr.Substitute (const ATemplate : RegExprString) : RegExprString;
     then inc (p) // this is '$&' or '${&}'
     else
      while (p < TemplateEnd) and
-      {$IFDEF SynRegUniCode} //###0.935
       (ord (p^) < 256) and (ansichar (p^) in Digits)
-      {$ELSE}
-      (p^ in Digits)
-      {$ENDIF}
        do begin
        Result := Result * 10 + (ord (p^) - ord ('0')); //###0.939
        inc (p);
