@@ -42,9 +42,7 @@ The  SynEditPythonBehaviour unit provides a simple component implements editing 
 to a python source file. Python has a unusual way to mark blocks (like begin/end in pascal) : it
 uses indentation. So the rule is after a ":" and a line break, we have to indent once.
 }
-{$IFNDEF QSYNEDITPYTHONBEHAVIOUR}
 unit SynEditPythonBehaviour;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

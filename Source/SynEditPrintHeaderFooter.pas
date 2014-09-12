@@ -94,9 +94,7 @@ CONTENTS:
 
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITPRINTHEADERFOOTER}
 unit SynEditPrintHeaderFooter;
-{$ENDIF}
 {$M+}
 
 {$I SynEdit.inc}

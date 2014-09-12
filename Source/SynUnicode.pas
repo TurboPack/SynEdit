@@ -45,9 +45,7 @@ Last Changes:
 - 1.1.3.19: Added TUnicodeStringList.CustomSort
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNUNICODE}
 unit SynUnicode;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

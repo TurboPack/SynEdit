@@ -36,9 +36,7 @@ Known Issues:
 
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITOPTIONSDIALOG}
 unit SynEditOptionsDialog;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

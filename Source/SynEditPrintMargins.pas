@@ -82,9 +82,7 @@ CONTENTS:
 
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITPRINTMARGINS}
 unit SynEditPrintMargins;
-{$ENDIF}
 {$M+}
 
 {$I SynEdit.inc }

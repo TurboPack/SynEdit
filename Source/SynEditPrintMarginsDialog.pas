@@ -41,9 +41,7 @@ CONTENTS:
   a picture that can help with understanding the different values.
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITPRINTMARGINSDIALOG}
 unit SynEditPrintMarginsDialog;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

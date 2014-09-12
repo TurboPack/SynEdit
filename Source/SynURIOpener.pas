@@ -40,9 +40,7 @@ clickable.
 http://www.mh-net.de.vu
 }
 
-{$IFNDEF QSYNURIOPENER}
 unit SynURIOpener;
-{$ENDIF}
 
 {$I SynEdit.inc}
               

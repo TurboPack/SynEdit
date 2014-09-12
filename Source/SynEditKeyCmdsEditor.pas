@@ -35,9 +35,7 @@ located at http://SynEdit.SourceForge.net
 Known Issues:
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITKEYCMDSEDITOR}
 unit SynEditKeyCmdsEditor;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

@@ -38,9 +38,7 @@ located at http://SynEdit.SourceForge.net
 Known Issues:
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEXPORTRTF}
 unit SynExportRTF;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

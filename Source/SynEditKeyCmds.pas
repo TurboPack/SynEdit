@@ -36,9 +36,7 @@ Known Issues:
 -------------------------------------------------------------------------------}
 // TODO: introduce friendly Names for the Commands (EditorCommandStrs is not good enough for end-users)
 
-{$IFNDEF QSYNEDITKEYCMDS}
 unit SynEditKeyCmds;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

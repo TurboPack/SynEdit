@@ -36,9 +36,7 @@ Known Issues:
 // TODO: use TntUnicode to enable unicode input
 
 
-{$IFNDEF QSYNAUTOCORRECTEDITOR}
 unit SynAutoCorrectEditor;
-{$ENDIF}
 
 interface
 

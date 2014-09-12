@@ -34,9 +34,7 @@ located at http://SynEdit.SourceForge.net
 Known Issues:
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITREGEXSEARCH}
 unit SynEditRegexSearch;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

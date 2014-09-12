@@ -38,9 +38,7 @@ Known Issues:
   - EM_XXX messages aren't implemented on CLX, although this could be useful;
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNMEMO}
 unit SynMemo;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

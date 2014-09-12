@@ -43,9 +43,7 @@ CONTENTS:
 -------------------------------------------------------------------------------}
 
 
-{$IFNDEF QSYNEDITPRINTTYPES}
 unit SynEditPrintTypes;
-{$ENDIF}
 
 interface
 

@@ -41,9 +41,7 @@ Known Issues:
   We'll have to wait for LaTeX 3.)
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEXPORTTEX}
 unit SynExportTeX;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

@@ -37,9 +37,7 @@ Known Issues:
 //todo: Document the code
 //todo: The length of the last Row of a Line could be calculated from the Line length instead of being stored. This would be only useful when most of the lines aren't wrapped.
 
-{$IFNDEF QSYNEDITWORDWRAP}
 unit SynEditWordWrap;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

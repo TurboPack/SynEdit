@@ -27,9 +27,7 @@ located at http://SynEdit.SourceForge.net
 Known Issues:
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITHIGHLIGHTER}
 unit SynEditHighlighter;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

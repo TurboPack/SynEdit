@@ -41,9 +41,7 @@ Known Issues:
 { Base class for exporting a programming language source file or part of it to
   a formatted output like HTML or RTF and copying this to the Windows clipboard
   or saving it to a file. }
-{$IFNDEF QSYNEDITEXPORT}
 unit SynEditExport;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

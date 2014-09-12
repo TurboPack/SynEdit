@@ -82,9 +82,7 @@ CONTENTS:
     PrintRange(StartPage,EndPage) : Prints the specified page-range (both inclusive)
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITPRINT}
 unit SynEditPrint;
-{$ENDIF}
 
 {$M+}
 {$I SynEdit.inc}

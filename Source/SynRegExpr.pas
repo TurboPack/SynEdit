@@ -1,6 +1,4 @@
-{$IFNDEF QSYNREGEXPR}
 unit SynRegExpr;
-{$ENDIF}
 
 {
      TRegExpr class library

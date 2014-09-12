@@ -44,9 +44,7 @@ CONTENTS:
   before the preview is shown, and when the printer is changed)
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITPRINTPREVIEW}
 unit SynEditPrintPreview;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

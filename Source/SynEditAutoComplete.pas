@@ -38,9 +38,7 @@ located at http://SynEdit.SourceForge.net
 Known Issues:
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEDITAUTOCOMPLETE}
 unit SynEditAutoComplete;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

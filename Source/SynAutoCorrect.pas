@@ -91,9 +91,7 @@ located at http://SynEdit.SourceForge.net
       * New demo.
 }
 
-{$IFNDEF QSYNAUTOCORRECT}
 unit SynAutoCorrect;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

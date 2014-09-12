@@ -39,9 +39,7 @@ located at http://SynEdit.SourceForge.net
 Known Issues:
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNEXPORTHTML}
 unit SynExportHTML;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

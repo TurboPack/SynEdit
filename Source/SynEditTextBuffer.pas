@@ -37,9 +37,7 @@ Known Issues:
 -------------------------------------------------------------------------------}
 //todo: Avoid calculating expanded string unncessarily (just calculate expandedLength instead).
 
-{$IFNDEF QSYNEDITTEXTBUFFER}
 unit SynEditTextBuffer;
-{$ENDIF}
 
 {$I SynEdit.inc}
 

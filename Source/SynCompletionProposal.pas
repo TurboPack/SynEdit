@@ -41,9 +41,7 @@ Last Changes:
 Known Issues:
 -------------------------------------------------------------------------------}
 
-{$IFNDEF QSYNCOMPLETIONPROPOSAL}
 unit SynCompletionProposal;
-{$ENDIF}
 
 {$I SynEdit.inc}
 
