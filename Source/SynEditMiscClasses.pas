@@ -1270,21 +1270,7 @@ begin
 end;
 
 procedure TSynHotKey.KeyUp(var Key: Word; Shift: TShiftState);
-{$IFDEF SYN_LINUX}
-var
-  Code: Byte;
-{$ENDIF}
 begin
-  {$IFDEF SYN_LINUX}
-  // uniform Keycode: key has the same value wether Shift is pressed or not
-  if Key <= 255 then
-  begin
-    Code := XKeysymToKeycode(Xlib.PDisplay(QtDisplay), Key);
-    Key := XKeycodeToKeysym(Xlib.PDisplay(QtDisplay), Code, 0);
-    if AnsiChar(Key) in ['a'..'z'] then Key := Ord(UpCase(AnsiChar(Key)));
-  end;
-  {$ENDIF}
-  
   if FPressedOnlyModifiers then
   begin
     Text := srNone;
