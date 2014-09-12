@@ -1311,15 +1311,6 @@ begin
   Color := clWindow;
   fFontDummy.Name := 'Courier New';
   fFontDummy.Size := 10;
-{$IFDEF SYN_KYLIX}
-  fFontDummy.Name := 'adobe-courier';
-  if fFontDummy.Name = 'adobe-courier' then
-    fFontDummy.Size := 12
-  else begin
-    fFontDummy.Name := 'terminal';
-    fFontDummy.Size := 14;
-  end;
-{$ENDIF}
 {$IFDEF SYN_COMPILER_3_UP}
   fFontDummy.CharSet := DEFAULT_CHARSET;
 {$ENDIF}
@@ -2431,11 +2422,9 @@ begin
   else if not fGutter.Gradient then
     Canvas.FillRect(AClip);
 
-{$IFDEF SYN_WIN32}
   // draw word wrap glyphs transparently over gradient
   if fGutter.Gradient then
     Canvas.Brush.Style := bsClear;
-{$ENDIF}
   // paint wrapped line glyphs
   if WordWrap and fWordWrapGlyph.Visible then
     for cLine := aFirstRow to aLastRow do
@@ -2443,11 +2432,9 @@ begin
         fWordWrapGlyph.Draw(Canvas,
                             (fGutterWidth - fGutter.RightOffset - 2) - fWordWrapGlyph.Width,
                             (cLine - TopLine) * fTextHeight, fTextHeight);
-{$IFDEF SYN_WIN32}
   // restore brush
   if fGutter.Gradient then
     Canvas.Brush.Style := bsSolid;
-{$ENDIF}
 
   // the gutter separator if visible
   if (fGutter.BorderStyle <> gbsNone) and (AClip.Right >= fGutterWidth - 2) then
@@ -5912,10 +5899,8 @@ end;
 
 procedure TCustomSynEdit.RemoveLinesPointer;
 begin
-  {$IFDEF SYN_COMPILER_5_UP}
   if Assigned(fChainedEditor) then
     RemoveFreeNotification(fChainedEditor);
-  {$ENDIF}
   fChainedEditor := nil;
 
   UnHookTextBuffer;
@@ -6137,9 +6122,7 @@ begin
     if Assigned(fHighlighter) then
     begin
       fHighlighter.UnhookAttrChangeEvent(HighlighterAttrChanged);
-{$IFDEF SYN_COMPILER_5_UP}
       fHighlighter.RemoveFreeNotification(Self);
-{$ENDIF}
     end;
     if Assigned(Value) then
     begin
@@ -9101,7 +9084,6 @@ begin
         CommandProcessor(ecCopy, ' ', nil)
       else if Action is TEditPaste then
         CommandProcessor(ecPaste, ' ', nil)
-{$IFDEF SYN_COMPILER_5_UP}
       else if Action is TEditDelete then
       begin
         if SelAvail then
@@ -9113,7 +9095,6 @@ begin
         CommandProcessor(ecUndo, ' ', nil)
       else if Action is TEditSelectAll then
         CommandProcessor(ecSelectAll, ' ', nil);
-{$ENDIF}
     end
   end
 {$IFDEF SYN_COMPILER_6_UP}
@@ -9150,14 +9131,12 @@ begin
         TEditAction(Action).Enabled := SelAvail
       else if Action is TEditPaste then
         TEditAction(Action).Enabled := CanPaste
-{$IFDEF SYN_COMPILER_5_UP}
       else if Action is TEditDelete then
         TEditAction(Action).Enabled := not ReadOnly
       else if Action is TEditUndo then
         TEditAction(Action).Enabled := CanUndo
       else if Action is TEditSelectAll then
         TEditAction(Action).Enabled := True;
-{$ENDIF}
     end;
 {$IFDEF SYN_COMPILER_6_UP}
   end else if Action is TSearchAction then

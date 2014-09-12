@@ -86,8 +86,7 @@ interface
 {$IFDEF SYN_COMPILER_4_UP} {$DEFINE DefParam} {$ENDIF}
 
 // Define 'OverMeth' options, to use method overloading (do not edit this definitions).
-{$IFDEF SYN_COMPILER_5_UP} {$DEFINE OverMeth} {$ENDIF}
-{$IFDEF FPC} {$DEFINE OverMeth} {$ENDIF}
+{$DEFINE OverMeth}
 
 uses
   SynUnicode,
