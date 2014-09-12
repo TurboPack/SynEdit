@@ -315,7 +315,7 @@ begin
   try
     BlobStream := FDataLink.DataSet.CreateBlobStream(FDataLink.Field, bmRead);
     Lines.BeginUpdate;
-    Lines.LoadFromStream(BlobStream{$IFDEF UNICODE}, TEncoding.Default{$ENDIF});
+    Lines.LoadFromStream(BlobStream, TEncoding.Default);
     Lines.EndUpdate;
     BlobStream.Free;
     Modified := False;

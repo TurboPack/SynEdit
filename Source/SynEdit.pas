@@ -1065,7 +1065,7 @@ type
     fEvent: THookedCommandEvent;
     fData: pointer;
     constructor Create(AEvent: THookedCommandEvent; AData: pointer);
-    function Equals(AEvent: THookedCommandEvent): Boolean; {$IFDEF UNICODE} reintroduce; {$ENDIF}
+    function Equals(AEvent: THookedCommandEvent): Boolean; reintroduce;
   end;
 
 constructor THookedCommandHandlerEntry.Create(AEvent: THookedCommandEvent;

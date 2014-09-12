@@ -118,162 +118,9 @@ const
 type
   TFontCharSet = 0..255;
 
-{$IFDEF UNICODE}
   TUnicodeStrings = TStrings;
-{$ELSE}
-{ TUnicodeStrings }
 
-  TUnicodeStrings = class;
-
-  // Event used to give the application a chance to switch the way of how to save
-  // the text in TUnicodeStrings if the text contains characters not only from the
-  // ANSI block but the save type is ANSI. On triggering the event the application
-  // can change the property SaveUnicode as needed. This property is again checked
-  // after the callback returns.
-  TConfirmConversionEvent = procedure (Sender: TUnicodeStrings; var Allowed: Boolean) of object;
-
-  TUnicodeStrings = class(TPersistent)
-  private
-    FUpdateCount: Integer;
-    FSaved: Boolean;        // set in SaveToStream, True in case saving was successfull otherwise False
-    FOnConfirmConversion: TConfirmConversionEvent;
-    FSaveFormat: TSaveFormat;  // overrides the FSaveUnicode flag, initialized when a file is loaded,
-                               // expect losses if it is set to sfAnsi before saving
-    function GetCommaText: UnicodeString;
-    function GetName(Index: Integer): UnicodeString;
-    function GetValue(const Name: UnicodeString): UnicodeString;
-    procedure ReadData(Reader: TReader);
-    procedure SetCommaText(const Value: UnicodeString);
-    procedure SetValue(const Name, Value: UnicodeString);
-    procedure WriteData(Writer: TWriter);
-    function GetSaveUnicode: Boolean;
-    procedure SetSaveUnicode(const Value: Boolean);
-  protected
-    procedure DefineProperties(Filer: TFiler); override;
-    procedure DoConfirmConversion(var Allowed: Boolean); virtual;
-    procedure Error(const Msg: string; Data: Integer);
-    function Get(Index: Integer): UnicodeString; virtual; abstract;
-    function GetCapacity: Integer; virtual;
-    function GetCount: Integer; virtual; abstract;
-    function GetObject(Index: Integer): TObject; virtual;
-    function GetTextStr: UnicodeString; virtual;
-    procedure Put(Index: Integer; const S: UnicodeString); virtual; abstract;
-    procedure PutObject(Index: Integer; AObject: TObject); virtual; abstract;
-    procedure SetCapacity(NewCapacity: Integer); virtual;
-    procedure SetUpdateState(Updating: Boolean); virtual;
-  public
-    constructor Create;
-
-    function Add(const S: UnicodeString): Integer; virtual;
-    function AddObject(const S: UnicodeString; AObject: TObject): Integer; virtual;
-    procedure Append(const S: UnicodeString);
-    procedure AddStrings(Strings: TStrings); overload; virtual;
-    procedure AddStrings(Strings: TUnicodeStrings); overload; virtual;
-    procedure Assign(Source: TPersistent); override;
-    procedure AssignTo(Dest: TPersistent); override;
-    procedure BeginUpdate;
-    procedure Clear; virtual; abstract;
-    procedure Delete(Index: Integer); virtual; abstract;
-    procedure EndUpdate;
-    function Equals(Strings: TUnicodeStrings): Boolean;
-    procedure Exchange(Index1, Index2: Integer); virtual;
-    function GetSeparatedText(Separators: UnicodeString): UnicodeString; virtual;
-    function GetText: PWideChar; virtual;
-    function IndexOf(const S: UnicodeString): Integer; virtual;
-    function IndexOfName(const Name: UnicodeString): Integer;
-    function IndexOfObject(AObject: TObject): Integer;
-    procedure Insert(Index: Integer; const S: UnicodeString); virtual; abstract;
-    procedure InsertObject(Index: Integer; const S: UnicodeString; AObject: TObject);
-    procedure LoadFromFile(const FileName: TFileName); virtual;
-    procedure LoadFromStream(Stream: TStream); virtual;
-    procedure Move(CurIndex, NewIndex: Integer); virtual;
-    procedure SaveToFile(const FileName: TFileName); virtual;
-    procedure SaveToStream(Stream: TStream; WithBOM: Boolean = True); virtual;
-    procedure SetTextStr(const Value: UnicodeString); virtual;
-
-    property Capacity: Integer read GetCapacity write SetCapacity;
-    property CommaText: UnicodeString read GetCommaText write SetCommaText;
-    property Count: Integer read GetCount;
-    property Names[Index: Integer]: UnicodeString read GetName;
-    property Objects[Index: Integer]: TObject read GetObject write PutObject;
-    property Values[const Name: UnicodeString]: UnicodeString read GetValue write SetValue;
-    property Saved: Boolean read FSaved;
-    property SaveUnicode: Boolean read GetSaveUnicode write SetSaveUnicode default True;
-    property SaveFormat: TSaveFormat read FSaveFormat write FSaveFormat default sfUnicodeLSB;
-    property Strings[Index: Integer]: UnicodeString read Get write Put; default;
-    property Text: UnicodeString read GetTextStr write SetTextStr;
-
-    property OnConfirmConversion: TConfirmConversionEvent read FOnConfirmConversion write FOnConfirmConversion;
-  end;
-{$ENDIF}
-
-{$IFDEF UNICODE}
   TUnicodeStringList = TStringList;
-{$ELSE}
-{ TUnicodeStringList }
-  
-  //----- TUnicodeStringList class
-  TDynWideCharArray = array of WideChar;
-  TUnicodeStringItem = record
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    FString: PWideChar; // "array of WideChar";
-    {$ELSE}
-    FString: UnicodeString;
-    {$ENDIF OWN_UnicodeString_MEMMGR}
-    FObject: TObject;
-  end;
-
-  TUnicodeStringList = class;
-  TUnicodeStringItemList = array of TUnicodeStringItem;
-  TUnicodeStringListSortCompare = function (AString1, AString2: UnicodeString): Integer;
-
-  TUnicodeStringList = class(TUnicodeStrings)
-  private
-    FList: TUnicodeStringItemList;
-    FCount: Integer;
-    FSorted: Boolean;
-    FDuplicates: TDuplicates;
-    FOnChange: TNotifyEvent;
-    FOnChanging: TNotifyEvent;
-    procedure ExchangeItems(Index1, Index2: Integer);
-    procedure Grow;
-    procedure QuickSort(L, R: Integer); overload;
-    procedure QuickSort(L, R: Integer; SCompare: TUnicodeStringListSortCompare); overload;
-    procedure InsertItem(Index: Integer; const S: UnicodeString);
-    procedure SetSorted(Value: Boolean);
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    procedure SetListString(Index: Integer; const S: UnicodeString);
-    {$ENDIF OWN_UnicodeString_MEMMGR}
-  protected
-    procedure Changed; virtual;
-    procedure Changing; virtual;
-    function Get(Index: Integer): UnicodeString; override;
-    function GetCapacity: Integer; override;
-    function GetCount: Integer; override;
-    function GetObject(Index: Integer): TObject; override;
-    procedure Put(Index: Integer; const S: UnicodeString); override;
-    procedure PutObject(Index: Integer; AObject: TObject); override;
-    procedure SetCapacity(NewCapacity: Integer); override;
-    procedure SetUpdateState(Updating: Boolean); override;
-  public
-    destructor Destroy; override;
-
-    function Add(const S: UnicodeString): Integer; override;
-    procedure Clear; override;
-    procedure Delete(Index: Integer); override;
-    procedure Exchange(Index1, Index2: Integer); override;
-    function Find(const S: UnicodeString; var Index: Integer): Boolean; virtual;
-    function IndexOf(const S: UnicodeString): Integer; override;
-    procedure Insert(Index: Integer; const S: UnicodeString); override;
-    procedure Sort; virtual;
-    procedure CustomSort(Compare: TUnicodeStringListSortCompare); virtual;
-
-    property Duplicates: TDuplicates read FDuplicates write FDuplicates;
-    property Sorted: Boolean read FSorted write SetSorted;
-    property OnChange: TNotifyEvent read FOnChange write FOnChange;
-    property OnChanging: TNotifyEvent read FOnChanging write FOnChanging;
-  end;
-{$ENDIF}
 
 {$IFNDEF UNICODE}
 { PWideChar versions of important PAnsiChar functions from SysUtils }
@@ -339,20 +186,7 @@ type
   TSynEncoding = (seUTF8, seUTF16LE, seUTF16BE, seAnsi);
   TSynEncodings = set of TSynEncoding;
 
-{$IFDEF UNICODE}
   TWideFileStream = TFileStream;
-{$ELSE}
-  TWideFileStream = class(THandleStream)
-  public
-    constructor Create(const FileName: UnicodeString; Mode: Word); overload;
-    constructor Create(const FileName: UnicodeString; Mode: Word; Rights: Cardinal); overload;
-    destructor Destroy; override;
-  end;
-
-function WideFileOpen(const FileName: UnicodeString; Mode: LongWord): Integer;
-function WideFileCreate(const FileName: UnicodeString): Integer; overload;
-function WideFileCreate(const FileName: UnicodeString; Rights: Integer): Integer; overload;
-{$ENDIF}
 
 function IsAnsiOnly(const WS: UnicodeString): Boolean;
 function IsUTF8(Stream: TStream; out WithBOM: Boolean): Boolean; overload;
@@ -2683,12 +2517,7 @@ begin
         begin
           SetLength(UTF8Str, Size);
           Stream.ReadBuffer(UTF8Str[1], Size);
-{$IFDEF UNICODE}
           UnicodeStrings.Text := UTF8ToUnicodeString(UTF8Str);
-{$ELSE}
-          UnicodeStrings.Text := UTF8Decode(UTF8Str);
-          UnicodeStrings.SaveFormat := sfUTF8;
-{$ENDIF}
         end;
       seUTF16LE:
         begin

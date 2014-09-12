@@ -352,11 +352,7 @@ begin
           StrSwapByteOrder(PWideChar(S));
         end;
       seUTF8:
-{$IFDEF UNICODE}
         S := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
-{$ELSE}
-        S := UTF8Decode(PAnsiChar(fBuffer.Memory));
-{$ENDIF}
       seAnsi:
         S := UnicodeString(PAnsiChar(fBuffer.Memory));
     end;
