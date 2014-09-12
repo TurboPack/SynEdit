@@ -505,15 +505,7 @@ var
 begin
   s := Value;
   FText := DecodeString(GetFirstEl(s, '/'));
-{$IFDEF SYN_COMPILER_3_UP}
-{$IFDEF SYN_CLX}
-  GetFirstEl(s, '/');
-{$ELSE}
   FFont.Charset := StrToIntDef(GetFirstEl(s, '/'), 0);
-{$ENDIF}
-{$ELSE}
-  GetFirstEl(s, '/');
-{$ENDIF}
   FFont.Color := StrToIntDef(GetFirstEl(s, '/'), 0);
   FFont.Height := StrToIntDef(GetFirstEl(s, '/'), 0);
   FFont.Name := DecodeString(GetFirstEl(s, '/'));

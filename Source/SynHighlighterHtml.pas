@@ -402,11 +402,7 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
 const
 //  KeyWords: array[0..201] of UnicodeString = (

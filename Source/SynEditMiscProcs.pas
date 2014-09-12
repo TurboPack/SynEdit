@@ -130,21 +130,6 @@ procedure Assert(Expr: Boolean);  { stub for Delphi 2 }
 function LastDelimiter(const Delimiters, S: UnicodeString): Integer;
 {$ENDIF}
 
-{$IFNDEF SYN_COMPILER_4_UP}
-type
-  TReplaceFlags = set of (rfReplaceAll, rfIgnoreCase);
-
-function StringReplace(const S, OldPattern, NewPattern: UnicodeString;
-  Flags: TReplaceFlags): UnicodeString;
-{$ENDIF}
-
-{$IFDEF SYN_CLX}
-function GetRValue(RGBValue: TColor): byte;
-function GetGValue(RGBValue: TColor): byte;
-function GetBValue(RGBValue: TColor): byte;
-function RGB(r, g, b: Byte): Cardinal;
-{$ENDIF}
-
 type
   THighlighterAttriProc = function (Highlighter: TSynCustomHighlighter;
     Attri: TSynHighlighterAttributes; UniqueAttriName: string;
@@ -171,23 +156,7 @@ implementation
 
 uses
   SysUtils,
-  {$IFDEF SYN_CLX}
-  QSynHighlighterMulti;
-  {$ELSE}
   SynHighlighterMulti;
-  {$ENDIF}
-
-{$IFNDEF SYN_COMPILER_4_UP}
-function Max(x, y: Integer): Integer;
-begin
-  if x > y then Result := x else Result := y;
-end;
-
-function Min(x, y: Integer): Integer;
-begin
-  if x < y then Result := x else Result := y;
-end;
-{$ENDIF}
 
 function MinMax(x, mi, ma: Integer): Integer;
 begin
@@ -684,108 +653,6 @@ begin
   SetLength(Result,j);
 end; { DecodeString }
 {$IFDEF RestoreRangeChecking}{$R+}{$ENDIF}
-
-{$IFNDEF SYN_COMPILER_5_UP}
-procedure FreeAndNil(var Obj);
-var
-  P: TObject;
-begin
-  P := TObject(Obj);
-  TObject(Obj) := nil;
-  P.Free;
-end;
-{$ENDIF}
-
-{$IFNDEF SYN_COMPILER_3_UP}
-procedure Assert(Expr: Boolean);  { stub for Delphi 2 }
-begin
-end;
-{$ENDIF}
-
-{$IFNDEF SYN_COMPILER_3_UP}
-function LastDelimiter(const Delimiters, S: UnicodeString): Integer;
-var
-  P: PWideChar;
-begin
-  Result := Length(S);
-  P := PWideChar(Delimiters);
-  while Result > 0 do
-  begin
-    if (S[Result] <> #0) and (StrScan(P, S[Result]) <> nil) then
-      exit;
-    Dec(Result);
-  end;
-end;
-{$ENDIF}
-
-{$IFNDEF SYN_COMPILER_4_UP}
-function StringReplace(const S, OldPattern, NewPattern: UnicodeString;
-  Flags: TReplaceFlags): UnicodeString;
-var
-  SearchStr, Patt, NewStr: UnicodeString;
-  Offset: Integer;
-begin
-  if rfIgnoreCase in Flags then
-  begin
-    SearchStr := SynWideUpperCase(S);
-    Patt := SynWideUpperCase(OldPattern);
-  end
-  else
-  begin
-    SearchStr := S;
-    Patt := OldPattern;
-  end;
-  NewStr := S;
-  Result := '';
-  while SearchStr <> '' do
-  begin
-    Offset := Pos(Patt, SearchStr);
-    if Offset = 0 then
-    begin
-      Result := Result + NewStr;
-      Break;
-    end;
-    Result := Result + Copy(NewStr, 1, Offset - 1) + NewPattern;
-    NewStr := Copy(NewStr, Offset + Length(OldPattern), MaxInt);
-    if not (rfReplaceAll in Flags) then
-    begin
-      Result := Result + NewStr;
-      Break;
-    end;
-    SearchStr := Copy(SearchStr, Offset + Length(Patt), MaxInt);
-  end;
-end;
-{$ENDIF}
-
-{$IFDEF SYN_CLX}
-type
-  TColorRec = packed record
-    Blue: Byte;
-    Green: Byte;
-    Red: Byte;
-    Unused: Byte;
-  end;
-
-function GetRValue(RGBValue: TColor): byte;
-begin
-  Result := TColorRec(RGBValue).Red;
-end;
-
-function GetGValue(RGBValue: TColor): byte;
-begin
-  Result := TColorRec(RGBValue).Green;
-end;
-
-function GetBValue(RGBValue: TColor): byte;
-begin
-  Result := TColorRec(RGBValue).Blue;
-end;
-
-function RGB(r, g, b: Byte): Cardinal;
-begin
-  Result := (r or (g shl 8) or (b shl 16));
-end;
-{$ENDIF}
 
 function DeleteTypePrefixAndSynSuffix(S: string): string;
 begin
