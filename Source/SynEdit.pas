@@ -1309,10 +1309,8 @@ begin
   Width := 200;
   Cursor := crIBeam;
   Color := clWindow;
-{$IFDEF SYN_WIN32}
   fFontDummy.Name := 'Courier New';
   fFontDummy.Size := 10;
-{$ENDIF}
 {$IFDEF SYN_KYLIX}
   fFontDummy.Name := 'adobe-courier';
   if fFontDummy.Name = 'adobe-courier' then
@@ -1840,24 +1838,10 @@ end;
 {$ENDIF}
 
 procedure TCustomSynEdit.KeyUp(var Key: Word; Shift: TShiftState);
-{$IFDEF SYN_LINUX}
-var
-  Code: Byte;
-{$ENDIF}
 var
   CharCode: Integer;
   KeyMsg: TWMKey;
 begin
-  {$IFDEF SYN_LINUX}
-  // uniform Keycode: key has the same value wether Shift is pressed or not
-  if Key <= 255 then
-  begin
-    Code := XKeysymToKeycode(Xlib.PDisplay(QtDisplay), Key);
-    Key := XKeycodeToKeysym(Xlib.PDisplay(QtDisplay), Code, 0);
-    if AnsiChar(Key) in ['a'..'z'] then Key := Ord(UpCase(AnsiChar(Key)));
-  end;
-  {$ENDIF}
-
   if (ssAlt in Shift) and (Key >= VK_NUMPAD0) and (Key <= VK_NUMPAD9) then
     FCharCodeString := FCharCodeString + IntToStr(Key - VK_NUMPAD0);
 
@@ -1885,19 +1869,7 @@ var
   Data: pointer;
   C: WideChar;
   Cmd: TSynEditorCommand;
-  {$IFDEF SYN_LINUX}
-  Code: Byte;
-  {$ENDIF}
 begin
-  {$IFDEF SYN_LINUX}
-  // uniform Keycode: key has the same value wether Shift is pressed or not
-  if Key <= 255 then
-  begin
-    Code := XKeysymToKeycode(Xlib.PDisplay(QtDisplay), Key);
-    Key := XKeycodeToKeysym(Xlib.PDisplay(QtDisplay), Code, 0);
-    if AnsiChar(Key) in ['a'..'z'] then Key := Ord(UpCase(AnsiChar(Key)));
-  end;
-  {$ENDIF}
   inherited;
   fKbdHandler.ExecuteKeyDown(Self, Key, Shift);
 

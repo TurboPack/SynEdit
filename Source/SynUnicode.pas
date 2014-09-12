@@ -296,7 +296,6 @@ procedure WStrDispose(Str: PWideChar);
 
 
 {$IFNDEF SYN_COMPILER_6_UP}
-{$IFDEF SYN_WIN32} // Kylix should have that from version 1 on
 function UnicodeToUtf8(Dest: PAnsiChar; MaxDestBytes: Cardinal;
   Source: PWideChar; SourceChars: Cardinal): Cardinal;
 function Utf8ToUnicode(Dest: PWideChar; MaxDestChars: Cardinal;
@@ -309,21 +308,11 @@ function Utf8ToAnsi(const S: UTF8String): string;
 function WideCompareStr(const S1, S2: UnicodeString): Integer;
 function WideCompareText(const S1, S2: UnicodeString): Integer;
 {$ENDIF}
-{$ENDIF}
 
-// Kylix has them, but Delphi 5 doesn't and Delphi 6&7 versions are buggy
-// in Win9X (fix taken from Troy Wolbrinks TntUnicode-package)
-{$IFDEF SYN_WIN32}
-{$IFNDEF UNICODE}
-var
-  DefaultSystemCodePage: Cardinal; // implicitly used when converting AnsiString <--> UnicodeString.
-{$ENDIF}
-  
 function WCharUpper(lpsz: PWideChar): PWideChar;
 function WCharUpperBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
 function WCharLower(lpsz: PWideChar): PWideChar;
 function WCharLowerBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
-{$ENDIF}
 function SynWideUpperCase(const S: UnicodeString): UnicodeString;
 function SynWideLowerCase(const S: UnicodeString): UnicodeString;
 function SynIsCharAlpha(const C: WideChar): Boolean;
@@ -347,14 +336,12 @@ function UnicodeStringOfChar(C: WideChar; Count: Cardinal): UnicodeString;
 function WideTrim(const S: UnicodeString): UnicodeString;
 function WideTrimLeft(const S: UnicodeString): UnicodeString;
 function WideTrimRight(const S: UnicodeString): UnicodeString;
-{$IFDEF SYN_WIN32}
 function CharSetFromLocale(Language: LCID): TFontCharSet;
 function CodePageFromLocale(Language: LCID): Integer;
 function KeyboardCodePage: Word;
 function KeyUnicode(C: AnsiChar): WideChar;
 function StringToUnicodeStringEx(const S: AnsiString; CodePage: Word): UnicodeString;
 function UnicodeStringToStringEx(const WS: UnicodeString; CodePage: Word): AnsiString;
-{$ENDIF}
 
 { functions providing same behavior on Win9x and WinNT based systems}
 function GetTextSize(DC: HDC; Str: PWideChar; Count: Integer): TSize;
@@ -423,15 +410,11 @@ procedure SetWideStrProp(Instance: TObject; PropInfo: PPropInfo; const Value: Un
 {$ENDIF}
 procedure UnicodeDefineProperties(Filer: TFiler; Instance: TPersistent);
 {$ENDIF}
-{$IFDEF SYN_WIN32}
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
 function IsUnicodeStringMappableToAnsi(const WS: UnicodeString): Boolean;
-{$ENDIF}
 
-{$IFDEF SYN_WIN32}
 var
   Win32PlatformIsUnicode: Boolean;
-{$ENDIF}
 
 implementation
 
@@ -483,24 +466,17 @@ end;
 procedure TUnicodeStrings.AddStrings(Strings: TStrings);
 var
   I: Integer;
-{$IFDEF SYN_WIN32}
   S: UnicodeString;
   CP: Integer;
-{$ENDIF}
 begin
   BeginUpdate;
   try
-    {$IFDEF SYN_WIN32}
     CP := CodePageFromLocale(GetThreadLocale);
     for I := 0 to Strings.Count - 1 do
     begin
       S := StringToUnicodeStringEx(Strings[I], CP);
       AddObject(S, Strings.Objects[I]);
     end;
-    {$ELSE}
-    for I := 0 to Strings.Count - 1 do
-      AddObject(Strings[I], Strings.Objects[I]);
-    {$ENDIF}
   finally
     EndUpdate;
   end;
@@ -1671,7 +1647,6 @@ begin
 end;
 
 {$IFNDEF SYN_COMPILER_6_UP}
-{$IFDEF SYN_WIN32}
 function UnicodeToUtf8(Dest: PAnsiChar; MaxDestBytes: Cardinal;
   Source: PWideChar; SourceChars: Cardinal): Cardinal;
 var
@@ -1885,9 +1860,7 @@ begin
   end;
 end;
 {$ENDIF}
-{$ENDIF}
 
-{$IFDEF SYN_WIN32}
 // The Win9X fix for SynWideUpperCase and SynWideLowerCase was taken
 // from Troy Wolbrinks, TntUnicode-package.
 
@@ -2014,19 +1987,7 @@ begin
   if Len > 0 then
     SynUnicode.WCharLowerBuff(Pointer(Result), Len);
 end;
-{$ELSE}
-function SynWideUpperCase(const S: UnicodeString): UnicodeString;
-begin
-  Result := WideUpperCase(S);
-end;
 
-function SynWideLowerCase(const S: UnicodeString): UnicodeString;
-begin
-  Result := WideLowerCase(S);
-end;
-{$ENDIF}
-
-{$IFDEF SYN_WIN32}
 function SynIsCharAlpha(const C: WideChar): Boolean;
 begin
   if Win32PlatformIsUnicode then
@@ -2044,17 +2005,6 @@ begin
     // returns false if C is not mappable to ANSI
     Result := IsCharAlphaNumericA(AnsiChar(C));
 end;
-{$ELSE}
-function SynIsCharAlpha(const C: WideChar): Boolean;
-begin
-  Result := IsAlpha(Integer(ch)) <> 0;
-end;
-
-function SynIsCharAlphaNumeric(const C: WideChar): Boolean;
-begin
-  Result := IsAlNum(Integer(ch)) <> 0;
-end;
-{$ENDIF}
 
 {$IFNDEF UNICODE}
 function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean;
@@ -2366,7 +2316,6 @@ begin
   Result := Copy(S, 1, I);
 end;
 
-{$IFDEF SYN_WIN32}
 function TranslateCharsetInfoEx(lpSrc: PDWORD; var lpCs: TCharsetInfo; dwFlags: DWORD): BOOL; stdcall;
   external 'gdi32.dll' name 'TranslateCharsetInfo';
 
@@ -2426,7 +2375,6 @@ begin
   WideCharToMultiByte(CodePage, 0, PWideChar(WS), InputLength, PAnsiChar(Result),
     OutputLength, nil, nil);
 end;
-{$ENDIF}
 
 function GetTextSize(DC: HDC; Str: PWideChar; Count: Integer): TSize;
 {$IFDEF SYN_UNISCRIBE}
@@ -2550,11 +2498,7 @@ end;
 
 constructor TWideFileStream.Create(const FileName: UnicodeString; Mode: Word);
 begin
-{$IFDEF SYN_WIN32}
   Create(Filename, Mode, 0);
-{$ELSE}
-  Create(Filename, Mode, FileAccessRights);
-{$ENDIF}
 end;
 
 constructor TWideFileStream.Create(const FileName: UnicodeString; Mode: Word;
@@ -2619,7 +2563,6 @@ begin
 end;
 
 function WideFileOpen(const FileName: UnicodeString; Mode: LongWord): Integer;
-{$IFDEF SYN_WIN32}
 const
   AccessMode: array[0..2] of LongWord = (
     GENERIC_READ,
@@ -2646,9 +2589,7 @@ begin
         FILE_ATTRIBUTE_NORMAL, 0));
   end;
 end;
-{$ENDIF}
 function WideFileCreate(const FileName: UnicodeString): Integer;
-{$IFDEF SYN_WIN32}
 begin
   if Win32PlatformIsUnicode then
     Result := Integer(CreateFileW(PWideChar(FileName), GENERIC_READ or GENERIC_WRITE,
@@ -2657,31 +2598,17 @@ begin
     Result := Integer(CreateFileA(PAnsiChar(AnsiString(FileName)), GENERIC_READ or GENERIC_WRITE,
       0, nil, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0));
 end;
-{$ENDIF}
 
 function WideFileCreate(const FileName: UnicodeString; Rights: Integer): Integer;
-{$IFDEF SYN_WIN32}
 begin
   Result := WideFileCreate(FileName);
 end;
 {$ENDIF}
-{$ENDIF}
 
 function IsAnsiOnly(const WS: UnicodeString): Boolean;
-{$IFDEF SYN_WIN32}
 begin
   Result := IsUnicodeStringMappableToAnsi(WS);
 end;
-{$ELSE}
-var
-  Run: PWideChar;
-begin
-  Run := PWideChar(WS);
-  while Run^ in [WideChar(#1)..WideChar(#255)] do
-    Inc(Run);
-  Result := Run^ = WideNull;
-end;
-{$ENDIF}
 
 function IsUTF8(const FileName: UnicodeString; out WithBOM: Boolean): Boolean;
 var
@@ -3586,7 +3513,6 @@ begin
 end;
 {$ENDIF}
 
-{$IFDEF SYN_WIN32}
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
 var
   UsedDefaultChar: BOOL;
@@ -3604,14 +3530,8 @@ begin
     nil, @UsedDefaultChar);
   Result := not UsedDefaultChar;
 end;
-{$ENDIF}
 
 initialization
-{$IFDEF SYN_WIN32}
   Win32PlatformIsUnicode := (Win32Platform = VER_PLATFORM_WIN32_NT);
-  {$IFNDEF UNICODE}
-  DefaultSystemCodePage := GetACP;
-  {$ENDIF}
-{$ENDIF}
 
 end.
