@@ -66,9 +66,7 @@ interface
 // ======== Define options for TRegExpr engine
 {$DEFINE SynRegUniCode} // Unicode support
 {$DEFINE RegExpPCodeDump} // p-code dumping (see Dump method)
-{$IFNDEF FPC} // the option is not supported in FreePascal
  {$DEFINE reRealExceptionAddr} // exceptions will point to appropriate source line, not to Error procedure
-{$ENDIF}
 {$DEFINE ComplexBraces} // support braces in complex cases
 {$IFNDEF SynRegUniCode} // the option applicable only for non-UniCode mode
  {$DEFINE UseSetOfChar} // Significant optimization by using set of char
@@ -415,9 +413,7 @@ type
     // see description in the help. Initialized from RegExprModifierX
 
     function Exec (const AInputString : RegExprString) : boolean; {$IFDEF OverMeth} overload;
-    {$IFNDEF FPC} // I do not know why FreePascal cannot overload methods with empty param list
     function Exec : boolean; overload; //###0.949
-    {$ENDIF}
     function Exec (AOffset: integer) : boolean; overload; //###0.949
     {$ENDIF}
     // match a programm against a string AInputString
@@ -3363,13 +3359,11 @@ function TRegExpr.Exec (const AInputString : RegExprString) : boolean;
 --------------------------------------------------------------}
 
 {$IFDEF OverMeth}
-{$IFNDEF FPC}
 function TRegExpr.Exec : boolean;
  begin
   Result := ExecPrim (1);
  end; { of function TRegExpr.Exec
 --------------------------------------------------------------}
-{$ENDIF}
 function TRegExpr.Exec (AOffset: integer) : boolean;
  begin
   Result := ExecPrim (AOffset);
