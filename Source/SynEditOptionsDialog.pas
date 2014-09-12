@@ -237,9 +237,6 @@ type
   public
     eKeyShort2: TSynHotKey;
     eKeyShort1: TSynHotKey;
-    {$IFNDEF SYN_DELPHI_4_UP}
-    FOnSelectItem: TLVSelectItemEvent;
-    {$ENDIF}
 
     function Execute(EditOptions : TSynEditorOptionsContainer) : Boolean;
     property GetUserCommandNames: TSynEditorOptionsUserCommand read FUserCommand

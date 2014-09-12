@@ -49,15 +49,10 @@ interface
 {$EXTENDEDSYNTAX ON}
 {$LONGSTRINGS ON}
 {$OPTIMIZATION ON}
-  {$WARN SYMBOL_PLATFORM OFF} // Suppress .Net warnings
-{$IFDEF SYN_COMPILER_7_UP}
-  {$WARN UNSAFE_CAST OFF} // Suppress .Net warnings
-  {$WARN UNSAFE_TYPE OFF} // Suppress .Net warnings
-  {$WARN UNSAFE_CODE OFF} // Suppress .Net warnings
-{$ENDIF}
-{$IFDEF FPC}
-  {$MODE DELPHI} // Delphi-compatible mode in FreePascal
-{$ENDIF}
+{$WARN SYMBOL_PLATFORM OFF} // Suppress .Net warnings
+{$WARN UNSAFE_CAST OFF} // Suppress .Net warnings
+{$WARN UNSAFE_TYPE OFF} // Suppress .Net warnings
+{$WARN UNSAFE_CODE OFF} // Suppress .Net warnings
 
 // ======== Define options for TRegExpr engine
 {$DEFINE SynRegUniCode} // Unicode support
