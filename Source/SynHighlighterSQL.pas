@@ -56,21 +56,12 @@ unit SynHighlighterSQL;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Types,
-  QGraphics,
-  QSynEditTypes,
-  QSynEditHighlighter,
-  QSynHighlighterHashEntries,
-  QSynUnicode,
-{$ELSE}
   Graphics,
   Registry,
   SynEditTypes,
   SynEditHighlighter,
   SynHighlighterHashEntries,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -211,11 +202,7 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
 const
 //---"Standard" (ANSI SQL keywords (Version 1, 2 and 3) (www.sql.org)-----------

@@ -45,23 +45,12 @@ unit SynEditMiscProcs;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Types,
-  kTextDrawer,
-  QGraphics,
-  QSynEditTypes,
-  QSynEditHighlighter,
-  QSynUnicode,
-{$ELSE}
   Windows,
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-{$ENDIF}
-{$IFDEF SYN_COMPILER_4_UP}
   Math,
-{$ENDIF}
   Classes;
 
 const

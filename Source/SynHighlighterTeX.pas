@@ -44,17 +44,10 @@ unit SynHighlighterTeX;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QGraphics,
-  QSynEditTypes,
-  QSynEditHighlighter,
-  QSynUnicode,
-{$ELSE}
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-{$ENDIF}
   Classes;
 
 type
@@ -123,11 +116,7 @@ fControlSequenceAttri
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
 constructor TSynTeXSyn.Create(AOwner: TComponent);
 begin

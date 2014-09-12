@@ -52,17 +52,10 @@ unit SynHighlighterADSP21xx;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QGraphics,
-  QSynEditTypes,
-  QSynEditHighlighter,
-  QSynUnicode,
-{$ELSE}
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -336,12 +329,8 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   Windows,
   SynEditStrConst;
-{$ENDIF}
 
 const
   KeyWords: array[0..178] of UnicodeString = (

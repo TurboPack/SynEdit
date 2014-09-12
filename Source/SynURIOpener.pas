@@ -49,26 +49,12 @@ unit SynURIOpener;
 interface
 
 uses
-  {$IFDEF SYN_LINUX}
-  Xlib,
-  {$ELSE}
   Windows,
-  {$ENDIF}
-  {$IFDEF SYN_CLX}
-  Types,
-  Qt,
-  QControls,
-  QSynEditTypes,
-  QSynEdit,
-  QSynHighlighterURI,
-  QSynUnicode,
-  {$ELSE}
   Controls,
   SynEditTypes,
   SynEdit,
   SynHighlighterURI,
   SynUnicode,
-  {$ENDIF}
   Classes;
 
 type
@@ -145,20 +131,10 @@ type
 implementation
 
 uses
-  {$IFDEF SYN_LINUX}
-  Libc,
-  {$ELSE}
   ShellAPI,
-  {$ENDIF}
-  {$IFDEF SYN_CLX}
-  QForms,
-  QSynEditHighlighter,
-  QSynEditKeyConst,
-  {$ELSE}
   Forms,
   SynEditHighlighter,
   SynEditKeyConst,
-  {$ENDIF}
   SysUtils;
 
 type

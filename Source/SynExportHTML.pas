@@ -48,19 +48,11 @@ unit SynExportHTML;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  QGraphics,
-  QSynEditExport,
-  QSynEditHighlighter,
-  QSynUnicode,  
-{$ELSE}
   Windows,
   Graphics,
   SynEditExport,
   SynEditHighlighter,
-  SynUnicode,    
-{$ENDIF}
+  SynUnicode,
   Classes;
 
 type
@@ -111,17 +103,10 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditMiscProcs,
-  QSynEditStrConst,
-  QSynHighlighterMulti,
-{$ELSE}
   SynEditMiscProcs,
-  SynEditStrConst,  
+  SynEditStrConst,
   SynHighlighterMulti,
-{$ENDIF}
   SysUtils;
-
 
 { TSynExporterHTML }
 

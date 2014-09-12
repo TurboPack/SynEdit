@@ -45,23 +45,6 @@ unit SynEditMiscClasses;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  {$IFDEF SYN_LINUX}
-  Xlib,
-  {$ENDIF}
-  Types,
-  Qt,
-  QConsts,
-  QGraphics,
-  QControls,
-  QImgList,
-  QStdCtrls,
-  QMenus,
-  kTextDrawer,
-  QSynEditTypes,
-  QSynEditKeyConst,
-  QSynUnicode,
-{$ELSE}
   Consts,
   Windows,
   Messages,
@@ -74,10 +57,7 @@ uses
   SynEditTypes,
   SynEditKeyConst,
   SynUnicode,
-{$ENDIF}
-{$IFDEF SYN_COMPILER_4_UP}
   Math,
-{$ENDIF}
   Classes,
   SysUtils;
 

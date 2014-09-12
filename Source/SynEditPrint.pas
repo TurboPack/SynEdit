@@ -92,21 +92,6 @@ unit SynEditPrint;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  QGraphics,
-  QPrinters,
-  Types,
-  QSynEdit,
-  QSynEditTypes,
-  QSynEditPrintTypes,
-  QSynEditPrintHeaderFooter,
-  QSynEditPrinterInfo,
-  QSynEditPrintMargins,
-  QSynEditMiscProcs,
-  QSynEditHighlighter,
-  QSynUnicode,
-{$ELSE}
   Windows,
   Graphics,
   Printers,
@@ -119,7 +104,6 @@ uses
   SynEditMiscProcs,
   SynEditHighlighter,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -415,14 +399,9 @@ begin
   // Calculate TextMetrics with the (probably) most wider text styles so text is
   // never clipped (although potentially wasting space)
   FCanvas.Font.Style := [fsBold, fsItalic, fsUnderline, fsStrikeOut];
-{$IFDEF SYN_CLX}
-  CharWidth := TextWidth(FCanvas, 'W');
-  FLineHeight := TextHeight(FCanvas, 'Wp¹');
-{$ELSE}
   GetTextMetrics(FCanvas.Handle, TmpTextMetrics);
   CharWidth := TmpTextMetrics.tmAveCharWidth;
   FLineHeight := TmpTextMetrics.tmHeight + TmpTextMetrics.tmExternalLeading;
-{$ENDIF}
   FCanvas.Font.Style := FFont.Style;
   FMargins.InitPage(FCanvas, 1, FPrinterInfo, FLineNumbers, FLineNumbersInMargin,
     FLines.Count - 1 + FLineOffset);
@@ -593,12 +572,7 @@ begin
   FCanvas.Brush.Color := FDefaultBG; 
   FCanvas.Font.Style := [];
   FCanvas.Font.Color := clBlack;
-  {$IFDEF SYN_CLX}
-  QSynUnicode.
-  {$ELSE}
-  SynUnicode.
-  {$ENDIF}
-  TextOut(FCanvas, FMargins.PLeft - TextWidth(FCanvas, AStr), FYPos, AStr);
+  SynUnicode.TextOut(FCanvas, FMargins.PLeft - TextWidth(FCanvas, AStr), FYPos, AStr);
   RestoreCurrentFont;
 end;
 
@@ -687,7 +661,6 @@ var
   sLine, sLineExpandedAtWideGlyphs: UnicodeString;
   ExpandedPos: Integer;
 
-  {$IFNDEF SYN_CLX}
   procedure InitETODist(CharWidth: Integer; const Text: UnicodeString);
   var
     Size: TSize;
@@ -700,18 +673,13 @@ var
       FETODist[i] := Ceil(Size.cx / CharWidth) * CharWidth;
     end;
   end;
-  {$ENDIF}
   
   procedure ClippedTextOut(X, Y: Integer; Text: UnicodeString);
   begin
     Text := ClipLineToRect(Text, ClipRect);
-    {$IFDEF SYN_CLX}
-    QSynUnicode.TextOut(FCanvas, X, Y, Text);
-    {$ELSE}
     InitETODist(FCharWidth, Text);
     Windows.ExtTextOutW(FCanvas.Handle, X, Y, 0, nil, PWideChar(Text),
       Length(Text), PInteger(FETODist));
-    {$ENDIF}
   end;
 
   procedure SplitToken;

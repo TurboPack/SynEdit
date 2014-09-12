@@ -47,20 +47,12 @@ unit SynMemo;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  Types,
-  QSynEdit,
-  QSynEditTextBuffer,
-  QSynEditTypes,
-{$ELSE}
   RichEdit,
   Windows,
   Messages,
   SynEdit,
   SynEditTextBuffer,
   SynEditTypes,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -205,21 +197,10 @@ type
 implementation
 
 uses
-{$IFDEF SYN_COMPILER_18_UP}
   AnsiStrings,
-{$ENDIF}
-{$IFDEF UNICODE}
   WideStrUtils,
-{$ENDIF}
-{$IFDEF SYN_CLX}
-  QSynUnicode,
-  QSynEditMiscProcs;
-{$ELSE}
   SynUnicode,
   SynEditMiscProcs;
-{$ENDIF}
-
-{$IFNDEF SYN_CLX}
 
 { TSynMemo }
 
@@ -394,8 +375,6 @@ begin
   //todo: this can't be right, CharIndex can easily overflow
   Message.Result := MakeLong(vPos.Char{CharIndex}, vPos.Line{Line zero based});
 end;
-
-{$ENDIF}
 
 end.
 

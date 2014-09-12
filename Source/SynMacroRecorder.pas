@@ -44,20 +44,6 @@ unit SynMacroRecorder;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QConsts,
-  QStdCtrls,
-  QControls,
-  Qt,
-  Types,
-  QGraphics,
-  QMenus,
-  QSynEdit,
-  QSynEditKeyCmds,
-  QSynEditPlugins,
-  QSynEditTypes,
-  QSynUnicode,
-{$ELSE}
   StdCtrls,
   Controls,
   Windows,
@@ -69,17 +55,10 @@ uses
   SynEditPlugins,
   SynEditTypes,
   SynUnicode,
-{$ENDIF}
-{$IFDEF UNICODE}
   WideStrUtils,
-{$ENDIF}
   Classes;
 
-{$IFDEF SYN_COMPILER_3_UP}
 resourcestring
-{$ELSE}
-const
-{$ENDIF}
   sCannotRecord = 'Cannot record macro; already recording or playing';
   sCannotPlay = 'Cannot playback macro; already playing or recording';
   sCannotPause = 'Can only pause when recording';
@@ -271,16 +250,9 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QForms,
-  QSynEditMiscProcs,
-{$ELSE}
   Forms,
   SynEditMiscProcs,
-{$IFDEF SYN_COMPILER_6_UP}
   RTLConsts,
-{$ENDIF}
-{$ENDIF}
   SysUtils;
 
 { TSynDataEvent }
@@ -350,13 +322,8 @@ begin
   fMacroName := 'unnamed';
   fCommandIDs[mcRecord] := NewPluginCommand;
   fCommandIDs[mcPlayback] := NewPluginCommand;
-  {$IFDEF SYN_CLX} 
-  fShortCuts[mcRecord] := QMenus.ShortCut(Ord('R'), [ssCtrl, ssShift]);
-  fShortCuts[mcPlayback] := QMenus.ShortCut(Ord('P'), [ssCtrl, ssShift]);
-  {$ELSE}
   fShortCuts[mcRecord] := Menus.ShortCut(Ord('R'), [ssCtrl, ssShift]);
   fShortCuts[mcPlayback] := Menus.ShortCut(Ord('P'), [ssCtrl, ssShift]);
-  {$ENDIF}
 end;
 
 function TCustomSynMacroRecorder.CreateMacroEvent(aCmd: TSynEditorCommand): TSynMacroEvent;

@@ -54,24 +54,13 @@ unit SynEditPrintPreview;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  QControls,
-  QGraphics,
-  QForms,
-  Types,
-  QSynEditPrint,
-{$ELSE}
-  {$IFDEF SYN_COMPILER_7}
   Themes,
-  {$ENDIF}
   Windows,
   Controls,
   Messages,
   Graphics,
   Forms,
   SynEditPrint,
-{$ENDIF}
   Classes,
   SysUtils;
 
@@ -185,11 +174,7 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
 const
   MARGIN_X = 12; // margin width left and right of page
@@ -262,19 +247,13 @@ end;
 
 function TSynEditPrintPreview.GetPageHeight100Percent: Integer;
 var
-  {$IFNDEF SYN_CLX}
   DC: HDC;
-  {$ENDIF}
   ScreenDPI: Integer;
 begin
   Result := 0;
-{$IFDEF SYN_CLX}
-  ScreenDPI := Screen.Height;
-{$ELSE}
   DC := GetDC(0);
   ScreenDPI := GetDeviceCaps(DC, LogPixelsY);
   ReleaseDC(0, DC);
-{$ENDIF}
   if Assigned(FSynEditPrint) then
     with FSynEditPrint.PrinterInfo do
       Result := MulDiv(PhysicalHeight, ScreenDPI, YPixPrInch);
@@ -282,19 +261,13 @@ end;
 
 function TSynEditPrintPreview.GetPageWidth100Percent: Integer;
 var
-  {$IFNDEF SYN_CLX}
   DC: HDC;
-  {$ENDIF}
   ScreenDPI: Integer;
 begin
   Result := 0;
-{$IFDEF SYN_CLX}
-  ScreenDPI := Screen.Height;
-{$ELSE}
   DC := GetDC(0);
   ScreenDPI := GetDeviceCaps(DC, LogPixelsX);
   ReleaseDC(0, DC);
-{$ENDIF}
   if Assigned(FSynEditPrint) then
     with FSynEditPrint.PrinterInfo do
       Result := MulDiv(PhysicalWidth, ScreenDPI, XPixPrInch);

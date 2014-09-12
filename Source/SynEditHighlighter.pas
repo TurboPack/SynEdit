@@ -36,14 +36,6 @@ unit SynEditHighlighter;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  kTextDrawer,
-  Types,
-  QGraphics,
-  QSynEditTypes,
-  QSynEditMiscClasses,
-  QSynUnicode,
-{$ELSE}
   Graphics,
   Windows,
   Registry,
@@ -51,7 +43,6 @@ uses
   SynEditTypes,
   SynEditMiscClasses,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes,
   SynEditHighlighterOptions;
@@ -279,18 +270,10 @@ implementation
 
 uses
   SynEditMiscProcs,
-{$IFDEF UNICODE}
   WideStrUtils,
-{$ENDIF}
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
-{$IFNDEF SYN_CPPB_1}
 { THighlighterList }
-
 function TSynHighlighterList.Count: Integer;
 begin
   Result := hlList.Count;
@@ -371,7 +354,6 @@ var
     if G_PlaceableHighlighters.hlList.IndexOf(highlighter) < 0 then
       G_PlaceableHighlighters.hlList.Add(highlighter);
   end;
-{$ENDIF}
 
 { TSynHighlighterAttributes }
 
@@ -1312,11 +1294,9 @@ begin
   end;
 end;
 
-{$IFNDEF SYN_CPPB_1}
 initialization
   G_PlaceableHighlighters := TSynHighlighterList.Create;
 finalization
   G_PlaceableHighlighters.Free;
   G_PlaceableHighlighters := nil;
-{$ENDIF}
 end.

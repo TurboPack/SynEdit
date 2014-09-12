@@ -50,12 +50,7 @@ unit SynEditPrintTypes;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QSynUnicode,
-{$ELSE}
-  SynUnicode,
-{$ENDIF}
-  Classes, SysUtils;
+  SynUnicode, Classes, SysUtils;
 
 const
   DefLeft = 25; //Default left margin [mm]

@@ -45,24 +45,6 @@ unit SynEditOptionsDialog;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  Types,
-  QGraphics,
-  QControls,
-  QForms,
-  QDialogs,
-  QStdCtrls,
-  QComCtrls,
-  QExtCtrls,
-  QButtons,
-  QImgList,
-  QMenus,
-  QSynEdit,
-  QSynEditHighlighter,
-  QSynEditMiscClasses,
-  QSynEditKeyCmds,
-{$ELSE}
   Windows,
   Messages,
   Graphics,
@@ -75,24 +57,16 @@ uses
   Registry,
   ExtCtrls,
   Buttons,
-  {$IFDEF SYN_DELPHI_4_UP}
   ImgList,
-  {$ENDIF}
   Menus,
   SynEdit,
   SynEditHighlighter,
   SynEditMiscClasses,
   SynEditKeyCmds,
-{$ENDIF}
   Classes,
   SysUtils;
 
 type
-{$IFNDEF SYN_DELPHI_4_UP}
-  TLVSelectItemEvent = procedure(Sender: TObject; Item: TListItem;
-    Selected: Boolean) of object;
-{$ENDIF}
-
   TColorPopup = (cpGutter, cpRightEdge);
   
   TSynEditorOptionsUserCommand = procedure(AUserCommand: Integer;
@@ -364,11 +338,7 @@ implementation
 {$R *.dfm}
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditKeyConst;
-{$ELSE}
   SynEditKeyConst;
-{$ENDIF}
 
 { TSynEditOptionsDialog }
 

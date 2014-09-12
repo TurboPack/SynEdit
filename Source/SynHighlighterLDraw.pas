@@ -51,16 +51,9 @@ unit SynHighlighterLDraw;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt, QControls, QGraphics,
-  QSynEditHighlighter,
-  QSynEditTypes,
-  QSynUnicode,
-{$ELSE}
   Windows, Controls, Graphics,
   SynEditHighlighter, SynEditTypes,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -152,11 +145,7 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
 const
   KeyWords: array[0..0] of UnicodeString = (
@@ -203,13 +192,6 @@ begin
 
   fIdentFuncTable[1] := FuncAuthor;
 end;
-
-{$IFDEF SYN_CLX}
-function RGB(const R, G, B: Byte):  TColor;
-begin
-  Result := R or (G shl 8) or (B shl 16)
-end;
-{$ENDIF}
 
 function TSynLDRSyn.AltFunc(Index: Integer): TtkTokenKind;
 begin

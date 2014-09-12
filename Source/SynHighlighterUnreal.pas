@@ -50,19 +50,12 @@ unit SynHighlighterUnreal;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QGraphics,
-  QSynEditHighlighter,
-  QSynEditTypes,
-  QSynUnicode,
-{$ELSE}
   Graphics,
   Registry,
   Windows, // registry constants
   SynEditHighlighter,
   SynEditTypes,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -350,11 +343,7 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
 
 const
   KeyWords: array[0..142] of UnicodeString = (
@@ -2630,11 +2619,7 @@ function TSynUnrealSyn.UseUserSettings(settingIndex: integer): boolean;
 {$ENDIF}
 
 begin
-{$IFDEF SYN_CLX}
-  Result := False;
-{$ELSE}
   Result := ReadCPPBSettings(settingIndex);
-{$ENDIF}
 end; { TSynUnrealSyn.UseUserSettings }
 
 class function TSynUnrealSyn.GetLanguageName: string;

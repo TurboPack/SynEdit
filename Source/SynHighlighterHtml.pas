@@ -53,20 +53,11 @@ interface
 {$I SynEdit.inc}
 
 uses
-{$IFDEF UNICODE}
   WideStrUtils,
-{$ENDIF}
-{$IFDEF SYN_CLX}
-  QGraphics,
-  QSynEditTypes,
-  QSynEditHighlighter,
-  QSynUnicode,
-{$ELSE}
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 

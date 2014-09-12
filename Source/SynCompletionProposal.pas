@@ -50,24 +50,6 @@ unit SynCompletionProposal;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  Types,
-  QControls,
-  QGraphics,
-  QForms,
-  QStdCtrls,
-  QExtCtrls,
-  QMenus,
-  QImgList,
-  QDialogs,
-  QSynEditTypes,
-  QSynEditKeyCmds,
-  QSynEditHighlighter,
-  QSynEditKbdHandler,
-  QSynEdit,
-  QSynUnicode,  
-{$ELSE}
   Windows,
   Messages,
   Graphics,
@@ -83,7 +65,6 @@ uses
   SynEditKbdHandler,
   SynEdit,
   SynUnicode,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -228,12 +209,6 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-{$IFDEF SYN_CLX}
-    function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
-      const MousePos: TPoint): Boolean; override;
-    procedure KeyString(var S: UnicodeString; var Handled: Boolean); override;      
-    function WidgetFlags: Integer; override;
-{$ELSE}
     procedure WMChar(var Msg: TWMChar); message WM_CHAR;
     procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
     procedure WMActivate (var Message: TWMActivate); message WM_ACTIVATE;
@@ -241,10 +216,7 @@ type
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWnd; override;
-    {$IFDEF SYN_DELPHI_4_UP}
     function CanResize(var NewWidth, NewHeight: Integer): Boolean; override;
-    {$ENDIF}
-{$ENDIF}
   public
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
@@ -434,9 +406,6 @@ type
     FNoNextKey: Boolean;
     FCompletionStart: Integer;
     FAdjustCompletionStart: Boolean;
-    {$IFDEF SYN_CLX} // Missing-ShowWindow-Workaround
-    FIgnoreFocusCommands: Boolean;
-    {$ENDIF}
     FOnCodeCompletion: TCodeCompletionEvent;
     FTimer: TTimer;
     FTimerInterval: Integer;
@@ -587,18 +556,10 @@ function PrettyTextToFormattedString(const APrettyText: UnicodeString;
 implementation
 
 uses
-{$IFDEF SYN_COMPILER_4_UP}
   Math,
-{$ENDIF}
-{$IFDEF SYN_CLX}
-  QSynEditTextBuffer,
-  QSynEditMiscProcs,
-  QSynEditKeyConst;
-{$ELSE}
   SynEditTextBuffer,
   SynEditMiscProcs,
   SynEditKeyConst;
-{$ENDIF}
 
 const
   TextHeightString = 'CompletionProposal';
@@ -1238,16 +1199,10 @@ begin
   FInsertList := TUnicodeStringList.Create;
   FAssignedList := TUnicodeStringList.Create;
   FMatchText := False;
-{$IFDEF SYN_CLX}
-  BorderStyle := fbsNone;
-{$ELSE}
   BorderStyle := bsNone;
-{$ENDIF}
   FScrollbar := TScrollBar.Create(Self);
   FScrollbar.Kind := sbVertical;
-{$IFNDEF SYN_CLX}
   FScrollbar.ParentCtl3D := False;
-{$ENDIF}
   FScrollbar.OnChange := ScrollbarOnChange;
   FScrollbar.OnScroll := ScrollbarOnScroll;
   FScrollbar.OnEnter := ScrollbarOnEnter;
@@ -1296,53 +1251,9 @@ begin
   OnHide := DoFormHide;
 end;
 
-{$IFDEF SYN_CLX}
-
-function TSynBaseCompletionProposalForm.DoMouseWheel(Shift: TShiftState;
-  WheelDelta: Integer; const MousePos: TPoint): Boolean;
-const
-  WHEEL_DIVISOR = 120; { according to Qt API... }
-var
-  iWheelClicks: integer;
-  iLinesToScroll: integer;
-begin
-  if ssCtrl in Application.KeyState then
-    iLinesToScroll := FLinesInWindow 
-  else
-    iLinesToScroll := 3;
-  Inc(fMouseWheelAccumulator, WheelDelta);
-  iWheelClicks := fMouseWheelAccumulator div WHEEL_DIVISOR;
-  fMouseWheelAccumulator := fMouseWheelAccumulator mod WHEEL_DIVISOR;
-  Position := Position - iWheelClicks * iLinesToScroll;
-  Update;
-  Result := True;
-end;
-
-procedure TSynBaseCompletionProposalForm.KeyString(var S: UnicodeString;
-  var Handled: Boolean);
-var
-  i: Integer;
-begin
-  inherited;
-  Handled := True;
-  for i := 1 to Length(S) do
-    DoKeyPressW(S[i]);
-end;
-
-function TSynBaseCompletionProposalForm.WidgetFlags: Integer;
-begin
-  Result := Integer(WidgetFlags_WType_Popup);
-end;
-
-{$ELSE SYN_CLX}
-
 procedure TSynBaseCompletionProposalForm.CreateParams(var Params: TCreateParams);
 const
   CS_DROPSHADOW = $20000;
-{$IFNDEF SYN_COMPILER_3_UP}
-var
-  VersionInfo: TOSVersionInfo;
-{$ENDIF}
 begin
   inherited;
   with Params do
@@ -1350,17 +1261,9 @@ begin
     Style := WS_POPUP;
     ExStyle := WS_EX_TOOLWINDOW;
 
-    {$IFDEF SYN_COMPILER_3_UP}
     if ((Win32Platform and VER_PLATFORM_WIN32_NT) <> 0)
       and (Win32MajorVersion > 4)
       and (Win32MinorVersion > 0) {Windows XP} then
-    {$ELSE}
-    VersionInfo.dwOSVersionInfoSize := sizeof(TOSVersionInfo);
-    if GetVersionEx(VersionInfo)
-      and ((VersionInfo.dwPlatformId and VER_PLATFORM_WIN32_NT) <> 0)
-      and (VersionInfo.dwMajorVersion > 4)
-      and (VersionInfo.dwMinorVersion > 0) {Windows XP} then
-    {$ENDIF}
       Params.WindowClass.style := Params.WindowClass.style or CS_DROPSHADOW;
 
     if DisplayType = ctCode then
@@ -1382,7 +1285,6 @@ begin
       SetWindowLongW(Handle, GWL_WNDPROC, Integer(GetWindowLongA(Handle, GWL_WNDPROC)));
   end;
 end;
-{$ENDIF}
 
 procedure TSynBaseCompletionProposalForm.Activate;
 begin
@@ -1516,9 +1418,6 @@ end;
 
 procedure TSynBaseCompletionProposalForm.KeyPress(var Key: Char);
 begin
-{$IFDEF SYN_CLX}
-  DoKeyPressW(WideChar(Key));
-{$ENDIF}
 end;
 
 {.$MESSAGE 'Check what must be adapted in DoKeyPressW and related methods'}
@@ -1951,10 +1850,7 @@ end;
 procedure TSynBaseCompletionProposalForm.SetResizeable(const Value: Boolean);
 begin
   FResizeable := Value;
-  {$IFDEF SYN_CLX}
-  {$ELSE}
   RecreateWnd;
-  {$ENDIF}
 end;
 
 procedure TSynBaseCompletionProposalForm.SetItemHeight(const Value: Integer);
@@ -2004,33 +1900,14 @@ begin
   Result := (Owner as TSynBaseCompletionProposal).IsWordBreakChar(AChar);
 end;
 
-{$IFNDEF SYN_CLX}
 procedure TSynBaseCompletionProposalForm.WMMouseWheel(var Msg: TMessage);
 var
   nDelta: integer;
   nWheelClicks: integer;
-{$IFNDEF SYN_COMPILER_4_UP}
-const
-  LinesToScroll = 3;
-  WHEEL_DELTA = 120;
-  WHEEL_PAGESCROLL = MAXDWORD;
-  {$IFNDEF SYN_COMPILER_3_UP}
-  SPI_GETWHEELSCROLLLINES = 104;
-  {$ENDIF}
-{$ENDIF}
 begin
   if csDesigning in ComponentState then exit;
 
-{$IFDEF SYN_COMPILER_4_UP}
   if GetKeyState(VK_CONTROL) >= 0 then nDelta := Mouse.WheelScrollLines
-{$ELSE}
-  if GetKeyState(VK_CONTROL) >= 0 then
-    {$IFDEF SYN_CLX}
-    nDelta := LinesToScroll
-    {$ELSE}
-    SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @nDelta, 0)
-    {$ENDIF}
-{$ENDIF}
     else nDelta := FLinesInWindow;
 
   Inc(fMouseWheelAccumulator, SmallInt(Msg.wParamHi));
@@ -2042,7 +1919,6 @@ begin
   Position := Position - (nDelta * nWheelClicks);
 //  (CurrentEditor as TCustomSynEdit).UpdateCaret;
 end;
-{$ENDIF}
 
 function GetMDIParent (const Form: TSynForm): TSynForm;
 { Returns the parent of the specified MDI child form. But, if Form isn't a
@@ -2129,8 +2005,6 @@ begin
     (Owner as TSynBaseCompletionProposal).OnShow(Self);
 end;
 
-{$IFDEF SYN_CLX}
-{$ELSE}
 procedure TSynBaseCompletionProposalForm.WMEraseBackgrnd(
   var Message: TMessage);
 begin
@@ -2143,7 +2017,6 @@ begin
   inherited;
   Message.Result := Message.Result or DLGC_WANTTAB;
 end;
-{$ENDIF}
 
 procedure TSynBaseCompletionProposalForm.AdjustMetrics;
 begin
@@ -2293,28 +2166,12 @@ procedure TSynBaseCompletionProposal.ExecuteEx(s: UnicodeString; x, y: integer; 
 
   function GetWorkAreaWidth: Integer;
   begin
-  {$IFDEF SYN_CLX}
-    Result := Screen.Width
-  {$ELSE}
-    {$IFDEF SYN_COMPILER_5_UP}
     Result := Screen.DesktopWidth;
-    {$ELSE}
-    Result := Screen.Width;
-    {$ENDIF}
-  {$ENDIF}
   end;
 
   function GetWorkAreaHeight: Integer;
   begin
-  {$IFDEF SYN_CLX}
-    Result := Screen.Height
-  {$ELSE}
-    {$IFDEF SYN_COMPILER_5_UP}
     Result := Screen.DesktopHeight;
-    {$ELSE}
-    Result := Screen.Height;
-    {$ENDIF}
-  {$ENDIF}
   end;
 
   function GetParamWidth(const S: UnicodeString): Integer;
@@ -2360,12 +2217,7 @@ procedure TSynBaseCompletionProposal.ExecuteEx(s: UnicodeString; x, y: integer; 
     case Kind of
     ctCode:
       begin
-        BorderWidth :=
-          {$IFDEF SYN_CLX}
-          6; // TODO: I don't know how to retrieve the border width in CLX
-          {$ELSE}
-          2 * GetSystemMetrics(SM_CYSIZEFRAME);
-          {$ENDIF}
+        BorderWidth := 2 * GetSystemMetrics(SM_CYSIZEFRAME);
 
         tmpWidth := FWidth;
         tmpHeight := Form.FHeightBuffer + Form.FEffectiveItemHeight * FNbLinesInWindow + BorderWidth;
@@ -2772,10 +2624,7 @@ procedure TSynBaseCompletionProposal.SetDefaultKind(const Value: SynCompletionTy
 begin
   Form.DefaultType := Value;
   Form.DisplayType := Value;
-  {$IFDEF SYN_CLX}
-  {$ELSE}
   Form.RecreateWnd;
-  {$ENDIF}
 end;
 
 procedure TSynBaseCompletionProposal.SetEndOfTokenChar(
@@ -2915,10 +2764,6 @@ begin
 
     (F.CurrentEditor as TCustomSynEdit).SetFocus;
 
-{$IFDEF SYN_CLX}
-    GetParentForm( F.CurrentEditor ).Show;
-{$ENDIF}
-
     if Assigned(OnCancelled) then
       OnCancelled(Self);
   end;
@@ -2996,9 +2841,6 @@ begin
           //that the editor would bounce back to the left margin, very irritating
           InternalCancelCompletion;
           SetFocus;
-{$IFDEF SYN_CLX}
-          GetParentForm( F.CurrentEditor ).Show;
-{$ENDIF}
           EnsureCursorPosVisible; //GBN 25/02/2002
           CaretXY := BlockEnd;
           BlockBegin := CaretXY;
@@ -3075,13 +2917,7 @@ begin
   fTimerInterval:= 1000;
   fNoNextKey := False;
 
-{$IFDEF SYN_CLX}
-  fShortCut := QMenus.ShortCut(Ord(' '), [ssCtrl]);
-  // Belongs to Missing-ShowWindow-Workaround
-  FIgnoreFocusCommands := False;
-{$ELSE}
   fShortCut := Menus.ShortCut(Ord(' '), [ssCtrl]);
-{$ENDIF}
   Options := DefaultProposalOptions;
   fEditors := TList.Create;
 end;
@@ -3260,18 +3096,9 @@ end;
 procedure TSynCompletionProposal.ExecuteEx(s: UnicodeString; x, y: integer;
   Kind: SynCompletionType);
 begin
-  {$IFDEF SYN_CLX} // Missing-ShowWindow-Workaround
-  FIgnoreFocusCommands := True;
-  try
-  {$ENDIF}
-    inherited;
-    if Assigned(FTimer) then
-      FTimer.Enabled := False;
-  {$IFDEF SYN_CLX} // Missing-ShowWindow-Workaround
-  finally
-    FIgnoreFocusCommands := False;
-  end;
-  {$ENDIF}
+  inherited;
+  if Assigned(FTimer) then
+    FTimer.Enabled := False;
 end;
 
 procedure TSynCompletionProposal.AddEditor(AEditor: TCustomSynEdit);
@@ -3390,20 +3217,12 @@ begin
       end;
     ctHint:
       begin
-        {$IFDEF SYN_CLX}
-        if ((Command <> ecLostFocus) and (Command <> ecGotFocus))
-          or (not FIgnoreFocusCommands) then
-        {$ENDIF}
           CancelCompletion
       end;
     ctParams:
       begin
         case Command of
         ecGotFocus, ecLostFocus:
-          {$IFDEF SYN_CLX}
-          if ((Command <> ecLostFocus) and (Command <> ecGotFocus))
-            or (not FIgnoreFocusCommands) then
-          {$ENDIF}
             CancelCompletion;
         ecLineBreak:
           DoExecute(Sender as TCustomSynEdit);
@@ -3467,11 +3286,7 @@ begin
   FEndOfTokenChr := DefaultEndOfTokenChr;
   fAutoCompleteList := TUnicodeStringList.Create;
   fNoNextKey := false;
-{$IFDEF SYN_CLX}
-  fShortCut := QMenus.ShortCut(Ord(' '), [ssShift]);
-{$ELSE}
   fShortCut := Menus.ShortCut(Ord(' '), [ssShift]);
-{$ENDIF}
 end;
 
 procedure TSynAutoComplete.SetShortCut(Value: TShortCut);

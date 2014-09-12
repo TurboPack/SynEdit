@@ -44,20 +44,11 @@ unit SynEditPlugins;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  Types,
-  QMenus,
-  QSynEdit,
-  QSynEditKeyCmds,
-  QSynUnicode,
-{$ELSE}
   Windows,
   Menus,
   SynEdit,
   SynEditKeyCmds,
   SynUnicode,
-{$ENDIF}
   Classes;
 
 type
@@ -151,17 +142,10 @@ procedure ReleasePluginCommand(aCmd: TSynEditorCommand);
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QForms,
-  QSynEditTypes,
-  QSynEditMiscProcs,
-  QSynEditStrConst,
-{$ELSE}
   Forms,
   SynEditTypes,
   SynEditMiscProcs,
   SynEditStrConst,
-{$ENDIF}
   SysUtils;
 
 const

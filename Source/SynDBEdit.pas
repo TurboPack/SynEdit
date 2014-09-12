@@ -45,23 +45,12 @@ unit SynDBEdit;
 interface
 
 uses
-{$IFNDEF SYN_COMPILER_3_UP}
-  DbTables,
-{$ENDIF}
-{$IFDEF SYN_CLX}
-  Qt,
-  QControls,
-  QDBCtrls,
-  QSynEdit,
-  QSynEditKeyCmds,
-{$ELSE}
   Windows,
   Messages,
   Controls,
   DbCtrls,
   SynEdit,
   SynEditKeyCmds,
-{$ENDIF}
   SysUtils,
   Classes,
   DB;
@@ -102,9 +91,6 @@ type
     procedure LoadMemo;
     procedure Notification(AComponent: TComponent; Operation: TOperation);
       override;
-  {$IFDEF SYN_CLX}
-    function EventFilter(Sender: QObjectH; Event: QEventH): Boolean; override;
-  {$ENDIF}
   protected
     property DataField: string read GetDataField write SetDataField;
     property DataSource: TDataSource read GetDataSource write SetDataSource;
@@ -421,35 +407,17 @@ begin
 end;
 
 procedure TCustomDBSynEdit.UpdateData(Sender: TObject);
-{$IFDEF SYN_COMPILER_3_UP}
 var
   BlobStream: TStream;
-{$ENDIF}
 begin
-{$IFDEF SYN_COMPILER_3_UP}
   if FDataLink.Field.IsBlob then
   begin
     BlobStream := FDataLink.DataSet.CreateBlobStream(FDataLink.Field, bmWrite);
     Lines.SaveToStream(BlobStream);
     BlobStream.Free;
   end else
-{$ENDIF}
     FDataLink.Field.AsString := Text;
 end;
-
-{$IFDEF SYN_CLX}
-function TCustomDBSynEdit.EventFilter(Sender: QObjectH;
-  Event: QEventH): Boolean;
-begin
-  Result := inherited EventFilter(Sender, Event);
-  case QEvent_type(Event) of
-    QEventType_FocusIn:
-      SetEditing(True);
-    QEventType_FocusOut:
-      SetEditing(False);
-  end;
-end;
-{$ENDIF}
 
 end.
 

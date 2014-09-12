@@ -46,15 +46,9 @@ unit SynEditWordWrap;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditTypes,
-  QSynEditTextBuffer,
-  QSynEdit,
-{$ELSE}
   SynEditTypes,
   SynEditTextBuffer,
   SynEdit,
-{$ENDIF}
   SysUtils,
   Classes;
 
@@ -129,23 +123,9 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynUnicode,
-{$ELSE}
   SynUnicode,
-{$ENDIF}
-{$IFDEF SYN_COMPILER_6_UP}
   RTLConsts,
-{$ELSE}
-  {$IFDEF SYN_CLX}
-    QConsts,
-  {$ELSE}
-    Consts,
-  {$ENDIF}
-{$ENDIF}
-{$IFNDEF SYN_COMPILER_4_UP}
   SynEditMiscProcs,
-{$ENDIF}
   Math;
 
 { TSynWordWrapPlugin }

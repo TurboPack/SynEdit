@@ -104,19 +104,11 @@ unit SynEditPrintHeaderFooter;
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  Qt,
-  QSynEditPrintTypes,
-  QSynEditPrintMargins,
-  QSynUnicode,
-  QGraphics,
-{$ELSE}
   Windows,
   SynEditPrintTypes,
   SynEditPrintMargins,
   SynUnicode,
   Graphics,
-{$ENDIF}
   Classes,
   SysUtils;
 
@@ -239,14 +231,8 @@ type
 implementation
 
 uses
-{$IFDEF SYN_COMPILER_4_UP}
   Math,
-{$ENDIF}
-{$IFDEF SYN_CLX}
-  QSynEditMiscProcs;
-{$ELSE}
   SynEditMiscProcs;
-{$ENDIF}
 
 // Helper routine for AsString processing.
 function GetFirstEl(var Value: UnicodeString; Delim: WideChar): UnicodeString;
@@ -281,15 +267,7 @@ function THeaderFooterItem.GetAsString: UnicodeString;
 begin
   Result :=
     EncodeString(FText) + '/' +
-{$IFDEF SYN_COMPILER_3_UP}
-{$IFDEF SYN_CLX}
-    IntToStr(Ord(FFont.Charset)) + '/' +
-{$ELSE}
     IntToStr(FFont.Charset) + '/' +
-{$ENDIF}
-{$ELSE}
-    IntToStr(DEFAULT_CHARSET)+'/' +                             
-{$ENDIF}
     IntToStr(FFont.Color) + '/' +
     IntToStr(FFont.Height) + '/' +
     EncodeString(FFont.Name) + '/' +
