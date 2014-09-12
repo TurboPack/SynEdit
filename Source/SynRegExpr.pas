@@ -51,9 +51,7 @@ interface
 {$EXTENDEDSYNTAX ON}
 {$LONGSTRINGS ON}
 {$OPTIMIZATION ON}
-{$IFDEF SYN_COMPILER_6_UP}
   {$WARN SYMBOL_PLATFORM OFF} // Suppress .Net warnings
-{$ENDIF}
 {$IFDEF SYN_COMPILER_7_UP}
   {$WARN UNSAFE_CAST OFF} // Suppress .Net warnings
   {$WARN UNSAFE_TYPE OFF} // Suppress .Net warnings

@@ -311,10 +311,8 @@ type
     destructor Destroy; override;
   end;
 
-{$IFDEF SYN_COMPILER_6_UP}
   TCustomSynEditSearchNotFoundEvent = procedure(Sender: TObject;
     FindText: UnicodeString) of object;
-{$ENDIF}
 
   TCustomSynEdit = class(TCustomControl)
   private
@@ -342,9 +340,6 @@ type
     procedure WMSize(var Msg: TWMSize); message WM_SIZE;
     procedure WMUndo(var Msg: TMessage); message WM_UNDO;
     procedure WMVScroll(var Msg: TWMScroll); message WM_VSCROLL;
-{$IFNDEF SYN_COMPILER_6_UP}
-    procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
-{$ENDIF}
   private
     fAlwaysShowCaret: Boolean;
     fBlockBegin: TBufferCoord;
@@ -455,14 +450,12 @@ type
     FAdditionalWordBreakChars: TSysCharSet;
     FAdditionalIdentChars: TSysCharSet;
 
-{$IFDEF SYN_COMPILER_6_UP}
     fSearchNotFound: TCustomSynEditSearchNotFoundEvent;
     OnFindBeforeSearch: TNotifyEvent;
     OnReplaceBeforeSearch: TNotifyEvent;
     OnCloseBeforeSearch: TNotifyEvent;
     SelStartBeforeSearch: integer;
     SelLengthBeforeSearch: integer;
-{$ENDIF}
 
     FWindowProducedMessage: Boolean;
 
@@ -567,7 +560,6 @@ type
     procedure SetAdditionalIdentChars(const Value: TSysCharSet);
     procedure SetAdditionalWordBreakChars(const Value: TSysCharSet);
 
-{$IFDEF SYN_COMPILER_6_UP}
     procedure DoSearchFindFirstExecute(Action: TSearchFindFirst);
     procedure DoSearchFindExecute(Action: TSearchFind);
     procedure DoSearchReplaceExecute(Action: TSearchReplace);
@@ -576,14 +568,11 @@ type
     procedure FindDialogFind(Sender: TObject);
     function SearchByFindDialog(FindDialog: TFindDialog) : bool;
     procedure FindDialogClose(Sender: TObject);
-{$ENDIF}
   protected
     FIgnoreNextChar: Boolean;
     FCharCodeString: string;
-{$IFDEF SYN_COMPILER_6_UP}
     function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPoint): Boolean; override;
-{$ENDIF}
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWnd; override;
     procedure DestroyWnd; override;
@@ -950,10 +939,8 @@ type
       read fOnScroll write fOnScroll;
   published
     property Cursor default crIBeam;
-{$IFDEF SYN_COMPILER_6_UP}
     property OnSearchNotFound: TCustomSynEditSearchNotFoundEvent
       read fSearchNotFound write fSearchNotFound;
-{$ENDIF}
   end;
 
   TSynEdit = class(TCustomSynEdit)
@@ -1060,12 +1047,8 @@ implementation
 {$R SynEdit.res}
 
 uses
-{$IFDEF SYN_COMPILER_6_UP}
   Consts,
-{$ENDIF}
-{$IFDEF SYN_COMPILER_18_UP}
   AnsiStrings,
-{$ENDIF}
   Clipbrd,
   ShellAPI,
   SynEditWordWrap,
@@ -4474,7 +4457,6 @@ begin
   end;
 end;
 
-{$IFDEF SYN_COMPILER_6_UP}
 function TCustomSynEdit.DoMouseWheel(Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint): Boolean;
 const
@@ -4498,7 +4480,6 @@ begin
   if Assigned(OnScroll) then OnScroll(Self,sbVertical);
   Result := True;
 end;
-{$ENDIF}
 
 procedure TCustomSynEdit.WMCaptureChanged(var Msg: TMessage);
 begin
@@ -7669,55 +7650,6 @@ begin
   end;
 end;
 
-
-{$IFNDEF SYN_COMPILER_6_UP}
-procedure TCustomSynEdit.WMMouseWheel(var Msg: TMessage);
-var
-  nDelta: Integer;
-  nWheelClicks: Integer;
-{$IFNDEF SYN_COMPILER_4_UP}
-const
-  LinesToScroll = 3;
-  WHEEL_DELTA = 120;
-  WHEEL_PAGESCROLL = MAXDWORD;
-  SPI_GETWHEELSCROLLLINES = 104;
-{$ENDIF}
-begin
-  if csDesigning in ComponentState then
-    exit;
-
-	Msg.Result := 1;
-
-{$IFDEF SYN_COMPILER_4_UP}
-  // In some occasions Windows will not properly initialize mouse wheel, but
-  // will still keep sending WM_MOUSEWHEEL message. Calling inherited procedure
-  // will re-initialize related properties (i.e. Mouse.WheelScrollLines)
-  inherited;
-{$ENDIF}
-
-  if GetKeyState(VK_CONTROL) >= 0 then
-  begin
-{$IFDEF SYN_COMPILER_4_UP}
-    nDelta := Mouse.WheelScrollLines
-{$ELSE}
-    if not SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, @nDelta, 0) then
-      nDelta := LinesToScroll;
-{$ENDIF}
-  end
-  else
-    nDelta := LinesInWindow shr Ord(eoHalfPageScroll in fOptions);
-
-  Inc(fMouseWheelAccumulator, SmallInt(Msg.wParamHi));
-  nWheelClicks := fMouseWheelAccumulator div WHEEL_DELTA;
-  fMouseWheelAccumulator := fMouseWheelAccumulator mod WHEEL_DELTA;
-  if (nDelta = Integer(WHEEL_PAGESCROLL)) or (nDelta > LinesInWindow) then
-    nDelta := LinesInWindow;
-  TopLine := TopLine - (nDelta * nWheelClicks);
-  Update;
-  if Assigned(OnScroll) then OnScroll(Self,sbVertical);
-end;
-{$ENDIF}
-
 procedure TCustomSynEdit.WMSetCursor(var Msg: TWMSetCursor);
 begin
   if (Msg.HitTest = HTCLIENT) and (Msg.CursorWnd = Handle) and
@@ -9097,7 +9029,6 @@ begin
         CommandProcessor(ecSelectAll, ' ', nil);
     end
   end
-{$IFDEF SYN_COMPILER_6_UP}
   else if Action is TSearchAction then
   begin
     Result := Focused;
@@ -9113,7 +9044,6 @@ begin
     Result := Focused;
     DoSearchFindNextExecute(TSearchFindNext(Action))
   end
-{$ENDIF}
   else
     Result := inherited ExecuteAction(Action);
 end;
@@ -9138,7 +9068,6 @@ begin
       else if Action is TEditSelectAll then
         TEditAction(Action).Enabled := True;
     end;
-{$IFDEF SYN_COMPILER_6_UP}
   end else if Action is TSearchAction then
   begin
     Result := Focused;
@@ -9158,7 +9087,6 @@ begin
       TSearchAction(Action).Enabled := (Text<>'')
         and (TSearchFindNext(Action).SearchFind <> nil)
         and (TSearchFindNext(Action).SearchFind.Dialog.FindText <> '');
-{$ENDIF}
   end
   else
     Result := inherited UpdateAction(Action);
@@ -9952,12 +9880,10 @@ end;
 
 procedure TCustomSynEdit.DefineProperties(Filer: TFiler);
 
-{$IFDEF SYN_COMPILER_6_UP}
   function CollectionsEqual(C1, C2: TCollection): Boolean;
   begin
     Result := Classes.CollectionsEqual(C1, C2, nil, nil);
   end;
-{$ENDIF}
 
   function HasKeyData: Boolean;
   var
@@ -10136,7 +10062,6 @@ begin
   fKbdHandler.RemoveMouseCursorHandler(aHandler);
 end;
 
-{$IFDEF SYN_COMPILER_6_UP}
 procedure TCustomSynEdit.DoSearchFindFirstExecute(Action: TSearchFindFirst);
 begin
   OnFindBeforeSearch := Action.Dialog.OnFind;
@@ -10249,7 +10174,6 @@ begin
     TReplaceDialog(Sender).OnReplace := OnReplaceBeforeSearch;
   TFindDialog(Sender).OnClose := OnCloseBeforeSearch;
 end;
-{$ENDIF}
 
 function TCustomSynEdit.GetWordWrap: Boolean;
 begin
