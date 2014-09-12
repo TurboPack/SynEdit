@@ -69,9 +69,6 @@ interface
 // Define 'use subroutine parameters default values' option (do not edit this definition).
 {$DEFINE DefParam}
 
-// Define 'OverMeth' options, to use method overloading (do not edit this definitions).
-{$DEFINE OverMeth}
-
 uses
   SynUnicode,
   Classes,  // TStrings in Split method
@@ -386,10 +383,9 @@ type
     // Modifier /x - eXtended syntax, allow r.e. text formatting,
     // see description in the help. Initialized from RegExprModifierX
 
-    function Exec (const AInputString : RegExprString) : boolean; {$IFDEF OverMeth} overload;
+    function Exec (const AInputString : RegExprString) : boolean; overload;
     function Exec : boolean; overload; //###0.949
     function Exec (AOffset: integer) : boolean; overload; //###0.949
-    {$ENDIF}
     // match a programm against a string AInputString
     // !!! Exec store AInputString into InputString property
     // For Delphi 5 and higher available overloaded versions - first without
@@ -435,11 +431,10 @@ type
     function Replace (AInputStr : RegExprString;
       const AReplaceStr : RegExprString;
       AUseSubstitution : boolean{$IFDEF DefParam}= False{$ENDIF}) //###0.946
-     : RegExprString; {$IFDEF OverMeth} overload;
+     : RegExprString; overload;
     function Replace (AInputStr : RegExprString;
       AReplaceFunc : TRegExprReplaceFunction)
      : RegExprString; overload;
-    {$ENDIF}
     function ReplaceEx (AInputStr : RegExprString;
       AReplaceFunc : TRegExprReplaceFunction)
      : RegExprString;
@@ -3283,7 +3278,6 @@ function TRegExpr.Exec (const AInputString : RegExprString) : boolean;
  end; { of function TRegExpr.Exec
 --------------------------------------------------------------}
 
-{$IFDEF OverMeth}
 function TRegExpr.Exec : boolean;
  begin
   Result := ExecPrim (1);
@@ -3294,7 +3288,6 @@ function TRegExpr.Exec (AOffset: integer) : boolean;
   Result := ExecPrim (AOffset);
  end; { of function TRegExpr.Exec
 --------------------------------------------------------------}
-{$ENDIF}
 
 function TRegExpr.ExecPos (AOffset: integer {$IFDEF DefParam}= 1{$ENDIF}) : boolean;
  begin
@@ -3725,7 +3718,6 @@ function TRegExpr.ReplaceEx (AInputStr : RegExprString;
 --------------------------------------------------------------}
 
 
-{$IFDEF OverMeth}
 function TRegExpr.Replace (AInputStr : RegExprString;
       AReplaceFunc : TRegExprReplaceFunction)
      : RegExprString;
@@ -3733,7 +3725,6 @@ function TRegExpr.Replace (AInputStr : RegExprString;
   ReplaceEx (AInputStr, AReplaceFunc);
  end; { of function TRegExpr.Replace
 --------------------------------------------------------------}
-{$ENDIF}
 
 {=============================================================}
 {====================== Debug section ========================}
