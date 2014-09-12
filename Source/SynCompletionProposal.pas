@@ -346,8 +346,7 @@ type
   public
     constructor Create(Aowner: TComponent); override;
     procedure Execute(s: UnicodeString; x, y: Integer);
-    procedure ExecuteEx(s: UnicodeString; x, y: Integer; Kind: SynCompletionType
-      {$IFDEF SYN_COMPILER_4_UP} = ctCode {$ENDIF}); virtual;
+    procedure ExecuteEx(s: UnicodeString; x, y: Integer; Kind: SynCompletionType = ctCode); virtual;
     procedure Activate;
     procedure Deactivate;
 
@@ -441,8 +440,7 @@ type
     procedure AddEditor(AEditor: TCustomSynEdit);
     function RemoveEditor(AEditor: TCustomSynEdit): boolean;
     function EditorsCount: integer;
-    procedure ExecuteEx(s: UnicodeString; x, y: Integer; Kind : SynCompletionType
-      {$IFDEF SYN_COMPILER_4_UP} = ctCode {$ENDIF}); override;
+    procedure ExecuteEx(s: UnicodeString; x, y: Integer; Kind : SynCompletionType = ctCode); override;
     procedure ActivateCompletion;
     procedure CancelCompletion; 
     procedure ActivateTimer(ACurrentEditor: TCustomSynEdit);
@@ -537,9 +535,7 @@ type
     constructor Create(AOwner: TPersistent; ItemClass: TCollectionItemClass);
     function Add: TProposalColumn;
     function FindItemID(ID: Integer): TProposalColumn;
-    {$IFDEF SYN_COMPILER_4_UP}
     function Insert(Index: Integer): TProposalColumn;
-    {$ENDIF}
     property Items[Index: Integer]: TProposalColumn read GetItem write SetItem; default;
   end;
 
@@ -549,7 +545,7 @@ procedure FormattedTextOut(TargetCanvas: TCanvas; const Rect: TRect;
 function FormattedTextWidth(TargetCanvas: TCanvas; const Text: UnicodeString;
   Columns: TProposalColumns; Images: TImageList): Integer;
 function PrettyTextToFormattedString(const APrettyText: UnicodeString;
-  AlternateBoldStyle: Boolean {$IFDEF SYN_COMPILER_4_UP} = False {$ENDIF}): UnicodeString;
+  AlternateBoldStyle: Boolean = False): UnicodeString;
 
 implementation
 
@@ -1021,7 +1017,7 @@ begin
 end;
 
 function PrettyTextToFormattedString(const APrettyText: UnicodeString;
-  AlternateBoldStyle: Boolean {$IFDEF SYN_COMPILER_4_UP} = False {$ENDIF}): UnicodeString;
+  AlternateBoldStyle: Boolean = False): UnicodeString;
 var
   i: Integer;
   Color: TColor;

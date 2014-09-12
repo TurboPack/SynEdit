@@ -80,7 +80,7 @@ interface
 {$DEFINE UseAsserts}
 
 // Define 'use subroutine parameters default values' option (do not edit this definition).
-{$IFDEF SYN_COMPILER_4_UP} {$DEFINE DefParam} {$ENDIF}
+{$DEFINE DefParam}
 
 // Define 'OverMeth' options, to use method overloading (do not edit this definitions).
 {$DEFINE OverMeth}
