@@ -466,10 +466,6 @@ type
 
     FWindowProducedMessage: Boolean;
 
-{$IFDEF SYN_LINUX}
-    FDeadKeysFixed: Boolean;
-{$ENDIF}
-
     procedure BookMarkOptionsChanged(Sender: TObject);
     procedure ComputeCaret(X, Y: Integer);
     procedure ComputeScroll(X, Y: Integer);

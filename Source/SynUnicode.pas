@@ -76,7 +76,7 @@ type
 {$ENDIF}
 
 const
-  SLineBreak = {$IFDEF SYN_LINUX} #10 {$ELSE} #13#10 {$ENDIF};
+  SLineBreak = #13#10;
   UTF8BOM: array[0..2] of Byte = ($EF, $BB, $BF);
   UTF16BOMLE: array[0..1] of Byte = ($FF, $FE);
   UTF16BOMBE: array[0..1] of Byte = ($FE, $FF);
@@ -2647,49 +2647,6 @@ begin
   end;
 end;
 {$ENDIF}
-{$IFDEF SYN_LINUX}
-const
-  ShareMode: array[0..fmShareDenyNone shr 4] of Byte = (
-    0,        //No share mode specified
-    F_WRLCK,  //fmShareExclusive
-    F_RDLCK,  //fmShareDenyWrite
-    0);       //fmShareDenyNone
-var
-  FileHandle, Tvar: Integer;
-  LockVar: TFlock;
-  smode: Byte;
-begin
-  Result := -1;
-  if FileExists(FileName) and
-     ((Mode and 3) <= fmOpenReadWrite) and
-     ((Mode and $F0) <= fmShareDenyNone) then
-  begin
-    FileHandle := open(PChar(AnsiString(FileName)), (Mode and 3), FileAccessRights);
-
-    if FileHandle = -1 then  Exit;
-
-    smode := Mode and $F0 shr 4;
-    if ShareMode[smode] <> 0 then
-    begin
-      with LockVar do
-      begin
-        l_whence := SEEK_SET;
-        l_start := 0;
-        l_len := 0;
-        l_type := ShareMode[smode];
-      end;
-      Tvar :=  fcntl(FileHandle, F_SETLK, LockVar);
-      if Tvar = -1 then
-      begin
-        __close(FileHandle);
-        Exit;
-      end;
-    end;
-    Result := FileHandle;
-  end;
-end;
-{$ENDIF}
-
 function WideFileCreate(const FileName: UnicodeString): Integer;
 {$IFDEF SYN_WIN32}
 begin
@@ -2701,21 +2658,11 @@ begin
       0, nil, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0));
 end;
 {$ENDIF}
-{$IFDEF SYN_LINUX}
-begin
-  Result := FileCreate(FileName, FileAccessRights);
-end;
-{$ENDIF}
 
 function WideFileCreate(const FileName: UnicodeString; Rights: Integer): Integer;
 {$IFDEF SYN_WIN32}
 begin
   Result := WideFileCreate(FileName);
-end;
-{$ENDIF}
-{$IFDEF SYN_LINUX}
-begin
-  Result := Integer(open(PChar(AnsiString(FileName)), O_RDWR or O_CREAT or O_TRUNC, Rights));
 end;
 {$ENDIF}
 {$ENDIF}
