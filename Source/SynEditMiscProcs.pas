@@ -116,10 +116,6 @@ function EncodeString(s: UnicodeString): UnicodeString;
 // Decodes string, encoded with EncodeString.
 function DecodeString(s: UnicodeString): UnicodeString;
 
-{$IFNDEF SYN_COMPILER_5_UP}
-procedure FreeAndNil(var Obj);
-{$ENDIF}
-
 {$IFNDEF SYN_COMPILER_3_UP}
 procedure Assert(Expr: Boolean);  { stub for Delphi 2 }
 {$ENDIF}
