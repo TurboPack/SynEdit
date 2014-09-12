@@ -1136,14 +1136,10 @@ begin
   Result := inherited FindItemID(ID) as TProposalColumn;
 end;
 
-{$IFDEF SYN_COMPILER_4_UP}
 function TProposalColumns.Insert(Index: Integer): TProposalColumn;
 begin
   Result := inherited Insert(Index) as TProposalColumn;
 end;
-{$ENDIF}
-
-
 
 //============================================================================
 

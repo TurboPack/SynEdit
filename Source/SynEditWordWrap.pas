@@ -70,10 +70,6 @@ type
   TRowLengthArray = array [TRowIndex] of TRowLength;
   PRowLengthArray = ^TRowLengthArray;
 
-  {$IFNDEF SYN_COMPILER_4_UP}
-  TSysCharSet = set of Char;
-  {$ENDIF}
-
   // For clarity, I'll refer to buffer coordinates as 'Line' and
   // 'Char' and to display (wrapped) coordinates as 'Row' and 'Column'.
 

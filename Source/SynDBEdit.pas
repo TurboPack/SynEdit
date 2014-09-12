@@ -106,10 +106,8 @@ type
     property OnLoadData;
     // inherited properties
     property Align;
-  {$IFDEF SYN_COMPILER_4_UP}
     property Anchors;
     property Constraints;
-  {$ENDIF}
     property Color;
     property Ctl3D;
     property Enabled;

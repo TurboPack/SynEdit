@@ -224,10 +224,6 @@ type
     constructor Create;
   end;
 
-  {$IFNDEF SYN_COMPILER_3_UP}
-  TFontCharSet = 0..255;
-  {$ENDIF}
-
 implementation
 
 uses

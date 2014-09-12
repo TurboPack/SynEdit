@@ -69,21 +69,6 @@ type
   TPreviewPageEvent = procedure(Sender: TObject; PageNumber: Integer) of object;
   TSynPreviewScale = (pscWholePage, pscPageWidth, pscUserScaled);
 
-  {$IFNDEF SYN_COMPILER_4_UP}
-  TWMMouseWheel = record
-    Msg: Cardinal;
-    Keys: SmallInt;
-    WheelDelta: SmallInt;
-    case Integer of
-      0: (
-        XPos: Smallint;
-        YPos: Smallint);
-      1: (
-        Pos: TSmallPoint;
-        Result: Longint);
-  end;
-  {$ENDIF}
-
   TSynEditPrintPreview = class(TCustomControl)
   protected
     FBorderStyle: TBorderStyle;

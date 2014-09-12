@@ -60,11 +60,6 @@ type
   PIntArray = ^TIntArray;
   TIntArray = array[0..MaxIntArraySize - 1] of Integer;
 
-{$IFNDEF SYN_COMPILER_4_UP}
-function Max(x, y: Integer): Integer;
-function Min(x, y: Integer): Integer;
-{$ENDIF}
-
 function MinMax(x, mi, ma: Integer): Integer;
 procedure SwapInt(var l, r: Integer);
 function MaxPoint(const P1, P2: TPoint): TPoint;
@@ -115,14 +110,6 @@ function EncodeString(s: UnicodeString): UnicodeString;
 
 // Decodes string, encoded with EncodeString.
 function DecodeString(s: UnicodeString): UnicodeString;
-
-{$IFNDEF SYN_COMPILER_3_UP}
-procedure Assert(Expr: Boolean);  { stub for Delphi 2 }
-{$ENDIF}
-
-{$IFNDEF SYN_COMPILER_3_UP}
-function LastDelimiter(const Delimiters, S: UnicodeString): Integer;
-{$ENDIF}
 
 type
   THighlighterAttriProc = function (Highlighter: TSynCustomHighlighter;
