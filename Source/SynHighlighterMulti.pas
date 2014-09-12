@@ -133,11 +133,7 @@ type
 
   TRangeOperation = (roGet, roSet);
 
-{$IFDEF SYN_COMPILER_16_UP}
   TRangeUNativeInt = NativeUInt;
-{$ELSE}
-  TRangeUNativeInt = Cardinal;
-{$ENDIF}
   TRangeProc = procedure (Operation: TRangeOperation; var Range: TRangeUNativeInt) of object;
 
   TCustomRangeEvent = procedure (Sender: TSynMultiSyn; Operation: TRangeOperation;

@@ -1159,9 +1159,9 @@ class function TRegExpr.InvertCaseFunction (const Ch : REChar) : REChar;
   else
   {$ENDIF}
    begin
-    Result := {$IFDEF FPC}AnsiUpperCase (Ch) [1]{$ELSE} REChar (CharUpper (PChar (Ch))){$ENDIF};
+    Result := REChar (CharUpper (PChar (Ch)));
     if Result = Ch
-     then Result := {$IFDEF FPC}AnsiLowerCase (Ch) [1]{$ELSE} REChar (CharLower (PChar (Ch))){$ENDIF};
+     then Result := REChar (CharLower (PChar (Ch)));
    end;
  end; { of function TRegExpr.InvertCaseFunction
 --------------------------------------------------------------}

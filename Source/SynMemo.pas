@@ -249,7 +249,7 @@ begin
     if IsWindowUnicode(Handle) then
       WStrLCopy(PWideChar(Message.lParam), PWideChar(SelText), Length(SelText))
     else
-      {$IFDEF SYN_COMPILER_18_UP}AnsiStrings.{$ENDIF}StrLCopy(PAnsiChar(Message.lParam), PAnsiChar(AnsiString(SelText)), Length(SelText));
+      AnsiStrings.StrLCopy(PAnsiChar(Message.lParam), PAnsiChar(AnsiString(SelText)), Length(SelText));
     Message.Result := Length(SelText);
   end;                          
 end;
@@ -318,8 +318,8 @@ begin
     begin
       DestAnsi := PAnsiChar(Message.LParam);
       SourceAnsi := PAnsiChar(AnsiString(Lines[Message.WParam]));
-      {$IFDEF SYN_COMPILER_18_UP}AnsiStrings.{$ENDIF}StrLCopy(DestAnsi, SourceAnsi, PWord(Message.LParam)^);
-      Message.Result := {$IFDEF SYN_COMPILER_18_UP}AnsiStrings.{$ENDIF}StrLen(DestAnsi);
+      AnsiStrings.StrLCopy(DestAnsi, SourceAnsi, PWord(Message.LParam)^);
+      Message.Result := AnsiStrings.StrLen(DestAnsi);
     end
   end
   else

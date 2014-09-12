@@ -298,8 +298,8 @@ function SynWideLowerCase(const S: UnicodeString): UnicodeString;
 function SynIsCharAlpha(const C: WideChar): Boolean;
 function SynIsCharAlphaNumeric(const C: WideChar): Boolean;
 {$IFNDEF UNICODE}
-function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean; overload; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
-function CharInSet(C: WideChar; const CharSet: TSysCharSet): Boolean; overload; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean; overload; inline;
+function CharInSet(C: WideChar; const CharSet: TSysCharSet): Boolean; overload; inline;
 {$ENDIF}
 
 function WideLastDelimiter(const Delimiters, S: UnicodeString): Integer;
@@ -1509,67 +1509,13 @@ begin
 end;
 
 function WStrCopy(Dest: PWideChar; const Source: PWideChar): PWideChar;
-{$IFDEF SYN_COMPILER_16_UP}
 begin
   Result := SysUtils.StrCopy(Dest, Source)
-{$ELSE}
-asm
-        PUSH    EDI
-        PUSH    ESI
-        MOV     ESI,EAX
-        MOV     EDI,EDX
-        MOV     ECX,0FFFFFFFFH
-        XOR     AX,AX
-        REPNE   SCASW
-        NOT     ECX
-        MOV     EDI,ESI
-        MOV     ESI,EDX
-        MOV     EDX,ECX
-        MOV     EAX,EDI
-        SHR     ECX,1
-        REP     MOVSD
-        MOV     ECX,EDX
-        AND     ECX,1
-        REP     MOVSW
-        POP     ESI
-        POP     EDI
-{$ENDIF}
 end;
 
 function WStrLCopy(Dest: PWideChar; const Source: PWideChar; MaxLen: Cardinal): PWideChar;
-{$IFDEF SYN_COMPILER_16_UP}
 begin
   Result := SysUtils.StrLCopy(Dest, Source, MaxLen)
-{$ELSE}
-asm
-        PUSH    EDI
-        PUSH    ESI
-        PUSH    EBX
-        MOV     ESI,EAX
-        MOV     EDI,EDX
-        MOV     EBX,ECX
-        XOR     AX,AX
-        TEST    ECX,ECX
-        JZ      @@1
-        REPNE   SCASW
-        JNE     @@1
-        INC     ECX
-@@1:    SUB     EBX,ECX
-        MOV     EDI,ESI
-        MOV     ESI,EDX
-        MOV     EDX,EDI
-        MOV     ECX,EBX
-        SHR     ECX,1
-        REP     MOVSD
-        MOV     ECX,EBX
-        AND     ECX,1
-        REP     MOVSW
-        STOSW
-        MOV     EAX,EDX
-        POP     EBX
-        POP     ESI
-        POP     EDI
-{$ENDIF}
 end;
 
 function WStrCat(Dest: PWideChar; const Source: PWideChar): PWideChar;
@@ -1904,36 +1850,15 @@ end;
 // byte to go from LSB to MSB and vice versa.
 // EAX contains address of string
 procedure StrSwapByteOrder(Str: PWideChar);
-{$IFDEF SYN_COMPILER_16_UP}
 var
   P: PWord;
 begin
   P := PWord(Str);
-  while P^ <> 0 do 
+  while P^ <> 0 do
   begin
     P^ := MakeWord(HiByte(P^), LoByte(P^));
     Inc(P);
   end;
-{$ELSE}
-asm
-       PUSH    ESI
-       PUSH    EDI
-       MOV     ESI, EAX
-       MOV     EDI, ESI
-       XOR     EAX, EAX // clear high order byte to be able to use 32bit operand below
-@@1:
-       LODSW
-       OR      EAX, EAX
-       JZ      @@2
-       XCHG    AL, AH
-       STOSW
-       JMP     @@1
-
-
-@@2:
-       POP     EDI
-       POP     ESI
-{$ENDIF}
 end;
 
 // works like QuotedStr from SysUtils.pas but can insert any quotation character
@@ -2275,20 +2200,12 @@ begin
     if Handle < 0 then
     begin
 {$IFDEF USE_TNT_RUNTIME_SUPPORT}
-  {$IFDEF SYN_COMPILER_7_UP}
       ErrorMessage := WideSysErrorMessage(GetLastError);
       raise EWideFCreateError.CreateResFmt(PResStringRec(@SFCreateErrorEx),
         [WideExpandFileName(FileName), ErrorMessage]);
-  {$ELSE}
-      raise EWideFCreateError.CreateResFmt(@SFCreateError, [FileName]);
-  {$ENDIF}
 {$ELSE}
-  {$IFDEF SYN_COMPILER_7_UP}
       raise EFCreateError.CreateResFmt(PResStringRec(@SFCreateErrorEx),
         [ExpandFileName(FileName), SysErrorMessage(GetLastError)]);
-  {$ELSE}
-      raise EFCreateError.CreateResFmt(PResStringRec(@SFCreateError), [FileName]);
-  {$ENDIF}
 {$ENDIF}
     end
   end
@@ -2298,20 +2215,12 @@ begin
     if Handle < 0 then
     begin
 {$IFDEF USE_TNT_RUNTIME_SUPPORT}
-  {$IFDEF SYN_COMPILER_7_UP}
       ErrorMessage := WideSysErrorMessage(GetLastError);
       raise EWideFOpenError.CreateResFmt(PResStringRec(@SFOpenErrorEx),
         [WideExpandFileName(FileName), ErrorMessage]);
-  {$ELSE}
-      raise EWideFOpenError.CreateResFmt(@SFOpenError, [FileName]);
-  {$ENDIF}
 {$ELSE}
-  {$IFDEF SYN_COMPILER_7_UP}
       raise EFOpenError.CreateResFmt(PResStringRec(@SFOpenErrorEx),
         [ExpandFileName(FileName), SysErrorMessage(GetLastError)]);
-  {$ELSE}
-      raise EFOpenError.CreateResFmt(PResStringRec(@SFOpenError), [FileName]);
-  {$ENDIF}
 {$ENDIF}
     end;
   end;

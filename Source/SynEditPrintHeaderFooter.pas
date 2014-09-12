@@ -476,11 +476,7 @@ begin
     Write(aHeight, SizeOf(aHeight));
     aLen := Length(aName);
     Write(aLen, SizeOf(aLen));
-    {$IFDEF SYN_COMPILER_2}           // In D2 TFontName is a ShortString
-    Write(PAnsiChar(@aName[1])^, aLen);   // D2 cannot convert ShortStrings to PAnsiChar
-    {$ELSE}
     Write(PAnsiChar(AnsiString(aName))^, aLen);
-    {$ENDIF}
     Write(aPitch, SizeOf(aPitch));
     Write(aSize, SizeOf(aSize));
     Write(aStyle, SizeOf(aStyle));
@@ -950,11 +946,7 @@ begin
     Write(aHeight, SizeOf(aHeight));
     aLen := Length(aName);
     Write(aLen, SizeOf(aLen));
-    {$IFDEF SYN_COMPILER_2}                    // In D2 TFontName is a ShortString
-    Write(PAnsiChar(@aName[1])^, Length(aName));   // D2 cannot convert ShortStrings to PAnsiChar
-    {$ELSE}
     Write(PAnsiChar(AnsiString(aName))^, Length(aName));
-    {$ENDIF}
     Write(aPitch, SizeOf(aPitch));
     Write(aSize, SizeOf(aSize));
     Write(aStyle, SizeOf(aStyle));

@@ -42,10 +42,6 @@
 
 // $Id: SynUsp10.pas,v 1.1.2.2 2008/09/17 13:59:12 maelh Exp $
 
-{$IFDEF FPC}
-{$mode objfpc}
-{$ENDIF}
-
 // necessary for dynamic linking
 {$STACKFRAMES ON}
 {$WARNINGS OFF}

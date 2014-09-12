@@ -109,16 +109,11 @@ type
       order of keyword entries is maintained. }
     procedure Put(HashKey: Integer; Entry: TSynHashEntry);
   public
-{$IFDEF LIST_CLEAR_NOT_VIRTUAL}
     { Overridden destructor clears the list and frees all contained keyword
       entries. }
     destructor Destroy; override;
     { Clears the list and frees all contained keyword entries. }
     procedure DeleteEntries;
-{$ELSE}
-    { Clears the list and frees all contained keyword entries. }
-    procedure Clear; override;
-{$ENDIF}
   public
     { Type-safe access to the first keyword entry for a hashvalue. }
     property Items[Index: integer]: TSynHashEntry read Get write Put; default;
@@ -205,7 +200,6 @@ end;
 
 { TSynHashEntryList }
 
-{$IFDEF LIST_CLEAR_NOT_VIRTUAL}
 destructor TSynHashEntryList.Destroy;
 begin
   DeleteEntries;
@@ -213,9 +207,6 @@ begin
 end;
 
 procedure TSynHashEntryList.DeleteEntries;
-{$ELSE}
-procedure TSynHashEntryList.Clear;
-{$ENDIF}
 var
   i: integer;
 begin

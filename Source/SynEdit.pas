@@ -83,11 +83,6 @@ uses
   Classes;
 
 const
-{$IFNDEF SYN_COMPILER_3_UP}
-   // not defined in all Delphi versions
-  WM_MOUSEWHEEL = $020A;
-{$ENDIF}
-
    // maximum scroll range
   MAX_SCROLL = 32767;
 
@@ -686,13 +681,8 @@ type
     property AlwaysShowCaret: Boolean read FAlwaysShowCaret
                                       write SetAlwaysShowCaret;
     procedure UpdateCaret;
-{$IFDEF SYN_COMPILER_4_UP}
     procedure AddKey(Command: TSynEditorCommand; Key1: word; SS1: TShiftState;
       Key2: word = 0; SS2: TShiftState = []);
-{$ELSE}
-    procedure AddKey(Command: TSynEditorCommand; Key1: word; SS1: TShiftState;
-      Key2: word; SS2: TShiftState);
-{$ENDIF}
     procedure BeginUndoBlock;
     procedure BeginUpdate;
     function CaretInView: Boolean;
@@ -716,9 +706,7 @@ type
     procedure FindMatchingBracket; virtual;
     function GetMatchingBracket: TBufferCoord; virtual;
     function GetMatchingBracketEx(const APoint: TBufferCoord): TBufferCoord; virtual;
-{$IFDEF SYN_COMPILER_4_UP}
     function ExecuteAction(Action: TBasicAction): Boolean; override;
-{$ENDIF}
     procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
     function ExpandAtWideGlyphs(const S: UnicodeString): UnicodeString;
@@ -787,9 +775,7 @@ type
     procedure Undo;
     procedure UnlockUndo;
     procedure UnregisterCommandHandler(AHandlerProc: THookedCommandEvent);
-{$IFDEF SYN_COMPILER_4_UP}
     function UpdateAction(Action: TBasicAction): Boolean; override;
-{$ENDIF}
     procedure SetFocus; override;
 
     procedure AddKeyUpHandler(aHandler: TKeyEvent);
@@ -947,10 +933,8 @@ type
   published
     // inherited properties
     property Align;
-{$IFDEF SYN_COMPILER_4_UP}
     property Anchors;
     property Constraints;
-{$ENDIF}
     property Color;
     property ActiveLineColor;
     property Ctl3D;
@@ -1294,9 +1278,7 @@ begin
   Color := clWindow;
   fFontDummy.Name := 'Courier New';
   fFontDummy.Size := 10;
-{$IFDEF SYN_COMPILER_3_UP}
   fFontDummy.CharSet := DEFAULT_CHARSET;
-{$ENDIF}
   fTextDrawer := TheTextDrawer.Create([fsBold], fFontDummy);
   Font.Assign(fFontDummy);
   Font.OnChange := SynFontChanged;
@@ -4357,7 +4339,7 @@ begin
 
       if Visible then SendMessage(Handle, WM_SETREDRAW, 0, 0);
 
-      if (fScrollBars in [{$IFDEF SYN_COMPILER_17_UP}TScrollStyle.{$ENDIF}ssBoth, {$IFDEF SYN_COMPILER_17_UP}TScrollStyle.{$ENDIF}ssHorizontal]) and not WordWrap then
+      if (fScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssHorizontal]) and not WordWrap then
       begin
         if eoScrollPastEol in Options then
           nMaxScroll := MaxScrollWidth
@@ -4585,20 +4567,18 @@ begin
   end
   else
   begin
-   {$IFDEF SYN_COMPILER_18_UP}AnsiStrings.{$ENDIF}StrLCopy(PAnsiChar(Msg.Text), PAnsiChar(AnsiString(Text)), Msg.TextMax - 1);
-    Msg.Result := {$IFDEF SYN_COMPILER_18_UP}AnsiStrings.{$ENDIF}StrLen(PAnsiChar(Msg.Text));
+   AnsiStrings.StrLCopy(PAnsiChar(Msg.Text), PAnsiChar(AnsiString(Text)), Msg.TextMax - 1);
+    Msg.Result := AnsiStrings.StrLen(PAnsiChar(Msg.Text));
   end;
 end;
 
 procedure TCustomSynEdit.WMGetTextLength(var Msg: TWMGetTextLength);
 begin
-{$IFDEF SYN_COMPILER_4_UP}
   // Avoid (useless) temporary copy of WindowText while window is recreated
   // because of docking.
   if csDocking in ControlState then
     Msg.Result := 0
   else
-{$ENDIF}
     Msg.Result := Length(Text);
 end;
 
@@ -4859,12 +4839,7 @@ begin
                 RowToLine(TopLine + Min(LinesInWindow, DisplayLineCount-TopLine))]);
           end;
 
-{$IFDEF SYN_COMPILER_3_UP}
           rc := ScrollHint.CalcHintRect(200, s, nil);
-{$ELSE}
-          rc := Rect(0, 0, TextWidth(ScrollHint.Canvas, s) + 6,
-            TextHeight(ScrollHint.Canvas, s) + 4);
-{$ENDIF}
           if eoScrollHintFollows in fOptions then
           begin
             ButtonH := GetSystemMetrics(SM_CYVSCROLL);
@@ -4885,12 +4860,6 @@ begin
 
           OffsetRect(rc, pt.x, pt.y);
           ScrollHint.ActivateHint(rc, s);
-{$IFDEF SYN_COMPILER_3}
-          SendMessage(ScrollHint.Handle, WM_NCPAINT, 1, 0);
-{$ENDIF}
-{$IFNDEF SYN_COMPILER_3_UP}
-          ScrollHint.Invalidate;
-{$ENDIF}
           ScrollHint.Update;
         end;
       end;
@@ -6303,10 +6272,6 @@ function TCustomSynEdit.TranslateKeyCode(Code: word; Shift: TShiftState;
   var Data: pointer): TSynEditorCommand;
 var
   i: Integer;
-{$IFNDEF SYN_COMPILER_3_UP}
-const
-  VK_ACCEPT = $30;
-{$ENDIF}
 begin
   i := KeyStrokes.FindKeycode2(fLastKey, fLastShiftState, Code, Shift);
   if i >= 0 then
@@ -9002,7 +8967,6 @@ begin
   end;
 end;
 
-{$IFDEF SYN_COMPILER_4_UP}
 function TCustomSynEdit.ExecuteAction(Action: TBasicAction): Boolean;
 begin
   if Action is TEditAction then
@@ -9091,7 +9055,6 @@ begin
   else
     Result := inherited UpdateAction(Action);
 end;
-{$ENDIF}
 
 procedure TCustomSynEdit.SetModified(Value: Boolean);
 begin
