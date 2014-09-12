@@ -439,9 +439,7 @@ begin
     Read(aPitch, sizeof(aPitch));
     Read(aSize, sizeof(aSize));
     Read(aStyle, sizeof(aStyle));
-    {$IFDEF SYN_COMPILER_3_UP}
     FFont.Charset := aCharset;
-    {$ENDIF}
     FFont.Color := aColor;
     FFont.Height := aHeight;
     FFont.Name := aName;
@@ -470,11 +468,7 @@ begin
     Write(PWideChar(FText)^, aLen * sizeof(WideChar));
     Write(FLineNumber, sizeof(FLineNumber));
     // font
-    {$IFDEF SYN_COMPILER_3_UP}
     aCharset := FFont.Charset;
-    {$ELSE}
-    aCharset := DEFAULT_CHARSET;
-    {$ENDIF}
     aColor   := FFont.Color;
     aHeight  := FFont.Height;
     aName    := FFont.Name;
@@ -909,9 +903,7 @@ begin
     Read(aPitch, SizeOf(aPitch));
     Read(aSize, SizeOf(aSize));
     Read(aStyle, SizeOf(aStyle));
-    {$IFDEF SYN_COMPILER_3_UP}
     FDefaultFont.Charset := aCharset;
-    {$ENDIF}
     FDefaultFont.Color   := aColor;
     FDefaultFont.Height  := aHeight;
     FDefaultFont.Name    := aName;
@@ -950,11 +942,7 @@ begin
     Write(FRomanNumbers, SizeOf(FRomanNumbers));
     Write(FMirrorPosition, SizeOf(FMirrorPosition));
     // font
-    {$IFDEF SYN_COMPILER_3_UP}
     aCharset := FDefaultFont.Charset;
-    {$ELSE}
-    aCharSet := DEFAULT_CHARSET;
-    {$ENDIF}
     aColor   := FDefaultFont.Color;
     aHeight  := FDefaultFont.Height;
     aName    := FDefaultFont.Name;

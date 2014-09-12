@@ -223,9 +223,7 @@ type
     procedure SetShortCut(const Value: TShortCut);
     procedure SetShortCut2(const Value: TShortCut);
   protected
-{$IFDEF SYN_COMPILER_3_UP}
     function GetDisplayName: string; override;
-{$ENDIF}
   public
     procedure Assign(Source: TPersistent); override;
     procedure LoadFromStream(AStream: TStream);
@@ -249,9 +247,7 @@ type
     function GetItem(Index: Integer): TSynEditKeyStroke;
     procedure SetItem(Index: Integer; Value: TSynEditKeyStroke);
   protected
-{$IFDEF SYN_COMPILER_3_UP}
     function GetOwner: TPersistent; override;
-{$ENDIF}
   public
     constructor Create(AOwner: TPersistent);
     function Add: TSynEditKeyStroke;
@@ -730,12 +726,10 @@ begin
  Result := TSynEditKeyStroke(inherited GetItem(Index));
 end;
 
-{$IFDEF SYN_COMPILER_3_UP}
 function TSynEditKeyStrokes.GetOwner: TPersistent;
 begin
   Result := FOwner;
 end;
-{$ENDIF}
 
 procedure TSynEditKeyStrokes.LoadFromStream(AStream: TStream);
 var

@@ -81,10 +81,8 @@ type
     procedure SetCaseSensitive(const Value: Boolean);
   protected
     procedure DefineProperties(Filer: TFiler); override;
-{$IFDEF SYN_COMPILER_3_UP}
     function GetDisplayName: string; override;
     procedure SetDisplayName(const Value: string); override;
-{$ENDIF}
   public
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
@@ -111,11 +109,9 @@ type
     fOwner: TSynMultiSyn;
     function GetItems(Index: integer): TScheme;
     procedure SetItems(Index: integer; const Value: TScheme);
-{$IFDEF SYN_COMPILER_3_UP}
   protected
     function GetOwner: TPersistent; override;
     procedure Update(Item: TCollectionItem); override;
-{$ENDIF}
   public
     constructor Create(aOwner: TSynMultiSyn);
     property Items[aIndex: integer]: TScheme read GetItems write SetItems;
@@ -961,19 +957,16 @@ begin
   Result := inherited Items[Index] as TScheme;
 end;
 
-{$IFDEF SYN_COMPILER_3_UP}
 function TSchemes.GetOwner: TPersistent;
 begin
   Result := fOwner;
 end;
-{$ENDIF}
 
 procedure TSchemes.SetItems(Index: Integer; const Value: TScheme);
 begin
   inherited Items[Index] := Value;
 end;
 
-{$IFDEF SYN_COMPILER_3_UP}
 procedure TSchemes.Update(Item: TCollectionItem);
 begin
   if Item <> nil then
@@ -981,7 +974,6 @@ begin
   else // pass the MultiSyn as the Sender so Editors reparse their text
     fOwner.DefHighlightChange(fOwner);
 end;
-{$ENDIF}
 
 { TScheme }
 
@@ -1020,7 +1012,6 @@ begin
 {$ENDIF}
 end;
 
-{$IFDEF SYN_COMPILER_3_UP}
 function TScheme.GetDisplayName: string;
 begin
   if SchemeName <> '' then
@@ -1028,7 +1019,6 @@ begin
   else
     Result := inherited GetDisplayName;
 end;
-{$ENDIF SYN_COMPILER_3_UP}
 
 procedure TScheme.MarkerAttriChanged(Sender: TObject);
 begin
@@ -1044,12 +1034,10 @@ begin
   end;
 end;
 
-{$IFDEF SYN_COMPILER_3_UP}
 procedure TScheme.SetDisplayName(const Value: string);
 begin
   SchemeName := Value;
 end;
-{$ENDIF SYN_COMPILER_3_UP}
 
 procedure TScheme.SetEndExpr(const Value: UnicodeString);
 var

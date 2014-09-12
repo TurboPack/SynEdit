@@ -311,22 +311,11 @@ begin
 end;
 
 procedure TCustomDBSynEdit.LoadMemo;
-{$IFDEF SYN_COMPILER_3_UP}
 var
   BlobStream: TStream;
-{$ELSE}
-var
-  BlobStream: TBlobStream;
-  BlobField: TBlobField;
-{$ENDIF}
 begin
   try
-{$IFDEF SYN_COMPILER_3_UP}
     BlobStream := FDataLink.DataSet.CreateBlobStream(FDataLink.Field, bmRead);
-{$ELSE}
-    BlobField := FDataLink.Field as TBlobField;
-    BlobStream := TBlobStream.Create(BlobField, bmRead);
-{$ENDIF}
     Lines.BeginUpdate;
     Lines.LoadFromStream(BlobStream{$IFDEF UNICODE}, TEncoding.Default{$ENDIF});
     Lines.EndUpdate;
@@ -374,9 +363,7 @@ begin
   if fEditing <> Value then
   begin
     fEditing := Value;
-{$IFDEF SYN_COMPILER_3_UP}
     if not Assigned(FDataLink.Field) or not FDataLink.Field.IsBlob then
-{$ENDIF}
       FDataLink.Reset;
   end;
 end;

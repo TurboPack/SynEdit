@@ -77,8 +77,7 @@ interface
 // Define 'UseAsserts' option (do not edit this definitions).
 // Asserts used to catch 'strange bugs' in TRegExpr implementation (when something goes
 // completely wrong). You can swith asserts on/off with help of {$C+}/{$C-} compiler options.
-{$IFDEF SYN_COMPILER_3_UP} {$DEFINE UseAsserts} {$ENDIF}
-{$IFDEF FPC} {$DEFINE UseAsserts} {$ENDIF}
+{$DEFINE UseAsserts}
 
 // Define 'use subroutine parameters default values' option (do not edit this definition).
 {$IFDEF SYN_COMPILER_4_UP} {$DEFINE DefParam} {$ENDIF}
