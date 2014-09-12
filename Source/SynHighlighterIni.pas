@@ -417,7 +417,6 @@ begin
             'Number=123456';
 end;
 
-{$IFNDEF SYN_CPPB_1}
 class function TSynIniSyn.GetFriendlyLanguageName: UnicodeString;
 begin
   Result := SYNS_FriendlyLangINI;
@@ -425,5 +424,4 @@ end;
 
 initialization
   RegisterPlaceableHighlighter(TSynIniSyn);
-{$ENDIF}
 end.

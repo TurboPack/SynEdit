@@ -543,8 +543,6 @@ begin
   Result := SYNS_FriendlyLangDfm;
 end;
 
-{$IFNDEF SYN_CPPB_1}
 initialization
   RegisterPlaceableHighlighter(TSynDfmSyn);
-{$ENDIF}
 end.

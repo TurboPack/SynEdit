@@ -91,11 +91,6 @@ type
     property Next: TSynHashEntry read fNext;
   end;
 
-
-  {$IFNDEF SYN_CPPB_3}
-    {$DEFINE LIST_CLEAR_NOT_VIRTUAL}
-  {$ENDIF}
-
   { A list of keyword entries, stored as single-linked lists under the hashvalue
     of the keyword. }
   TSynHashEntryList = class(TList)

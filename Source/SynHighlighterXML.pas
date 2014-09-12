@@ -849,7 +849,6 @@ begin
            '</root>';
 end;
 
-{$IFNDEF SYN_CPPB_1}
 class function TSynXMLSyn.GetFriendlyLanguageName: UnicodeString;
 begin
   Result := SYNS_FriendlyLangXML;
@@ -857,5 +856,4 @@ end;
 
 initialization
   RegisterPlaceableHighlighter(TSynXMLSyn);
-{$ENDIF}
 end.

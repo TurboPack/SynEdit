@@ -494,7 +494,5 @@ begin
 end;
 
 initialization
-{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynHC11Syn);
-{$ENDIF}
 end.

@@ -1781,16 +1781,6 @@ begin
   InvalidateLines(BlockBegin.Line, BlockEnd.Line);
 end;
 
-{$IFDEF SYN_COMPILER_5}
-function TryStrToInt(const S: string; out Value: Integer): Boolean;
-var
-  E: Integer;
-begin
-  Val(S, Value, E);
-  Result := E = 0;
-end;
-{$ENDIF}
-
 procedure TCustomSynEdit.KeyUp(var Key: Word; Shift: TShiftState);
 var
   CharCode: Integer;

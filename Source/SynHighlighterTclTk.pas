@@ -888,7 +888,5 @@ begin
 end;
 
 initialization
-{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynTclTkSyn);
-{$ENDIF}
 end.

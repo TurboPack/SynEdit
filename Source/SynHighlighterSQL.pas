@@ -2101,8 +2101,6 @@ begin
 end;
 
 initialization
-{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynSQLSyn);
-{$ENDIF}
 end.
 

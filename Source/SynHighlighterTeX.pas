@@ -335,7 +335,6 @@ begin
           '\end{document}';
 end;
 
-{$IFNDEF SYN_CPPB_1}
 class function TSynTeXSyn.GetFriendlyLanguageName: UnicodeString;
 begin
   Result := SYNS_FriendlyLangTeX;
@@ -343,5 +342,4 @@ end;
 
 initialization
   RegisterPlaceableHighlighter(TSynTeXSyn);
-{$ENDIF}
 end.

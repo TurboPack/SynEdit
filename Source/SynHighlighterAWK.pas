@@ -544,8 +544,6 @@ begin
   Result := SYNS_FriendlyLangAWK;
 end;
 
-{$IFNDEF SYN_CPPB_1}
 initialization
   RegisterPlaceableHighlighter(TSynAWKSyn);
-{$ENDIF}
 end.

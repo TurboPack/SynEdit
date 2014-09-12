@@ -640,7 +640,5 @@ begin
 end;
 
 initialization
-{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynFortranSyn);
-{$ENDIF}
 end.

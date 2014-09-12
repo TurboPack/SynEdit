@@ -1199,7 +1199,5 @@ begin
 end;
 
 initialization
-{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynVrml97Syn);
-{$ENDIF}
 end.

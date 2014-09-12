@@ -1010,7 +1010,6 @@ begin
   Result := (Run - 1 >= fLineLen) or (fLine[Run - 1] = #10) or (fLine[Run - 1] = #13);
 end;
 
-{$IFNDEF SYN_CPPB_1}
 class function TSynHP48Syn.GetFriendlyLanguageName: UnicodeString;
 begin
   Result := SYNS_FriendlyLangHP48;
@@ -1018,5 +1017,4 @@ end;
 
 initialization
   RegisterPlaceableHighlighter(TSynHP48Syn);
-{$ENDIF}
 end.

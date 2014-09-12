@@ -237,7 +237,6 @@ type
 
   TSynCustomHighlighterClass = class of TSynCustomHighlighter;
 
-{$IFNDEF SYN_CPPB_1}
   TSynHighlighterList = class(TList)
   private
     hlList: TList;
@@ -256,7 +255,6 @@ type
   procedure RegisterPlaceableHighlighter(highlighter:
     TSynCustomHighlighterClass);
   function GetPlaceableHighlighters: TSynHighlighterList;
-{$ENDIF}
 
 implementation
 
