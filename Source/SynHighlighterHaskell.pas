@@ -901,7 +901,6 @@ end;
 
 procedure TSynHaskellSyn.EnumUserSettings(settings: TStrings);
 begin
-  {$IFNDEF SYN_CLX}
   { returns the user settings that exist in the registry }
   with TBetterRegistry.Create do
   begin
@@ -919,7 +918,6 @@ begin
       Free;
     end;
   end;
-  {$ENDIF}
 end;
 
 function TSynHaskellSyn.IsFilterStored: Boolean;

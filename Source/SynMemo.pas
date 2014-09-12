@@ -58,7 +58,6 @@ uses
 
 type
   TSynMemo = class(TSynEdit)
-{$IFNDEF SYN_CLX}
   private
     // EM_XXX see winuser.h (PSDK August 2001)
     procedure EMGetSel(var Message: TMessage); message EM_GETSEL;
@@ -191,7 +190,6 @@ type
     procedure EMSETEDITSTYLE(var Message: TMessage); message EM_SETEDITSTYLE;
     procedure EMGETEDITSTYLE(var Message: TMessage); message EM_GETEDITSTYLE;
     }
-{$ENDIF NOT SYN_CLX}
   end;
 
 implementation

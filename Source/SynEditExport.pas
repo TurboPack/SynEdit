@@ -218,9 +218,7 @@ constructor TSynCustomExporter.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   fBuffer := TMemoryStream.Create;
-{$IFNDEF SYN_CLX}
   fClipboardFormat := CF_TEXT;
-{$ENDIF}
   FCharSize := 1;
   FEncoding := seUTF8;
   fFont := TFont.Create;
@@ -369,14 +367,11 @@ begin
 end;
 
 procedure TSynCustomExporter.CopyToClipboardFormat(AFormat: UINT);
-{$IFNDEF SYN_CLX}
 var
   hData: THandle;
   hDataSize: UINT;
   PtrData: PByte;
-{$ENDIF}
 begin
-{$IFNDEF SYN_CLX}
   hDataSize := GetBufferSize + 1;
   hData := GlobalAlloc(GMEM_MOVEABLE or GMEM_ZEROINIT or GMEM_SHARE, hDataSize);
   if hData <> 0 then
@@ -398,15 +393,11 @@ begin
     GlobalFree(hData);
     OutOfMemoryError;
   end;
-{$ENDIF}
 end;
 
 procedure TSynCustomExporter.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 procedure TSynCustomExporter.ExportAll(ALines: TUnicodeStrings);

@@ -1329,7 +1329,6 @@ end;
 procedure TSynCppSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
-{$IFNDEF SYN_CLX}
   with TBetterRegistry.Create do
   begin
     try
@@ -1346,7 +1345,6 @@ begin
       Free;
     end;
   end;
-{$ENDIF}
 end;
 
 function TSynCppSyn.UseUserSettings(settingIndex: integer): boolean;
@@ -1357,7 +1355,6 @@ function TSynCppSyn.UseUserSettings(settingIndex: integer): boolean;
 //   false: problem reading settings or invalid version specified - old settings
 //          were preserved
 
-  {$IFNDEF SYN_CLX}
   function ReadCPPBSettings(settingIndex: integer): boolean;
 
     function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): boolean;
@@ -1488,14 +1485,9 @@ function TSynCppSyn.UseUserSettings(settingIndex: integer): boolean;
       end;
     finally s.Free; end;
   end; { ReadCPPBSettings }
-  {$ENDIF}
 
 begin
-  {$IFNDEF SYN_CLX}
   Result := ReadCPPBSettings(settingIndex);
-  {$ELSE}
-  Result := False;
-  {$ENDIF}
 end; { TSynCppSyn.UseUserSettings }
 
 function TSynCppSyn.IsFilterStored: Boolean;

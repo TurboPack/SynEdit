@@ -115,9 +115,7 @@ const
   CF_HTML = 'HTML Format';
 begin
   inherited Create(AOwner);
-  {$IFNDEF SYN_CLX}
   fClipboardFormat := RegisterClipboardFormat(CF_HTML);
-  {$ENDIF} // TODO: register for Kylix, too, see what Netscape Composer uses/accepts
   fDefaultFilter := SYNS_FilterHTML;
   FEncoding := seUTF8;
 end;

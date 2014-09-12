@@ -146,10 +146,8 @@ type
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
-    {$IFNDEF SYN_CLX}
     function SaveToRegistry(RootKey: HKEY; Key: string): boolean; override;
     function LoadFromRegistry(RootKey: HKEY; Key: string): boolean; override;
-    {$ENDIF}
     property OnGetTokenAttribute : TGetTokenAttributeEvent read fOnGetTokenAttribute write fOnGetTokenAttribute;
     property StringMultiLine : Boolean read FStringMultiLine write FStringMultiLine;
   published
@@ -727,7 +725,6 @@ begin
   Result := SYNS_LangGeneral;
 end;
 
-{$IFNDEF SYN_CLX}
 function TSynGeneralSyn.LoadFromRegistry(RootKey: HKEY; Key: string): boolean;
 var
   r: TBetterRegistry;
@@ -758,7 +755,6 @@ begin
     else Result := false;
   finally r.Free; end;
 end;
-{$ENDIF}
 
 function TSynGeneralSyn.GetStringDelim: TStringDelim;
 begin

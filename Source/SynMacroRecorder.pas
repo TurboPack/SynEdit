@@ -918,9 +918,7 @@ begin
   aStream.Read(l, sizeof(l));
   GetMem(Buff, l * sizeof(WideChar));
   try
-  {$IFNDEF SYN_CLX}
     FillMemory(Buff, l, 0);
-  {$ENDIF}
     aStream.Read(Buff^, l * sizeof(WideChar));
     fString := Buff;
   finally
@@ -955,9 +953,7 @@ begin
   aStream.Write(l, sizeof(l));
   GetMem(Buff, l * sizeof(WideChar));
   try
-  {$IFNDEF SYN_CLX}
     FillMemory(Buff, l, 0);
-  {$ENDIF}
     WStrCopy(Buff, PWideChar(Value));
     aStream.Write(Buff^, l * sizeof(WideChar));
   finally

@@ -1208,7 +1208,6 @@ begin
   TabStop := True;
 end;
 
-{$IFNDEF SYN_CLX}
 procedure TSynHotKey.CreateParams(var Params: TCreateParams);
 const
   BorderStyles: array[TSynBorderStyle] of DWORD = (0, WS_BORDER);
@@ -1227,7 +1226,6 @@ begin
     end;
   end;
 end;
-{$ENDIF}
 
 procedure TSynHotKey.DoExit;
 begin

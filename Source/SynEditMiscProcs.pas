@@ -72,9 +72,7 @@ function MinPoint(const P1, P2: TPoint): TPoint;
 
 function GetIntArray(Count: Cardinal; InitialValue: integer): PIntArray;
 
-{$IFNDEF SYN_CLX}
 procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
-{$ENDIF}
 
 // Converting tabs to spaces: To use the function several times it's better
 // to use a function pointer that is set to the fastest conversion function.
@@ -206,12 +204,10 @@ begin
   end;
 end;
 
-{$IFNDEF SYN_CLX}
 procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
 begin
   ExtTextOut(dc, 0, 0, ETO_OPAQUE, @rcPaint, nil, 0, nil);
 end;
-{$ENDIF}
 
 // Please don't change this function; no stack frame and efficient register use.
 function GetHasTabs(pLine: PWideChar; var CharsBefore: Integer): Boolean;

@@ -235,10 +235,8 @@ type
     function UpdateRangeProcs: Boolean;
     property CurrScheme: Integer read fCurrScheme write fCurrScheme;
     property CurrLine: UnicodeString read fLineStr;
-{$IFNDEF SYN_CLX}
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
-{$ENDIF}
     function IsIdentChar(AChar: WideChar): Boolean; override;
   published
     property Schemes: TSchemes read fSchemes write SetSchemes;
@@ -692,7 +690,6 @@ begin
   fSampleSource := Value;
 end;
 
-{$IFNDEF SYN_CLX}
 function TSynMultiSyn.LoadFromRegistry(RootKey: HKEY;
   Key: string): Boolean;
 var
@@ -751,7 +748,6 @@ begin
     r.Free;
   end;
 end;
-{$ENDIF}
 
 function TSynMultiSyn.GetRange: Pointer;
 begin

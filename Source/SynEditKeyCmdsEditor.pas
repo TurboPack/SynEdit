@@ -88,10 +88,8 @@ type
     FExtended: Boolean;
     procedure SetKeystrokes(const Value: TSynEditKeyStrokes);
     procedure UpdateKeystrokesList;
-    {$IFNDEF SYN_CLX}
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);
       message WM_GETMINMAXINFO;
-    {$ENDIF}
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -182,13 +180,11 @@ begin
   lnlInfo2.Top := pnlCommands.Top + pnlCommands.Height + 27;
 end;
 
-{$IFNDEF SYN_CLX}
 procedure TSynEditKeystrokesEditorForm.WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);
 begin
   inherited;
   Msg.MinMaxInfo.ptMinTrackSize := Point(300, 225);
 end;
-{$ENDIF}
 
 procedure TSynEditKeystrokesEditorForm.btnAddClick(Sender: TObject);            //DDH 10/16/01 Begin (reworked proc)
 var

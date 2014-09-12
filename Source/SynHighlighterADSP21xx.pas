@@ -2500,7 +2500,6 @@ end;
 procedure TSynADSP21xxSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
-  {$IFNDEF SYN_CLX}
   with TBetterRegistry.Create do
   begin
     try
@@ -2518,7 +2517,6 @@ begin
       Free;
     end;
   end;
-  {$ENDIF}
 end;
 
 function TSynADSP21xxSyn.UseUserSettings(settingIndex: integer): boolean;
@@ -2529,7 +2527,6 @@ function TSynADSP21xxSyn.UseUserSettings(settingIndex: integer): boolean;
 //   false: problem reading settings or invalid version specified - old settings
 //          were preserved
 
-    {$IFNDEF SYN_CLX}
     function ReadDspIDESetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): boolean;
     begin
       try
@@ -2537,7 +2534,6 @@ function TSynADSP21xxSyn.UseUserSettings(settingIndex: integer): boolean;
                '\Software\Wynand\DspIDE\1.0\Editor\Highlight',key,false);
       except Result := false; end;
     end;
-    {$ENDIF}
 var
   tmpNumberAttri    : TSynHighlighterAttributes;
   tmpKeyAttri       : TSynHighlighterAttributes;
@@ -2574,7 +2570,6 @@ begin  // UseUserSettings
       tmpIdentifierAttri.Assign(fIdentifierAttri);
       tmpSpaceAttri     .Assign(fSpaceAttri);
       tmpRegisterAttri  .Assign(fRegisterAttri);
-      {$IFNDEF SYN_CLX}
       Result := ReadDspIDESetting(StrLst[settingIndex],fCommentAttri,'Comment')       and
                 ReadDspIDESetting(StrLst[settingIndex],fIdentifierAttri,'Identifier') and
                 ReadDspIDESetting(StrLst[settingIndex],fKeyAttri,'Reserved word')     and
@@ -2583,9 +2578,6 @@ begin  // UseUserSettings
                 ReadDspIDESetting(StrLst[settingIndex],fSymbolAttri,'Symbol')         and
                 ReadDspIDESetting(StrLst[settingIndex],fConditionAttri,'Condition')   and
                 ReadDspIDESetting(StrLst[settingIndex],fRegisterAttri,'Symbol');
-      {$ELSE}
-      Result := False;
-      {$ENDIF}
       if not Result then
       begin
         fNumberAttri     .Assign(tmpNumberAttri);

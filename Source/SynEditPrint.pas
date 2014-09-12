@@ -382,9 +382,7 @@ procedure TSynEditPrint.InitPrint;
   headers and footers}
 var
   TmpSize: Integer;
-{$IFNDEF SYN_CLX}
   TmpTextMetrics: TTextMetric;
-{$ENDIF}
 begin
 //  FDefaultBG := FCanvas.Brush.Color;                                          
   fFontColor := FFont.Color;
@@ -775,13 +773,11 @@ begin
           end;
         end;
       end;
-      {$IFNDEF SYN_CLX}
       if not Handled then
       begin
         ExpandedPos := FHighLighter.PosToExpandedPos(TokenPos - TokenStart);
         ClippedTextOut(FMargins.PLeft + ExpandedPos * FCharWidth, FYPos, Token);
       end;
-      {$ENDIF}
       FHighLighter.Next;
     end;
     RestoreCurrentFont;
@@ -966,9 +962,7 @@ function TSynEditPrint.GetPageCount: Integer;
  then a UpdatePages is called with a temporary canvas}
 var
   TmpCanvas: TCanvas;
-  {$IFNDEF SYN_CLX}
   DC: HDC;
-  {$ENDIF}
 begin
   Result := 0;
   if FPagesCounted then
@@ -976,7 +970,6 @@ begin
   else begin
     TmpCanvas := TCanvas.Create;
     try
-      {$IFNDEF SYN_CLX}
       DC := GetDC(0);
       try
         if DC <> 0 then
@@ -990,7 +983,6 @@ begin
       finally
         ReleaseDC(0, DC);
       end;
-      {$ENDIF}
     finally
       TmpCanvas.Free;
     end;

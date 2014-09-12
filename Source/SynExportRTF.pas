@@ -103,9 +103,7 @@ begin
   inherited Create(AOwner);
   fListColors := TList.Create;
   fDefaultFilter := SYNS_FilterRTF;
-{$IFNDEF SYN_CLX}
   fClipboardFormat := RegisterClipboardFormat(CF_RTF);
-{$ENDIF} // TODO: register for Kylix, too, see what Netscape Composer uses/accepts
   FEncoding := seUTF8;
 end;
 

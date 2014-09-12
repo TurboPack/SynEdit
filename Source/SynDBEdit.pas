@@ -72,11 +72,9 @@ type
     procedure SetEditing(Value: Boolean);
     procedure UpdateData(Sender: TObject);
   private
-  {$IFNDEF SYN_CLX}
     procedure CMEnter(var Msg: TCMEnter); message CM_ENTER;
     procedure CMExit(var Msg: TCMExit); message CM_EXIT;
     procedure CMGetDataLink(var Msg: TMessage); message CM_GETDATALINK;
-  {$ENDIF}
   protected
     function GetReadOnly: boolean; override;
     procedure Loaded; override;
@@ -113,17 +111,13 @@ type
     property Constraints;
   {$ENDIF}
     property Color;
-  {$IFNDEF SYN_CLX}
     property Ctl3D;
-  {$ENDIF}
     property Enabled;
     property Font;
     property Height;
     property Name;
     property ParentColor;
-  {$IFNDEF SYN_CLX}
     property ParentCtl3D;
-  {$ENDIF}
     property ParentFont;
     property ParentShowHint;
     property PopupMenu;
@@ -138,11 +132,7 @@ type
     property OnDblClick;
     property OnDragDrop;
     property OnDragOver;
-  {$IFDEF SYN_COMPILER_4_UP}
-  {$IFNDEF SYN_CLX}
     property OnEndDock;
-  {$ENDIF}
-  {$ENDIF}
     property OnEndDrag;
     property OnEnter;
     property OnExit;
@@ -152,11 +142,7 @@ type
     property OnMouseDown;
     property OnMouseMove;
     property OnMouseUp;
-  {$IFDEF SYN_COMPILER_4_UP}
-  {$IFNDEF SYN_CLX}
     property OnStartDock;
-  {$ENDIF}
-  {$ENDIF}
     property OnStartDrag;
     // TCustomSynEdit properties
     property BookMarkOptions;
@@ -165,10 +151,8 @@ type
     property Gutter;
     property HideSelection;
     property Highlighter;
-{$IFNDEF SYN_CLX}
     property ImeMode;
     property ImeName;
-{$ENDIF}
     property InsertCaret;
     property InsertMode;
     property Keystrokes;
@@ -221,7 +205,6 @@ begin
   inherited Destroy;
 end;
 
-{$IFNDEF SYN_CLX}
 procedure TCustomDBSynEdit.CMEnter(var Msg: TCMEnter);
 begin
   SetEditing(True);
@@ -244,7 +227,6 @@ procedure TCustomDBSynEdit.CMGetDataLink(var Msg: TMessage);
 begin
   Msg.Result := Integer(FDataLink);
 end;
-{$ENDIF}
 
 procedure TCustomDBSynEdit.DataChange(Sender: TObject);
 begin
@@ -255,11 +237,9 @@ begin
       FBeginEdit := False;
       Exit;
     end;
-{$IFDEF SYN_COMPILER_3_UP}
     if FDataLink.Field.IsBlob then
       LoadMemo
     else
-{$ENDIF}
       Text := FDataLink.Field.Text;
     if Assigned(FLoadData) then
       FLoadData(Self);

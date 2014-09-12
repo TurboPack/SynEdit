@@ -1470,8 +1470,6 @@ begin
 //  (CurrentEditor as TCustomSynEdit).UpdateCaret;
 end;
 
-{$IFNDEF SYN_CLX}
-{$IFDEF SYN_DELPHI_4_UP}
 function TSynBaseCompletionProposalForm.CanResize(var NewWidth, NewHeight: Integer): Boolean;
 var
   NewLinesInWindow: Integer;
@@ -1502,8 +1500,6 @@ begin
   ctParams:;
   end;
 end;
-{$ENDIF}
-{$ENDIF}
 
 procedure TSynBaseCompletionProposalForm.Resize;
 begin
@@ -1944,7 +1940,6 @@ begin
       end;
 end;
 
-{$IFNDEF SYN_CLX}
 procedure TSynBaseCompletionProposalForm.WMActivate(var Message: TWMActivate);
 var
   ParentForm: TSynForm;
@@ -1970,7 +1965,6 @@ begin
   else
     DoKeyPressW(KeyUnicode(AnsiChar(Msg.CharCode)));
 end;
-{$ENDIF}
 
 procedure TSynBaseCompletionProposalForm.DoFormHide(Sender: TObject);
 begin
@@ -2061,29 +2055,17 @@ begin
 
       if FAssignedList.Count - FLinesInWindow < 0 then
       begin
-        {$IFNDEF SYN_CLX}
-        {$IFDEF SYN_DELPHI_4_UP}
         FScrollbar.PageSize := 0;
-        {$ENDIF}
-        {$ENDIF}
         FScrollbar.Max := 0;
         FScrollbar.Enabled := False;
       end else
       begin
-        {$IFNDEF SYN_CLX}
-        {$IFDEF SYN_DELPHI_4_UP}
         FScrollbar.PageSize := 0;
-        {$ENDIF}
-        {$ENDIF}
         FScrollbar.Max := FAssignedList.Count - FLinesInWindow;
         if FScrollbar.Max <> 0 then
         begin
           FScrollbar.LargeChange := FLinesInWindow;
-          {$IFNDEF SYN_CLX}
-          {$IFDEF SYN_DELPHI_4_UP}
           FScrollbar.PageSize := 1;
-          {$ENDIF}
-          {$ENDIF}
           FScrollbar.Enabled := True;
         end else
           FScrollbar.Enabled := False;
@@ -2333,14 +2315,9 @@ begin
 
       RecalcFormPlacement;
 
-      {$IFNDEF SYN_CLX}
 //      ShowWindow(Form.Handle, SW_SHOWNOACTIVATE);
       ShowWindow(Form.Handle, SW_SHOWNA);
       Form.Visible := True;
-      {$ELSE}
-      Form.Show;
-      (Form.CurrentEditor as TCustomSynEdit).SetFocus;
-      {$ENDIF}
       Form.Repaint;
     end;
   end;

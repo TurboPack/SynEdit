@@ -370,7 +370,6 @@ begin
   Result := FVisitedURIs.Find(URI, Dummy);
 end;
 
-{$IFNDEF SYN_CLX}
 const
   IDC_LINK = MakeIntResource(32649);
 
@@ -381,6 +380,5 @@ initialization
   CursorHandle := LoadCursor(0, IDC_LINK);
   if CursorHandle <> 0 then
     Screen.Cursors[crHandPoint] := CursorHandle;
-{$ENDIF}
 
 end.
