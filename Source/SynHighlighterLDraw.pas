@@ -227,14 +227,6 @@ begin
 end;
 
 constructor TSynLDRSyn.Create(AOwner: TComponent);
-
-  {$IFDEF SYN_KYLIX}
-  function RGB(r, g, b: Byte): LongWord;
-  begin
-    Result := (r or (g shl 8) or (b shl 16));
-  end;
-  {$ENDIF}
-
 begin
   inherited Create(AOwner);
   fColorAttri := TSynHighLighterAttributes.Create(SYNS_AttrColor, SYNS_FriendlyAttrColor);

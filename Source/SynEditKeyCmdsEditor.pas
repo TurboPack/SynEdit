@@ -316,13 +316,8 @@ var
           on ESynKeyError do
             begin
               // Shortcut already exists in the collection!
-              {$IFDEF SYN_KYLIX}
-              MessageDlg(Format(SYNS_DuplicateShortcutMsg2,
-                [QMenus.ShortCutToText(Keystroke)]), mtError, [mbOK], 0);
-              {$ELSE}
               MessageDlg(Format(SYNS_DuplicateShortcutMsg2,
                 [Menus.ShortCutToText(Keystroke)]), mtError, [mbOK], 0);
-              {$ENDIF}
             end;
           // Some other kind of exception, we don't deal with it...
         end;
