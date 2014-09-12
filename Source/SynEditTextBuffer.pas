@@ -152,12 +152,8 @@ type
     procedure InsertLines(Index, NumLines: integer);
     procedure InsertStrings(Index: integer; NewStrings: TUnicodeStrings);
     procedure InsertText(Index: integer; NewText: UnicodeString);
-{$IFDEF UNICODE}
     procedure SaveToStream(Stream: TStream; Encoding: TEncoding); override;
     function GetSeparatedText(Separators: UnicodeString): UnicodeString;
-{$ELSE}
-    procedure SaveToStream(Stream: TStream; WithBOM: Boolean = True); override;
-{$ENDIF}
     procedure SetTextStr(const Value: UnicodeString); override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure FontChanged;
@@ -630,7 +626,6 @@ begin
     Result := nil;
 end;
 
-{$IFDEF UNICODE}
 function TSynEditStringList.GetSeparatedText(Separators: UnicodeString): UnicodeString;
 {Optimized by Eric Grange}
 var
@@ -688,7 +683,6 @@ begin
     Inc(PRec);
   end;
 end;
-{$ENDIF}
 
 function TSynEditStringList.GetTextStr: UnicodeString;
 var
@@ -841,21 +835,12 @@ begin
   FStreaming := False;
 end;
 
-{$IFDEF UNICODE}
 procedure TSynEditStringList.SaveToStream(Stream: TStream; Encoding: TEncoding);
 begin
   FStreaming := True;
   inherited;
   FStreaming := False;
 end;
-{$ELSE}
-procedure TSynEditStringList.SaveToStream(Stream: TStream; WithBOM: Boolean);
-begin
-  FStreaming := True;
-  inherited;
-  FStreaming := False;
-end;
-{$ENDIF}
 
 procedure TSynEditStringList.Put(Index: integer; const S: UnicodeString);
 begin
@@ -919,7 +904,6 @@ end;
 procedure TSynEditStringList.SetFileFormat(const Value: TSynEditFileFormat);
 begin
   fFileFormat := Value;
-{$IFDEF UNICODE}
   case FileFormat of
     sffDos:
       LineBreak := WideCRLF;
@@ -930,7 +914,6 @@ begin
     sffUnicode:
       LineBreak := WideLineSeparator;
   end;
-{$ENDIF}
 end;
 
 {$IFDEF OWN_UnicodeString_MEMMGR}

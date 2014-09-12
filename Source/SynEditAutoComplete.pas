@@ -186,9 +186,6 @@ end;
 procedure TCustomSynAutoComplete.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 procedure TCustomSynAutoComplete.Execute(AEditor: TCustomSynEdit);

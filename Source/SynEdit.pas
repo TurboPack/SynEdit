@@ -9872,9 +9872,6 @@ var
   iSaveKeyData: Boolean;
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
   iSaveKeyData := HasKeyData;
   Filer.DefineProperty('RemovedKeystrokes', ReadRemovedKeystrokes,
     WriteRemovedKeystrokes, iSaveKeyData);

@@ -130,17 +130,9 @@ type
   end;
 
 function LoadDFMFile2Strings(const AFile: UnicodeString; AStrings: TUnicodeStrings;
-  var WasText: Boolean): Integer; {$IFNDEF UNICODE} overload; {$ENDIF}
-{$IFNDEF UNICODE}
-function LoadDFMFile2Strings(const AFile: string; AStrings: TStrings;
-  var WasText: Boolean): Integer; overload;
-{$ENDIF}
+  var WasText: Boolean): Integer;
 function SaveStrings2DFMFile(AStrings: TUnicodeStrings;
-  const AFile: UnicodeString): Integer; {$IFNDEF UNICODE} overload; {$ENDIF}
-{$IFNDEF UNICODE}
-function SaveStrings2DFMFile(AStrings: TStrings;
-  const AFile: string): Integer; overload;
-{$ENDIF}
+  const AFile: UnicodeString): Integer;
 
 implementation
 
@@ -180,58 +172,15 @@ begin
   end;
 end;
 
-{$IFNDEF UNICODE}
-function LoadDFMFile2Strings(const AFile: string; AStrings: TStrings;
-  var WasText: Boolean): Integer;
-var
-  Src, Dest: TStream;
-  origFormat: TStreamOriginalFormat;
-begin
-  Result := 0;
-  WasText := FALSE;
-  AStrings.Clear;
-  try
-    Src := TFileStream.Create(AFile, fmOpenRead or fmShareDenyWrite);
-    try
-      Dest := TMemoryStream.Create;
-      try
-        origFormat := sofUnknown;
-        ObjectResourceToText(Src, Dest, origFormat);
-        WasText := origFormat = sofText;
-        Dest.Seek(0, soFromBeginning);
-        AStrings.LoadFromStream(Dest);
-      finally
-        Dest.Free;
-      end;
-    finally
-      Src.Free;
-    end;
-  except
-    on E: EInOutError do Result := -E.ErrorCode;
-    else Result := -1;
-  end;
-end;
-{$ENDIF}
-
 function SaveStrings2DFMFile(AStrings: TUnicodeStrings; const AFile: UnicodeString): Integer;
 var
   Src, Dest: TStream;
-{$IFNDEF UNICODE}
-  OldSaveUnicode: Boolean;
-{$ENDIF}
 begin
   Result := 0;
   try
     Src := TMemoryStream.Create;
     try
-{$IFNDEF UNICODE}
-      OldSaveUnicode := AStrings.SaveUnicode;
-      AStrings.SaveUnicode := False;
-{$ENDIF}
       AStrings.SaveToStream(Src);
-{$IFNDEF UNICODE}
-      AStrings.SaveUnicode := OldSaveUnicode;
-{$ENDIF}
       Src.Seek(0, soFromBeginning);
       Dest := TWideFileStream.Create(AFile, fmCreate);
       try
@@ -247,33 +196,6 @@ begin
     else Result := -1;
   end;
 end;
-
-{$IFNDEF UNICODE}
-function SaveStrings2DFMFile(AStrings: TStrings; const AFile: string): Integer;
-var
-  Src, Dest: TStream;
-begin
-  Result := 0;
-  try
-    Src := TMemoryStream.Create;
-    try
-      AStrings.SaveToStream(Src);
-      Src.Seek(0, soFromBeginning);
-      Dest := TFileStream.Create(AFile, fmCreate);
-      try
-        ObjectTextToResource(Src, Dest);
-      finally
-        Dest.Free;
-      end;
-    finally
-      Src.Free;
-    end;
-  except
-    on E: EInOutError do Result := -E.ErrorCode;
-    else Result := -1;
-  end;
-end;
-{$ENDIF}
 
 { TSynDfmSyn }
 

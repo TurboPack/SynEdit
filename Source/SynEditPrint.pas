@@ -283,9 +283,6 @@ end;
 procedure TSynEditPrint.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 procedure TSynEditPrint.SetLines(const Value: TUnicodeStrings);

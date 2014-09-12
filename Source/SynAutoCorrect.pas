@@ -492,9 +492,6 @@ end;
 procedure TCustomSynAutoCorrect.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 procedure TCustomSynAutoCorrect.Delete(AIndex: Integer);

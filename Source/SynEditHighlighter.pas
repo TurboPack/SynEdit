@@ -921,9 +921,6 @@ end;
 procedure TSynCustomHighlighter.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 function TSynCustomHighlighter.GetAttribCount: Integer;

@@ -1099,9 +1099,6 @@ end;
 procedure TProposalColumn.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 constructor TProposalColumns.Create(AOwner: TPersistent; ItemClass: TCollectionItemClass);
@@ -2437,9 +2434,6 @@ end;
 procedure TSynBaseCompletionProposal.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 function TSynBaseCompletionProposal.GetClBack: TColor;

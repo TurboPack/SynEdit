@@ -1003,9 +1003,6 @@ end;
 procedure TScheme.DefineProperties(Filer: TFiler);
 begin
   inherited;
-{$IFNDEF UNICODE}
-  UnicodeDefineProperties(Filer, Self);
-{$ENDIF}
 end;
 
 function TScheme.GetDisplayName: string;
