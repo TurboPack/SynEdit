@@ -107,6 +107,9 @@ implementation
 
 {$R *.dfm}
 
+uses
+  UITypes;
+
 { TSynEditPrintMarginsDlg }
 
 procedure TSynEditPrintMarginsDlg.FormCreate(Sender: TObject);

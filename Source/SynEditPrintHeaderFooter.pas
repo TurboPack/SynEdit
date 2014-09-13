@@ -225,6 +225,7 @@ type
 implementation
 
 uses
+  UITypes,
   Math,
   SynEditMiscProcs;
 

@@ -150,7 +150,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  Types, SynEditStrConst;
 
 const
   MARGIN_X = 12; // margin width left and right of page

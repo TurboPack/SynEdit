@@ -232,7 +232,7 @@ type
 implementation
 
 uses
-  Math;
+  Math, UITypes;
 
 { TSynEditPrint }
 

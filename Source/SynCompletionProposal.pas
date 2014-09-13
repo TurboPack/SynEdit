@@ -548,6 +548,8 @@ function PrettyTextToFormattedString(const APrettyText: UnicodeString;
 implementation
 
 uses
+  Types,
+  UITypes,
   Math,
   SynEditTextBuffer,
   SynEditMiscProcs,

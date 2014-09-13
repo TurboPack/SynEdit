@@ -140,6 +140,7 @@ procedure ReleasePluginCommand(aCmd: TSynEditorCommand);
 implementation
 
 uses
+  Types,
   Forms,
   SynEditTypes,
   SynEditMiscProcs,

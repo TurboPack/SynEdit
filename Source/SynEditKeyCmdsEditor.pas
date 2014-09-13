@@ -101,6 +101,8 @@ implementation
 {$R *.dfm}
 
 uses
+  Types,
+  UITypes,
   SynEditKeyCmdEditor,
   SynEditStrConst;
 

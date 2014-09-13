@@ -1029,6 +1029,7 @@ implementation
 {$R SynEdit.res}
 
 uses
+  Types,
   Consts,
   AnsiStrings,
   Clipbrd,

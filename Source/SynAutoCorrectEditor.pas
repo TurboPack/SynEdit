@@ -89,6 +89,9 @@ implementation
 
 {$R *.dfm}
 
+uses
+  Types;
+
 procedure TfrmAutoCorrectEditor.FormShow(Sender: TObject);
 begin
   lbxItems.Items.Assign(SynAutoCorrect.Items);

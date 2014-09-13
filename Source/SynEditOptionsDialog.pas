@@ -328,7 +328,7 @@ implementation
 {$R *.dfm}
 
 uses
-  SynEditKeyConst;
+  Types, SynEditKeyConst;
 
 { TSynEditOptionsDialog }
 

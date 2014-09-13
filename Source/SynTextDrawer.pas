@@ -261,10 +261,8 @@ function UniversalExtTextOut(DC: HDC; X, Y: Integer; Options: TTextOutOptions;
 
 implementation
 
-{$IFDEF SYN_UNISCRIBE}
 uses
-  SynUsp10;
-{$ENDIF}
+  Types, UITypes{$IFDEF SYN_UNISCRIBE}, SynUsp10{$ENDIF};
 
 var
   gFontsInfoManager: TheFontsInfoManager;

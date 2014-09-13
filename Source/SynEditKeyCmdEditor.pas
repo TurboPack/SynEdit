@@ -102,6 +102,9 @@ implementation
 
 {$R *.dfm}
 
+uses
+  UITypes;
+
 { TSynEditKeystrokeEditorForm }
 
 procedure TSynEditKeystrokeEditorForm.SetCommand(const Value: TSynEditorCommand);
