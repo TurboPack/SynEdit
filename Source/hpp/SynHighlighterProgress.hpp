@@ -106,6 +106,7 @@ protected:
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
+	__property Synhighlighterhashentries::TSynHashEntryList* Keywords = {read=fHashList};
 	__fastcall virtual TSynProgressSyn(System::Classes::TComponent* AOwner);
 	__fastcall virtual ~TSynProgressSyn(void);
 	virtual bool __fastcall GetEol(void);

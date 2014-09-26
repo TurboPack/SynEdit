@@ -72,7 +72,7 @@
         <_TCHARMapping>char</_TCHARMapping>
         <SanitizedProjectName>SynEditCD</SanitizedProjectName>
         <VerInfo_Locale>1031</VerInfo_Locale>
-        <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+        <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DynamicRTL>true</DynamicRTL>
         <UsePackages>true</UsePackages>
         <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
