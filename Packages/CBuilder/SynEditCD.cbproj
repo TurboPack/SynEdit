@@ -62,7 +62,7 @@
         <ILINK_LibraryPath>..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_AdditionalSwitches>-LUDesignIDE</DCC_AdditionalSwitches>
-        <DCC_HppOutput>..\..\source</DCC_HppOutput>
+        <DCC_HppOutput>..\..\source\hpp</DCC_HppOutput>
         <IncludePath>..\..\Source\;$(IncludePath)</IncludePath>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -133,29 +133,17 @@
         <TASM_Debugging>None</TASM_Debugging>
     </PropertyGroup>
     <ItemGroup>
-        <CppCompile Include="SynEditCD.cpp">
-            <BuildOrder>0</BuildOrder>
-        </CppCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPropertyReg.pas">
-            <BuildOrder>3</BuildOrder>
-        </DelphiCompile>
-        <ResFiles Include="..\..\source\SynEditReg.dcr">
-            <BuildOrder>5</BuildOrder>
-        </ResFiles>
-        <DelphiCompile Include="..\..\Source\SynEditReg.pas">
-            <BuildOrder>4</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterManager.pas">
-            <BuildOrder>6</BuildOrder>
-        </DelphiCompile>
-        <PackageImport Include="SynEditCR.bpi">
-            <BuildOrder>2</BuildOrder>
-        </PackageImport>
         <PackageImport Include="designide.bpi">
             <BuildOrder>7</BuildOrder>
         </PackageImport>
         <PackageImport Include="rtl.bpi">
             <BuildOrder>1</BuildOrder>
+        </PackageImport>
+        <CppCompile Include="SynEditCD.cpp">
+            <BuildOrder>0</BuildOrder>
+        </CppCompile>
+        <PackageImport Include="SynEditCR.bpi">
+            <BuildOrder>2</BuildOrder>
         </PackageImport>
         <PackageImport Include="vcl.bpi">
             <BuildOrder>9</BuildOrder>
@@ -172,6 +160,18 @@
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>10</BuildOrder>
         </PackageImport>
+        <DelphiCompile Include="..\..\Source\SynEditPropertyReg.pas">
+            <BuildOrder>3</BuildOrder>
+        </DelphiCompile>
+        <ResFiles Include="..\..\source\SynEditReg.dcr">
+            <BuildOrder>5</BuildOrder>
+        </ResFiles>
+        <DelphiCompile Include="..\..\Source\SynEditReg.pas">
+            <BuildOrder>4</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\SynHighlighterManager.pas">
+            <BuildOrder>6</BuildOrder>
+        </DelphiCompile>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -217,6 +217,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\..\..\..\..\Public\Documents\Embarcadero\Studio\15.0\BPL\Package1.tds" Configuration="Debug" Class="DebugSymbols"/>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32160mt.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
@@ -256,7 +257,6 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\..\..\Public\Documents\Embarcadero\Studio\15.0\BPL\Package1.tds" Configuration="Debug" Class="DebugSymbols"/>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32160.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
