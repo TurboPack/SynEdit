@@ -70,7 +70,7 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <ILINK_GenerateLibFile>true</ILINK_GenerateLibFile>
         <SanitizedProjectName>SynEditCR</SanitizedProjectName>
-        <ILINK_Description>SynEdit component suite runtime</ILINK_Description>
+        <ILINK_Description>SynEdit CBuilder runtime package</ILINK_Description>
         <IncludePath>..\..\Source\;$(IncludePath)</IncludePath>
         <_TCHARMapping>char</_TCHARMapping>
         <Multithreaded>true</Multithreaded>
@@ -488,11 +488,11 @@
         <DelphiCompile Include="..\..\Source\SynURIOpener.pas">
             <BuildOrder>108</BuildOrder>
         </DelphiCompile>
+        <FormResources Include="..\..\Source\SynEditKeyCmdEditor.dfm"/>
         <FormResources Include="..\..\Source\SynEditOptionsDialog.dfm"/>
-        <FormResources Include="..\..\Source\SynEditPrintMarginsDialog.dfm"/>
         <FormResources Include="..\..\Source\SynEditKeyCmdsEditor.dfm"/>
         <FormResources Include="..\..\Source\SynAutoCorrectEditor.dfm"/>
-        <FormResources Include="..\..\Source\SynEditKeyCmdEditor.dfm"/>
+        <FormResources Include="..\..\Source\SynEditPrintMarginsDialog.dfm"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -527,8 +527,9 @@
                 </Excluded_Packages>
             </CPlusPlusBuilder.Personality>
             <Deployment>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64160.dll" Class="DependencyModule">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\15.0\Bpl\Win64\SynEditCR.bpl" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win64">
+                        <RemoteName>SynEditCR.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -587,9 +588,8 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\15.0\Bpl\Win64\SynEditCR.bpl" Configuration="Release" Class="ProjectOutput">
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64160.dll" Class="DependencyModule">
                     <Platform Name="Win64">
-                        <RemoteName>SynEditCR.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

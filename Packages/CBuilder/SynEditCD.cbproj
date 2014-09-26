@@ -67,7 +67,7 @@
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <DesignOnlyPackage>true</DesignOnlyPackage>
-        <ILINK_Description>SynEdit component suite</ILINK_Description>
+        <ILINK_Description>SynEdit CBuilder designtime package</ILINK_Description>
         <Multithreaded>true</Multithreaded>
         <_TCHARMapping>char</_TCHARMapping>
         <SanitizedProjectName>SynEditCD</SanitizedProjectName>

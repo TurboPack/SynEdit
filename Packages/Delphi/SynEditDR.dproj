@@ -71,7 +71,7 @@
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_WriteableConstants>true</DCC_WriteableConstants>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_Description>SynEdit component suite runtime</DCC_Description>
+        <DCC_Description>SynEdit Delphi runtime package</DCC_Description>
         <GenPackage>true</GenPackage>
         <DCC_S>false</DCC_S>
         <DCC_N>false</DCC_N>
@@ -104,6 +104,8 @@
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Icon_MainIcon>SynEditDR.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
