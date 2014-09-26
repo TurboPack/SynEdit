@@ -57,23 +57,21 @@ implementation
 {$R *.dfm}
 
 uses
-{$IFDEF SYN_COMPILER_6_UP}
   StrUtils,
-{$ENDIF}
   SynGenUnit,
   SynUnicode;
 
 {$I primenumbers.inc}
 
 var
-  c, d, m: Cardinal;
+  m: Cardinal;
   FinalC, FinalD, FinalM: Cardinal;
   searching: Boolean;
-  KeyWords: array of UnicodeString;
+  KeyWords: array of string;
   HashKeyList: THashKeyList;
 
 {$Q-}
-function HashKey(const S: UnicodeString): Cardinal;
+function HashKey(const S: string; c, d: Cardinal): Cardinal;
 var
   i: Integer;
 begin
@@ -85,7 +83,7 @@ end;
 {$Q+}
 
 {$Q-}
-function FinalHashKey(const S: UnicodeString): Cardinal;
+function FinalHashKey(const S: string): Cardinal;
 var
   i: Integer;
 begin
@@ -168,8 +166,6 @@ end;
 
 procedure TFrmHashTableGen.FormShow(Sender: TObject);
 begin
-  c := 0;
-  d := 0;
   m := 0;
   FinalC := 0;
   FinalD := 0;
@@ -200,7 +196,7 @@ end;
 
 procedure TFrmHashTableGen.ButtonFindHashClick(Sender: TObject);
 var
-  i, j: Integer;
+  i, j, c, d: Integer;
   collided: Boolean;
   Key, smallestM: Cardinal;
 
@@ -248,7 +244,7 @@ begin
         end;
         for i := Low(KeyWords) to High(KeyWords) do
         begin
-          Key := HashKey(KeyWords[i]);
+          Key := HashKey(KeyWords[i], c, d);
           collided := HashKeyList.Add(Key);
           if collided then
           begin
@@ -341,7 +337,7 @@ begin
   // write KeyWords
   if not CaseSensitive then
     Result := Result + '  // as this language is case-insensitive keywords *must* be in lowercase'#13#10;
-  Result := Result + Format('  KeyWords: array[0..%d] of UnicodeString = (', [High(KeyWords)]) + #13#10;
+  Result := Result + Format('  KeyWords: array[0..%d] of string = (', [High(KeyWords)]) + #13#10;
   sl := TStringList.Create;
   try
     for i := Low(KeyWords) to High(KeyWords) do
