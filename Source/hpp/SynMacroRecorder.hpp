@@ -211,6 +211,10 @@ private:
 	TSynMacroEvent* __fastcall GetEvent(int aIndex);
 	int __fastcall GetEventCount(void);
 	System::UnicodeString __fastcall GetAsString(void);
+	Syneditkeycmds::TSynEditorCommand __fastcall GetPlaybackCommandID(void);
+	System::Classes::TShortCut __fastcall GetPlaybackShortCut(const int Index);
+	Syneditkeycmds::TSynEditorCommand __fastcall GetRecordCommandID(void);
+	System::Classes::TShortCut __fastcall GetRecordShortCut(const int Index);
 	void __fastcall SetAsString(const System::UnicodeString Value);
 	
 protected:
@@ -225,8 +229,8 @@ protected:
 	virtual void __fastcall DoRemoveEditor(Synedit::TCustomSynEdit* aEditor);
 	virtual void __fastcall OnCommand(System::TObject* Sender, bool AfterProcessing, bool &Handled, Syneditkeycmds::TSynEditorCommand &Command, System::WideChar &aChar, void * Data, void * HandlerData);
 	TSynMacroEvent* __fastcall CreateMacroEvent(Syneditkeycmds::TSynEditorCommand aCmd);
-	__property Syneditkeycmds::TSynEditorCommand RecordCommandID = {read=fCommandIDs[0], nodefault};
-	__property Syneditkeycmds::TSynEditorCommand PlaybackCommandID = {read=fCommandIDs[1], nodefault};
+	__property Syneditkeycmds::TSynEditorCommand RecordCommandID = {read=GetRecordCommandID, nodefault};
+	__property Syneditkeycmds::TSynEditorCommand PlaybackCommandID = {read=GetPlaybackCommandID, nodefault};
 	
 public:
 	__fastcall virtual TCustomSynMacroRecorder(System::Classes::TComponent* aOwner);
@@ -254,8 +258,8 @@ public:
 	void __fastcall SaveToFile(System::UnicodeString aFilename);
 	__property int EventCount = {read=GetEventCount, nodefault};
 	__property TSynMacroEvent* Events[int aIndex] = {read=GetEvent};
-	__property System::Classes::TShortCut RecordShortCut = {read=fShortCuts[0], write=SetShortCut, index=0, nodefault};
-	__property System::Classes::TShortCut PlaybackShortCut = {read=fShortCuts[1], write=SetShortCut, index=1, nodefault};
+	__property System::Classes::TShortCut RecordShortCut = {read=GetRecordShortCut, write=SetShortCut, index=0, nodefault};
+	__property System::Classes::TShortCut PlaybackShortCut = {read=GetPlaybackShortCut, write=SetShortCut, index=1, nodefault};
 	__property bool SaveMarkerPos = {read=fSaveMarkerPos, write=fSaveMarkerPos, default=0};
 	__property System::UnicodeString AsString = {read=GetAsString, write=SetAsString};
 	__property System::UnicodeString MacroName = {read=fMacroName, write=fMacroName};

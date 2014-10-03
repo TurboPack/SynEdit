@@ -178,6 +178,10 @@ type
     function GetEvent(aIndex: integer): TSynMacroEvent;
     function GetEventCount: integer;
     function GetAsString: UnicodeString;
+    function GetPlaybackCommandID: TSynEditorCommand;
+    function GetPlaybackShortCut(const Index: Integer): TShortCut;
+    function GetRecordCommandID: TSynEditorCommand;
+    function GetRecordShortCut(const Index: Integer): TShortCut;
     procedure SetAsString(const Value: UnicodeString);
   protected
     fCurrentEditor: TCustomSynEdit;
@@ -194,8 +198,8 @@ type
       Data: pointer; HandlerData: pointer); override;
     function CreateMacroEvent(aCmd: TSynEditorCommand): TSynMacroEvent;
   protected
-    property RecordCommandID: TSynEditorCommand read fCommandIDs[mcRecord];
-    property PlaybackCommandID: TSynEditorCommand read fCommandIDs[mcPlayback];
+    property RecordCommandID: TSynEditorCommand read GetRecordCommandID;
+    property PlaybackCommandID: TSynEditorCommand read GetPlaybackCommandID;
   public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
@@ -223,10 +227,8 @@ type
     procedure SaveToFile(aFilename : string);
     property EventCount: integer read GetEventCount;
     property Events[aIndex: integer]: TSynMacroEvent read GetEvent;
-    property RecordShortCut: TShortCut index Ord(mcRecord)
-      read fShortCuts[mcRecord] write SetShortCut;
-    property PlaybackShortCut: TShortCut index Ord(mcPlayback)
-      read fShortCuts[mcPlayback] write SetShortCut;
+    property RecordShortCut: TShortCut index Ord(mcRecord) read GetRecordShortCut write SetShortCut;
+    property PlaybackShortCut: TShortCut index Ord(mcPlayback) read GetPlaybackShortCut write SetShortCut;
     property SaveMarkerPos: boolean read fSaveMarkerPos
       write fSaveMarkerPos default False;
     property AsString: UnicodeString read GetAsString write SetAsString;
@@ -643,6 +645,26 @@ begin
     end;
   end;
   Result := Result + 'end';
+end;
+
+function TCustomSynMacroRecorder.GetPlaybackCommandID: TSynEditorCommand;
+begin
+  Result := fCommandIDs[mcPlayback];
+end;
+
+function TCustomSynMacroRecorder.GetPlaybackShortCut(const Index: Integer): TShortCut;
+begin
+  Result := fShortCuts[mcPlayback];
+end;
+
+function TCustomSynMacroRecorder.GetRecordCommandID: TSynEditorCommand;
+begin
+  Result := fCommandIDs[mcRecord];
+end;
+
+function TCustomSynMacroRecorder.GetRecordShortCut(const Index: Integer): TShortCut;
+begin
+  Result := fShortCuts[mcRecord];
 end;
 
 procedure TCustomSynMacroRecorder.SetAsString(const Value: UnicodeString);
