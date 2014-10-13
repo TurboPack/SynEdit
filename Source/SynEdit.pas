@@ -94,8 +94,8 @@ var
   SynEditClipboardFormat: UINT;
 
 type
-	TBufferCoord = SynEditTypes.TBufferCoord;
-	TDisplayCoord = SynEditTypes.TDisplayCoord;
+  TBufferCoord = SynEditTypes.TBufferCoord;
+  TDisplayCoord = SynEditTypes.TDisplayCoord;
 
   TSynBorderStyle = TBorderStyle;
 
@@ -6459,9 +6459,9 @@ begin
           MoveCaretAndSelection(CaretXY, CaretNew, Command = ecSelWordRight);
         end;
       ecSelWord:
-      	begin
-      	  SetSelWord;
-      	end;
+        begin
+          SetSelWord;
+        end;
       ecSelectAll:
         begin
           SelectAll;
@@ -6495,11 +6495,11 @@ begin
                     begin
                       BackCounter := CaretY - 2;
                       //It's better not to have if statement inside loop
-                      if (eoTrimTrailingSpaces in Options) and (Len = 0) then
+                      if (eoTrimTrailingSpaces in Options) then
                         while BackCounter >= 0 do
                         begin
                           SpaceCount2 := LeftSpacesEx(Lines[BackCounter], True);
-                          if SpaceCount2 < SpaceCount1 then
+                          if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
                             break;
                           Dec(BackCounter);
                         end
@@ -6507,7 +6507,7 @@ begin
                         while BackCounter >= 0 do
                         begin
                           SpaceCount2 := LeftSpaces(Lines[BackCounter]);
-                          if SpaceCount2 < SpaceCount1 then
+                          if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
                             break;
                           Dec(BackCounter);
                         end;
@@ -6553,13 +6553,23 @@ begin
                     if SpaceCount1 > 0 then
                     begin
                       BackCounter := CaretY - 2;
-                      while BackCounter >= 0 do
-                      begin
-                        SpaceCount2 := LeftSpaces(Lines[BackCounter]);
-                        if SpaceCount2 < SpaceCount1 then
-                          break;
-                        Dec(BackCounter);
-                      end;
+                      //It's better not to have if statement inside loop
+                      if (eoTrimTrailingSpaces in Options) then
+                        while BackCounter >= 0 do
+                        begin
+                          SpaceCount2 := LeftSpacesEx(Lines[BackCounter], True);
+                          if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
+                            break;
+                          Dec(BackCounter);
+                        end
+                      else
+                        while BackCounter >= 0 do
+                        begin
+                          SpaceCount2 := LeftSpaces(Lines[BackCounter]);
+                          if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
+                            break;
+                          Dec(BackCounter);
+                        end;
                       if (BackCounter = -1) and (SpaceCount2 > SpaceCount1) then
                         SpaceCount2 := 0;
                     end;
