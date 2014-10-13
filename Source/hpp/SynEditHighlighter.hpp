@@ -68,6 +68,7 @@ public:
 	bool __fastcall SaveToRegistry(Syneditmiscclasses::TBetterRegistry* Reg);
 	bool __fastcall LoadFromFile(System::Inifiles::TIniFile* Ini);
 	bool __fastcall SaveToFile(System::Inifiles::TIniFile* Ini);
+	void __fastcall SetColors(System::Uitypes::TColor Foreground, System::Uitypes::TColor Background);
 	__property System::UnicodeString FriendlyName = {read=fFriendlyName};
 	__property int IntegerStyle = {read=GetStyleFromInt, write=SetStyleFromInt, nodefault};
 	__property System::UnicodeString Name = {read=fName};
