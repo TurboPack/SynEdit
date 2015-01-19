@@ -156,7 +156,7 @@ end;
 
 function TSynExporterHTML.ColorToHTML(AColor: TColor): string;
 var
-  RGBColor: longint;
+  RGBColor: Integer;
   RGBValue: byte;
 const
   Digits: array[0..15] of Char = '0123456789ABCDEF';

@@ -142,8 +142,8 @@ type
     { Private variables and methods }
     FPrevLine: Integer;
 
-    function CorrectItemStart(EditLine, SearchString: UnicodeString; StartPos: LongInt;
-      MatchCase, WholeWord: Boolean): LongInt;
+    function CorrectItemStart(EditLine, SearchString: UnicodeString; StartPos: Integer;
+      MatchCase, WholeWord: Boolean): Integer;
     function FindAndCorrect(var EditLine: UnicodeString; Original, Correction: UnicodeString;
       var CurrentX: Integer): Boolean;
     function PreviousToken: UnicodeString;
@@ -389,7 +389,7 @@ begin
 end;
 
 function TCustomSynAutoCorrect.CorrectItemStart(EditLine, SearchString: UnicodeString;
-  StartPos: LongInt; MatchCase, WholeWord: Boolean): LongInt;
+  StartPos: Integer; MatchCase, WholeWord: Boolean): Integer;
 var
   SearchCount, I: Integer;
   CurBuf, Buf: PWideChar;
@@ -586,7 +586,7 @@ end;
 function TCustomSynAutoCorrect.FindAndCorrect(var EditLine: UnicodeString;
   Original, Correction: UnicodeString; var CurrentX: Integer): Boolean;
 var
-  StartPos: LongInt;
+  StartPos: Integer;
   EndPos: Integer;
   FoundText, ReplaceDefText: UnicodeString;
   p: TBufferCoord;

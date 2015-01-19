@@ -127,7 +127,7 @@ begin
     FontDialog.Options := FontDialog.Options + [fdShowHelp, fdForceFontExist,
        fdFixedPitchOnly];
     if FontDialog.Execute then
-      SetOrdValue(Longint(FontDialog.Font));
+      SetOrdValue(NativeInt(FontDialog.Font));
   finally
     FontDialog.Free;
   end;
@@ -158,7 +158,7 @@ end;
 
 procedure TSynEditCommandProperty.SetValue(const Value: string);
 var
-  NewValue: longint;
+  NewValue: Integer;
 begin
   if IdentToEditorCommand(Value, NewValue) then
     SetOrdValue(NewValue)
@@ -179,7 +179,7 @@ begin
     if Dlg.ShowModal = mrOk then
     begin
       { SetOrdValue will operate on all selected propertiy values }
-      SetOrdValue(Longint(Dlg.Keystrokes));
+      SetOrdValue(NativeInt(Dlg.Keystrokes));
       Modified;
     end;
   finally

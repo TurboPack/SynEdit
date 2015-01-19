@@ -820,8 +820,8 @@ function ScriptShape(
 type
   PGOffset = ^TGOffset;
   tagGOFFSET = record
-    du:  Longint;
-    dv:  Longint;
+    du:  Integer;
+    dv:  Integer;
   end;
   GOFFSET = tagGOFFSET;
   {$EXTERNALSYM GOFFSET}
@@ -1645,7 +1645,7 @@ function ScriptGetFontProperties(
 function ScriptCacheGetHeight(
     hdc: HDC;            // In    Optional (see notes on caching)
     psc: PScriptCache;   // InOut Address of Cache handle
-    tmHeight: PLongint   // Out   Receives font height in pixels
+    tmHeight: PInteger   // Out   Receives font height in pixels
  ): HRESULT; stdcall;
 
 

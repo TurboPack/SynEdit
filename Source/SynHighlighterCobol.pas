@@ -81,9 +81,9 @@ type
     fTokenID: TtkTokenKind;
     fIndicator: WideChar;
 
-    fCodeStartPos: LongInt;
-    fCodeMediumPos: LongInt;
-    fCodeEndPos: LongInt;
+    fCodeStartPos: Integer;
+    fCodeMediumPos: Integer;
+    fCodeEndPos: Integer;
 
     fCommentAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
@@ -122,9 +122,9 @@ type
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
 
-    procedure SetCodeStartPos(Value: LongInt);
-    procedure SetCodeMediumPos(Value: LongInt);
-    procedure SetCodeEndPos(Value: LongInt);
+    procedure SetCodeStartPos(Value: Integer);
+    procedure SetCodeMediumPos(Value: Integer);
+    procedure SetCodeEndPos(Value: Integer);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -155,9 +155,9 @@ type
     property TagAreaAttri: TSynHighlighterAttributes read fTagAreaAttri write fTagAreaAttri;
     property DebugLinesAttri: TSynHighlighterAttributes read fDebugLinesAttri write fDebugLinesAttri;
 
-    property AreaAStartPos: LongInt read fCodeStartPos write SetCodeStartPos;
-    property AreaBStartPos: LongInt read fCodeMediumPos write SetCodeMediumPos;
-    property CodeEndPos: LongInt read fCodeEndPos write SetCodeEndPos;
+    property AreaAStartPos: Integer read fCodeStartPos write SetCodeStartPos;
+    property AreaBStartPos: Integer read fCodeMediumPos write SetCodeMediumPos;
+    property CodeEndPos: Integer read fCodeEndPos write SetCodeEndPos;
   end;
 
 implementation
@@ -275,7 +275,7 @@ end;
 
 function TSynCobolSyn.HashKey(Str: PWideChar): Integer;
 var
-  fRun: LongInt;
+  fRun: Integer;
 
   function GetOrd: Integer;
   begin
@@ -872,7 +872,7 @@ begin
   end;
 end;
 
-procedure TSynCobolSyn.SetCodeStartPos(Value: LongInt);
+procedure TSynCobolSyn.SetCodeStartPos(Value: Integer);
 begin
   if Value < fCodeMediumPos then
     fCodeStartPos := Value
@@ -880,7 +880,7 @@ begin
     fCodeStartPos := fCodeMediumPos;
 end;
 
-procedure TSynCobolSyn.SetCodeMediumPos(Value: LongInt);
+procedure TSynCobolSyn.SetCodeMediumPos(Value: Integer);
 begin
   if (fCodeStartPos <= Value) and (Value <= fCodeEndPos) then
     fCodeMediumPos := Value
@@ -890,7 +890,7 @@ begin
     else fCodeMediumPos := fCodeStartPos;
 end;
 
-procedure TSynCobolSyn.SetCodeEndPos(Value: LongInt);
+procedure TSynCobolSyn.SetCodeEndPos(Value: Integer);
 begin
   if Value > fCodeMediumPos then
     fCodeEndPos := Value

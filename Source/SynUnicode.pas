@@ -875,7 +875,7 @@ end;
 procedure TextRect(ACanvas: TCanvas; Rect: TRect; X, Y: Integer;
   const Text: UnicodeString);
 var
-  Options: Longint;
+  Options: Integer;
 begin
   with TAccessCanvas(ACanvas) do
   begin

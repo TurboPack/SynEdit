@@ -71,7 +71,7 @@ type
 type
   TSynCacheSyn = class(TSynCustomHighlighter)
   private
-    fBrace: LongInt;
+    fBrace: Integer;
     fFirstBrace: Boolean;
     fRange: TRangeState;
     FTokenID: TtkTokenKind;

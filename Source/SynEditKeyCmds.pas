@@ -272,8 +272,8 @@ function EditorCommandToDescrString(Cmd: TSynEditorCommand): string;
 function EditorCommandToCodeString(Cmd: TSynEditorCommand): string;
 procedure GetEditorCommandValues(Proc: TGetStrProc);
 procedure GetEditorCommandExtended(Proc: TGetStrProc);
-function IdentToEditorCommand(const Ident: string; var Cmd: longint): Boolean;
-function EditorCommandToIdent(Cmd: longint; var Ident: string): Boolean;
+function IdentToEditorCommand(const Ident: string; var Cmd: Integer): Boolean;
+function EditorCommandToIdent(Cmd: Integer; var Ident: string): Boolean;
 function ConvertCodeStringToExtended(AString: string): string;
 function ConvertExtendedToCodeString(AString: string): string;
 function ConvertExtendedToCommand(AString: string): TSynEditorCommand;
@@ -409,12 +409,12 @@ begin
     Proc(ConvertCodeStringToExtended(EditorCommandStrs[I].Name));
 end;
 
-function IdentToEditorCommand(const Ident: string; var Cmd: longint): boolean;
+function IdentToEditorCommand(const Ident: string; var Cmd: Integer): boolean;
 begin
     Result := IdentToInt(Ident, Cmd, EditorCommandStrs);
 end;
 
-function EditorCommandToIdent(Cmd: longint; var Ident: string): boolean;
+function EditorCommandToIdent(Cmd: Integer; var Ident: string): boolean;
 begin
   Result := IntToIdent(Cmd, Ident, EditorCommandStrs);
 end;

@@ -687,7 +687,7 @@ begin
       p := Pos(' ', cmdStr);
       if p = 0 then p := Length(cmdStr) + 1;
       Cmd := ecNone;
-      if IdentToEditorCommand(Copy(cmdStr, 1, p - 1), Longint(Cmd)) then  // D2 needs type-cast
+      if IdentToEditorCommand(Copy(cmdStr, 1, p - 1), Cmd) then  // D2 needs type-cast
       begin
         Delete(cmdStr, 1, p);
         iEvent := CreateMacroEvent(Cmd);

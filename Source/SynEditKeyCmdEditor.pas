@@ -140,7 +140,7 @@ end;
 
 function TSynEditKeystrokeEditorForm.GetCommand: TSynEditorCommand;
 var
-  NewCmd: longint;
+  NewCmd: Integer;
 begin
   cmbCommand.ItemIndex := cmbCommand.Items.IndexOf(cmbCommand.Text);
   if cmbCommand.ItemIndex <> -1 then

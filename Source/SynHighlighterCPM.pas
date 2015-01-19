@@ -2041,10 +2041,10 @@ end; { ResetRange }
 
 procedure TSynCPMSyn.SetRange(Value: Pointer);
 var
-  AValue: LongInt;
+  AValue: Integer;
 begin
   inherited;
-  AValue := Longint(Value);
+  AValue := NativeInt(Value);
   fCommentLevel := AValue div $10000;
   fRange := TRangeState(AValue mod $10000);
 end; { SetRange }
