@@ -628,16 +628,6 @@ begin
   end;
 end;
 
-procedure TSynHighlighterAttributes.SetColors(Foreground, Background: TColor);
-begin
-  if (fForeGround <> Foreground) or (fBackground <> Background) then
-  begin
-    fForeGround := Foreground;
-    fBackground := Background;
-    Changed;
-  end;
-end;
-
 procedure TSynHighlighterAttributes.SetForeground(Value: TColor);
 begin
   if fForeGround <> Value then

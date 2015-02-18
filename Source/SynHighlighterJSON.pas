@@ -29,27 +29,16 @@ You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
 }
 
-{$IFNDEF QSYNHIGHLIGHTERJSON}
 unit SynHighlighterJSON;
-{$ENDIF}
-
-{$I SynEdit.Inc}
 
 interface
 
 uses
-{$IFDEF SYN_CLX}
-  QGraphics,
-  QSynEditTypes,
-  QSynEditHighlighter,
-  QSynUnicode,
-{$ELSE}
   Graphics,
   Registry,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-{$ENDIF}
   SysUtils, Classes;
 
 type
@@ -120,12 +109,7 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditStrConst, Variants;
-{$ELSE}
   SynEditStrConst;
-{$ENDIF}
-
 
 { TSynJSONSyn }
 
@@ -536,7 +520,5 @@ begin
 end;
 
 initialization
-{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynJSONSyn);
-{$ENDIF}
 end.
