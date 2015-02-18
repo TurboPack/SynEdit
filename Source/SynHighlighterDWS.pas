@@ -737,17 +737,15 @@ end;
 procedure TSynDWSSyn.StringAposMultiProc;
 begin
   fTokenID := tkString;
-  if (Run>0) or IsLineEnd(Run+1) then
-     Inc(Run);
+  Inc(Run);
   fRange := rsHereDocSingle;
   while not IsLineEnd(Run) do
   begin
     if fLine[Run] = '''' then begin
       Inc(Run);
-      if fLine[Run] <> '''' then begin
+      if fLine[Run] <> '''' then
         fRange := rsUnknown;
         break;
-      end;
     end;
     Inc(Run);
   end;
@@ -756,17 +754,15 @@ end;
 procedure TSynDWSSyn.StringQuoteProc;
 begin
   fTokenID := tkString;
-  if (Run>0) or IsLineEnd(Run+1) then
-     Inc(Run);
+  Inc(Run);
   fRange := rsHereDocDouble;
   while not IsLineEnd(Run) do
   begin
     if fLine[Run] = '"' then begin
       Inc(Run);
-      if fLine[Run] <> '"' then begin
+      if fLine[Run] <> '"' then
         fRange := rsUnknown;
         break;
-      end;
     end;
     Inc(Run);
   end;

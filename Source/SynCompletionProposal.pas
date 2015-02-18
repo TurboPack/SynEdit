@@ -29,14 +29,10 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynCompletionProposal.pas,v 1.80.1.1 2013/06/25 10:31:19 codehunterworks Exp $
+$Id: SynCompletionProposal.pas,v 1.73.2.11 2008/09/17 13:59:11 maelh Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
-
-Last Changes:
-  1.80.1.1 - Removed TProposalColumn.BiggestWord and
-             added TProposalColumn.ColumnWidth (Static Column Width in Pixels)
 
 Known Issues:
 -------------------------------------------------------------------------------}
@@ -541,19 +537,20 @@ type
     property Options: TSynCompletionOptions read GetOptions write SetOptions default DefaultProposalOptions;
   end;
 
+
   TProposalColumn = class(TCollectionItem)
   private
-    FColumnWidth: Integer;
+    FBiggestWord: UnicodeString;
     FInternalWidth: Integer;
     FFontStyle: TFontStyles;
   protected
-    procedure DefineProperties(Filer: TFiler); override;
+    procedure DefineProperties(Filer: TFiler); override;    
   public
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
   published
-    property ColumnWidth: Integer read FColumnWidth write FColumnWidth;
+    property BiggestWord: UnicodeString read FBiggestWord write FBiggestWord;
     property DefaultFontStyle: TFontStyles read FFontStyle write FFontStyle default [];
   end;
 
@@ -985,7 +982,7 @@ begin
         begin
           if CurrentColumnIndex <= Columns.Count -1 then
           begin
-            inc(LastColumnStart, CurrentColumn.FColumnWidth);
+            inc(LastColumnStart, TextWidth(TargetCanvas, CurrentColumn.FBiggestWord+' '));
             X := LastColumnStart;
 
             inc(CurrentColumnIndex);
@@ -1119,7 +1116,7 @@ end;
 constructor TProposalColumn.Create(Collection: TCollection);
 begin
   inherited;
-  FColumnWidth := 100;
+  FBiggestWord := 'CONSTRUCTOR';
   FInternalWidth := -1;
   FFontStyle := [];
 end;
@@ -1133,7 +1130,7 @@ procedure TProposalColumn.Assign(Source: TPersistent);
 begin
   if Source is TProposalColumn then
   begin
-    FColumnWidth := TProposalColumn(Source).FColumnWidth;
+    FBiggestWord := TProposalColumn(Source).FBiggestWord;
     FInternalWidth := TProposalColumn(Source).FInternalWidth;
     FFontStyle := TProposalColumn(Source).FFontStyle;
   end
@@ -1521,7 +1518,7 @@ begin
 {$ENDIF}
 end;
 
-{.$MESSAGE 'Check what must be adapted in DoKeyPressW and related methods'}
+{$MESSAGE 'Check what must be adapted in DoKeyPressW and related methods'}
 procedure TSynBaseCompletionProposalForm.DoKeyPressW(Key: WideChar);
 begin
   if Key <> #0 then
@@ -3760,9 +3757,9 @@ begin
   FInternalCompletion.EndOfTokenChr := FEndOfTokenChr;
   FInternalCompletion.ShortCut := 0;
   FInternalCompletion.OnAfterCodeCompletion := DoInternalAutoCompletion;
-//  with FInternalCompletion.Columns.Add do
-//    //this is the trigger column
-//    BiggestWord := 'XXXXXXXX';
+  with FInternalCompletion.Columns.Add do
+    //this is the trigger column
+    BiggestWord := 'XXXXXXXX';
 end;
 
 function TSynAutoComplete.GetOptions: TSynCompletionOptions;
