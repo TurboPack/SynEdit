@@ -90,6 +90,7 @@ uses
   SynHighlighterInno,
   SynHighlighterJava,
   SynHighlighterJScript,
+  SynHighlighterJSON,
   SynHighlighterKix,
   SynHighlighterModelica,
   SynHighlighterM3,   
@@ -162,7 +163,7 @@ begin
     TSynM3Syn, TSynPasSyn, TSynVBSyn, TSynCobolSyn, TSynCSSyn,
     // internet
     TSynCssSyn, TSynHTMLSyn, TSynJScriptSyn, TSynPHPSyn, TSynVBScriptSyn,
-    TSynXMLSyn, TSynVrml97Syn,
+    TSynXMLSyn, TSynJSONSyn, TSynVrml97Syn,
     //interpreted
     TSynAWKSyn, TSynBATSyn,
     TSynDWSSyn,
