@@ -27,9 +27,9 @@
 namespace Synhighlightercss
 {
 //-- type declarations -------------------------------------------------------
-enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkComment, tkProperty, tkKey, tkNull, tkSpace, tkString, tkSymbol, tkText, tkUndefProperty, tkValue, tkColor, tkNumber, tkImportant };
+enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkComment, tkProperty, tkSelector, tkSelectorAttrib, tkNull, tkSpace, tkString, tkSymbol, tkText, tkUndefProperty, tkValue, tkColor, tkNumber, tkImportant };
 
-enum DECLSPEC_DENUM TRangeState : unsigned char { rsComment, rsKey, rsParam, rsText, rsUnKnown, rsValue };
+enum DECLSPEC_DENUM TRangeState : unsigned char { rsComment, rsSelector, rsDeclaration, rsUnknown, rsProperty, rsValue, rsAttrib, rsParameter };
 
 class DELPHICLASS TSynCssSyn;
 class PASCALIMPLEMENTATION TSynCssSyn : public Synedithighlighter::TSynCustomHighlighter
@@ -39,10 +39,12 @@ class PASCALIMPLEMENTATION TSynCssSyn : public Synedithighlighter::TSynCustomHig
 private:
 	TRangeState fRange;
 	TRangeState fCommentRange;
+	TRangeState fParameterRange;
 	TtkTokenKind fTokenID;
 	Synedithighlighter::TSynHighlighterAttributes* fCommentAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fPropertyAttri;
-	Synedithighlighter::TSynHighlighterAttributes* fKeyAttri;
+	Synedithighlighter::TSynHighlighterAttributes* fAttributeAttri;
+	Synedithighlighter::TSynHighlighterAttributes* fSelectorAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fSpaceAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fStringAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fColorAttri;
@@ -56,10 +58,15 @@ private:
 	void __fastcall DoAddKeyword(System::UnicodeString AKeyword, int AKind);
 	int __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall TextProc(void);
+	void __fastcall SelectorProc(void);
+	void __fastcall AttributeProc(void);
 	void __fastcall CommentProc(void);
 	void __fastcall BraceCloseProc(void);
 	void __fastcall BraceOpenProc(void);
+	void __fastcall ParenOpenProc(void);
+	void __fastcall ParenCloseProc(void);
+	void __fastcall BracketOpenProc(void);
+	void __fastcall BracketCloseProc(void);
 	void __fastcall CRProc(void);
 	void __fastcall SemiProc(void);
 	void __fastcall StartValProc(void);
@@ -71,12 +78,17 @@ private:
 	void __fastcall StringProc(void);
 	void __fastcall HashProc(void);
 	void __fastcall SlashProc(void);
+	void __fastcall GreaterProc(void);
+	void __fastcall PlusProc(void);
+	void __fastcall TildeProc(void);
+	void __fastcall PipeProc(void);
+	void __fastcall EqualProc(void);
 	void __fastcall ExclamProc(void);
 	
 protected:
 	virtual System::UnicodeString __fastcall GetSampleSource(void);
 	virtual bool __fastcall IsFilterStored(void);
-	void __fastcall NextProcedure(void);
+	void __fastcall NextDeclaration(void);
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
@@ -99,7 +111,8 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* PropertyAttri = {read=fPropertyAttri, write=fPropertyAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* ColorAttri = {read=fColorAttri, write=fColorAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* NumberAttri = {read=fNumberAttri, write=fNumberAttri};
-	__property Synedithighlighter::TSynHighlighterAttributes* KeyAttri = {read=fKeyAttri, write=fKeyAttri};
+	__property Synedithighlighter::TSynHighlighterAttributes* SelectorAttri = {read=fSelectorAttri, write=fSelectorAttri};
+	__property Synedithighlighter::TSynHighlighterAttributes* AttributeAttri = {read=fAttributeAttri, write=fAttributeAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* SpaceAttri = {read=fSpaceAttri, write=fSpaceAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* StringAttri = {read=fStringAttri, write=fStringAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* SymbolAttri = {read=fSymbolAttri, write=fSymbolAttri};

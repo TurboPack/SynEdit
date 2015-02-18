@@ -64,6 +64,7 @@
 #include <SynHighlighterInno.hpp>	// Pascal unit
 #include <SynHighlighterJava.hpp>	// Pascal unit
 #include <SynHighlighterJScript.hpp>	// Pascal unit
+#include <SynHighlighterJSON.hpp>	// Pascal unit
 #include <SynHighlighterKix.hpp>	// Pascal unit
 #include <SynHighlighterModelica.hpp>	// Pascal unit
 #include <SynHighlighterM3.hpp>	// Pascal unit

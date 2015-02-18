@@ -67,7 +67,6 @@ struct DECLSPEC_DRECORD TBufferCoord
 public:
 	int Char;
 	int Line;
-	static bool __fastcall _op_Equality(const TBufferCoord &a, const TBufferCoord &b);
 };
 
 
@@ -78,7 +77,6 @@ public:
 	int BeginChar;
 	int EndLine;
 	int EndChar;
-	static bool __fastcall _op_Equality(const TBufferBlock &a, const TBufferBlock &b);
 };
 
 
@@ -87,7 +85,6 @@ struct DECLSPEC_DRECORD TDisplayCoord
 public:
 	int Column;
 	int Row;
-	static bool __fastcall _op_Equality(const TDisplayCoord &a, const TDisplayCoord &b);
 };
 
 

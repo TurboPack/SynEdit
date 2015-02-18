@@ -25,7 +25,7 @@
 namespace Synhighlightermulti
 {
 //-- type declarations -------------------------------------------------------
-typedef void __fastcall (__closure *TOnCheckMarker)(System::TObject* Sender, int &StartPos, int &MarkerLen, System::UnicodeString &MarkerText, int Line);
+typedef void __fastcall (__closure *TOnCheckMarker)(System::TObject* Sender, int &StartPos, int &MarkerLen, System::UnicodeString &MarkerText, int Line, const System::UnicodeString LineStr);
 
 class DELPHICLASS TScheme;
 class PASCALIMPLEMENTATION TScheme : public System::Classes::TCollectionItem
@@ -148,7 +148,7 @@ private:
 	void __fastcall SetDefaultHighlighter(Synedithighlighter::TSynCustomHighlighter* const Value);
 	TMarker* __fastcall GetMarkers(int Index);
 	__property TMarker* Markers[int Index] = {read=GetMarkers};
-	void __fastcall DoCheckMarker(TScheme* Scheme, int StartPos, int MarkerLen, const System::UnicodeString MarkerText, bool Start, int Line);
+	void __fastcall DoCheckMarker(TScheme* Scheme, int StartPos, int MarkerLen, const System::UnicodeString MarkerText, bool Start, int Line, const System::UnicodeString LineStr);
 	void __fastcall SetOnCustomRange(const TCustomRangeEvent Value);
 	
 protected:

@@ -40,6 +40,7 @@ namespace Syneditstrconst
 #define SYNS_AttrCharacter L"Character"
 #define SYNS_AttrClass L"Class"
 #define SYNS_AttrColor L"ColorValue"
+#define SYNS_AttrConstant L"Constant"
 #define SYNS_AttrComment L"Comment"
 #define SYNS_AttrCondition L"Condition"
 #define SYNS_AttrConditionalComment L"ConditionalComment"
@@ -71,6 +72,7 @@ namespace Syneditstrconst
 #define SYNS_AttrInclude L"Include"
 #define SYNS_AttrIndicator L"IndicatorArea"
 #define SYNS_AttrIndirect L"Indirect"
+#define SYNS_AttrInstructions L"Instructions"
 #define SYNS_AttrInvalidSymbol L"InvalidSymbol"
 #define SYNS_AttrInternalFunction L"InternalFunction"
 #define SYNS_AttrKey L"Key"
@@ -195,6 +197,7 @@ namespace Syneditstrconst
 #define SYNS_LangCache L"CacheObjectScript"
 #define SYNS_LangCSS L"CascadingStyleSheet"
 #define SYNS_LangJScript L"JavaScript"
+#define SYNS_LangJSON L"JSON"
 #define SYNS_LangKIX L"KiXtart"
 #define SYNS_LangBaan L"Baan_4GL"
 #define SYNS_LangFoxpro L"Foxpro"
@@ -219,6 +222,7 @@ namespace Syneditstrconst
 #define SYNS_LangDOT L"DOT_Graph_Drawing_Description_language"
 #define SYNS_LangEiffel L"Eiffel"
 #define SYNS_LangLDraw L"LEGO_LDraw"
+#define SYNS_LangLLVMIR L"LLVM IR"
 #define SYNS_LangUnknown L"<Unknown>"
 #define SYNS_LangURI L"URI"
 #define SYNS_LangVrml97 L"Vrml97"
@@ -266,6 +270,8 @@ extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrCondition;
 #define Syneditstrconst_SYNS_FriendlyAttrCondition System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrCondition)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrConditionalComment;
 #define Syneditstrconst_SYNS_FriendlyAttrConditionalComment System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrConditionalComment)
+extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrConstant;
+#define Syneditstrconst_SYNS_FriendlyAttrConstant System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrConstant)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrDataType;
 #define Syneditstrconst_SYNS_FriendlyAttrDataType System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrDataType)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrDebugLines;
@@ -322,10 +328,12 @@ extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrIndicator;
 #define Syneditstrconst_SYNS_FriendlyAttrIndicator System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrIndicator)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrIndirect;
 #define Syneditstrconst_SYNS_FriendlyAttrIndirect System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrIndirect)
-extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrInvalidSymbol;
-#define Syneditstrconst_SYNS_FriendlyAttrInvalidSymbol System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrInvalidSymbol)
+extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrInstructions;
+#define Syneditstrconst_SYNS_FriendlyAttrInstructions System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrInstructions)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrInternalFunction;
 #define Syneditstrconst_SYNS_FriendlyAttrInternalFunction System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrInternalFunction)
+extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrInvalidSymbol;
+#define Syneditstrconst_SYNS_FriendlyAttrInvalidSymbol System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrInvalidSymbol)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrKey;
 #define Syneditstrconst_SYNS_FriendlyAttrKey System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyAttrKey)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyAttrLabel;
@@ -588,6 +596,8 @@ extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterCSS;
 #define Syneditstrconst_SYNS_FilterCSS System::LoadResourceString(&Syneditstrconst::_SYNS_FilterCSS)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterJScript;
 #define Syneditstrconst_SYNS_FilterJScript System::LoadResourceString(&Syneditstrconst::_SYNS_FilterJScript)
+extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterJSON;
+#define Syneditstrconst_SYNS_FilterJSON System::LoadResourceString(&Syneditstrconst::_SYNS_FilterJSON)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterKIX;
 #define Syneditstrconst_SYNS_FilterKIX System::LoadResourceString(&Syneditstrconst::_SYNS_FilterKIX)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterBaan;
@@ -634,6 +644,8 @@ extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterEiffel;
 #define Syneditstrconst_SYNS_FilterEiffel System::LoadResourceString(&Syneditstrconst::_SYNS_FilterEiffel)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterLDraw;
 #define Syneditstrconst_SYNS_FilterLDraw System::LoadResourceString(&Syneditstrconst::_SYNS_FilterLDraw)
+extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterLLVMIR;
+#define Syneditstrconst_SYNS_FilterLLVMIR System::LoadResourceString(&Syneditstrconst::_SYNS_FilterLLVMIR)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterURI;
 #define Syneditstrconst_SYNS_FilterURI System::LoadResourceString(&Syneditstrconst::_SYNS_FilterURI)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FilterVrml97;
@@ -700,6 +712,8 @@ extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangCSS;
 #define Syneditstrconst_SYNS_FriendlyLangCSS System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangCSS)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangJScript;
 #define Syneditstrconst_SYNS_FriendlyLangJScript System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangJScript)
+extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangJSON;
+#define Syneditstrconst_SYNS_FriendlyLangJSON System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangJSON)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangKIX;
 #define Syneditstrconst_SYNS_FriendlyLangKIX System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangKIX)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangBaan;
@@ -748,6 +762,8 @@ extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangEiffel;
 #define Syneditstrconst_SYNS_FriendlyLangEiffel System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangEiffel)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangLDraw;
 #define Syneditstrconst_SYNS_FriendlyLangLDraw System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangLDraw)
+extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangLLVMIR;
+#define Syneditstrconst_SYNS_FriendlyLangLLVMIR System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangLLVMIR)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangUnknown;
 #define Syneditstrconst_SYNS_FriendlyLangUnknown System::LoadResourceString(&Syneditstrconst::_SYNS_FriendlyLangUnknown)
 extern DELPHI_PACKAGE System::ResourceString _SYNS_FriendlyLangURI;
