@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterURI.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterURI.pas' rev: 29.00 (Windows)
 
 #ifndef SynhighlighteruriHPP
 #define SynhighlighteruriHPP
@@ -12,19 +12,21 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.Graphics.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditHighlighter.hpp>
+#include <SynUnicode.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synhighlighteruri
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TSynURISyn;
 //-- type declarations -------------------------------------------------------
 enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkNull, tkSpace, tkFtpLink, tkGopherLink, tkHttpLink, tkHttpsLink, tkMailtoLink, tkNewsLink, tkNntpLink, tkProsperoLink, tkTelnetLink, tkWaisLink, tkWebLink, tkUnknown, tkNullChar };
 
@@ -34,7 +36,6 @@ typedef TIdentFuncTableFunc *PIdentFuncTableFunc;
 
 typedef bool __fastcall (__closure *TAlreadyVisitedURIFunc)(System::UnicodeString URI);
 
-class DELPHICLASS TSynURISyn;
 class PASCALIMPLEMENTATION TSynURISyn : public Synedithighlighter::TSynCustomHighlighter
 {
 	typedef Synedithighlighter::TSynCustomHighlighter inherited;

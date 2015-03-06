@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynTextDrawer.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynTextDrawer.pas' rev: 29.00 (Windows)
 
 #ifndef SyntextdrawerHPP
 #define SyntextdrawerHPP
@@ -12,21 +12,29 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <System.Math.hpp>	// Pascal unit
-#include <System.UITypes.hpp>	// Pascal unit
-#include <System.Types.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynUnicode.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
+#include <Winapi.Windows.hpp>
+#include <Vcl.Graphics.hpp>
+#include <System.Math.hpp>
+#include <System.UITypes.hpp>
+#include <System.Types.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syntextdrawer
 {
+//-- forward type declarations -----------------------------------------------
+struct TheFontData;
+struct TheSharedFontsInfo;
+class DELPHICLASS TheFontsInfoManager;
+class DELPHICLASS EheFontStockException;
+class DELPHICLASS TheFontStock;
+class DELPHICLASS EheTextDrawerException;
+class DELPHICLASS TheTextDrawer;
 //-- type declarations -------------------------------------------------------
 typedef System::StaticArray<int, 536870911> TIntegerArray;
 
@@ -34,7 +42,6 @@ typedef TIntegerArray *PIntegerArray;
 
 typedef System::Int8 TheStockFontPatterns;
 
-struct TheFontData;
 typedef TheFontData *PheFontData;
 
 struct DECLSPEC_DRECORD TheFontData
@@ -51,7 +58,6 @@ typedef System::StaticArray<TheFontData, 16> TheFontsData;
 
 typedef TheFontsData *PheFontsData;
 
-struct TheSharedFontsInfo;
 typedef TheSharedFontsInfo *PheSharedFontsInfo;
 
 struct DECLSPEC_DRECORD TheSharedFontsInfo
@@ -66,7 +72,6 @@ public:
 };
 
 
-class DELPHICLASS TheFontsInfoManager;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TheFontsInfoManager : public System::TObject
 {
@@ -96,7 +101,6 @@ typedef System::Set<Syntextdrawer__2, Syntextdrawer__2::tooOpaque, Syntextdrawer
 
 typedef void __fastcall (__closure *TheExtTextOutProc)(int X, int Y, TTextOutOptions fuOptions, const System::Types::TRect &ARect, const System::UnicodeString Text, int Length);
 
-class DELPHICLASS EheFontStockException;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION EheFontStockException : public System::Sysutils::Exception
 {
@@ -121,7 +125,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TheFontStock;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TheFontStock : public System::TObject
 {
@@ -168,7 +171,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS EheTextDrawerException;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION EheTextDrawerException : public System::Sysutils::Exception
 {
@@ -193,7 +195,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TheTextDrawer;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TheTextDrawer : public System::TObject
 {

@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterVrml97.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterVrml97.pas' rev: 29.00 (Windows)
 
 #ifndef Synhighlightervrml97HPP
 #define Synhighlightervrml97HPP
@@ -12,30 +12,31 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <System.Win.Registry.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
-#include <SynHighlighterHashEntries.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <Winapi.Messages.hpp>
+#include <System.Win.Registry.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.Graphics.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditHighlighter.hpp>
+#include <SynHighlighterHashEntries.hpp>
+#include <SynUnicode.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synhighlightervrml97
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TSynVrml97Syn;
 //-- type declarations -------------------------------------------------------
 enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkComment, tkIdentifier, tkKey, tkNull, tkNumber, tkSpace, tkString, tkSymbol, tkUnknown, tkNonReservedKey, tkEvent, tkVrmlAppearance, tkVrmlAttribute, tkVrmlDefinition, tkVrmlEvent, tkVrmlGrouping, tkVrmlInterpolator, tkVrmlLight, tkVrmlNode, tkVrmlParameter, tkVrmlproto, tkVrmlSensor, tkVrmlShape, tkVrmlShape_Hint, tkVrmlTime_dependent, tkVrmlViewpoint, tkVrmlWorldInfo, tkX3DDocType, tkX3DHeader };
 
 enum DECLSPEC_DENUM TRangeState : unsigned char { rsNormalText, rsComment, rsX3DHeader, rsX3DDocType };
 
-class DELPHICLASS TSynVrml97Syn;
 class PASCALIMPLEMENTATION TSynVrml97Syn : public Synedithighlighter::TSynCustomHighlighter
 {
 	typedef Synedithighlighter::TSynCustomHighlighter inherited;

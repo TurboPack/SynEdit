@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditWildcardSearch.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditWildcardSearch.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditwildcardsearchHPP
 #define SyneditwildcardsearchHPP
@@ -12,20 +12,21 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynRegExpr.hpp>	// Pascal unit
-#include <SynEditRegexSearch.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynEdit.hpp>
+#include <SynEditTypes.hpp>
+#include <SynRegExpr.hpp>
+#include <SynEditRegexSearch.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditwildcardsearch
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TSynEditWildcardSearch;
+//-- type declarations -------------------------------------------------------
 class PASCALIMPLEMENTATION TSynEditWildcardSearch : public Syneditregexsearch::TSynEditRegexSearch
 {
 	typedef Syneditregexsearch::TSynEditRegexSearch inherited;

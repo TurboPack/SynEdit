@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynMemo.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynMemo.pas' rev: 29.00 (Windows)
 
 #ifndef SynmemoHPP
 #define SynmemoHPP
@@ -12,24 +12,25 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.RichEdit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynEditTextBuffer.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.RichEdit.hpp>
+#include <Winapi.Windows.hpp>
+#include <Winapi.Messages.hpp>
+#include <SynEdit.hpp>
+#include <SynEditTextBuffer.hpp>
+#include <SynEditTypes.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synmemo
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TSynMemo;
+//-- type declarations -------------------------------------------------------
 class PASCALIMPLEMENTATION TSynMemo : public Synedit::TSynEdit
 {
 	typedef Synedit::TSynEdit inherited;

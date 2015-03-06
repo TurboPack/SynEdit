@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEdit.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEdit.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditHPP
 #define SyneditHPP
@@ -12,42 +12,52 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <System.Contnrs.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Vcl.Forms.hpp>	// Pascal unit
-#include <Vcl.StdCtrls.hpp>	// Pascal unit
-#include <Vcl.ExtCtrls.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <Vcl.StdActns.hpp>	// Pascal unit
-#include <Vcl.Dialogs.hpp>	// Pascal unit
-#include <Vcl.Themes.hpp>	// Pascal unit
-#include <System.UITypes.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <Winapi.Imm.hpp>	// Pascal unit
-#include <SynTextDrawer.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditKeyConst.hpp>	// Pascal unit
-#include <SynEditMiscProcs.hpp>	// Pascal unit
-#include <SynEditMiscClasses.hpp>	// Pascal unit
-#include <SynEditTextBuffer.hpp>	// Pascal unit
-#include <SynEditKeyCmds.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
-#include <SynEditKbdHandler.hpp>	// Pascal unit
-#include <System.WideStrUtils.hpp>	// Pascal unit
-#include <System.Math.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.Types.hpp>	// Pascal unit
-#include <Vcl.Menus.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.Controls.hpp>
+#include <System.Contnrs.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.ExtCtrls.hpp>
+#include <Winapi.Windows.hpp>
+#include <Winapi.Messages.hpp>
+#include <Vcl.StdActns.hpp>
+#include <Vcl.Dialogs.hpp>
+#include <Vcl.Themes.hpp>
+#include <System.UITypes.hpp>
+#include <SynUnicode.hpp>
+#include <Winapi.Imm.hpp>
+#include <SynTextDrawer.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditKeyConst.hpp>
+#include <SynEditMiscProcs.hpp>
+#include <SynEditMiscClasses.hpp>
+#include <SynEditTextBuffer.hpp>
+#include <SynEditKeyCmds.hpp>
+#include <SynEditHighlighter.hpp>
+#include <SynEditKbdHandler.hpp>
+#include <System.WideStrUtils.hpp>
+#include <System.Math.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
+#include <System.Types.hpp>
+#include <Vcl.Menus.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synedit
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS ESynEditError;
+struct TCreateParamsW;
+class DELPHICLASS TSynEditMark;
+class DELPHICLASS TSynEditMarkList;
+__interface ISynEditBufferPlugin;
+typedef System::DelphiInterface<ISynEditBufferPlugin> _di_ISynEditBufferPlugin;
+class DELPHICLASS TSynEditPlugin;
+class DELPHICLASS TCustomSynEdit;
+class DELPHICLASS TSynEdit;
 //-- type declarations -------------------------------------------------------
 typedef Synedittypes::TBufferCoord TBufferCoord;
 
@@ -57,7 +67,6 @@ typedef Vcl::Forms::TFormBorderStyle TSynBorderStyle;
 
 enum DECLSPEC_DENUM TSynReplaceAction : unsigned char { raCancel, raSkip, raReplace, raReplaceAll };
 
-class DELPHICLASS ESynEditError;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION ESynEditError : public Synedittypes::ESynError
 {
@@ -146,8 +155,6 @@ typedef void __fastcall (__closure *TStatusChangeEvent)(System::TObject* Sender,
 
 typedef void __fastcall (__closure *TMouseCursorEvent)(System::TObject* Sender, const Synedittypes::TBufferCoord &aLineCharPos, System::Uitypes::TCursor &aCursor);
 
-class DELPHICLASS TSynEditMark;
-class DELPHICLASS TCustomSynEdit;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditMark : public System::TObject
 {
@@ -190,7 +197,6 @@ typedef void __fastcall (__closure *TPlaceMarkEvent)(System::TObject* Sender, TS
 
 typedef System::StaticArray<TSynEditMark*, 16> TSynEditMarks;
 
-class DELPHICLASS TSynEditMarkList;
 class PASCALIMPLEMENTATION TSynEditMarkList : public System::Contnrs::TObjectList
 {
 	typedef System::Contnrs::TObjectList inherited;
@@ -225,12 +231,8 @@ public:
 
 typedef void __fastcall (__closure *TGutterClickEvent)(System::TObject* Sender, System::Uitypes::TMouseButton Button, int X, int Y, int Line, TSynEditMark* Mark);
 
-__interface ISynEditBufferPlugin;
-typedef System::DelphiInterface<ISynEditBufferPlugin> _di_ISynEditBufferPlugin;
 __interface ISynEditBufferPlugin  : public System::IInterface 
 {
-	
-public:
 	virtual Synedittypes::TDisplayCoord __fastcall BufferToDisplayPos(const Synedittypes::TBufferCoord &aPos) = 0 ;
 	virtual Synedittypes::TBufferCoord __fastcall DisplayToBufferPos(const Synedittypes::TDisplayCoord &aPos) = 0 ;
 	virtual int __fastcall RowCount(void) = 0 ;
@@ -242,7 +244,6 @@ public:
 	virtual void __fastcall Reset(void) = 0 ;
 };
 
-class DELPHICLASS TSynEditPlugin;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditPlugin : public System::TObject
 {
@@ -511,7 +512,7 @@ private:
 	void __fastcall DoSearchFindNextExecute(Vcl::Stdactns::TSearchFindNext* Action);
 	void __fastcall FindDialogFindFirst(System::TObject* Sender);
 	void __fastcall FindDialogFind(System::TObject* Sender);
-	BOOL __fastcall SearchByFindDialog(Vcl::Dialogs::TFindDialog* FindDialog);
+	System::LongBool __fastcall SearchByFindDialog(Vcl::Dialogs::TFindDialog* FindDialog);
 	void __fastcall FindDialogClose(System::TObject* Sender);
 	
 protected:
@@ -808,7 +809,6 @@ public:
 };
 
 
-class DELPHICLASS TSynEdit;
 class PASCALIMPLEMENTATION TSynEdit : public TCustomSynEdit
 {
 	typedef TCustomSynEdit inherited;

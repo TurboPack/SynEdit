@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditAutoComplete.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditAutoComplete.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditautocompleteHPP
 #define SyneditautocompleteHPP
@@ -12,21 +12,23 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Vcl.Menus.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynEditKeyCmds.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <Vcl.Menus.hpp>
+#include <SynEdit.hpp>
+#include <SynEditKeyCmds.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditautocomplete
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TCustomSynAutoComplete;
+class DELPHICLASS TSynAutoComplete;
+//-- type declarations -------------------------------------------------------
 class PASCALIMPLEMENTATION TCustomSynAutoComplete : public System::Classes::TComponent
 {
 	typedef System::Classes::TComponent inherited;
@@ -74,7 +76,6 @@ public:
 };
 
 
-class DELPHICLASS TSynAutoComplete;
 class PASCALIMPLEMENTATION TSynAutoComplete : public TCustomSynAutoComplete
 {
 	typedef TCustomSynAutoComplete inherited;

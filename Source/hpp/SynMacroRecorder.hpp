@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynMacroRecorder.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynMacroRecorder.pas' rev: 29.00 (Windows)
 
 #ifndef SynmacrorecorderHPP
 #define SynmacrorecorderHPP
@@ -12,32 +12,40 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.StdCtrls.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Vcl.Menus.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynEditKeyCmds.hpp>	// Pascal unit
-#include <SynEditPlugins.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.WideStrUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Controls.hpp>
+#include <Winapi.Windows.hpp>
+#include <Winapi.Messages.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Menus.hpp>
+#include <SynEdit.hpp>
+#include <SynEditKeyCmds.hpp>
+#include <SynEditPlugins.hpp>
+#include <SynEditTypes.hpp>
+#include <SynUnicode.hpp>
+#include <System.WideStrUtils.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synmacrorecorder
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TSynMacroEvent;
+class DELPHICLASS TSynBasicEvent;
+class DELPHICLASS TSynCharEvent;
+class DELPHICLASS TSynStringEvent;
+class DELPHICLASS TSynPositionEvent;
+class DELPHICLASS TSynDataEvent;
+class DELPHICLASS TCustomSynMacroRecorder;
+class DELPHICLASS TSynMacroRecorder;
 //-- type declarations -------------------------------------------------------
 enum DECLSPEC_DENUM TSynMacroState : unsigned char { msStopped, msRecording, msPlaying, msPaused };
 
 enum DECLSPEC_DENUM TSynMacroCommand : unsigned char { mcRecord, mcPlayback };
 
-class DELPHICLASS TSynMacroEvent;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynMacroEvent : public System::TObject
 {
@@ -63,7 +71,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynBasicEvent;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynBasicEvent : public TSynMacroEvent
 {
@@ -90,7 +97,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynCharEvent;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynCharEvent : public TSynMacroEvent
 {
@@ -117,7 +123,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynStringEvent;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynStringEvent : public TSynMacroEvent
 {
@@ -144,7 +149,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynPositionEvent;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynPositionEvent : public TSynBasicEvent
 {
@@ -171,7 +175,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynDataEvent;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynDataEvent : public TSynBasicEvent
 {
@@ -195,7 +198,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TCustomSynMacroRecorder;
 typedef void __fastcall (__closure *TSynUserCommandEvent)(TCustomSynMacroRecorder* aSender, Syneditkeycmds::TSynEditorCommand aCmd, TSynMacroEvent* &aEvent);
 
 class PASCALIMPLEMENTATION TCustomSynMacroRecorder : public Syneditplugins::TAbstractSynHookerPlugin
@@ -268,7 +270,6 @@ public:
 };
 
 
-class DELPHICLASS TSynMacroRecorder;
 class PASCALIMPLEMENTATION TSynMacroRecorder : public TCustomSynMacroRecorder
 {
 	typedef TCustomSynMacroRecorder inherited;

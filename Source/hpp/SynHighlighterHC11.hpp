@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterHC11.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterHC11.pas' rev: 29.00 (Windows)
 
 #ifndef Synhighlighterhc11HPP
 #define Synhighlighterhc11HPP
@@ -12,26 +12,28 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynHighlighterHashEntries.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.Graphics.hpp>
+#include <SynEditHighlighter.hpp>
+#include <SynEditTypes.hpp>
+#include <SynHighlighterHashEntries.hpp>
+#include <SynUnicode.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synhighlighterhc11
 {
+//-- forward type declarations -----------------------------------------------
+struct THashListEntry;
+class DELPHICLASS TSynHC11Syn;
 //-- type declarations -------------------------------------------------------
 enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkComment, tkDirective, tkIdentifier, tkKey, tkNull, tkNumber, tkSpace, tkString, tkSymbol, tkUnknown };
 
 enum DECLSPEC_DENUM TkwKeyWordType : unsigned char { kwNone, kwOperand, kwOperandOver, kwNoOperand };
 
-struct THashListEntry;
 typedef THashListEntry *PHashListEntry;
 
 struct DECLSPEC_DRECORD THashListEntry
@@ -44,7 +46,6 @@ public:
 };
 
 
-class DELPHICLASS TSynHC11Syn;
 class PASCALIMPLEMENTATION TSynHC11Syn : public Synedithighlighter::TSynCustomHighlighter
 {
 	typedef Synedithighlighter::TSynCustomHighlighter inherited;

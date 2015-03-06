@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'pasall.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'pasall.pas' rev: 29.00 (Windows)
 
 #ifndef PasallHPP
 #define PasallHPP
@@ -17,6 +17,7 @@
 
 namespace Pasall
 {
+//-- forward type declarations -----------------------------------------------
 //-- type declarations -------------------------------------------------------
 //-- var, const, procedure ---------------------------------------------------
 }	/* namespace Pasall */

@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditKeyConst.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditKeyConst.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditkeyconstHPP
 #define SyneditkeyconstHPP
@@ -12,14 +12,15 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditkeyconst
 {
+//-- forward type declarations -----------------------------------------------
 //-- type declarations -------------------------------------------------------
 //-- var, const, procedure ---------------------------------------------------
 static const System::Int8 SYNEDIT_RETURN = System::Int8(0xd);

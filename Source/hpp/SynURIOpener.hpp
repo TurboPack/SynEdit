@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynURIOpener.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynURIOpener.pas' rev: 29.00 (Windows)
 
 #ifndef SynuriopenerHPP
 #define SynuriopenerHPP
@@ -12,22 +12,23 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynHighlighterURI.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <Vcl.Controls.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEdit.hpp>
+#include <SynHighlighterURI.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synuriopener
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TSynURIOpener;
+//-- type declarations -------------------------------------------------------
 class PASCALIMPLEMENTATION TSynURIOpener : public System::Classes::TComponent
 {
 	typedef System::Classes::TComponent inherited;

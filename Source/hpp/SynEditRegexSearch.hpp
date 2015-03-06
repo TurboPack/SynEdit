@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditRegexSearch.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditRegexSearch.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditregexsearchHPP
 #define SyneditregexsearchHPP
@@ -12,20 +12,21 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynRegExpr.hpp>	// Pascal unit
-#include <SynEditMiscClasses.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynEditTypes.hpp>
+#include <SynRegExpr.hpp>
+#include <SynEditMiscClasses.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditregexsearch
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TSynEditRegexSearch;
+//-- type declarations -------------------------------------------------------
 class PASCALIMPLEMENTATION TSynEditRegexSearch : public Syneditmiscclasses::TSynEditSearchCustom
 {
 	typedef Syneditmiscclasses::TSynEditSearchCustom inherited;

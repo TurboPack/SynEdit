@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditWordWrap.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditWordWrap.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditwordwrapHPP
 #define SyneditwordwrapHPP
@@ -12,18 +12,20 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditTextBuffer.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditTextBuffer.hpp>
+#include <SynEdit.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditwordwrap
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TSynWordWrapPlugin;
 //-- type declarations -------------------------------------------------------
 typedef int TLineIndex;
 
@@ -39,7 +41,6 @@ typedef System::StaticArray<System::Word, 134217728> TRowLengthArray;
 
 typedef TRowLengthArray *PRowLengthArray;
 
-class DELPHICLASS TSynWordWrapPlugin;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynWordWrapPlugin : public System::TInterfacedObject
 {

@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynRegExpr.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynRegExpr.pas' rev: 29.00 (Windows)
 
 #ifndef SynregexprHPP
 #define SynregexprHPP
@@ -12,16 +12,19 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
+#include <System.SysUtils.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synregexpr
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TRegExpr;
+class DELPHICLASS ERegExpr;
 //-- type declarations -------------------------------------------------------
 typedef System::WideChar * PRegExprChar;
 
@@ -43,7 +46,6 @@ typedef int *PREBracesArg;
 
 typedef System::WideChar __fastcall (__closure *TRegExprInvertCaseFunction)(const System::WideChar Ch);
 
-class DELPHICLASS TRegExpr;
 typedef System::UnicodeString __fastcall (__closure *TRegExprReplaceFunction)(TRegExpr* ARegExpr);
 
 class PASCALIMPLEMENTATION TRegExpr : public System::TObject
@@ -162,7 +164,6 @@ public:
 };
 
 
-class DELPHICLASS ERegExpr;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION ERegExpr : public System::Sysutils::Exception
 {

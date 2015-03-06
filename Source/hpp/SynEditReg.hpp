@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditReg.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditReg.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditregHPP
 #define SyneditregHPP
@@ -12,94 +12,95 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynMemo.hpp>	// Pascal unit
-#include <SynDBEdit.hpp>	// Pascal unit
-#include <SynEditStrConst.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
-#include <SynEditMiscClasses.hpp>	// Pascal unit
-#include <SynEditPlugins.hpp>	// Pascal unit
-#include <SynEditExport.hpp>	// Pascal unit
-#include <SynExportHTML.hpp>	// Pascal unit
-#include <SynExportRTF.hpp>	// Pascal unit
-#include <SynExportTeX.hpp>	// Pascal unit
-#include <SynHighlighterMulti.hpp>	// Pascal unit
-#include <SynCompletionProposal.hpp>	// Pascal unit
-#include <SynEditPythonBehaviour.hpp>	// Pascal unit
-#include <SynEditPrint.hpp>	// Pascal unit
-#include <SynEditPrintPreview.hpp>	// Pascal unit
-#include <SynMacroRecorder.hpp>	// Pascal unit
-#include <SynAutoCorrect.hpp>	// Pascal unit
-#include <SynEditSearch.hpp>	// Pascal unit
-#include <SynEditRegexSearch.hpp>	// Pascal unit
-#include <SynHighlighterManager.hpp>	// Pascal unit
-#include <SynEditOptionsDialog.hpp>	// Pascal unit
-#include <SynHighlighterADSP21xx.hpp>	// Pascal unit
-#include <SynHighlighterAsm.hpp>	// Pascal unit
-#include <SynHighlighterAWK.hpp>	// Pascal unit
-#include <SynHighlighterBaan.hpp>	// Pascal unit
-#include <SynHighlighterBat.hpp>	// Pascal unit
-#include <SynHighlighterCAC.hpp>	// Pascal unit
-#include <SynHighlighterCache.hpp>	// Pascal unit
-#include <SynHighlighterCobol.hpp>	// Pascal unit
-#include <SynHighlighterCpp.hpp>	// Pascal unit
-#include <SynHighlighterCS.hpp>	// Pascal unit
-#include <SynHighlighterCSS.hpp>	// Pascal unit
-#include <SynHighlighterDfm.hpp>	// Pascal unit
-#include <SynHighlighterDml.hpp>	// Pascal unit
-#include <SynHighlighterDOT.hpp>	// Pascal unit
-#include <SynHighlighterDWS.hpp>	// Pascal unit
-#include <SynHighlighterEiffel.hpp>	// Pascal unit
-#include <SynHighlighterFortran.hpp>	// Pascal unit
-#include <SynHighlighterFoxpro.hpp>	// Pascal unit
-#include <SynHighlighterGalaxy.hpp>	// Pascal unit
-#include <SynHighlighterGeneral.hpp>	// Pascal unit
-#include <SynHighlighterHaskell.hpp>	// Pascal unit
-#include <SynHighlighterHC11.hpp>	// Pascal unit
-#include <SynHighlighterHP48.hpp>	// Pascal unit
-#include <SynHighlighterHtml.hpp>	// Pascal unit
-#include <SynHighlighterIni.hpp>	// Pascal unit
-#include <SynHighlighterInno.hpp>	// Pascal unit
-#include <SynHighlighterJava.hpp>	// Pascal unit
-#include <SynHighlighterJScript.hpp>	// Pascal unit
-#include <SynHighlighterJSON.hpp>	// Pascal unit
-#include <SynHighlighterKix.hpp>	// Pascal unit
-#include <SynHighlighterModelica.hpp>	// Pascal unit
-#include <SynHighlighterM3.hpp>	// Pascal unit
-#include <SynHighlighterPas.hpp>	// Pascal unit
-#include <SynHighlighterPerl.hpp>	// Pascal unit
-#include <SynHighlighterPHP.hpp>	// Pascal unit
-#include <SynHighlighterProgress.hpp>	// Pascal unit
-#include <SynHighlighterPython.hpp>	// Pascal unit
-#include <SynHighlighterRC.hpp>	// Pascal unit
-#include <SynHighlighterRuby.hpp>	// Pascal unit
-#include <SynHighlighterSml.hpp>	// Pascal unit
-#include <SynHighlighterSQL.hpp>	// Pascal unit
-#include <SynHighlighterTclTk.hpp>	// Pascal unit
-#include <SynHighlighterTeX.hpp>	// Pascal unit
-#include <SynHighlighterUNIXShellScript.hpp>	// Pascal unit
-#include <SynHighlighterURI.hpp>	// Pascal unit
-#include <SynHighlighterVB.hpp>	// Pascal unit
-#include <SynHighlighterVBScript.hpp>	// Pascal unit
-#include <SynHighlighterVrml97.hpp>	// Pascal unit
-#include <SynHighlighterGWS.hpp>	// Pascal unit
-#include <SynHighlighterCPM.hpp>	// Pascal unit
-#include <SynHighlighterSDD.hpp>	// Pascal unit
-#include <SynHighlighterXML.hpp>	// Pascal unit
-#include <SynHighlighterMsg.hpp>	// Pascal unit
-#include <SynHighlighterIDL.hpp>	// Pascal unit
-#include <SynHighlighterUnreal.hpp>	// Pascal unit
-#include <SynHighlighterST.hpp>	// Pascal unit
-#include <SynHighlighterLDraw.hpp>	// Pascal unit
-#include <SynURIOpener.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynEdit.hpp>
+#include <SynMemo.hpp>
+#include <SynDBEdit.hpp>
+#include <SynEditStrConst.hpp>
+#include <SynEditHighlighter.hpp>
+#include <SynEditMiscClasses.hpp>
+#include <SynEditPlugins.hpp>
+#include <SynEditExport.hpp>
+#include <SynExportHTML.hpp>
+#include <SynExportRTF.hpp>
+#include <SynExportTeX.hpp>
+#include <SynHighlighterMulti.hpp>
+#include <SynCompletionProposal.hpp>
+#include <SynEditPythonBehaviour.hpp>
+#include <SynEditPrint.hpp>
+#include <SynEditPrintPreview.hpp>
+#include <SynMacroRecorder.hpp>
+#include <SynAutoCorrect.hpp>
+#include <SynEditSearch.hpp>
+#include <SynEditRegexSearch.hpp>
+#include <SynHighlighterManager.hpp>
+#include <SynEditOptionsDialog.hpp>
+#include <SynHighlighterADSP21xx.hpp>
+#include <SynHighlighterAsm.hpp>
+#include <SynHighlighterAWK.hpp>
+#include <SynHighlighterBaan.hpp>
+#include <SynHighlighterBat.hpp>
+#include <SynHighlighterCAC.hpp>
+#include <SynHighlighterCache.hpp>
+#include <SynHighlighterCobol.hpp>
+#include <SynHighlighterCpp.hpp>
+#include <SynHighlighterCS.hpp>
+#include <SynHighlighterCSS.hpp>
+#include <SynHighlighterDfm.hpp>
+#include <SynHighlighterDml.hpp>
+#include <SynHighlighterDOT.hpp>
+#include <SynHighlighterDWS.hpp>
+#include <SynHighlighterEiffel.hpp>
+#include <SynHighlighterFortran.hpp>
+#include <SynHighlighterFoxpro.hpp>
+#include <SynHighlighterGalaxy.hpp>
+#include <SynHighlighterGeneral.hpp>
+#include <SynHighlighterHaskell.hpp>
+#include <SynHighlighterHC11.hpp>
+#include <SynHighlighterHP48.hpp>
+#include <SynHighlighterHtml.hpp>
+#include <SynHighlighterIni.hpp>
+#include <SynHighlighterInno.hpp>
+#include <SynHighlighterJava.hpp>
+#include <SynHighlighterJScript.hpp>
+#include <SynHighlighterJSON.hpp>
+#include <SynHighlighterKix.hpp>
+#include <SynHighlighterModelica.hpp>
+#include <SynHighlighterM3.hpp>
+#include <SynHighlighterPas.hpp>
+#include <SynHighlighterPerl.hpp>
+#include <SynHighlighterPHP.hpp>
+#include <SynHighlighterProgress.hpp>
+#include <SynHighlighterPython.hpp>
+#include <SynHighlighterRC.hpp>
+#include <SynHighlighterRuby.hpp>
+#include <SynHighlighterSml.hpp>
+#include <SynHighlighterSQL.hpp>
+#include <SynHighlighterTclTk.hpp>
+#include <SynHighlighterTeX.hpp>
+#include <SynHighlighterUNIXShellScript.hpp>
+#include <SynHighlighterURI.hpp>
+#include <SynHighlighterVB.hpp>
+#include <SynHighlighterVBScript.hpp>
+#include <SynHighlighterVrml97.hpp>
+#include <SynHighlighterGWS.hpp>
+#include <SynHighlighterCPM.hpp>
+#include <SynHighlighterSDD.hpp>
+#include <SynHighlighterXML.hpp>
+#include <SynHighlighterMsg.hpp>
+#include <SynHighlighterIDL.hpp>
+#include <SynHighlighterUnreal.hpp>
+#include <SynHighlighterST.hpp>
+#include <SynHighlighterLDraw.hpp>
+#include <SynURIOpener.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditreg
 {
+//-- forward type declarations -----------------------------------------------
 //-- type declarations -------------------------------------------------------
 //-- var, const, procedure ---------------------------------------------------
 extern DELPHI_PACKAGE void __fastcall Register(void);

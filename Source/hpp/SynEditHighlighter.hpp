@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditHighlighter.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditHighlighter.pas' rev: 29.00 (Windows)
 
 #ifndef SynedithighlighterHPP
 #define SynedithighlighterHPP
@@ -12,28 +12,31 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <System.Win.Registry.hpp>	// Pascal unit
-#include <System.IniFiles.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditMiscClasses.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <SynEditHighlighterOptions.hpp>	// Pascal unit
-#include <System.UITypes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Winapi.Windows.hpp>
+#include <System.Win.Registry.hpp>
+#include <System.IniFiles.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditMiscClasses.hpp>
+#include <SynUnicode.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
+#include <SynEditHighlighterOptions.hpp>
+#include <System.UITypes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synedithighlighter
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TSynHighlighterAttributes;
+class DELPHICLASS TSynCustomHighlighter;
+class DELPHICLASS TSynHighlighterList;
 //-- type declarations -------------------------------------------------------
 ;
 
-class DELPHICLASS TSynHighlighterAttributes;
 class PASCALIMPLEMENTATION TSynHighlighterAttributes : public System::Classes::TPersistent
 {
 	typedef System::Classes::TPersistent inherited;
@@ -88,7 +91,6 @@ enum DECLSPEC_DENUM TSynHighlighterCapability : unsigned char { hcUserSettings, 
 
 typedef System::Set<TSynHighlighterCapability, TSynHighlighterCapability::hcUserSettings, TSynHighlighterCapability::hcRegistry> TSynHighlighterCapabilities;
 
-class DELPHICLASS TSynCustomHighlighter;
 class PASCALIMPLEMENTATION TSynCustomHighlighter : public System::Classes::TComponent
 {
 	typedef System::Classes::TComponent inherited;
@@ -210,7 +212,6 @@ __published:
 
 typedef System::TMetaClass* TSynCustomHighlighterClass;
 
-class DELPHICLASS TSynHighlighterList;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynHighlighterList : public System::Classes::TList
 {

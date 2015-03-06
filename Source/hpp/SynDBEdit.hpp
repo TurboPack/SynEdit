@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynDBEdit.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynDBEdit.pas' rev: 29.00 (Windows)
 
 #ifndef SyndbeditHPP
 #define SyndbeditHPP
@@ -12,31 +12,33 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <Vcl.DBCtrls.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynEditKeyCmds.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <Data.DB.hpp>	// Pascal unit
-#include <System.UITypes.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Vcl.Menus.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditMiscClasses.hpp>	// Pascal unit
-#include <Vcl.Forms.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <Winapi.Messages.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.DBCtrls.hpp>
+#include <SynEdit.hpp>
+#include <SynEditKeyCmds.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
+#include <Data.DB.hpp>
+#include <System.UITypes.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Menus.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditMiscClasses.hpp>
+#include <Vcl.Forms.hpp>
+#include <SynEditHighlighter.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syndbedit
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TCustomDBSynEdit;
+class DELPHICLASS TDBSynEdit;
+//-- type declarations -------------------------------------------------------
 class PASCALIMPLEMENTATION TCustomDBSynEdit : public Synedit::TCustomSynEdit
 {
 	typedef Synedit::TCustomSynEdit inherited;
@@ -84,7 +86,6 @@ public:
 };
 
 
-class DELPHICLASS TDBSynEdit;
 class PASCALIMPLEMENTATION TDBSynEdit : public TCustomDBSynEdit
 {
 	typedef TCustomDBSynEdit inherited;

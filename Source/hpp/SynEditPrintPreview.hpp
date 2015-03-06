@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrintPreview.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrintPreview.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditprintpreviewHPP
 #define SyneditprintpreviewHPP
@@ -12,31 +12,32 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.Themes.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Vcl.Forms.hpp>	// Pascal unit
-#include <SynEditPrint.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Types.hpp>	// Pascal unit
-#include <System.UITypes.hpp>	// Pascal unit
-#include <Vcl.Menus.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.Themes.hpp>
+#include <Winapi.Windows.hpp>
+#include <Vcl.Controls.hpp>
+#include <Winapi.Messages.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Forms.hpp>
+#include <SynEditPrint.hpp>
+#include <System.Classes.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Types.hpp>
+#include <System.UITypes.hpp>
+#include <Vcl.Menus.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditprintpreview
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TSynEditPrintPreview;
 //-- type declarations -------------------------------------------------------
 typedef void __fastcall (__closure *TPreviewPageEvent)(System::TObject* Sender, int PageNumber);
 
 enum DECLSPEC_DENUM TSynPreviewScale : unsigned char { pscWholePage, pscPageWidth, pscUserScaled };
 
-class DELPHICLASS TSynEditPrintPreview;
 class PASCALIMPLEMENTATION TSynEditPrintPreview : public Vcl::Controls::TCustomControl
 {
 	typedef Vcl::Controls::TCustomControl inherited;

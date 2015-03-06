@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrint.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrint.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditprintHPP
 #define SyneditprintHPP
@@ -12,30 +12,32 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Vcl.Printers.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditPrintTypes.hpp>	// Pascal unit
-#include <SynEditPrintHeaderFooter.hpp>	// Pascal unit
-#include <SynEditPrinterInfo.hpp>	// Pascal unit
-#include <SynEditPrintMargins.hpp>	// Pascal unit
-#include <SynEditMiscProcs.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.UITypes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Printers.hpp>
+#include <SynEdit.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditPrintTypes.hpp>
+#include <SynEditPrintHeaderFooter.hpp>
+#include <SynEditPrinterInfo.hpp>
+#include <SynEditPrintMargins.hpp>
+#include <SynEditMiscProcs.hpp>
+#include <SynEditHighlighter.hpp>
+#include <SynUnicode.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
+#include <System.UITypes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditprint
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TPageLine;
+class DELPHICLASS TSynEditPrint;
+//-- type declarations -------------------------------------------------------
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TPageLine : public System::TObject
 {
@@ -51,7 +53,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynEditPrint;
 class PASCALIMPLEMENTATION TSynEditPrint : public System::Classes::TComponent
 {
 	typedef System::Classes::TComponent inherited;

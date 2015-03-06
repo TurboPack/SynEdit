@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrintTypes.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrintTypes.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditprinttypesHPP
 #define SyneditprinttypesHPP
@@ -12,16 +12,18 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
+#include <System.SysUtils.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditprinttypes
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TWrapPos;
 //-- type declarations -------------------------------------------------------
 enum DECLSPEC_DENUM TFrameType : unsigned char { ftLine, ftBox, ftShaded };
 
@@ -35,7 +37,6 @@ typedef void __fastcall (__closure *TPrintStatusEvent)(System::TObject* Sender, 
 
 typedef void __fastcall (__closure *TPrintLineEvent)(System::TObject* Sender, int LineNumber, int PageNumber);
 
-class DELPHICLASS TWrapPos;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TWrapPos : public System::TObject
 {

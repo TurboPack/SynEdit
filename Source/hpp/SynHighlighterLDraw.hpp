@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterLDraw.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterLDraw.pas' rev: 29.00 (Windows)
 
 #ifndef SynhighlighterldrawHPP
 #define SynhighlighterldrawHPP
@@ -12,21 +12,23 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <SynEditHighlighter.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.Graphics.hpp>
+#include <SynEditHighlighter.hpp>
+#include <SynEditTypes.hpp>
+#include <SynUnicode.hpp>
+#include <System.SysUtils.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synhighlighterldraw
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TSynLDRSyn;
 //-- type declarations -------------------------------------------------------
 enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkColor, tkComment, tkFirstTri, tkFourthTri, tkIdentifier, tkKey, tkLine, tkNull, tkOpLine, tkQuad, tkSecondTri, tkThirdTri, tkTriangle, tkUnknown };
 
@@ -36,7 +38,6 @@ typedef TtkTokenKind __fastcall (__closure *TIdentFuncTableFunc)(int Index);
 
 typedef TIdentFuncTableFunc *PIdentFuncTableFunc;
 
-class DELPHICLASS TSynLDRSyn;
 class PASCALIMPLEMENTATION TSynLDRSyn : public Synedithighlighter::TSynCustomHighlighter
 {
 	typedef Synedithighlighter::TSynCustomHighlighter inherited;

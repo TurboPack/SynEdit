@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditKeyCmds.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditKeyCmds.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditkeycmdsHPP
 #define SyneditkeycmdsHPP
@@ -12,19 +12,22 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.Menus.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.Menus.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
+#include <System.SysUtils.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditkeycmds
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS ESynKeyError;
+class DELPHICLASS TSynEditKeyStroke;
+class DELPHICLASS TSynEditKeyStrokes;
+//-- type declarations -------------------------------------------------------
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION ESynKeyError : public System::Sysutils::Exception
 {
@@ -51,7 +54,6 @@ public:
 
 typedef System::Word TSynEditorCommand;
 
-class DELPHICLASS TSynEditKeyStroke;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditKeyStroke : public System::Classes::TCollectionItem
 {
@@ -97,7 +99,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynEditKeyStrokes;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditKeyStrokes : public System::Classes::TCollection
 {

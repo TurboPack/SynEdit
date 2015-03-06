@@ -92,7 +92,7 @@ const
   + 'abcdefghijklmnopqrstuvwxyz'
   + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_';
   RegExprLineSeparators : RegExprString =// default value for LineSeparators
-   #$d#$a+#$b#$c#$2028#$2029#$85; //###0.947
+   #$d#$a#$b#$c + Chr(2028) + Chr(2029) + Chr(85); //###0.947
   RegExprLinePairedSeparator : RegExprString =// default value for LinePairedSeparator
    #$d#$a;
   { if You need Unix-styled line separators (only \n), then use:

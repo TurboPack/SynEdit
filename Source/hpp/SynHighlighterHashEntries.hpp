@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterHashEntries.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterHashEntries.pas' rev: 29.00 (Windows)
 
 #ifndef SynhighlighterhashentriesHPP
 #define SynhighlighterhashentriesHPP
@@ -12,18 +12,20 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <SynEditTypes.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synhighlighterhashentries
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TSynHashEntry;
+class DELPHICLASS TSynHashEntryList;
+//-- type declarations -------------------------------------------------------
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynHashEntry : public System::TObject
 {
@@ -47,7 +49,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynHashEntryList;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynHashEntryList : public System::Classes::TList
 {

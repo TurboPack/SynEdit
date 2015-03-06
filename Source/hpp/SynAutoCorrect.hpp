@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynAutoCorrect.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynAutoCorrect.pas' rev: 29.00 (Windows)
 
 #ifndef SynautocorrectHPP
 #define SynautocorrectHPP
@@ -12,29 +12,32 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <System.Win.Registry.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <Vcl.Forms.hpp>	// Pascal unit
-#include <Vcl.Dialogs.hpp>	// Pascal unit
-#include <SynEditMiscProcs.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditKeyCmds.hpp>	// Pascal unit
-#include <SynEdit.hpp>	// Pascal unit
-#include <SynEditMiscClasses.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.IniFiles.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <System.Win.Registry.hpp>
+#include <Winapi.Messages.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.Dialogs.hpp>
+#include <SynEditMiscProcs.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditKeyCmds.hpp>
+#include <SynEdit.hpp>
+#include <SynEditMiscClasses.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
+#include <System.SysUtils.hpp>
+#include <System.IniFiles.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synautocorrect
 {
+//-- forward type declarations -----------------------------------------------
+class DELPHICLASS TCustomSynAutoCorrect;
+class DELPHICLASS TSynAutoCorrect;
 //-- type declarations -------------------------------------------------------
 enum DECLSPEC_DENUM TAsSynAutoCorrectOption : unsigned char { ascoCorrectOnMouseDown, ascoIgnoreCase, ascoMaintainCase };
 
@@ -44,7 +47,6 @@ enum DECLSPEC_DENUM TAutoCorrectAction : unsigned char { aaCorrect, aaAbort };
 
 typedef void __fastcall (__closure *TAutoCorrectEvent)(System::TObject* Sender, const System::UnicodeString AOriginal, const System::UnicodeString ACorrection, int Line, int Column, TAutoCorrectAction &Action);
 
-class DELPHICLASS TCustomSynAutoCorrect;
 class PASCALIMPLEMENTATION TCustomSynAutoCorrect : public System::Classes::TComponent
 {
 	typedef System::Classes::TComponent inherited;
@@ -95,7 +97,6 @@ public:
 };
 
 
-class DELPHICLASS TSynAutoCorrect;
 class PASCALIMPLEMENTATION TSynAutoCorrect : public TCustomSynAutoCorrect
 {
 	typedef TCustomSynAutoCorrect inherited;

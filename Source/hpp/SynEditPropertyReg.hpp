@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPropertyReg.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPropertyReg.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditpropertyregHPP
 #define SyneditpropertyregHPP
@@ -12,21 +12,27 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <DesignIntf.hpp>	// Pascal unit
-#include <DesignEditors.hpp>	// Pascal unit
-#include <VCLEditors.hpp>	// Pascal unit
-#include <StrEdit.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <DesignIntf.hpp>
+#include <DesignEditors.hpp>
+#include <VCLEditors.hpp>
+#include <StrEdit.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditpropertyreg
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TSynEditFontProperty;
+class DELPHICLASS TSynEditCommandProperty;
+class DELPHICLASS TSynEditKeystrokesProperty;
+class DELPHICLASS TSynEditPrintMarginsProperty;
+class DELPHICLASS TAutoCorrectionProperty;
+class DELPHICLASS TSynAutoCorrectComponentEditor;
+//-- type declarations -------------------------------------------------------
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditFontProperty : public Vcleditors::TFontProperty
 {
@@ -42,7 +48,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynEditCommandProperty;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditCommandProperty : public Designeditors::TIntegerProperty
 {
@@ -67,7 +72,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynEditKeystrokesProperty;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditKeystrokesProperty : public Designeditors::TClassProperty
 {
@@ -84,7 +88,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynEditPrintMarginsProperty;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditPrintMarginsProperty : public Designeditors::TClassProperty
 {
@@ -101,7 +104,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TAutoCorrectionProperty;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TAutoCorrectionProperty : public Designeditors::TPropertyEditor
 {
@@ -119,7 +121,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynAutoCorrectComponentEditor;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynAutoCorrectComponentEditor : public Designeditors::TDefaultEditor
 {

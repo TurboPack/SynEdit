@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditMiscClasses.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditMiscClasses.pas' rev: 29.00 (Windows)
 
 #ifndef SyneditmiscclassesHPP
 #define SyneditmiscclassesHPP
@@ -12,31 +12,42 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Vcl.Consts.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <Winapi.Messages.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
-#include <Vcl.Controls.hpp>	// Pascal unit
-#include <Vcl.Forms.hpp>	// Pascal unit
-#include <Vcl.StdCtrls.hpp>	// Pascal unit
-#include <Vcl.Menus.hpp>	// Pascal unit
-#include <System.Win.Registry.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditKeyConst.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Math.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <System.UITypes.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Vcl.Consts.hpp>
+#include <Winapi.Windows.hpp>
+#include <Winapi.Messages.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Menus.hpp>
+#include <System.Win.Registry.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditKeyConst.hpp>
+#include <SynUnicode.hpp>
+#include <System.Math.hpp>
+#include <System.Classes.hpp>
+#include <System.SysUtils.hpp>
+#include <System.UITypes.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Syneditmiscclasses
 {
-//-- type declarations -------------------------------------------------------
+//-- forward type declarations -----------------------------------------------
 class DELPHICLASS TSynSelectedColor;
+class DELPHICLASS TSynGutter;
+class DELPHICLASS TSynBookMarkOpt;
+class DELPHICLASS TSynGlyph;
+class DELPHICLASS ESynMethodChain;
+class DELPHICLASS TSynMethodChain;
+class DELPHICLASS TSynNotifyEventChain;
+class DELPHICLASS TSynInternalImage;
+class DELPHICLASS TSynHotKey;
+class DELPHICLASS TSynEditSearchCustom;
+class DELPHICLASS TBetterRegistry;
+//-- type declarations -------------------------------------------------------
 class PASCALIMPLEMENTATION TSynSelectedColor : public System::Classes::TPersistent
 {
 	typedef System::Classes::TPersistent inherited;
@@ -64,7 +75,6 @@ public:
 
 enum DECLSPEC_DENUM TSynGutterBorderStyle : unsigned char { gbsNone, gbsMiddle, gbsRight };
 
-class DELPHICLASS TSynGutter;
 class PASCALIMPLEMENTATION TSynGutter : public System::Classes::TPersistent
 {
 	typedef System::Classes::TPersistent inherited;
@@ -147,7 +157,6 @@ __published:
 };
 
 
-class DELPHICLASS TSynBookMarkOpt;
 class PASCALIMPLEMENTATION TSynBookMarkOpt : public System::Classes::TPersistent
 {
 	typedef System::Classes::TPersistent inherited;
@@ -185,7 +194,6 @@ public:
 };
 
 
-class DELPHICLASS TSynGlyph;
 class PASCALIMPLEMENTATION TSynGlyph : public System::Classes::TPersistent
 {
 	typedef System::Classes::TPersistent inherited;
@@ -220,7 +228,6 @@ __published:
 };
 
 
-class DELPHICLASS ESynMethodChain;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION ESynMethodChain : public System::Sysutils::Exception
 {
@@ -247,7 +254,6 @@ public:
 
 typedef void __fastcall (__closure *TSynExceptionEvent)(System::TObject* Sender, System::Sysutils::Exception* E, bool &DoContinue);
 
-class DELPHICLASS TSynMethodChain;
 class PASCALIMPLEMENTATION TSynMethodChain : public System::TObject
 {
 	typedef System::TObject inherited;
@@ -270,7 +276,6 @@ public:
 };
 
 
-class DELPHICLASS TSynNotifyEventChain;
 class PASCALIMPLEMENTATION TSynNotifyEventChain : public TSynMethodChain
 {
 	typedef TSynMethodChain inherited;
@@ -294,7 +299,6 @@ public:
 };
 
 
-class DELPHICLASS TSynInternalImage;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynInternalImage : public System::TObject
 {
@@ -327,7 +331,6 @@ enum DECLSPEC_DENUM THKInvalidKey : unsigned char { hcNone, hcShift, hcCtrl, hcA
 
 typedef System::Set<THKInvalidKey, THKInvalidKey::hcNone, THKInvalidKey::hcShiftCtrlAlt> THKInvalidKeys;
 
-class DELPHICLASS TSynHotKey;
 class PASCALIMPLEMENTATION TSynHotKey : public Vcl::Controls::TCustomControl
 {
 	typedef Vcl::Controls::TCustomControl inherited;
@@ -371,7 +374,6 @@ public:
 };
 
 
-class DELPHICLASS TSynEditSearchCustom;
 class PASCALIMPLEMENTATION TSynEditSearchCustom : public System::Classes::TComponent
 {
 	typedef System::Classes::TComponent inherited;
@@ -399,7 +401,6 @@ public:
 };
 
 
-class DELPHICLASS TBetterRegistry;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TBetterRegistry : public System::Win::Registry::TRegistry
 {

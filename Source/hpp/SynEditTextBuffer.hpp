@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2014 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditTextBuffer.pas' rev: 28.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditTextBuffer.pas' rev: 29.00 (Windows)
 
 #ifndef SynedittextbufferHPP
 #define SynedittextbufferHPP
@@ -12,20 +12,27 @@
 #pragma option -w-      // All warnings off
 #pragma option -Vx      // Zero-length empty class member 
 #pragma pack(push,8)
-#include <System.hpp>	// Pascal unit
-#include <SysInit.hpp>	// Pascal unit
-#include <Winapi.Windows.hpp>	// Pascal unit
-#include <SynEditTypes.hpp>	// Pascal unit
-#include <SynEditMiscProcs.hpp>	// Pascal unit
-#include <SynUnicode.hpp>	// Pascal unit
-#include <System.Classes.hpp>	// Pascal unit
-#include <System.SysUtils.hpp>	// Pascal unit
-#include <Vcl.Graphics.hpp>	// Pascal unit
+#include <System.hpp>
+#include <SysInit.hpp>
+#include <Winapi.Windows.hpp>
+#include <SynEditTypes.hpp>
+#include <SynEditMiscProcs.hpp>
+#include <SynUnicode.hpp>
+#include <System.Classes.hpp>
+#include <System.SysUtils.hpp>
+#include <Vcl.Graphics.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
 namespace Synedittextbuffer
 {
+//-- forward type declarations -----------------------------------------------
+struct TSynEditStringRec;
+struct TSynEditTwoWideChars;
+class DELPHICLASS TSynEditStringList;
+class DELPHICLASS ESynEditStringList;
+class DELPHICLASS TSynEditUndoItem;
+class DELPHICLASS TSynEditUndoList;
 //-- type declarations -------------------------------------------------------
 typedef void * TSynEditRange;
 
@@ -33,7 +40,6 @@ enum DECLSPEC_DENUM TSynEditStringFlag : unsigned char { sfHasTabs, sfHasNoTabs,
 
 typedef System::Set<TSynEditStringFlag, TSynEditStringFlag::sfHasTabs, TSynEditStringFlag::sfExpandedLengthUnknown> TSynEditStringFlags;
 
-struct TSynEditStringRec;
 typedef TSynEditStringRec *PSynEditStringRec;
 
 struct DECLSPEC_DRECORD TSynEditStringRec
@@ -68,7 +74,6 @@ typedef System::UnicodeString __fastcall (__closure *TExpandAtWideGlyphsFunc)(co
 
 enum DECLSPEC_DENUM TSynEditFileFormat : unsigned char { sffDos, sffUnix, sffMac, sffUnicode };
 
-class DELPHICLASS TSynEditStringList;
 class PASCALIMPLEMENTATION TSynEditStringList : public System::Classes::TStrings
 {
 	typedef System::Classes::TStrings inherited;
@@ -158,7 +163,6 @@ public:
 };
 
 
-class DELPHICLASS ESynEditStringList;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION ESynEditStringList : public System::Sysutils::Exception
 {
@@ -185,7 +189,6 @@ public:
 
 enum DECLSPEC_DENUM TSynChangeReason : unsigned char { crInsert, crPaste, crDragDropInsert, crDeleteAfterCursor, crDelete, crLineBreak, crIndent, crUnindent, crSilentDelete, crSilentDeleteAfterCursor, crAutoCompleteBegin, crAutoCompleteEnd, crPasteBegin, crPasteEnd, crSpecial1Begin, crSpecial1End, crSpecial2Begin, crSpecial2End, crCaret, crSelection, crNothing, crGroupBreak, crDeleteAll, crWhiteSpaceAdd };
 
-class DELPHICLASS TSynEditUndoItem;
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditUndoItem : public System::Classes::TPersistent
 {
@@ -217,7 +220,6 @@ public:
 
 #pragma pack(pop)
 
-class DELPHICLASS TSynEditUndoList;
 class PASCALIMPLEMENTATION TSynEditUndoList : public System::Classes::TPersistent
 {
 	typedef System::Classes::TPersistent inherited;
