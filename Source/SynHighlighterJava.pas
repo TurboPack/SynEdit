@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterJava.pas, released 2000-04-10.
 The Original Code is based on the DcjSynJava.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Trier.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -860,7 +860,7 @@ begin
         ',': CommaProc;
         '=': EqualProc;
         '>': GreaterProc;
-        'A'..'Z', 'a'..'z', '_', '$': IdentProc;
+        'A'..'Z', 'a'..'z', '_', '$', 'À'..'Ö', 'Ø'..'ö', 'ø'..'ÿ': IdentProc;
         #10: LFProc;
         '<': LowerProc;
         '-': MinusProc;
@@ -884,14 +884,7 @@ begin
         #34: StringProc;
         '~': TildeProc;
         '^': XOrSymbolProc;
-        else
-        begin
-          case Ord(fLine[Run]) of
-            192..214, 216..246, 248..255: IdentProc;
-          else
-           UnknownProc;
-          end;
-        end;
+        else UnknownProc;
       end;
     end;
   end;
@@ -971,8 +964,8 @@ end;
 
 function TSynJavaSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  case Ord(AChar) of
-    Ord('_'), Ord('$'), Ord('0')..Ord('9'), Ord('a')..Ord('z'), Ord('A')..Ord('Z'), 192..214, 216..246, 248..255:
+  case AChar of
+    '_', '$', '0'..'9', 'a'..'z', 'A'..'Z', 'À'..'Ö', 'Ø'..'ö', 'ø'..'ÿ':
       Result := True;
     else
       Result := False;
