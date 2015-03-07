@@ -860,7 +860,7 @@ begin
         ',': CommaProc;
         '=': EqualProc;
         '>': GreaterProc;
-        'A'..'Z', 'a'..'z', '_', '$', 'À'..'Ö', 'Ø'..'ö', 'ø'..'ÿ': IdentProc;
+        'A'..'Z', 'a'..'z', '_', '$': IdentProc;
         #10: LFProc;
         '<': LowerProc;
         '-': MinusProc;
@@ -884,7 +884,14 @@ begin
         #34: StringProc;
         '~': TildeProc;
         '^': XOrSymbolProc;
-        else UnknownProc;
+        else
+        begin
+          case Ord(fLine[Run]) of
+            192..214, 216..246, 248..255: IdentProc;
+          else
+           UnknownProc;
+          end;
+        end;
       end;
     end;
   end;
@@ -964,8 +971,8 @@ end;
 
 function TSynJavaSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  case AChar of
-    '_', '$', '0'..'9', 'a'..'z', 'A'..'Z', 'À'..'Ö', 'Ø'..'ö', 'ø'..'ÿ':
+  case Ord(AChar) of
+    Ord('_'), Ord('$'), Ord('0')..Ord('9'), Ord('a')..Ord('z'), Ord('A')..Ord('Z'), 192..214, 216..246, 248..255:
       Result := True;
     else
       Result := False;
