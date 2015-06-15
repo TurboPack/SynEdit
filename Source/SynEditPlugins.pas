@@ -119,19 +119,19 @@ type
 
   TAbstractSynCompletion = class(TAbstractSynSingleHookPlugin)
   protected
-    fCurrentString: UnicodeString;
+    fCurrentString: string;
   protected
-    procedure SetCurrentString(const Value: UnicodeString); virtual;
+    procedure SetCurrentString(const Value: string); virtual;
     procedure OnCommand(Sender: TObject; AfterProcessing: boolean;
       var Handled: boolean; var Command: TSynEditorCommand; var AChar: WideChar;
       Data: pointer; HandlerData: pointer); override;
     procedure DoExecute; override;
     procedure DoAccept; override;
     procedure DoCancel; override;
-    function GetCurrentEditorString: UnicodeString; virtual;
+    function GetCurrentEditorString: string; virtual;
   public
     procedure AddEditor(aEditor: TCustomSynEdit);
-    property CurrentString: UnicodeString read fCurrentString write SetCurrentString;
+    property CurrentString: string read fCurrentString write SetCurrentString;
   end;
 
 function NewPluginCommand: TSynEditorCommand;
@@ -434,9 +434,9 @@ end;
 
 { TAbstractSynCompletion }
 
-function TAbstractSynCompletion.GetCurrentEditorString: UnicodeString;
+function TAbstractSynCompletion.GetCurrentEditorString: string;
 var
-  S: UnicodeString;
+  S: string;
   Col: integer;
 begin
   S := CurrentEditor.LineText;
@@ -470,7 +470,7 @@ procedure TAbstractSynCompletion.OnCommand(Sender: TObject;
   var Command: TSynEditorCommand; var AChar: WideChar; Data,
   HandlerData: Pointer);
 var
-  S: UnicodeString;
+  S: string;
 begin  
   if not Executing then
   begin
@@ -542,7 +542,7 @@ begin
     end; {endif Sender = CurrentEditor}
 end;
 
-procedure TAbstractSynCompletion.SetCurrentString(const Value: UnicodeString);
+procedure TAbstractSynCompletion.SetCurrentString(const Value: string);
 begin
   fCurrentString := Value;
 end;

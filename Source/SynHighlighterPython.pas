@@ -76,7 +76,7 @@ type
     fStringStarter: WideChar;  // used only for rsMultilineString3 stuff
     fRange: TRangeState;
     FTokenID: TtkTokenKind;
-    FKeywords: TUnicodeStringList;
+    FKeywords: TStringList;
     fStringAttri: TSynHighlighterAttributes;
     fDocStringAttri: TSynHighlighterAttributes;
     fNumberAttri: TSynHighlighterAttributes;
@@ -109,14 +109,14 @@ type
     procedure StringEndProc(EndChar: WideChar);
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
-    function GetKeywordIdentifiers: TUnicodeStringList;
-    property Keywords: TUnicodeStringList read FKeywords;
+    function GetKeywordIdentifiers: TStringList;
+    property Keywords: TStringList read FKeywords;
     property TokenID: TtkTokenKind read FTokenID;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -166,15 +166,15 @@ uses
   SynEditStrConst;
 
 var
-  GlobalKeywords: TUnicodeStringList;
+  GlobalKeywords: TStringList;
 
-function TSynPythonSyn.GetKeywordIdentifiers: TUnicodeStringList;
+function TSynPythonSyn.GetKeywordIdentifiers: TStringList;
 const
   // No need to localise keywords!
 
   // List of keywords
   KEYWORDCOUNT = 29;
-  KEYWORDS: array [1..KEYWORDCOUNT] of UnicodeString =
+  KEYWORDS: array [1..KEYWORDCOUNT] of string =
     (
     'and',
     'assert',
@@ -209,7 +209,7 @@ const
 
   // List of non-keyword identifiers
   NONKEYWORDCOUNT = 66;
-  NONKEYWORDS: array [1..NONKEYWORDCOUNT] of UnicodeString =
+  NONKEYWORDS: array [1..NONKEYWORDCOUNT] of string =
     (
     '__future__',
     '__import__',
@@ -284,7 +284,7 @@ begin
   if not Assigned (GlobalKeywords) then
   begin
     // Create the string list of keywords - only once
-    GlobalKeywords := TUnicodeStringList.Create;
+    GlobalKeywords := TStringList.Create;
 
     for f := 1 to KEYWORDCOUNT do
       GlobalKeywords.AddObject(KEYWORDS[f], Pointer(Ord(tkKey)));
@@ -298,7 +298,7 @@ function TSynPythonSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
   i: Integer;
   temp: PWideChar;
-  s: UnicodeString;
+  s: string;
 begin
   // Extract the identifier out - it is assumed to terminate in a
   //   non-alphanumeric character
@@ -312,7 +312,7 @@ begin
   SetString(s, fToIdent, fStringLen);
   if FKeywords.Find(s, i) then
   begin
-    // TUnicodeStringList is not case sensitive!
+    // TStringList is not case sensitive!
     if s <> FKeywords[i] then
       i := -1;
   end
@@ -340,7 +340,7 @@ begin
 
   fCaseSensitive := True;
 
-  FKeywords := TUnicodeStringList.Create;
+  FKeywords := TStringList.Create;
   FKeywords.Sorted := True; 
   FKeywords.Duplicates := dupError;
   FKeywords.Assign (GetKeywordIdentifiers);
@@ -1152,7 +1152,7 @@ begin
   Result := SYNS_LangPython;
 end;
 
-function TSynPythonSyn.GetSampleSource: UnicodeString;
+function TSynPythonSyn.GetSampleSource: string;
 begin
   Result :=
     '#!/usr/local/bin/python'#13#10 +
@@ -1163,7 +1163,7 @@ begin
     '    sys.exit(0)';
 end;
 
-class function TSynPythonSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynPythonSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangPython;
 end;

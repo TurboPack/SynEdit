@@ -277,7 +277,7 @@ procedure Register;
 begin
   RegisterPropertyEditor(TypeInfo(WideChar), nil,
      '', TCharProperty);
-  RegisterPropertyEditor(TypeInfo(TUnicodeStrings), nil,
+  RegisterPropertyEditor(TypeInfo(TStrings), nil,
      '', TStringListProperty);
 
   RegisterPropertyEditor(TypeInfo(TFont), TCustomSynEdit,

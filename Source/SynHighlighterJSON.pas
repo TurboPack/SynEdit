@@ -74,11 +74,11 @@ type
     procedure SymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -483,7 +483,7 @@ begin
   Result := SYNS_LangJSON;
 end;
 
-function TSynJSONSyn.GetSampleSource: UnicodeString;
+function TSynJSONSyn.GetSampleSource: string;
 begin
   Result :=
     '{'#13#10 +
@@ -514,7 +514,7 @@ begin
     '}';
 end;
 
-class function TSynJSONSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynJSONSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangJSON;
 end;

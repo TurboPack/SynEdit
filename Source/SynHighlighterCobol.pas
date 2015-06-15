@@ -99,7 +99,7 @@ type
     fTagAreaAttri: TSynHighlighterAttributes;
     fDebugLinesAttri: TSynHighlighterAttributes;
     fKeywords: TSynHashEntryList;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure IdentProc;
@@ -118,7 +118,7 @@ type
     procedure CommentProc;
     procedure DebugProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
 
@@ -129,7 +129,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -166,10 +166,10 @@ uses
   SynEditStrConst;
 
 const
-  BooleanWords: UnicodeString =
+  BooleanWords: string =
     'false, true';
 
-  KeyWords: UnicodeString =
+  KeyWords: string =
     'accept, access, acquire, add, address, advancing, after, all, allowing, ' +
     'alphabet, alphabetic, alphabetic-lower, alphabetic-upper, alphanumeric, ' +
     'alphanumeric-edited, also, alter, alternate, and, any, apply, are, ' +
@@ -250,22 +250,22 @@ const
     'value, values, variable, varying, wait, when, when-compiled, with, ' +
     'within, words, working-storage, write, write-only, zero-fill';
 
-  PreprocessorWords: UnicodeString =
+  PreprocessorWords: string =
     'basis, cbl, control, copy, delete, eject, insert, ready, reload, ' +
     'replace, reset, service, skip1, skip2, skip3, title, trace, use';
 
-  StringWords: UnicodeString =
+  StringWords: string =
     'high-value, high-values, low-value, low-values, null, nulls, quote, ' +
     'quotes, space, spaces, zero, zeroes, zeros';
 
   // Ambigious means that a simple string comparision is not enough
-  AmbigiousWords: UnicodeString =
+  AmbigiousWords: string =
     'label';
 
 const
   StringChars: array[TRangeState] of WideChar = (#0, '"', '''', '=',  '"', '''');
 
-procedure TSynCobolSyn.DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+procedure TSynCobolSyn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
   HashValue: integer;
 begin
@@ -772,7 +772,7 @@ begin
   Result := Ord(fTokenId);
 end;
 
-function TSynCobolSyn.GetSampleSource: UnicodeString;
+function TSynCobolSyn.GetSampleSource: string;
 begin
   Result := '000100* This is a sample file to be used to show all TSynCobolSyn''s'#13#10 +
             '000200* features.'#13#10 +
@@ -918,7 +918,7 @@ begin
   Result := Pointer(fRange);
 end;
 
-class function TSynCobolSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynCobolSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCOBOL;
 end;

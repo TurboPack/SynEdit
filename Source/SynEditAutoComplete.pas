@@ -55,23 +55,23 @@ uses
 type
   TCustomSynAutoComplete = class(TComponent)
   protected
-    fAutoCompleteList: TUnicodeStrings;
-    fCompletions: TUnicodeStrings;
-    fCompletionComments: TUnicodeStrings;
-    fCompletionValues: TUnicodeStrings;
+    fAutoCompleteList: TStrings;
+    fCompletions: TStrings;
+    fCompletionComments: TStrings;
+    fCompletionValues: TStrings;
     fEditor: TCustomSynEdit;
     fEditors: TList;
-    fEOTokenChars: UnicodeString;
+    fEOTokenChars: string;
     fCaseSensitive: boolean;
     fParsed: boolean;
     procedure CompletionListChanged(Sender: TObject);
     procedure DefineProperties(Filer: TFiler); override;    
-    function GetCompletions: TUnicodeStrings;
-    function GetCompletionComments: TUnicodeStrings;
-    function GetCompletionValues: TUnicodeStrings;
+    function GetCompletions: TStrings;
+    function GetCompletionComments: TStrings;
+    function GetCompletionValues: TStrings;
     function GetEditorCount: integer;
     function GetNthEditor(Index: integer): TCustomSynEdit;
-    procedure SetAutoCompleteList(Value: TUnicodeStrings); virtual;
+    procedure SetAutoCompleteList(Value: TStrings); virtual;
     procedure SetEditor(Value: TCustomSynEdit);
     procedure SynEditCommandHandler(Sender: TObject; AfterProcessing: boolean;
       var Handled: boolean; var Command: TSynEditorCommand; var AChar: WideChar;
@@ -85,22 +85,22 @@ type
     function AddEditor(AEditor: TCustomSynEdit): boolean;
     function RemoveEditor(AEditor: TCustomSynEdit): boolean;
 
-    procedure AddCompletion(const AToken, AValue, AComment: UnicodeString);
+    procedure AddCompletion(const AToken, AValue, AComment: string);
     procedure Execute(AEditor: TCustomSynEdit); virtual;
-    procedure ExecuteCompletion(const AToken: UnicodeString; AEditor: TCustomSynEdit);
+    procedure ExecuteCompletion(const AToken: string; AEditor: TCustomSynEdit);
       virtual;
     procedure ParseCompletionList; virtual;
   public
-    property AutoCompleteList: TUnicodeStrings read fAutoCompleteList
+    property AutoCompleteList: TStrings read fAutoCompleteList
       write SetAutoCompleteList;
     property CaseSensitive: boolean read fCaseSensitive write fCaseSensitive;
-    property Completions: TUnicodeStrings read GetCompletions;
-    property CompletionComments: TUnicodeStrings read GetCompletionComments;
-    property CompletionValues: TUnicodeStrings read GetCompletionValues;
+    property Completions: TStrings read GetCompletions;
+    property CompletionComments: TStrings read GetCompletionComments;
+    property CompletionValues: TStrings read GetCompletionValues;
     property Editor: TCustomSynEdit read fEditor write SetEditor;
     property EditorCount: integer read GetEditorCount;
     property Editors[Index: integer]: TCustomSynEdit read GetNthEditor;
-    property EndOfTokenChr: UnicodeString read fEOTokenChars write fEOTokenChars;
+    property EndOfTokenChr: string read fEOTokenChars write fEOTokenChars;
   end;
 
   TSynAutoComplete = class(TCustomSynAutoComplete)
@@ -119,7 +119,7 @@ uses
 
 { TCustomSynAutoComplete }
 
-procedure TCustomSynAutoComplete.AddCompletion(const AToken, AValue, AComment: UnicodeString);
+procedure TCustomSynAutoComplete.AddCompletion(const AToken, AValue, AComment: string);
 begin
   if AToken <> '' then
   begin
@@ -158,11 +158,11 @@ end;
 constructor TCustomSynAutoComplete.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fAutoCompleteList := TUnicodeStringList.Create;
-  TUnicodeStringList(fAutoCompleteList).OnChange := CompletionListChanged;
-  fCompletions := TUnicodeStringList.Create;
-  fCompletionComments := TUnicodeStringList.Create;
-  fCompletionValues := TUnicodeStringList.Create;
+  fAutoCompleteList := TStringList.Create;
+  TStringList(fAutoCompleteList).OnChange := CompletionListChanged;
+  fCompletions := TStringList.Create;
+  fCompletionComments := TStringList.Create;
+  fCompletionValues := TStringList.Create;
   fEditors := TList.Create;
   fEOTokenChars := '()[]{}.';
 end;
@@ -188,7 +188,7 @@ end;
 
 procedure TCustomSynAutoComplete.Execute(AEditor: TCustomSynEdit);
 var
-  s: UnicodeString;
+  s: string;
   i, j: integer;
 begin
   if AEditor <> nil then
@@ -208,15 +208,15 @@ begin
   end;
 end;
 
-procedure TCustomSynAutoComplete.ExecuteCompletion(const AToken: UnicodeString;
+procedure TCustomSynAutoComplete.ExecuteCompletion(const AToken: string;
   AEditor: TCustomSynEdit);
 var
   i, j, Len, IndentLen: integer;
-  s: UnicodeString;
+  s: string;
   IdxMaybe, NumMaybe: integer;
   p: TBufferCoord;
   NewCaretPos: boolean;
-  Temp: TUnicodeStringList;
+  Temp: TStringList;
 begin
   if not fParsed then
     ParseCompletionList;
@@ -272,7 +272,7 @@ begin
         IndentLen := p.Char - Len - 1;
         p := AEditor.BlockBegin;
         NewCaretPos := False;
-        Temp := TUnicodeStringList.Create;
+        Temp := TStringList.Create;
         try
           Temp.Text := fCompletionValues[i];
           // indent lines
@@ -322,21 +322,21 @@ begin
   end;
 end;
 
-function TCustomSynAutoComplete.GetCompletions: TUnicodeStrings;
+function TCustomSynAutoComplete.GetCompletions: TStrings;
 begin
   if not fParsed then
     ParseCompletionList;
   Result := fCompletions;
 end;
 
-function TCustomSynAutoComplete.GetCompletionComments: TUnicodeStrings;
+function TCustomSynAutoComplete.GetCompletionComments: TStrings;
 begin
   if not fParsed then
     ParseCompletionList;
   Result := fCompletionComments;
 end;
 
-function TCustomSynAutoComplete.GetCompletionValues: TUnicodeStrings;
+function TCustomSynAutoComplete.GetCompletionValues: TStrings;
 begin
   if not fParsed then
     ParseCompletionList;
@@ -373,7 +373,7 @@ procedure TCustomSynAutoComplete.ParseCompletionList;
 var
   BorlandDCI: boolean;
   i, j, Len: integer;
-  s, sCompl, sComment, sComplValue: UnicodeString;
+  s, sCompl, sComment, sComplValue: string;
 
   procedure SaveEntry;
   begin
@@ -477,7 +477,7 @@ begin
   Result := False;
 end;
 
-procedure TCustomSynAutoComplete.SetAutoCompleteList(Value: TUnicodeStrings);
+procedure TCustomSynAutoComplete.SetAutoCompleteList(Value: TStrings);
 begin
   fAutoCompleteList.Assign(Value);
   fParsed := False;

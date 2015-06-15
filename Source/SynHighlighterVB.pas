@@ -96,11 +96,11 @@ type
     procedure StringProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -132,7 +132,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..213] of UnicodeString = (
+  KeyWords: array[0..213] of string = (
     'abs', 'and', 'appactivate', 'array', 'as', 'asc', 'atn', 'attribute', 
     'base', 'beep', 'begin', 'boolean', 'byte', 'call', 'case', 'cbool', 
     'cbyte', 'ccur', 'cdate', 'cdbl', 'chdir', 'chdrive', 'chr', 'cint', 
@@ -531,7 +531,7 @@ begin
   Result := SYNS_LangVisualBASIC;
 end;
 
-function TSynVBSyn.GetSampleSource: UnicodeString;
+function TSynVBSyn.GetSampleSource: string;
 begin
   Result := ''' Syntax highlighting'#13#10+
             'Function PrintNumber'#13#10+
@@ -551,7 +551,7 @@ begin
             'End Function';
 end;
 
-class function TSynVBSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynVBSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangVisualBASIC;
 end;

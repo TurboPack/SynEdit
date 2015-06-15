@@ -35,10 +35,6 @@ enum DECLSPEC_DENUM TSaveFormat : unsigned char { sfUTF16LSB, sfUTF16MSB, sfUTF8
 
 typedef System::Byte TFontCharSet;
 
-typedef System::Classes::TStrings TUnicodeStrings;
-
-typedef System::Classes::TStringList TUnicodeStringList;
-
 enum DECLSPEC_DENUM TSynEncoding : unsigned char { seUTF8, seUTF16LE, seUTF16BE, seAnsi };
 
 typedef System::Set<TSynEncoding, TSynEncoding::seUTF8, TSynEncoding::seAnsi> TSynEncodings;

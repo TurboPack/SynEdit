@@ -119,7 +119,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -151,7 +151,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..809] of UnicodeString = (
+  KeyWords: array[0..809] of string = (
     '_curobj', '_msysmenu', '_pageno', '_screen', '_vfp', 'abs', 'accept', 
     'aclass', 'acopy', 'acos', 'acti', 'activate', 'adatabases', 'adbobjects', 
     'add', 'additive', 'adel', 'adir', 'aelement', 'aerror', 'afields', 'afont', 
@@ -1755,7 +1755,7 @@ begin
   Result := SYNS_LangFoxpro;
 end;
 
-class function TSynFoxproSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynFoxproSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangFoxpro;
 end;

@@ -69,7 +69,7 @@ type
   PHashListEntry = ^THashListEntry;
   THashListEntry = record
     Next: PHashListEntry;
-    Token: UnicodeString;
+    Token: string;
     Kind: TtkTokenKind;
     Op: Boolean;
   end;
@@ -88,7 +88,7 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     fKeywords: TSynHashEntryList;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymAsciiCharProc;
@@ -105,11 +105,11 @@ type
     procedure SymStringProc;
     procedure SymUnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -151,7 +151,7 @@ const
     Also the SampleSource uses EQU_ and EQU, so it isn't clear what is
     the correct syntax: with other without the underscores.
   }
-  KeyWords: UnicodeString = (
+  KeyWords: string = (
     'ABA,ABX,ABY,ADCA_,ADCB_,ADDA_,ADDB_,ADDD_,ANDA_,ANDB_,ASLA,ASLB,' +
     'ASL_,ASLD,ASRA,ASRB,ASR_,BCC_,BCLR_,BCS_,BEQ_,BGE_,BGT_,BHI_,BHS' +
     '_,BITA_,BITB_,BLE_,BLO_,BLS_,BLT_,BMI_,BNE_,BPL_,BRA_,BRCLR_,BRN' +
@@ -167,11 +167,11 @@ const
     'FCC_,FCB_,BSZ_,FDB_' // codegenerating directives
   );
 
-  Directives: UnicodeString = (
+  Directives: string = (
     'EQU_,OPT_,PAGE,ORG_,RMB_,END'  // directives
   );
 
-procedure TSynHC11Syn.DoAddKeyword(AKeyword: UnicodeString; AKind: Integer);
+procedure TSynHC11Syn.DoAddKeyword(AKeyword: string; AKind: Integer);
 var
   HashValue: Integer;
 begin
@@ -473,7 +473,7 @@ begin
   Result := SYNS_Lang68HC11;
 end;
 
-function TSynHC11Syn.GetSampleSource: UnicodeString;
+function TSynHC11Syn.GetSampleSource: string;
 begin
   Result :=
     '* TX.ASM'#13#10 +
@@ -488,7 +488,7 @@ begin
     '	END';
 end;
 
-class function TSynHC11Syn.GetFriendlyLanguageName: UnicodeString;
+class function TSynHC11Syn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLang68HC11;
 end;

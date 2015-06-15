@@ -75,7 +75,7 @@ type
     fCommentAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
-    fKeyWords: TUnicodeStrings;
+    fKeyWords: TStrings;
     procedure PointCommaProc;
     procedure CRProc;
     procedure IdentProc;
@@ -85,12 +85,12 @@ type
     procedure StringProc;
     procedure UnknownProc;
     procedure MessageStyleProc;
-    procedure SetKeyWords(const Value: TUnicodeStrings);
+    procedure SetKeyWords(const Value: TStrings);
   protected
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -102,7 +102,7 @@ type
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
-    function IsKeyword(const AKeyword: UnicodeString): Boolean; override;
+    function IsKeyword(const AKeyword: string): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -114,7 +114,7 @@ type
     property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri
       write fIdentifierAttri;
     property KeyAttri: TSynHighlighterAttributes read fKeyAttri write fKeyAttri;
-    property KeyWords: TUnicodeStrings read fKeyWords write SetKeyWords;
+    property KeyWords: TStrings read fKeyWords write SetKeyWords;
     property SpaceAttri: TSynHighlighterAttributes read fSpaceAttri
       write fSpaceAttri;
     property MessageAttri: TSynHighlighterAttributes read fMessageAttri
@@ -136,10 +136,10 @@ begin
   end;
 end;
 
-function TSynGalaxySyn.IsKeyword(const AKeyword: UnicodeString): Boolean;
+function TSynGalaxySyn.IsKeyword(const AKeyword: string): Boolean;
 var
   First, Last, I, Compare: Integer;
-  Token: UnicodeString;
+  Token: string;
 begin
   First := 0;
   Last := fKeywords.Count - 1;
@@ -164,10 +164,10 @@ begin
 
   fCaseSensitive := False;
 
-  fKeyWords := TUnicodeStringList.Create;
-  TUnicodeStringList(fKeyWords).Sorted := True;
-  TUnicodeStringList(fKeyWords).Duplicates := dupIgnore;
-  TUnicodeStringList(fKeyWords).CommaText :=
+  fKeyWords := TStringList.Create;
+  TStringList(fKeyWords).Sorted := True;
+  TStringList(fKeyWords).Duplicates := dupIgnore;
+  TStringList(fKeyWords).CommaText :=
     '#end,#galaxy,a,anonymous,autounload,b,battleprotocol,c,cap,cargo,col,' +
     'compress,d,drive,e,emp,f,fleet,fleettables,g,galaxytv,gplus,groupforecast,' +
     'h,i,j,l,m,machinereport,mat,n,namecase,no,o,options,p,planetforecast,' +
@@ -367,7 +367,7 @@ begin
   fRange := TRangeState(Value);
 end;
 
-procedure TSynGalaxySyn.SetKeyWords(const Value: TUnicodeStrings);
+procedure TSynGalaxySyn.SetKeyWords(const Value: TStrings);
 var
   i: Integer;
 begin
@@ -431,7 +431,7 @@ begin
   end;
 end;
 
-class function TSynGalaxySyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynGalaxySyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangGalaxy;
 end;

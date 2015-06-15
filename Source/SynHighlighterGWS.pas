@@ -152,7 +152,7 @@ Type
   public
     constructor Create(AOwner: TComponent); override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function GetDefaultAttribute (Index: integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
@@ -181,7 +181,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..12] of UnicodeString = (
+  KeyWords: array[0..12] of string = (
     'bool', 'break', 'char', 'do', 'else', 'false', 'for', 'if', 'int', 
     'return', 'string', 'true', 'while' 
   );
@@ -1028,7 +1028,7 @@ begin
   end;
 end;
 
-class function TSynGWScriptSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynGWScriptSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangGWS;
 end;

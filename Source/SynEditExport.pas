@@ -75,10 +75,10 @@ type
     procedure SetExportAsText(Value: Boolean);
     procedure SetFont(Value: TFont);
     procedure SetHighlighter(Value: TSynCustomHighlighter);
-    procedure SetTitle(const Value: UnicodeString);
+    procedure SetTitle(const Value: string);
     procedure SetUseBackground(const Value: Boolean);
-    function StringSize(const AText: UnicodeString): Integer;
-    procedure WriteString(const AText: UnicodeString);
+    function StringSize(const AText: string): Integer;
+    procedure WriteString(const AText: string);
   protected
     fBackgroundColor: TColor;
     fClipboardFormat: UINT;
@@ -90,12 +90,12 @@ type
     fLastBG: TColor;
     fLastFG: TColor;
     fLastStyle: TFontStyles;
-    fTitle: UnicodeString;
+    fTitle: string;
     fUseBackground: Boolean;
     { Adds a string to the output buffer. }
-    procedure AddData(const AText: UnicodeString);
+    procedure AddData(const AText: string);
     { Adds a string and a trailing newline to the output buffer. }
-    procedure AddDataNewLine(const AText: UnicodeString);
+    procedure AddDataNewLine(const AText: string);
     { Adds a newline to the output buffer. }
     procedure AddNewLine;
     { Copies the data under this format to the clipboard. The clipboard has to
@@ -122,7 +122,7 @@ type
       virtual; abstract;
     { Has to be overridden in descendant classes to add the formatted text of
       the actual token text to the output buffer. }
-    procedure FormatToken(Token: UnicodeString); virtual;
+    procedure FormatToken(Token: string); virtual;
     { Has to be overridden in descendant classes to add a newline in the output
       format to the output buffer. }
     procedure FormatNewLine; virtual; abstract;
@@ -133,21 +133,21 @@ type
     function GetClipboardFormat: UINT; virtual;
     { Has to be overridden in descendant classes to return the correct output
       format footer. }
-    function GetFooter: UnicodeString; virtual; abstract;
+    function GetFooter: string; virtual; abstract;
     { Has to be overridden in descendant classes to return the name of the
       output format. }
     function GetFormatName: string; virtual;
     { Has to be overridden in descendant classes to return the correct output
       format header. }
-    function GetHeader: UnicodeString; virtual; abstract;
+    function GetHeader: string; virtual; abstract;
     { Inserts a data block at the given position into the output buffer.  Is
       used to insert the format header after the exporting, since some header
       data may be known only after the conversion is done. }
-    procedure InsertData(APos: Integer; const AText: UnicodeString);
-    function ReplaceReservedChar(AChar: WideChar): UnicodeString; virtual; abstract;
+    procedure InsertData(APos: Integer; const AText: string);
+    function ReplaceReservedChar(AChar: WideChar): string; virtual; abstract;
     { Returns a string that has all the invalid chars of the output format
       replaced with the entries in the replacement array. }
-    function ReplaceReservedChars(AToken: UnicodeString): UnicodeString;
+    function ReplaceReservedChars(AToken: string): string;
     { Sets the token attribute of the next token to determine the changes
       of colors and font styles so the properties of the next token can be
       added to the output buffer. }
@@ -165,11 +165,11 @@ type
       or as text depending on the ExportAsText property. }
     procedure CopyToClipboard;
     { Exports everything in the strings parameter to the output buffer. }
-    procedure ExportAll(ALines: TUnicodeStrings);
+    procedure ExportAll(ALines: TStrings);
     { Exports the given range of the strings parameter to the output buffer. }
-    procedure ExportRange(ALines: TUnicodeStrings; Start, Stop: TBufferCoord);
+    procedure ExportRange(ALines: TStrings; Start, Stop: TBufferCoord);
     { Saves the contents of the output buffer to a file. }
-    procedure SaveToFile(const FileName: UnicodeString);
+    procedure SaveToFile(const FileName: string);
     { Saves the contents of the output buffer to a stream. }
     procedure SaveToStream(Stream: TStream);
     function SupportedEncodings: TSynEncodings; virtual; abstract;
@@ -191,7 +191,7 @@ type
     property Highlighter: TSynCustomHighlighter
       read fHighlighter write SetHighlighter;
     { The title to embedd into the output header. }
-    property Title: UnicodeString read fTitle write SetTitle;
+    property Title: string read fTitle write SetTitle;
     { Use the token attribute background for the exporting. }
     property UseBackground: Boolean read fUseBackground write SetUseBackground;
   end;
@@ -233,7 +233,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TSynCustomExporter.AddData(const AText: UnicodeString);
+procedure TSynCustomExporter.AddData(const AText: string);
 begin
   if AText <> '' then
   begin
@@ -242,7 +242,7 @@ begin
   end;
 end;
 
-procedure TSynCustomExporter.AddDataNewLine(const AText: UnicodeString);
+procedure TSynCustomExporter.AddDataNewLine(const AText: string);
 begin
   AddData(AText);
   AddNewLine;
@@ -277,7 +277,7 @@ begin
   fLastFG := clWindowText;
 end;
 
-procedure SetClipboardText(Text: UnicodeString);
+procedure SetClipboardText(Text: string);
 var
   Mem: HGLOBAL;
   P: PByte;
@@ -335,7 +335,7 @@ procedure TSynCustomExporter.CopyToClipboard;
 const
   Nulls: array[0..1] of Byte = (0, 0);
 var
-  S: UnicodeString;
+  S: string;
 begin
   if fExportAsText then
   begin
@@ -352,7 +352,7 @@ begin
       seUTF8:
         S := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
       seAnsi:
-        S := UnicodeString(PAnsiChar(fBuffer.Memory));
+        S := string(PAnsiChar(fBuffer.Memory));
     end;
     SetClipboardText(S);
   end
@@ -394,15 +394,15 @@ begin
   inherited;
 end;
 
-procedure TSynCustomExporter.ExportAll(ALines: TUnicodeStrings);
+procedure TSynCustomExporter.ExportAll(ALines: TStrings);
 begin
   ExportRange(ALines, BufferCoord(1, 1), BufferCoord(MaxInt, MaxInt));
 end;
 
-procedure TSynCustomExporter.ExportRange(ALines: TUnicodeStrings; Start, Stop: TBufferCoord);
+procedure TSynCustomExporter.ExportRange(ALines: TStrings; Start, Stop: TBufferCoord);
 var
   i: Integer;
-  Line, Token: UnicodeString;
+  Line, Token: string;
   Attri: TSynHighlighterAttributes;
 begin
   FStreaming := True;
@@ -459,7 +459,7 @@ begin
   end
 end;
 
-procedure TSynCustomExporter.FormatToken(Token: UnicodeString);
+procedure TSynCustomExporter.FormatToken(Token: string);
 begin
   AddData(Token);
 end;
@@ -479,7 +479,7 @@ begin
   Result := '';
 end;
 
-procedure TSynCustomExporter.InsertData(APos: Integer; const AText: UnicodeString);
+procedure TSynCustomExporter.InsertData(APos: Integer; const AText: string);
 var
   Size, ToMove, SizeNeeded: Integer;
   Dest: PByte;
@@ -502,10 +502,10 @@ begin
   end;
 end;
 
-function TSynCustomExporter.ReplaceReservedChars(AToken: UnicodeString): UnicodeString;
+function TSynCustomExporter.ReplaceReservedChars(AToken: string): string;
 var
   I, ISrc, IDest, SrcLen, DestLen: Integer;
-  Replace: UnicodeString;
+  Replace: string;
   c: WideChar;                                                                      //mh 2000-10-10
 begin
   if AToken <> '' then
@@ -550,7 +550,7 @@ begin
     Result := '';
 end;
 
-procedure TSynCustomExporter.SaveToFile(const FileName: UnicodeString);
+procedure TSynCustomExporter.SaveToFile(const FileName: string);
 var
   Stream: TStream;
 begin
@@ -620,7 +620,7 @@ begin
   end;
 end;
 
-procedure TSynCustomExporter.SetTitle(const Value: UnicodeString);
+procedure TSynCustomExporter.SetTitle(const Value: string);
 begin
   if fTitle <> Value then
   begin
@@ -682,7 +682,7 @@ begin
     fBackgroundColor := fHighlighter.WhitespaceAttribute.Background;
 end;
 
-function TSynCustomExporter.StringSize(const AText: UnicodeString): Integer;
+function TSynCustomExporter.StringSize(const AText: string): Integer;
 begin
   Result := 0;
   case Encoding of
@@ -696,7 +696,7 @@ begin
   Result := Result * FCharSize;
 end;
 
-procedure TSynCustomExporter.WriteString(const AText: UnicodeString);
+procedure TSynCustomExporter.WriteString(const AText: string);
 var
   UTF8Str: UTF8String;
   AnsiStr: AnsiString;

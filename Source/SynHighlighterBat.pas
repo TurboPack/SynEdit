@@ -112,11 +112,11 @@ type
     procedure SpaceProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;        
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -146,7 +146,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..20] of UnicodeString = (
+  KeyWords: array[0..20] of string = (
     'call', 'cd', 'cls', 'copy', 'del', 'do', 'echo', 'errorlevel', 'exist', 
     'for', 'goto', 'if', 'in', 'not', 'off', 'on', 'pause', 'set', 'shift', 
     'start', 'title' 
@@ -589,7 +589,7 @@ begin
   Result := SYNS_LangBatch;
 end;
 
-function TSynBatSyn.GetSampleSource: UnicodeString;
+function TSynBatSyn.GetSampleSource: string;
 begin
   Result := 'rem MS-DOS batch file'#13#10 +
             'rem'#13#10 +
@@ -603,7 +603,7 @@ begin
             'if errorlevel 1 echo Error in copy action!';
 end;
 
-class function TSynBatSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynBatSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangBatch;
 end;

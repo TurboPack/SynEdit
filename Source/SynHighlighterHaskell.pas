@@ -140,13 +140,13 @@ type
     procedure XOrSymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function GetExtTokenID: TxtkTokenKind;
     function IsFilterStored: Boolean; override;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -185,7 +185,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..23] of UnicodeString = (
+  KeyWords: array[0..23] of string = (
     'Bool', 'Char', 'class', 'data', 'deriving', 'Double', 'else', 'False', 
     'Float', 'if', 'import', 'in', 'instance', 'Int', 'Integer', 'IO', 'let', 
     'module', 'otherwise', 'String', 'then', 'True', 'type', 'where' 
@@ -943,7 +943,7 @@ begin
   Result := inherited GetCapabilities + [hcUserSettings];
 end;
 
-function TSynHaskellSyn.GetSampleSource: UnicodeString;
+function TSynHaskellSyn.GetSampleSource: string;
 begin
   Result := '-- Haskell Sample Source'#13#10 +
             'tail :: [a] -> [a]'#13#10 +
@@ -951,7 +951,7 @@ begin
             '';
 end;
 
-class function TSynHaskellSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynHaskellSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangHaskell;
 end;

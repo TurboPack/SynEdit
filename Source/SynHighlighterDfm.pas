@@ -94,11 +94,11 @@ type
     procedure SymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -127,10 +127,10 @@ type
       write fSymbolAttri;
   end;
 
-function LoadDFMFile2Strings(const AFile: UnicodeString; AStrings: TUnicodeStrings;
+function LoadDFMFile2Strings(const AFile: string; AStrings: TStrings;
   var WasText: Boolean): Integer;
-function SaveStrings2DFMFile(AStrings: TUnicodeStrings;
-  const AFile: UnicodeString): Integer;
+function SaveStrings2DFMFile(AStrings: TStrings;
+  const AFile: string): Integer;
 
 implementation
 
@@ -139,7 +139,7 @@ uses
 
 { A couple of useful Delphi Form functions }
 
-function LoadDFMFile2Strings(const AFile: UnicodeString; AStrings: TUnicodeStrings;
+function LoadDFMFile2Strings(const AFile: string; AStrings: TStrings;
   var WasText: Boolean): Integer;
 var
   Src, Dest: TStream;
@@ -170,7 +170,7 @@ begin
   end;
 end;
 
-function SaveStrings2DFMFile(AStrings: TUnicodeStrings; const AFile: UnicodeString): Integer;
+function SaveStrings2DFMFile(AStrings: TStrings; const AFile: string): Integer;
 var
   Src, Dest: TStream;
 begin
@@ -528,7 +528,7 @@ begin
   Result := SYNS_LangDfm;
 end;
 
-function TSynDfmSyn.GetSampleSource: UnicodeString;
+function TSynDfmSyn.GetSampleSource: string;
 begin
   Result := '{ Delphi/C++ Builder Form Definitions }'#13#10 +
             'object TestForm: TTestForm'#13#10 +
@@ -538,7 +538,7 @@ begin
             'end';
 end; { GetSampleSource }
 
-class function TSynDfmSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynDfmSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangDfm;
 end;

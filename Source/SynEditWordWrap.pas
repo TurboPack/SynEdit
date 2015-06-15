@@ -384,7 +384,7 @@ function TSynWordWrapPlugin.ReWrapLine(aIndex: TLineIndex): integer;
 // Returns RowCount delta (how many wrapped lines were added or removed by this change).
 var
   vMaxNewRows: Cardinal;
-  vLine: UnicodeString;
+  vLine: string;
   vLineRowCount: Integer; //numbers of rows parsed in this line
   vTempRowLengths: PRowLengthArray;
   vRowBegin: PWideChar;
@@ -513,7 +513,7 @@ procedure TSynWordWrapPlugin.WrapLines;
 var
   cRow: Integer;
   cLine: Integer;
-  vLine: UnicodeString;
+  vLine: string;
   vMaxNewRows: Integer;
   vRowBegin: PWideChar;
   vLineEnd: PWideChar;

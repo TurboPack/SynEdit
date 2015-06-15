@@ -94,7 +94,7 @@ type
     fUndefPropertyAttri: TSynHighlighterAttributes;
     fImportantPropertyAttri: TSynHighlighterAttributes;
     fKeywords: TSynHashEntryList;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SelectorProc;
@@ -124,12 +124,12 @@ type
     procedure EqualProc;
     procedure ExclamProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     procedure NextDeclaration;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -178,7 +178,7 @@ uses
   SynEditStrConst;
 
 const
-   Properties_CSS1 : UnicodeString =
+   Properties_CSS1 : string =
                       'background'
                      +',background-attachment'
                      +',background-color'
@@ -240,7 +240,7 @@ const
                      +',white-space'
                      +',width'
                      +',word-spacing';
-   Properties_CSS2 : UnicodeString =
+   Properties_CSS2 : string =
                       'border-collapse'
                      +',border-spacing'
                      +',bottom'
@@ -275,7 +275,7 @@ const
                      +',visibility'
                      +',widows'
                      +',z-index';
-   Properties_CSS2_Aural : UnicodeString =
+   Properties_CSS2_Aural : string =
                       'azimuth'
                      +',cue'
                      +',cue-after'
@@ -296,7 +296,7 @@ const
                      +',stress'
                      +',voice-family'
                      +',volume';
-   Properties_CSS3 : UnicodeString =
+   Properties_CSS3 : string =
                       '@font-face'
                      +',@font-feature-values'
                      +',@keyframes'
@@ -538,7 +538,7 @@ begin
   Result := tkUndefProperty;
 end;
 
-procedure TSynCssSyn.DoAddKeyword(AKeyword: UnicodeString; AKind: Integer);
+procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
 var
   HashValue: Integer;
 begin
@@ -1032,7 +1032,7 @@ begin
   fRange:= rsSelector;
 end;
 
-function TSynCssSyn.GetSampleSource: UnicodeString;
+function TSynCssSyn.GetSampleSource: string;
 begin
   Result := '/* Syntax Highlighting */'#13#10 +
         'body { font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif; font-size: 8pt }'#13#10 +
@@ -1059,7 +1059,7 @@ begin
   end;
 end;
 
-class function TSynCssSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynCssSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCSS;
 end;

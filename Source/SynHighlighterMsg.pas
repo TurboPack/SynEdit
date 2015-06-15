@@ -102,12 +102,12 @@ type
     procedure StringOpenProc;
     procedure StringProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -134,7 +134,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..6] of UnicodeString = (
+  KeyWords: array[0..6] of string = (
     'beginproc', 'chars', 'enclosedby', 'endproc', 'keys', 'samplesource', 
     'tokentypes' 
   );
@@ -466,7 +466,7 @@ begin
   Result := Ord(fTokenId);
 end;
 
-function TSynMsgSyn.GetSampleSource: UnicodeString;
+function TSynMsgSyn.GetSampleSource: string;
 begin
   Result := 'TSynSampleSyn   {first identifier is the class name }'#13#10 +
             'tk              {second identifier is the prefix }'#13#10 +
@@ -512,7 +512,7 @@ begin
   Result := Pointer(fRange);
 end;
 
-class function TSynMsgSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynMsgSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangSynGenMsgfiles;
 end;

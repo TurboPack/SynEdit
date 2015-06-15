@@ -59,7 +59,7 @@ uses
 
 type
  PRegExprChar = PWideChar;
- RegExprString = UnicodeString;
+ RegExprString = string;
  REChar = WideChar;
  TREOp = REChar; // internal p-code type //###0.933
  PREOp = ^TREOp;
@@ -571,7 +571,7 @@ const
  XIgnoredChars = ' '#9#$d#$a;
 
 {=============================================================}
-{=================== UnicodeString functions ====================}
+{=================== string functions ====================}
 {=============================================================}
 
 function StrPCopy (Dest: PRegExprChar; const Source: RegExprString): PRegExprChar;

@@ -90,8 +90,8 @@ type
     fCommentAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
-    fKeyWords: TUnicodeStrings;
-    fSecondKeys: TUnicodeStrings;
+    fKeyWords: TStrings;
+    fSecondKeys: TStrings;
     procedure BraceOpenProc;
     procedure PointCommaProc;
     procedure CRProc;
@@ -108,14 +108,14 @@ type
 {$IFDEF SYN_HEREDOC}
     procedure HeredocProc;
 {$ENDIF}
-    procedure SetSecondKeys(const Value: TUnicodeStrings);
+    procedure SetSecondKeys(const Value: TStrings);
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -124,8 +124,8 @@ type
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
-    function IsKeyword(const AKeyword: UnicodeString): boolean; override;
-    function IsSecondKeyWord(aToken: UnicodeString): Boolean;
+    function IsKeyword(const AKeyword: string): boolean; override;
+    function IsSecondKeyWord(aToken: string): Boolean;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
     procedure Next; override;
@@ -139,7 +139,7 @@ type
     property KeyAttri: TSynHighlighterAttributes read fKeyAttri write fKeyAttri;
     property SecondKeyAttri: TSynHighlighterAttributes read fSecondKeyAttri
       write fSecondKeyAttri;
-    property SecondKeyWords: TUnicodeStrings read fSecondKeys write SetSecondKeys;
+    property SecondKeyWords: TStrings read fSecondKeys write SetSecondKeys;
     property NumberAttri: TSynHighlighterAttributes read fNumberAttri
       write fNumberAttri;
     property SpaceAttri: TSynHighlighterAttributes read fSpaceAttri
@@ -158,17 +158,17 @@ uses
 
 const
   RubyKeysCount = 43;
-  RubyKeys: array[1..RubyKeysCount] of UnicodeString = (
+  RubyKeys: array[1..RubyKeysCount] of string = (
     'alias', 'attr', 'begin', 'break', 'case', 'class', 'def', 'do', 'else',
     'elsif', 'end', 'ensure', 'exit', 'extend', 'false', 'for', 'gets', 'if',
     'in', 'include', 'load', 'loop', 'module', 'next', 'nil', 'not', 'print',
     'private', 'public', 'puts', 'raise', 'redo', 'require', 'rescue', 'retry',
     'return', 'self', 'then', 'true', 'unless', 'when', 'while', 'yield');
 
-function TSynRubySyn.IsKeyword(const AKeyword: UnicodeString): Boolean;
+function TSynRubySyn.IsKeyword(const AKeyword: string): Boolean;
 var
   First, Last, I, Compare: Integer;
-  Token: UnicodeString;
+  Token: string;
 begin
   First := 0;
   Last := fKeywords.Count - 1;
@@ -191,10 +191,10 @@ begin
   end;
 end; { IsKeyWord }
 
-function TSynRubySyn.IsSecondKeyWord(aToken: UnicodeString): Boolean;
+function TSynRubySyn.IsSecondKeyWord(aToken: string): Boolean;
 var
   First, Last, I, Compare: Integer;
-  Token: UnicodeString;
+  Token: string;
 begin
   First := 0;
   Last := fSecondKeys.Count - 1;
@@ -224,12 +224,12 @@ begin
 
   fCaseSensitive := False;
 
-  fKeyWords := TUnicodeStringList.Create;
-  TUnicodeStringList(fKeyWords).Sorted := True;
-  TUnicodeStringList(fKeyWords).Duplicates := dupIgnore;
-  fSecondKeys := TUnicodeStringList.Create;
-  TUnicodeStringList(fSecondKeys).Sorted := True;
-  TUnicodeStringList(fSecondKeys).Duplicates := dupIgnore;
+  fKeyWords := TStringList.Create;
+  TStringList(fKeyWords).Sorted := True;
+  TStringList(fKeyWords).Duplicates := dupIgnore;
+  fSecondKeys := TStringList.Create;
+  TStringList(fSecondKeys).Sorted := True;
+  TStringList(fSecondKeys).Duplicates := dupIgnore;
   if not (csDesigning in ComponentState) then
     for i := 1 to RubyKeysCount do
       fKeyWords.Add(RubyKeys[i]);
@@ -680,7 +680,7 @@ begin
 {$ENDIF}
 end;
 
-procedure TSynRubySyn.SetSecondKeys(const Value: TUnicodeStrings);
+procedure TSynRubySyn.SetSecondKeys(const Value: TStrings);
 var
   i: Integer;
 begin
@@ -705,7 +705,7 @@ begin
   Result := SYNS_LangRuby;
 end;
 
-function TSynRubySyn.GetSampleSource: UnicodeString;
+function TSynRubySyn.GetSampleSource: string;
 begin
   Result :=
     '# Factorial'+#13#10+
@@ -719,7 +719,7 @@ begin
     'print fact(ARGV[0].to_i), "\n"';
 end;
 
-class function TSynRubySyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynRubySyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangRuby;
 end;

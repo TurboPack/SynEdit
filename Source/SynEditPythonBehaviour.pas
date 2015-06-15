@@ -93,7 +93,7 @@ procedure TSynEditPythonBehaviour.doProcessUserCommand(Sender: TObject;
   HandlerData: pointer);
 var
   iEditor: TCustomSynEdit;
-  iPrevLine: UnicodeString;
+  iPrevLine: string;
   cSpace: integer;
 begin
   if (Command = ecLineBreak) and AfterProcessing then

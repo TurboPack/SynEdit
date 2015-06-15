@@ -86,11 +86,11 @@ type
     procedure StringProc;  // ""
     procedure StringProc1; // ''
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;   
@@ -408,7 +408,7 @@ begin
   Result := SYNS_LangINI;
 end;
 
-function TSynIniSyn.GetSampleSource: UnicodeString;
+function TSynIniSyn.GetSampleSource: string;
 begin
   Result := '; Syntax highlighting'#13#10+
             '[Section]'#13#10+
@@ -417,7 +417,7 @@ begin
             'Number=123456';
 end;
 
-class function TSynIniSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynIniSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangINI;
 end;

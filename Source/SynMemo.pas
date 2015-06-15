@@ -275,10 +275,7 @@ begin
     BlockEnd := EndOfBlock;
     LockUndo;
     try
-      if IsWindowUnicode(Handle) then
-        SelText := PWideChar(Message.lParam)
-      else
-        SelText := UnicodeString(PAnsiChar(Message.lParam))
+      SelText := PWideChar(Message.lParam)
     finally
       UnlockUndo;
     end;

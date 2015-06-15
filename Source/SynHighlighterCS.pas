@@ -223,12 +223,12 @@ type
   protected
     function GetExtTokenID: TxtkTokenKind;
     function IsFilterStored: Boolean; override;
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     procedure NextProcedure;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -272,7 +272,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..74] of UnicodeString = (
+  KeyWords: array[0..74] of string = (
     'abstract', 'as', 'base', 'bool', 'break', 'byte', 'case', 'catch', 'char', 
     'checked', 'class', 'const', 'continue', 'decimal', 'default', 'delegate', 
     'do', 'double', 'else', 'enum', 'event', 'explicit', 'extern', 'false', 
@@ -1973,7 +1973,7 @@ begin
   Result := ReadCPPBSettings(settingIndex);
 end; { TSynCSSyn.UseUserSettings }
 
-function TSynCSSyn.GetSampleSource: UnicodeString;
+function TSynCSSyn.GetSampleSource: string;
 begin
   Result := '/* Syntax Highlighting */'#13#10 +
 				'int num = 12345;'#13#10 +
@@ -1996,7 +1996,7 @@ begin
   Result := inherited GetCapabilities + [hcUserSettings];
 end;
 
-class function TSynCSSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynCSSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCS;
 end;

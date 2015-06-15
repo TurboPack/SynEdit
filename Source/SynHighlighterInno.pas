@@ -93,13 +93,13 @@ type
     procedure SemiColonProc;
     procedure StringProc;
     procedure UnknownProc;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: integer);
   protected
-    function IsCurrentToken(const Token: UnicodeString): Boolean; override;
+    function IsCurrentToken(const Token: string): Boolean; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -146,7 +146,7 @@ const
   {Ref:  Keywords and Parameters are updated as they last appeared in
          Inno Setup / ISX version 1.3.26}
 
-  Keywords: UnicodeString =
+  Keywords: string =
     'adminprivilegesrequired,allownoicons,allowrootdirectory,allowuncpath,' +
     'alwayscreateuninstallicon,alwaysrestart,alwaysshowcomponentslist,' +
     'alwaysshowdironreadypage,alwaysshowgrouponreadypage,' +
@@ -174,7 +174,7 @@ const
     'windowvisible,wizardimagebackcolor,wizardimagefile,wizardsmallimagefile,' +
     'wizardstyle,workingdir';
 
-  Parameters: UnicodeString =
+  Parameters: string =
     'hkcc,hkcr,hkcu,hklm,hku,alwaysoverwrite,alwaysskipifsameorolder,append,' +
     'binary,classic,closeonexit,comparetimestampalso,confirmoverwrite,' +
     'createkeyifdoesntexist,createonlyiffileexists,createvalueifdoesntexist,' +
@@ -191,7 +191,7 @@ const
     'uninsdeletesection,uninsdeletesectionifempty,uninsdeletevalue,' +
     'uninsneveruninstall,useapppaths,verysilent,waituntilidle';
 
-  KeyOrParameter: UnicodeString = 'string';
+  KeyOrParameter: string = 'string';
 
 function TSynInnoSyn.HashKey(Str: PWideChar): Integer;
 
@@ -241,7 +241,7 @@ begin
   Result := tkIdentifier;
 end;
 
-function TSynInnoSyn.IsCurrentToken(const Token: UnicodeString): Boolean;
+function TSynInnoSyn.IsCurrentToken(const Token: string): Boolean;
   var
   I: Integer;
   Temp: PWideChar;
@@ -586,7 +586,7 @@ begin
   Result := SYNS_LangInno;
 end;
 
-procedure TSynInnoSyn.DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
   HashValue: Integer;
 begin
@@ -594,7 +594,7 @@ begin
   fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
 end;
 
-class function TSynInnoSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynInnoSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangInno;
 end;

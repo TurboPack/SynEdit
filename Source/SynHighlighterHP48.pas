@@ -65,13 +65,13 @@ type
 
   TSpeedListObject = class
   protected
-    FName: UnicodeString;
+    FName: string;
     FSpeedList: TSpeedStringList;
     FObject: TObject;
-    procedure SetName(const Value: UnicodeString); virtual;
+    procedure SetName(const Value: string); virtual;
   public
-    property Name: UnicodeString read FName write SetName;
-    constructor Create(name: UnicodeString);
+    property Name: string read FName write SetName;
+    constructor Create(name: string);
     destructor Destroy; override;
     property SpeedList: TSpeedStringList read FSpeedList write FSpeedList;
     property Pointer: TObject read FObject write FObject;
@@ -82,8 +82,8 @@ type
 
   TSpeedStringList = class
   private
-    function GetText: UnicodeString;
-    procedure SetText(const Value: UnicodeString);
+    function GetText: string;
+    procedure SetText(const Value: string);
     function GetInObject(Index: Integer): TObject;
     procedure SetInObject(Index: Integer; const Value: TObject);
   protected
@@ -93,28 +93,28 @@ type
     Datas: array[0..NbSubList - 1] of PSpeedListObjects;
     LengthDatas: array[0..NbSubList - 1] of Integer;
     procedure Changed; virtual;
-    function Get(Index: Integer): UnicodeString; virtual;
+    function Get(Index: Integer): string; virtual;
     function GetObject(Index: Integer): TSpeedListObject;
     function GetCount: Integer;
-    function GetStringList: TUnicodeStrings;
-    procedure SetStringList(const Value: TUnicodeStrings);
+    function GetStringList: TStrings;
+    procedure SetStringList(const Value: TStrings);
   public
-    procedure NameChange(const obj: TSpeedListObject; const NewName: UnicodeString);
+    procedure NameChange(const obj: TSpeedListObject; const NewName: string);
     procedure ObjectDeleted(const obj: TSpeedListObject);
 
     destructor Destroy; override;
     constructor Create;
     function AddObj(const Value: TSpeedListObject): Integer;
-    function Add(const Value: UnicodeString): TSpeedListObject;
+    function Add(const Value: string): TSpeedListObject;
     procedure Clear;
-    function Find(const Name: UnicodeString): TSpeedListObject;
+    function Find(const Name: string): TSpeedListObject;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property Objects[Index: Integer]: TSpeedListObject read GetObject;
     property InObject[Index: Integer]: TObject read GetInObject write SetInObject;
-    property Strings[Index: Integer]: UnicodeString read Get; default;
+    property Strings[Index: Integer]: string read Get; default;
     property Count: Integer read GetCount;
-    property StringList: TUnicodeStrings read GetStringList write SetStringList;
-    property Text: UnicodeString read GetText write SetText;
+    property StringList: TStrings read GetStringList write SetStringList;
+    property Text: string read GetText write SetText;
   end;
 
   TtkTokenKind = (tkNull, tkAsmKey, tkAsm, tkAsmComment, tksAsmKey, tksAsm,
@@ -159,17 +159,17 @@ type
     function IsLineEnd(Run: Integer): Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
-    procedure DoSetLine(const Value: UnicodeString; LineNumber: Integer); override;
+    procedure DoSetLine(const Value: string; LineNumber: Integer); override;
     procedure Next; override;
 
-    function GetToken: UnicodeString; override;
+    function GetToken: string; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
 
@@ -211,13 +211,13 @@ uses
   SynEditStrConst;
 
 const
-  DefaultAsmKeyWords: UnicodeString = '!RPL'#13#10'ENDCODE'#13#10'{'#13#10'}'#13#10 +
+  DefaultAsmKeyWords: string = '!RPL'#13#10'ENDCODE'#13#10'{'#13#10'}'#13#10 +
   'GOTO'#13#10'GOSUB'#13#10'GOSBVL'#13#10'GOVLNG'#13#10'GOLONG'#13#10'SKIP' +
     #13#10'SKIPYES' + #13#10'->'#13#10'SKUB'#13#10'SKUBL'#13#10'SKC'#13#10'SKNC'#13#10'SKELSE' +
     #13#10'SKEC'#13#10'SKENC'#13#10'SKLSE'#13#10 + 'GOTOL'#13#10'GOSUBL'#13#10 +
     'RTN'#13#10'RTNC'#13#10'RTNNC'#13#10'RTNSC'#13#10'RTNCC'#13#10'RTNSXM'#13#10'RTI';
-  OtherAsmKeyWords: array[0..5] of UnicodeString = ('UP', 'EXIT', 'UPC', 'EXITC', 'UPNC', 'EXITNC');
-  DefaultRplKeyWords: UnicodeString =
+  OtherAsmKeyWords: array[0..5] of string = ('UP', 'EXIT', 'UPC', 'EXITC', 'UPNC', 'EXITNC');
+  DefaultRplKeyWords: string =
     'CODEM'#13#10'ASSEMBLEM'#13#10'CODE'#13#10'ASSEMBLE'#13#10'IT'#13#10'ITE'#13#10'case'#13#10'::'#13#10';'#13#10'?SEMI'#13#10''''#13#10'#=case'#13#10'{'#13#10'}'#13#10'NAMELESS'#13#10'LOCAL'#13#10'LOCALNAME'#13#10'LABEL'#13#10 +
     'LOCALLABEL'#13#10'xNAME'#13#10'tNAME' + 'COLA'#13#10'NULLNAME'#13#10'xROMID'#13#10'#0=ITE'#13#10'#<ITE'#13#10'#=ITE'#13#10'#>ITE'#13#10'2''RCOLARPITE'#13#10'ANDITE'#13#10'COLAITE'#13#10'COLARPITE'#13#10'DUP#0=ITE'#13#10 +
     'EQITE'#13#10'ITE'#13#10'RPITE'#13#10'SysITE'#13#10'UNxSYMRPITE'#13#10'UserITE'#13#10'snnSYMRPITE'#13#10'snsSYMRPITE'#13#10'ssnSYMRPITE'#13#10'sssSYMRPITE'#13#10'$_EXIT'#13#10'DA1OK?NOTIT'#13#10'DA2aOK?NOTIT'#13#10 +
@@ -233,7 +233,7 @@ const
     'dMATRIXcase'#13#10'dREALNcase'#13#10'dREALcase'#13#10'dZINTNcase'#13#10'delimcase'#13#10'estcase'#13#10'idntcase'#13#10'idntlamcase'#13#10'j#-1=case'#13#10'j#0=case'#13#10'j#1=case'#13#10'j%-1=case'#13#10'j%0=case'#13#10 +
     'j%1=case'#13#10'jEQcase'#13#10'jZ-1=case'#13#10'jZ0=case'#13#10'jZ1=case'#13#10'namelscase'#13#10'need''case'#13#10'negrealcase'#13#10'ngsizecase'#13#10'nonopcase'#13#10'nonrmcase'#13#10'num#-1=case'#13#10'num#0=case'#13#10 +
     'num#1=case'#13#10'num-1=case'#13#10'num0=case'#13#10'num0case'#13#10'num1=case'#13#10'num2=case'#13#10'numb1stcase'#13#10'rebuildcase'#13#10'tok=casedrop'#13#10'wildcase'#13#10'zerdercase'#13#10;
-  SasmNoField: UnicodeString = 'LOOP'#13#10'RTNSXM'#13#10'RTN'#13#10'RTNSC'#13#10'RTNCC'#13#10'SETDEC'#13#10'SETHEX'#13#10'RSTK=C'#13#10'C=RSTK'#13#10'CLRST'#13#10'C=ST'#13#10'ST=C'#13#10'CSTEX'#13#10 +
+  SasmNoField: string = 'LOOP'#13#10'RTNSXM'#13#10'RTN'#13#10'RTNSC'#13#10'RTNCC'#13#10'SETDEC'#13#10'SETHEX'#13#10'RSTK=C'#13#10'C=RSTK'#13#10'CLRST'#13#10'C=ST'#13#10'ST=C'#13#10'CSTEX'#13#10 +
   'RTI'#13#10'R0=A'#13#10'R1=A'#13#10'R2=A'#13#10'R3=A'#13#10'R4=A'#13#10'R0=C'#13#10'R1=C'#13#10'R2=C'#13#10'R3=C'#13#10'R4=C'#13#10'A=R0'#13#10'A=R1'#13#10'A=R2'#13#10'A=R3'#13#10'A=R4'#13#10 +
     'C=R0'#13#10'C=R1'#13#10'C=R2'#13#10'C=R3'#13#10'C=R4'#13#10'AR0EX'#13#10'AR1EX'#13#10'AR2EX'#13#10'AR3EX'#13#10'AR4EX'#13#10'CR0EX'#13#10'CR1EX'#13#10'CR2EX'#13#10'CR3EX'#13#10'CR4EX'#13#10 +
     'D0=A'#13#10'D0=C'#13#10'D1=A'#13#10'D1=C'#13#10'AD0EX'#13#10'AD1EX'#13#10'CD0EX'#13#10'CD1EX'#13#10'D0=AS'#13#10'D1=AS'#13#10'D0=CS'#13#10'D1=CD'#13#10'CD1XS'#13#10'CD0XS'#13#10'AD1XS'#13#10'AD0XS'#13#10 +
@@ -242,7 +242,7 @@ const
     'A=PC'#13#10'C=PC'#13#10'APCEX'#13#10'CPCEX'#13#10'XM=0'#13#10'SB=0'#13#10'SR=0'#13#10'MP=0'#13#10'CLRHST'#13#10'?XM=0'#13#10'?SR=0'#13#10'?MP=0'#13#10'?SB=0'#13#10'RTNYES'#13#10'SKIPYES{'#13#10'{'#13#10'}'#13#10'UP'#13#10'EXIT'#13#10'EXITNC'#13#10'EXITC'#13#10'UPC'#13#10'UPNC' +
     '}SKELSE{'#13#10'SKC{'#13#10'SKNC{'#13#10'SKUB{'#13#10'SKUBL{'#13#10'SKIPC{'#13#10'SKIPNC{'#13#10'EXIT2'#13#10'EXIT3'#13#10'UP2'#13#10'UP3'#13#10'}SKLSE{'#13#10'}SKEC{'#13#10'}SKENC{'#13#10;
 
-function StringCrc(S: UnicodeString): integer;
+function StringCrc(S: string): integer;
 var
   i: integer;
 begin
@@ -255,7 +255,7 @@ end;
 
 { TSpeedListObject }
 
-constructor TSpeedListObject.create(name: UnicodeString);
+constructor TSpeedListObject.create(name: string);
 begin
   inherited create;
   FName := name;
@@ -268,7 +268,7 @@ begin
   inherited destroy;
 end;
 
-procedure TSpeedListObject.SetName(const Value: UnicodeString);
+procedure TSpeedListObject.SetName(const Value: string);
 begin
   FName := Value;
   if FSpeedList <> nil then
@@ -295,7 +295,7 @@ begin
   Value.SpeedList := Self;
 end;
 
-function TSpeedStringList.Add(const Value: UnicodeString): TSpeedListObject;
+function TSpeedStringList.Add(const Value: string): TSpeedListObject;
 begin
   result := TSpeedListObject.Create(value);
   AddObj(Result);
@@ -341,7 +341,7 @@ begin
   inherited destroy;
 end;
 
-function TSpeedStringList.Find(const name: UnicodeString): TSpeedListObject;
+function TSpeedStringList.Find(const name: string): TSpeedListObject;
 var
   crc: integer;
   i: integer;
@@ -355,7 +355,7 @@ begin
   result := nil;
 end;
 
-function TSpeedStringList.Get(Index: Integer): UnicodeString;
+function TSpeedStringList.Get(Index: Integer): string;
 var
   i: integer;
 begin
@@ -396,17 +396,17 @@ begin
   result := nil;
 end;
 
-function TSpeedStringList.GetStringList: TUnicodeStrings;
+function TSpeedStringList.GetStringList: TStrings;
 var
   i, j: integer;
 begin
-  result := TUnicodeStringList.Create;
+  result := TStringList.Create;
   for i := Low(Datas) to High(Datas) do
     for j := 0 to DatasUsed[i] - 1 do
       result.add(datas[i][j].name);
 end;
 
-function TSpeedStringList.GetText: UnicodeString;
+function TSpeedStringList.GetText: string;
 begin
   with StringList do begin
     result := Text;
@@ -414,7 +414,7 @@ begin
   end;
 end;
 
-procedure TSpeedStringList.NameChange(const Obj: TSpeedListObject; const NewName: UnicodeString);
+procedure TSpeedStringList.NameChange(const Obj: TSpeedListObject; const NewName: string);
 var
   crc: integer;
   i: integer;
@@ -467,7 +467,7 @@ begin
     end;
 end;
 
-procedure TSpeedStringList.SetStringList(const value: TUnicodeStrings);
+procedure TSpeedStringList.SetStringList(const value: TStrings);
 var
   i: integer;
 begin
@@ -476,11 +476,11 @@ begin
     AddObj(TSpeedListObject.Create(value[i]));
 end;
 
-procedure TSpeedStringList.SetText(const Value: UnicodeString);
+procedure TSpeedStringList.SetText(const Value: string);
 var
-  s: TUnicodeStrings;
+  s: TStrings;
 begin
-  s := TUnicodeStringList.Create;
+  s := TStringList.Create;
   try
     s.Text := Value;
     StringList := s;
@@ -665,7 +665,7 @@ end;
 function TSynHP48Syn.IdentProc: TtkTokenKind;
 var
   i: integer;
-  s: UnicodeString;
+  s: string;
 begin
   i := Run;
   EndOfToken;
@@ -896,7 +896,7 @@ end;
 function TSynHP48Syn.SasmProc1: TtkTokenKind;
 var
   i: integer;
-  s: UnicodeString;
+  s: string;
 begin
   Result := tksAsmKey;
   if run > Length(fLineStr) then
@@ -927,7 +927,7 @@ end;
 function TSynHP48Syn.SasmProc2: TtkTokenKind;
 var
   i: integer;
-  s: UnicodeString;
+  s: string;
 begin
   Result := tksAsm;
   while (run <= Length(fLineStr)) and (fLineStr[run] <= ' ') and (fLineStr[run] <> #10) do
@@ -987,7 +987,7 @@ end;
 // reimplement functions to handle the non-standard use of 1-based Run
 // (instead of the standard 0-based Run)
 
-procedure TSynHP48Syn.DoSetLine(const Value: UnicodeString;
+procedure TSynHP48Syn.DoSetLine(const Value: string;
   LineNumber: Integer);
 begin
   inherited;
@@ -995,7 +995,7 @@ begin
   fOldRun := Run;
 end;
 
-function TSynHP48Syn.GetToken: UnicodeString;
+function TSynHP48Syn.GetToken: string;
 var
   Len: Integer;
 begin
@@ -1010,7 +1010,7 @@ begin
   Result := (Run - 1 >= fLineLen) or (fLine[Run - 1] = #10) or (fLine[Run - 1] = #13);
 end;
 
-class function TSynHP48Syn.GetFriendlyLanguageName: UnicodeString;
+class function TSynHP48Syn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangHP48;
 end;

@@ -155,7 +155,7 @@ type
     fX3DHeaderAttri :TSynHighlighterAttributes;
 
     fKeywords: TSynHashEntryList;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AndSymbolProc;
@@ -182,13 +182,13 @@ type
     procedure StringProc;
     procedure SymbolProc;
     procedure UnknownProc;
-    function NextTokenIs(T: UnicodeString) :Boolean;
+    function NextTokenIs(T: string) :Boolean;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -239,13 +239,13 @@ uses
   SynEditStrConst;
 
 const
-  Events: UnicodeString =
+  Events: string =
     'onAbort, onBlur, onChange, onClick, onDblClick, onError, onFocus, ' +
     'onKeyDown, onKeyPress, onKeyUp, onLoad, onMouseDown, onMouseMove, ' +
     'onMouseOut, onMouseOver, onMouseUp, onReset, onSelect, onSubmit, ' +
     'onUnload';
 
-  KeyWords: UnicodeString =
+  KeyWords: string =
     'abstract, boolean, break, byte, callee, case, catch, char, class, ' +
     'const, constructor, continue, debugger, default, delete, do, DOCTYPE, ' +
     'double, else, enum, export, extends, false, final, finally, float, for, ' +
@@ -255,7 +255,7 @@ const
     'super, switch, synchronized, this, throw, throws, transient, true, try, ' +
     'typeof, var, void, while, with, xml';
 
-  NonReservedKeys: UnicodeString =
+  NonReservedKeys: string =
     'abs, acos, action, alert, align, alinkColor, all, All, anchor, anchors, ' +
     'appCodeName, Applet, applets, appName, appVersion, Area, arguments, ' +
     'Arguments, Array, asin, atan, atan2, back, background, bgColor, big, ' +
@@ -300,12 +300,12 @@ const
     'version, visibility, vlinkColor, vspace, watch, width, window, Window, ' +
     'write, writeln, zIndex';
 
-  VrmlAppearances: UnicodeString =
+  VrmlAppearances: string =
     'Appearance, ImageTexture, Material, NurbsTextureSurface, PixelTexture, ' +
     'TextureBackground, TextureCoordinate, TextureCoordinateGenerator, ' +
     'TextureTransform';
 
-  VrmlAttributes: UnicodeString =
+  VrmlAttributes: string =
     'addChildren, ambientIntensity, appearance, attenuation, autoOffset, ' +
     'avatarSize, axisOfRotation, backUrl, bboxCenter, bboxSize, beamWidth, ' +
     'beginCap, bindTime, bottom, bottomRadius, bottomUrl, ccw, center, children, ' +
@@ -338,33 +338,33 @@ const
     'visibilityLimit, visibilityRange, whichChoice, xDimension, xSpacing, ' +
     'zDimension, zSpacing';
 
-  VrmlDefinitions: UnicodeString =
+  VrmlDefinitions: string =
     'MFColor, MFFloat, MFInt32, MFNode, MFRotation, MFString, MFTime, ' +
     'MFVec2f, MFVec3f, SFBool, SFColor, SFFloat, SFImage, SFInt32, SFNode, ' +
     'SFRotation, SFString, SFTime, SFVec2f, SFVec3f';
 
-  VrmlEvents: UnicodeString =
+  VrmlEvents: string =
     'eventIn, eventOut, exposedField, field';
 
-  VrmlGroupings: UnicodeString =
+  VrmlGroupings: string =
     'Anchor, Billboard, Collision, ESPDUTransform, Group, Inline, LOD, ' +
     'NurbsGroup, ReceiverPdu, SignalPdu, StaticGroup, Switch, Transform, ' +
     'Transform2D, TransmitterPdu';
 
-  VrmlInterpolators: UnicodeString =
+  VrmlInterpolators: string =
     'ColorInterpolator, CoordinateInterpolator, CoordinateInterpolator2D, ' +
     'GeoPositionInterpolator, NormalInterpolator, NurbsPositionInterpolator, ' +
     'OrientationInterpolator, PositionInterpolator, PositionInterpolator2D, ' +
     'ScalarInterpolator';
 
-  VrmlLights: UnicodeString =
+  VrmlLights: string =
     'DirectionalLight, PointLight, SpotLight';
 
-  VrmlNodes: UnicodeString =
+  VrmlNodes: string =
     'Background, Color, Coordinate, CoordinateDeformer, Fog, FontStyle, ' +
     'Joint, NavigationInfo, Normal, Script, Site, Sound';
 
-  VrmlParameters: UnicodeString =
+  VrmlParameters: string =
     'ALL, AUTO, BINDINGS, BOLD, BOTTOM, CENTER, CLAMP, CLOCKWISE, CONVEX, ' +
     'COUNTERCLOCKWISE, CULLING, DEFAULT, DEFAULTS, Displacer, ENUMS, FACE, FALSE, ' +
     'FAMILY, FILE, FORMAT, ITALIC, JUSTIFICATION, LEFT, NONE, NULL, OFF, ON, ' +
@@ -373,7 +373,7 @@ const
     'STYLE, TRUE, TYPE, UNKNOWN_FACE_TYPE, UNKNOWN_ORDERING, ' +
     'UNKNOWN_SHAPE_TYPE, WRAP';
 
-  VrmlProtos: UnicodeString =
+  VrmlProtos: string =
     'DEF, EXTERNPROTO, IS, PROTO, ROUTE, Scene, TO, USE, VRML, X3D, ' +
     'X3DAppearanceNode, X3DAppearanceChildNode, X3DBackgroundNode, X3DBindableNode, ' +
     'X3DBoundedObject, X3DChildNode, X3DColorNode, X3DComposedGeometryNode, ' +
@@ -389,33 +389,33 @@ const
     'X3DTextureTransformNode, X3DTimeDependentNode, X3DTouchSensorNode, ' +
     'X3DTriggerNode, X3DUrlObject';
 
-  VrmlSensors: UnicodeString =
+  VrmlSensors: string =
     'BooleanFilter, BooleanSequencer, BooleanToggle, BooleanTrigger, ' +
     'CylinderSensor, GeoTouchSensor, IntegerTrigger, KeySensor, LoadSensor, ' +
     'PlaneSensor, ProximitySensor, SphereSensor, StringSensor, TimeSensor, ' +
     'TouchSensor, VisibilitySensor';
 
-  VrmlShapes: UnicodeString =
+  VrmlShapes: string =
     'Arc2D, ArcClose2D, Box, Circle2D, Cone, Contour2D, ContourPolyline2D, ' +
     'Cylinder, Disk2D, ElevationGrid, Humanoid, NurbsCurve, NurbsCurve2D, ' +
     'NurbsSurface, PointSet, Polyline2D, Polypoint2D, Rectangle2D, Segment, ' +
     'Shape, Shape2D, Sphere, Text, TriangleFanSet, TriangleSet, TriangleSet2D, ' +
     'TriangleStripSet, TrimmedSurface';
 
-  VrmlShape_Hints: UnicodeString =
+  VrmlShape_Hints: string =
     'Extrusion, IndexedFaceSet, IndexedLineSet';
 
-  VrmlTime_dependents: UnicodeString =
+  VrmlTime_dependents: string =
     'AudioClip, IntegerSequencer, MovieTexture, TimeTrigger';
 
-  VrmlViewpoints: UnicodeString =
+  VrmlViewpoints: string =
     'GeoViewpoint, Viewpoint';
 
-  VrmlWorldInfos: UnicodeString =
+  VrmlWorldInfos: string =
     'WorldInfo';
 
 
-procedure TSynVrml97Syn.DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+procedure TSynVrml97Syn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
   HashValue: integer;
 begin
@@ -679,7 +679,7 @@ begin
   if CharInSet(fLine[Run], ['=', '&']) then inc(Run);
 end;
 
-function TSynVrml97Syn.NextTokenIs(T: UnicodeString): Boolean;
+function TSynVrml97Syn.NextTokenIs(T: string): Boolean;
 var
   I, Len: Integer;
 begin
@@ -981,7 +981,7 @@ end;
 
 procedure TSynVrml97Syn.StringProc;
 var
-  l_strChar: UnicodeString;
+  l_strChar: string;
 begin
   fTokenID := tkString;
   l_strChar := FLine[Run]; // We could have '"' or #39
@@ -1132,7 +1132,7 @@ begin
   Result := SYNS_LangVrml97;
 end;
 
-function TSynVrml97Syn.GetSampleSource: UnicodeString;
+function TSynVrml97Syn.GetSampleSource: string;
 begin
   Result :=
     '#VRML V2.0 utf8'#13#10 +
@@ -1193,7 +1193,7 @@ begin
     '}';
 end;
 
-class function TSynVrml97Syn.GetFriendlyLanguageName: UnicodeString;
+class function TSynVrml97Syn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangVrml97;
 end;

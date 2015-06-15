@@ -88,7 +88,7 @@ type
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
   TIdentFuncTableFunc = function (Key: Integer): TtkTokenKind of object;
 
-  TAlreadyVisitedURIFunc = function (URI: UnicodeString): Boolean of object;
+  TAlreadyVisitedURIFunc = function (URI: string): Boolean of object;
 
   TSynURISyn = class(TSynCustomHighlighter)
   private
@@ -140,13 +140,13 @@ type
     procedure SetURIAttri(const Value: TSynHighlighterAttributes);
     procedure SetVisitedURIAttri(const Value: TSynHighlighterAttributes);
   protected
-    function GetSampleSource: UnicodeString; override;
-    function IsCurrentToken(const Token: UnicodeString): Boolean; override;
+    function GetSampleSource: string; override;
+    function IsCurrentToken(const Token: string): Boolean; override;
     function IsFilterStored: Boolean; override;
     procedure SetAlreadyVisitedURIFunc(Value: TAlreadyVisitedURIFunc);
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -174,7 +174,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..15] of UnicodeString = (
+  KeyWords: array[0..15] of string = (
     '', 'http://', '', 'https://', 'news:', 'gopher://', '', 'prospero://',
     'news://', 'www', 'nntp://', 'ftp://', 'wais://', '', 'telnet://', 'mailto:'
   );
@@ -230,7 +230,7 @@ begin
   fIdentFuncTable[9] := FuncWeb;
 end;
 
-function TSynURISyn.IsCurrentToken(const Token: UnicodeString): Boolean;
+function TSynURISyn.IsCurrentToken(const Token: string): Boolean;
 var
   I: Integer;
   Temp: PWideChar;
@@ -396,7 +396,7 @@ begin
   Result := SYNS_LangURI;
 end;
 
-function TSynURISyn.GetSampleSource: UnicodeString;
+function TSynURISyn.GetSampleSource: string;
 begin
   Result := 'Universal Resource Identifier highlighting'#13#10#13#10 +
             'http://www.somewhere.org'#13#10 +
@@ -697,7 +697,7 @@ begin
             (SecondDotPos > WWWEndPos + 1) and (SecondDotPos < Run);
 end;
 
-class function TSynURISyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynURISyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangURI;
 end;

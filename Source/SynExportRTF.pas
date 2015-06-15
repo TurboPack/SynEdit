@@ -57,7 +57,7 @@ type
   private
     fAttributesChanged: Boolean;
     fListColors: TList;
-    function ColorToRTF(AColor: TColor): UnicodeString;
+    function ColorToRTF(AColor: TColor): string;
     function GetColorIndex(AColor: TColor): Integer;
   protected
     procedure FormatAfterLastAttribute; override;
@@ -68,10 +68,10 @@ type
     procedure FormatBeforeFirstAttribute(BackgroundChanged,
       ForegroundChanged: Boolean; FontStylesChanged: TFontStyles); override;
     procedure FormatNewLine; override;
-    function GetFooter: UnicodeString; override;
+    function GetFooter: string; override;
     function GetFormatName: string; override;
-    function GetHeader: UnicodeString; override;
-    function ReplaceReservedChar(AChar: WideChar): UnicodeString; override;
+    function GetHeader: string; override;
+    function ReplaceReservedChar(AChar: WideChar): string; override;
     function UseBom: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -119,7 +119,7 @@ begin
     fListColors.Clear;
 end;
 
-function TSynExporterRTF.ColorToRTF(AColor: TColor): UnicodeString;
+function TSynExporterRTF.ColorToRTF(AColor: TColor): string;
 var
   Col: Integer;
 begin
@@ -136,7 +136,7 @@ end;
 procedure TSynExporterRTF.FormatAttributeDone(BackgroundChanged,
   ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
 const
-  FontTags: array[TFontStyle] of UnicodeString = ('\b0', '\i0', '\ul0', '\strike0');
+  FontTags: array[TFontStyle] of string = ('\b0', '\i0', '\ul0', '\strike0');
 var
   AStyle: TFontStyle;
 begin
@@ -154,7 +154,7 @@ end;
 procedure TSynExporterRTF.FormatAttributeInit(BackgroundChanged,
   ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
 const
-  FontTags: array[TFontStyle] of UnicodeString = ('\b', '\i', '\ul', '\strike');
+  FontTags: array[TFontStyle] of string = ('\b', '\i', '\ul', '\strike');
 var
   AStyle: TFontStyle;
 begin
@@ -202,7 +202,7 @@ begin
     Result := fListColors.Add(pointer(AColor));
 end;
 
-function TSynExporterRTF.GetFooter: UnicodeString;
+function TSynExporterRTF.GetFooter: string;
 begin
   Result := '}';
 end;
@@ -212,11 +212,11 @@ begin
   Result := SYNS_ExporterFormatRTF;
 end;
 
-function TSynExporterRTF.GetHeader: UnicodeString;
+function TSynExporterRTF.GetHeader: string;
 var
   i: Integer;
 
-  function GetFontTable: UnicodeString;
+  function GetFontTable: string;
   begin
     Result := '{\fonttbl{\f0\fmodern ' + Font.Name;
     Result := Result + ';}}'#13#10;
@@ -239,7 +239,7 @@ begin
     [2 * Font.Size]);
 end;
 
-function TSynExporterRTF.ReplaceReservedChar(AChar: WideChar): UnicodeString;
+function TSynExporterRTF.ReplaceReservedChar(AChar: WideChar): string;
 begin
   Result := '';
   case AChar of

@@ -78,10 +78,10 @@ type
     procedure FormatBeforeFirstAttribute(BackgroundChanged,
       ForegroundChanged: boolean; FontStylesChanged: TFontStyles); override;
     procedure FormatNewLine; override;
-    function GetFooter: UnicodeString; override;
+    function GetFooter: string; override;
     function GetFormatName: string; override;
-    function GetHeader: UnicodeString; override;
-    function ReplaceReservedChar(AChar: WideChar): UnicodeString; override;
+    function GetHeader: string; override;
+    function ReplaceReservedChar(AChar: WideChar): string; override;
     function UseBom: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -217,7 +217,7 @@ begin
   AddNewLine;
 end;
 
-function TSynExporterHTML.GetFooter: UnicodeString;
+function TSynExporterHTML.GetFooter: string;
 begin
   Result := '';
   if fExportAsText then
@@ -233,7 +233,7 @@ begin
   Result := SYNS_ExporterFormatHTML;
 end;
 
-function TSynExporterHTML.GetHeader: UnicodeString;
+function TSynExporterHTML.GetHeader: string;
 const
   DescriptionSize = 105;
   FooterSize1 = 47;
@@ -309,7 +309,7 @@ begin
       Delete(Result, i, 1);
 end;
 
-function TSynExporterHTML.ReplaceReservedChar(AChar: WideChar): UnicodeString;
+function TSynExporterHTML.ReplaceReservedChar(AChar: WideChar): string;
 begin
   case AChar of
     '&': Result := '&amp;';

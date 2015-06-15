@@ -250,11 +250,11 @@ type
     procedure UnknownProc;
     procedure BraceCommentProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -287,7 +287,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..145] of UnicodeString = (
+  KeyWords: array[0..145] of string = (
     'allentities', 'allproducts', 'allproperties', 'allqualityproperties', 
     'allsuppliers', 'assign', 'begin', 'block', 'case', 'category', 'centerstr', 
     'charreplacestr', 'charrlenstr', 'charrllenstr', 'chr', 'client', 
@@ -1966,7 +1966,7 @@ begin
   inc(Run);
 end; { LFProc }
 
-function TSynCPMSyn.GetSampleSource: UnicodeString;
+function TSynCPMSyn.GetSampleSource: string;
 begin
   Result := '{ COAS Product Manager report (RDF) }'#13#10 +
             'PARAM'#13#10 +
@@ -2054,7 +2054,7 @@ begin
   Result := Pointer((fCommentLevel * $10000) + Integer(fRange));
 end; { GetRange }
 
-class function TSynCPMSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynCPMSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCPM;
 end;

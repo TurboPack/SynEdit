@@ -260,18 +260,18 @@ type
     procedure SymbolProc;
     procedure DirectionsProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): UnicodeString; override;
+    function GetKeyWords(TokenKind: Integer): string; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
@@ -297,7 +297,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..145] of UnicodeString = (
+  KeyWords: array[0..145] of string = (
     'all', 'appendix', 'arrowhead', 'arrowsize', 'arrowtail', 'auto', 'back', 
     'bgcolor', 'bold', 'both', 'bottomlabel', 'box', 'center', 'circle', 
     'clusterrank', 'color', 'comment', 'compound', 'concentrate', 'constraint', 
@@ -1954,7 +1954,7 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynDOTSyn.GetKeyWords(TokenKind: Integer): UnicodeString;
+function TSynDOTSyn.GetKeyWords(TokenKind: Integer): string;
 begin
   Result :=
     '--,->,all,appendix,arrowhead,arrowsize,arrowtail,auto,back,bgcolor,bo' +
@@ -2006,7 +2006,7 @@ begin
   Result := Ord(fTokenId);
 end;
 
-function TSynDOTSyn.GetSampleSource: UnicodeString;
+function TSynDOTSyn.GetSampleSource: string;
 begin
   Result :=
     '// ATT DOT Graphic description language'#13#10 +
@@ -2086,7 +2086,7 @@ begin
   Result := Pointer(fRange);
 end;
 
-class function TSynDOTSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynDOTSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangDOT;
 end;

@@ -70,44 +70,44 @@ procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
 // Converting tabs to spaces: To use the function several times it's better
 // to use a function pointer that is set to the fastest conversion function.
 type
-  TConvertTabsProc = function(const Line: UnicodeString;
-    TabWidth: Integer): UnicodeString;
+  TConvertTabsProc = function(const Line: string;
+    TabWidth: Integer): string;
 
 function GetBestConvertTabsProc(TabWidth: Integer): TConvertTabsProc;
 // This is the slowest conversion function which can handle TabWidth <> 2^n.
-function ConvertTabs(const Line: UnicodeString; TabWidth: Integer): UnicodeString;
+function ConvertTabs(const Line: string; TabWidth: Integer): string;
 
 type
-  TConvertTabsProcEx = function(const Line: UnicodeString; TabWidth: Integer;
-    var HasTabs: Boolean): UnicodeString;
+  TConvertTabsProcEx = function(const Line: string; TabWidth: Integer;
+    var HasTabs: Boolean): string;
 
 function GetBestConvertTabsProcEx(TabWidth: Integer): TConvertTabsProcEx;
 // This is the slowest conversion function which can handle TabWidth <> 2^n.
-function ConvertTabsEx(const Line: UnicodeString; TabWidth: Integer;
-  var HasTabs: Boolean): UnicodeString;
+function ConvertTabsEx(const Line: string; TabWidth: Integer;
+  var HasTabs: Boolean): string;
 
-function GetExpandedLength(const aStr: UnicodeString; aTabWidth: Integer): Integer;
+function GetExpandedLength(const aStr: string; aTabWidth: Integer): Integer;
 
 function CharIndex2CaretPos(Index, TabWidth: Integer;
-  const Line: UnicodeString): Integer;
-function CaretPos2CharIndex(Position, TabWidth: Integer; const Line: UnicodeString;
+  const Line: string): Integer;
+function CaretPos2CharIndex(Position, TabWidth: Integer; const Line: string;
   var InsideTabChar: Boolean): Integer;
 
 // search for the first char of set AChars in Line, starting at index Start
-function StrScanForCharInCategory(const Line: UnicodeString; Start: Integer;
+function StrScanForCharInCategory(const Line: string; Start: Integer;
   IsOfCategory: TCategoryMethod): Integer;
 // the same, but searching backwards
-function StrRScanForCharInCategory(const Line: UnicodeString; Start: Integer;
+function StrRScanForCharInCategory(const Line: string; Start: Integer;
   IsOfCategory: TCategoryMethod): Integer;
 
 function GetEOL(Line: PWideChar): PWideChar;
 
 // Remove all '/' characters from string by changing them into '\.'.
 // Change all '\' characters into '\\' to allow for unique decoding.
-function EncodeString(s: UnicodeString): UnicodeString;
+function EncodeString(s: string): string;
 
 // Decodes string, encoded with EncodeString.
-function DecodeString(s: UnicodeString): UnicodeString;
+function DecodeString(s: string): string;
 
 type
   THighlighterAttriProc = function (Highlighter: TSynCustomHighlighter;
@@ -209,8 +209,8 @@ begin
 end;
 
 
-function ConvertTabs1Ex(const Line: UnicodeString; TabWidth: Integer;
-  var HasTabs: Boolean): UnicodeString;
+function ConvertTabs1Ex(const Line: string; TabWidth: Integer;
+  var HasTabs: Boolean): string;
 var
   pDest: PWideChar;
   nBeforeTab: Integer;
@@ -231,15 +231,15 @@ begin
     HasTabs := False;
 end;
 
-function ConvertTabs1(const Line: UnicodeString; TabWidth: Integer): UnicodeString;
+function ConvertTabs1(const Line: string; TabWidth: Integer): string;
 var
   HasTabs: Boolean;
 begin
   Result := ConvertTabs1Ex(Line, TabWidth, HasTabs);
 end;
 
-function ConvertTabs2nEx(const Line: UnicodeString; TabWidth: Integer;
-  var HasTabs: Boolean): UnicodeString;
+function ConvertTabs2nEx(const Line: string; TabWidth: Integer;
+  var HasTabs: Boolean): string;
 var
   i, DestLen, TabCount, TabMask: Integer;
   pSrc, pDest: PWideChar;
@@ -306,15 +306,15 @@ begin
     HasTabs := False;
 end;
 
-function ConvertTabs2n(const Line: UnicodeString; TabWidth: Integer): UnicodeString;
+function ConvertTabs2n(const Line: string; TabWidth: Integer): string;
 var
   HasTabs: Boolean;
 begin
   Result := ConvertTabs2nEx(Line, TabWidth, HasTabs);
 end;
 
-function ConvertTabsEx(const Line: UnicodeString; TabWidth: Integer;
-  var HasTabs: Boolean): UnicodeString;
+function ConvertTabsEx(const Line: string; TabWidth: Integer;
+  var HasTabs: Boolean): string;
 var
   i, DestLen, TabCount: Integer;
   pSrc, pDest: PWideChar;
@@ -377,7 +377,7 @@ begin
     HasTabs := False;
 end;
 
-function ConvertTabs(const Line: UnicodeString; TabWidth: Integer): UnicodeString;
+function ConvertTabs(const Line: string; TabWidth: Integer): string;
 var
   HasTabs: Boolean;
 begin
@@ -414,7 +414,7 @@ begin
       Result := ConvertTabsEx;
 end;
 
-function GetExpandedLength(const aStr: UnicodeString; aTabWidth: Integer): Integer;
+function GetExpandedLength(const aStr: string; aTabWidth: Integer): Integer;
 var
   iRun: PWideChar;
 begin
@@ -431,7 +431,7 @@ begin
 end;
 
 function CharIndex2CaretPos(Index, TabWidth: Integer;
-  const Line: UnicodeString): Integer;
+  const Line: string): Integer;
 var
   iChar: Integer;
   pNext: PWideChar;
@@ -482,7 +482,7 @@ begin
     Result := 1;
 end;
 
-function CaretPos2CharIndex(Position, TabWidth: Integer; const Line: UnicodeString;
+function CaretPos2CharIndex(Position, TabWidth: Integer; const Line: string;
   var InsideTabChar: Boolean): Integer;
 var
   iPos: Integer;
@@ -530,7 +530,7 @@ begin
     Result := Position;
 end;
 
-function StrScanForCharInCategory(const Line: UnicodeString; Start: Integer;
+function StrScanForCharInCategory(const Line: string; Start: Integer;
   IsOfCategory: TCategoryMethod): Integer;
 var
   p: PWideChar;
@@ -551,7 +551,7 @@ begin
   Result := 0;
 end;
 
-function StrRScanForCharInCategory(const Line: UnicodeString; Start: Integer;
+function StrRScanForCharInCategory(const Line: string; Start: Integer;
   IsOfCategory: TCategoryMethod): Integer;
 var
   I: Integer;
@@ -578,7 +578,7 @@ end;
 
 {$IFOPT R+}{$DEFINE RestoreRangeChecking}{$ELSE}{$UNDEF RestoreRangeChecking}{$ENDIF}
 {$R-}
-function EncodeString(s: UnicodeString): UnicodeString;
+function EncodeString(s: string): string;
 var
   i, j: Integer;
 begin
@@ -605,7 +605,7 @@ begin
   SetLength(Result, j);
 end; { EncodeString }
 
-function DecodeString(s: UnicodeString): UnicodeString;
+function DecodeString(s: string): string;
 var
   i, j: Integer;
 begin

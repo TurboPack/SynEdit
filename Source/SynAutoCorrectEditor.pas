@@ -101,7 +101,7 @@ end;
 procedure TfrmAutoCorrectEditor.lbxItemsDrawItemCLX(Sender: TObject;
   Index: Integer; Rect: TRect; State: TOwnerDrawState; var Handled: Boolean);
 var
-  s: UnicodeString;
+  s: string;
 begin
   with lbxItems do
   begin

@@ -85,7 +85,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function VisitedURI(URI: UnicodeString): Boolean;
+    function VisitedURI(URI: string): Boolean;
   published
     property CtrlActivatesLinks: Boolean read FCtrlActivatesLinks
       write FCtrlActivatesLinks default True;
@@ -161,7 +161,7 @@ procedure TSynURIOpener.NewMouseCursor(Sender: TObject;
   const aLineCharPos: TBufferCoord; var aCursor: TCursor);
 var
   TokenType, Start: Integer;
-  Token: UnicodeString;
+  Token: string;
   Attri: TSynHighlighterAttributes;
 begin
   FControlDown := IsControlPressed;
@@ -194,7 +194,7 @@ procedure TSynURIOpener.NewMouseUp(Sender: TObject; Button: TMouseButton;
 var
   ptLineCol: TBufferCoord;
   TokenType, Start: Integer;
-  Token: UnicodeString;
+  Token: string;
   Attri: TSynHighlighterAttributes;
 begin
   if (Button <> mbLeft) or (FCtrlActivatesLinks and not FControlDown) or
@@ -289,7 +289,7 @@ begin
     TAccessSynURISyn(FURIHighlighter).SetAlreadyVisitedURIFunc(VisitedURI);
 end;
 
-function TSynURIOpener.VisitedURI(URI: UnicodeString): Boolean;
+function TSynURIOpener.VisitedURI(URI: string): Boolean;
 var
   Dummy: Integer;
 begin

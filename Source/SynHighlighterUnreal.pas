@@ -293,13 +293,13 @@ type
     procedure UnknownProc;
   protected
     function GetExtTokenID: TxtkTokenKind;
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -344,7 +344,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..142] of UnicodeString = (
+  KeyWords: array[0..142] of string = (
     'abstract', 'always', 'array', 'arraycount', 'assert', 'auto', 'automated', 
     'bool', 'boundingbox', 'boundingvolume', 'break', 'button', 'byte', 'cache', 
     'cacheexempt', 'case', 'catch', 'class', 'coerce', 'collapsecategories', 
@@ -2626,7 +2626,7 @@ begin
   Result := inherited GetCapabilities + [hcUserSettings];
 end;
 
-function TSynUnrealSyn.GetSampleSource: UnicodeString;
+function TSynUnrealSyn.GetSampleSource: string;
 begin
   Result := '//----Comment-----------------------------------------------------------'#13#10+
             'class TestObject expands Object native;'#13#10+
@@ -2648,7 +2648,7 @@ begin
             '}';
 end;
 
-class function TSynUnrealSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynUnrealSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangUnreal;
 end;

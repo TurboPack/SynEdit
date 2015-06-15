@@ -118,7 +118,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -172,7 +172,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..274] of UnicodeString = (
+  KeyWords: array[0..274] of string = (
     '$a', '$ascii', '$c', '$char', '$d', '$data', '$device', '$e', '$ec', 
     '$ecode', '$es', '$estack', '$et', '$etrap', '$extract', '$f', '$find', 
     '$fn', '$fnumber', '$g', '$get', '$h', '$horolog', '$i', '$in', 
@@ -813,7 +813,7 @@ begin
   end;
 end;
 
-class function TSynCacheSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynCacheSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCache;
 end;

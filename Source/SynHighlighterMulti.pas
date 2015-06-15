@@ -58,24 +58,24 @@ uses
 
 type
   TOnCheckMarker = procedure (Sender: TObject; var StartPos, MarkerLen: Integer;
-    var MarkerText: UnicodeString; Line: Integer; const LineStr: string) of object;
+    var MarkerText: string; Line: Integer; const LineStr: string) of object;
 
   TScheme = class(TCollectionItem)
   private
-    fEndExpr: UnicodeString;
-    fStartExpr: UnicodeString;
+    fEndExpr: string;
+    fStartExpr: string;
     fHighlighter: TSynCustomHighLighter;
     fMarkerAttri: TSynHighlighterAttributes;
     fSchemeName: TComponentName;
     fCaseSensitive: Boolean;
     fOnCheckStartMarker: TOnCheckMarker;
     fOnCheckEndMarker: TOnCheckMarker;
-    function ConvertExpression(const Value: UnicodeString): UnicodeString;
+    function ConvertExpression(const Value: string): string;
     procedure MarkerAttriChanged(Sender: TObject);
     procedure SetMarkerAttri(const Value: TSynHighlighterAttributes);
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
-    procedure SetEndExpr(const Value: UnicodeString);
-    procedure SetStartExpr(const Value: UnicodeString);
+    procedure SetEndExpr(const Value: string);
+    procedure SetStartExpr(const Value: string);
     procedure SetCaseSensitive(const Value: Boolean);
   protected
     procedure DefineProperties(Filer: TFiler); override;
@@ -87,8 +87,8 @@ type
   published
     property CaseSensitive: Boolean read fCaseSensitive write SetCaseSensitive
       default True;
-    property StartExpr: UnicodeString read fStartExpr write SetStartExpr;
-    property EndExpr: UnicodeString read fEndExpr write SetEndExpr;
+    property StartExpr: string read fStartExpr write SetStartExpr;
+    property EndExpr: string read fEndExpr write SetEndExpr;
     property Highlighter: TSynCustomHighlighter read fHighlighter
       write SetHighlighter;
     property MarkerAttri: TSynHighlighterAttributes read fMarkerAttri
@@ -121,11 +121,11 @@ type
     fScheme: Integer;
     fStartPos: Integer;
     fMarkerLen: Integer;
-    fMarkerText: UnicodeString;
+    fMarkerText: string;
     fIsOpenMarker: Boolean;
   public
     constructor Create(aScheme, aStartPos, aMarkerLen: Integer;
-      aIsOpenMarker: Boolean; const aMarkerText: UnicodeString);
+      aIsOpenMarker: Boolean; const aMarkerText: string);
   end;
 
 
@@ -179,19 +179,19 @@ type
     fCurrScheme: integer;
     fTmpRange: pointer;
     fOnCustomRange: TCustomRangeEvent;
-    fLineStr: UnicodeString;
+    fLineStr: string;
     procedure SetDefaultHighlighter(const Value: TSynCustomHighLighter);
     function GetMarkers(Index: Integer): TMarker;
     property Markers[Index: Integer]: TMarker read GetMarkers;
     procedure DoCheckMarker(Scheme:TScheme; StartPos, MarkerLen: Integer;
-      const MarkerText: UnicodeString; Start: Boolean; Line: Integer;
+      const MarkerText: string; Start: Boolean; Line: Integer;
       const LineStr: string);
     procedure SetOnCustomRange(const Value: TCustomRangeEvent);
   protected
     fSchemes: TSchemes;
     fDefaultHighlighter: TSynCustomHighLighter;
     fLineNumber: Integer;
-    fSampleSource: UnicodeString;
+    fSampleSource: string;
     procedure Loaded; override;
     procedure SetSchemes(const Value: TSchemes);
     procedure ClearMarkers;
@@ -201,23 +201,23 @@ type
     procedure HookHighlighter(aHL: TSynCustomHighlighter);
     procedure UnhookHighlighter(aHL: TSynCustomHighlighter);
     procedure Notification(aComp: TComponent; aOp: TOperation); override;
-    function GetSampleSource: UnicodeString; override;
-    procedure SetSampleSource(Value: UnicodeString); override;
-    procedure DoSetLine(const Value: UnicodeString; LineNumber: Integer); override;
+    function GetSampleSource: string; override;
+    procedure SetSampleSource(Value: string); override;
+    procedure DoSetLine(const Value: string; LineNumber: Integer); override;
     //
     procedure OldRangeProc(Operation: TRangeOperation; var Range: TRangeUNativeInt);
     procedure NewRangeProc(Operation: TRangeOperation; var Range: TRangeUNativeInt);
     procedure UserRangeProc(Operation: TRangeOperation; var Range: TRangeUNativeInt);
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function GetEol: Boolean; override;
-    function GetExpandedToken: UnicodeString; override;
+    function GetExpandedToken: string; override;
     function GetRange: Pointer; override;
-    function GetToken: UnicodeString; override;
+    function GetToken: string; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
     procedure Next; override;
@@ -225,7 +225,7 @@ type
     procedure ResetRange; override;
     function UpdateRangeProcs: Boolean;
     property CurrScheme: Integer read fCurrScheme write fCurrScheme;
-    property CurrLine: UnicodeString read fLineStr;
+    property CurrLine: string read fLineStr;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
@@ -247,7 +247,7 @@ uses
   SynEditStrConst,
   SysUtils;
 
-procedure CheckExpression(const Expr: UnicodeString);
+procedure CheckExpression(const Expr: string);
 var
   Parser: TRegExpr;
 begin
@@ -273,7 +273,7 @@ end;
 { TMarker }
 
 constructor TMarker.Create(aScheme, aStartPos,
-  aMarkerLen: Integer; aIsOpenMarker: Boolean; const aMarkerText: UnicodeString);
+  aMarkerLen: Integer; aIsOpenMarker: Boolean; const aMarkerText: string);
 begin
   fScheme := aScheme;
   fStartPos := aStartPos;
@@ -449,7 +449,7 @@ begin
   end;
 end;
 
-function TSynMultiSyn.GetToken: UnicodeString;
+function TSynMultiSyn.GetToken: string;
 begin
   if DefaultHighlighter = nil then
     Result := fLineStr
@@ -489,7 +489,7 @@ end;
 
 procedure TSynMultiSyn.Next;
 var
-  iToken, TmpLine, ExpandedTmpLine: UnicodeString;
+  iToken, TmpLine, ExpandedTmpLine: string;
   iHL: TSynCustomHighlighter;
 begin
   if DefaultHighlighter = nil then
@@ -638,12 +638,12 @@ begin
 end;
 
 procedure TSynMultiSyn.DoCheckMarker(Scheme:TScheme; StartPos, MarkerLen: Integer;
-  const MarkerText: UnicodeString; Start: Boolean; Line: Integer;
+  const MarkerText: string; Start: Boolean; Line: Integer;
   const LineStr: string);
 var
   aStartPos: Integer;
   aMarkerLen: Integer;
-  aMarkerText: UnicodeString;
+  aMarkerText: string;
 begin
   aStartPos := StartPos;
   aMarkerLen := MarkerLen;
@@ -670,12 +670,12 @@ begin
   aHL.RemoveFreeNotification(Self);
 end;
 
-function TSynMultiSyn.GetSampleSource: UnicodeString;
+function TSynMultiSyn.GetSampleSource: string;
 begin
   Result := fSampleSource;
 end;
 
-procedure TSynMultiSyn.SetSampleSource(Value: UnicodeString);
+procedure TSynMultiSyn.SetSampleSource(Value: string);
 begin
   fSampleSource := Value;
 end;
@@ -846,17 +846,17 @@ begin
     Result := inherited IsIdentChar(AChar);
 end;
 
-class function TSynMultiSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynMultiSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangGeneralMulti;
 end;
 
-procedure TSynMultiSyn.DoSetLine(const Value: UnicodeString; LineNumber: Integer);
+procedure TSynMultiSyn.DoSetLine(const Value: string; LineNumber: Integer);
 var
   iParser: TRegExpr;
   iScheme: TScheme;
-  iExpr: UnicodeString;
-  iLine: UnicodeString;
+  iExpr: string;
+  iLine: string;
   iEaten: Integer;
   i: Integer;
 begin
@@ -932,7 +932,7 @@ begin
   fLineNumber := LineNumber;
 end;
 
-function TSynMultiSyn.GetExpandedToken: UnicodeString;
+function TSynMultiSyn.GetExpandedToken: string;
 begin
   if (DefaultHighlighter = nil) and (fExpandedLine <> nil) then
     Result := fExpandedLineStr
@@ -973,7 +973,7 @@ end;
 
 { TScheme }
 
-function TScheme.ConvertExpression(const Value: UnicodeString): UnicodeString;
+function TScheme.ConvertExpression(const Value: string): string;
 begin
   if not CaseSensitive then
     Result := SynWideUpperCase(Value)
@@ -1032,9 +1032,9 @@ begin
   SchemeName := Value;
 end;
 
-procedure TScheme.SetEndExpr(const Value: UnicodeString);
+procedure TScheme.SetEndExpr(const Value: string);
 var
-  OldValue: UnicodeString;
+  OldValue: string;
 begin
   if fEndExpr <> Value then
   begin
@@ -1074,9 +1074,9 @@ begin
   fMarkerAttri.Assign(Value);
 end;
 
-procedure TScheme.SetStartExpr(const Value: UnicodeString);
+procedure TScheme.SetStartExpr(const Value: string);
 var
-  OldValue: UnicodeString;
+  OldValue: string;
 begin
   if fStartExpr <> Value then
   begin

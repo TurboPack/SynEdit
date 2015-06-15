@@ -136,12 +136,12 @@ type
     procedure XOrSymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function GetExtTokenID: TxtkTokenKind;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;    
@@ -182,7 +182,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..51] of UnicodeString = (
+  KeyWords: array[0..51] of string = (
     'abstract', 'assert', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 
     'class', 'const', 'continue', 'default', 'do', 'double', 'else', 'extends', 
     'false', 'final', 'finally', 'float', 'for', 'goto', 'if', 'implements', 
@@ -977,7 +977,7 @@ begin
   Result := SYNS_LangJava;
 end;
 
-function TSynJavaSyn.GetSampleSource: UnicodeString;
+function TSynJavaSyn.GetSampleSource: string;
 begin
   Result := '/* Java syntax highlighting */'#13#10 +
             'import java.util.*;'#13#10 +
@@ -992,7 +992,7 @@ begin
             '}';
 end;
 
-class function TSynJavaSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynJavaSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangJava;
 end;

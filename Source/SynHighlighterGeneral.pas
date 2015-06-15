@@ -80,7 +80,7 @@ const
 type
   TSynGeneralSyn = class(TSynCustomHighlighter)
   private
-    fIdentChars: UnicodeString;
+    fIdentChars: string;
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
     fCommentAttri: TSynHighlighterAttributes;
@@ -91,7 +91,7 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    fKeyWords: TUnicodeStrings;
+    fKeyWords: TStrings;
     fComments: TCommentStyles;
     fStringDelim: TStringDelim;
     fDetectPreprocessor: Boolean;
@@ -114,17 +114,17 @@ type
     procedure AnsiProc;
     procedure PasStyleProc;
     procedure CStyleProc;
-    procedure SetKeyWords(const Value: TUnicodeStrings);
+    procedure SetKeyWords(const Value: TStrings);
     procedure SetComments(Value: TCommentStyles);
     function GetStringDelim: TStringDelim;
     procedure SetStringDelim(const Value: TStringDelim);
-    function GetIdentifierChars: UnicodeString;
-    procedure SetIdentifierChars(const Value: UnicodeString);
+    function GetIdentifierChars: string;
+    procedure SetIdentifierChars(const Value: string);
     function StoreIdentChars : Boolean;
     procedure SetDetectPreprocessor(Value: boolean);
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function IsStringDelim(aChar : WideChar) : Boolean;
   public
     constructor Create(AOwner: TComponent); override;
@@ -139,7 +139,7 @@ type
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
-    function IsKeyword(const AKeyword: UnicodeString): Boolean; override;
+    function IsKeyword(const AKeyword: string): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure ResetRange; override;
@@ -156,10 +156,10 @@ type
       write SetDetectPreprocessor;
     property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri
       write fIdentifierAttri;
-    property IdentifierChars: UnicodeString read GetIdentifierChars
+    property IdentifierChars: string read GetIdentifierChars
       write SetIdentifierChars stored StoreIdentChars;
     property KeyAttri: TSynHighlighterAttributes read fKeyAttri write fKeyAttri;
-    property KeyWords: TUnicodeStrings read fKeyWords write SetKeyWords;
+    property KeyWords: TStrings read fKeyWords write SetKeyWords;
     property NumberAttri: TSynHighlighterAttributes read fNumberAttri
       write fNumberAttri;
     property PreprocessorAttri: TSynHighlighterAttributes
@@ -192,10 +192,10 @@ begin
     end;
 end;
 
-function TSynGeneralSyn.IsKeyword(const AKeyword: UnicodeString): Boolean;
+function TSynGeneralSyn.IsKeyword(const AKeyword: string): Boolean;
 var
   First, Last, I, Compare: Integer;
-  Token: UnicodeString;
+  Token: string;
 begin
   First := 0;
   Last := fKeywords.Count - 1;
@@ -225,9 +225,9 @@ end;
 constructor TSynGeneralSyn.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fKeyWords := TUnicodeStringList.Create;
-  TUnicodeStringList(fKeyWords).Sorted := True;
-  TUnicodeStringList(fKeyWords).Duplicates := dupIgnore;
+  fKeyWords := TStringList.Create;
+  TStringList(fKeyWords).Sorted := True;
+  TStringList(fKeyWords).Duplicates := dupIgnore;
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
   AddAttribute(fCommentAttri);
@@ -690,7 +690,7 @@ begin
   fRange := TRangeState(Value);
 end;
 
-procedure TSynGeneralSyn.SetKeyWords(const Value: TUnicodeStrings);
+procedure TSynGeneralSyn.SetKeyWords(const Value: TStrings);
 var
   i: Integer;
 begin
@@ -702,9 +702,9 @@ begin
       Value.EndUpdate;
     end;
 
-  TUnicodeStringList(fKeyWords).Sorted:=False;
+  TStringList(fKeyWords).Sorted:=False;
   fKeyWords.Assign(Value);
-  TUnicodeStringList(fKeyWords).Sorted:=True;
+  TStringList(fKeyWords).Sorted:=True;
 
   DefHighLightChange(nil);
 end;
@@ -764,12 +764,12 @@ begin
    fStringDelim:=Value;
 end;
 
-function TSynGeneralSyn.GetIdentifierChars: UnicodeString;
+function TSynGeneralSyn.GetIdentifierChars: string;
 begin
   Result := fIdentChars;
 end;
 
-procedure TSynGeneralSyn.SetIdentifierChars(const Value: UnicodeString);
+procedure TSynGeneralSyn.SetIdentifierChars(const Value: string);
 begin
   fIdentChars := Value;
 end;
@@ -788,7 +788,7 @@ begin
   end;
 end;
 
-class function TSynGeneralSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynGeneralSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangGeneral;
 end;

@@ -54,7 +54,7 @@ type
     Run: PWideChar;
     Origin: PWideChar;
     TheEnd: PWideChar;
-    Pat, CasedPat: UnicodeString;
+    Pat, CasedPat: string;
     fCount: Integer;
     fTextLen: Integer;
     Look_At: Integer;
@@ -64,14 +64,14 @@ type
     fWhole: Boolean;
     fResults: TList;
     fShiftInitialized: Boolean;
-    FTextToSearch: UnicodeString;
+    FTextToSearch: string;
     function GetFinished: Boolean;
     procedure InitShiftTable;
     procedure SetCaseSensitive(const Value: Boolean);
   protected
     function TestWholeWord: Boolean;
-    procedure SetPattern(const Value: UnicodeString); override;
-    function GetPattern: UnicodeString; override;
+    procedure SetPattern(const Value: string); override;
+    function GetPattern: string; override;
     function GetLength(Index: Integer): Integer; override;
     function GetResult(Index: Integer): Integer; override;
     function GetResultCount: Integer; override;
@@ -79,9 +79,9 @@ type
   public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
-    function FindAll(const NewText: UnicodeString): Integer; override;
-    function Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString; override;
-    function FindFirst(const NewText: UnicodeString): Integer;
+    function FindAll(const NewText: string): Integer; override;
+    function Replace(const aOccurrence, aReplacement: string): string; override;
+    function FindFirst(const NewText: string): Integer;
     procedure FixResults(First, Delta: Integer);
     function Next: Integer;
     property Count: Integer read fCount write fCount;
@@ -217,7 +217,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TSynEditSearch.SetPattern(const Value: UnicodeString);
+procedure TSynEditSearch.SetPattern(const Value: string);
 begin
   if Pat <> Value then
   begin
@@ -244,7 +244,7 @@ begin
   end;
 end;
 
-function TSynEditSearch.FindAll(const NewText: UnicodeString): Integer;
+function TSynEditSearch.FindAll(const NewText: string): Integer;
 var
   Found: Integer;
 begin
@@ -259,12 +259,12 @@ begin
   Result := fResults.Count;
 end;
 
-function TSynEditSearch.Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString;
+function TSynEditSearch.Replace(const aOccurrence, aReplacement: string): string;
 begin
   Result := aReplacement;
 end;                     
 
-function TSynEditSearch.FindFirst(const NewText: UnicodeString): Integer;
+function TSynEditSearch.FindFirst(const NewText: string): Integer;
 begin
   if not fShiftInitialized then
     InitShiftTable;
@@ -288,7 +288,7 @@ begin
   Result := PatLen;  
 end;
 
-function TSynEditSearch.GetPattern: UnicodeString;
+function TSynEditSearch.GetPattern: string;
 begin
   Result := CasedPat; 
 end;

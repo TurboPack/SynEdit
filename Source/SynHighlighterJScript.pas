@@ -490,11 +490,11 @@ type
     procedure SymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -531,7 +531,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..398] of UnicodeString = (
+  KeyWords: array[0..398] of string = (
     'abs', 'abstract', 'acos', 'action', 'alert', 'align', 'alinkColor', 'all',
     'All', 'anchor', 'Anchor', 'anchors', 'appCodeName', 'Applet', 'applets',
     'appName', 'appVersion', 'Area', 'arguments', 'Arguments', 'Array', 'asin',
@@ -4614,7 +4614,7 @@ end;
 
 procedure TSynJScriptSyn.StringProc;
 var
-  l_strChar: UnicodeString;
+  l_strChar: string;
 begin
   fTokenID := tkString;
   l_strChar := FLine[Run];   // We could have '"' or #39
@@ -4739,7 +4739,7 @@ begin
   Result := SYNS_LangJScript;
 end;
 
-function TSynJScriptSyn.GetSampleSource: UnicodeString;
+function TSynJScriptSyn.GetSampleSource: string;
 begin
   Result := '// Syntax highlighting'#13#10+
             'function printNumber()'#13#10+
@@ -4758,7 +4758,7 @@ begin
             'body.onLoad = printNumber;';
 end;
 
-class function TSynJScriptSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynJScriptSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangJScript;
 end;

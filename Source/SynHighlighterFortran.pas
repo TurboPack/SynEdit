@@ -110,7 +110,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -142,7 +142,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..69] of UnicodeString = (
+  KeyWords: array[0..69] of string = (
     'allocatable', 'allocate', 'allocated', 'associated', 'call', 'case', 
     'character', 'close', 'common', 'complex', 'contains', 'continue', 'cycle', 
     'data', 'deallocate', 'default', 'define', 'dimension', 'do', 'else', 
@@ -634,7 +634,7 @@ begin
   Result := SYNS_LangFortran;
 end;
 
-class function TSynFortranSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynFortranSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangFortran;
 end;

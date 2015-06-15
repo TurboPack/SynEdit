@@ -324,16 +324,16 @@ type
 
   TSynEditSearchCustom = class(TComponent)
   protected
-    function GetPattern: UnicodeString; virtual; abstract;
-    procedure SetPattern(const Value: UnicodeString); virtual; abstract;
+    function GetPattern: string; virtual; abstract;
+    procedure SetPattern(const Value: string); virtual; abstract;
     function GetLength(Index: Integer): Integer; virtual; abstract;
     function GetResult(Index: Integer): Integer; virtual; abstract;
     function GetResultCount: Integer; virtual; abstract;
     procedure SetOptions(const Value: TSynSearchOptions); virtual; abstract;
   public
-    function FindAll(const NewText: UnicodeString): Integer; virtual; abstract;
-    function Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString; virtual; abstract;
-    property Pattern: UnicodeString read GetPattern write SetPattern;
+    function FindAll(const NewText: string): Integer; virtual; abstract;
+    function Replace(const aOccurrence, aReplacement: string): string; virtual; abstract;
+    property Pattern: string read GetPattern write SetPattern;
     property ResultCount: Integer read GetResultCount;
     property Results[Index: Integer]: Integer read GetResult;
     property Lengths[Index: Integer]: Integer read GetLength;
@@ -1179,7 +1179,7 @@ begin
     Result := hcNone;
 end;
 
-function ShortCutToTextEx(Key: Word; Shift: TShiftState): UnicodeString;
+function ShortCutToTextEx(Key: Word; Shift: TShiftState): string;
 begin
   if ssCtrl in Shift then Result := SmkcCtrl;
   if ssShift in Shift then Result := Result + SmkcShift;

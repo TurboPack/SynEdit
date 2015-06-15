@@ -110,11 +110,11 @@ type
     procedure StringEndProc;
     procedure PoundProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -157,7 +157,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..40] of UnicodeString = (
+  KeyWords: array[0..40] of string = (
     'abstype', 'and', 'andalso', 'as', 'case', 'datatype', 'do', 'else', 'end', 
     'eqtype', 'exception', 'fn', 'fun', 'functor', 'handle', 'if', 'in', 
     'include', 'infix', 'infixr', 'let', 'local', 'nonfix', 'of', 'op', 'open', 
@@ -224,7 +224,7 @@ function TSynSMLSyn.IsValidMLCharacter: Boolean;
   end;
 
 var
-  ASCIIStr: UnicodeString;
+  ASCIIStr: string;
   ASCIICode, Error: Integer;
 begin
   Result := False;
@@ -633,7 +633,7 @@ begin
   Result := SYNS_LangSML;
 end;
 
-function TSynSMLSyn.GetSampleSource: UnicodeString;
+function TSynSMLSyn.GetSampleSource: string;
 begin
   Result := '(* Syntax highlighting *)'#13#10 +
             'load "Real";'#13#10 +
@@ -662,7 +662,7 @@ begin
   Result := Pointer(fRange);
 end;
 
-class function TSynSMLSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynSMLSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangSML;
 end;

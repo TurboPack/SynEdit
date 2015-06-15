@@ -82,7 +82,7 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fSyntaxErrorAttri: TSynHighlighterAttributes;
     fKeywords: TSynHashEntryList;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function HashKey(Str: PWideChar): integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymAsciiCharProc;
@@ -104,7 +104,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
 {$IFDEF SYN_DEVELOPMENT_CHECKS}
   public
     property _Keywords: TSynHashEntryList read fKeywords;
@@ -150,20 +150,20 @@ uses
   SynEditStrConst;
 
 const
-  Keywords: UnicodeString =
+  Keywords: string =
     'AS,AND,ANY,ARRAY,BEGIN,BITS,BRANDED,BY,CASE,CONST,DIV,DO,ELSE,ELSIF,END,' +
     'EVAL,EXCEPT,EXCEPTION,EXIT,EXPORTS,FINALLY,FOR,FROM,GENERIC,IF,IMPORT,' +
     'IN,INTERFACE,LOCK,LOOP,METHODS,MOD,MODULE,NOT,OBJECT,OF,OR,OVERRIDES,' +
     'PROCEDURE,RAISE,RAISES,READONLY,RECORD,REF,REPEAT,RETURN,REVEAL,ROOT,' +
     'SET,THEN,TO,TRY,TYPE,TYPECASE,UNSAFE,UNTIL,UNTRACED,VALUE,VAR,WHILE,WITH';
 
-  ReservedWords: UnicodeString =
+  ReservedWords: string =
     'ABS,ADDRESS,ADR,ADRSIZE,BITSIZE,BOOLEAN,BYTESIZE,CARDINAL,CEILING,CHAR,' +
     'DEC,DISPOSE,FALSE,FIRST,FLOAT,FLOOR,INC,INTEGER,ISTYPE,LAST,LONGFLOAT,' +
     'LONGREAL,LOOPHOLE,MAX,MIN,MUTEX,NARROW,NEW,NIL,NULL,NUMBER,ORD,REAL,' +
     'REFANY,ROUND,SUBARRAY,TEXT,TRUE,TRUNC,TYPECODE,VAL';
 
-procedure TSynM3Syn.DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+procedure TSynM3Syn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
   HashValue: integer;
 begin
@@ -643,7 +643,7 @@ begin
   fRange.p := Value;
 end;
 
-class function TSynM3Syn.GetFriendlyLanguageName: UnicodeString;
+class function TSynM3Syn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangModula3;
 end;

@@ -124,14 +124,14 @@ type
     procedure SymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
-    function IsCurrentToken(const Token: UnicodeString): Boolean; override;
+    function IsCurrentToken(const Token: string): Boolean; override;
 
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -186,7 +186,7 @@ uses
 
 const
    // if the language is case-insensitive keywords *must* be in lowercase
-   cKeyWords: array[1..95] of UnicodeString = (
+   cKeyWords: array[1..95] of string = (
       'abstract', 'and', 'array', 'as', 'asm',
       'begin', 'break', 'case', 'cdecl', 'class', 'const', 'constructor',
       'contains', 'continue', 'deprecated', 'destructor',
@@ -204,7 +204,7 @@ const
       'then', 'to', 'try', 'type', 'unit', 'until',
       'uses', 'var', 'virtual', 'while', 'xor'
   );
-  cKeyWords_PropertyScoped: array [0..4] of UnicodeString = (
+  cKeyWords_PropertyScoped: array [0..4] of string = (
       'default', 'index', 'read', 'stored', 'write'
   );
 
@@ -546,9 +546,9 @@ const
   clID = clNavy;
   clString = clBlue;
   clComment = clGreen;
-  cKeywordsToAdd: array[0..0] of UnicodeString = (
+  cKeywordsToAdd: array[0..0] of string = (
       'string');
-  cKeywordsToRemove: array[0..1] of UnicodeString = (
+  cKeywordsToRemove: array[0..1] of string = (
       'break', 'exit');
 var
   i : integer;
@@ -917,7 +917,7 @@ begin
   fRange:= rsUnknown;
 end;
 
-function TSynDWSSyn.GetSampleSource: UnicodeString;
+function TSynDWSSyn.GetSampleSource: string;
 begin
   Result := '{ Syntax highlighting }'#13#10 +
              'procedure TForm1.Button1Click(Sender: TObject);'#13#10 +
@@ -960,7 +960,7 @@ end;
 
 // IsCurrentToken
 //
-function TSynDWSSyn.IsCurrentToken(const Token: UnicodeString): Boolean;
+function TSynDWSSyn.IsCurrentToken(const Token: string): Boolean;
 var
    i : Integer;
    temp : PWideChar;
@@ -990,7 +990,7 @@ begin
       Result := AChar.IsLetterOrDigit;
 end;
 
-class function TSynDWSSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynDWSSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangPascal;
 end;

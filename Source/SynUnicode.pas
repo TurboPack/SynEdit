@@ -10,7 +10,7 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is SynUnicode.pas by Maël Hörz, released 2004-05-30.
 All Rights Reserved.
-TUnicodeStrings/TUnicodeStringList-code (originally written by Mike Lischke) is based
+TStrings/TStringList-code (originally written by Mike Lischke) is based
 on JclUnicode.pas which is part of the JCL (www.delphi-jedi.org).
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -34,7 +34,7 @@ located at http://SynEdit.SourceForge.net
 Provides:
 - Unicode(PWideChar) versions of the most important PAnsiChar-functions in
   SysUtils and some functions unavailable in Delphi 5.
-- An adapted and lighter version of TUnicodeStrings/TUnicodeStringList taken
+- An adapted and lighter version of TStrings/TStringList taken
   from JCL, but made portable.
 - function for loading and saving of Unicode files, and detecting the encoding
 - Unicode clipboard support
@@ -42,7 +42,7 @@ Provides:
 - Some character constants like CR&LF.
 
 Last Changes:
-- 1.1.3.19: Added TUnicodeStringList.CustomSort
+- 1.1.3.19: Added TStringList.CustomSort
 -------------------------------------------------------------------------------}
 
 unit SynUnicode;
@@ -90,7 +90,7 @@ const
   WideFormFeed = WideChar(#12);
   WideCR = WideChar(#13);
   WideCarriageReturn = WideChar(#13);
-  WideCRLF = UnicodeString(#13#10);
+  WideCRLF = string(#13#10);
   WideLineSeparator = WideChar($2028);
   WideParagraphSeparator = WideChar($2029);
 
@@ -111,50 +111,46 @@ const
 type
   TFontCharSet = 0..255;
 
-  TUnicodeStrings = TStrings;
-
-  TUnicodeStringList = TStringList;
-
 function WCharUpper(lpsz: PWideChar): PWideChar;
 function WCharUpperBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
 function WCharLower(lpsz: PWideChar): PWideChar;
 function WCharLowerBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
-function SynWideUpperCase(const S: UnicodeString): UnicodeString;
-function SynWideLowerCase(const S: UnicodeString): UnicodeString;
+function SynWideUpperCase(const S: string): string;
+function SynWideLowerCase(const S: string): string;
 function SynIsCharAlpha(const C: WideChar): Boolean;
 function SynIsCharAlphaNumeric(const C: WideChar): Boolean;
 
-function WideLastDelimiter(const Delimiters, S: UnicodeString): Integer;
-function UnicodeStringReplace(const S, OldPattern, NewPattern: UnicodeString;
-  Flags: TReplaceFlags): UnicodeString;
+function WideLastDelimiter(const Delimiters, S: string): Integer;
+function UnicodeStringReplace(const S, OldPattern, NewPattern: string;
+  Flags: TReplaceFlags): string;
 
 { functions taken from JCLUnicode.pas }
 function WStrComp(Str1, Str2: PWideChar): Integer;
 function WStrLComp(Str1, Str2: PWideChar; MaxLen: Cardinal): Integer;
 procedure StrSwapByteOrder(Str: PWideChar);
-function WideQuotedStr(const S: UnicodeString; Quote: WideChar): UnicodeString;
-function WideExtractQuotedStr(var Src: PWideChar; Quote: WideChar): UnicodeString;
-function UnicodeStringOfChar(C: WideChar; Count: Cardinal): UnicodeString;
-function WideTrim(const S: UnicodeString): UnicodeString;
-function WideTrimLeft(const S: UnicodeString): UnicodeString;
-function WideTrimRight(const S: UnicodeString): UnicodeString;
+function WideQuotedStr(const S: string; Quote: WideChar): string;
+function WideExtractQuotedStr(var Src: PWideChar; Quote: WideChar): string;
+function UnicodeStringOfChar(C: WideChar; Count: Cardinal): string;
+function WideTrim(const S: string): string;
+function WideTrimLeft(const S: string): string;
+function WideTrimRight(const S: string): string;
 function CharSetFromLocale(Language: LCID): TFontCharSet;
 function CodePageFromLocale(Language: LCID): Integer;
 function KeyboardCodePage: Word;
 function KeyUnicode(C: AnsiChar): WideChar;
-function StringToUnicodeStringEx(const S: AnsiString; CodePage: Word): UnicodeString;
-function UnicodeStringToStringEx(const WS: UnicodeString; CodePage: Word): AnsiString;
+function StringToUnicodeStringEx(const S: AnsiString; CodePage: Word): string;
+function UnicodeStringToStringEx(const WS: string; CodePage: Word): AnsiString;
 
 { functions providing same behavior on Win9x and WinNT based systems}
 function GetTextSize(DC: HDC; Str: PWideChar; Count: Integer): TSize;
 
 { Unicode versions of TCanvas-methods }
-function TextExtent(ACanvas: TCanvas; const Text: UnicodeString): TSize;
-function TextWidth(ACanvas: TCanvas; const Text: UnicodeString): Integer;
-function TextHeight(ACanvas: TCanvas; const Text: UnicodeString): Integer;
-procedure TextOut(ACanvas: TCanvas; X, Y: Integer; const Text: UnicodeString);
+function TextExtent(ACanvas: TCanvas; const Text: string): TSize;
+function TextWidth(ACanvas: TCanvas; const Text: string): Integer;
+function TextHeight(ACanvas: TCanvas; const Text: string): Integer;
+procedure TextOut(ACanvas: TCanvas; X, Y: Integer; const Text: string);
 procedure TextRect(ACanvas: TCanvas; Rect: TRect; X, Y: Integer;
-  const Text: UnicodeString);
+  const Text: string);
 
 { Unicode streaming-support }
 type
@@ -163,37 +159,37 @@ type
 
   TWideFileStream = TFileStream;
 
-function IsAnsiOnly(const WS: UnicodeString): Boolean;
+function IsAnsiOnly(const WS: string): Boolean;
 function IsUTF8(Stream: TStream; out WithBOM: Boolean): Boolean; overload;
-function IsUTF8(const FileName: UnicodeString; out WithBOM: Boolean): Boolean; overload;
-function GetEncoding(const FileName: UnicodeString; out WithBOM: Boolean): TSynEncoding; overload;
+function IsUTF8(const FileName: string; out WithBOM: Boolean): Boolean; overload;
+function GetEncoding(const FileName: string; out WithBOM: Boolean): TSynEncoding; overload;
 function GetEncoding(Stream: TStream; out WithBOM: Boolean): TSynEncoding; overload;
-procedure SaveToFile(const WS: UnicodeString; const FileName: UnicodeString;
+procedure SaveToFile(const WS: string; const FileName: string;
   Encoding: TSynEncoding; WithBom: Boolean = True); overload;
-procedure SaveToFile(UnicodeStrings: TUnicodeStrings; const FileName: UnicodeString;
+procedure SaveToFile(UnicodeStrings: TStrings; const FileName: string;
   Encoding: TSynEncoding; WithBom: Boolean = True); overload;
-function LoadFromFile(UnicodeStrings: TUnicodeStrings; const FileName: UnicodeString;
+function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
   out WithBOM: Boolean): TSynEncoding; overload;
-function LoadFromFile(UnicodeStrings: TUnicodeStrings; const FileName: UnicodeString;
+function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
   Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding; overload;
-procedure SaveToStream(const WS: UnicodeString; Stream: TStream;
+procedure SaveToStream(const WS: string; Stream: TStream;
   Encoding: TSynEncoding; WithBom: Boolean  = True); overload;
-procedure SaveToStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+procedure SaveToStream(UnicodeStrings: TStrings; Stream: TStream;
   Encoding: TSynEncoding; WithBom: Boolean  = True); overload;
-function LoadFromStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
   out WithBOM: Boolean): TSynEncoding; overload;
-function LoadFromStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
   Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding; overload;
-function LoadFromStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
   Encoding: TSynEncoding): TSynEncoding; overload;
 
 function ClipboardProvidesText: Boolean;
-function GetClipboardText: UnicodeString;
-procedure SetClipboardText(const Text: UnicodeString);
+function GetClipboardText: string;
+procedure SetClipboardText(const Text: string);
 
 { misc functions }
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
-function IsUnicodeStringMappableToAnsi(const WS: UnicodeString): Boolean;
+function IsUnicodeStringMappableToAnsi(const WS: string): Boolean;
 
 var
   Win32PlatformIsUnicode: Boolean;
@@ -301,7 +297,7 @@ end;
 function WCharUpper(lpsz: PWideChar): PWideChar;
 var
   AStr: AnsiString;
-  WStr: UnicodeString;
+  WStr: string;
 begin
   if Win32PlatformIsUnicode then
     Result := Windows.CharUpperW(lpsz)
@@ -315,7 +311,7 @@ begin
       begin
         AStr := AnsiString(WideChar(lpsz)); // single character may be more than one byte
         Windows.CharUpperA(PAnsiChar(AStr));
-        WStr := UnicodeString(AStr); // should always be single wide char
+        WStr := string(AStr); // should always be single wide char
         if Length(WStr) = 1 then
           Result := PWideChar(WStr[1]);
       end
@@ -353,7 +349,7 @@ end;
 function WCharLower(lpsz: PWideChar): PWideChar;
 var
   AStr: AnsiString;
-  WStr: UnicodeString;
+  WStr: string;
 begin
   if Win32PlatformIsUnicode then
     Result := Windows.CharLowerW(lpsz)
@@ -367,7 +363,7 @@ begin
       begin
         AStr := AnsiString(WideChar(lpsz)); // single character may be more than one byte
         Windows.CharLowerA(PAnsiChar(AStr));
-        WStr := UnicodeString(AStr); // should always be single wide char
+        WStr := string(AStr); // should always be single wide char
         if Length(WStr) = 1 then
           Result := PWideChar(WStr[1]);
       end
@@ -402,7 +398,7 @@ begin
   end;
 end;
 
-function SynWideUpperCase(const S: UnicodeString): UnicodeString;
+function SynWideUpperCase(const S: string): string;
 var
   Len: Integer;
 begin
@@ -412,7 +408,7 @@ begin
     SynUnicode.WCharUpperBuff(Pointer(Result), Len);
 end;
 
-function SynWideLowerCase(const S: UnicodeString): UnicodeString;
+function SynWideLowerCase(const S: string): string;
 var
   Len: Integer;
 begin
@@ -440,7 +436,7 @@ begin
     Result := IsCharAlphaNumericA(AnsiChar(C));
 end;
 
-function WideLastDelimiter(const Delimiters, S: UnicodeString): Integer;
+function WideLastDelimiter(const Delimiters, S: string): Integer;
 var
   P: PWideChar;
 begin
@@ -454,10 +450,10 @@ begin
   end;
 end;
 
-function UnicodeStringReplace(const S, OldPattern, NewPattern: UnicodeString;
-  Flags: TReplaceFlags): UnicodeString;
+function UnicodeStringReplace(const S, OldPattern, NewPattern: string;
+  Flags: TReplaceFlags): string;
 var
-  SearchStr, Patt, NewStr: UnicodeString;
+  SearchStr, Patt, NewStr: string;
   Offset: Integer;
 begin
   if rfIgnoreCase in Flags then
@@ -577,7 +573,7 @@ begin
 end;
 
 // works like QuotedStr from SysUtils.pas but can insert any quotation character
-function WideQuotedStr(const S: UnicodeString; Quote: WideChar): UnicodeString;
+function WideQuotedStr(const S: string; Quote: WideChar): string;
 var
   P, Src,
   Dest: PWideChar;
@@ -619,7 +615,7 @@ begin
 end;
 
 // extracts a string enclosed in quote characters given by Quote
-function WideExtractQuotedStr(var Src: PWideChar; Quote: WideChar): UnicodeString;
+function WideExtractQuotedStr(var Src: PWideChar; Quote: WideChar): string;
 var
   P, Dest: PWideChar;
   DropCount: Integer;
@@ -673,7 +669,7 @@ begin
 end;
 
 // returns a string of Count characters filled with C
-function UnicodeStringOfChar(C: WideChar; Count: Cardinal): UnicodeString;
+function UnicodeStringOfChar(C: WideChar; Count: Cardinal): string;
 var
   I: Integer;
 begin
@@ -682,7 +678,7 @@ begin
     Result[I] := C;
 end;
 
-function WideTrim(const S: UnicodeString): UnicodeString;
+function WideTrim(const S: string): string;
 var
   I, L: Integer;
 begin
@@ -698,7 +694,7 @@ begin
   end;
 end;
 
-function WideTrimLeft(const S: UnicodeString): UnicodeString;
+function WideTrimLeft(const S: string): string;
 var
   I, L: Integer;
 begin
@@ -708,7 +704,7 @@ begin
   Result := Copy(S, I, Maxint);
 end;
 
-function WideTrimRight(const S: UnicodeString): UnicodeString;
+function WideTrimRight(const S: string): string;
 var
   I: Integer;
 begin
@@ -751,7 +747,7 @@ begin
   MultiByteToWideChar(KeyboardCodePage, MB_USEGLYPHCHARS, @C, 1, @Result, 1);
 end;
 
-function StringToUnicodeStringEx(const S: AnsiString; CodePage: Word): UnicodeString;
+function StringToUnicodeStringEx(const S: AnsiString; CodePage: Word): string;
 var
   InputLength,
   OutputLength: Integer;
@@ -764,7 +760,7 @@ begin
     OutputLength);
 end;
 
-function UnicodeStringToStringEx(const WS: UnicodeString; CodePage: Word): AnsiString;
+function UnicodeStringToStringEx(const WS: string; CodePage: Word): AnsiString;
 var
   InputLength,
   OutputLength: Integer;
@@ -838,7 +834,7 @@ type
   TAccessCanvas = class(TCanvas)
   end;
 
-function TextExtent(ACanvas: TCanvas; const Text: UnicodeString): TSize;
+function TextExtent(ACanvas: TCanvas; const Text: string): TSize;
 begin
   with TAccessCanvas(ACanvas) do
   begin
@@ -847,17 +843,17 @@ begin
   end;
 end;
 
-function TextWidth(ACanvas: TCanvas; const Text: UnicodeString): Integer;
+function TextWidth(ACanvas: TCanvas; const Text: string): Integer;
 begin
   Result := TextExtent(ACanvas, Text).cX;
 end;
 
-function TextHeight(ACanvas: TCanvas; const Text: UnicodeString): Integer;
+function TextHeight(ACanvas: TCanvas; const Text: string): Integer;
 begin
   Result := TextExtent(ACanvas, Text).cY;
 end;
 
-procedure TextOut(ACanvas: TCanvas; X, Y: Integer; const Text: UnicodeString);
+procedure TextOut(ACanvas: TCanvas; X, Y: Integer; const Text: string);
 begin
   with TAccessCanvas(ACanvas) do
   begin
@@ -873,7 +869,7 @@ begin
 end;
 
 procedure TextRect(ACanvas: TCanvas; Rect: TRect; X, Y: Integer;
-  const Text: UnicodeString);
+  const Text: string);
 var
   Options: Integer;
 begin
@@ -894,12 +890,12 @@ begin
   end;
 end;
 
-function IsAnsiOnly(const WS: UnicodeString): Boolean;
+function IsAnsiOnly(const WS: string): Boolean;
 begin
   Result := IsUnicodeStringMappableToAnsi(WS);
 end;
 
-function IsUTF8(const FileName: UnicodeString; out WithBOM: Boolean): Boolean;
+function IsUTF8(const FileName: string; out WithBOM: Boolean): Boolean;
 var
   Stream: TStream;
 begin
@@ -1044,7 +1040,7 @@ begin
   end;
 end;
 
-function GetEncoding(const FileName: UnicodeString; out WithBOM: Boolean): TSynEncoding;
+function GetEncoding(const FileName: string; out WithBOM: Boolean): TSynEncoding;
 var
   Stream: TStream;
 begin
@@ -1097,7 +1093,7 @@ begin
   end;
 end;
 
-procedure SaveToFile(const WS: UnicodeString; const FileName: UnicodeString;
+procedure SaveToFile(const WS: string; const FileName: string;
   Encoding: TSynEncoding; WithBom: Boolean = True);
 var
   Stream: TStream;
@@ -1110,7 +1106,7 @@ begin
   end;
 end;
 
-procedure SaveToFile(UnicodeStrings: TUnicodeStrings; const FileName: UnicodeString;
+procedure SaveToFile(UnicodeStrings: TStrings; const FileName: string;
   Encoding: TSynEncoding; WithBom: Boolean = True);
 var
   Stream: TStream;
@@ -1123,7 +1119,7 @@ begin
   end;
 end;
 
-function LoadFromFile(UnicodeStrings: TUnicodeStrings; const FileName: UnicodeString;
+function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
   out WithBOM: Boolean): TSynEncoding;
 var
   Stream: TStream;
@@ -1136,7 +1132,7 @@ begin
   end;
 end;
 
-function LoadFromFile(UnicodeStrings: TUnicodeStrings; const FileName: UnicodeString;
+function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
   Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding;
 var
   Stream: TStream;
@@ -1149,10 +1145,10 @@ begin
   end;
 end;
 
-procedure SaveToStream(const WS: UnicodeString; Stream: TStream; Encoding: TSynEncoding;
+procedure SaveToStream(const WS: string; Stream: TStream; Encoding: TSynEncoding;
   WithBom: Boolean  = True);
 var
-  UTF16BOM: UnicodeString;
+  UTF16BOM: string;
 
   UTF8Str: UTF8String;
   AnsiStr: AnsiString;
@@ -1197,10 +1193,10 @@ end;
 type
   TSynEditStringListAccess = class(TSynEditStringList);
 
-procedure SaveToStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+procedure SaveToStream(UnicodeStrings: TStrings; Stream: TStream;
   Encoding: TSynEncoding; WithBom: Boolean = True);
 var
-  SText: UnicodeString;
+  SText: string;
   SaveFStreaming: Boolean;
 begin
   // if UnicodeStrings or Stream is nil, let Delphi raise the exception to flag the error
@@ -1217,7 +1213,7 @@ begin
   SaveToStream(SText, Stream, Encoding, WithBom);
 end;
 
-function LoadFromStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
   out WithBOM: Boolean): TSynEncoding;
 var
   Dummy: Boolean;
@@ -1226,7 +1222,7 @@ begin
     Dummy);
 end;
 
-function LoadFromStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
   Encoding: TSynEncoding): TSynEncoding; overload;
 var
   Dummy: Boolean;
@@ -1234,10 +1230,10 @@ begin
   Result := LoadFromStream(UnicodeStrings, Stream, Encoding, Dummy);
 end;
 
-function LoadFromStream(UnicodeStrings: TUnicodeStrings; Stream: TStream;
+function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
   Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding;
 var
-  WideStr: UnicodeString;
+  WideStr: string;
   UTF8Str: UTF8String;
   AnsiStr: AnsiString;
   Size: Integer;
@@ -1321,7 +1317,7 @@ begin
         begin
           SetLength(AnsiStr, Size);
           Stream.ReadBuffer(AnsiStr[1], Size);
-          UnicodeStrings.Text := UnicodeString(AnsiStr);
+          UnicodeStrings.Text := string(AnsiStr);
         end;
     end;
   finally
@@ -1334,7 +1330,7 @@ begin
   Result := IsClipboardFormatAvailable(CF_TEXT) or IsClipboardFormatAvailable(CF_UNICODETEXT);
 end;
 
-function GetClipboardText: UnicodeString;
+function GetClipboardText: string;
 var
   Mem: HGLOBAL;
   LocaleID: LCID;
@@ -1379,7 +1375,7 @@ begin
   end;
 end;
 
-procedure SetClipboardText(const Text: UnicodeString);
+procedure SetClipboardText(const Text: string);
 var
   Mem: HGLOBAL;
   P: PByte;
@@ -1443,7 +1439,7 @@ begin
   Result := not UsedDefaultChar;
 end;
 
-function IsUnicodeStringMappableToAnsi(const WS: UnicodeString): Boolean;
+function IsUnicodeStringMappableToAnsi(const WS: string): Boolean;
 var
   UsedDefaultChar: BOOL;
 begin

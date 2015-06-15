@@ -63,7 +63,7 @@ type
     {$IFDEF OWN_UnicodeString_MEMMGR}
     FString: PWideChar; // "array of WideChar";
     {$ELSE}
-    FString: UnicodeString;
+    FString: string;
     {$ENDIF OWN_UnicodeString_MEMMGR}
     fObject: TObject;
     fRange: TSynEditRange;
@@ -90,11 +90,11 @@ type
   TStringListChangeEvent = procedure(Sender: TObject; Index: Integer;
     Count: integer) of object;
 
-  TExpandAtWideGlyphsFunc = function (const S: UnicodeString): UnicodeString of object;
+  TExpandAtWideGlyphsFunc = function (const S: string): string of object;
 
   TSynEditFileFormat = (sffDos, sffUnix, sffMac, sffUnicode); // DOS: CRLF, UNIX: LF, Mac: CR, Unicode: LINE SEPARATOR
 
-  TSynEditStringList = class(TUnicodeStrings)
+  TSynEditStringList = class(TStrings)
   private
     fList: PSynEditStringRecList;
     fCount: integer;
@@ -112,26 +112,26 @@ type
     fOnDeleted: TStringListChangeEvent;
     fOnInserted: TStringListChangeEvent;
     fOnPutted: TStringListChangeEvent;
-    function ExpandString(Index: integer): UnicodeString;
-    function GetExpandedString(Index: integer): UnicodeString;
+    function ExpandString(Index: integer): string;
+    function GetExpandedString(Index: integer): string;
     function GetExpandedStringLength(Index: integer): integer;
     function GetLengthOfLongestLine: Integer;
     function GetRange(Index: integer): TSynEditRange;
     procedure Grow;
-    procedure InsertItem(Index: integer; const S: UnicodeString);
+    procedure InsertItem(Index: integer; const S: string);
     procedure PutRange(Index: integer; ARange: TSynEditRange);
     procedure SetFileFormat(const Value: TSynEditFileFormat);
     {$IFDEF OWN_UnicodeString_MEMMGR}
-    procedure SetListString(Index: Integer; const S: UnicodeString);
+    procedure SetListString(Index: Integer; const S: string);
     {$ENDIF OWN_UnicodeString_MEMMGR}
   protected
     FStreaming: Boolean;
-    function Get(Index: Integer): UnicodeString; override;
+    function Get(Index: Integer): string; override;
     function GetCapacity: integer; override;
     function GetCount: integer; override;
     function GetObject(Index: integer): TObject; override;
-    function GetTextStr: UnicodeString; override;
-    procedure Put(Index: integer; const S: UnicodeString); override;
+    function GetTextStr: string; override;
+    procedure Put(Index: integer; const S: string); override;
     procedure PutObject(Index: integer; AObject: TObject); override;
     procedure SetCapacity(NewCapacity: integer); override;
     procedure SetTabWidth(Value: integer);
@@ -140,19 +140,19 @@ type
   public
     constructor Create(AExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc);
     destructor Destroy; override;
-    function Add(const S: UnicodeString): integer; override;
-    procedure AddStrings(Strings: TUnicodeStrings); override;
+    function Add(const S: string): integer; override;
+    procedure AddStrings(Strings: TStrings); override;
     procedure Clear; override;
     procedure Delete(Index: integer); override;
     procedure DeleteLines(Index, NumLines: integer);
     procedure Exchange(Index1, Index2: integer); override;
-    procedure Insert(Index: integer; const S: UnicodeString); override;
+    procedure Insert(Index: integer; const S: string); override;
     procedure InsertLines(Index, NumLines: integer);
-    procedure InsertStrings(Index: integer; NewStrings: TUnicodeStrings);
-    procedure InsertText(Index: integer; NewText: UnicodeString);
+    procedure InsertStrings(Index: integer; NewStrings: TStrings);
+    procedure InsertText(Index: integer; NewText: string);
     procedure SaveToStream(Stream: TStream; Encoding: TEncoding); override;
-    function GetSeparatedText(Separators: UnicodeString): UnicodeString;
-    procedure SetTextStr(const Value: UnicodeString); override;
+    function GetSeparatedText(Separators: string): string;
+    procedure SetTextStr(const Value: string); override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure FontChanged;
     function LineCharLength(Index : Integer) : Integer;
@@ -161,7 +161,7 @@ type
     property AppendNewLineAtEOF: Boolean read fAppendNewLineAtEOF write fAppendNewLineAtEOF;
 
     property FileFormat: TSynEditFileFormat read fFileFormat write SetFileFormat;
-    property ExpandedStrings[Index: integer]: UnicodeString read GetExpandedString;
+    property ExpandedStrings[Index: integer]: string read GetExpandedString;
     property ExpandedStringLengths[Index: integer]: integer read GetExpandedStringLength;
     property LengthOfLongestLine: Integer read GetLengthOfLongestLine;
     property Ranges[Index: integer]: TSynEditRange read GetRange write PutRange;
@@ -201,7 +201,7 @@ type
     fChangeSelMode: TSynSelectionMode;
     fChangeStartPos: TBufferCoord;
     fChangeEndPos: TBufferCoord;
-    fChangeStr: UnicodeString;
+    fChangeStr: string;
     fChangeNumber: integer;                                                     
   public
     procedure Assign(Source: TPersistent); override;
@@ -209,7 +209,7 @@ type
     property ChangeSelMode: TSynSelectionMode read fChangeSelMode;
     property ChangeStartPos: TBufferCoord read fChangeStartPos;
     property ChangeEndPos: TBufferCoord read fChangeEndPos;
-    property ChangeStr: UnicodeString read fChangeStr;
+    property ChangeStr: string read fChangeStr;
     property ChangeNumber: integer read fChangeNumber;
   end;
 
@@ -237,7 +237,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure AddChange(AReason: TSynChangeReason; const AStart, AEnd: TBufferCoord;
-      const ChangeText: UnicodeString; SelMode: TSynSelectionMode);
+      const ChangeText: string; SelMode: TSynSelectionMode);
     procedure BeginBlock;                                                       
     procedure Clear;
     procedure EndBlock;
@@ -303,7 +303,7 @@ begin
   {$ENDIF OWN_UnicodeString_MEMMGR}
 end;
 
-function TSynEditStringList.Add(const S: UnicodeString): integer;
+function TSynEditStringList.Add(const S: string): integer;
 begin
   BeginUpdate;
   Result := fCount;
@@ -313,7 +313,7 @@ begin
   EndUpdate;
 end;
 
-procedure TSynEditStringList.AddStrings(Strings: TUnicodeStrings);
+procedure TSynEditStringList.AddStrings(Strings: TStrings);
 var
   i, FirstAdded: integer;
 begin
@@ -453,7 +453,7 @@ begin
   EndUpdate;
 end;
 
-function TSynEditStringList.ExpandString(Index: integer): UnicodeString;
+function TSynEditStringList.ExpandString(Index: integer): string;
 var
   HasTabs: Boolean;
 begin
@@ -484,7 +484,7 @@ begin
     end;
 end;
 
-function TSynEditStringList.Get(Index: integer): UnicodeString;
+function TSynEditStringList.Get(Index: integer): string;
 {$IFDEF OWN_UnicodeString_MEMMGR}
 var
   Len: Integer;
@@ -553,7 +553,7 @@ begin
   Result := fCount;
 end;
 
-function TSynEditStringList.GetExpandedString(Index: Integer): UnicodeString;
+function TSynEditStringList.GetExpandedString(Index: Integer): string;
 begin
   if (Index >= 0) and (Index < fCount) then
   begin
@@ -624,7 +624,7 @@ begin
     Result := nil;
 end;
 
-function TSynEditStringList.GetSeparatedText(Separators: UnicodeString): UnicodeString;
+function TSynEditStringList.GetSeparatedText(Separators: string): string;
 {Optimized by Eric Grange}
 var
   I, L, Size, LineBreakSize: Integer;
@@ -682,9 +682,9 @@ begin
   end;
 end;
 
-function TSynEditStringList.GetTextStr: UnicodeString;
+function TSynEditStringList.GetTextStr: string;
 var
-  LB: UnicodeString;
+  LB: string;
 begin
   if not FStreaming then
   begin
@@ -719,7 +719,7 @@ begin
   SetCapacity(fCapacity + Delta);
 end;
 
-procedure TSynEditStringList.Insert(Index: integer; const S: UnicodeString);
+procedure TSynEditStringList.Insert(Index: integer; const S: string);
 begin
   if (Index < 0) or (Index > fCount) then
     ListIndexOutOfBounds(Index);
@@ -730,7 +730,7 @@ begin
   EndUpdate;
 end;
 
-procedure TSynEditStringList.InsertItem(Index: Integer; const S: UnicodeString);
+procedure TSynEditStringList.InsertItem(Index: Integer; const S: string);
 begin
   BeginUpdate;
   if fCount = fCapacity then
@@ -793,7 +793,7 @@ begin
 end;
 
 procedure TSynEditStringList.InsertStrings(Index: integer;
-  NewStrings: TUnicodeStrings);
+  NewStrings: TStrings);
 var
   i, Cnt: integer;
 begin
@@ -811,13 +811,13 @@ begin
 end;
 
 procedure TSynEditStringList.InsertText(Index: integer;
-  NewText: UnicodeString);
+  NewText: string);
 var
-  TmpStringList: TUnicodeStringList;
+  TmpStringList: TStringList;
 begin
   if NewText = '' then exit;
 
-  TmpStringList := TUnicodeStringList.Create;
+  TmpStringList := TStringList.Create;
   try
     TmpStringList.Text := NewText;
     InsertStrings(Index, TmpStringList);
@@ -840,7 +840,7 @@ begin
   FStreaming := False;
 end;
 
-procedure TSynEditStringList.Put(Index: integer; const S: UnicodeString);
+procedure TSynEditStringList.Put(Index: integer; const S: string);
 begin
   if (Index = 0) and (fCount = 0) or (fCount = Index) then
     Add(S)
@@ -915,7 +915,7 @@ begin
 end;
 
 {$IFDEF OWN_UnicodeString_MEMMGR}
-procedure TSynEditStringList.SetListString(Index: Integer; const S: UnicodeString);
+procedure TSynEditStringList.SetListString(Index: Integer; const S: string);
 var
   Len: Integer;
   A: TDynWideCharArray;
@@ -957,9 +957,9 @@ begin
   end;
 end;
 
-procedure TSynEditStringList.SetTextStr(const Value: UnicodeString);
+procedure TSynEditStringList.SetTextStr(const Value: string);
 var
-  S: UnicodeString;
+  S: string;
   Size: Integer;
   P, Start, Pmax: PWideChar;
   fCR, fLF, fLINESEPARATOR: Boolean;
@@ -1113,7 +1113,7 @@ begin
 end;
 
 procedure TSynEditUndoList.AddChange(AReason: TSynChangeReason; const AStart,
-  AEnd: TBufferCoord; const ChangeText: UnicodeString; SelMode: TSynSelectionMode);
+  AEnd: TBufferCoord; const ChangeText: string; SelMode: TSynSelectionMode);
 var
   NewItem: TSynEditUndoItem;
 begin

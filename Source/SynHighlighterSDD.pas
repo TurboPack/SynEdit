@@ -120,11 +120,11 @@ type
     procedure UnknownProc;
     procedure SymbolProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;   
+    class function GetFriendlyLanguageName: string; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -153,7 +153,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..26] of UnicodeString = (
+  KeyWords: array[0..26] of string = (
     'array', 'binarydata', 'block', 'byte', 'database', 'date', 'end',
     'endblock', 'integer', 'keys', 'longint', 'memotext', 'object', 'objects',
     'of', 'owner', 'partition', 'partitions', 'primary', 'real', 'secondary',
@@ -579,7 +579,7 @@ begin
   inc(Run);
 end; { LFProc }
 
-function TSynSDDSyn.GetSampleSource: UnicodeString;
+function TSynSDDSyn.GetSampleSource: string;
 begin
   Result := '{ Semanta data dictionary }'#13#10 +
             'database Sample.001;'#13#10 +
@@ -697,7 +697,7 @@ begin
   fTokenID := tkSymbol;
 end;
 
-class function TSynSDDSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynSDDSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangSDD;
 end;

@@ -375,7 +375,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -422,7 +422,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..263] of UnicodeString = (
+  KeyWords: array[0..263] of string = (
     'abs', 'absolute_position', 'account', 'acos', 'actual_break', 'add', 
     'add_form', 'alternate_form', 'ascii', 'asin', 'atan', 'atan2', 
     'attributes', 'back', 'base', 'batch', 'begin_block', 'begin_case', 
@@ -3427,7 +3427,7 @@ begin
   Result := SYNS_LangGembase;
 end;
 
-class function TSynDmlSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynDmlSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangGembase;
 end;

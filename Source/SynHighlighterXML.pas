@@ -126,17 +126,17 @@ type
     procedure EqualProc;
     procedure IdentProc;
     procedure NextProcedure;
-    function NextTokenIs(Token: UnicodeString): Boolean;
+    function NextTokenIs(Token: string): Boolean;
     procedure EntityRefProc;
     procedure QEntityRefProc;
     procedure AEntityRefProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     function IsNameChar: Boolean; virtual;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -728,7 +728,7 @@ begin
   end;
 end;
 
-function TSynXMLSyn.NextTokenIs(Token: UnicodeString): Boolean;
+function TSynXMLSyn.NextTokenIs(Token: string): Boolean;
 var
   I, Len: Integer;
 begin
@@ -838,7 +838,7 @@ begin
   Result := SYNS_LangXML;
 end;
 
-function TSynXMLSyn.GetSampleSource: UnicodeString;
+function TSynXMLSyn.GetSampleSource: string;
 begin
   Result:= '<?xml version="1.0"?>'#13#10+
            '<!DOCTYPE root ['#13#10+
@@ -849,7 +849,7 @@ begin
            '</root>';
 end;
 
-class function TSynXMLSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynXMLSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangXML;
 end;

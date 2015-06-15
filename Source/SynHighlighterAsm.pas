@@ -91,14 +91,14 @@ type
     procedure SingleQuoteStringProc;
     procedure SymbolProc;
     procedure UnknownProc;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;    
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -131,7 +131,7 @@ uses
   SynEditStrConst;
 
 const
-  Mnemonics: UnicodeString =
+  Mnemonics: string =
     'aaa,aad,aam,adc,add,and,arpl,bound,bsf,bsr,bswap,bt,btc,' +
     'btr,bts,call,cbw,cdq,clc,cld,cli,clts,cmc,cmp,cmps,cmpsb,cmpsd,cmpsw,' +
     'cmpxchg,cwd,cwde,daa,das,dec,div,emms,enter,f2xm1,fabs,fadd,faddp,fbld,' +
@@ -164,7 +164,7 @@ const
     'sldt,smsw,stc,std,sti,stos,stosb,stosd,stosw,str,sub,test,verr,verw,' +
     'wait,wbinvd,xadd,xchg,xlat,xlatb,xor';
 
-procedure TSynAsmSyn.DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+procedure TSynAsmSyn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
   HashValue: Cardinal;
 begin
@@ -453,7 +453,7 @@ begin
   Result := fDefaultFilter <> SYNS_FilterX86Assembly;
 end;
 
-function TSynAsmSyn.GetSampleSource: UnicodeString;
+function TSynAsmSyn.GetSampleSource: string;
 begin
   Result := '; x86 assembly sample source'#13#10 +
             '  CODE	SEGMENT	BYTE PUBLIC'#13#10 +
@@ -474,7 +474,7 @@ begin
             'END';
 end;
 
-class function TSynAsmSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynAsmSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangX86Asm;
 end;

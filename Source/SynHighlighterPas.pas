@@ -164,12 +164,12 @@ type
     procedure SetDelphiVersion(const Value: TDelphiVersion);
     procedure SetPackageSource(const Value: Boolean);
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
@@ -219,7 +219,7 @@ uses
 
 const
   // if the language is case-insensitive keywords *must* be in lowercase
-  KeyWords: array[0..110] of UnicodeString = (
+  KeyWords: array[0..110] of string = (
     'absolute', 'abstract', 'and', 'array', 'as', 'asm', 'assembler',
     'automated', 'begin', 'case', 'cdecl', 'class', 'const', 'constructor',
     'contains', 'default', 'deprecated', 'destructor', 'dispid',
@@ -1255,7 +1255,7 @@ begin
   Result := ReadDelphiSettings(VersionIndex);
 end;
 
-function TSynPasSyn.GetSampleSource: UnicodeString;                                   
+function TSynPasSyn.GetSampleSource: string;
 begin
   Result := '{ Syntax highlighting }'#13#10 +
              'procedure TForm1.Button1Click(Sender: TObject);'#13#10 +
@@ -1318,7 +1318,7 @@ begin
   end;
 end;
 
-class function TSynPasSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynPasSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangPascal;
 end;

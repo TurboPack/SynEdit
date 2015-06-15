@@ -122,7 +122,7 @@ type
 
   TAutoCorrectAction = (aaCorrect, aaAbort);
   TAutoCorrectEvent = procedure(Sender: TObject;
-    const AOriginal, ACorrection: UnicodeString; Line, Column: Integer;
+    const AOriginal, ACorrection: string; Line, Column: Integer;
     var Action: TAutoCorrectAction) of object;
 
   TCustomSynAutoCorrect = class(TComponent)
@@ -132,7 +132,7 @@ type
     { Published properties and events }
     FEditor: TCustomSynEdit;
     FEnabled: Boolean;
-    FItems: TUnicodeStrings;
+    FItems: TStrings;
     FItemSepChar: WideChar;
     FOptions: TAsSynAutoCorrectOptions;
 
@@ -142,15 +142,15 @@ type
     { Private variables and methods }
     FPrevLine: Integer;
 
-    function CorrectItemStart(EditLine, SearchString: UnicodeString; StartPos: Integer;
+    function CorrectItemStart(EditLine, SearchString: string; StartPos: Integer;
       MatchCase, WholeWord: Boolean): Integer;
-    function FindAndCorrect(var EditLine: UnicodeString; Original, Correction: UnicodeString;
+    function FindAndCorrect(var EditLine: string; Original, Correction: string;
       var CurrentX: Integer): Boolean;
-    function PreviousToken: UnicodeString;
+    function PreviousToken: string;
 
     { Accessor methods }
-    function GetItems: TUnicodeStrings;
-    procedure SetItems(const Value: TUnicodeStrings);
+    function GetItems: TStrings;
+    procedure SetItems(const Value: TStrings);
   protected
     { Protected declarations }
     procedure DefineProperties(Filer: TFiler); override;
@@ -167,10 +167,10 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    procedure Add(AOriginal, ACorrection: UnicodeString);
+    procedure Add(AOriginal, ACorrection: string);
     function AutoCorrectAll: Boolean;
     procedure Delete(AIndex: Integer);
-    procedure Edit(AIndex: Integer; ANewOriginal, ANewCorrection: UnicodeString);
+    procedure Edit(AIndex: Integer; ANewOriginal, ANewCorrection: string);
 
     procedure LoadFromINI(AFileName, ASection: string);
     procedure SaveToINI(AFileName, ASection: string);
@@ -182,12 +182,12 @@ type
     procedure SaveToList(AFileName: string);
 
     { Utility functions }
-    function HalfString(Str: UnicodeString; GetFirstHalf: Boolean): UnicodeString;
+    function HalfString(Str: string; GetFirstHalf: Boolean): string;
   public
     { Published declarations }
     property Enabled: Boolean read FEnabled write FEnabled default True;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
-    property Items: TUnicodeStrings read GetItems write SetItems;
+    property Items: TStrings read GetItems write SetItems;
     property ItemSepChar: WideChar read FItemSepChar write FItemSepChar default #9;
     property Options: TAsSynAutoCorrectOptions read FOptions write FOptions
       default [ascoIgnoreCase, ascoMaintainCase];
@@ -220,7 +220,7 @@ begin
   inherited Create(AOwner);
 
   FEnabled := True;
-  FItems := TUnicodeStringList.Create;
+  FItems := TStringList.Create;
   FItemSepChar := #9;
   FOptions := [ascoIgnoreCase, ascoMaintainCase];
   FPrevLine := -1;
@@ -237,8 +237,8 @@ end;
 
 { Utility functions }
 
-function TCustomSynAutoCorrect.HalfString(Str: UnicodeString;
-  GetFirstHalf: Boolean): UnicodeString;
+function TCustomSynAutoCorrect.HalfString(Str: string;
+  GetFirstHalf: Boolean): string;
 var
   i: Integer;
 begin
@@ -254,7 +254,7 @@ end;
 procedure TCustomSynAutoCorrect.LoadFromIni(AFileName, ASection: string);
 var
   i: Integer;
-  Original, Correction: UnicodeString;
+  Original, Correction: string;
   Reg: TIniFile;
 begin
   Reg := TIniFile.Create(AFileName);
@@ -314,7 +314,7 @@ end;
 procedure TCustomSynAutoCorrect.LoadFromRegistry(ARoot: DWORD; AKey: string);
 var
   i: Integer;
-  Original, Correction: UnicodeString;
+  Original, Correction: string;
   Reg: TRegIniFile;
 begin
   Reg := TRegIniFile.Create('');
@@ -361,7 +361,7 @@ begin
   end;
 end;
 
-procedure TCustomSynAutoCorrect.Add(AOriginal, ACorrection: UnicodeString);
+procedure TCustomSynAutoCorrect.Add(AOriginal, ACorrection: string);
 begin
   FItems.Add(AOriginal + FItemSepChar + ACorrection);
 end;
@@ -369,7 +369,7 @@ end;
 function TCustomSynAutoCorrect.AutoCorrectAll: Boolean;
 var
   i, cx: Integer;
-  s, Original, Correction, CurrText: UnicodeString;
+  s, Original, Correction, CurrText: string;
 begin
   Result := False;
   if Assigned(Editor) then
@@ -388,7 +388,7 @@ begin
   end;
 end;
 
-function TCustomSynAutoCorrect.CorrectItemStart(EditLine, SearchString: UnicodeString;
+function TCustomSynAutoCorrect.CorrectItemStart(EditLine, SearchString: string;
   StartPos: Integer; MatchCase, WholeWord: Boolean): Integer;
 var
   SearchCount, I: Integer;
@@ -498,7 +498,7 @@ begin
 end;
 
 procedure TCustomSynAutoCorrect.Edit(AIndex: Integer;
-  ANewOriginal, ANewCorrection: UnicodeString);
+  ANewOriginal, ANewCorrection: string);
 begin
   if AIndex > -1 then
     FItems[AIndex] := ANewOriginal + FItemSepChar + ANewCorrection;
@@ -510,7 +510,7 @@ procedure TCustomSynAutoCorrect.KeyboardHandler(Sender: TObject; AfterProcessing
 var
   b: Boolean;
   i, cx: Integer;
-  s, Original, Correction, CurrText: UnicodeString;
+  s, Original, Correction, CurrText: string;
 begin
   if Enabled and not AfterProcessing and not Handled then
   begin
@@ -547,7 +547,7 @@ var
   Action: TAutoCorrectAction;
   b: Boolean;
   i, cx: Integer;
-  s, Original, Correction, CurrText: UnicodeString;
+  s, Original, Correction, CurrText: string;
 begin
   if ascoCorrectOnMouseDown in FOptions then
   begin
@@ -583,16 +583,16 @@ begin
   end;
 end;
 
-function TCustomSynAutoCorrect.FindAndCorrect(var EditLine: UnicodeString;
-  Original, Correction: UnicodeString; var CurrentX: Integer): Boolean;
+function TCustomSynAutoCorrect.FindAndCorrect(var EditLine: string;
+  Original, Correction: string; var CurrentX: Integer): Boolean;
 var
   StartPos: Integer;
   EndPos: Integer;
-  FoundText, ReplaceDefText: UnicodeString;
+  FoundText, ReplaceDefText: string;
   p: TBufferCoord;
   Action: TAutoCorrectAction;
 
-  function FirstCapCase(s: UnicodeString): UnicodeString;
+  function FirstCapCase(s: string): string;
   begin
     if s <> '' then
     begin
@@ -677,7 +677,7 @@ begin
   end;       
 end;
                       
-function TCustomSynAutoCorrect.GetItems: TUnicodeStrings;
+function TCustomSynAutoCorrect.GetItems: TStrings;
 begin
   Result := FItems;
 end;
@@ -692,7 +692,7 @@ begin
   end;
 end;
 
-function TCustomSynAutoCorrect.PreviousToken: UnicodeString;
+function TCustomSynAutoCorrect.PreviousToken: string;
 var
   i, cx: Integer;
 begin
@@ -732,7 +732,7 @@ begin
   end;
 end;
 
-procedure TCustomSynAutoCorrect.SetItems(const Value: TUnicodeStrings);
+procedure TCustomSynAutoCorrect.SetItems(const Value: TStrings);
 begin
   FItems.Assign(Value);
 end;

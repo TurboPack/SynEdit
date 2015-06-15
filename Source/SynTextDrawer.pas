@@ -132,7 +132,7 @@ type
   TTextOutOptions = set of (tooOpaque, tooClipped);
 
   TheExtTextOutProc = procedure (X, Y: Integer; fuOptions: TTextOutOptions;
-    const ARect: TRect; const Text: UnicodeString; Length: Integer) of object;
+    const ARect: TRect; const Text: string; Length: Integer) of object;
 
   EheFontStockException = class(Exception);
 
@@ -233,9 +233,9 @@ type
     procedure TextOut(X, Y: Integer; Text: PWideChar; Length: Integer); virtual;
     procedure ExtTextOut(X, Y: Integer; Options: TTextOutOptions; ARect: TRect;
       Text: PWideChar; Length: Integer); virtual;
-    function TextExtent(const Text: UnicodeString): TSize; overload;
+    function TextExtent(const Text: string): TSize; overload;
     function TextExtent(Text: PWideChar; Count: Integer): TSize; overload;
-    function TextWidth(const Text: UnicodeString): Integer; overload;
+    function TextWidth(const Text: string): Integer; overload;
     function TextWidth(Text: PWideChar; Count: Integer): Integer; overload;
     procedure SetBaseFont(Value: TFont); virtual;
     procedure SetBaseStyle(const Value: TFontStyles); virtual;
@@ -291,7 +291,7 @@ function UniversalExtTextOut(DC: HDC; X, Y: Integer; Options: TTextOutOptions;
 {$IFDEF SYN_UNISCRIBE}
 const
   SSAnalyseFlags = SSA_GLYPHS or SSA_FALLBACK or SSA_LINK;
-  SpaceString: UnicodeString = ' ';
+  SpaceString: string = ' ';
 {$ENDIF}
 var
   TextOutFlags: DWORD;
@@ -975,7 +975,7 @@ begin
   FFontStock.ReleaseFontHandles;
 end;
 
-function TheTextDrawer.TextExtent(const Text: UnicodeString): TSize;
+function TheTextDrawer.TextExtent(const Text: string): TSize;
 begin
   Result := SynUnicode.TextExtent(FStockBitmap.Canvas, Text);
 end;
@@ -985,7 +985,7 @@ begin
   Result := SynUnicode.GetTextSize(FStockBitmap.Canvas.Handle, Text, Count);
 end;
 
-function TheTextDrawer.TextWidth(const Text: UnicodeString): Integer;
+function TheTextDrawer.TextWidth(const Text: string): Integer;
 var
    c : Cardinal;
 begin

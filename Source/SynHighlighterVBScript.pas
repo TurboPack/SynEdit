@@ -98,11 +98,11 @@ type
     procedure SymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -134,7 +134,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..83] of UnicodeString = (
+  KeyWords: array[0..83] of string = (
     'and', 'as', 'boolean', 'byref', 'byte', 'byval', 'call', 'case', 'class', 
     'const', 'currency', 'debug', 'dim', 'do', 'double', 'each', 'else', 
     'elseif', 'empty', 'end', 'endif', 'enum', 'eqv', 'erase', 'error', 'event', 
@@ -441,7 +441,7 @@ begin
   Result := SYNS_LangVBSScript;
 end;
 
-function TSynVBScriptSyn.GetSampleSource: UnicodeString;
+function TSynVBScriptSyn.GetSampleSource: string;
 begin
   Result := ''' Syntax highlighting'#13#10 +
             'function printNumber()'#13#10 +
@@ -453,7 +453,7 @@ begin
             'end function';
 end;
 
-class function TSynVBScriptSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynVBScriptSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangVBSScript;
 end;

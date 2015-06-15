@@ -359,12 +359,12 @@ type
     procedure StringProc;
     procedure AmpersandProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -403,7 +403,7 @@ uses
   SynEditStrConst;
 
 const
-//  KeyWords: array[0..201] of UnicodeString = (
+//  KeyWords: array[0..201] of string = (
 //    '!doctype', '/a', '/abbr', '/acronym', '/address', '/applet', '/b', '/bdo',
 //    '/big', '/blink', '/blockquote', '/body', '/button', '/caption', '/center',
 //    '/cite', '/code', '/colgroup', '/comment', '/dd', '/del', '/dfn', '/dir',
@@ -517,7 +517,7 @@ const
 //    -1, -1, 156, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 //  );
 
-  KeyWords: array[0..256] of UnicodeString = (
+  KeyWords: array[0..256] of string = (
     '!doctype', '/!doctype', '/a', '/abbr', '/acronym', '/address', '/applet',
     '/area', '/article', '/aside', '/audio', '/b', '/base', '/basefont', '/bb',
     '/bdo', '/big', '/blockquote', '/body', '/button', '/canvas', '/caption',
@@ -1194,7 +1194,7 @@ begin
   Result := SYNS_LangHTML;
 end;
 
-function TSynHTMLSyn.GetSampleSource: UnicodeString;
+function TSynHTMLSyn.GetSampleSource: string;
 begin
   Result := '<!-- Syntax highlighting -->'#13#10 +
             #13#10 +
@@ -1209,7 +1209,7 @@ begin
             '</html>';
 end;
 
-class function TSynHTMLSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynHTMLSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangHTML;
 end;

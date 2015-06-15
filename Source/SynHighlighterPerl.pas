@@ -392,11 +392,11 @@ type
     procedure XOrSymbolProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -437,7 +437,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..281] of UnicodeString = (
+  KeyWords: array[0..281] of string = (
     '$ACCUMULATOR', '$ARG', '$ARGV', '$BASETIME', '$CHILD_ERROR', '$DEBUGGING', 
     '$EFFECTIVE_GROUP_ID', '$EFFECTIVE_USER_ID', '$EGID', '$ENV', '$ERRNO', 
     '$EUID', '$EVAL_ERROR', '$EXECUTABLE_NAME', '$FORMAT_FORMFEED', 
@@ -3798,7 +3798,7 @@ begin
   Result := Ord(fTokenId);
 end;
 
-function TSynPerlSyn.GetSampleSource: UnicodeString;
+function TSynPerlSyn.GetSampleSource: string;
 begin
   Result :=
     '#!/bin/perl'#13#10 +
@@ -3833,7 +3833,7 @@ begin
   Result := SYNS_LangPerl;
 end;
 
-class function TSynPerlSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynPerlSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangPerl;
 end;

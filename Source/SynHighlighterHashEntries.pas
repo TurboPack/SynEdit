@@ -67,7 +67,7 @@ type
     { Length of the keyword. }
     fKeyLen: integer;
     { The keyword itself. }
-    fKeyword: UnicodeString;
+    fKeyword: string;
     { Keyword token kind, has to be typecasted to the real token kind type. }
     fKind: integer;
   public
@@ -77,12 +77,12 @@ type
       to Self. This way the order of keyword length is preserved. }
     function AddEntry(NewEntry: TSynHashEntry): TSynHashEntry; virtual;
     { Creates a keyword entry for the given keyword and token kind. }
-    constructor Create(const AKey: UnicodeString; AKind: integer);
+    constructor Create(const AKey: string; AKind: integer);
     { Destroys the keyword entry and all other keyword entries Next points to. }
     destructor Destroy; override;
   public
     { The keyword itself. }
-    property Keyword: UnicodeString read fKeyword;
+    property Keyword: string read fKeyword;
     { Length of the keyword. }
     property KeywordLen: integer read fKeyLen;
     { Keyword token kind, has to be typecasted to the real token kind type. }
@@ -114,13 +114,13 @@ type
 
   { Procedural type for adding keyword entries to a TSynHashEntryList when
     iterating over all the keywords contained in a string. }
-  TEnumerateKeywordEvent = procedure(AKeyword: UnicodeString; AKind: integer)
+  TEnumerateKeywordEvent = procedure(AKeyword: string; AKind: integer)
     of object;
 
 { This procedure will call AKeywordProc for all keywords in KeywordList. A
   keyword is considered any number of successive chars that are contained in
   Identifiers, with chars not contained in Identifiers before and after them. }
-procedure EnumerateKeywords(AKind: integer; KeywordList: UnicodeString;
+procedure EnumerateKeywords(AKind: integer; KeywordList: string;
   IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
 
 implementation
@@ -128,11 +128,11 @@ implementation
 uses
   SysUtils;
 
-procedure EnumerateKeywords(AKind: integer; KeywordList: UnicodeString;
+procedure EnumerateKeywords(AKind: integer; KeywordList: string;
   IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
 var
   pStart, pEnd: PWideChar;
-  Keyword: UnicodeString;
+  Keyword: string;
 begin
   if Assigned(AKeywordProc) and (KeywordList <> '') then
   begin
@@ -159,7 +159,7 @@ end;
 
 { TSynHashEntry }
 
-constructor TSynHashEntry.Create(const AKey: UnicodeString; AKind: integer);
+constructor TSynHashEntry.Create(const AKey: string; AKind: integer);
 begin
   inherited Create;
   fKeyLen := Length(AKey);

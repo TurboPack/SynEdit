@@ -54,8 +54,8 @@ type
     fPositions: TList;
     fLengths: TList;
   protected
-    function GetPattern: UnicodeString; override;
-    procedure SetPattern(const Value: UnicodeString); override;
+    function GetPattern: string; override;
+    procedure SetPattern(const Value: string); override;
     procedure SetOptions(const Value: TSynSearchOptions); override;
     function GetLength(Index: Integer): Integer; override;
     function GetResult(Index: Integer): Integer; override;
@@ -63,8 +63,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function FindAll(const NewText: UnicodeString): Integer; override;
-    function Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString; override;
+    function FindAll(const NewText: string): Integer; override;
+    function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
 
 implementation
@@ -90,7 +90,7 @@ begin
   fLengths.Free;
 end;
 
-function TSynEditRegexSearch.FindAll(const NewText: UnicodeString): Integer;
+function TSynEditRegexSearch.FindAll(const NewText: string): Integer;
 
   procedure AddResult(const aPos, aLength: Integer);
   begin
@@ -115,7 +115,7 @@ begin
     Result := 0;
 end;
 
-function TSynEditRegexSearch.Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString;
+function TSynEditRegexSearch.Replace(const aOccurrence, aReplacement: string): string;
 begin
   Result := fRegex.Replace(aOccurrence, aReplacement, True);
 end;   
@@ -125,7 +125,7 @@ begin
   Result := Integer(fLengths[Index]);
 end;
 
-function TSynEditRegexSearch.GetPattern: UnicodeString;
+function TSynEditRegexSearch.GetPattern: string;
 begin
   Result := fRegex.Expression;
 end;
@@ -145,7 +145,7 @@ begin
   fRegex.ModifierI := not(ssoMatchCase in Value);
 end;
 
-procedure TSynEditRegexSearch.SetPattern(const Value: UnicodeString);
+procedure TSynEditRegexSearch.SetPattern(const Value: string);
 begin
   fRegex.Expression := Value;
 end;

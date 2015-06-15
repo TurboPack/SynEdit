@@ -88,11 +88,11 @@ type
       ForegroundChanged: Boolean; FontStylesChanged: TFontStyles); override;
 
     procedure FormatNewLine; override;
-    procedure FormatToken(Token: UnicodeString); override;
-    function GetFooter: UnicodeString; override;
+    procedure FormatToken(Token: string); override;
+    function GetFooter: string; override;
     function GetFormatName: string; override;
-    function GetHeader: UnicodeString; override;
-    function ReplaceReservedChar(AChar: WideChar): UnicodeString; override;
+    function GetHeader: string; override;
+    function ReplaceReservedChar(AChar: WideChar): string; override;
     procedure SetTokenAttribute(Attri: TSynHighlighterAttributes); override;
     function UseBom: Boolean; override;
   public
@@ -238,7 +238,7 @@ begin
     Result := True;
 end;
 
-procedure TSynExporterTeX.FormatToken(Token: UnicodeString);
+procedure TSynExporterTeX.FormatToken(Token: string);
 var
   CommandName: string;
 begin
@@ -274,7 +274,7 @@ begin
   EnumHighlighterAttris(Highlighter, False, CommandNameCallback, [Attri, @Result]);
 end;
 
-function TSynExporterTeX.GetFooter: UnicodeString;
+function TSynExporterTeX.GetFooter: string;
 begin
   if not fCreateTeXFragment then
     Result := SLineBreak + '\end{ttfamily}' + SLineBreak + '\end{document}'
@@ -287,7 +287,7 @@ begin
   Result := SYNS_ExporterFormatTeX;
 end;
 
-function TSynExporterTeX.GetHeader: UnicodeString;
+function TSynExporterTeX.GetHeader: string;
 const
   TeXHeader   = '\documentclass[a4paper, %dpt]{article}' + SLineBreak +
                 '\usepackage[a4paper, margin=%dcm]{geometry}' + SLineBreak +
@@ -360,7 +360,7 @@ begin
     Delete(Result, i, 1);
 end;
 
-function TSynExporterTeX.ReplaceReservedChar(AChar: WideChar): UnicodeString;
+function TSynExporterTeX.ReplaceReservedChar(AChar: WideChar): string;
 begin
   case AChar of
     '{': Result := '\{';

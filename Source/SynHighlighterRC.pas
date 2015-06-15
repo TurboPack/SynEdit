@@ -87,12 +87,12 @@ type
    procedure SymbolProc;
    procedure UnknownProc;
   protected
-   function GetSampleSource: UnicodeString; override;
+   function GetSampleSource: string; override;
    function IsFilterStored: Boolean; override;
   public
    class function GetCapabilities: TSynHighlighterCapabilities; override;
    class function GetLanguageName: string; override;
-   class function GetFriendlyLanguageName: UnicodeString; override;
+   class function GetFriendlyLanguageName: string; override;
   public
    constructor Create(aOwner: TComponent); override;
    destructor Destroy; override;
@@ -124,7 +124,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..77] of UnicodeString = (
+  KeyWords: array[0..77] of string = (
     'ACCELERATORS', 'ALT', 'ASCII', 'AUTO3STATE', 'AUTOCHECKBOX', 
     'AUTORADIOBUTTON', 'BITMAP', 'BLOCK', 'CAPTION', 'CHARACTERISTICS', 
     'CHECKBOX', 'CHECKED', 'CLASS', 'COMBOBOX', 'COMMENTS', 'COMPANYNAME', 
@@ -522,12 +522,12 @@ begin
   Result := SYNS_LangRC;
 end;
 
-function TSynRCSyn.GetSampleSource: UnicodeString;
+function TSynRCSyn.GetSampleSource: string;
 begin
   Result := '';
 end;
 
-class function TSynRCSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynRCSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangRC;
 end;

@@ -149,12 +149,12 @@ type
     procedure StringEndProc;
   protected
     function GetExtTokenID: TxtkTokenKind;
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -206,7 +206,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..94] of UnicodeString = (
+  KeyWords: array[0..94] of string = (
     '__asm', '__automated', '__cdecl', '__classid', '__closure', '__declspec', 
     '__dispid', '__except', '__export', '__fastcall', '__finally', '__import', 
     '__int16', '__int32', '__int64', '__int8', '__pascal', '__property', 
@@ -1503,7 +1503,7 @@ begin
   Result := inherited GetCapabilities + [hcUserSettings];
 end;
 
-function TSynCppSyn.GetSampleSource: UnicodeString;
+function TSynCppSyn.GetSampleSource: string;
 begin
   Result := '// Syntax Highlighting'#13#10+
             'void __fastcall TForm1::Button1Click(TObject *Sender)'#13#10+
@@ -1529,7 +1529,7 @@ begin
 
 end;
 
-class function TSynCppSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynCppSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCPP;
 end;

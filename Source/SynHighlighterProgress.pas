@@ -101,7 +101,7 @@ type
     fDataTypeAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     fHashList: TSynHashEntryList;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AsciiCharProc;
@@ -122,11 +122,11 @@ type
   protected
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
       override;
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
 {$IFDEF DEBUG}
   public
     property Keywords: TSynHashEntryList read fHashList;
@@ -170,7 +170,7 @@ type
   end;
 
 const
-  DefaultKeywords: UnicodeString =
+  DefaultKeywords: string =
                     'accum accumulate active-window add alias ' +
                     'all alter ambig ambiguous analyze ' +
                     'analyze-resume analyze-suspend and any apply ' +
@@ -263,7 +263,7 @@ const
                     '_servers _startup _trace _trans _user ' +
                     '_userio _userlock _view _view-col _view-ref';
 
-  DefaultNonReservedKeywords: UnicodeString =
+  DefaultNonReservedKeywords: string =
                                'abs absolute accelerator across add-events-procedure ' +
                                'add-first add-interval add-last advise alert-box allow-replication ' +
                                'ansi-only anywhere append appl-alert appl-alert-boxes ' +
@@ -418,7 +418,7 @@ const
                                'x-of y year year-offset yes-no ' +
                                'yes-no-cancel y-of';
 
-  DefaultEvents: UnicodeString =
+  DefaultEvents: string =
                     'abort any-key any-printable append-line backspace ' +
                     'back-tab block blue bottom-column break-line ' +
                     'bs cancel cancel-move cancel-pick cancel-resize ' +
@@ -465,7 +465,7 @@ const
                     'u8 u9 unix-end up-arrow value-changed ' +
                     'white window-close window-resized window-restored';
 
-  DefaultDataTypes: UnicodeString =
+  DefaultDataTypes: string =
     'char character com-handle component-handle date datetime datetime-tz dec ' +
     'decimal double float handle int ' +
     'integer int64 log logical longchar raw rowid ' +
@@ -526,7 +526,7 @@ begin
   Result := tkIdentifier;
 end;
 
-procedure TSynProgressSyn.DoAddKeyword(AKeyword: UnicodeString; AKind: Integer);
+procedure TSynProgressSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
 var
   HashValue: Integer;
 begin
@@ -1040,7 +1040,7 @@ begin
   Result := SYNS_LangProgress;
 end;
 
-function TSynProgressSyn.GetSampleSource: UnicodeString;
+function TSynProgressSyn.GetSampleSource: string;
 begin
   Result := '&scoped-define FirstChar 65'#13#10+
             '&scoped-define LastChar  90'#13#10+
@@ -1064,7 +1064,7 @@ begin
             'display s.';
 end;
 
-class function TSynProgressSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynProgressSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangProgress;
 end;

@@ -111,12 +111,12 @@ type
     procedure HeredocProc;
 {$ENDIF}
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -125,8 +125,8 @@ type
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
-    function IsKeyword(const AKeyword: UnicodeString): Boolean; override;
-    function IsSecondKeyWord(AToken: UnicodeString): Boolean;
+    function IsKeyword(const AKeyword: string): Boolean; override;
+    function IsSecondKeyWord(AToken: string): Boolean;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: Integer; override;
     procedure Next; override;
@@ -159,7 +159,7 @@ uses
   SynEditStrConst;
 
 const
-  ShellScriptKeys: array[0..109] of UnicodeString = (
+  ShellScriptKeys: array[0..109] of string = (
     'awk', 'banner', 'basename', 'bdiff', 'bg', 'break', 'case', 'cat', 'cc',
     'cd', 'chdir', 'chgrp', 'chmod', 'chown', 'clear', 'compress', 'continue',
     'cp', 'cpio', 'cut', 'date', 'dd', 'df', 'diff', 'do', 'done', 'dtpad',
@@ -174,17 +174,17 @@ const
     'uuencode', 'vi', 'wait', 'wc', 'while', 'who', 'xtern', 'zcat', 'zip'
   );
 
-  ShellScriptSecondKeys: array[0..22] of UnicodeString = (
+  ShellScriptSecondKeys: array[0..22] of string = (
     'cdpath', 'editor', 'home', 'ifs', 'lang', 'lc_messages', 'lc_type',
     'ld_library_path', 'logname', 'mail', 'mailcheck', 'mailpath', 'manpath',
     'path', 'ps1', 'ps2', 'pwd', 'shacct', 'shell', 'shlib_path', 'term',
     'termcap', 'tz'
   );
 
-function TSynUNIXShellScriptSyn.IsKeyword(const AKeyword: UnicodeString): Boolean;
+function TSynUNIXShellScriptSyn.IsKeyword(const AKeyword: string): Boolean;
 var
   First, Last, I, Compare: Integer;
-  Token: UnicodeString;
+  Token: string;
 begin
   First := 0;
   Last := High(ShellScriptKeys);
@@ -205,10 +205,10 @@ begin
   end;
 end; { IsKeyWord }
 
-function TSynUNIXShellScriptSyn.IsSecondKeyWord(AToken: UnicodeString): Boolean;
+function TSynUNIXShellScriptSyn.IsSecondKeyWord(AToken: string): Boolean;
 var
   First, Last, I, Compare: Integer;
-  Token: UnicodeString;
+  Token: string;
 begin
   First := 0;
   Last := High(ShellScriptSecondKeys);
@@ -742,7 +742,7 @@ begin
   Result := SYNS_LangNameUNIXShellScript;
 end;
 
-function TSynUNIXShellScriptSyn.GetSampleSource: UnicodeString;
+function TSynUNIXShellScriptSyn.GetSampleSource: string;
 begin
   Result := '######################################'#13#10 +
             '# Here is a comment about some stuff #'#13#10 +
@@ -761,7 +761,7 @@ begin
             'esac';
 end;
 
-class function TSynUNIXShellScriptSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynUNIXShellScriptSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangNameUNIXShellScript;
 end;

@@ -63,7 +63,7 @@ type
 
   TSynAWKSyn = class(TSynCustomHighLighter)
   private
-    AWKSyntaxList: TUnicodeStringList;
+    AWKSyntaxList: TStringList;
     FTokenID: TtkTokenKind;
     fCommentAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
@@ -97,7 +97,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -225,7 +225,7 @@ procedure TSynAWKSyn.IdentProc;
 var
   i: Integer;
   idx: Integer;
-  s: UnicodeString;
+  s: string;
 begin
   i := Run;
   while CharInSet(fLine[i], ['a'..'z', 'A'..'Z']) do
@@ -446,7 +446,7 @@ begin
 
   SetAttributesOnChange(DefHighlightChange);
 
-  AWKSyntaxList := TUnicodeStringList.Create;
+  AWKSyntaxList := TStringList.Create;
   MakeSyntaxList;
 
   fDefaultFilter := SYNS_FilterAWK;
@@ -539,7 +539,7 @@ begin
   Result := SYNS_LangAWK;
 end;
 
-class function TSynAWKSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynAWKSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangAWK;
 end;

@@ -147,12 +147,12 @@ type
     procedure HeredocProc;
 {$ENDIF}
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -190,7 +190,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..73] of UnicodeString = (
+  KeyWords: array[0..73] of string = (
     '__class__', '__dir__', '__file__', '__function__', '__halt_compiler',
     '__line__', '__method__', '__namespace__', 'abstract', 'and', 'array', 'as',
     'break', 'case', 'catch', 'class', 'clone', 'const', 'continue', 'declare',
@@ -1186,7 +1186,7 @@ begin
   Result := SYNS_LangPHP;
 end;
 
-function TSynPHPSyn.GetSampleSource: UnicodeString;
+function TSynPHPSyn.GetSampleSource: string;
 begin
   Result := '// Syntax highlighting'#13#10+
             'function printNumber()'#13#10+
@@ -1203,7 +1203,7 @@ begin
 
 end;
 
-class function TSynPHPSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynPHPSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangPHP;
 end;

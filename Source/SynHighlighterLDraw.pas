@@ -108,18 +108,18 @@ type
     procedure LFProc;
     function FirstChar(DatLine: PWideChar): WideChar;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): UnicodeString; override;
+    function GetKeyWords(TokenKind: Integer): string; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
@@ -146,7 +146,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..0] of UnicodeString = (
+  KeyWords: array[0..0] of string = (
     'author' 
   );
 
@@ -396,7 +396,7 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynLDRSyn.GetKeyWords(TokenKind: Integer): UnicodeString;
+function TSynLDRSyn.GetKeyWords(TokenKind: Integer): string;
 begin
   Result := 'Author';
 end;
@@ -432,7 +432,7 @@ begin
   Result := Ord(fTokenId);
 end;
 
-function TSynLDRSyn.GetSampleSource: UnicodeString;
+function TSynLDRSyn.GetSampleSource: string;
 begin
   Result := #13#10 +
             'Sample source for: '#13#10 +
@@ -480,7 +480,7 @@ begin
   Result := Pointer(fRange);
 end;
 
-class function TSynLDRSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynLDRSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangLDraw;
 end;

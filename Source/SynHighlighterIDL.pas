@@ -151,12 +151,12 @@ type
     procedure CharProc;
     procedure PreProcessorProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -185,7 +185,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..47] of UnicodeString = (
+  KeyWords: array[0..47] of string = (
     'abstract', 'any', 'attribute', 'boolean', 'case', 'char', 'const', 
     'context', 'custom', 'default', 'double', 'enum', 'exception', 'factory', 
     'FALSE', 'fixed', 'float', 'in', 'inout', 'interface', 'local', 'long', 
@@ -994,7 +994,7 @@ begin
   Result := Ord(fTokenId);
 end;
 
-function TSynIdlSyn.GetSampleSource: UnicodeString;
+function TSynIdlSyn.GetSampleSource: string;
 begin
   Result := '/* CORBA IDL sample source */'#13#10 +
             '#include <sample.idl>'#13#10 +
@@ -1044,7 +1044,7 @@ begin
   Result := Pointer(fRange);
 end;
 
-class function TSynIdlSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynIdlSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCORBAIDL;
 end;

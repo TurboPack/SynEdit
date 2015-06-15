@@ -80,8 +80,8 @@ type
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
     fKeywords: TSynHashEntryList;
-    fTableNames: TUnicodeStrings;
-    fFunctionNames: TUniCodeStrings;
+    fTableNames: TStrings;
+    fFunctionNames: TStrings;
     fDialect: TSQLDialect;
     fCommentAttri: TSynHighlighterAttributes;
     fConditionalCommentAttri: TSynHighlighterAttributes;
@@ -102,10 +102,10 @@ type
     fVariableAttri: TSynHighlighterAttributes;
     function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
-    procedure DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: integer);
     procedure SetDialect(Value: TSQLDialect);
-    procedure SetTableNames(const Value: TUnicodeStrings);
-    procedure SetFunctionNames(const Value: TUnicodeStrings);
+    procedure SetTableNames(const Value: TStrings);
+    procedure SetFunctionNames(const Value: TStrings);
     procedure PutFunctionNamesInKeywordList;
     procedure TableNamesChanged(Sender: TObject);
     procedure InitializeKeywordLists;
@@ -135,11 +135,11 @@ type
     procedure UnknownProc;
     procedure AnsiCProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -147,13 +147,13 @@ type
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): UnicodeString; override;
+    function GetKeyWords(TokenKind: Integer): string; override;
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
-    function IsKeyword(const AKeyword: UnicodeString): Boolean; override;
+    function IsKeyword(const AKeyword: string): Boolean; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -189,8 +189,8 @@ type
       write fSymbolAttri;
     property TableNameAttri: TSynHighlighterAttributes read fTableNameAttri
       write fTableNameAttri;
-    property TableNames: TUnicodeStrings read fTableNames write SetTableNames;
-    property FunctionNames: TUnicodeStrings read fFunctionNames write SetFunctionNames;
+    property TableNames: TStrings read fTableNames write SetTableNames;
+    property FunctionNames: TStrings read fFunctionNames write SetFunctionNames;
     property VariableAttri: TSynHighlighterAttributes read fVariableAttri
       write fVariableAttri;
     property SQLDialect: TSQLDialect read fDialect write SetDialect
@@ -204,7 +204,7 @@ uses
 
 const
 //---"Standard" (ANSI SQL keywords (Version 1, 2 and 3) (www.sql.org)-----------
-  StandardKW: UnicodeString =
+  StandardKW: string =
     'absolute,action,active,actor,add,after,alias,all,allocate,alter,' +
     'and,any,are,as,asc,ascending,assertion,async,at,attributes,auto,' +
     'base_name,before,begin,between,bit,bit_length,boolean,both,breadth,by,' +
@@ -241,7 +241,7 @@ const
     'while,with,without,work,write,year,zone';
 
 //---Sybase keywords------------------------------------------------------------
-  SybaseKW: UnicodeString =
+  SybaseKW: string =
     'absolute,action,add,after,alias,all,allocate,alter,and,any,are,' +
     'arith_overflow,as,asc,assertion,async,at,authorization,avg,before,begin,' +
     'between,bit,bit_length,boolean,both,breadth,break,browse,bulk,by,call,' +
@@ -287,7 +287,7 @@ const
 
 //---Oracle---------------------------------------------------------------------
   // Oracle SQL keywords
-  OracleKW: UnicodeString =
+  OracleKW: string =
     'ACCESS,ACCESSED,ACCOUNT,ACTIVATE,ACTIVE_INSTANCE_COUNT,ADD,ADMIN,ADVISE,' +
     'AGENT,ALL,ALLOCATE,ALTER,ANALYZE,ANCILLARY,AND,ANY,AQ_TM_PROCESSES,' +
     'ARCHIVE_LAG_TARGET,ARCHIVELOG,AS,ASC,ASSOCIATE,ATTRIBUTES,AUDIT,' +
@@ -408,7 +408,7 @@ const
 
 //---Postgresql-----------------------------------------------------------------
   //Postgresql Keywords
-  PostgresKW: UnicodeString =
+  PostgresKW: string =
     'IF,LOOP,ABORT,ABSOLUTE,ACCESS,ACTION,ADA,ADD,ADMIN,AFTER,AGGREGATE,ALIAS' +
     ',ALLOCATE,ALTER,ANALYSE,ANALYZE,AND,ARE,AS,ASC,ASENSITIVE' +
     ',ASSERTION,ASSIGNMENT,ASYMMETRIC,AT,ATOMIC,AUTHORIZATION,BACKWARD' +
@@ -465,7 +465,7 @@ const
     ',VARIABLE,VARYING,VERBOSE,VIEW,VOLATILE,WHEN,WHENEVER,WHERE,WITH,WITHOUT,WORK,WRITE,YEAR,ZONE';
 
   //Postgresql Functions
-  PostgresFunctions: UnicodeString =
+  PostgresFunctions: string =
     'abs,cbrt,ceil,ceiling,degrees,exp,floor,ln,log,mod,pi,power,radians,random,'+
     'round,setseed,sign,sqrt,trunc,width_bucket,acos,asin,atan,atan2,cos,cot,'+
     'sin,tan,bit_length,char_length,character_length,convert,lower,octet_length,'+
@@ -495,7 +495,7 @@ const
     'current_user,current_date,current_time,current_timestamp,localtime,localtimestamp,session_user,user';
 
   //Postgresql Types
-  PostgresTypes: UnicodeString =
+  PostgresTypes: string =
     'smallint,integer,bigint,decimal,numeric,real,double,serial,bigserial,'+
     'character,varchar,char,text,bytea,timestamp, interval,date,'+
     'time,boolean,point,line,lseg,box,path,polygon,circle,cidr,inet,'+
@@ -504,7 +504,7 @@ const
     'trigger,void,opaque,refcursor,binary,blob,int4,int2,int8,float,float4,float8';
 
   //Postgresql Exceptions
-  PostgresExceptions: UnicodeString =
+  PostgresExceptions: string =
     '$BODY$,SUCCESSFUL_COMPLETION,WARNING,DYNAMIC_RESULT_SETS_RETURNED,IMPLICIT_ZERO_BIT_PADDING,NULL_VALUE_ELIMINATED_IN_SET_FUNCTION,'+
     'PRIVILEGE_NOT_GRANTED,PRIVILEGE_NOT_REVOKED,STRING_DATA_RIGHT_TRUNCATION,DEPRECATED_FEATURE,NO_DATA,NO_ADDITIONAL_DYNAMIC_RESULT_SETS_RETURNED,'+
     'SQL_STATEMENT_NOT_YET_COMPLETE,CONNECTION_EXCEPTION,CONNECTION_DOES_NOT_EXIST,CONNECTION_FAILURE,SQLCLIENT_UNABLE_TO_ESTABLISH_SQLCONNECTION,'+
@@ -540,7 +540,7 @@ const
     'PLPGSQL_ERROR,RAISE_EXCEPTION,INTERNAL_ERROR,DATA_CORRUPTED,INDEX_CORRUPTED';
 
   // PLSQL keywords
-  OraclePLSQLKW: UnicodeString =
+  OraclePLSQLKW: string =
     'ABORT,ACCEPT,AFTER,ARRAY,ARRAYLEN,ASSERT,ASSIGN,AT,AUTHORIZATION,' +
     'AUTONOMOUS_TRANSACTION,BASE_TABLE,BEGIN,BODY,BULK,BULK_ROWCOUNT,CALL,' +
     'CALLING,CASE,CHAR_BASE,CHARSETFORM,CHARSETID,CLOSE,CLUSTERS,COLAUTH,' +
@@ -568,7 +568,7 @@ const
     'WHEN,WHILE,WORK,WRITE,XOR';
 
   // Oracle data types
-  OracleTypes: UnicodeString =
+  OracleTypes: string =
     'ANYDATA,ANYDATASET,ANYTYPE,BFILE,BINARY_INTEGER,BLOB,BOOLEAN,CHAR,CLOB,' +
     'DATE,DAY,DBURIType,DEC,DECIMAL,DOUBLE,FLOAT,HTTPURIType,INTEGER,LONG,' +
     'MLSLABEL,MONTH,NATURAL,NATURALN,NCHAR,NCLOB,NUMBER,NUMERIC,' +
@@ -577,7 +577,7 @@ const
     'YEAR,ZONE';
 
   // Oracle built in exceptions
-  OracleExceptions: UnicodeString =
+  OracleExceptions: string =
     'ACCESS_INTO_NULL,COLLECTION_IS_NULL,CURSOR_ALREADY_OPEN,' +
     'DUP_VAL_ON_INDEX,INVALID_CURSOR,INVALID_NUMBER,LOGIN_DENIED,' +
     'NO_DATA_FOUND,NOT_LOGGED_ON,OTHERS,PROGRAM_ERROR,ROWTYPE_MISMATCH,' +
@@ -586,7 +586,7 @@ const
     'ZERO_DIVIDE';
 
   // Oracle built in functions
-  OracleFunctions: UnicodeString =
+  OracleFunctions: string =
     'ABS,ACOS,ADD_MONTHS,AGGREGATE,ANALYTIC,ASCII,ASCIISTR,ASIN,ATAN,ATAN2,' +
     'AVERAGE,AVG,BASE64_DECODE,BASE64_ENCODE,BEGIN_REQUEST,BFILENAME,' +
     'BIN_TO_NUM,BIT_AND,BIT_COMPLEMENT,BIT_OR,BIT_XOR,BITAND,' +
@@ -656,7 +656,7 @@ const
     'XMLAGG,XMLCOLATTVAL,XMLCONCAT,XMLELEMENT,XMLFOREST,XMLSEQUENCE,' +
     'XMLTRANSFORM,XRANGE';
 
-  OracleDefaultPackages: UnicodeString =
+  OracleDefaultPackages: string =
     'DBMS_ALERT,DBMS_APPLICATION_INFO,DBMS_APPLY_ADM,DBMS_AQ,' +
     'DBMS_AQ_EXP_HISTORY_TABLES,DBMS_AQ_EXP_INDEX_TABLES,' +
     'DBMS_AQ_EXP_QUEUE_TABLES,DBMS_AQ_EXP_QUEUES,' +
@@ -702,7 +702,7 @@ const
     'UTL_COLL,UTL_ENCODE,UTL_FILE,UTL_FILE_DIR,UTL_HTTP,UTL_INADDR,UTL_PG,' +
     'UTL_RAW,UTL_REF,UTL_SMTP,UTL_TCP,UTL_URL';
 
-  OracleSQLPlusCommands: UnicodeString =
+  OracleSQLPlusCommands: string =
     'APP,APPINFO,AQ$_AGENT,AQ$_AGENT_LIST_T,AQ$_DESCRIPTOR,AQ$_POST_INFO,' +
     'AQ$_POST_INFO_LIST,AQ$_RECIPIENT_LIST_T,AQ$_REG_INFO,AQ$_REG_INFO_LIST,' +
     'AQ$_SUBSCRIBER_LIST_T,ARCHIVE,ARRAYSIZE,ATTRIBUTE,AUTOCOMMIT,AUTOP,' +
@@ -725,12 +725,12 @@ const
     'UNDERLINE,UP,VAR,VARIABLE,VER,VERIFY,VERSION,VIS,VISIBLE,WHENEVER,WR,' +
     'WRA,WRAP,WRAPPED';
 
-  OracleCommentKW: UnicodeString =
+  OracleCommentKW: string =
     'REM,REMA,REMAR,REMARK';
 
 //---MS-SQL 7-------------------------------------------------------------------
   // keywords
-  MSSQL7KW: UnicodeString =
+  MSSQL7KW: string =
     'ABSOLUTE,ADD,ALL,ALTER,ANY,AS,ASC,AUTHORIZATION,AVG,BACKUP,BEGIN,' +
     'BETWEEN,BREAK,BROWSE,BULK,BY,CASCADE,CHECK,CHECKPOINT,CLOSE,CLUSTERED,' +
     'COLUMN,COMMIT,COMMITTED,COMPUTE,CONFIRM,CONSTRAINT,CONTAINS,' +
@@ -754,7 +754,7 @@ const
     'VALUES,VARYING,VIEW,WAITFOR,WHEN,WHERE,WHILE,WITH,WORK,WRITETEXT';
 
   // functions
-  MSSQL7Functions: UnicodeString =
+  MSSQL7Functions: string =
     '@@CONNECTIONS,@@CPU_BUSY,@@CURSOR_ROWS,@@DATEFIRST,@@DBTS,@@ERROR,' +
     '@@FETCH_STATUS,@@IDENTITY,@@IDLE,@@IO_BUSY,@@LANGID,@@LANGUAGE,' +
     '@@LOCK_TIMEOUT,@@MAX_CONNECTIONS,@@MAX_PRECISION,@@NESTLEVEL,@@OPTIONS,' +
@@ -778,14 +778,14 @@ const
     'UPPER,USER_ID,USER_NAME,YEAR';
 
   // types
-  MSSQL7Types: UnicodeString =
+  MSSQL7Types: string =
     'BINARY,BIT,CHAR,DATETIME,DECIMAL,FLOAT,IMAGE,INT,MONEY,NCHAR,NTEXT,' +
     'NUMERIC,NVARCHAR,REAL,SMALLDATETIME,SMALLINT,SMALLMONEY,SYSNAME,TEXT,' +
     'TIMESTAMP,TINYINT,UNIQUEIDENTIFIER,VARBINARY,VARCHAR';
 
 //---MS-SQL2K-------------------------------------------------------------------
   // keywords
-  MSSQL2000KW: UnicodeString =
+  MSSQL2000KW: string =
     'ADD,ALL,ALTER,AND,ANY,AS,ASC,AUTHORIZATION,BACKUP,' +
     'BEGIN,BETWEEN,BREAK,BROWSE,BULK,BY,CASCADE,CASE,' +
     'CHECK,CHECKPOINT,CLOSE,CLUSTERED,COLLATE,' +
@@ -811,7 +811,7 @@ const
     'WITH,WRITETEXT';
 
   // functions
-  MSSQL2000Functions: UnicodeString =
+  MSSQL2000Functions: string =
     '@@CONNECTIONS,@@CPU_BUSY,@@CURSOR_ROWS,@@DATEFIRST,@@DBTS,@@ERROR,' +
     '@@FETCH_STATUS,@@IDENTITY,@@IDLE,@@IO_BUSY,@@LANGID,@@LANGUAGE,' +
     '@@LOCK_TIMEOUT,@@MAX_CONNECTIONS,@@MAX_PRECISION,@@NESTLEVEL,@@OPTIONS,' +
@@ -842,7 +842,7 @@ const
     'USER_ID,USER_NAME,VAR,VARP,YEAR';
 
   // types
-  MSSQL2000Types: UnicodeString =
+  MSSQL2000Types: string =
     'bigint,binary,bit,char,character,datetime,' +
     'dec,decimal,float,image,int,' +
     'integer,money,nchar,ntext,numeric,nvarchar,real,' +
@@ -852,10 +852,10 @@ const
 
 //---Interbase 6----------------------------------------------------------------
   // functions
-  Interbase6Functions: UnicodeString = 'AVG,CAST,COUNT,GEN_ID,MAX,MIN,SUM,UPPER';
+  Interbase6Functions: string = 'AVG,CAST,COUNT,GEN_ID,MAX,MIN,SUM,UPPER';
 
   // keywords
-  Interbase6KW: UnicodeString = 'ACTIVE,ADD,AFTER,ALL,ALTER,AND,ANY,AS,ASC,' +
+  Interbase6KW: string = 'ACTIVE,ADD,AFTER,ALL,ALTER,AND,ANY,AS,ASC,' +
     'ASCENDING,AT,AUTO,AUTODDL,BASED,BASENAME,BASE_NAME,BEFORE,BEGIN,BETWEEN,' +
     'BLOBEDIT,BUFFER,BY,CACHE,CHARACTER_LENGTH,CHAR_LENGTH,CHECK,' +
     'CHECK_POINT_LEN,CHECK_POINT_LENGTH,COLLATE,COLLATION,COLUMN,COMMIT,' +
@@ -886,13 +886,13 @@ const
     'WAIT,WEEKDAY,WHEN,WHENEVER,WHERE,WHILE,WITH,WORK,WRITE,YEAR,YEARDAY';
 
   // types
-  Interbase6Types: UnicodeString =
+  Interbase6Types: string =
     'BLOB,CHAR,CHARACTER,DATE,DECIMAL,DOUBLE,FLOAT,INTEGER,' +
     'NUMERIC,SMALLINT,TIME,TIMESTAMP,VARCHAR';
 
 //---MySQL----------------------------------------------------------------------
   // keywords
-  MySqlKW: UnicodeString =
+  MySqlKW: string =
     'ACTION,AFTER,AGAINST,AGGREGATE,ALGORITHM,ALL,ALTER,ANALYZE,AND,ANY,AS,' +
     'ASC,AT,AUTO_INCREMENT,AVG_ROW_LENGTH,BACKUP,BEFORE,BEGIN,BENCHMARK,BETWEEN,BINLOG,BIT,' +
     'BOOL,BOTH,BY,CACHE,CALL,CASCADE,CASCADED,CHANGE,CHARACTER,CHARSET,CHECK,' +
@@ -931,11 +931,11 @@ const
     'VARIABLES,VARYING,VIEW,WARNINGS,WHERE,WITH,WORK,WRITE';
 
   // PLSQL keywords
-  MySQLPLSQLKW: UnicodeString =
+  MySQLPLSQLKW: string =
     'CLOSE,CONDITION,CONTINUE,CURSOR,DECLARE,DO,EXIT,FETCH,FOUND,GOTO,' +
     'HANDLER,ITERATE,LANGUAGE,LEAVE,LOOP,UNTIL,WHILE';
 
-  MySQLTypes: UnicodeString =
+  MySQLTypes: string =
 
     // Table Engines
     'ARCHIVE,BDB,BERKELEYDB,BLACKHOLE,CSV,EXAMPLE,FEDERATED,HEAP,INNOBASE,' +
@@ -1007,7 +1007,7 @@ const
     'utf8_spanish_ci,utf8_swedish_ci,utf8_turkish_ci,utf8_unicode_ci,';
 
   // functions
-  MySQLFunctions: UnicodeString =
+  MySQLFunctions: string =
     'ABS,ACOS,ADD,ADDDATE,ADDTIME,ASCII,ASIN,ATAN,ATAN2,AVG,BIN,BIT_AND,' +
     'BIT_COUNT,BIT_LENGTH,BIT_OR,BIT_XOR,CASE,CAST,CHARACTER_LENGTH,CEILING,' +
     'CHAR_LENGTH,COALESCE,COERCIBILITY,COMPRESS,CONCAT,CONCAT_WS,' +
@@ -1035,7 +1035,7 @@ const
 
 //---Ingres---------------------------------------------------------------------
   // keywords
-  IngresKW: UnicodeString =
+  IngresKW: string =
     'ABORT,ACTIVATE,ADD,ADDFORM,AFTER,AGGREGATE,ALL,ALTER,AND,APPEND,ARRAY,' +
     'AS,ASC,AT,AUDIT_LOG,AUTHORIZATION,AUTOCOMMIT,AVGU,BEFORE,BEGIN,BETWEEN,' +
     'BREAKDISPLAY,BY,BYREF,CACHE,CALL,CALLFRAME,CALLPROC,CASCADE,CHECK,CLEAR,' +
@@ -1075,13 +1075,13 @@ const
     'VALIDATE,VALIDROW,VALUES,VIEW,WHEN,WHENEVER,WHERE,WHILE,WITH,WORK';
 
   // types
-  IngresTypes: UnicodeString =
+  IngresTypes: string =
     'BYTE,C,CHAR,CHARACTER,DATE,DECIMAL,FLOAT,FLOAT4,FLOAT8,INTEGER,INTEGER1,' +
     'INTEGER2,INTEGER4,LONG,MONEY,OBJECT_KEY,SECURITY_LABEL,SHORT,SMALLINT,' +
     'TABLE_KEY,TEXT,VARCHAR,VARYING';
 
   // functions
-  IngresFunctions: UnicodeString =
+  IngresFunctions: string =
     '_BINTIM,_CPU_MS,_DATE,_DIO_CNT,_ET_SEC,_PFAULT_CNT,_TIME,_VERSION,ABS,' +
     'ANY,ATAN,AUTOCOMMIT_STATE,AVG,BIOCNT,CHAREXTRACT,COLLATION,CONCAT,' +
     'CONNECT_TIME_LIMIT,COS,COUNT,CREATE_PROCEDURE,CREATE_TABLE,DATABASE,' +
@@ -1101,7 +1101,7 @@ const
 
 //---Nexus----------------------------------------------------------------------
   // keywords
-  NexusKW: UnicodeString =
+  NexusKW: string =
     'ABSOLUTE,AFTER,ALTER,ANY,ASC,ASSERT,ATOMIC,' +
     'ADD,ALL,AND,AS,ASSEMBLY,AUTHORIZATION,BEFORE,' +
     'BETWEEN,BINARY,BLOCK,BY,BEGIN,' +
@@ -1135,7 +1135,7 @@ const
     'VIEW,WHEN,WHILE,WITH,WORK,WHERE,WIDTH,YEAR';
 
   // functions
-  NexusFunctions: UnicodeString =
+  NexusFunctions: string =
     'ABS,ATAN,ATAN2,ATN2,AVG,BOTH,BROUND,CEIL,CEILING,CHAR_LENGTH,CHARACTER_LENGTH,'+
     'CHR,COS,COUNT,CURRENT_DATE,CURRENT_TIME,CURRENT_TIMESTAMP,CURRENT_USER,ERROR_MESSAGE,EXP,EXTRACT,'+
     'FLOOR,LASTAUTOINC,LEADING,LIST,LN,LOCALTIME,LOCALTIMESTAMP,LOWER,MAX,MED,MIN,MOD,NEWGUID,OCTECT,'+
@@ -1143,7 +1143,7 @@ const
     'SUBSTRING,SUM,SYSTEM_ROW#,TOSTRING,TOSTRINGLEN,TRAILING,TRIM,UPPER,USER,USING';
 
   // types
-  NexusTypes: UnicodeString =
+  NexusTypes: string =
     'CHARACTER,CHAR,NULLSTRING,SHORTSTRING,SINGLECHAR,VARCHAR,' +
     'CLOB,TEXT,NSINGLECHAR,NCHAR,' +
     'NVARCHAR,NCLOB,BLOB,IMAGE,NUMERIC,DECIMAL,DEC,BYTE,TINYINT,SHORTINT,SMALLINT,INTEGER,INT,' +
@@ -1214,11 +1214,11 @@ begin
   fCaseSensitive := False;
 
   fKeywords := TSynHashEntryList.Create;
-  fTableNames := TUnicodeStringList.Create;
-  TUnicodeStringList(fTableNames).OnChange := TableNamesChanged;
+  fTableNames := TStringList.Create;
+  TStringList(fTableNames).OnChange := TableNamesChanged;
 
-  fFunctionNames := TunicodeStringList.Create;
-  TUnicodeStringList(fFunctionNames).OnChange := TableNamesChanged;
+  fFunctionNames := TStringList.Create;
+  TStringList(fFunctionNames).OnChange := TableNamesChanged;
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
@@ -1663,7 +1663,7 @@ begin
   end;
 end;
 
-function TSynSQLSyn.IsKeyword(const AKeyword: UnicodeString): Boolean;
+function TSynSQLSyn.IsKeyword(const AKeyword: string): Boolean;
 var
   tk: TtkTokenKind;
 begin
@@ -1809,7 +1809,7 @@ begin
   Result := SYNS_LangSQL;
 end;
 
-procedure TSynSQLSyn.DoAddKeyword(AKeyword: UnicodeString; AKind: integer);
+procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
   HashValue: Integer;
 begin
@@ -1818,7 +1818,7 @@ begin
   fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
 end;
 
-procedure TSynSQLSyn.SetTableNames(const Value: TUnicodeStrings);
+procedure TSynSQLSyn.SetTableNames(const Value: TStrings);
 begin
   fTableNames.Assign(Value);
 end;
@@ -1889,12 +1889,15 @@ begin
   end;
 end;
 
-procedure TSynSQLSyn.SetFunctionNames(const Value: TUnicodeStrings);
+procedure TSynSQLSyn.SetFunctionNames(const Value: TStrings);
 begin
-  fFunctionNames := Value;
+  if Value <> nil then
+    fFunctionNames.Assign(Value)
+  else
+    fFunctionNames.Clear;
 end;
 
-function TSynSQLSyn.GetSampleSource: UnicodeString;
+function TSynSQLSyn.GetSampleSource: string;
 begin
   Result := '';
   case fDialect of
@@ -2024,12 +2027,12 @@ begin
   end;
 end;
 
-class function TSynSQLSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynSQLSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangSQL;
 end;
 
-function TSynSQLSyn.GetKeyWords(TokenKind: Integer): UnicodeString;
+function TSynSQLSyn.GetKeyWords(TokenKind: Integer): string;
 begin
   Result := '';
 

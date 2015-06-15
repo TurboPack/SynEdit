@@ -97,11 +97,11 @@ type
     procedure StringProc;
     procedure UnknownProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -137,7 +137,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..168] of UnicodeString = (
+  KeyWords: array[0..168] of string = (
     'addkey', 'addprinterconnection', 'addprogramgroup', 'addprogramitem', 
     'address', 'asc', 'at', 'backupeventlog', 'beep', 'big', 'box', 'break', 
     'call', 'case', 'cd', 'chr', 'cleareventlog', 'close', 'cls', 'color', 
@@ -508,7 +508,7 @@ begin
   Result := fDefaultFilter <> SYNS_FilterKIX;
 end;
 
-function TSynKixSyn.GetSampleSource: UnicodeString;
+function TSynKixSyn.GetSampleSource: string;
 begin
   Result := '; KiXtart sample source'#13#10 +
             'break on'#13#10 +
@@ -519,7 +519,7 @@ begin
             'AT(1, 30) $USERID';
 end;
 
-class function TSynKixSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynKixSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangKIX;
 end;

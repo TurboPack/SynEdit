@@ -102,7 +102,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -139,7 +139,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..142] of UnicodeString = (
+  KeyWords: array[0..142] of string = (
     'aadd', 'abs', 'and', 'announce', 'asc', 'at', 'average', 'begin', 'bof', 
     'break', 'call', 'cancel', 'cdow', 'chr', 'clear', 'close', 'cmonth', 'col', 
     'commit', 'continue', 'copy', 'count', 'create', 'ctod', 'date', 'day', 
@@ -593,7 +593,7 @@ begin
   end;
 end;
 
-class function TSynCACSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynCACSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCAClipper;
 end;

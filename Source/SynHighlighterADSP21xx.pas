@@ -289,7 +289,7 @@ type
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -331,7 +331,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..178] of UnicodeString = (
+  KeyWords: array[0..178] of string = (
     'abs', 'abstract', 'ac', 'af', 'alt_reg', 'and', 'ar', 'ar_sat', 'ashift', 
     'astat', 'aux', 'av', 'av_latch', 'ax0', 'ax1', 'ay0', 'ay1', 'b', 
     'bit_rev', 'bm', 'boot', 'by', 'cache', 'call', 'ce', 'circ', 'clear', 
@@ -2615,7 +2615,7 @@ begin
   Result := inherited GetCapabilities + [hcUserSettings];
 end;
 
-class function TSynADSP21xxSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynADSP21xxSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangADSP21xx;
 end;

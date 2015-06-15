@@ -61,7 +61,7 @@ CONTENTS:
       MirrorPosition : Mirror position of left/right aligned THeaderFooterItem's
                        Can be used when printing 2-sided.
     Run-time methods:
-      function Add(Text: UnicodeString; Font: TFont;
+      function Add(Text: string; Font: TFont;
                    Alignment: TAlignment;
                    LineNumber: Integer) : Integer;
         Add a THeaderFooterItem. If Font is nil or not specified then DefaultFont
@@ -85,7 +85,7 @@ CONTENTS:
       procedure SetPixPrInch(Value : Integer);
         Corrects the PixPerInch property of fonts. Used internally by
         TSynEditPrint.
-      procedure InitPrint(ACanvas : TCanvas;NumPages : Integer; Title : UnicodeString;
+      procedure InitPrint(ACanvas : TCanvas;NumPages : Integer; Title : string;
                           Margins : TSynEditPrintMargins);
         Prepares the header or footer for printing. Used internally by
         TSynEditPrint.
@@ -116,29 +116,29 @@ type
   //fonts).
   THeaderFooterItem = class
   private
-    FText: UnicodeString;
+    FText: string;
     FFont: TFont;
     FLineNumber: Integer;
     FAlignment: TAlignment;
         {Used to store the original Index when the item was added - the index
          might change when the list is sorted}
     FIndex: Integer;
-    function GetAsString: UnicodeString;
-    procedure SetAsString(const Value: UnicodeString);
+    function GetAsString: string;
+    procedure SetAsString(const Value: string);
     procedure SetFont(const Value: TFont);
   public
     constructor Create;
     destructor Destroy; override;
     function GetText(NumPages, PageNum: Integer; Roman: Boolean;
-      Title, ATime, ADate: UnicodeString): UnicodeString;
+      Title, ATime, ADate: string): string;
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
   public
     property Alignment: TAlignment read FAlignment write FAlignment;
-    property AsString: UnicodeString read GetAsString write SetAsString;
+    property AsString: string read GetAsString write SetAsString;
     property Font: TFont read FFont write SetFont;
     property LineNumber: Integer read FLineNumber write FLineNumber;
-    property Text: UnicodeString read FText write FText;
+    property Text: string read FText write FText;
   end;
 
   THeaderFooterType = (hftHeader, hftFooter);
@@ -160,9 +160,9 @@ type
     FLineColor: TColor;
     FItems: TList;
     FDefaultFont: TFont;
-    FDate, FTime: UnicodeString;
+    FDate, FTime: string;
     FNumPages: Integer;
-    FTitle: UnicodeString;
+    FTitle: string;
     FMargins: TSynEditPrintMargins;
     FFrameHeight: Integer;
     FOldPen: TPen;
@@ -177,24 +177,24 @@ type
     procedure CalcHeight(ACanvas: TCanvas);
     procedure SaveFontPenBrush(ACanvas: TCanvas);
     procedure RestoreFontPenBrush(ACanvas: TCanvas);
-    function GetAsString: UnicodeString;
-    procedure SetAsString(const Value: UnicodeString);
+    function GetAsString: string;
+    procedure SetAsString(const Value: string);
   public
     constructor Create;
     destructor Destroy; override;
-    function Add(Text: UnicodeString; Font: TFont; Alignment: TAlignment;
+    function Add(Text: string; Font: TFont; Alignment: TAlignment;
       LineNumber: Integer): Integer;
     procedure Delete(Index: Integer);
     procedure Clear;
     function Count: Integer;
     function Get(Index: Integer): THeaderFooterItem;
     procedure SetPixPrInch(Value: Integer);
-    procedure InitPrint(ACanvas: TCanvas; NumPages: Integer; Title: UnicodeString;
+    procedure InitPrint(ACanvas: TCanvas; NumPages: Integer; Title: string;
       Margins: TSynEditPrintMargins);
     procedure Print(ACanvas: TCanvas; PageNum: Integer);
     procedure Assign(Source: TPersistent); override;
     procedure FixLines;
-    property AsString: UnicodeString read GetAsString write SetAsString;
+    property AsString: string read GetAsString write SetAsString;
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
   published
@@ -230,7 +230,7 @@ uses
   SynEditMiscProcs;
 
 // Helper routine for AsString processing.
-function GetFirstEl(var Value: UnicodeString; Delim: WideChar): UnicodeString;
+function GetFirstEl(var Value: string; Delim: WideChar): string;
 var
   p: Integer;
 begin
@@ -258,7 +258,7 @@ end;
 
 // Returns string representation of THeaderFooterItem to alleviate storing
 // items into external storage (registry, ini file).
-function THeaderFooterItem.GetAsString: UnicodeString;
+function THeaderFooterItem.GetAsString: string;
 begin
   Result :=
     EncodeString(FText) + '/' +
@@ -278,12 +278,12 @@ end;
 { This is basically copied from original SynEditPrint.pas. Returns the
   header/footer text with macros expanded }
 function THeaderFooterItem.GetText(NumPages, PageNum: Integer;
-  Roman: Boolean; Title, ATime, ADate: UnicodeString): UnicodeString;
+  Roman: Boolean; Title, ATime, ADate: string): string;
 var
   Len, Start, Run: Integer;
-  AStr: UnicodeString;
+  AStr: string;
 
-  procedure DoAppend(AText: UnicodeString);
+  procedure DoAppend(AText: string);
   begin
     Result := Result + AText;
   end;
@@ -297,7 +297,7 @@ var
   end;
   function TryExecuteMacro: Boolean;
   var
-    Macro: UnicodeString;
+    Macro: string;
   begin
     Result := True;
     Macro := SynWideUpperCase(Copy(FText, Start, Run - Start + 1));
@@ -483,9 +483,9 @@ begin
   end;
 end;
 
-procedure THeaderFooterItem.SetAsString(const Value: UnicodeString);
+procedure THeaderFooterItem.SetAsString(const Value: string);
 var
-  s: UnicodeString;
+  s: string;
   sty: TFontStyles;
 begin
   s := Value;
@@ -548,7 +548,7 @@ begin
   inherited;
 end;
 
-function THeaderFooter.Add(Text: UnicodeString; Font: TFont;
+function THeaderFooter.Add(Text: string; Font: TFont;
   Alignment: TAlignment; LineNumber: Integer): Integer;
 var
   AItem: THeaderFooterItem;
@@ -675,7 +675,7 @@ begin
   end;
 end;
 
-procedure THeaderFooter.InitPrint(ACanvas: TCanvas; NumPages: Integer; Title: UnicodeString;
+procedure THeaderFooter.InitPrint(ACanvas: TCanvas; NumPages: Integer; Title: string;
   Margins: TSynEditPrintMargins);
 begin
   SaveFontPenBrush(ACanvas);
@@ -742,7 +742,7 @@ end;
 procedure THeaderFooter.Print(ACanvas: TCanvas; PageNum: Integer);
 var
   i, X, Y, CurLine: Integer;
-  AStr: UnicodeString;
+  AStr: string;
   AItem: THeaderFooterItem;
   OldAlign: UINT;
   TheAlignment: TAlignment;
@@ -827,7 +827,7 @@ begin
   Result := THeaderFooterItem(FItems[Index]);
 end;
 
-function THeaderFooter.GetAsString: UnicodeString;
+function THeaderFooter.GetAsString: string;
 var
   i: integer;
 begin
@@ -839,10 +839,10 @@ begin
   end; //for
 end;
 
-procedure THeaderFooter.SetAsString(const Value: UnicodeString);
+procedure THeaderFooter.SetAsString(const Value: string);
 var
   item: THeaderFooterItem;
-  s: UnicodeString;
+  s: string;
 begin
   Clear;
   item := THeaderFooterItem.Create;

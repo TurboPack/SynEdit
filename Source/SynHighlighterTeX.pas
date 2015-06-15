@@ -64,7 +64,7 @@ type
     fBracketAttri: TSynHighlighterAttributes;
     fBraceAttri: TSynHighlighterAttributes;
 
-    function CreateHighlighterAttributes(Name: string; FriendlyName: UnicodeString;
+    function CreateHighlighterAttributes(Name: string; FriendlyName: string;
       Foreground, Background: TColor; FontStyles: TFontStyles): TSynHighlighterAttributes;
     procedure CRProc;
     procedure TextProc;
@@ -79,11 +79,11 @@ type
     procedure BracketCloseProc;
     procedure MathmodeProc;
   protected
-    function GetSampleSource: UnicodeString; override;
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;    
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -317,7 +317,7 @@ begin
   Result := SYNS_LangTeX;
 end;  { GetLanguageName }
 
-function TSynTeXSyn.CreateHighlighterAttributes(Name: string; FriendlyName: UnicodeString;
+function TSynTeXSyn.CreateHighlighterAttributes(Name: string; FriendlyName: string;
   Foreground, Background: TColor; FontStyles: TFontStyles): TSynHighlighterAttributes;
 begin
   Result := TSynHighlighterAttributes.Create(Name, FriendlyName);
@@ -326,7 +326,7 @@ begin
   Result.Style := FontStyles;
 end;
 
-function TSynTeXSyn.GetSampleSource: UnicodeString;
+function TSynTeXSyn.GetSampleSource: string;
 begin
   Result:='\documentclass[a4paper]{article}'+#13#10+
           '% LaTeX sample source'+#13#10+
@@ -335,7 +335,7 @@ begin
           '\end{document}';
 end;
 
-class function TSynTeXSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynTeXSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangTeX;
 end;

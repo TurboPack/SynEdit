@@ -105,7 +105,7 @@ type
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
-    class function GetFriendlyLanguageName: UnicodeString; override;
+    class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
@@ -142,7 +142,7 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..47] of UnicodeString = (
+  KeyWords: array[0..47] of string = (
     'algorithm', 'and', 'annotation', 'assert', 'block', 'Boolean', 'class', 
     'connect', 'connector', 'constant', 'der', 'discrete', 'else', 'elseif', 
     'end', 'equation', 'extends', 'external', 'false', 'final', 'flow', 'for', 
@@ -631,7 +631,7 @@ begin
   Result := SYNS_LangModelica;
 end;
 
-class function TSynModelicaSyn.GetFriendlyLanguageName: UnicodeString;
+class function TSynModelicaSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangModelica;
 end;
