@@ -26,6 +26,7 @@ package SynEditDR;
 {$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'TurboPack SynEdit Delphi runtime package'}
+{$LIBSUFFIX '220'}
 {$RUNONLY}
 {$IMPLICITBUILD OFF}
 

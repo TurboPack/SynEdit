@@ -85,6 +85,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <DllSuffix>220</DllSuffix>
         <DCC_HppOutput>..\..\source\hpp\$(Platform)\$(Config)</DCC_HppOutput>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <SanitizedProjectName>SynEditDR</SanitizedProjectName>
@@ -341,6 +342,7 @@
                 </VersionInfoKeys>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclIntraweb_140_220.bpl">IntraWeb 14.0 Design Package for RAD Studio XE6</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\DUnitXRuntime220.bpl">Embarcadero Unit-Test IDE-Package</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\bcboffice2k220.bpl">Embarcadero C++Builder-Package für Office 2000-Server</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\bcbofficexp220.bpl">Embarcadero C++Builder-Package für Office XP-Server</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k220.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
@@ -356,7 +358,7 @@
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <ModelSupport>False</ModelSupport>
-            <Deployment Version="1">
+            <Deployment Version="2">
                 <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\15.0\Bpl\SynEditDR.bpl" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>SynEditDR.bpl</RemoteName>
@@ -687,13 +689,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
