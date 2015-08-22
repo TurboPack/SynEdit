@@ -95,6 +95,7 @@ __published:
 	__property DataSource;
 	__property Field;
 	__property OnLoadData;
+	__property ActiveLineColor = {default=536870911};
 	__property Align = {default=0};
 	__property Anchors = {default=3};
 	__property Constraints;
