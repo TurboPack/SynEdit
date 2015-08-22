@@ -103,6 +103,7 @@ type
     // TCustomDBSynEdit events
     property OnLoadData;
     // inherited properties
+    property ActiveLineColor;
     property Align;
     property Anchors;
     property Constraints;
