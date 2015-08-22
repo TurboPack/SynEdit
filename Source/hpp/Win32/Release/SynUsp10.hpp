@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynUsp10.pas' rev: 29.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynUsp10.pas' rev: 30.00 (Windows)
 
 #ifndef Synusp10HPP
 #define Synusp10HPP
@@ -71,6 +71,8 @@ typedef tag_SCRIPT_VISATTR *PScriptVisAttr;
 #pragma pack(push,1)
 struct DECLSPEC_DRECORD tag_SCRIPT_VISATTR
 {
+	
+public:
 	union
 	{
 		struct 

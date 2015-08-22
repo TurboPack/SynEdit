@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterM3.pas' rev: 29.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterM3.pas' rev: 30.00 (Windows)
 
 #ifndef Synhighlighterm3HPP
 #define Synhighlighterm3HPP
@@ -38,6 +38,8 @@ enum DECLSPEC_DENUM TTokenRange : unsigned char { trNone, trComment, trPragma };
 #pragma pack(push,1)
 struct DECLSPEC_DRECORD TRangeState
 {
+	
+public:
 	union
 	{
 		struct 

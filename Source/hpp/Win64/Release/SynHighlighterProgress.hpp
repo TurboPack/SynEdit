@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterProgress.pas' rev: 29.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterProgress.pas' rev: 30.00 (Windows)
 
 #ifndef SynhighlighterprogressHPP
 #define SynhighlighterprogressHPP
@@ -37,6 +37,8 @@ enum DECLSPEC_DENUM TRangeState : unsigned char { rsNone, rsInclude, rsPreproces
 #pragma pack(push,1)
 struct DECLSPEC_DRECORD TRangeInfo
 {
+	
+public:
 	union
 	{
 		struct 

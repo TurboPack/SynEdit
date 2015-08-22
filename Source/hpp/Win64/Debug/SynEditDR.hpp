@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditDR.dpk' rev: 29.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditDR.dpk' rev: 30.00 (Windows)
 
 #ifndef SyneditdrHPP
 #define SyneditdrHPP
@@ -195,11 +195,13 @@
 #include <System.Win.ComObj.hpp>	// (rtl)
 #include <System.Win.Taskbar.hpp>	// (rtl)
 #include <System.Win.TaskbarCore.hpp>	// (rtl)
+#include <Winapi.ShellScaling.hpp>	// (rtl)
 #include <Winapi.FlatSB.hpp>	// (rtl)
 #include <Vcl.Forms.hpp>	// (vcl)
 #include <Vcl.ImgList.hpp>	// (vcl)
 #include <Vcl.Menus.hpp>	// (vcl)
 #include <Winapi.TpcShrd.hpp>	// (rtl)
+#include <Winapi.MsCTF.hpp>	// (rtl)
 #include <Winapi.MsInkAut.hpp>	// (rtl)
 #include <Winapi.PenInputPanel.hpp>	// (rtl)
 #include <Vcl.Controls.hpp>	// (vcl)

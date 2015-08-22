@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynAutoCorrect.pas' rev: 29.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynAutoCorrect.pas' rev: 30.00 (Windows)
 
 #ifndef SynautocorrectHPP
 #define SynautocorrectHPP
