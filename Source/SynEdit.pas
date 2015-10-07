@@ -424,7 +424,6 @@ type
     fOnScroll: TScrollEvent;
     fOnGutterGetText: TGutterGetTextEvent;
     fOnGutterPaint: TGutterPaintEvent;
-    fOnCaretXY: TProc<Integer, Integer>;
 
     fOnStatusChange: TStatusChangeEvent;
     fShowSpecChar: Boolean;
@@ -456,7 +455,6 @@ type
     procedure BookMarkOptionsChanged(Sender: TObject);
     procedure ComputeCaret(X, Y: Integer);
     procedure ComputeScroll(X, Y: Integer);
-    procedure DoCaretXY(ACaretX, ACaretY: Integer);
     procedure DoHomeKey(Selection:boolean);
     procedure DoEndKey(Selection: Boolean);
     procedure DoLinesDeleted(FirstLine, Count: integer);
@@ -886,7 +884,6 @@ type
       read FSelectionMode write SetSelectionMode default smNormal;
     property ActiveSelectionMode: TSynSelectionMode read fActiveSelectionMode
       write SetActiveSelectionMode stored False;
-    property OnCaretXY: TProc<Integer, Integer> read fOnCaretXY write fOnCaretXY;
     property TabWidth: integer read fTabWidth write SetTabWidth default 8;
     property WantReturns: boolean read fWantReturns write SetWantReturns default True;
     property WantTabs: boolean read fWantTabs write SetWantTabs default False;
@@ -3697,7 +3694,6 @@ begin
         EnsureCursorPosVisible;
       Include(fStateFlags, sfCaretChanged);
       Include(fStateFlags, sfScrollbarChanged);
-      DoCaretXY(fCaretX, fCaretY);
     finally
       DecPaintLock;
     end;
@@ -10018,12 +10014,6 @@ end;
 procedure TCustomSynEdit.AddMouseCursorHandler(aHandler: TMouseCursorEvent);
 begin
   fKbdHandler.AddMouseCursorHandler(aHandler);
-end;
-
-procedure TCustomSynEdit.DoCaretXY(ACaretX, ACaretY: Integer);
-begin
-  if Assigned(FOnCaretXY) then
-    FOnCaretXY(ACaretX, ACaretY);
 end;
 
 procedure TCustomSynEdit.RemoveMouseCursorHandler(aHandler: TMouseCursorEvent);
