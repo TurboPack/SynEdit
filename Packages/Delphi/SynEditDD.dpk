@@ -27,7 +27,7 @@ package SynEditDD;
 {$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'TurboPack SynEdit Delphi designtime package'}
-{$LIBSUFFIX '230'}
+{$LIBSUFFIX '240'}
 {$DESIGNONLY}
 {$IMPLICITBUILD OFF}
 
