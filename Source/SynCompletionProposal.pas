@@ -1466,9 +1466,9 @@ begin
     begin
       BorderWidth := 2 * GetSystemMetrics(SM_CYSIZEFRAME);
 
-      if FEffectiveItemHeight <> 0 then
+      if FEffectiveItemHeight - 1 <> 0 then
       begin
-        NewLinesInWindow := (NewHeight-FHeightBuffer) div FEffectiveItemHeight;
+        NewLinesInWindow := (NewHeight-FHeightBuffer) div (FEffectiveItemHeight - 1);
         if NewLinesInWindow < 1 then
           NewLinesInWindow := 1;
       end else
@@ -1490,8 +1490,8 @@ procedure TSynBaseCompletionProposalForm.Resize;
 begin
   inherited;
 
-  if FEffectiveItemHeight <> 0 then
-    FLinesInWindow := (Height - FHeightBuffer) div FEffectiveItemHeight;
+  if FEffectiveItemHeight - 1 <> 0 then
+    FLinesInWindow := (Height - FHeightBuffer) div (FEffectiveItemHeight - 1);
 
   if not(csCreating in ControlState) then
     AdjustMetrics;
