@@ -491,6 +491,9 @@
         <DelphiCompile Include="..\..\Source\SynHighlighterRC.pas">
             <BuildOrder>87</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\Source\SynHighlighterRexx.pas">
+            <BuildOrder>112</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\SynHighlighterRuby.pas">
             <BuildOrder>88</BuildOrder>
         </DelphiCompile>
@@ -554,6 +557,9 @@
         <DelphiCompile Include="..\..\Source\SynURIOpener.pas">
             <BuildOrder>108</BuildOrder>
         </DelphiCompile>
+        <PackageImport Include="SynEditDR.bpi">
+            <BuildOrder>113</BuildOrder>
+        </PackageImport>
         <FormResources Include="..\..\Source\SynEditKeyCmdEditor.dfm"/>
         <FormResources Include="..\..\Source\SynEditOptionsDialog.dfm"/>
         <FormResources Include="..\..\Source\SynEditKeyCmdsEditor.dfm"/>
@@ -686,7 +692,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\15.0\BPL\SynEditCR.bpl" Configuration="Release" Class="ProjectOutput">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\17.0\BPL\SynEditCR230.bpl" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>SynEditCR.bpl</RemoteName>
                         <Overwrite>true</Overwrite>

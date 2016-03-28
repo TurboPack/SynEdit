@@ -115,6 +115,7 @@
 #include <SynUsp10.hpp>
 #include <SynEditHighlighterOptions.hpp>
 #include <SynHighlighterJSON.hpp>
+#include <SynHighlighterRexx.hpp>
 #include <Winapi.Windows.hpp>	// (rtl)
 #include <System.Character.hpp>	// (rtl)
 #include <System.Internal.ExcUtils.hpp>	// (rtl)

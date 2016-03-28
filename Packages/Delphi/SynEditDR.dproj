@@ -293,6 +293,7 @@
         </DCCReference>
         <DCCReference Include="..\..\Source\SynEditHighlighterOptions.pas"/>
         <DCCReference Include="..\..\Source\SynHighlighterJSON.pas"/>
+        <DCCReference Include="..\..\Source\SynHighlighterRexx.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -358,7 +359,7 @@
             </Platforms>
             <ModelSupport>False</ModelSupport>
             <Deployment Version="2">
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\15.0\Bpl\SynEditDR.bpl" Configuration="Release" Class="ProjectOutput">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\17.0\Bpl\SynEditDR230.bpl" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>SynEditDR.bpl</RemoteName>
                         <Overwrite>true</Overwrite>

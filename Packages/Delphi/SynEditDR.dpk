@@ -137,6 +137,7 @@ contains
   SynUnicode in '..\..\Source\SynUnicode.pas' {$IFNDEF CPUX64},
   SynUsp10 in '..\..\Source\SynUsp10.pas' {$ENDIF},
   SynEditHighlighterOptions in '..\..\Source\SynEditHighlighterOptions.pas',
-  SynHighlighterJSON in '..\..\Source\SynHighlighterJSON.pas';
+  SynHighlighterJSON in '..\..\Source\SynHighlighterJSON.pas',
+  SynHighlighterRexx in '..\..\Source\SynHighlighterRexx.pas';
 
 end.
