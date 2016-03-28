@@ -114,6 +114,7 @@
 #include <SynUnicode.hpp>
 #include <SynEditHighlighterOptions.hpp>
 #include <SynHighlighterJSON.hpp>
+#include <SynHighlighterRexx.hpp>
 #include <System.Types.hpp>	// (rtl)
 #include <System.UITypes.hpp>	// (rtl)
 #include <Winapi.Windows.hpp>	// (rtl)
