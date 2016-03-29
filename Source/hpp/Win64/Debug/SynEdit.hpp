@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEdit.pas' rev: 30.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEdit.pas' rev: 31.00 (Windows)
 
 #ifndef SyneditHPP
 #define SyneditHPP
@@ -73,17 +73,17 @@ class PASCALIMPLEMENTATION ESynEditError : public Synedittypes::ESynError
 	
 public:
 	/* Exception.Create */ inline __fastcall ESynEditError(const System::UnicodeString Msg) : Synedittypes::ESynError(Msg) { }
-	/* Exception.CreateFmt */ inline __fastcall ESynEditError(const System::UnicodeString Msg, System::TVarRec const *Args, const int Args_High) : Synedittypes::ESynError(Msg, Args, Args_High) { }
+	/* Exception.CreateFmt */ inline __fastcall ESynEditError(const System::UnicodeString Msg, const System::TVarRec *Args, const int Args_High) : Synedittypes::ESynError(Msg, Args, Args_High) { }
 	/* Exception.CreateRes */ inline __fastcall ESynEditError(NativeUInt Ident)/* overload */ : Synedittypes::ESynError(Ident) { }
 	/* Exception.CreateRes */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec)/* overload */ : Synedittypes::ESynError(ResStringRec) { }
-	/* Exception.CreateResFmt */ inline __fastcall ESynEditError(NativeUInt Ident, System::TVarRec const *Args, const int Args_High)/* overload */ : Synedittypes::ESynError(Ident, Args, Args_High) { }
-	/* Exception.CreateResFmt */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec, System::TVarRec const *Args, const int Args_High)/* overload */ : Synedittypes::ESynError(ResStringRec, Args, Args_High) { }
+	/* Exception.CreateResFmt */ inline __fastcall ESynEditError(NativeUInt Ident, const System::TVarRec *Args, const int Args_High)/* overload */ : Synedittypes::ESynError(Ident, Args, Args_High) { }
+	/* Exception.CreateResFmt */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High)/* overload */ : Synedittypes::ESynError(ResStringRec, Args, Args_High) { }
 	/* Exception.CreateHelp */ inline __fastcall ESynEditError(const System::UnicodeString Msg, int AHelpContext) : Synedittypes::ESynError(Msg, AHelpContext) { }
-	/* Exception.CreateFmtHelp */ inline __fastcall ESynEditError(const System::UnicodeString Msg, System::TVarRec const *Args, const int Args_High, int AHelpContext) : Synedittypes::ESynError(Msg, Args, Args_High, AHelpContext) { }
+	/* Exception.CreateFmtHelp */ inline __fastcall ESynEditError(const System::UnicodeString Msg, const System::TVarRec *Args, const int Args_High, int AHelpContext) : Synedittypes::ESynError(Msg, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResHelp */ inline __fastcall ESynEditError(NativeUInt Ident, int AHelpContext)/* overload */ : Synedittypes::ESynError(Ident, AHelpContext) { }
 	/* Exception.CreateResHelp */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : Synedittypes::ESynError(ResStringRec, AHelpContext) { }
-	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec, System::TVarRec const *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(ResStringRec, Args, Args_High, AHelpContext) { }
-	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditError(NativeUInt Ident, System::TVarRec const *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(Ident, Args, Args_High, AHelpContext) { }
+	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(ResStringRec, Args, Args_High, AHelpContext) { }
+	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditError(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(Ident, Args, Args_High, AHelpContext) { }
 	/* Exception.Destroy */ inline __fastcall virtual ~ESynEditError(void) { }
 	
 };
@@ -198,7 +198,7 @@ class PASCALIMPLEMENTATION TSynEditMarkList : public System::Contnrs::TObjectLis
 	typedef System::Contnrs::TObjectList inherited;
 	
 public:
-	TSynEditMark* operator[](int Index) { return Items[Index]; }
+	TSynEditMark* operator[](int Index) { return this->Items[Index]; }
 	
 protected:
 	TCustomSynEdit* fEdit;

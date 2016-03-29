@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterMulti.pas' rev: 30.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterMulti.pas' rev: 31.00 (Windows)
 
 #ifndef SynhighlightermultiHPP
 #define SynhighlightermultiHPP
@@ -82,7 +82,7 @@ class PASCALIMPLEMENTATION TSchemes : public System::Classes::TCollection
 	typedef System::Classes::TCollection inherited;
 	
 public:
-	TScheme* operator[](int aIndex) { return Items[aIndex]; }
+	TScheme* operator[](int aIndex) { return this->Items[aIndex]; }
 	
 private:
 	TSynMultiSyn* fOwner;

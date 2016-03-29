@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditHighlighter.pas' rev: 30.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditHighlighter.pas' rev: 31.00 (Windows)
 
 #ifndef SynedithighlighterHPP
 #define SynedithighlighterHPP
@@ -218,7 +218,7 @@ class PASCALIMPLEMENTATION TSynHighlighterList : public System::Classes::TList
 	typedef System::Classes::TList inherited;
 	
 public:
-	TSynCustomHighlighterClass operator[](int Index) { return Items[Index]; }
+	TSynCustomHighlighterClass operator[](int Index) { return this->Items[Index]; }
 	
 private:
 	System::Classes::TList* hlList;

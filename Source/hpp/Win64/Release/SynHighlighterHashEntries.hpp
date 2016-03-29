@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2015 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterHashEntries.pas' rev: 30.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterHashEntries.pas' rev: 31.00 (Windows)
 
 #ifndef SynhighlighterhashentriesHPP
 #define SynhighlighterhashentriesHPP
@@ -52,7 +52,7 @@ class PASCALIMPLEMENTATION TSynHashEntryList : public System::Classes::TList
 	typedef System::Classes::TList inherited;
 	
 public:
-	TSynHashEntry* operator[](int Index) { return Items[Index]; }
+	TSynHashEntry* operator[](int Index) { return this->Items[Index]; }
 	
 protected:
 	HIDESBASE TSynHashEntry* __fastcall Get(int HashKey);
