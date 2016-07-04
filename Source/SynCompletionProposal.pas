@@ -2036,7 +2036,7 @@ begin
       FScrollbar.Height := ClientHeight - FHeightBuffer;
       FScrollbar.Left := ClientWidth - FScrollbar.Width;
 
-      if FAssignedList.Count - FLinesInWindow < 0 then
+      if (FLinesInWindow < 0) or (FAssignedList.Count - FLinesInWindow < 0) then
       begin
         FScrollbar.PageSize := 0;
         FScrollbar.Max := 0;
