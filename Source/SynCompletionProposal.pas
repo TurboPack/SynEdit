@@ -13,7 +13,7 @@ The Original Code is based on mwCompletionProposal.pas by Cyrille de Brebisson,
 part of the mwEdit component suite.
 Portions created by Cyrille de Brebisson are Copyright (C) 1999
 Cyrille de Brebisson.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -2036,7 +2036,7 @@ begin
       FScrollbar.Height := ClientHeight - FHeightBuffer;
       FScrollbar.Left := ClientWidth - FScrollbar.Width;
 
-      if FAssignedList.Count - FLinesInWindow < 0 then
+      if (FLinesInWindow < 0) or (FAssignedList.Count - FLinesInWindow < 0) then
       begin
         FScrollbar.PageSize := 0;
         FScrollbar.Max := 0;
