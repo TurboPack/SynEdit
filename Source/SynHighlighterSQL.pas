@@ -15,7 +15,7 @@ Initial Author of these files is Willo van der Merwe. Initial Author of
 SynHighlighterSQL.pas is Michael Hieke.
 Portions created by Willo van der Merwe are Copyright 1999 Willo van der Merwe.
 Portions created by Michael Hieke are Copyright 2000 Michael Hieke.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -409,80 +409,113 @@ const
 //---Postgresql-----------------------------------------------------------------
   //Postgresql Keywords
   PostgresKW: string =
-    'IF,LOOP,ABORT,ABSOLUTE,ACCESS,ACTION,ADA,ADD,ADMIN,AFTER,AGGREGATE,ALIAS' +
-    ',ALLOCATE,ALTER,ANALYSE,ANALYZE,AND,ARE,AS,ASC,ASENSITIVE' +
-    ',ASSERTION,ASSIGNMENT,ASYMMETRIC,AT,ATOMIC,AUTHORIZATION,BACKWARD' +
-    ',BEFORE,BEGIN,BETWEEN' +
-    ',BOTH,BREADTH,BY,C,CACHE,CALL,CALLED,CARDINALITY,CASCADE,CASCADED,CASE' +
-    ',CAST,CATALOG,CATALOG_NAME,CHAIN,CHARACTERISTICS' +
-    ',CHARACTER_SET_CATALOG,CHARACTER_SET_NAME,CHARACTER_SET_SCHEMA' +
-    ',CHECK,CHECKED,CHECKPOINT,CLASS,CLASS_ORIGIN,CLOB,CLOSE,CLUSTER,COBOL,COLLATE' +
-    ',COLLATION,COLLATION_CATALOG,COLLATION_NAME,COLLATION_SCHEMA,COLUMN,COLUMN_NAME' +
-    ',COMMAND_Function,COMMAND_Function_CODE,COMMENT,COMMIT,COMMITTED,COMPLETION' +
-    ',CONDITION_NUMBER,CONNECT,CONNECTION,CONNECTION_NAME,CONSTRAINT,CONSTRAINTS' +
-    ',CONSTRAINT_CATALOG,CONSTRAINT_NAME,CONSTRAINT_SCHEMA,CONSTRUCTOR,CONTAINS' +
-    ',CONTINUE,CONVERSION,COPY,CORRESPONDING,CREATE,CREATEDB,CREATEUSER' +
-    ',CROSS,CUBE,CURRENT,CURRENT_PATH,CURRENT_ROLE' +
-    ',CURSOR,CURSOR_NAME,CYCLE,DATA,DATABASE,DATETIME_INTERVAL_CODE' +
-    ',DATETIME_INTERVAL_PRECISION,DAY,DEALLOCATE,DEC,DECLARE,DEFAULT,DEFERRABLE' +
-    ',DEFERRED,DEFINED,DEFINER,DELETE,DELIMITER,DELIMITERS,DEPTH,DEREF,DESC,DESCRIBE' +
-    ',DESCRIPTOR,DESTROY,DESTRUCTOR,DETERMINISTIC,DIAGNOSTICS,DICTIONARY,DISCONNECT' +
-    ',DISPATCH,DISTINCT,DO,DOMAIN,DROP,DYNAMIC,DYNAMIC_Function,DYNAMIC_Function_CODE' +
-    ',EACH,ELSE,ELSIF,ELSEIF,ENCODING,ENCRYPTED,END,EQUALS,ESCAPE,EXCEPT,EXCEPTION' +
-    ',EXCLUSIVE,EXEC,EXECUTE,EXISTING,EXPLAIN,EXTERNAL,FALSE,FETCH' +
-    ',FINAL,FIRST,FOR,FORCE,FOREIGN,FORTRAN,FORWARD,FOUND,FREE,FREEZE,FROM' +
-    ',FULL,Function,G,GENERAL,GENERATED,GET,GLOBAL,GO,GOTO,GRANT,GRANTED,GROUP' +
-    ',GROUPING,HANDLER,HAVING,HIERARCHY,HOLD,HOUR,IDENTITY,IGNORE,ILIKE' +
-    ',IMMEDIATE,IMMUTABLE,IMPLEMENTATION,IMPLICIT,INCREMENT,INDEX,INDICATOR' +
-    ',INFIX,INHERITS,INITIALIZE,INITIALLY,INNER,INOUT,INPUT,INSENSITIVE,INSERT' +
-    ',INSTANCE,INSTANTIABLE,INSTEAD,INT,INTERSECT,INTO,INVOKER' +
-    ',IS,ISNULL,ISOLATION,ITERATE,JOIN,K,KEY,KEY_MEMBER,KEY_TYPE,LANCOMPILER,LANGUAGE' +
-    ',LARGE,LAST,LATERAL,LEADING,LEFT,LESS,LEVEL,LIKE,LIMIT,LISTEN,LOAD,LOCAL' +
-    ' LOCATION,LOCATOR,LOCK,M,MAP,MATCH,MAXVALUE,MESSAGE_LENGTH' +
-    ',MESSAGE_OCTET_LENGTH,MESSAGE_TEXT,METHOD,MINUTE,MINVALUE,MODE,MODIFIES' +
-    ',MODIFY,MODULE,MONTH,MORE,MOVE,MUMPS,NAME,NAMES,NATIONAL,NATURAL,NCHAR,NCLOB' +
-    ',NEW,NEXT,NO,NOCREATEDB,NOCREATEUSER,NONE,NOT,NOTHING,NOTIFY,NOTNULL,NULL,NULLABLE' +
-    ',NUMBER,OBJECT,OF,OFF,OFFSET,OIDS,OLD,ON,ONLY,OPEN' +
-    ',OPERATION,Operator,OPTION,OPTIONS,OR,ORDER,ORDINALITY,OUT,OUTER,OUTPUT,OVERLAPS' +
-    ',OVERRIDING,OWNER,PAD,PARAMETER,PARAMETERS,PARAMETER_MODE,PARAMETER_NAME,PARAMETER_ORDINAL_POSITION' +
-    ',PARAMETER_SPECIFIC_CATALOG,PARAMETER_SPECIFIC_NAME,PARAMETER_SPECIFIC_SCHEMA,PARTIAL,PASCAL,PASSWORD' +
-    ',PENDANT,PLACING,PLI,POSTFIX,PRECISION,PREFIX,PREORDER,PREPARE,PRESERVE,PRIMARY' +
-    ',PRIOR,PRIVILEGES,PROCEDURAL,PROCEDURE,PUBLIC,READ,READS,RECHECK,RECURSIVE,REF,REFERENCES' +
-    ',REFERENCING,REINDEX,RELATIVE,RENAME ,REPEATABLE,RESET,RESTRICT,RESULT,RETURN,RETURNED_LENGTH' +
-    ',RETURNED_OCTET_LENGTH,RETURNED_SQLSTATE,RETURNS,REVOKE,RIGHT,ROLE,ROLLBACK,ROLLUP,ROUTINE,ROUTINE_CATALOG' +
-    ',ROUTINE_NAME,ROUTINE_SCHEMA,ROW,ROWS,ROW_COUNT,RULE,SAVEPOINT,SCALE,SCHEMA,SCHEMA_NAME' +
-    ',SCOPE,SCROLL,SEARCH,SECOND,SECTION,SECURITY,SELECT,SELF,SENSITIVE,SEQUENCE,SERIALIZABLE,SERVER_NAME' +
-    ',SESSION,SET,SETOF,SETS,SHARE,SHOW,SIMILAR,SIMPLE,SIZE,SOURCE,SPACE' +
-    ',SPECIFIC,SPECIFICTYPE,SPECIFIC_NAME,SQLCODE,SQLERROR,SQLEXCEPTION,SQLSTATE,SQLWARNING' +
-    ',STABLE,START,STATE,STATEMENT,STATIC,STATISTICS,STDIN,STDOUT,STORAGE,STRICT,STRUCTURE' +
-    ',STYLE,SUBCLASS_ORIGIN,SUBLIST,SYMMETRIC,SYSID,SYSTEM,SYSTEM_USER,TABLE' +
-    ',TABLE_NAME,TEMP,TEMPLATE,TEMPORARY,TERMINATE,THAN,THEN,TIMEZONE_HOUR' +
-    ',TIMEZONE_MINUTE,TO,TOAST,TRAILING,TRANSACTION,TRANSACTIONS_COMMITTED,TRANSACTIONS_ROLLED_BACK' +
-    ',TRANSACTION_ACTIVE,TRANSFORM,TRANSFORMS,TRANSLATION,TREAT,TRIGGER_CATALOG' +
-    ',TRIGGER_NAME,TRIGGER_SCHEMA,TRUE,TRUNCATE,TRUSTED,TYPE,UNCOMMITTED,UNDER,UNENCRYPTED,UNION'+
-    ',UNIQUE,UNKNOWN,UNLISTEN,UNNAMED,UNNEST,UNTIL,UPDATE,USAGE,USER_DEFINED_TYPE_CATALOG' +
-    ',USER_DEFINED_TYPE_NAME,USER_DEFINED_TYPE_SCHEMA,USING,VACUUM,VALID,VALIDATOR,VALUE,VALUES' +
-    ',VARIABLE,VARYING,VERBOSE,VIEW,VOLATILE,WHEN,WHENEVER,WHERE,WITH,WITHOUT,WORK,WRITE,YEAR,ZONE';
+    'ABORT,ABSOLUTE,ACCESS,ACTION,ADD,ADMIN,AFTER,'+
+    'AGGREGATE,ALL,ALSO,ALTER,ALWAYS,ANALYSE,ANALYZE,AND,ANY,ARRAY,AS,ASC,'+
+    'ASSERTION,ASSIGNMENT,ASYMMETRIC,AT,ATTACH,ATTRIBUTE,AUTHORIZATION,'+
+
+    'BACKWARD,BEFORE,BEGIN,BETWEEN,BINARY,'+
+    'BOTH,BY,'+
+
+    'CACHE,CALLED,CASCADE,CASCADED,CASE,CAST,CATALOG,CHAIN,'+
+    'CHARACTERISTICS,CHECK,CHECKPOINT,CLASS,CLOSE,'+
+    'CLUSTER,COLLATE,COLLATION,COLUMN,COLUMNS,COMMENT,COMMENTS,COMMIT,'+
+    'COMMITTED,CONCURRENTLY,CONFIGURATION,CONFLICT,CONNECTION,CONSTRAINT,'+
+    'CONSTRAINTS,CONTENT,CONTINUE,CONVERSION,COPY,COST,CREATE,'+
+    'CROSS,CSV,CUBE,CURRENT,CURSOR,CYCLE,'+
+
+    'DATA,DATABASE,DAY,DEALLOCATE,DEC,DECLARE,DEFAULT,DEFAULTS,'+
+    'DEFERRABLE,DEFERRED,DEFINER,DELETE,DELIMITER,DELIMITERS,DEPENDS,DESC,'+
+    'DETACH,DICTIONARY,DISABLE,DISCARD,DISTINCT,DO,DOCUMENT,DOMAIN,'+
+    'DROP,'+
+
+    'EACH,ELSE,ENABLE,ENCODING,ENCRYPTED,END,ENUM,ESCAPE,EVENT,EXCEPT,'+
+    'EXCLUDE,EXCLUDING,EXCLUSIVE,EXECUTE,EXPLAIN,'+
+    'EXTENSION,EXTERNAL,'+
+
+    'FALSE,FAMILY,FETCH,FILTER,FIRST,FOLLOWING,FOR,'+
+    'FORCE,FOREIGN,FORWARD,FREEZE,FROM,FULL,FUNCTION,FUNCTIONS,'+
+
+    'GENERATED,GLOBAL,GRANT,GRANTED,GREATEST,GROUP,GROUPING,'+
+
+    'HANDLER,HAVING,HEADER,HOLD,HOUR,'+
+
+    'IDENTITY,IF,ILIKE,IMMEDIATE,IMMUTABLE,IMPLICIT,IMPORT,IN,'+
+    'INCLUDING,INCREMENT,INDEX,INDEXES,INHERIT,INHERITS,INITIALLY,INLINE,'+
+    'INNER,INOUT,INPUT,INSENSITIVE,INSERT,INSTEAD,'+
+    'INTERSECT,INTO,INVOKER,IS,ISNULL,ISOLATION,'+
+
+    'JOIN,'+
+
+    'KEY,'+
+
+    'LABEL,LANGUAGE,LARGE,LAST,LATERAL,'+
+    'LEADING,LEAKPROOF,LEAST,LEFT,LEVEL,LIKE,LIMIT,LISTEN,LOAD,LOCAL,'+
+    'LOCATION,LOCK,LOCKED,LOGGED,'+
+
+    'MAPPING,MATCH,MATERIALIZED,MAXVALUE,METHOD,MINUTE,MINVALUE,MODE,MONTH,MOVE,'+
+
+    'NAME,NAMES,NATIONAL,NATURAL,NCHAR,NEW,NEXT,NO,NONE,'+
+    'NOT,NOTHING,NOTIFY,NOTNULL,NOWAIT,NULL,'+
+    'NULLS,'+
+
+    'OBJECT,OF,OFF,OFFSET,OIDS,OLD,ON,ONLY,OPERATOR,OPTION,OPTIONS,OR,'+
+    'ORDER,ORDINALITY,OUT,OUTER,OVER,OVERLAPS,OVERRIDING,OWNED,OWNER,'+
+
+    'PARALLEL,PARSER,PARTIAL,PARTITION,PASSING,PASSWORD,PLACING,PLANS,POLICY,'+
+    'PRECEDING,PRECISION,PRESERVE,PREPARE,PREPARED,PRIMARY,'+
+    'PRIOR,PRIVILEGES,PROCEDURAL,PROCEDURE,PROGRAM,PUBLICATION,'+
+
+    'QUOTE,'+
+
+    'RANGE,READ,REASSIGN,RECHECK,RECURSIVE,REF,REFERENCES,REFERENCING,'+
+    'REFRESH,REINDEX,RELATIVE,RELEASE,RENAME,REPEATABLE,REPLACE,REPLICA,'+
+    'RESET,RESTART,RESTRICT,RETURNING,RETURNS,REVOKE,RIGHT,ROLE,ROLLBACK,ROLLUP,'+
+    'ROW,ROWS,RULE,'+
+
+    'SAVEPOINT,SCHEMA,SCHEMAS,SCROLL,SEARCH,SECOND,SECURITY,SELECT,SEQUENCE,SEQUENCES,'+
+    'SERIALIZABLE,SERVER,SESSION,SET,SETS,SETOF,SHARE,SHOW,'+
+    'SIMILAR,SIMPLE,SKIP,SNAPSHOT,SQL,STABLE,STANDALONE,'+
+    'START,STATEMENT,STATISTICS,STDIN,STDOUT,STORAGE,STRICT,STRIP,'+
+    'SUBSCRIPTION,SYMMETRIC,SYSID,SYSTEM,'+
+
+    'TABLE,TABLES,TABLESAMPLE,TABLESPACE,TEMP,TEMPLATE,TEMPORARY,THEN,'+
+    'TO,TRAILING,TRANSACTION,TRANSFORM,TREAT,TRIGGER,TRUE,'+
+    'TRUNCATE,TRUSTED,TYPE,TYPES,'+
+
+    'UNBOUNDED,UNCOMMITTED,UNENCRYPTED,UNION,UNIQUE,UNKNOWN,UNLISTEN,UNLOGGED,'+
+    'UNTIL,UPDATE,USER,USING,'+
+
+    'VACUUM,VALID,VALIDATE,VALIDATOR,VALUE,VALUES,VARIADIC,VARYING,'+
+    'VERBOSE,VIEW,VIEWS,VOLATILE,'+
+
+    'WHEN,WHERE,WHITESPACE,WINDOW,WITH,WITHIN,WITHOUT,WORK,WRAPPER,WRITE,'+
+
+    'XMLATTRIBUTES,XMLCONCAT,XMLELEMENT,XMLEXISTS,XMLFOREST,XMLNAMESPACES,'+
+    'XMLPARSE,XMLPI,XMLROOT,XMLSERIALIZE,XMLTABLE,'+
+
+    'YEAR,YES,'+
+
+    'ZONE';
 
   //Postgresql Functions
   PostgresFunctions: string =
     'abs,cbrt,ceil,ceiling,degrees,exp,floor,ln,log,mod,pi,power,radians,random,'+
     'round,setseed,sign,sqrt,trunc,width_bucket,acos,asin,atan,atan2,cos,cot,'+
     'sin,tan,bit_length,char_length,character_length,convert,lower,octet_length,'+
-    'overlay,position,substring,trim,upper,ascii,btrim,chr,decode,'+
+    'overlay,trim,upper,ascii,btrim,chr,decode,'+
     'encode,initcap,length,lpad,ltrim,md5,pg_client_encoding,quote_ident,quote_literal,'+
-    'replace,rpad,rtrim,split_part,strpos,substr,to_ascii,to_hex,translate,get_byte,'+
+    'rpad,rtrim,split_part,strpos,substr,to_ascii,to_hex,translate,get_byte,'+
     'set_byte,get_bit,set_bit,to_char,to_date,'+
     'to_timestamp,to_number,age,date_part,date_trunc,extract,now,'+
     'timeofday,isfinite,area,box_intersect,center,diameter,height,isclosed,isopen,'+
     'npoints,pclose,popen,radius,width,'+
     'broadcast,'+
-    'host,masklen,set_masklen,netmask,hostmask,network,abbrev,family,nextval,'+
-    'currval,setval,coalesce,nullif,array_cat ,array_append ,array_prepend ,array_dims,'+
+    'host,masklen,set_masklen,netmask,hostmask,network,abbrev,nextval,'+
+    'currval,setval,coalesce,array_cat ,array_append ,array_prepend ,array_dims,'+
     'array_lower ,array_upper ,array_to_string ,string_to_array ,avg,bit_and,bit_or,bool_and,'+
-    'bool_or,count,every,max,min,stddev,sum,variance,exists ,in ,some,'+
-    'all ,generate_series,current_database,current_schema,'+
-    'current_schemas,,inet_client_addr,inet_client_port,inet_server_addr,inet_server_port,'+
+    'bool_or,count,every,max,min,stddev,sum,variance,exists,some,'+
+    'generate_series,current_database,current_schema,'+
+    'current_schemas,inet_client_addr,inet_client_port,inet_server_addr,inet_server_port,'+
     'version,has_table_privilege,has_database_privilege,'+
     'has_function_privilege,has_language_privilege,'+
     'has_schema_privilege,has_tablespace_privilege,'+
@@ -492,16 +525,16 @@ const
     'pg_get_triggerdef,pg_get_constraintdef,pg_get_expr,'+
     'pg_get_userbyid,pg_get_serial_sequence,pg_tablespace_databases,obj_description,'+
     'col_description,current_setting,set_config,pg_cancel_backend,pg_start_backup,pg_stop_backup,'+
-    'current_user,current_date,current_time,current_timestamp,localtime,localtimestamp,session_user,user';
+    'current_user,current_role,current_catalog,current_date,current_time,current_timestamp,localtime,localtimestamp,session_user';
 
   //Postgresql Types
   PostgresTypes: string =
-    'smallint,integer,bigint,decimal,numeric,real,double,serial,bigserial,'+
-    'character,varchar,char,text,bytea,timestamp, interval,date,'+
+    'smallint,integer,bigint,decimal,real,double,serial,bigserial,'+
+    'character,varchar,char,text,bytea,timestamp,interval,date,'+
     'time,boolean,point,line,lseg,box,path,polygon,circle,cidr,inet,'+
-    'macaddr,BIT,bitvar,ARRAY,oid,regproc,regprocedure,regoper,regoperator,regclass,'+
-    'regtype,any,anyarray,anyelement,cstring,internal,language_handler,record,'+
-    'trigger,void,opaque,refcursor,binary,blob,int4,int2,int8,float,float4,float8';
+    'macaddr,macaddr8,BIT,bitvar,oid,regproc,regprocedure,regoper,regoperator,regclass,'+
+    'regtype,anyarray,anyelement,cstring,internal,language_handler,record,'+
+    'void,opaque,refcursor,int4,int2,int8,float,float4,float8,json,jsonb,uuid';
 
   //Postgresql Exceptions
   PostgresExceptions: string =
