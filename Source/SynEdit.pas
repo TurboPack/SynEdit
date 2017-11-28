@@ -75,6 +75,9 @@ uses
   SynEditKeyCmds,
   SynEditHighlighter,
   SynEditKbdHandler,
+//++ CodeFolding
+  SynEditCodeFolding,
+//-- CodeFolding
   WideStrUtils,
   Math,
   SysUtils,
@@ -211,6 +214,13 @@ type
   TMouseCursorEvent = procedure(Sender: TObject; const aLineCharPos: TBufferCoord;
     var aCursor: TCursor) of object;
 
+//++ CodeFolding
+  TScanForFoldRangesEvent = procedure(Sender: TObject;
+    FoldRanges: TSynFoldRanges; LinesToScan: TStrings;
+    FromLine : Integer; ToLine : Integer) of object;
+//-- CodeFolding
+
+
   TCustomSynEdit = class;
 
   TSynEditMark = class
@@ -334,6 +344,11 @@ type
     procedure WMUndo(var Msg: TMessage); message WM_UNDO;
     procedure WMVScroll(var Msg: TWMScroll); message WM_VSCROLL;
   private
+//++ CodeFolding
+    fUseCodeFolding : Boolean;
+    fCodeFolding: TSynCodeFolding;
+    fAllFoldRanges: TSynFoldRanges;
+//-- CodeFolding
     fAlwaysShowCaret: Boolean;
     fBlockBegin: TBufferCoord;
     fBlockEnd: TBufferCoord;
@@ -424,8 +439,11 @@ type
     fOnScroll: TScrollEvent;
     fOnGutterGetText: TGutterGetTextEvent;
     fOnGutterPaint: TGutterPaintEvent;
-
     fOnStatusChange: TStatusChangeEvent;
+//++ CodeFolding
+    fOnScanForFoldRanges : TScanForFoldRangesEvent;
+//-- CodeFolding
+
     fShowSpecChar: Boolean;
     FPaintTransientLock: Integer;
     FIsScrolling: Boolean;
@@ -451,6 +469,13 @@ type
     SelLengthBeforeSearch: integer;
 
     FWindowProducedMessage: Boolean;
+
+//++ CodeFolding
+    procedure ReScanForFoldRanges(FromLine : Integer; ToLine : Integer);
+    procedure FullFoldScan;
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine : Integer; ToLine : Integer);
+//-- CodeFolding
 
     procedure BookMarkOptionsChanged(Sender: TObject);
     procedure ComputeCaret(X, Y: Integer);
@@ -489,7 +514,9 @@ type
     function GetWordWrap: Boolean;
     procedure GutterChanged(Sender: TObject);
     function LeftSpaces(const Line: string): Integer;
-    function LeftSpacesEx(const Line: string; WantTabs: Boolean): Integer;
+//++ CodeFolding
+    function LeftSpacesEx(const Line: string; WantTabs: Boolean; CalcAlways : Boolean = False): Integer;
+//-- CodeFolding
     function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
     procedure LinesChanging(Sender: TObject);
     procedure MoveCaretAndSelection(const ptBefore, ptAfter: TBufferCoord;
@@ -561,6 +588,9 @@ type
     procedure FindDialogFind(Sender: TObject);
     function SearchByFindDialog(FindDialog: TFindDialog) : bool;
     procedure FindDialogClose(Sender: TObject);
+//++ CodeFolding
+    procedure SetUseCodeFolding(const Value: Boolean);
+//-- CodeFolding
   protected
     FIgnoreNextChar: Boolean;
     FCharCodeString: string;
@@ -670,6 +700,9 @@ type
     property InternalCaretY: Integer write InternalSetCaretY;
     property InternalCaretXY: TBufferCoord write InternalSetCaretXY;
     property FontSmoothing: TSynFontSmoothMethod read fFontSmoothing write SetFontSmoothing;
+//++ DPI-Aware
+    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend}); override;
+//-- DPI-Aware
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -797,6 +830,19 @@ type
     procedure HookTextBuffer(aBuffer: TSynEditStringList;
       aUndo, aRedo: TSynEditUndoList);
     procedure UnHookTextBuffer;
+//++ CodeFolding
+    procedure CollapseAll;
+    procedure UncollapseAll;
+    procedure Collapse(FoldRangeIndex: Integer; Invalidate:Boolean = True);
+    procedure Uncollapse(FoldRangeIndex: Integer; Invalidate:Boolean = True);
+    procedure UncollapseAroundLine(Line: Integer);
+    procedure CollapseNearest;
+    procedure UncollapseNearest;
+    procedure CollapseLevel(Level : integer);
+    procedure UnCollapseLevel(Level : integer);
+    procedure CollapseFoldType(FoldType : Integer);
+    procedure UnCollapseFoldType(FoldType : Integer);
+//-- CodeFolding
   public
     property AdditionalIdentChars: TSysCharSet read FAdditionalIdentChars write SetAdditionalIdentChars;
     property AdditionalWordBreakChars: TSysCharSet read FAdditionalWordBreakChars write SetAdditionalWordBreakChars;
@@ -848,6 +894,11 @@ type
     property OnProcessCommand: TProcessCommandEvent
       read FOnProcessCommand write FOnProcessCommand;
 
+//++ CodeFolding
+    property CodeFolding: TSynCodeFolding read fCodeFolding write fCodeFolding;
+    property UseCodeFolding: Boolean read fUseCodeFolding write SetUseCodeFolding;
+    property AllFoldRanges: TSynFoldRanges read fAllFoldRanges;
+//-- CodeFolding
     property BookMarkOptions: TSynBookMarkOpt
       read fBookMarkOpt write fBookMarkOpt;
     property BorderStyle: TSynBorderStyle read FBorderStyle write SetBorderStyle
@@ -921,6 +972,10 @@ type
       read fOnPaintTransient write fOnPaintTransient;
     property OnScroll: TScrollEvent
       read fOnScroll write fOnScroll;
+//++ CodeFolding
+    property OnScanForFoldRanges: TScanForFoldRangesEvent
+      read fOnScanForFoldRanges write fOnScanForFoldRanges;
+//-- CodeFolding
   published
     property Cursor default crIBeam;
     property OnSearchNotFound: TCustomSynEditSearchNotFoundEvent
@@ -971,6 +1026,10 @@ type
     property OnMouseWheelUp;
     property OnStartDrag;
     // TCustomSynEdit properties
+//++ CodeFolding
+    property CodeFolding;
+    property UseCodeFolding;
+//-- CodeFolding
     property BookMarkOptions;
     property BorderStyle;
     property ExtraLineSpacing;
@@ -1020,6 +1079,9 @@ type
     property OnSpecialLineColors;
     property OnStatusChange;
     property OnPaintTransient;
+//++ CodeFolding
+    property OnScanForFoldRanges;
+//-- CodeFolding
 
     property FontSmoothing;
   end;
@@ -1318,6 +1380,10 @@ begin
 
   fScrollHintColor := clInfoBk;
   fScrollHintFormat := shfTopLineOnly;
+//++ CodeFolding
+  fCodeFolding := TSynCodeFolding.Create;
+  fAllFoldRanges := TSynFoldRanges.Create;
+//-- CodeFolding
 
   SynFontChanged(nil);
 end;
@@ -1420,6 +1486,10 @@ begin
   fInternalImage.Free;
   fFontDummy.Free;
   fOrigLines.Free;
+//++ CodeFolding
+  fCodeFolding.Free;
+  fAllFoldRanges.Free;
+//-- CodeFolding
 end;
 
 function TCustomSynEdit.GetBlockBegin: TBufferCoord;
@@ -1694,7 +1764,9 @@ begin
     begin
       rcInval := Rect(0, 0, fGutterWidth, ClientHeight);
       if sfLinesChanging in fStateFlags then
-        UnionRect(fInvalidateRect, fInvalidateRect, rcInval)
+//++ Flicker Reduction
+          UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
+//-- Flicker Reduction
       else
         InvalidateRect(rcInval, False);
     end
@@ -1702,7 +1774,9 @@ begin
       { find the visible lines first }
       if (LastLine < FirstLine) then
         SwapInt(LastLine, FirstLine);
-      if WordWrap then
+//++ CodeFolding
+      if UseCodeFolding or WordWrap then
+//-- CodeFolding
       begin
         FirstLine := LineToRow(FirstLine);
         if LastLine <= Lines.Count then
@@ -1718,7 +1792,9 @@ begin
         rcInval := Rect(0, fTextHeight * (FirstLine - TopLine),
           fGutterWidth, fTextHeight * (LastLine - TopLine + 1));
         if sfLinesChanging in fStateFlags then
-          UnionRect(fInvalidateRect, fInvalidateRect, rcInval)
+//++ Flicker Reduction
+          UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
+//-- Flicker Reduction
         else
           InvalidateRect(rcInval, False);
       end;
@@ -1736,7 +1812,9 @@ begin
       rcInval := ClientRect;
       Inc(rcInval.Left, fGutterWidth);
       if sfLinesChanging in fStateFlags then
-        UnionRect(fInvalidateRect, fInvalidateRect, rcInval)
+//++ Flicker Reduction
+        UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
+//-- Flicker Reduction
       else
         InvalidateRect(rcInval, False);
     end
@@ -1750,14 +1828,20 @@ begin
       if LastLine >= Lines.Count then
         LastLine := MaxInt; // paint empty space beyond last line
 
-      if WordWrap then
+//++ CodeFolding
+      if UseCodeFolding or WordWrap then
       begin
         FirstLine := LineToRow(FirstLine);
         // Could avoid this conversion if (First = Last) and
         // (Length < CharsInWindow) but the dependency isn't worth IMO.
-        if LastLine < Lines.Count then
-          LastLine := LineToRow(LastLine + 1) - 1;
+        if LastLine < Lines.Count then begin
+          if UseCodeFolding then
+            LastLine := LineToRow(LastLine)
+          else
+            LastLine := LineToRow(LastLine + 1) - 1;
+        end;
       end;
+//-- CodeFolding
 
       // TopLine is in display coordinates, so FirstLine and LastLine must be
       // converted previously.
@@ -1770,7 +1854,9 @@ begin
         rcInval := Rect(fGutterWidth, fTextHeight * (FirstLine - TopLine),
           ClientWidth, fTextHeight * (LastLine - TopLine + 1));
         if sfLinesChanging in fStateFlags then
-          UnionRect(fInvalidateRect, fInvalidateRect, rcInval)
+//++ Flicker Reduction
+          UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
+//++ Flicker Reduction
         else
           InvalidateRect(rcInval, False);
       end;
@@ -1898,12 +1984,14 @@ begin
   Result := LeftSpacesEx(Line, False);
 end;
 
-function TCustomSynEdit.LeftSpacesEx(const Line: string; WantTabs: Boolean): Integer;
+//-- CodeFolding
+function TCustomSynEdit.LeftSpacesEx(const Line: string; WantTabs: Boolean; CalcAlways : Boolean = False): Integer;
+//-- CodeFolding
 var
   p: PWideChar;
 begin
   p := PWideChar(Line);
-  if Assigned(p) and (eoAutoIndent in fOptions) then
+  if Assigned(p) and ((eoAutoIndent in fOptions) or CalcAlways) then
   begin
     Result := 0;
     while (p^ >= #1) and (p^ <= #32) do
@@ -1937,10 +2025,20 @@ procedure TCustomSynEdit.LinesChanged(Sender: TObject);
 var
   vOldMode: TSynSelectionMode;
 begin
+//++ CodeFolding
+  if (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
+  begin
+    InvalidateGutter;
+    Include(fStateFlags, sfScrollbarChanged);
+  end;
+//-- CodeFolding
+
   Exclude(fStateFlags, sfLinesChanging);
   if HandleAllocated then
   begin
-    UpdateScrollBars;
+//++ Flicker Reduction
+//    UpdateScrollBars;
+//-- Flicker Reduction
     vOldMode := fActiveSelectionMode;
     SetBlockBegin(CaretXY);
     fActiveSelectionMode := vOldMode;
@@ -2168,7 +2266,36 @@ var
   line  : Integer;
   allmrk: TSynEditMarks;
   mark  : TSynEditMark;
+//++ CodeFolding
+  Index : integer;
+  rect: TRect;
+  RowColumn: TDisplayCoord;
 begin
+  RowColumn := PixelsToRowColumn(X, Y);
+  Line := RowToLine(RowColumn.Row);
+
+  // Check if we clicked on a folding thing
+  if UseCodeFolding then begin
+    if AllFoldRanges.FoldStartAtLine(Line, Index) then
+    begin
+      // See if we actually clicked on the rectangle...
+      rect.Left := Gutter.RealGutterWidth(CharWidth) - Gutter.RightOffset;
+      rect.Right := rect.Left + Gutter.RightOffset - 4;
+      rect.Top := (RowColumn.Row - fTopLine) * LineHeight;
+      rect.Bottom := rect.Top + LineHeight;
+
+      if PtInRect(rect, Point(X, Y)) then begin
+        if AllFoldRanges.Ranges[Index].Collapsed then
+          Uncollapse(Index)
+        else
+          Collapse(Index);
+        Exit;
+      end;
+    end;
+  end;
+//-- CodeFolding
+
+  // If not, check gutter marks
   if Assigned(fOnGutterClick) then
   begin
     line := DisplayToBufferPos(PixelsToRowColumn(X,Y)).Line;
@@ -2264,6 +2391,10 @@ procedure TCustomSynEdit.PaintGutter(const AClip: TRect;
         begin
           fInternalImage := TSynInternalImage.Create(HINSTANCE,
             'SynEditInternalImages', 10);
+//++ DPI-Aware
+          if Screen.PixelsPerInch >= 120 then
+            fInternalImage.ChangeScale(Screen.PixelsPerInch, 96);
+//-- DPI-Aware
         end;
         if aGutterOff = 0 then
         begin
@@ -2290,6 +2421,14 @@ var
   vLineTop: Integer;
   dc: HDC;
   TextSize: TSize;
+//++ CodeFolding
+  vLine: Integer;
+  cRow : Integer;
+  rcFold: TRect;
+  x: Integer;
+  FoldRange: TSynFoldRange;
+  Index : Integer;
+//-- CodeFolding
 begin
   vFirstLine := RowToLine(aFirstRow);
   vLastLine := RowToLine(aLastRow);
@@ -2329,6 +2468,10 @@ begin
 
       for cLine := vFirstLine to vLastLine do
       begin
+//++ CodeFolding
+        if UseCodeFolding and AllFoldRanges.FoldHidesLine(cLine, Index) then
+          continue;
+//-- CodeFolding
         vLineTop := (LineToRow(cLine) - TopLine) * fTextHeight;
         if WordWrap and not fGutter.Gradient then
         begin
@@ -2389,6 +2532,74 @@ begin
   // restore brush
   if fGutter.Gradient then
     Canvas.Brush.Style := bsSolid;
+//++ CodeFolding
+  // Draw the folding lines and squares
+  if UseCodeFolding then begin
+    for cRow := aFirstRow to aLastRow do begin
+      vLine := RowToLine(cRow);
+      if (vLine > Lines.Count) and not (Lines.Count = 0) then
+        break;
+
+      // Form a rectangle for the square the user can click on
+      rcFold.Left := fGutterWidth - Gutter.RightOffset;
+      rcFold.Right := rcFold.Left + Gutter.RightOffset - 4;
+      rcFold.Top := (cRow - fTopLine) * LineHeight;
+      rcFold.Bottom := rcFold.Top + LineHeight;
+
+      Canvas.Pen.Color := fCodeFolding.FolderBarLinesColor;
+
+      // Need to paint a line?
+      if AllFoldRanges.FoldAroundLine(vLine, Index) then begin
+        x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
+        Canvas.MoveTo(x, rcFold.Top);
+        Canvas.LineTo(x, rcFold.Bottom);
+      end;
+
+      // Need to paint a line end?
+      if AllFoldRanges.FoldEndAtLine(vLine, Index) then begin
+        x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
+        Canvas.MoveTo(x, rcFold.Top);
+        Canvas.LineTo(x, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
+        Canvas.LineTo(rcFold.Right - 2, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
+      end;
+
+      // Any fold ranges beginning on this line?
+      if AllFoldRanges.FoldStartAtLine(vLine, Index) then begin
+        FoldRange := AllFoldRanges.Ranges[Index];
+
+        // Draw the bottom part of a line
+        if not FoldRange.Collapsed then begin
+          x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
+          Canvas.MoveTo(x, (rcFold.Top + rcFold.Bottom) div 2);
+          Canvas.LineTo(x, rcFold.Bottom);
+        end;
+
+        // make a square rect
+        InflateRect(rcFold, -2, -0);
+        rcFold.Top := rcFold.Top + ((LineHeight - (rcFold.Right - rcFold.Left)) div 2);
+        rcFold.Bottom := rcFold.Top + (rcFold.Right - rcFold.Left);
+
+        // Paint the square the user can click on
+        Canvas.Brush.Color := clWindow;
+        Canvas.FillRect(rcFold);
+        Canvas.Brush.Color := fCodeFolding.FolderBarLinesColor;
+        Canvas.FrameRect(rcFold);
+
+        // Paint minus sign
+        Canvas.Pen.Color := fCodeFolding.FolderBarLinesColor;
+        Canvas.MoveTo(rcFold.Left + 2, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
+        Canvas.LineTo(rcFold.Right - 2, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
+
+        // Paint vertical line of plus sign
+        if FoldRange.Collapsed then begin
+          x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
+          Canvas.MoveTo(x, rcFold.Top + 2);
+          Canvas.LineTo(x, rcFold.Bottom - 2);
+        end;
+      end;
+    end;
+  end;
+//-- CodeFolding
 
   // the gutter separator if visible
   if (fGutter.BorderStyle <> gbsNone) and (AClip.Right >= fGutterWidth - 2) then
@@ -2419,7 +2630,11 @@ begin
       // whether there is any other mark to be drawn
       bHasOtherMarks := False;
       for cMark := 0 to Marks.Count - 1 do with Marks[cMark] do
-        if Visible and (Line >= vFirstLine) and (Line <= vLastLine) then
+//++ Codefolding
+        if Visible and (Line >= vFirstLine) and (Line <= vLastLine) and (Line <= FLines.Count)
+           and not (UseCodeFolding and AllFoldRanges.FoldHidesLine(Line, Index))
+//-- Codefolding
+        then
         begin
           if IsBookmark <> BookMarkOptions.DrawBookmarksFirst then
             bHasOtherMarks := True
@@ -2433,7 +2648,10 @@ begin
         for cMark := 0 to Marks.Count - 1 do with Marks[cMark] do
         begin
           if Visible and (IsBookmark <> BookMarkOptions.DrawBookmarksFirst)
-            and (Line >= vFirstLine) and (Line <= vLastLine) then
+//++ Codefolding
+            and (Line >= vFirstLine) and (Line <= vLastLine) and (Line <= FLines.Count)
+            and not (UseCodeFolding and AllFoldRanges.FoldHidesLine(Line, Index))  then
+//-- Codefolding
           begin
             vMarkRow := LineToRow(Line);
             if vMarkRow >= aFirstRow then
@@ -3030,6 +3248,91 @@ var
     end;
   end;
 
+//++ CodeFolding
+  procedure PaintFoldAttributes;
+  var
+    i, TabSteps, LineIndent, LastNonBlank, X, Y, cRow, vLine: Integer;
+    DottedPen, OldPen: HPEN;
+    DottedPenDesc: LOGBRUSH;
+    CollapsedTo : integer;
+  begin
+    // Paint indent guides. Use folds to determine indent value of these
+    // Use a separate loop so we can use a custom pen
+    if not UseCodeFolding then
+      Exit;
+
+    // Paint indent guides using custom pen
+    if fCodeFolding.IndentGuides then begin
+      DottedPenDesc.lbStyle := BS_SOLID;
+      DottedPenDesc.lbColor := fCodeFolding.IndentGuidesColor;
+      DottedPen := ExtCreatePen(PS_COSMETIC or PS_ALTERNATE, 1, DottedPenDesc, 0, nil);
+      try
+        OldPen := SelectObject(Canvas.Handle, DottedPen);
+
+        // Now loop through all the lines. The indices are valid for Lines.
+        for cRow := aFirstRow to aLastRow do begin
+          vLine := RowToLine(cRow);
+          if (vLine > Lines.Count) and not (Lines.Count = 0) then
+            break;
+
+          // Set vertical coord
+          Y := (LineToRow(vLine) - TopLine) * fTextHeight; // limit inside clip rect
+          if (fTextHeight mod 2 = 1) and (vLine mod 2 = 0) then // even
+            Inc(Y);
+
+        // Get next nonblank line
+          LastNonBlank := cRow;
+          while (RowToLine(LastNonBlank) <= fLines.Count)
+            and (TrimLeft(fLines[RowToLine(LastNonBlank)-1]) = '') do
+            Inc(LastNonBlank);
+          LineIndent := LeftSpacesEx(fLines[RowToLine(LastNonBlank)-1], True, True);
+
+   // Step horizontal coord
+          TabSteps := TabWidth;
+          while TabSteps < LineIndent do begin
+            X := TabSteps * CharWidth + fTextOffset - 2;
+            Inc(TabSteps, TabWidth);
+
+            // Move to top of vertical line
+            Canvas.MoveTo(X, Y);
+            Inc(Y, fTextHeight);
+
+            // Draw down and move back up
+            Canvas.LineTo(X, Y);
+            Dec(Y, fTextHeight);
+          end;
+        end;
+
+        // Reset pen
+        SelectObject(Canvas.Handle, OldPen);
+      finally
+        DeleteObject(DottedPen);
+      end;
+    end;
+
+    // Paint collapsed lines using changed pen
+    if fCodeFolding.ShowCollapsedLine then begin
+      Canvas.Pen.Color := fCodeFolding.CollapsedLineColor;
+      CollapsedTo := 0;
+      for i := 0 to fAllFoldRanges.Count - 1 do begin
+        with fAllFoldRanges.Ranges[i] do begin
+          if Collapsed then
+          begin
+            if (FromLine > CollapsedTo) and (FromLine <= vLastLine) and (FromLine >= vFirstLine) then
+            begin
+              // Get starting and end points
+              Y := (LineToRow(FromLine) - TopLine + 1) * fTextHeight - 1;
+              Canvas.MoveTo(AClip.Left, Y);
+              Canvas.LineTo(AClip.Right, Y);
+            end;
+            CollapsedTo := Max(CollapsedTo, ToLine);
+          end;
+        end;
+      end;
+    end;
+  end;
+//-- CodeFolding
+
   procedure PaintLines;
   var
     nLine: Integer; // line index for the loop
@@ -3044,6 +3347,9 @@ var
     vLastChar: Integer;
     vStartRow: Integer;
     vEndRow: Integer;
+//++ CodeFolding
+    Index : Integer;
+//-- CodeFolding
   begin
     // Initialize rcLine for drawing. Note that Top and Bottom are updated
     // inside the loop. Get only the starting point for this.
@@ -3059,6 +3365,10 @@ var
     // Now loop through all the lines. The indices are valid for Lines.
     for nLine := vFirstLine to vLastLine do
     begin
+//++ CodeFolding
+      if UseCodeFolding and AllFoldRanges.FoldHidesLine(nLine, Index) then
+        continue;
+//-- CodeFolding
       sLine := TSynEditStringList(Lines).ExpandedStrings[nLine - 1];
       sLineExpandedAtWideGlyphs := ExpandAtWideGlyphs(sLine);
       // determine whether will be painted with ActiveLineColor
@@ -3082,6 +3392,9 @@ var
 
       vStartRow := Max(LineToRow(nLine), aFirstRow);
       vEndRow := Min(LineToRow(nLine + 1) - 1, aLastRow);
+//++ CodeFolding
+      vEndRow := Max(vEndRow, vStartRow);
+//-- CodeFolding
       for cRow := vStartRow to vEndRow do
       begin
         if WordWrap then
@@ -3326,6 +3639,11 @@ begin
       Canvas.LineTo(nRightEdge, rcToken.Bottom + 1);
     end;
   end;
+
+//++ CodeFolding
+  // This messes with pen colors, so draw after right margin has been drawn
+  PaintFoldAttributes;
+//-- CodeFolding
 end;
 
 procedure TCustomSynEdit.PasteFromClipboard;
@@ -3579,7 +3897,9 @@ end;
 
 function TCustomSynEdit.GetDisplayY: Integer;
 begin
-  if not WordWrap then
+//++ CodeFolding
+  if not WordWrap and not UseCodeFolding then
+//-- CodeFolding
     Result := CaretY
   else
     Result := DisplayXY.Row;
@@ -3693,7 +4013,9 @@ begin
       if CallEnsureCursorPos then
         EnsureCursorPosVisible;
       Include(fStateFlags, sfCaretChanged);
-      Include(fStateFlags, sfScrollbarChanged);
+//++ CodeFolding
+//      Include(fStateFlags, sfScrollbarChanged);
+//-- CodeFolding
     finally
       DecPaintLock;
     end;
@@ -4259,6 +4581,37 @@ begin
     StatusChanged([scTopLine]);
   end;
 end;
+
+//++ CodeFolding
+procedure TCustomSynEdit.SetUseCodeFolding(const Value: Boolean);
+Var
+  ValidValue : Boolean;
+begin
+  ValidValue := Value and ((Assigned(fHighlighter) and
+      (fHighlighter is TSynCustomCodeFoldingHighlighter))
+        or Assigned(fOnScanForFoldRanges));
+
+  if fUseCodeFolding <> ValidValue then
+  begin
+    AllFoldRanges.Reset;
+    fUseCodeFolding := ValidValue;
+    Invalidate; // better Invalidate before changing LeftChar and TopLine
+    if ValidValue then
+    begin
+      // !!Mutually exclusive with WordWrap to reduce complexity
+      WordWrap := False;
+      FullFoldScan;
+      Gutter.RightOffset := Max(MulDiv(12, Screen.PixelsPerInch, 96) + 4, 19);
+      if not Odd(Gutter.RightOffset) then
+        Gutter.RightOffset := Gutter.RightOffset - 1;
+    end
+    else begin
+      Gutter.RightOffset := MulDiv(2, Screen.PixelsPerInch, 96);
+    end;
+    InvalidateGutter;
+  end;
+end;
+//-- CodeFolding
 
 procedure TCustomSynEdit.ShowCaret;
 begin
@@ -4893,6 +5246,11 @@ begin
   if WordWrap then
     fWordWrapPlugin.Reset;
 
+//++ CodeFolding
+  if UseCodeFolding then
+    AllFoldRanges.Reset;
+//-- CodeFolding
+
   ClearUndo;
   // invalidate the *whole* client area
   FillChar(fInvalidateRect, SizeOf(TRect), 0);
@@ -4907,15 +5265,30 @@ end;
 
 procedure TCustomSynEdit.ListDeleted(Sender: TObject; aIndex: Integer;
   aCount: Integer);
+//++ CodeFolding
+Var
+  vLastScan: Integer;
 begin
+  vLastScan := aIndex;
   if Assigned(fHighlighter) and (Lines.Count > 0) then
-    ScanFrom(aIndex);
+    vLastScan := ScanFrom(aIndex);
+
+  if UseCodeFolding then begin
+    AllFoldRanges.LinesDeleted(aIndex, aCount);
+    // Scan the same lines the highlighter has scanned
+    ReScanForFoldRanges(aIndex, vLastScan);
+    InvalidateGutter;
+  end;
+//-- CodeFolding
 
   if WordWrap then
     fWordWrapPlugin.LinesDeleted(aIndex, aCount);
 
   InvalidateLines(aIndex + 1, MaxInt);
   InvalidateGutterLines(aIndex + 1, MaxInt);
+//++ Flicker Reduction
+  Include(fStateFlags, sfScrollbarChanged);
+//-- Flicker Reduction
 end;
 
 procedure TCustomSynEdit.ListInserted(Sender: TObject; Index: Integer;
@@ -4923,21 +5296,38 @@ procedure TCustomSynEdit.ListInserted(Sender: TObject; Index: Integer;
 var
   L: Integer;
   vLastScan: Integer;
+//++ CodeFolding
+  FoldIndex: Integer;
 begin
+  vLastScan := Index;
+//-- CodeFolding
   if Assigned(fHighlighter) and (Lines.Count > 0) then
   begin
-    vLastScan := Index;
     repeat
       vLastScan := ScanFrom(vLastScan);
       Inc(vLastScan);
     until vLastScan >= Index + aCount;
   end;
 
+//++ CodeFolding
+  if UseCodeFolding then begin
+    if fAllFoldRanges.CollapsedFoldStartAtLine(Index, FoldIndex) then
+      // insertion starts at collapsed fold
+      Uncollapse(FoldIndex);
+    AllFoldRanges.LinesInserted(Index, aCount);
+    // Scan the same lines the highlighter has scanned
+    ReScanForFoldRanges(Index, vLastScan-1);
+  end;
+//-- CodeFolding
+
   if WordWrap then
     fWordWrapPlugin.LinesInserted(Index, aCount);
 
   InvalidateLines(Index + 1, MaxInt);
   InvalidateGutterLines(Index + 1, MaxInt);
+//++ Flicker Reduction
+  Include(fStateFlags, sfScrollbarChanged);
+//-- Flicker Reduction
 
   if (eoAutoSizeMaxScrollWidth in fOptions) then
   begin
@@ -4952,6 +5342,10 @@ procedure TCustomSynEdit.ListPutted(Sender: TObject; Index: Integer;
 var
   L: Integer;
   vEndLine: Integer;
+//++ CodeFolding
+  vLastScan: Integer;
+  FoldIndex: Integer;
+//-- CodeFolding
 begin
   vEndLine := Index +1;
   if WordWrap then
@@ -4960,14 +5354,30 @@ begin
       vEndLine := MaxInt;
     InvalidateGutterLines(Index + 1, vEndLine);
   end;
+//++ CodeFolding
+  vLastScan := Index;
   if Assigned(fHighlighter) then
   begin
-    vEndLine := Max(vEndLine, ScanFrom(Index) + 1);
+    vLastScan := ScanFrom(Index);
+    vEndLine := Max(vEndLine, vLastScan + 1);
+//-- CodeFolding
     // If this editor is chained then the real owner of text buffer will probably
     // have already parsed the changes, so ScanFrom will return immediately.
     if fLines <> fOrigLines then
       vEndLine := MaxInt;
   end;
+
+//++ CodeFolding
+  if fUseCodeFolding then begin
+    if fAllFoldRanges.CollapsedFoldStartAtLine(Index + 1, FoldIndex) then
+      // modification happens at collapsed fold
+      Uncollapse(FoldIndex);
+    AllFoldRanges.LinesPutted(Index, aCount);
+    // Scan the same lines the highlighter has scanned
+    ReScanForFoldRanges(Index, vLastScan);
+  end;
+//-- CodeFolding
+
   InvalidateLines(Index + 1, vEndLine);
 
   if (eoAutoSizeMaxScrollWidth in fOptions) then
@@ -4976,6 +5386,7 @@ begin
     if L > MaxScrollWidth then
       MaxScrollWidth := L;
   end;
+
 end;
 
 procedure TCustomSynEdit.ScanRanges;
@@ -5320,6 +5731,176 @@ begin
     DecPaintLock;
   end;
 end;
+
+//++ CodeFolding
+procedure TCustomSynEdit.Collapse(FoldRangeIndex: Integer; Invalidate:Boolean);
+begin
+  AllFoldRanges.Ranges.List[FoldRangeIndex].Collapsed := True;
+
+  with AllFoldRanges.Ranges[FoldRangeIndex] do
+  begin
+    // Extract caret from fold
+    if (fCaretY > FromLine) and (fCaretY <= ToLine) then
+      CaretXY := BufferCoord(Length(Lines[FromLine - 1]) + 1, FromLine);
+
+    if Invalidate then begin
+      // Redraw the collapsed line and below
+      InvalidateLines(FromLine, MaxInt);
+
+      // Redraw fold mark
+      InvalidateGutterLines(FromLine, MaxInt);
+    end;
+  end;
+  // Update Scrollbars
+  Include(fStateFlags, sfScrollbarChanged);
+end;
+
+procedure TCustomSynEdit.CollapseAll;
+var
+  i: Integer;
+begin
+  if not fUseCodeFolding then Exit;
+    for i := fAllFoldRanges.Count - 1 downto 0 do
+      Collapse(i, False);
+
+  InvalidateLines(-1, -1);
+  InvalidateGutterLines(-1, -1);
+
+  EnsureCursorPosVisible;
+end;
+
+
+procedure TCustomSynEdit.CollapseLevel(Level: integer);
+Var
+  i : integer;
+  RangeIndices : TArray<Integer>;
+begin
+  if not fUseCodeFolding then Exit;
+  RangeIndices := AllFoldRanges.FoldsAtLevel(Level);
+  for i := Low(RangeIndices) to High(RangeIndices) do
+    Collapse(RangeIndices[i], False);
+
+  InvalidateLines(-1, -1);
+  InvalidateGutterLines(-1, -1);
+
+  EnsureCursorPosVisible;
+end;
+
+procedure TCustomSynEdit.CollapseNearest;
+Var
+  Index : integer;
+begin
+  if not fUseCodeFolding then Exit;
+  if AllFoldRanges.FoldAroundLineEx(CaretY, False, True, True, Index) then
+    Collapse(Index);
+
+    EnsureCursorPosVisible;
+end;
+
+procedure TCustomSynEdit.CollapseFoldType(FoldType : Integer);
+Var
+  i : integer;
+  RangeIndices : TArray<Integer>;
+begin
+  if not fUseCodeFolding then Exit;
+  RangeIndices := AllFoldRanges.FoldsOfType(FoldType);
+  for i := Low(RangeIndices) to High(RangeIndices) do
+    Collapse(RangeIndices[i],False);
+
+  InvalidateLines(-1, -1);
+  InvalidateGutterLines(-1, -1);
+
+  EnsureCursorPosVisible;
+end;
+
+procedure TCustomSynEdit.Uncollapse(FoldRangeIndex: Integer; Invalidate:Boolean);
+begin
+    AllFoldRanges.Ranges.List[FoldRangeIndex].Collapsed := False;
+
+  if Invalidate then with AllFoldRanges.Ranges[FoldRangeIndex] do
+  begin
+    // Redraw the uncollapsed line and below
+    InvalidateLines(FromLine, MaxInt);
+
+    // Redraw fold marks
+    InvalidateGutterLines(FromLine, MaxInt);
+
+    // Make sure we can see the cursor
+//    EnsureCursorPosVisible;
+
+    // Update Scrollbars
+    Include(fStateFlags, sfScrollbarChanged);
+  end;
+end;
+
+procedure TCustomSynEdit.UncollapseAroundLine(Line: Integer);
+var
+  Index: Integer;
+begin
+  if not fUseCodeFolding then Exit;
+  // Open up the closed folds around the focused line until we can see the line we're looking for
+  while AllFoldRanges.FoldHidesLine(line, Index) do
+    Uncollapse(Index);
+end;
+
+procedure TCustomSynEdit.UnCollapseLevel(Level: integer);
+Var
+  i : integer;
+  RangeIndices : TArray<Integer>;
+begin
+  if not fUseCodeFolding then Exit;
+  RangeIndices := AllFoldRanges.FoldsAtLevel(Level);
+  for i := Low(RangeIndices) to High(RangeIndices) do
+    Uncollapse(RangeIndices[i], False);
+
+  InvalidateLines(-1, -1);
+  InvalidateGutterLines(-1, -1);
+
+  EnsureCursorPosVisible;
+end;
+
+procedure TCustomSynEdit.UncollapseNearest;
+Var
+  Index : integer;
+begin
+  if not fUseCodeFolding then Exit;
+  if AllFoldRanges.CollapsedFoldStartAtLine(CaretY, Index) then
+    Uncollapse(Index);
+
+  EnsureCursorPosVisible;
+end;
+
+procedure TCustomSynEdit.UnCollapseFoldType(FoldType : Integer);
+Var
+  i : integer;
+  RangeIndices : TArray<Integer>;
+begin
+  if not fUseCodeFolding then Exit;
+  RangeIndices := AllFoldRanges.FoldsOfType(FoldType);
+  for i := Low(RangeIndices) to High(RangeIndices) do
+    Uncollapse(RangeIndices[i], False);
+
+  InvalidateLines(-1, -1);
+  InvalidateGutterLines(-1, -1);
+
+  EnsureCursorPosVisible;
+end;
+
+procedure TCustomSynEdit.UncollapseAll;
+var
+  i: Integer;
+begin
+  if not fUseCodeFolding then Exit;
+  for i := fAllFoldRanges.Count - 1 downto 0 do
+      Uncollapse(i, False);
+
+  InvalidateLines(-1, -1);
+  InvalidateGutterLines(-1, -1);
+
+  EnsureCursorPosVisible;
+end;
+
+//-- CodeFolding
 
 procedure TCustomSynEdit.Undo;
 
@@ -5728,6 +6309,18 @@ begin
   iList.OnAddedUndo(Sender);
 end;
 
+//++ DPI-Aware
+procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$ifend});
+begin
+  {$if CompilerVersion >= 31}if isDpiChange then begin{$ifend}
+    if Assigned(fGutter) then fGutter.ChangeScale(M,D);
+    if Assigned(fBookMarkOpt) then fBookMarkOpt.ChangeScale(M, D);
+    if Assigned(fWordWrapGlyph) then fWordWrapGlyph.ChangeScale(M, D);
+  {$if CompilerVersion >= 31}end;{$ifend}
+  inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$ifend});
+ end;
+//-- DPI-Aware
+
 procedure TCustomSynEdit.UnHookTextBuffer;
 var
   vOldWrap: Boolean;
@@ -6055,6 +6648,10 @@ begin
 end;
 
 procedure TCustomSynEdit.SetHighlighter(const Value: TSynCustomHighlighter);
+//++ CodeFolding
+Var
+  OldUseCodeFolding : Boolean;
+//-- CodeFolding
 begin
   if Value <> fHighlighter then
   begin
@@ -6071,6 +6668,15 @@ begin
     fHighlighter := Value;
     if not(csDestroying in ComponentState) then
       HighlighterAttrChanged(fHighlighter);
+
+//++ CodeFolding
+    //  Disable Code Folding if not supported by highlighter
+    OldUseCodeFolding := fUseCodeFolding;
+    UseCodeFolding := False;
+    UseCodeFolding := OldUseCodeFolding;
+    if fHighlighter is TSynCustomCodeFoldingHighlighter then
+      TSynCustomCodeFoldingHighlighter(fHighlighter).InitFoldRanges(fAllFoldRanges);
+//-- CodeFolding
   end;
 end;
 
@@ -7188,6 +7794,20 @@ begin
             end;
           end;
         end;
+//++ CodeFolding
+      ecFoldAll: begin CollapseAll; end;
+      ecUnfoldAll: begin UncollapseAll; end;
+      ecFoldNearest: begin CollapseNearest; end;
+      ecUnfoldNearest: begin UncollapseNearest; end;
+      ecFoldLevel1: begin CollapseLevel(1); end;
+      ecFoldLevel2: begin CollapseLevel(2); end;
+      ecFoldLevel3: begin CollapseLevel(3); end;
+      ecUnfoldLevel1: begin UncollapseLevel(1); end;
+      ecUnfoldLevel2: begin UncollapseLevel(2); end;
+      ecUnfoldLevel3: begin UncollapseLevel(3); end;
+      ecFoldRegions: begin CollapseFoldType(FoldRegionType) end;
+      ecUnfoldRegions: begin UnCollapseFoldType(FoldRegionType) end;
+//-- CodeFolding
     end;
   finally
     DecPaintLock;
@@ -9081,7 +9701,9 @@ begin
   if (not HandleAllocated) or (Line < 1) or (Line > Lines.Count) or (not Visible) then
     Exit;
 
-  if WordWrap then
+//++ CodeFolding
+  if UseCodeFolding or WordWrap then
+//-- CodeFolding
   begin
     InvalidateLines(Line, Line);
     Exit;
@@ -9093,7 +9715,9 @@ begin
     rcInval := Rect(fGutterWidth, fTextHeight * (Line - TopLine), ClientWidth, 0);
     rcInval.Bottom := rcInval.Top + fTextHeight;
     if sfLinesChanging in fStateFlags then
-      UnionRect(fInvalidateRect, fInvalidateRect, rcInval)
+//++ Flicker Reduction
+      UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
+//-- Flicker Reduction
     else
       InvalidateRect(rcInval, False);
   end;
@@ -9523,6 +10147,10 @@ begin
   end;
   if WordWrap then
     Result := fWordWrapPlugin.BufferToDisplayPos(TBufferCoord(Result));
+//++ CodeFolding
+  if UseCodeFolding then
+    Result.Row := fAllFoldRanges.FoldLineToRow(Result.Row)
+//-- CodeFolding
 end;
 
 function TCustomSynEdit.DisplayToBufferPos(const p: TDisplayCoord): TBufferCoord;
@@ -9539,6 +10167,11 @@ begin
     Result := fWordWrapPlugin.DisplayToBufferPos(p)
   else
     Result := TBufferCoord(p);
+//++ CodeFolding
+  if UseCodeFolding then
+    Result.Line := fAllFoldRanges.FoldRowToLine(p.Row);
+//-- CodeFolding
+
   if Result.Line <= lines.Count then
   begin
     s := Lines[Result.Line -1];
@@ -10011,6 +10644,45 @@ begin
   fKbdHandler.RemoveMouseUpHandler(aHandler);
 end;
 
+//++ CodeFolding
+
+procedure TCustomSynEdit.FullFoldScan;
+begin
+  if UseCodeFolding then
+  begin
+    ReScanForFoldRanges(0, fLines.Count -1);
+  end;
+end;
+
+procedure TCustomSynEdit.ReScanForFoldRanges(FromLine : Integer; ToLine : Integer);
+Var
+  AdjustedToLine: Integer;
+begin
+  AdjustedToLine := Max(Min(ToLine, Lines.Count - 1), FromLine);
+  fAllFoldRanges.StartScanning;
+  ScanForFoldRanges(fAllFoldRanges, fLines, FromLine, AdjustedToLine);
+  {  StopScanning recreates AllFoldRanges.
+     Normally at this point (sfLinesChanging in fStateFlags) = True
+     and StopScanning will be called when LinesChanged is executed }
+  if not (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
+  begin
+    InvalidateGutter;
+    Include(fStateFlags, sfScrollbarChanged);
+  end;
+end;
+
+procedure TCustomSynEdit.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine : Integer; ToLine : Integer);
+begin
+  if Assigned(fHighlighter) and (fHighlighter is TSynCustomCodeFoldingHighlighter) then
+    TSynCustomCodeFoldingHighlighter(fHighlighter).ScanForFoldRanges(FoldRanges,
+      LinesToScan, FromLine, ToLine);
+
+  if Assigned(fOnScanForFoldRanges) then
+     fOnScanForFoldRanges(Self, FoldRanges, LinesToScan, FromLine, ToLine);
+end;
+//-- CodeFolding
+
 procedure TCustomSynEdit.AddMouseCursorHandler(aHandler: TMouseCursorEvent);
 begin
   fKbdHandler.AddMouseCursorHandler(aHandler);
@@ -10150,7 +10822,10 @@ begin
     Invalidate; // better Invalidate before changing LeftChar and TopLine
     vShowCaret := CaretInView;
     vOldTopLine := RowToLine(TopLine);
-    if Value then
+//++ CodeFolding
+     // !!Mutually exclusive with CodeFolding to reduce complexity
+    if Value and not UseCodeFolding then
+//-- CodeFolding
     begin
       fWordWrapPlugin := TSynWordWrapPlugin.Create(Self);
       LeftChar := 1;
@@ -10189,7 +10864,9 @@ function TCustomSynEdit.LineToRow(aLine: Integer): Integer;
 var
   vBufferPos: TBufferCoord;
 begin
-  if not WordWrap then
+//++ CodeFolding
+  if not UseCodeFolding and not WordWrap then
+//-- CodeFolding
     Result := aLine
   else begin
     vBufferPos.Char := 1;
@@ -10202,7 +10879,9 @@ function TCustomSynEdit.RowToLine(aRow: Integer): Integer;
 var
   vDisplayPos: TDisplayCoord;
 begin
-  if not WordWrap then
+//++ CodeFolding
+  if not UseCodeFolding and not WordWrap then
+//-- CodeFolding
     Result := aRow
   else begin
     vDisplayPos.Column := 1;
