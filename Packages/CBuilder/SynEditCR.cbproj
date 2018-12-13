@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{30340F4A-5FE6-4B66-ACCF-D1A8B0758ADE}</ProjectGuid>
-        <ProjectVersion>18.1</ProjectVersion>
+        <ProjectVersion>18.4</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>SynEditCR.cpp</MainSource>
         <Base>True</Base>
@@ -90,7 +90,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DllSuffix>240</DllSuffix>
+        <DllSuffix>250</DllSuffix>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_UnitSearchPath>..\..\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
@@ -150,7 +150,7 @@
         <PackageImports>adortl;bcbie;bcbsmp;bindcomp;bindcompdbx;bindcompfmx;bindcompvcl;bindengine;CloudService;CodeSiteExpressPkg;CustomIPTransport;DataSnapClient;DataSnapCommon;DataSnapConnectors;DatasnapConnectorsFreePascal;DataSnapFireDAC;DataSnapIndy10ServerTransport;DataSnapNativeClient;DataSnapProviderClient;DataSnapServer;DataSnapServerMidas;dbexpress;dbrtl;dbxcds;DbxClientDriver;DbxCommonDriver;DBXDb2Driver;DBXFirebirdDriver;DBXInformixDriver;DBXInterBaseDriver;DBXMSSQLDriver;DBXMySQLDriver;DBXOdbcDriver;DBXOracleDriver;DBXSqliteDriver;DBXSybaseASADriver;DBXSybaseASEDriver;dsnap;dsnapcon;dsnapxml;emsclient;emsclientfiredac;FireDAC;FireDACADSDriver;FireDACASADriver;FireDACCommon;FireDACCommonDriver;FireDACDb2Driver;FireDACDBXDriver;FireDACDSDriver;FireDACIBDriver;FireDACInfxDriver;FireDACMSAccDriver;FireDACMSSQLDriver;FireDACMySQLDriver;FireDACODBCDriver;FireDACOracleDriver;FireDACPgDriver;FireDACSqliteDriver;fmx;fmxase;fmxdae;fmxFireDAC;fmxobj;FMXTee;FmxTeeUI;frx21;frxDB21;frxe21;frxTee21;ibxpress;IndyCore;IndyIPClient;IndyIPCommon;IndyIPServer;IndyProtocols;IndySystem;inet;inetdb;inetdbxpress;Intraweb;MetropolisUILiveTile;RESTBackendComponents;RESTComponents;rtl;soapmidas;soaprtl;soapserver;svn;Tee;TeeDB;TeeUI;tethering;vcl;vclactnband;vcldb;vcldsnap;vclFireDAC;vclib;vclie;vclimg;VCLRESTComponents;vclribbon;VclSmp;vcltouch;vclx;xmlrtl;$(PackageImports)</PackageImports>
         <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
@@ -206,6 +206,8 @@
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <DllSuffix>250</DllSuffix>
     </PropertyGroup>
     <ItemGroup>
         <PackageImport Include="dbrtl.bpi">
@@ -235,333 +237,15 @@
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>113</BuildOrder>
         </PackageImport>
-        <DelphiCompile Include="..\..\Source\SynAutoCorrect.pas">
-            <BuildOrder>3</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynAutoCorrectEditor.pas">
-            <Form>frmAutoCorrectEditor</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>4</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynCompletionProposal.pas">
-            <BuildOrder>5</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynDBEdit.pas">
-            <BuildOrder>6</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEdit.pas">
-            <BuildOrder>7</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditAutoComplete.pas">
-            <BuildOrder>8</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditExport.pas">
-            <BuildOrder>9</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditHighlighter.pas">
-            <BuildOrder>10</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditHighlighterOptions.pas">
-            <BuildOrder>11</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditKbdHandler.pas">
-            <BuildOrder>12</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditKeyCmdEditor.pas">
-            <Form>SynEditKeystrokeEditorForm</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>13</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditKeyCmds.pas">
-            <BuildOrder>14</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditKeyCmdsEditor.pas">
-            <Form>SynEditKeystrokesEditorForm</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>15</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditKeyConst.pas">
-            <BuildOrder>16</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditMiscClasses.pas">
-            <BuildOrder>17</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditMiscProcs.pas">
-            <BuildOrder>18</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditOptionsDialog.pas">
-            <Form>fmEditorOptionsDialog</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>19</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPlugins.pas">
-            <BuildOrder>20</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPrint.pas">
-            <BuildOrder>21</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPrinterInfo.pas">
-            <BuildOrder>22</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPrintHeaderFooter.pas">
-            <BuildOrder>23</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPrintMargins.pas">
-            <BuildOrder>24</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPrintMarginsDialog.pas">
-            <Form>SynEditPrintMarginsDlg</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>25</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPrintPreview.pas">
-            <BuildOrder>26</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPrintTypes.pas">
-            <BuildOrder>27</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditPythonBehaviour.pas">
-            <BuildOrder>29</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditRegexSearch.pas">
-            <BuildOrder>32</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditSearch.pas">
-            <BuildOrder>33</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditStrConst.pas">
-            <BuildOrder>34</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditTextBuffer.pas">
-            <BuildOrder>35</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditTypes.pas">
-            <BuildOrder>36</BuildOrder>
-        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\SynEditWildcardSearch.pas">
             <BuildOrder>37</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynEditWordWrap.pas">
-            <BuildOrder>38</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynExportHTML.pas">
-            <BuildOrder>39</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynExportRTF.pas">
-            <BuildOrder>40</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynExportTeX.pas">
-            <BuildOrder>41</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterADSP21xx.pas">
-            <BuildOrder>42</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterAsm.pas">
-            <BuildOrder>43</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterAWK.pas">
-            <BuildOrder>44</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterBaan.pas">
-            <BuildOrder>45</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterBat.pas">
-            <BuildOrder>46</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterCAC.pas">
-            <BuildOrder>47</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterCache.pas">
-            <BuildOrder>48</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterCobol.pas">
-            <BuildOrder>49</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterCPM.pas">
-            <BuildOrder>50</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterCpp.pas">
-            <BuildOrder>51</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterCS.pas">
-            <BuildOrder>52</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterCss.pas">
-            <BuildOrder>53</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterDfm.pas">
-            <BuildOrder>54</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterDml.pas">
-            <BuildOrder>55</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterDOT.pas">
-            <BuildOrder>56</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterDWS.pas">
-            <BuildOrder>57</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterEiffel.pas">
-            <BuildOrder>58</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterFortran.pas">
-            <BuildOrder>59</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterFoxpro.pas">
-            <BuildOrder>60</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterGalaxy.pas">
-            <BuildOrder>61</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterGeneral.pas">
-            <BuildOrder>62</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterGWS.pas">
-            <BuildOrder>63</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterHashEntries.pas">
-            <BuildOrder>64</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterHaskell.pas">
-            <BuildOrder>65</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterHC11.pas">
-            <BuildOrder>66</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterHP48.pas">
-            <BuildOrder>67</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterHtml.pas">
-            <BuildOrder>68</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterIDL.pas">
-            <BuildOrder>69</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterIni.pas">
-            <BuildOrder>70</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterInno.pas">
-            <BuildOrder>71</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterJava.pas">
-            <BuildOrder>72</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterJScript.pas">
-            <BuildOrder>73</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterJSON.pas">
-            <BuildOrder>111</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterKix.pas">
-            <BuildOrder>74</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterLDraw.pas">
-            <BuildOrder>75</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\Source\SynHighlighterLLVM.pas">
             <BuildOrder>76</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterM3.pas">
-            <BuildOrder>77</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterModelica.pas">
-            <BuildOrder>79</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterMsg.pas">
-            <BuildOrder>80</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterMulti.pas">
-            <BuildOrder>81</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterPas.pas">
-            <BuildOrder>82</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterPerl.pas">
-            <BuildOrder>83</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterPHP.pas">
-            <BuildOrder>84</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterProgress.pas">
-            <BuildOrder>85</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterPython.pas">
-            <BuildOrder>86</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterRC.pas">
-            <BuildOrder>87</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterRexx.pas">
-            <BuildOrder>112</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterRuby.pas">
-            <BuildOrder>88</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterSDD.pas">
-            <BuildOrder>89</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterSml.pas">
-            <BuildOrder>90</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterSQL.pas">
-            <BuildOrder>91</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterST.pas">
-            <BuildOrder>92</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterTclTk.pas">
-            <BuildOrder>93</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterTeX.pas">
-            <BuildOrder>94</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterUNIXShellScript.pas">
-            <BuildOrder>95</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterUnreal.pas">
-            <BuildOrder>96</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterURI.pas">
-            <BuildOrder>97</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterVB.pas">
-            <BuildOrder>98</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterVBScript.pas">
-            <BuildOrder>99</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterVrml97.pas">
-            <BuildOrder>100</BuildOrder>
-        </DelphiCompile>
         <DelphiCompile Include="..\..\Source\SynHighlighterWebIDL.pas">
             <BuildOrder>101</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynHighlighterXML.pas">
-            <BuildOrder>102</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynMacroRecorder.pas">
-            <BuildOrder>103</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynMemo.pas">
-            <BuildOrder>104</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynRegExpr.pas">
-            <BuildOrder>105</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynTextDrawer.pas">
-            <BuildOrder>106</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynUnicode.pas">
-            <BuildOrder>107</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\Source\SynURIOpener.pas">
-            <BuildOrder>108</BuildOrder>
-        </DelphiCompile>
-        <FormResources Include="..\..\Source\SynEditKeyCmdEditor.dfm"/>
-        <FormResources Include="..\..\Source\SynEditOptionsDialog.dfm"/>
-        <FormResources Include="..\..\Source\SynEditKeyCmdsEditor.dfm"/>
-        <FormResources Include="..\..\Source\SynAutoCorrectEditor.dfm"/>
-        <FormResources Include="..\..\Source\SynEditPrintMarginsDialog.dfm"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -589,11 +273,11 @@
                     <Source Name="MainSource">SynEditCR.cpp</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclIntraweb_140_240.bpl">IntraWeb 14.0 Design Package for RAD Studio XE6</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k240.bpl">Embarcadero C++Builder-Package für Office 2000-Server</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp240.bpl">Embarcadero C++Builder-Package für Office XP-Server</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k240.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp240.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\19.0\Bpl\LowLevelD102.bpl">Low Level support units for Delphi 2011</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k250.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp250.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k250.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp250.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </CPlusPlusBuilder.Personality>
             <Deployment Version="3">
@@ -608,6 +292,12 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="..\..\..\..\..\..\Public\Documents\Embarcadero\Studio\19.0\BPL\SynEditCR250.bpl" Configuration="Release" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>SynEditCR.bpl</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32230.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
@@ -618,13 +308,18 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64220mt.dll" Class="DependencyModule">
-                    <Platform Name="Win64">
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32250mt.dll" Class="DependencyModule">
+                    <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32240mt.dll" Class="DependencyModule">
                     <Platform Name="Win32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64220mt.dll" Class="DependencyModule">
+                    <Platform Name="Win64">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -644,8 +339,8 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64230.dll" Class="DependencyModule">
-                    <Platform Name="Win64">
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32c240.dll" Class="DependencyModule">
+                    <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -654,8 +349,8 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32c240.dll" Class="DependencyModule">
-                    <Platform Name="Win32">
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64230.dll" Class="DependencyModule">
+                    <Platform Name="Win64">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -664,9 +359,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\18.0\BPL\SynEditCR240.bpl" Configuration="Release" Class="ProjectOutput">
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32c250mt.dll" Class="DependencyModule">
                     <Platform Name="Win32">
-                        <RemoteName>SynEditCR.bpl</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32c250.dll" Class="DependencyModule">
+                    <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -700,6 +399,11 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64250mt.dll" Class="DependencyModule">
+                    <Platform Name="Win64">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32160.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
@@ -715,6 +419,11 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32250.dll" Class="DependencyModule">
+                    <Platform Name="Win32">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32220.dll" Class="DependencyModule">
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
@@ -725,26 +434,24 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64250.dll" Class="DependencyModule">
+                    <Platform Name="Win64">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\15.0\BPL\SynEditCR.bpl" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>SynEditCR.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="DependencyModule">
+                <DeployClass Name="AdditionalDebugSymbols">
+                    <Platform Name="OSX32">
+                        <Operation>1</Operation>
+                    </Platform>
                     <Platform Name="Win32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
                         <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectOSXResource">
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\Resources</RemoteDir>
-                        <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="AndroidClassesDexFile">
@@ -753,18 +460,15 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="Android_LauncherIcon144">
+                <DeployClass Name="AndroidGDBServer">
                     <Platform Name="Android">
-                        <RemoteDir>res\drawable-xxhdpi</RemoteDir>
+                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="AdditionalDebugSymbols">
-                    <Platform Name="Win32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="OSX32">
+                <DeployClass Name="AndroidLibnativeArmeabiFile">
+                    <Platform Name="Android">
+                        <RemoteDir>library\lib\armeabi</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -774,187 +478,10 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="iPad_Launch768">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Required="true" Name="ProjectOutput">
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="Linux64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="DependencyFramework">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <Operation>1</Operation>
-                        <Extensions>.framework</Extensions>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Launch640">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
                 <DeployClass Name="AndroidLibnativeX86File"/>
-                <DeployClass Name="ProjectiOSDeviceDebug">
-                    <Platform Name="iOSDevice64">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_Launch1024">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Launch320">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSInfoPList"/>
-                <DeployClass Name="AndroidLibnativeArmeabiFile">
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\armeabi</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="DebugSymbols">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPad_Launch1536">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="Android_SplashImage470">
-                    <Platform Name="Android">
-                        <RemoteDir>res\drawable-normal</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="Android_LauncherIcon96">
-                    <Platform Name="Android">
-                        <RemoteDir>res\drawable-xhdpi</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="Android_SplashImage640">
-                    <Platform Name="Android">
-                        <RemoteDir>res\drawable-large</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="iPhone_Launch640x1136">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectiOSEntitlements"/>
-                <DeployClass Name="AndroidGDBServer">
+                <DeployClass Name="AndroidServiceOutput">
                     <Platform Name="Android">
                         <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="Android_LauncherIcon72">
-                    <Platform Name="Android">
-                        <RemoteDir>res\drawable-hdpi</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectOSXInfoPList"/>
-                <DeployClass Name="ProjectOSXEntitlements"/>
-                <DeployClass Name="iPad_Launch2048">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="AndroidSplashStyles">
-                    <Platform Name="Android">
-                        <RemoteDir>res\values</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="Android_SplashImage426">
-                    <Platform Name="Android">
-                        <RemoteDir>res\drawable-small</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -964,19 +491,9 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSResource">
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectAndroidManifest">
+                <DeployClass Name="AndroidSplashStyles">
                     <Platform Name="Android">
+                        <RemoteDir>res\values</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -986,63 +503,9 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="File">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>0</Operation>
-                    </Platform>
+                <DeployClass Name="Android_LauncherIcon144">
                     <Platform Name="Android">
-                        <Operation>0</Operation>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>0</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="AndroidServiceOutput">
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Required="true" Name="DependencyPackage">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.bpl</Extensions>
-                    </Platform>
-                    <Platform Name="iOSDevice64">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSDevice32">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="Android_LauncherIcon48">
-                    <Platform Name="Android">
-                        <RemoteDir>res\drawable-mdpi</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="Android_SplashImage960">
-                    <Platform Name="Android">
-                        <RemoteDir>res\drawable-xlarge</RemoteDir>
+                        <RemoteDir>res\drawable-xxhdpi</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -1052,7 +515,286 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
+                <DeployClass Name="Android_LauncherIcon48">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-mdpi</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="Android_LauncherIcon72">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-hdpi</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="Android_LauncherIcon96">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-xhdpi</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="Android_SplashImage426">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-small</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="Android_SplashImage470">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-normal</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="Android_SplashImage640">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-large</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="Android_SplashImage960">
+                    <Platform Name="Android">
+                        <RemoteDir>res\drawable-xlarge</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="DebugSymbols">
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="DependencyFramework">
+                    <Platform Name="OSX32">
+                        <Operation>1</Operation>
+                        <Extensions>.framework</Extensions>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="OSX32">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Required="true" Name="DependencyPackage">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.bpl</Extensions>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="File">
+                    <Platform Name="Android">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <Operation>0</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch1024">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch1536">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch2048">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPad_Launch768">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Launch320">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Launch640">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="iPhone_Launch640x1136">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectAndroidManifest">
+                    <Platform Name="Android">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectiOSDeviceDebug">
+                    <Platform Name="iOSDevice32">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <RemoteDir>..\$(PROJECTNAME).app.dSYM\Contents\Resources\DWARF</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
                 <DeployClass Name="ProjectiOSDeviceResourceRules"/>
+                <DeployClass Name="ProjectiOSEntitlements"/>
+                <DeployClass Name="ProjectiOSInfoPList"/>
+                <DeployClass Name="ProjectiOSResource">
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectOSXEntitlements"/>
+                <DeployClass Name="ProjectOSXInfoPList"/>
+                <DeployClass Name="ProjectOSXResource">
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\Resources</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Required="true" Name="ProjectOutput">
+                    <Platform Name="Android">
+                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSDevice64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Linux64">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="ProjectUWPManifest">
+                    <Platform Name="Win32">
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win64">
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="UWP_CppLogo150">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win64">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="UWP_CppLogo44">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Win64">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
