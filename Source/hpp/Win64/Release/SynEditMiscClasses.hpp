@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditMiscClasses.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditMiscClasses.pas' rev: 32.00 (Windows)
 
 #ifndef SyneditmiscclassesHPP
 #define SyneditmiscclassesHPP
@@ -131,6 +131,7 @@ public:
 	void __fastcall AutoSizeDigitCount(int LinesCount);
 	System::UnicodeString __fastcall FormatLineNumber(int Line);
 	int __fastcall RealGutterWidth(int CharWidth);
+	virtual void __fastcall ChangeScale(int M, int D);
 	
 __published:
 	__property bool AutoSize = {read=fAutoSize, write=SetAutoSize, default=0};
@@ -179,6 +180,7 @@ private:
 public:
 	__fastcall TSynBookMarkOpt(System::Classes::TComponent* AOwner);
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
+	virtual void __fastcall ChangeScale(int M, int D);
 	
 __published:
 	__property Vcl::Controls::TImageList* BookmarkImages = {read=fBookmarkImages, write=SetBookmarkImages};
@@ -219,6 +221,7 @@ public:
 	void __fastcall Draw(Vcl::Graphics::TCanvas* aCanvas, int aX, int aY, int aLineHeight);
 	__property int Width = {read=GetWidth, nodefault};
 	__property int Height = {read=GetHeight, nodefault};
+	virtual void __fastcall ChangeScale(int M, int D);
 	
 __published:
 	__property Vcl::Graphics::TBitmap* Glyph = {read=fGlyph, write=SetGlyph};
@@ -314,6 +317,7 @@ public:
 	__fastcall virtual ~TSynInternalImage(void);
 	void __fastcall Draw(Vcl::Graphics::TCanvas* ACanvas, int Number, int X, int Y, int LineHeight);
 	void __fastcall DrawTransparent(Vcl::Graphics::TCanvas* ACanvas, int Number, int X, int Y, int LineHeight, System::Uitypes::TColor TransparentColor);
+	virtual void __fastcall ChangeScale(int M, int D);
 };
 
 
@@ -413,6 +417,7 @@ public:
 
 //-- var, const, procedure ---------------------------------------------------
 static const System::Int8 BorderWidth = System::Int8(0x0);
+extern DELPHI_PACKAGE void __fastcall ResizeBitmap(Vcl::Graphics::TBitmap* Bitmap, const int NewWidth, const int NewHeight);
 }	/* namespace Syneditmiscclasses */
 #if !defined(DELPHIHEADER_NO_IMPLICIT_NAMESPACE_USE) && !defined(NO_USING_NAMESPACE_SYNEDITMISCCLASSES)
 using namespace Syneditmiscclasses;

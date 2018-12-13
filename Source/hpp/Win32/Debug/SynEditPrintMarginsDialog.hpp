@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrintMarginsDialog.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrintMarginsDialog.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditprintmarginsdialogHPP
 #define SyneditprintmarginsdialogHPP
@@ -80,7 +80,7 @@ public:
 public:
 	/* TCustomForm.Create */ inline __fastcall virtual TSynEditPrintMarginsDlg(System::Classes::TComponent* AOwner) : Vcl::Forms::TForm(AOwner) { }
 	/* TCustomForm.CreateNew */ inline __fastcall virtual TSynEditPrintMarginsDlg(System::Classes::TComponent* AOwner, int Dummy) : Vcl::Forms::TForm(AOwner, Dummy) { }
-	/* TCustomForm.Destroy */ inline __fastcall virtual ~TSynEditPrintMarginsDlg(void) { }
+	/* TCustomForm.Destroy */ inline __fastcall virtual ~TSynEditPrintMarginsDlg() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TSynEditPrintMarginsDlg(HWND ParentWindow) : Vcl::Forms::TForm(ParentWindow) { }

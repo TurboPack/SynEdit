@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEdit.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEdit.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditHPP
 #define SyneditHPP
@@ -37,6 +37,7 @@
 #include <SynEditKeyCmds.hpp>
 #include <SynEditHighlighter.hpp>
 #include <SynEditKbdHandler.hpp>
+#include <SynEditCodeFolding.hpp>
 #include <System.WideStrUtils.hpp>
 #include <System.Math.hpp>
 #include <System.SysUtils.hpp>
@@ -53,7 +54,7 @@ class DELPHICLASS ESynEditError;
 struct TCreateParamsW;
 class DELPHICLASS TSynEditMark;
 class DELPHICLASS TSynEditMarkList;
-__interface ISynEditBufferPlugin;
+__interface DELPHIINTERFACE ISynEditBufferPlugin;
 typedef System::DelphiInterface<ISynEditBufferPlugin> _di_ISynEditBufferPlugin;
 class DELPHICLASS TSynEditPlugin;
 class DELPHICLASS TCustomSynEdit;
@@ -85,7 +86,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : Synedittypes::ESynError(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditError(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditError(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~ESynEditError(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~ESynEditError() { }
 	
 };
 
@@ -155,6 +156,8 @@ typedef void __fastcall (__closure *TStatusChangeEvent)(System::TObject* Sender,
 
 typedef void __fastcall (__closure *TMouseCursorEvent)(System::TObject* Sender, const Synedittypes::TBufferCoord &aLineCharPos, System::Uitypes::TCursor &aCursor);
 
+typedef void __fastcall (__closure *TScanForFoldRangesEvent)(System::TObject* Sender, Syneditcodefolding::TSynFoldRanges* FoldRanges, System::Classes::TStrings* LinesToScan, int FromLine, int ToLine);
+
 #pragma pack(push,4)
 class PASCALIMPLEMENTATION TSynEditMark : public System::TObject
 {
@@ -168,13 +171,13 @@ protected:
 	bool fVisible;
 	bool fInternalImage;
 	int fBookmarkNum;
-	virtual TCustomSynEdit* __fastcall GetEdit(void);
+	virtual TCustomSynEdit* __fastcall GetEdit();
 	virtual void __fastcall SetChar(const int Value);
 	virtual void __fastcall SetImage(const int Value);
 	virtual void __fastcall SetLine(const int Value);
 	void __fastcall SetVisible(const bool Value);
 	void __fastcall SetInternalImage(const bool Value);
-	bool __fastcall GetIsBookmark(void);
+	bool __fastcall GetIsBookmark();
 	
 public:
 	__fastcall TSynEditMark(TCustomSynEdit* AOwner);
@@ -187,7 +190,7 @@ public:
 	__property bool InternalImage = {read=fInternalImage, write=SetInternalImage, nodefault};
 	__property bool IsBookmark = {read=GetIsBookmark, nodefault};
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynEditMark(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynEditMark() { }
 	
 };
 
@@ -214,8 +217,8 @@ protected:
 	
 public:
 	__fastcall TSynEditMarkList(TCustomSynEdit* AOwner);
-	HIDESBASE TSynEditMark* __fastcall First(void);
-	HIDESBASE TSynEditMark* __fastcall Last(void);
+	HIDESBASE TSynEditMark* __fastcall First();
+	HIDESBASE TSynEditMark* __fastcall Last();
 	HIDESBASE TSynEditMark* __fastcall Extract(TSynEditMark* Item);
 	void __fastcall ClearLine(int line);
 	void __fastcall GetMarksForLine(int line, TSynEditMarks &Marks);
@@ -224,7 +227,7 @@ public:
 	__property TCustomSynEdit* Edit = {read=fEdit};
 	__property System::Classes::TNotifyEvent OnChange = {read=fOnChange, write=fOnChange};
 public:
-	/* TList.Destroy */ inline __fastcall virtual ~TSynEditMarkList(void) { }
+	/* TList.Destroy */ inline __fastcall virtual ~TSynEditMarkList() { }
 	
 };
 
@@ -235,13 +238,13 @@ __interface ISynEditBufferPlugin  : public System::IInterface
 {
 	virtual Synedittypes::TDisplayCoord __fastcall BufferToDisplayPos(const Synedittypes::TBufferCoord &aPos) = 0 ;
 	virtual Synedittypes::TBufferCoord __fastcall DisplayToBufferPos(const Synedittypes::TDisplayCoord &aPos) = 0 ;
-	virtual int __fastcall RowCount(void) = 0 ;
+	virtual int __fastcall RowCount() = 0 ;
 	virtual int __fastcall GetRowLength(int aRow) = 0 ;
 	virtual int __fastcall LinesInserted(int aIndex, int aCount) = 0 ;
 	virtual int __fastcall LinesDeleted(int aIndex, int aCount) = 0 ;
 	virtual int __fastcall LinesPutted(int aIndex, int aCount) = 0 ;
-	virtual void __fastcall DisplayChanged(void) = 0 ;
-	virtual void __fastcall Reset(void) = 0 ;
+	virtual void __fastcall DisplayChanged() = 0 ;
+	virtual void __fastcall Reset() = 0 ;
 };
 
 #pragma pack(push,4)
@@ -261,7 +264,7 @@ protected:
 	
 public:
 	__fastcall TSynEditPlugin(TCustomSynEdit* AOwner);
-	__fastcall virtual ~TSynEditPlugin(void);
+	__fastcall virtual ~TSynEditPlugin();
 };
 
 #pragma pack(pop)
@@ -297,6 +300,9 @@ private:
 	HIDESBASE MESSAGE void __fastcall WMSize(Winapi::Messages::TWMSize &Msg);
 	MESSAGE void __fastcall WMUndo(Winapi::Messages::TMessage &Msg);
 	HIDESBASE MESSAGE void __fastcall WMVScroll(Winapi::Messages::TWMScroll &Msg);
+	bool fUseCodeFolding;
+	Syneditcodefolding::TSynCodeFolding* fCodeFolding;
+	Syneditcodefolding::TSynFoldRanges* fAllFoldRanges;
 	bool fAlwaysShowCaret;
 	Synedittypes::TBufferCoord fBlockBegin;
 	Synedittypes::TBufferCoord fBlockEnd;
@@ -387,6 +393,7 @@ private:
 	TGutterGetTextEvent fOnGutterGetText;
 	TGutterPaintEvent fOnGutterPaint;
 	TStatusChangeEvent fOnStatusChange;
+	TScanForFoldRangesEvent fOnScanForFoldRanges;
 	bool fShowSpecChar;
 	int FPaintTransientLock;
 	bool FIsScrolling;
@@ -408,6 +415,9 @@ private:
 	int SelStartBeforeSearch;
 	int SelLengthBeforeSearch;
 	bool FWindowProducedMessage;
+	void __fastcall ReScanForFoldRanges(int FromLine, int ToLine);
+	void __fastcall FullFoldScan();
+	void __fastcall ScanForFoldRanges(Syneditcodefolding::TSynFoldRanges* FoldRanges, System::Classes::TStrings* LinesToScan, int FromLine, int ToLine);
 	void __fastcall BookMarkOptionsChanged(System::TObject* Sender);
 	void __fastcall ComputeCaret(int X, int Y);
 	void __fastcall ComputeScroll(int X, int Y);
@@ -415,37 +425,37 @@ private:
 	void __fastcall DoEndKey(bool Selection);
 	void __fastcall DoLinesDeleted(int FirstLine, int Count);
 	void __fastcall DoLinesInserted(int FirstLine, int Count);
-	void __fastcall DoShiftTabKey(void);
-	void __fastcall DoTabKey(void);
+	void __fastcall DoShiftTabKey();
+	void __fastcall DoTabKey();
 	void __fastcall DoCaseChange(const Syneditkeycmds::TSynEditorCommand Cmd);
 	int __fastcall FindHookedCmdEvent(THookedCommandEvent AHandlerProc);
 	void __fastcall SynFontChanged(System::TObject* Sender);
-	Synedittypes::TBufferCoord __fastcall GetBlockBegin(void);
-	Synedittypes::TBufferCoord __fastcall GetBlockEnd(void);
-	bool __fastcall GetCanPaste(void);
-	bool __fastcall GetCanRedo(void);
-	bool __fastcall GetCanUndo(void);
-	Synedittypes::TBufferCoord __fastcall GetCaretXY(void);
-	int __fastcall GetDisplayX(void);
-	int __fastcall GetDisplayY(void);
-	Synedittypes::TDisplayCoord __fastcall GetDisplayXY(void);
-	int __fastcall GetDisplayLineCount(void);
-	Vcl::Graphics::TFont* __fastcall GetFont(void);
-	int __fastcall GetHookedCommandHandlersCount(void);
-	System::UnicodeString __fastcall GetLineText(void);
-	int __fastcall GetMaxUndo(void);
-	TSynEditorOptions __fastcall GetOptions(void);
-	bool __fastcall GetSelAvail(void);
-	bool __fastcall GetSelTabBlock(void);
-	bool __fastcall GetSelTabLine(void);
-	System::UnicodeString __fastcall GetSelText(void);
-	System::UnicodeString __fastcall SynGetText(void);
-	System::UnicodeString __fastcall GetWordAtCursor(void);
-	System::UnicodeString __fastcall GetWordAtMouse(void);
-	bool __fastcall GetWordWrap(void);
+	Synedittypes::TBufferCoord __fastcall GetBlockBegin();
+	Synedittypes::TBufferCoord __fastcall GetBlockEnd();
+	bool __fastcall GetCanPaste();
+	bool __fastcall GetCanRedo();
+	bool __fastcall GetCanUndo();
+	Synedittypes::TBufferCoord __fastcall GetCaretXY();
+	int __fastcall GetDisplayX();
+	int __fastcall GetDisplayY();
+	Synedittypes::TDisplayCoord __fastcall GetDisplayXY();
+	int __fastcall GetDisplayLineCount();
+	Vcl::Graphics::TFont* __fastcall GetFont();
+	int __fastcall GetHookedCommandHandlersCount();
+	System::UnicodeString __fastcall GetLineText();
+	int __fastcall GetMaxUndo();
+	TSynEditorOptions __fastcall GetOptions();
+	bool __fastcall GetSelAvail();
+	bool __fastcall GetSelTabBlock();
+	bool __fastcall GetSelTabLine();
+	System::UnicodeString __fastcall GetSelText();
+	System::UnicodeString __fastcall SynGetText();
+	System::UnicodeString __fastcall GetWordAtCursor();
+	System::UnicodeString __fastcall GetWordAtMouse();
+	bool __fastcall GetWordWrap();
 	void __fastcall GutterChanged(System::TObject* Sender);
 	int __fastcall LeftSpaces(const System::UnicodeString Line);
-	int __fastcall LeftSpacesEx(const System::UnicodeString Line, bool WantTabs);
+	int __fastcall LeftSpacesEx(const System::UnicodeString Line, bool WantTabs, bool CalcAlways = false);
 	System::UnicodeString __fastcall GetLeftSpacing(int CharCount, bool WantTabs);
 	void __fastcall LinesChanging(System::TObject* Sender);
 	void __fastcall MoveCaretAndSelection(const Synedittypes::TBufferCoord &ptBefore, const Synedittypes::TBufferCoord &ptAfter, bool SelectionCommand);
@@ -498,10 +508,10 @@ private:
 	void __fastcall WordWrapGlyphChange(System::TObject* Sender);
 	void __fastcall SizeOrFontChanged(bool bFont);
 	void __fastcall ProperSetLine(int ALine, const System::UnicodeString ALineText);
-	void __fastcall UpdateModifiedStatus(void);
+	void __fastcall UpdateModifiedStatus();
 	void __fastcall UndoRedoAdded(System::TObject* Sender);
-	void __fastcall UpdateLastCaretX(void);
-	void __fastcall UpdateScrollBars(void);
+	void __fastcall UpdateLastCaretX();
+	void __fastcall UpdateScrollBars();
 	void __fastcall WriteAddedKeystrokes(System::Classes::TWriter* Writer);
 	void __fastcall WriteRemovedKeystrokes(System::Classes::TWriter* Writer);
 	void __fastcall SetAdditionalIdentChars(const System::Sysutils::TSysCharSet &Value);
@@ -514,26 +524,27 @@ private:
 	void __fastcall FindDialogFind(System::TObject* Sender);
 	System::LongBool __fastcall SearchByFindDialog(Vcl::Dialogs::TFindDialog* FindDialog);
 	void __fastcall FindDialogClose(System::TObject* Sender);
+	void __fastcall SetUseCodeFolding(const bool Value);
 	
 protected:
 	bool FIgnoreNextChar;
 	System::UnicodeString FCharCodeString;
 	DYNAMIC bool __fastcall DoMouseWheel(System::Classes::TShiftState Shift, int WheelDelta, const System::Types::TPoint &MousePos);
 	virtual void __fastcall CreateParams(Vcl::Controls::TCreateParams &Params);
-	virtual void __fastcall CreateWnd(void);
-	virtual void __fastcall DestroyWnd(void);
+	virtual void __fastcall CreateWnd();
+	virtual void __fastcall DestroyWnd();
 	virtual void __fastcall InvalidateRect(const System::Types::TRect &aRect, bool aErase);
-	DYNAMIC void __fastcall DblClick(void);
-	void __fastcall DecPaintLock(void);
+	DYNAMIC void __fastcall DblClick();
+	void __fastcall DecPaintLock();
 	virtual void __fastcall DefineProperties(System::Classes::TFiler* Filer);
-	virtual void __fastcall DoChange(void);
+	virtual void __fastcall DoChange();
 	void __fastcall DoKeyPressW(Winapi::Messages::TWMKey &Message);
-	DYNAMIC void __fastcall DragCanceled(void);
+	DYNAMIC void __fastcall DragCanceled();
 	DYNAMIC void __fastcall DragOver(System::TObject* Source, int X, int Y, System::Uitypes::TDragState State, bool &Accept);
-	virtual bool __fastcall GetReadOnly(void);
+	virtual bool __fastcall GetReadOnly();
 	void __fastcall HighlighterAttrChanged(System::TObject* Sender);
-	void __fastcall IncPaintLock(void);
-	void __fastcall InitializeCaret(void);
+	void __fastcall IncPaintLock();
+	void __fastcall InitializeCaret();
 	DYNAMIC void __fastcall KeyUp(System::Word &Key, System::Classes::TShiftState Shift);
 	DYNAMIC void __fastcall KeyDown(System::Word &Key, System::Classes::TShiftState Shift);
 	DYNAMIC void __fastcall KeyPress(System::WideChar &Key);
@@ -550,18 +561,18 @@ protected:
 	void __fastcall ChainLinesChanging(System::TObject* Sender);
 	void __fastcall ChainLinesChanged(System::TObject* Sender);
 	void __fastcall ChainUndoRedoAdded(System::TObject* Sender);
-	void __fastcall ScanRanges(void);
-	virtual void __fastcall Loaded(void);
+	void __fastcall ScanRanges();
+	virtual void __fastcall Loaded();
 	void __fastcall MarkListChange(System::TObject* Sender);
 	DYNAMIC void __fastcall MouseDown(System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
 	DYNAMIC void __fastcall MouseMove(System::Classes::TShiftState Shift, int X, int Y);
 	DYNAMIC void __fastcall MouseUp(System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
 	virtual void __fastcall NotifyHookedCommandHandlers(bool AfterProcessing, Syneditkeycmds::TSynEditorCommand &Command, System::WideChar &AChar, void * Data);
-	virtual void __fastcall Paint(void);
+	virtual void __fastcall Paint();
 	virtual void __fastcall PaintGutter(const System::Types::TRect &AClip, const int aFirstRow, const int aLastRow);
 	virtual void __fastcall PaintTextLines(const System::Types::TRect &AClip, const int aFirstRow, const int aLastRow, const int FirstCol, const int LastCol);
-	void __fastcall RecalcCharExtent(void);
-	void __fastcall RedoItem(void);
+	void __fastcall RecalcCharExtent();
+	void __fastcall RedoItem();
 	virtual void __fastcall InternalSetCaretXY(const Synedittypes::TBufferCoord &Value);
 	virtual void __fastcall SetCaretXY(const Synedittypes::TBufferCoord &Value);
 	virtual void __fastcall SetCaretXYEx(bool CallEnsureCursorPos, const Synedittypes::TBufferCoord &Value);
@@ -574,16 +585,16 @@ protected:
 	void __fastcall SetWantTabs(bool Value);
 	void __fastcall StatusChanged(TSynStatusChanges AChanges);
 	Syneditkeycmds::TSynEditorCommand __fastcall TranslateKeyCode(System::Word Code, System::Classes::TShiftState Shift, void * &Data);
-	void __fastcall UndoItem(void);
-	virtual void __fastcall UpdateMouseCursor(void);
+	void __fastcall UndoItem();
+	virtual void __fastcall UpdateMouseCursor();
 	int fGutterWidth;
 	Syneditmiscclasses::TSynInternalImage* fInternalImage;
-	void __fastcall HideCaret(void);
-	void __fastcall ShowCaret(void);
+	void __fastcall HideCaret();
+	void __fastcall ShowCaret();
 	virtual void __fastcall DoOnClearBookmark(TSynEditMark* &Mark);
 	virtual void __fastcall DoOnCommandProcessed(Syneditkeycmds::TSynEditorCommand Command, System::WideChar AChar, void * Data);
 	virtual void __fastcall DoOnGutterClick(System::Uitypes::TMouseButton Button, int X, int Y);
-	virtual void __fastcall DoOnPaint(void);
+	virtual void __fastcall DoOnPaint();
 	virtual void __fastcall DoOnPaintTransientEx(TTransientType TransientType, bool Lock);
 	virtual void __fastcall DoOnPaintTransient(TTransientType TransientType);
 	virtual void __fastcall DoOnPlaceMark(TSynEditMark* &Mark);
@@ -591,49 +602,50 @@ protected:
 	virtual TSynReplaceAction __fastcall DoOnReplaceText(const System::UnicodeString ASearch, const System::UnicodeString AReplace, int Line, int Column);
 	virtual bool __fastcall DoOnSpecialLineColors(int Line, System::Uitypes::TColor &Foreground, System::Uitypes::TColor &Background);
 	virtual void __fastcall DoOnStatusChange(TSynStatusChanges Changes);
-	int __fastcall GetSelEnd(void);
-	int __fastcall GetSelStart(void);
-	int __fastcall GetSelLength(void);
+	int __fastcall GetSelEnd();
+	int __fastcall GetSelStart();
+	int __fastcall GetSelLength();
 	void __fastcall SetSelEnd(const int Value);
 	void __fastcall SetSelStart(const int Value);
 	void __fastcall SetSelLength(const int Value);
 	void __fastcall SetAlwaysShowCaret(const bool Value);
 	System::UnicodeString __fastcall ShrinkAtWideGlyphs(const System::UnicodeString S, int First, int &CharCount);
-	void __fastcall LinesHookChanged(void);
+	void __fastcall LinesHookChanged();
 	__property int InternalCaretX = {write=InternalSetCaretX, nodefault};
 	__property int InternalCaretY = {write=InternalSetCaretY, nodefault};
 	__property Synedittypes::TBufferCoord InternalCaretXY = {write=InternalSetCaretXY};
 	__property TSynFontSmoothMethod FontSmoothing = {read=fFontSmoothing, write=SetFontSmoothing, nodefault};
+	DYNAMIC void __fastcall ChangeScale(int M, int D, bool isDpiChange)/* overload */;
 	
 public:
 	__fastcall virtual TCustomSynEdit(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TCustomSynEdit(void);
+	__fastcall virtual ~TCustomSynEdit();
 	__property Canvas;
 	__property int SelStart = {read=GetSelStart, write=SetSelStart, nodefault};
 	__property int SelEnd = {read=GetSelEnd, write=SetSelEnd, nodefault};
 	__property bool AlwaysShowCaret = {read=fAlwaysShowCaret, write=SetAlwaysShowCaret, nodefault};
-	void __fastcall UpdateCaret(void);
+	void __fastcall UpdateCaret();
 	void __fastcall AddKey(Syneditkeycmds::TSynEditorCommand Command, System::Word Key1, System::Classes::TShiftState SS1, System::Word Key2 = (System::Word)(0x0), System::Classes::TShiftState SS2 = System::Classes::TShiftState() );
-	void __fastcall BeginUndoBlock(void);
-	void __fastcall BeginUpdate(void);
-	bool __fastcall CaretInView(void);
+	void __fastcall BeginUndoBlock();
+	void __fastcall BeginUpdate();
+	bool __fastcall CaretInView();
 	Synedittypes::TBufferCoord __fastcall CharIndexToRowCol(int Index);
-	void __fastcall Clear(void);
-	void __fastcall ClearAll(void);
+	void __fastcall Clear();
+	void __fastcall ClearAll();
 	void __fastcall ClearBookMark(int BookMark);
-	void __fastcall ClearSelection(void);
+	void __fastcall ClearSelection();
 	virtual void __fastcall CommandProcessor(Syneditkeycmds::TSynEditorCommand Command, System::WideChar AChar, void * Data);
-	void __fastcall ClearUndo(void);
-	void __fastcall CopyToClipboard(void);
-	void __fastcall CutToClipboard(void);
+	void __fastcall ClearUndo();
+	void __fastcall CopyToClipboard();
+	void __fastcall CutToClipboard();
 	void __fastcall DoCopyToClipboard(const System::UnicodeString SText);
 	DYNAMIC void __fastcall DragDrop(System::TObject* Source, int X, int Y);
-	void __fastcall EndUndoBlock(void);
-	void __fastcall EndUpdate(void);
-	void __fastcall EnsureCursorPosVisible(void);
+	void __fastcall EndUndoBlock();
+	void __fastcall EndUpdate();
+	void __fastcall EnsureCursorPosVisible();
 	void __fastcall EnsureCursorPosVisibleEx(bool ForceToMiddle, bool EvenIfVisible = false);
-	virtual void __fastcall FindMatchingBracket(void);
-	virtual Synedittypes::TBufferCoord __fastcall GetMatchingBracket(void);
+	virtual void __fastcall FindMatchingBracket();
+	virtual Synedittypes::TBufferCoord __fastcall GetMatchingBracket();
 	virtual Synedittypes::TBufferCoord __fastcall GetMatchingBracketEx(const Synedittypes::TBufferCoord &APoint);
 	DYNAMIC bool __fastcall ExecuteAction(System::Classes::TBasicAction* Action);
 	virtual void __fastcall ExecuteCommand(Syneditkeycmds::TSynEditorCommand Command, System::WideChar AChar, void * Data);
@@ -649,50 +661,50 @@ public:
 	virtual bool __fastcall IsWhiteChar(System::WideChar AChar);
 	virtual bool __fastcall IsWordBreakChar(System::WideChar AChar);
 	void __fastcall InsertBlock(const Synedittypes::TBufferCoord &BB, const Synedittypes::TBufferCoord &BE, System::WideChar * ChangeStr, bool AddToUndoList);
-	Synedittypes::TBufferBlock __fastcall UnifiedSelection(void);
-	void __fastcall DoBlockIndent(void);
-	void __fastcall DoBlockUnindent(void);
-	void __fastcall InvalidateGutter(void);
+	Synedittypes::TBufferBlock __fastcall UnifiedSelection();
+	void __fastcall DoBlockIndent();
+	void __fastcall DoBlockUnindent();
+	void __fastcall InvalidateGutter();
 	void __fastcall InvalidateGutterLine(int aLine);
 	void __fastcall InvalidateGutterLines(int FirstLine, int LastLine);
 	void __fastcall InvalidateLine(int Line);
 	void __fastcall InvalidateLines(int FirstLine, int LastLine);
-	void __fastcall InvalidateSelection(void);
+	void __fastcall InvalidateSelection();
 	bool __fastcall IsBookmark(int BookMark);
 	bool __fastcall IsPointInSelection(const Synedittypes::TBufferCoord &Value);
-	void __fastcall LockUndo(void);
+	void __fastcall LockUndo();
 	Synedittypes::TDisplayCoord __fastcall BufferToDisplayPos(const Synedittypes::TBufferCoord &p);
 	Synedittypes::TBufferCoord __fastcall DisplayToBufferPos(const Synedittypes::TDisplayCoord &p);
 	int __fastcall LineToRow(int aLine);
 	int __fastcall RowToLine(int aRow);
 	virtual void __fastcall Notification(System::Classes::TComponent* AComponent, System::Classes::TOperation Operation);
-	void __fastcall PasteFromClipboard(void);
-	virtual Synedittypes::TBufferCoord __fastcall NextWordPos(void);
+	void __fastcall PasteFromClipboard();
+	virtual Synedittypes::TBufferCoord __fastcall NextWordPos();
 	virtual Synedittypes::TBufferCoord __fastcall NextWordPosEx(const Synedittypes::TBufferCoord &XY);
-	virtual Synedittypes::TBufferCoord __fastcall WordStart(void);
+	virtual Synedittypes::TBufferCoord __fastcall WordStart();
 	virtual Synedittypes::TBufferCoord __fastcall WordStartEx(const Synedittypes::TBufferCoord &XY);
-	virtual Synedittypes::TBufferCoord __fastcall WordEnd(void);
+	virtual Synedittypes::TBufferCoord __fastcall WordEnd();
 	virtual Synedittypes::TBufferCoord __fastcall WordEndEx(const Synedittypes::TBufferCoord &XY);
-	virtual Synedittypes::TBufferCoord __fastcall PrevWordPos(void);
+	virtual Synedittypes::TBufferCoord __fastcall PrevWordPos();
 	virtual Synedittypes::TBufferCoord __fastcall PrevWordPosEx(const Synedittypes::TBufferCoord &XY);
 	Synedittypes::TDisplayCoord __fastcall PixelsToRowColumn(int aX, int aY);
 	Synedittypes::TDisplayCoord __fastcall PixelsToNearestRowColumn(int aX, int aY);
-	void __fastcall Redo(void);
+	void __fastcall Redo();
 	void __fastcall RegisterCommandHandler(const THookedCommandEvent AHandlerProc, void * AHandlerData);
 	System::Types::TPoint __fastcall RowColumnToPixels(const Synedittypes::TDisplayCoord &RowCol);
 	int __fastcall RowColToCharIndex(const Synedittypes::TBufferCoord &RowCol);
 	int __fastcall SearchReplace(const System::UnicodeString ASearch, const System::UnicodeString AReplace, Synedittypes::TSynSearchOptions AOptions);
-	void __fastcall SelectAll(void);
+	void __fastcall SelectAll();
 	void __fastcall SetBookMark(int BookMark, int X, int Y);
 	void __fastcall SetCaretAndSelection(const Synedittypes::TBufferCoord &ptCaret, const Synedittypes::TBufferCoord &ptBefore, const Synedittypes::TBufferCoord &ptAfter);
-	virtual void __fastcall SetDefaultKeystrokes(void);
-	void __fastcall SetSelWord(void);
+	virtual void __fastcall SetDefaultKeystrokes();
+	void __fastcall SetSelWord();
 	void __fastcall SetWordBlock(const Synedittypes::TBufferCoord &Value);
-	void __fastcall Undo(void);
-	void __fastcall UnlockUndo(void);
+	void __fastcall Undo();
+	void __fastcall UnlockUndo();
 	void __fastcall UnregisterCommandHandler(THookedCommandEvent AHandlerProc);
 	virtual bool __fastcall UpdateAction(System::Classes::TBasicAction* Action);
-	virtual void __fastcall SetFocus(void);
+	virtual void __fastcall SetFocus();
 	void __fastcall AddKeyUpHandler(Vcl::Controls::TKeyEvent aHandler);
 	void __fastcall RemoveKeyUpHandler(Vcl::Controls::TKeyEvent aHandler);
 	void __fastcall AddKeyDownHandler(Vcl::Controls::TKeyEvent aHandler);
@@ -709,9 +721,20 @@ public:
 	void __fastcall RemoveMouseCursorHandler(TMouseCursorEvent aHandler);
 	virtual void __fastcall WndProc(Winapi::Messages::TMessage &Msg);
 	void __fastcall SetLinesPointer(TCustomSynEdit* ASynEdit);
-	void __fastcall RemoveLinesPointer(void);
+	void __fastcall RemoveLinesPointer();
 	void __fastcall HookTextBuffer(Synedittextbuffer::TSynEditStringList* aBuffer, Synedittextbuffer::TSynEditUndoList* aUndo, Synedittextbuffer::TSynEditUndoList* aRedo);
-	void __fastcall UnHookTextBuffer(void);
+	void __fastcall UnHookTextBuffer();
+	void __fastcall CollapseAll();
+	void __fastcall UncollapseAll();
+	void __fastcall Collapse(int FoldRangeIndex, bool Invalidate = true);
+	void __fastcall Uncollapse(int FoldRangeIndex, bool Invalidate = true);
+	void __fastcall UncollapseAroundLine(int Line);
+	void __fastcall CollapseNearest();
+	void __fastcall UncollapseNearest();
+	void __fastcall CollapseLevel(int Level);
+	void __fastcall UnCollapseLevel(int Level);
+	void __fastcall CollapseFoldType(int FoldType);
+	void __fastcall UnCollapseFoldType(int FoldType);
 	__property System::Sysutils::TSysCharSet AdditionalIdentChars = {read=FAdditionalIdentChars, write=SetAdditionalIdentChars};
 	__property System::Sysutils::TSysCharSet AdditionalWordBreakChars = {read=FAdditionalWordBreakChars, write=SetAdditionalWordBreakChars};
 	__property Synedittypes::TBufferCoord BlockBegin = {read=GetBlockBegin, write=SetBlockBegin};
@@ -756,6 +779,9 @@ public:
 	__property Synedittextbuffer::TSynEditUndoList* UndoList = {read=fUndoList};
 	__property Synedittextbuffer::TSynEditUndoList* RedoList = {read=fRedoList};
 	__property TProcessCommandEvent OnProcessCommand = {read=fOnProcessCommand, write=fOnProcessCommand};
+	__property Syneditcodefolding::TSynCodeFolding* CodeFolding = {read=fCodeFolding, write=fCodeFolding};
+	__property bool UseCodeFolding = {read=fUseCodeFolding, write=SetUseCodeFolding, nodefault};
+	__property Syneditcodefolding::TSynFoldRanges* AllFoldRanges = {read=fAllFoldRanges};
 	__property Syneditmiscclasses::TSynBookMarkOpt* BookMarkOptions = {read=fBookMarkOpt, write=fBookMarkOpt};
 	__property Vcl::Forms::TBorderStyle BorderStyle = {read=fBorderStyle, write=SetBorderStyle, default=1};
 	__property int ExtraLineSpacing = {read=fExtraLineSpacing, write=SetExtraLineSpacing, default=0};
@@ -799,12 +825,18 @@ public:
 	__property TStatusChangeEvent OnStatusChange = {read=fOnStatusChange, write=fOnStatusChange};
 	__property TPaintTransient OnPaintTransient = {read=fOnPaintTransient, write=fOnPaintTransient};
 	__property TScrollEvent OnScroll = {read=fOnScroll, write=fOnScroll};
+	__property TScanForFoldRangesEvent OnScanForFoldRanges = {read=fOnScanForFoldRanges, write=fOnScanForFoldRanges};
 	
 __published:
 	__property Cursor = {default=-4};
 	__property TCustomSynEditSearchNotFoundEvent OnSearchNotFound = {read=fSearchNotFound, write=fSearchNotFound};
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TCustomSynEdit(HWND ParentWindow) : Vcl::Controls::TCustomControl(ParentWindow) { }
+	
+	/* Hoisted overloads: */
+	
+protected:
+	DYNAMIC inline void __fastcall  ChangeScale(int M, int D){ Vcl::Controls::TControl::ChangeScale(M, D); }
 	
 };
 
@@ -853,6 +885,8 @@ __published:
 	__property OnMouseWheelDown;
 	__property OnMouseWheelUp;
 	__property OnStartDrag;
+	__property CodeFolding;
+	__property UseCodeFolding;
 	__property BookMarkOptions;
 	__property BorderStyle = {default=1};
 	__property ExtraLineSpacing = {default=0};
@@ -901,10 +935,11 @@ __published:
 	__property OnSpecialLineColors;
 	__property OnStatusChange;
 	__property OnPaintTransient;
+	__property OnScanForFoldRanges;
 	__property FontSmoothing;
 public:
 	/* TCustomSynEdit.Create */ inline __fastcall virtual TSynEdit(System::Classes::TComponent* AOwner) : TCustomSynEdit(AOwner) { }
-	/* TCustomSynEdit.Destroy */ inline __fastcall virtual ~TSynEdit(void) { }
+	/* TCustomSynEdit.Destroy */ inline __fastcall virtual ~TSynEdit() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TSynEdit(HWND ParentWindow) : TCustomSynEdit(ParentWindow) { }

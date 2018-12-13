@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterSQL.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterSQL.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightersqlHPP
 #define SynhighlightersqlHPP
@@ -70,56 +70,56 @@ private:
 	void __fastcall SetDialect(TSQLDialect Value);
 	void __fastcall SetTableNames(System::Classes::TStrings* const Value);
 	void __fastcall SetFunctionNames(System::Classes::TStrings* const Value);
-	void __fastcall PutFunctionNamesInKeywordList(void);
+	void __fastcall PutFunctionNamesInKeywordList();
 	void __fastcall TableNamesChanged(System::TObject* Sender);
-	void __fastcall InitializeKeywordLists(void);
-	void __fastcall PutTableNamesInKeywordList(void);
-	void __fastcall AndSymbolProc(void);
-	void __fastcall AsciiCharProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall EqualProc(void);
-	void __fastcall GreaterProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall LowerProc(void);
-	void __fastcall MinusProc(void);
-	void __fastcall HashProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall OrSymbolProc(void);
-	void __fastcall PlusProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall QuoteProc(void);
-	void __fastcall BacktickProc(void);
-	void __fastcall BracketProc(void);
-	void __fastcall SymbolProc(void);
-	void __fastcall SymbolAssignProc(void);
-	void __fastcall VariableProc(void);
-	void __fastcall UnknownProc(void);
-	void __fastcall AnsiCProc(void);
+	void __fastcall InitializeKeywordLists();
+	void __fastcall PutTableNamesInKeywordList();
+	void __fastcall AndSymbolProc();
+	void __fastcall AsciiCharProc();
+	void __fastcall CRProc();
+	void __fastcall EqualProc();
+	void __fastcall GreaterProc();
+	void __fastcall IdentProc();
+	void __fastcall LFProc();
+	void __fastcall LowerProc();
+	void __fastcall MinusProc();
+	void __fastcall HashProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall OrSymbolProc();
+	void __fastcall PlusProc();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall QuoteProc();
+	void __fastcall BacktickProc();
+	void __fastcall BracketProc();
+	void __fastcall SymbolProc();
+	void __fastcall SymbolAssignProc();
+	void __fastcall VariableProc();
+	void __fastcall UnknownProc();
+	void __fastcall AnsiCProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynSQLSyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynSQLSyn(void);
+	__fastcall virtual ~TSynSQLSyn();
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
+	virtual bool __fastcall GetEol();
 	virtual System::UnicodeString __fastcall GetKeyWords(int TokenKind);
-	virtual void * __fastcall GetRange(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual int __fastcall GetTokenKind(void);
+	virtual void * __fastcall GetRange();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
 	virtual bool __fastcall IsKeyword(const System::UnicodeString AKeyword);
-	virtual void __fastcall Next(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall Next();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	
 __published:

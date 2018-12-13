@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynMacroRecorder.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynMacroRecorder.pas' rev: 33.00 (Windows)
 
 #ifndef SynmacrorecorderHPP
 #define SynmacrorecorderHPP
@@ -53,11 +53,11 @@ class PASCALIMPLEMENTATION TSynMacroEvent : public System::TObject
 	
 protected:
 	System::Byte fRepeatCount;
-	virtual System::UnicodeString __fastcall GetAsString(void) = 0 ;
+	virtual System::UnicodeString __fastcall GetAsString() = 0 ;
 	virtual void __fastcall InitEventParameters(System::UnicodeString aStr) = 0 ;
 	
 public:
-	__fastcall virtual TSynMacroEvent(void);
+	__fastcall virtual TSynMacroEvent();
 	virtual void __fastcall Initialize(Syneditkeycmds::TSynEditorCommand aCmd, System::WideChar aChar, void * aData) = 0 ;
 	virtual void __fastcall LoadFromStream(System::Classes::TStream* aStream) = 0 ;
 	virtual void __fastcall SaveToStream(System::Classes::TStream* aStream) = 0 ;
@@ -65,7 +65,7 @@ public:
 	__property System::UnicodeString AsString = {read=GetAsString};
 	__property System::Byte RepeatCount = {read=fRepeatCount, write=fRepeatCount, nodefault};
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynMacroEvent(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynMacroEvent() { }
 	
 };
 
@@ -78,7 +78,7 @@ class PASCALIMPLEMENTATION TSynBasicEvent : public TSynMacroEvent
 	
 protected:
 	Syneditkeycmds::TSynEditorCommand fCommand;
-	virtual System::UnicodeString __fastcall GetAsString(void);
+	virtual System::UnicodeString __fastcall GetAsString();
 	virtual void __fastcall InitEventParameters(System::UnicodeString aStr);
 	
 public:
@@ -88,10 +88,10 @@ public:
 	virtual void __fastcall Playback(Synedit::TCustomSynEdit* aEditor);
 	__property Syneditkeycmds::TSynEditorCommand Command = {read=fCommand, write=fCommand, nodefault};
 public:
-	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynBasicEvent(void) : TSynMacroEvent() { }
+	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynBasicEvent() : TSynMacroEvent() { }
 	
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynBasicEvent(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynBasicEvent() { }
 	
 };
 
@@ -104,7 +104,7 @@ class PASCALIMPLEMENTATION TSynCharEvent : public TSynMacroEvent
 	
 protected:
 	System::WideChar fKey;
-	virtual System::UnicodeString __fastcall GetAsString(void);
+	virtual System::UnicodeString __fastcall GetAsString();
 	virtual void __fastcall InitEventParameters(System::UnicodeString aStr);
 	
 public:
@@ -114,10 +114,10 @@ public:
 	virtual void __fastcall Playback(Synedit::TCustomSynEdit* aEditor);
 	__property System::WideChar Key = {read=fKey, write=fKey, nodefault};
 public:
-	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynCharEvent(void) : TSynMacroEvent() { }
+	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynCharEvent() : TSynMacroEvent() { }
 	
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynCharEvent(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynCharEvent() { }
 	
 };
 
@@ -130,7 +130,7 @@ class PASCALIMPLEMENTATION TSynStringEvent : public TSynMacroEvent
 	
 protected:
 	System::UnicodeString fString;
-	virtual System::UnicodeString __fastcall GetAsString(void);
+	virtual System::UnicodeString __fastcall GetAsString();
 	virtual void __fastcall InitEventParameters(System::UnicodeString aStr);
 	
 public:
@@ -140,10 +140,10 @@ public:
 	virtual void __fastcall Playback(Synedit::TCustomSynEdit* aEditor);
 	__property System::UnicodeString Value = {read=fString, write=fString};
 public:
-	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynStringEvent(void) : TSynMacroEvent() { }
+	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynStringEvent() : TSynMacroEvent() { }
 	
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynStringEvent(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynStringEvent() { }
 	
 };
 
@@ -156,7 +156,7 @@ class PASCALIMPLEMENTATION TSynPositionEvent : public TSynBasicEvent
 	
 protected:
 	Synedittypes::TBufferCoord fPosition;
-	virtual System::UnicodeString __fastcall GetAsString(void);
+	virtual System::UnicodeString __fastcall GetAsString();
 	virtual void __fastcall InitEventParameters(System::UnicodeString aStr);
 	
 public:
@@ -166,10 +166,10 @@ public:
 	virtual void __fastcall Playback(Synedit::TCustomSynEdit* aEditor);
 	__property Synedittypes::TBufferCoord Position = {read=fPosition, write=fPosition};
 public:
-	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynPositionEvent(void) : TSynBasicEvent() { }
+	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynPositionEvent() : TSynBasicEvent() { }
 	
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynPositionEvent(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynPositionEvent() { }
 	
 };
 
@@ -189,10 +189,10 @@ public:
 	virtual void __fastcall SaveToStream(System::Classes::TStream* aStream);
 	virtual void __fastcall Playback(Synedit::TCustomSynEdit* aEditor);
 public:
-	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynDataEvent(void) : TSynBasicEvent() { }
+	/* TSynMacroEvent.Create */ inline __fastcall virtual TSynDataEvent() : TSynBasicEvent() { }
 	
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynDataEvent(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynDataEvent() { }
 	
 };
 
@@ -211,11 +211,11 @@ private:
 	System::UnicodeString fMacroName;
 	bool fSaveMarkerPos;
 	TSynMacroEvent* __fastcall GetEvent(int aIndex);
-	int __fastcall GetEventCount(void);
-	System::UnicodeString __fastcall GetAsString(void);
-	Syneditkeycmds::TSynEditorCommand __fastcall GetPlaybackCommandID(void);
+	int __fastcall GetEventCount();
+	System::UnicodeString __fastcall GetAsString();
+	Syneditkeycmds::TSynEditorCommand __fastcall GetPlaybackCommandID();
 	System::Classes::TShortCut __fastcall GetPlaybackShortCut(const int Index);
-	Syneditkeycmds::TSynEditorCommand __fastcall GetRecordCommandID(void);
+	Syneditkeycmds::TSynEditorCommand __fastcall GetRecordCommandID();
 	System::Classes::TShortCut __fastcall GetRecordShortCut(const int Index);
 	void __fastcall SetAsString(const System::UnicodeString Value);
 	
@@ -225,8 +225,8 @@ protected:
 	System::Classes::TList* fEvents;
 	System::StaticArray<Syneditkeycmds::TSynEditorCommand, 2> fCommandIDs;
 	void __fastcall SetShortCut(const int Index, const System::Classes::TShortCut Value);
-	bool __fastcall GetIsEmpty(void);
-	void __fastcall StateChanged(void);
+	bool __fastcall GetIsEmpty();
+	void __fastcall StateChanged();
 	virtual void __fastcall DoAddEditor(Synedit::TCustomSynEdit* aEditor);
 	virtual void __fastcall DoRemoveEditor(Synedit::TCustomSynEdit* aEditor);
 	virtual void __fastcall OnCommand(System::TObject* Sender, bool AfterProcessing, bool &Handled, Syneditkeycmds::TSynEditorCommand &Command, System::WideChar &aChar, void * Data, void * HandlerData);
@@ -236,18 +236,18 @@ protected:
 	
 public:
 	__fastcall virtual TCustomSynMacroRecorder(System::Classes::TComponent* aOwner);
-	__fastcall virtual ~TCustomSynMacroRecorder(void);
+	__fastcall virtual ~TCustomSynMacroRecorder();
 	void __fastcall Error(const System::UnicodeString aMsg);
 	HIDESBASE void __fastcall AddEditor(Synedit::TCustomSynEdit* aEditor);
 	HIDESBASE void __fastcall RemoveEditor(Synedit::TCustomSynEdit* aEditor);
 	void __fastcall RecordMacro(Synedit::TCustomSynEdit* aEditor);
 	void __fastcall PlaybackMacro(Synedit::TCustomSynEdit* aEditor);
-	void __fastcall Stop(void);
-	void __fastcall Pause(void);
-	void __fastcall Resume(void);
+	void __fastcall Stop();
+	void __fastcall Pause();
+	void __fastcall Resume();
 	__property bool IsEmpty = {read=GetIsEmpty, nodefault};
 	__property TSynMacroState State = {read=fState, nodefault};
-	void __fastcall Clear(void);
+	void __fastcall Clear();
 	void __fastcall AddEvent(Syneditkeycmds::TSynEditorCommand aCmd, System::WideChar aChar, void * aData);
 	void __fastcall InsertEvent(int aIndex, Syneditkeycmds::TSynEditorCommand aCmd, System::WideChar aChar, void * aData);
 	void __fastcall AddCustomEvent(TSynMacroEvent* aEvent);
@@ -282,7 +282,7 @@ __published:
 	__property OnUserCommand;
 public:
 	/* TCustomSynMacroRecorder.Create */ inline __fastcall virtual TSynMacroRecorder(System::Classes::TComponent* aOwner) : TCustomSynMacroRecorder(aOwner) { }
-	/* TCustomSynMacroRecorder.Destroy */ inline __fastcall virtual ~TSynMacroRecorder(void) { }
+	/* TCustomSynMacroRecorder.Destroy */ inline __fastcall virtual ~TSynMacroRecorder() { }
 	
 };
 

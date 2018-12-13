@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterJSON.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterJSON.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterjsonHPP
 #define SynhighlighterjsonHPP
@@ -46,39 +46,39 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* FNumberAttri;
 	Synedithighlighter::TSynHighlighterAttributes* FSpaceAttri;
 	Synedithighlighter::TSynHighlighterAttributes* FSymbolAttri;
-	void __fastcall CloseArrayProc(void);
-	void __fastcall CloseObjectProc(void);
-	void __fastcall ColonProc(void);
-	void __fastcall CommaProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall OpenArrayProc(void);
-	void __fastcall OpenObjectProc(void);
-	void __fastcall ReservedWordProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall SymbolProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall CloseArrayProc();
+	void __fastcall CloseObjectProc();
+	void __fastcall ColonProc();
+	void __fastcall CommaProc();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall OpenArrayProc();
+	void __fastcall OpenObjectProc();
+	void __fastcall ReservedWordProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall SymbolProc();
+	void __fastcall UnknownProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynJSONSyn(System::Classes::TComponent* AOwner);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* AttributeAttri = {read=FAttributeAttri, write=FAttributeAttri};
@@ -88,7 +88,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* SymbolAttri = {read=FSymbolAttri, write=FSymbolAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* ValueAttri = {read=FValueAttri, write=FValueAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynJSONSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynJSONSyn() { }
 	
 };
 

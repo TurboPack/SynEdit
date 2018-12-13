@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterPas.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterPas.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterpasHPP
 #define SynhighlighterpasHPP
@@ -100,34 +100,34 @@ private:
 	TtkTokenKind __fastcall FuncWriteonly(int Index);
 	unsigned __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall InitIdent(void);
-	void __fastcall AddressOpProc(void);
-	void __fastcall AsciiCharProc(void);
-	void __fastcall AnsiProc(void);
-	void __fastcall BorProc(void);
-	void __fastcall BraceOpenProc(void);
-	void __fastcall ColonOrGreaterProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall IntegerProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall LowerProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall PointProc(void);
-	void __fastcall RoundOpenProc(void);
-	void __fastcall SemicolonProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall SymbolProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall InitIdent();
+	void __fastcall AddressOpProc();
+	void __fastcall AsciiCharProc();
+	void __fastcall AnsiProc();
+	void __fastcall BorProc();
+	void __fastcall BraceOpenProc();
+	void __fastcall ColonOrGreaterProc();
+	void __fastcall CRProc();
+	void __fastcall IdentProc();
+	void __fastcall IntegerProc();
+	void __fastcall LFProc();
+	void __fastcall LowerProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall PointProc();
+	void __fastcall RoundOpenProc();
+	void __fastcall SemicolonProc();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall SymbolProc();
+	void __fastcall UnknownProc();
 	void __fastcall SetDelphiVersion(const TDelphiVersion Value);
 	void __fastcall SetPackageSource(const bool Value);
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual Synedithighlighter::TSynHighlighterCapabilities __fastcall GetCapabilities();
@@ -135,13 +135,13 @@ public:
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynPasSyn(System::Classes::TComponent* AOwner);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
-	virtual void __fastcall ResetRange(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual bool __fastcall UseUserSettings(int VersionIndex);
 	virtual void __fastcall EnumUserSettings(System::Classes::TStrings* DelphiVersions);
@@ -162,7 +162,7 @@ __published:
 	__property TDelphiVersion DelphiVersion = {read=fDelphiVersion, write=SetDelphiVersion, default=8};
 	__property bool PackageSource = {read=fPackageSource, write=SetPackageSource, default=1};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynPasSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynPasSyn() { }
 	
 };
 

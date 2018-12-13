@@ -420,7 +420,6 @@ begin
     r.RootKey := RootKey;
     if r.OpenKey(Key,true) then
     begin
-      Result := true;
       r.WriteString('KeyWords', KeyWords.Text);
       Result := inherited SaveToRegistry(RootKey, Key);
     end

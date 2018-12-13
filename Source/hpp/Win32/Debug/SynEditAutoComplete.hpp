@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditAutoComplete.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditAutoComplete.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditautocompleteHPP
 #define SyneditautocompleteHPP
@@ -45,10 +45,10 @@ protected:
 	bool fParsed;
 	void __fastcall CompletionListChanged(System::TObject* Sender);
 	virtual void __fastcall DefineProperties(System::Classes::TFiler* Filer);
-	System::Classes::TStrings* __fastcall GetCompletions(void);
-	System::Classes::TStrings* __fastcall GetCompletionComments(void);
-	System::Classes::TStrings* __fastcall GetCompletionValues(void);
-	int __fastcall GetEditorCount(void);
+	System::Classes::TStrings* __fastcall GetCompletions();
+	System::Classes::TStrings* __fastcall GetCompletionComments();
+	System::Classes::TStrings* __fastcall GetCompletionValues();
+	int __fastcall GetEditorCount();
 	Synedit::TCustomSynEdit* __fastcall GetNthEditor(int Index);
 	virtual void __fastcall SetAutoCompleteList(System::Classes::TStrings* Value);
 	void __fastcall SetEditor(Synedit::TCustomSynEdit* Value);
@@ -57,13 +57,13 @@ protected:
 	
 public:
 	__fastcall virtual TCustomSynAutoComplete(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TCustomSynAutoComplete(void);
+	__fastcall virtual ~TCustomSynAutoComplete();
 	bool __fastcall AddEditor(Synedit::TCustomSynEdit* AEditor);
 	bool __fastcall RemoveEditor(Synedit::TCustomSynEdit* AEditor);
 	void __fastcall AddCompletion(const System::UnicodeString AToken, const System::UnicodeString AValue, const System::UnicodeString AComment);
 	virtual void __fastcall Execute(Synedit::TCustomSynEdit* AEditor);
 	virtual void __fastcall ExecuteCompletion(const System::UnicodeString AToken, Synedit::TCustomSynEdit* AEditor);
-	virtual void __fastcall ParseCompletionList(void);
+	virtual void __fastcall ParseCompletionList();
 	__property System::Classes::TStrings* AutoCompleteList = {read=fAutoCompleteList, write=SetAutoCompleteList};
 	__property bool CaseSensitive = {read=fCaseSensitive, write=fCaseSensitive, nodefault};
 	__property System::Classes::TStrings* Completions = {read=GetCompletions};
@@ -87,7 +87,7 @@ __published:
 	__property EndOfTokenChr = {default=0};
 public:
 	/* TCustomSynAutoComplete.Create */ inline __fastcall virtual TSynAutoComplete(System::Classes::TComponent* AOwner) : TCustomSynAutoComplete(AOwner) { }
-	/* TCustomSynAutoComplete.Destroy */ inline __fastcall virtual ~TSynAutoComplete(void) { }
+	/* TCustomSynAutoComplete.Destroy */ inline __fastcall virtual ~TSynAutoComplete() { }
 	
 };
 

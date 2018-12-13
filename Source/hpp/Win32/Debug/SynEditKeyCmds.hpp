@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditKeyCmds.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditKeyCmds.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditkeycmdsHPP
 #define SyneditkeycmdsHPP
@@ -46,7 +46,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall ESynKeyError(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynKeyError(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynKeyError(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~ESynKeyError(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~ESynKeyError() { }
 	
 };
 
@@ -65,8 +65,8 @@ private:
 	System::Word FKey2;
 	System::Classes::TShiftState FShift2;
 	TSynEditorCommand FCommand;
-	System::Classes::TShortCut __fastcall GetShortCut(void);
-	System::Classes::TShortCut __fastcall GetShortCut2(void);
+	System::Classes::TShortCut __fastcall GetShortCut();
+	System::Classes::TShortCut __fastcall GetShortCut2();
 	void __fastcall SetCommand(const TSynEditorCommand Value);
 	void __fastcall SetKey(const System::Word Value);
 	void __fastcall SetKey2(const System::Word Value);
@@ -76,7 +76,7 @@ private:
 	void __fastcall SetShortCut2(const System::Classes::TShortCut Value);
 	
 protected:
-	virtual System::UnicodeString __fastcall GetDisplayName(void);
+	virtual System::UnicodeString __fastcall GetDisplayName();
 	
 public:
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
@@ -93,7 +93,7 @@ __published:
 	__property System::Classes::TShortCut ShortCut2 = {read=GetShortCut2, write=SetShortCut2, default=0};
 public:
 	/* TCollectionItem.Create */ inline __fastcall virtual TSynEditKeyStroke(System::Classes::TCollection* Collection) : System::Classes::TCollectionItem(Collection) { }
-	/* TCollectionItem.Destroy */ inline __fastcall virtual ~TSynEditKeyStroke(void) { }
+	/* TCollectionItem.Destroy */ inline __fastcall virtual ~TSynEditKeyStroke() { }
 	
 };
 
@@ -113,12 +113,12 @@ private:
 	HIDESBASE void __fastcall SetItem(int Index, TSynEditKeyStroke* Value);
 	
 protected:
-	DYNAMIC System::Classes::TPersistent* __fastcall GetOwner(void);
+	DYNAMIC System::Classes::TPersistent* __fastcall GetOwner();
 	
 public:
 	__fastcall TSynEditKeyStrokes(System::Classes::TPersistent* AOwner);
-	HIDESBASE TSynEditKeyStroke* __fastcall Add(void);
-	void __fastcall AddKey(const TSynEditorCommand ACmd, const System::Word AKey, const System::Classes::TShiftState AShift);
+	HIDESBASE TSynEditKeyStroke* __fastcall Add();
+	void __fastcall AddKey(const TSynEditorCommand ACmd, const System::Word AKey, const System::Classes::TShiftState AShift, const System::Word AKey2 = (System::Word)(0x0), const System::Classes::TShiftState AShift2 = System::Classes::TShiftState() );
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	int __fastcall FindCommand(TSynEditorCommand Cmd);
 	int __fastcall FindKeycode(System::Word Code, System::Classes::TShiftState SS);
@@ -126,11 +126,11 @@ public:
 	int __fastcall FindShortcut(System::Classes::TShortCut SC);
 	int __fastcall FindShortcut2(System::Classes::TShortCut SC, System::Classes::TShortCut SC2);
 	void __fastcall LoadFromStream(System::Classes::TStream* AStream);
-	void __fastcall ResetDefaults(void);
+	void __fastcall ResetDefaults();
 	void __fastcall SaveToStream(System::Classes::TStream* AStream);
 	__property TSynEditKeyStroke* Items[int Index] = {read=GetItem, write=SetItem/*, default*/};
 public:
-	/* TCollection.Destroy */ inline __fastcall virtual ~TSynEditKeyStrokes(void) { }
+	/* TCollection.Destroy */ inline __fastcall virtual ~TSynEditKeyStrokes() { }
 	
 };
 
@@ -244,6 +244,18 @@ static const System::Word ecUpperCaseBlock = System::Word(0x271);
 static const System::Word ecLowerCaseBlock = System::Word(0x272);
 static const System::Word ecToggleCaseBlock = System::Word(0x273);
 static const System::Word ecString = System::Word(0x276);
+static const System::Word ecFoldAll = System::Word(0x2bd);
+static const System::Word ecUnfoldAll = System::Word(0x2be);
+static const System::Word ecFoldNearest = System::Word(0x2c1);
+static const System::Word ecUnfoldNearest = System::Word(0x2c2);
+static const System::Word ecFoldLevel1 = System::Word(0x2c7);
+static const System::Word ecFoldLevel2 = System::Word(0x2c8);
+static const System::Word ecFoldLevel3 = System::Word(0x2c9);
+static const System::Word ecUnfoldLevel1 = System::Word(0x2d1);
+static const System::Word ecUnfoldLevel2 = System::Word(0x2d2);
+static const System::Word ecUnfoldLevel3 = System::Word(0x2d3);
+static const System::Word ecFoldRegions = System::Word(0x2db);
+static const System::Word ecUnfoldRegions = System::Word(0x2dc);
 static const System::Word ecUserFirst = System::Word(0x3e9);
 extern DELPHI_PACKAGE void __fastcall GetEditorCommandValues(System::Classes::TGetStrProc Proc);
 extern DELPHI_PACKAGE void __fastcall GetEditorCommandExtended(System::Classes::TGetStrProc Proc);

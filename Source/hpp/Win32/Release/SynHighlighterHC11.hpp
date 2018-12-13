@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterHC11.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterHC11.pas' rev: 33.00 (Windows)
 
 #ifndef Synhighlighterhc11HPP
 #define Synhighlighterhc11HPP
@@ -66,35 +66,35 @@ private:
 	void __fastcall DoAddKeyword(System::UnicodeString AKeyword, int AKind);
 	int __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall SymAsciiCharProc(void);
-	void __fastcall SymbolProc(void);
-	void __fastcall SymDollarProc(void);
-	void __fastcall SymCRProc(void);
-	void __fastcall SymIdentProc(void);
-	void __fastcall SymLFProc(void);
-	void __fastcall SymPercentProc(void);
-	void __fastcall SymNullProc(void);
-	void __fastcall SymNumberProc(void);
-	void __fastcall SymSpaceProc(void);
-	void __fastcall SymStarProc(void);
-	void __fastcall SymStringProc(void);
-	void __fastcall SymUnknownProc(void);
+	void __fastcall SymAsciiCharProc();
+	void __fastcall SymbolProc();
+	void __fastcall SymDollarProc();
+	void __fastcall SymCRProc();
+	void __fastcall SymIdentProc();
+	void __fastcall SymLFProc();
+	void __fastcall SymPercentProc();
+	void __fastcall SymNullProc();
+	void __fastcall SymNumberProc();
+	void __fastcall SymSpaceProc();
+	void __fastcall SymStarProc();
+	void __fastcall SymStringProc();
+	void __fastcall SymUnknownProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynHC11Syn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynHC11Syn(void);
+	__fastcall virtual ~TSynHC11Syn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual bool __fastcall GetEol();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};

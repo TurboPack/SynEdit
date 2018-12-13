@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynExportRTF.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynExportRTF.pas' rev: 33.00 (Windows)
 
 #ifndef SynexportrtfHPP
 #define SynexportrtfHPP
@@ -41,22 +41,22 @@ private:
 	int __fastcall GetColorIndex(System::Uitypes::TColor AColor);
 	
 protected:
-	virtual void __fastcall FormatAfterLastAttribute(void);
+	virtual void __fastcall FormatAfterLastAttribute();
 	virtual void __fastcall FormatAttributeDone(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged);
 	virtual void __fastcall FormatAttributeInit(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged);
 	virtual void __fastcall FormatBeforeFirstAttribute(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged);
-	virtual void __fastcall FormatNewLine(void);
-	virtual System::UnicodeString __fastcall GetFooter(void);
-	virtual System::UnicodeString __fastcall GetFormatName(void);
-	virtual System::UnicodeString __fastcall GetHeader(void);
+	virtual void __fastcall FormatNewLine();
+	virtual System::UnicodeString __fastcall GetFooter();
+	virtual System::UnicodeString __fastcall GetFormatName();
+	virtual System::UnicodeString __fastcall GetHeader();
 	virtual System::UnicodeString __fastcall ReplaceReservedChar(System::WideChar AChar);
-	virtual bool __fastcall UseBom(void);
+	virtual bool __fastcall UseBom();
 	
 public:
 	__fastcall virtual TSynExporterRTF(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynExporterRTF(void);
-	virtual void __fastcall Clear(void);
-	virtual Synunicode::TSynEncodings __fastcall SupportedEncodings(void);
+	__fastcall virtual ~TSynExporterRTF();
+	virtual void __fastcall Clear();
+	virtual Synunicode::TSynEncodings __fastcall SupportedEncodings();
 	
 __published:
 	__property Color;

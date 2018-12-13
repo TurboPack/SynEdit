@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterHP48.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterHP48.pas' rev: 33.00 (Windows)
 
 #ifndef Synhighlighterhp48HPP
 #define Synhighlighterhp48HPP
@@ -44,7 +44,7 @@ protected:
 public:
 	__property System::UnicodeString Name = {read=FName, write=SetName};
 	__fastcall TSpeedListObject(System::UnicodeString name);
-	__fastcall virtual ~TSpeedListObject(void);
+	__fastcall virtual ~TSpeedListObject();
 	__property TSpeedStringList* SpeedList = {read=FSpeedList, write=FSpeedList};
 	__property System::TObject* Pointer = {read=FObject, write=FObject};
 };
@@ -63,7 +63,7 @@ public:
 	System::UnicodeString operator[](int Index) { return this->Strings[Index]; }
 	
 private:
-	System::UnicodeString __fastcall GetText(void);
+	System::UnicodeString __fastcall GetText();
 	void __fastcall SetText(const System::UnicodeString Value);
 	System::TObject* __fastcall GetInObject(int Index);
 	void __fastcall SetInObject(int Index, System::TObject* const Value);
@@ -74,21 +74,21 @@ protected:
 	System::StaticArray<int, 128> DatasUsed;
 	System::StaticArray<PSpeedListObjects, 128> Datas;
 	System::StaticArray<int, 128> LengthDatas;
-	virtual void __fastcall Changed(void);
+	virtual void __fastcall Changed();
 	virtual System::UnicodeString __fastcall Get(int Index);
 	TSpeedListObject* __fastcall GetObject(int Index);
-	int __fastcall GetCount(void);
-	System::Classes::TStrings* __fastcall GetStringList(void);
+	int __fastcall GetCount();
+	System::Classes::TStrings* __fastcall GetStringList();
 	void __fastcall SetStringList(System::Classes::TStrings* const Value);
 	
 public:
 	void __fastcall NameChange(TSpeedListObject* const obj, const System::UnicodeString NewName);
 	void __fastcall ObjectDeleted(TSpeedListObject* const obj);
-	__fastcall virtual ~TSpeedStringList(void);
-	__fastcall TSpeedStringList(void);
+	__fastcall virtual ~TSpeedStringList();
+	__fastcall TSpeedStringList();
 	int __fastcall AddObj(TSpeedListObject* const Value);
 	TSpeedListObject* __fastcall Add(const System::UnicodeString Value);
-	void __fastcall Clear(void);
+	void __fastcall Clear();
 	TSpeedListObject* __fastcall Find(const System::UnicodeString Name);
 	__property System::Classes::TNotifyEvent OnChange = {read=FOnChange, write=FOnChange};
 	__property TSpeedListObject* Objects[int Index] = {read=GetObject};
@@ -118,45 +118,45 @@ private:
 	TRangeState FBaseRange;
 	Synedithighlighter::TSynHighlighterAttributes* __fastcall GetAttrib(int Index);
 	void __fastcall SetAttrib(int Index, Synedithighlighter::TSynHighlighterAttributes* Value);
-	TtkTokenKind __fastcall NullProc(void);
-	TtkTokenKind __fastcall SpaceProc(void);
-	TtkTokenKind __fastcall ParOpenProc(void);
-	TtkTokenKind __fastcall RplComProc(void);
+	TtkTokenKind __fastcall NullProc();
+	TtkTokenKind __fastcall SpaceProc();
+	TtkTokenKind __fastcall ParOpenProc();
+	TtkTokenKind __fastcall RplComProc();
 	TtkTokenKind __fastcall AsmComProc(System::WideChar c);
-	TtkTokenKind __fastcall PersentProc(void);
-	TtkTokenKind __fastcall IdentProc(void);
-	TtkTokenKind __fastcall SlashProc(void);
-	TtkTokenKind __fastcall SasmProc1(void);
-	TtkTokenKind __fastcall SasmProc2(void);
-	TtkTokenKind __fastcall SasmProc3(void);
-	void __fastcall EndOfToken(void);
-	void __fastcall SetHighLightChange(void);
-	TtkTokenKind __fastcall Next1(void);
+	TtkTokenKind __fastcall PersentProc();
+	TtkTokenKind __fastcall IdentProc();
+	TtkTokenKind __fastcall SlashProc();
+	TtkTokenKind __fastcall SasmProc1();
+	TtkTokenKind __fastcall SasmProc2();
+	TtkTokenKind __fastcall SasmProc3();
+	void __fastcall EndOfToken();
+	void __fastcall SetHighLightChange();
+	TtkTokenKind __fastcall Next1();
 	void __fastcall Next2(TtkTokenKind tkk);
-	TtkTokenKind __fastcall GetTokenFromRange(void);
-	TtkTokenKind __fastcall StarProc(void);
+	TtkTokenKind __fastcall GetTokenFromRange();
+	TtkTokenKind __fastcall StarProc();
 	
 protected:
-	virtual int __fastcall GetAttribCount(void);
+	virtual int __fastcall GetAttribCount();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetAttribute(int idx);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual bool __fastcall IsFilterStored();
 	virtual bool __fastcall IsLineEnd(int Run);
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynHP48Syn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynHP48Syn(void);
+	__fastcall virtual ~TSynHP48Syn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
+	virtual bool __fastcall GetEol();
 	virtual void __fastcall DoSetLine(const System::UnicodeString Value, int LineNumber);
-	virtual void __fastcall Next(void);
-	virtual System::UnicodeString __fastcall GetToken(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void * __fastcall GetRange(void);
+	virtual void __fastcall Next();
+	virtual System::UnicodeString __fastcall GetToken();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void * __fastcall GetRange();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	virtual bool __fastcall SaveToRegistry(HKEY RootKey, System::UnicodeString Key);
 	virtual bool __fastcall LoadFromRegistry(HKEY RootKey, System::UnicodeString Key);
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);

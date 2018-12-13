@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditRegexSearch.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditRegexSearch.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditregexsearchHPP
 #define SyneditregexsearchHPP
@@ -37,16 +37,16 @@ private:
 	System::Classes::TList* fLengths;
 	
 protected:
-	virtual System::UnicodeString __fastcall GetPattern(void);
+	virtual System::UnicodeString __fastcall GetPattern();
 	virtual void __fastcall SetPattern(const System::UnicodeString Value);
 	virtual void __fastcall SetOptions(const Synedittypes::TSynSearchOptions Value);
 	virtual int __fastcall GetLength(int Index);
 	virtual int __fastcall GetResult(int Index);
-	virtual int __fastcall GetResultCount(void);
+	virtual int __fastcall GetResultCount();
 	
 public:
 	__fastcall virtual TSynEditRegexSearch(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynEditRegexSearch(void);
+	__fastcall virtual ~TSynEditRegexSearch();
 	virtual int __fastcall FindAll(const System::UnicodeString NewText);
 	virtual System::UnicodeString __fastcall Replace(const System::UnicodeString aOccurrence, const System::UnicodeString aReplacement);
 };

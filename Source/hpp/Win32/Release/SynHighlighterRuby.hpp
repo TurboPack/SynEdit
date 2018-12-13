@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterRuby.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterRuby.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterrubyHPP
 #define SynhighlighterrubyHPP
@@ -49,42 +49,42 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* fIdentifierAttri;
 	System::Classes::TStrings* fKeyWords;
 	System::Classes::TStrings* fSecondKeys;
-	void __fastcall BraceOpenProc(void);
-	void __fastcall PointCommaProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall LowerProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall RoundOpenProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall BraceOpenProc();
+	void __fastcall PointCommaProc();
+	void __fastcall CRProc();
+	void __fastcall IdentProc();
+	void __fastcall LFProc();
+	void __fastcall LowerProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall RoundOpenProc();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall UnknownProc();
 	void __fastcall SetSecondKeys(System::Classes::TStrings* const Value);
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
-	void __fastcall NextProcedure(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
+	void __fastcall NextProcedure();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynRubySyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynRubySyn(void);
+	__fastcall virtual ~TSynRubySyn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
 	virtual bool __fastcall IsKeyword(const System::UnicodeString AKeyword);
 	bool __fastcall IsSecondKeyWord(System::UnicodeString aToken);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};

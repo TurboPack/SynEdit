@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterCobol.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterCobol.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightercobolHPP
 #define SynhighlightercobolHPP
@@ -61,45 +61,45 @@ private:
 	void __fastcall DoAddKeyword(System::UnicodeString AKeyword, int AKind);
 	int __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall IdentProc(void);
-	void __fastcall UnknownProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall PointProc(void);
-	void __fastcall StringOpenProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall StringEndProc(void);
-	void __fastcall FirstCharsProc(void);
-	void __fastcall LastCharsProc(void);
-	void __fastcall CommentProc(void);
-	void __fastcall DebugProc(void);
+	void __fastcall IdentProc();
+	void __fastcall UnknownProc();
+	void __fastcall NullProc();
+	void __fastcall SpaceProc();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
+	void __fastcall NumberProc();
+	void __fastcall PointProc();
+	void __fastcall StringOpenProc();
+	void __fastcall StringProc();
+	void __fastcall StringEndProc();
+	void __fastcall FirstCharsProc();
+	void __fastcall LastCharsProc();
+	void __fastcall CommentProc();
+	void __fastcall DebugProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
-	void __fastcall NextProcedure(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
+	void __fastcall NextProcedure();
 	void __fastcall SetCodeStartPos(int Value);
 	void __fastcall SetCodeMediumPos(int Value);
 	void __fastcall SetCodeEndPos(int Value);
 	
 public:
 	__fastcall virtual TSynCobolSyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynCobolSyn(void);
+	__fastcall virtual ~TSynCobolSyn();
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
-	virtual void * __fastcall GetRange(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void * __fastcall GetRange();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	virtual bool __fastcall GetEol();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};

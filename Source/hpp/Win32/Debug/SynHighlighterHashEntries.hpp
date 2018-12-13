@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterHashEntries.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterHashEntries.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterhashentriesHPP
 #define SynhighlighterhashentriesHPP
@@ -40,7 +40,7 @@ protected:
 public:
 	virtual TSynHashEntry* __fastcall AddEntry(TSynHashEntry* NewEntry);
 	__fastcall TSynHashEntry(const System::UnicodeString AKey, int AKind);
-	__fastcall virtual ~TSynHashEntry(void);
+	__fastcall virtual ~TSynHashEntry();
 	__property System::UnicodeString Keyword = {read=fKeyword};
 	__property int KeywordLen = {read=fKeyLen, nodefault};
 	__property int Kind = {read=fKind, nodefault};
@@ -62,11 +62,11 @@ protected:
 	HIDESBASE void __fastcall Put(int HashKey, TSynHashEntry* Entry);
 	
 public:
-	__fastcall virtual ~TSynHashEntryList(void);
-	void __fastcall DeleteEntries(void);
+	__fastcall virtual ~TSynHashEntryList();
+	void __fastcall DeleteEntries();
 	__property TSynHashEntry* Items[int Index] = {read=Get, write=Put/*, default*/};
 public:
-	/* TObject.Create */ inline __fastcall TSynHashEntryList(void) : System::Classes::TList() { }
+	/* TObject.Create */ inline __fastcall TSynHashEntryList() : System::Classes::TList() { }
 	
 };
 

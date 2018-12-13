@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterURI.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterURI.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighteruriHPP
 #define SynhighlighteruriHPP
@@ -50,13 +50,13 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* fVisitedURIAttri;
 	TAlreadyVisitedURIFunc fAlreadyVisitedURI;
 	int __fastcall HashKey(System::WideChar * Str);
-	void __fastcall InitIdent(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall ProtocolProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall InitIdent();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall ProtocolProc();
+	void __fastcall SpaceProc();
+	void __fastcall UnknownProc();
 	TtkTokenKind __fastcall AltFunc(int Key);
 	TtkTokenKind __fastcall FuncFtp(int Key);
 	TtkTokenKind __fastcall FuncGopher(int Key);
@@ -77,30 +77,30 @@ private:
 	bool __fastcall IsNeverAtEnd(System::WideChar AChar);
 	bool __fastcall IsEMailAddressChar(System::WideChar AChar);
 	bool __fastcall IsNeverAtEMailAddressEnd(System::WideChar AChar);
-	bool __fastcall IsValidEmailAddress(void);
-	bool __fastcall IsValidURI(void);
-	bool __fastcall IsValidWebLink(void);
+	bool __fastcall IsValidEmailAddress();
+	bool __fastcall IsValidURI();
+	bool __fastcall IsValidWebLink();
 	void __fastcall SetURIAttri(Synedithighlighter::TSynHighlighterAttributes* const Value);
 	void __fastcall SetVisitedURIAttri(Synedithighlighter::TSynHighlighterAttributes* const Value);
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
 	virtual bool __fastcall IsCurrentToken(const System::UnicodeString Token);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual bool __fastcall IsFilterStored();
 	void __fastcall SetAlreadyVisitedURIFunc(TAlreadyVisitedURIFunc Value);
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynURISyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynURISyn(void);
+	__fastcall virtual ~TSynURISyn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	virtual bool __fastcall GetEol();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* URIAttri = {read=fURIAttri, write=SetURIAttri};

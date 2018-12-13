@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterTclTk.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterTclTk.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightertcltkHPP
 #define SynhighlightertcltkHPP
@@ -57,50 +57,50 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* fTixKeyAttri;
 	System::Classes::TStrings* fWidgetWords;
 	Synedithighlighter::TSynHighlighterAttributes* fWidgetKeyAttri;
-	void __fastcall BraceOpenProc(void);
-	void __fastcall PointCommaProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall RoundOpenProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall UnknownProc(void);
-	void __fastcall AnsiProc(void);
-	void __fastcall PasStyleProc(void);
-	void __fastcall CStyleProc(void);
-	void __fastcall VariableProc(void);
-	void __fastcall PathProc(void);
-	void __fastcall MinusProc(void);
-	void __fastcall SymbolProc(void);
+	void __fastcall BraceOpenProc();
+	void __fastcall PointCommaProc();
+	void __fastcall CRProc();
+	void __fastcall IdentProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall RoundOpenProc();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall UnknownProc();
+	void __fastcall AnsiProc();
+	void __fastcall PasStyleProc();
+	void __fastcall CStyleProc();
+	void __fastcall VariableProc();
+	void __fastcall PathProc();
+	void __fastcall MinusProc();
+	void __fastcall SymbolProc();
 	void __fastcall SetKeyWords(System::Classes::TStrings* const Value);
 	void __fastcall SetSecondKeys(System::Classes::TStrings* const Value);
-	bool __fastcall IsKeywordListStored(void);
-	bool __fastcall IsSecondKeywordListStored(void);
+	bool __fastcall IsKeywordListStored();
+	bool __fastcall IsSecondKeywordListStored();
 	bool __fastcall InternalIsKeyword(const System::UnicodeString AKeyword, System::Classes::TStrings* KeyWordList, bool ACaseSensitive = false);
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynTclTkSyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynTclTkSyn(void);
+	__fastcall virtual ~TSynTclTkSyn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
 	virtual bool __fastcall IsKeyword(const System::UnicodeString AKeyword);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	virtual bool __fastcall SaveToRegistry(HKEY RootKey, System::UnicodeString Key);
 	virtual bool __fastcall LoadFromRegistry(HKEY RootKey, System::UnicodeString Key);
 	

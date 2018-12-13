@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterTeX.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterTeX.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightertexHPP
 #define SynhighlightertexHPP
@@ -43,33 +43,33 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* fBracketAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fBraceAttri;
 	Synedithighlighter::TSynHighlighterAttributes* __fastcall CreateHighlighterAttributes(System::UnicodeString Name, System::UnicodeString FriendlyName, System::Uitypes::TColor Foreground, System::Uitypes::TColor Background, System::Uitypes::TFontStyles FontStyles);
-	void __fastcall CRProc(void);
-	void __fastcall TextProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall CommentProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall ControlSequenceProc(void);
-	void __fastcall BraceOpenProc(void);
-	void __fastcall BraceCloseProc(void);
-	void __fastcall BracketOpenProc(void);
-	void __fastcall BracketCloseProc(void);
-	void __fastcall MathmodeProc(void);
+	void __fastcall CRProc();
+	void __fastcall TextProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall CommentProc();
+	void __fastcall SpaceProc();
+	void __fastcall ControlSequenceProc();
+	void __fastcall BraceOpenProc();
+	void __fastcall BraceCloseProc();
+	void __fastcall BracketOpenProc();
+	void __fastcall BracketCloseProc();
+	void __fastcall MathmodeProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynTeXSyn(System::Classes::TComponent* AOwner);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual bool __fastcall GetEol();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};
@@ -80,7 +80,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* BraceAttri = {read=fBraceAttri, write=fBraceAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* BracketAttri = {read=fBracketAttri, write=fBracketAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynTeXSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynTeXSyn() { }
 	
 };
 

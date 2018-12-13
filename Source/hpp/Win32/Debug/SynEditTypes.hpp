@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditTypes.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditTypes.pas' rev: 33.00 (Windows)
 
 #ifndef SynedittypesHPP
 #define SynedittypesHPP
@@ -44,7 +44,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall ESynError(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynError(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynError(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~ESynError(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~ESynError() { }
 	
 };
 

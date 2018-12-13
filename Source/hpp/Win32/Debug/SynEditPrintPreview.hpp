@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrintPreview.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrintPreview.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditprintpreviewHPP
 #define SyneditprintpreviewHPP
@@ -69,32 +69,32 @@ private:
 	HIDESBASE MESSAGE void __fastcall WMSize(Winapi::Messages::TWMSize &Msg);
 	HIDESBASE MESSAGE void __fastcall WMVScroll(Winapi::Messages::TWMScroll &Msg);
 	HIDESBASE MESSAGE void __fastcall WMMouseWheel(Winapi::Messages::TWMMouseWheel &Message);
-	void __fastcall PaintPaper(void);
-	int __fastcall GetPageCount(void);
+	void __fastcall PaintPaper();
+	int __fastcall GetPageCount();
 	
 protected:
 	virtual void __fastcall CreateParams(Vcl::Controls::TCreateParams &Params);
 	int __fastcall GetPageHeightFromWidth(int AWidth);
-	int __fastcall GetPageHeight100Percent(void);
+	int __fastcall GetPageHeight100Percent();
 	int __fastcall GetPageWidthFromHeight(int AHeight);
-	int __fastcall GetPageWidth100Percent(void);
+	int __fastcall GetPageWidth100Percent();
 	virtual void __fastcall Notification(System::Classes::TComponent* AComponent, System::Classes::TOperation Operation);
 	void __fastcall ScrollHorzFor(int Value);
 	virtual void __fastcall ScrollHorzTo(int Value);
 	void __fastcall ScrollVertFor(int Value);
 	virtual void __fastcall ScrollVertTo(int Value);
-	virtual void __fastcall UpdateScrollbars(void);
-	virtual void __fastcall SizeChanged(void);
+	virtual void __fastcall UpdateScrollbars();
+	virtual void __fastcall SizeChanged();
 	
 public:
 	__fastcall virtual TSynEditPrintPreview(System::Classes::TComponent* AOwner);
-	virtual void __fastcall Paint(void);
-	void __fastcall UpdatePreview(void);
-	void __fastcall NextPage(void);
-	void __fastcall PreviousPage(void);
-	void __fastcall FirstPage(void);
-	void __fastcall LastPage(void);
-	void __fastcall Print(void);
+	virtual void __fastcall Paint();
+	void __fastcall UpdatePreview();
+	void __fastcall NextPage();
+	void __fastcall PreviousPage();
+	void __fastcall FirstPage();
+	void __fastcall LastPage();
+	void __fastcall Print();
 	__property int PageNumber = {read=FPageNumber, nodefault};
 	__property int PageCount = {read=GetPageCount, nodefault};
 	
@@ -116,7 +116,7 @@ __published:
 	__property TPreviewPageEvent OnPreviewPage = {read=FOnPreviewPage, write=FOnPreviewPage};
 	__property System::Classes::TNotifyEvent OnScaleChange = {read=FOnScaleChange, write=FOnScaleChange};
 public:
-	/* TCustomControl.Destroy */ inline __fastcall virtual ~TSynEditPrintPreview(void) { }
+	/* TCustomControl.Destroy */ inline __fastcall virtual ~TSynEditPrintPreview() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TSynEditPrintPreview(HWND ParentWindow) : Vcl::Controls::TCustomControl(ParentWindow) { }

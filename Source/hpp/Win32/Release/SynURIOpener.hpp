@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynURIOpener.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynURIOpener.pas' rev: 33.00 (Windows)
 
 #ifndef SynuriopenerHPP
 #define SynuriopenerHPP
@@ -42,7 +42,7 @@ private:
 	Synhighlighteruri::TSynURISyn* FURIHighlighter;
 	System::Classes::TStringList* FVisitedURIs;
 	void __fastcall OpenLink(System::UnicodeString URI, int LinkType);
-	bool __fastcall MouseInSynEdit(void);
+	bool __fastcall MouseInSynEdit();
 	
 protected:
 	void __fastcall NewKeyDown(System::TObject* Sender, System::Word &Key, System::Classes::TShiftState Shift);
@@ -56,7 +56,7 @@ protected:
 	
 public:
 	__fastcall virtual TSynURIOpener(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynURIOpener(void);
+	__fastcall virtual ~TSynURIOpener();
 	bool __fastcall VisitedURI(System::UnicodeString URI);
 	
 __published:

@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditHighlighterOptions.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditHighlighterOptions.pas' rev: 33.00 (Windows)
 
 #ifndef SynedithighlighteroptionsHPP
 #define SynedithighlighteroptionsHPP
@@ -52,10 +52,10 @@ __published:
 	__property System::WideString Title = {read=FTitle, write=FTitle};
 	__property bool Visible = {read=FVisible, write=FVisible, nodefault};
 public:
-	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynEditHighlighterOptions(void) { }
+	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynEditHighlighterOptions() { }
 	
 public:
-	/* TObject.Create */ inline __fastcall TSynEditHighlighterOptions(void) : System::Classes::TPersistent() { }
+	/* TObject.Create */ inline __fastcall TSynEditHighlighterOptions() : System::Classes::TPersistent() { }
 	
 };
 

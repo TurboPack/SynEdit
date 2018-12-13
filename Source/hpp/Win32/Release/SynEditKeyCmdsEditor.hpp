@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditKeyCmdsEditor.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditKeyCmdsEditor.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditkeycmdseditorHPP
 #define SyneditkeycmdseditorHPP
@@ -68,12 +68,12 @@ private:
 	Syneditkeycmds::TSynEditKeyStrokes* FKeystrokes;
 	bool FExtended;
 	void __fastcall SetKeystrokes(Syneditkeycmds::TSynEditKeyStrokes* const Value);
-	void __fastcall UpdateKeystrokesList(void);
+	void __fastcall UpdateKeystrokesList();
 	HIDESBASE MESSAGE void __fastcall WMGetMinMaxInfo(Winapi::Messages::TWMGetMinMaxInfo &Msg);
 	
 public:
 	__fastcall virtual TSynEditKeystrokesEditorForm(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynEditKeystrokesEditorForm(void);
+	__fastcall virtual ~TSynEditKeystrokesEditorForm();
 	__property Syneditkeycmds::TSynEditKeyStrokes* Keystrokes = {read=FKeystrokes, write=SetKeystrokes};
 	__property bool ExtendedString = {read=FExtended, write=FExtended, nodefault};
 public:

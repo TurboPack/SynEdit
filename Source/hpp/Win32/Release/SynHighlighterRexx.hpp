@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterRexx.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterRexx.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterrexxHPP
 #define SynhighlighterrexxHPP
@@ -32,7 +32,7 @@ enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkComment, tkIdentifier, tkKe
 
 enum DECLSPEC_DENUM TRangeState : unsigned char { rsUnKnown, rsMultilineComment, rsSinglelineComment, rsStringDouble, rsStringSingle };
 
-typedef void __fastcall (__closure *TProcTableProc)(void);
+typedef void __fastcall (__closure *TProcTableProc)();
 
 typedef TtkTokenKind __fastcall (__closure *TIdentFuncTableFunc)(int Index);
 
@@ -153,43 +153,43 @@ private:
 	TtkTokenKind __fastcall FuncX2c(int Index);
 	TtkTokenKind __fastcall FuncX2d(int Index);
 	TtkTokenKind __fastcall FuncXrange(int Index);
-	void __fastcall IdentProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall IdentProc();
+	void __fastcall UnknownProc();
 	TtkTokenKind __fastcall AltFunc(int Index);
-	void __fastcall InitIdent(void);
+	void __fastcall InitIdent();
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall NullProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall MultilineCommentOpenProc(void);
-	void __fastcall MultilineCommentProc(void);
-	void __fastcall SinglelineCommentOpenProc(void);
-	void __fastcall SinglelineCommentProc(void);
-	void __fastcall StringDoubleOpenProc(void);
-	void __fastcall StringDoubleProc(void);
-	void __fastcall StringSingleOpenProc(void);
-	void __fastcall StringSingleProc(void);
+	void __fastcall NullProc();
+	void __fastcall SpaceProc();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
+	void __fastcall MultilineCommentOpenProc();
+	void __fastcall MultilineCommentProc();
+	void __fastcall SinglelineCommentOpenProc();
+	void __fastcall SinglelineCommentProc();
+	void __fastcall StringDoubleOpenProc();
+	void __fastcall StringDoubleProc();
+	void __fastcall StringSingleOpenProc();
+	void __fastcall StringSingleProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__fastcall virtual TSynRexxSyn(System::Classes::TComponent* AOwner);
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
-	virtual void * __fastcall GetRange(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void * __fastcall GetRange();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
+	virtual bool __fastcall GetEol();
 	virtual System::UnicodeString __fastcall GetKeyWords(int TokenKind);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};
@@ -200,7 +200,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* StdFunctionAttri = {read=fStdFunctionAttri, write=fStdFunctionAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* StringAttri = {read=fStringAttri, write=fStringAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynRexxSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynRexxSyn() { }
 	
 };
 

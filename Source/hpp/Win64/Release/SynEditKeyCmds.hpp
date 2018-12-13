@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditKeyCmds.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditKeyCmds.pas' rev: 32.00 (Windows)
 
 #ifndef SyneditkeycmdsHPP
 #define SyneditkeycmdsHPP
@@ -113,7 +113,7 @@ protected:
 public:
 	__fastcall TSynEditKeyStrokes(System::Classes::TPersistent* AOwner);
 	HIDESBASE TSynEditKeyStroke* __fastcall Add(void);
-	void __fastcall AddKey(const TSynEditorCommand ACmd, const System::Word AKey, const System::Classes::TShiftState AShift);
+	void __fastcall AddKey(const TSynEditorCommand ACmd, const System::Word AKey, const System::Classes::TShiftState AShift, const System::Word AKey2 = (System::Word)(0x0), const System::Classes::TShiftState AShift2 = System::Classes::TShiftState() );
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	int __fastcall FindCommand(TSynEditorCommand Cmd);
 	int __fastcall FindKeycode(System::Word Code, System::Classes::TShiftState SS);
@@ -238,6 +238,18 @@ static const System::Word ecUpperCaseBlock = System::Word(0x271);
 static const System::Word ecLowerCaseBlock = System::Word(0x272);
 static const System::Word ecToggleCaseBlock = System::Word(0x273);
 static const System::Word ecString = System::Word(0x276);
+static const System::Word ecFoldAll = System::Word(0x2bd);
+static const System::Word ecUnfoldAll = System::Word(0x2be);
+static const System::Word ecFoldNearest = System::Word(0x2c1);
+static const System::Word ecUnfoldNearest = System::Word(0x2c2);
+static const System::Word ecFoldLevel1 = System::Word(0x2c7);
+static const System::Word ecFoldLevel2 = System::Word(0x2c8);
+static const System::Word ecFoldLevel3 = System::Word(0x2c9);
+static const System::Word ecUnfoldLevel1 = System::Word(0x2d1);
+static const System::Word ecUnfoldLevel2 = System::Word(0x2d2);
+static const System::Word ecUnfoldLevel3 = System::Word(0x2d3);
+static const System::Word ecFoldRegions = System::Word(0x2db);
+static const System::Word ecUnfoldRegions = System::Word(0x2dc);
 static const System::Word ecUserFirst = System::Word(0x3e9);
 extern DELPHI_PACKAGE void __fastcall GetEditorCommandValues(System::Classes::TGetStrProc Proc);
 extern DELPHI_PACKAGE void __fastcall GetEditorCommandExtended(System::Classes::TGetStrProc Proc);

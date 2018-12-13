@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterCSS.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterCSS.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightercssHPP
 #define SynhighlightercssHPP
@@ -59,53 +59,53 @@ private:
 	void __fastcall DoAddKeyword(System::UnicodeString AKeyword, int AKind);
 	int __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall SelectorProc(void);
-	void __fastcall AttributeProc(void);
-	void __fastcall CommentProc(void);
-	void __fastcall BraceCloseProc(void);
-	void __fastcall BraceOpenProc(void);
-	void __fastcall ParenOpenProc(void);
-	void __fastcall ParenCloseProc(void);
-	void __fastcall BracketOpenProc(void);
-	void __fastcall BracketCloseProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall SemiProc(void);
-	void __fastcall StartValProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall HashProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall GreaterProc(void);
-	void __fastcall PlusProc(void);
-	void __fastcall TildeProc(void);
-	void __fastcall PipeProc(void);
-	void __fastcall EqualProc(void);
-	void __fastcall ExclamProc(void);
+	void __fastcall SelectorProc();
+	void __fastcall AttributeProc();
+	void __fastcall CommentProc();
+	void __fastcall BraceCloseProc();
+	void __fastcall BraceOpenProc();
+	void __fastcall ParenOpenProc();
+	void __fastcall ParenCloseProc();
+	void __fastcall BracketOpenProc();
+	void __fastcall BracketCloseProc();
+	void __fastcall CRProc();
+	void __fastcall SemiProc();
+	void __fastcall StartValProc();
+	void __fastcall NumberProc();
+	void __fastcall IdentProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall HashProc();
+	void __fastcall SlashProc();
+	void __fastcall GreaterProc();
+	void __fastcall PlusProc();
+	void __fastcall TildeProc();
+	void __fastcall PipeProc();
+	void __fastcall EqualProc();
+	void __fastcall ExclamProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
-	void __fastcall NextDeclaration(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
+	void __fastcall NextDeclaration();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynCssSyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynCssSyn(void);
+	__fastcall virtual ~TSynCssSyn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};

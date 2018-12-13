@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynDBEdit.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynDBEdit.pas' rev: 33.00 (Windows)
 
 #ifndef SyndbeditHPP
 #define SyndbeditHPP
@@ -50,9 +50,9 @@ private:
 	System::Classes::TNotifyEvent FLoadData;
 	void __fastcall DataChange(System::TObject* Sender);
 	void __fastcall EditingChange(System::TObject* Sender);
-	System::UnicodeString __fastcall GetDataField(void);
-	Data::Db::TDataSource* __fastcall GetDataSource(void);
-	Data::Db::TField* __fastcall GetField(void);
+	System::UnicodeString __fastcall GetDataField();
+	Data::Db::TDataSource* __fastcall GetDataSource();
+	Data::Db::TField* __fastcall GetField();
 	void __fastcall SetDataField(const System::UnicodeString Value);
 	void __fastcall SetDataSource(Data::Db::TDataSource* Value);
 	void __fastcall SetEditing(bool Value);
@@ -62,17 +62,17 @@ private:
 	MESSAGE void __fastcall CMGetDataLink(Winapi::Messages::TMessage &Msg);
 	
 protected:
-	virtual bool __fastcall GetReadOnly(void);
-	virtual void __fastcall Loaded(void);
-	virtual void __fastcall DoChange(void);
+	virtual bool __fastcall GetReadOnly();
+	virtual void __fastcall Loaded();
+	virtual void __fastcall DoChange();
 	virtual void __fastcall SetReadOnly(bool Value);
 	
 public:
 	__fastcall virtual TCustomDBSynEdit(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TCustomDBSynEdit(void);
+	__fastcall virtual ~TCustomDBSynEdit();
 	DYNAMIC void __fastcall DragDrop(System::TObject* Source, int X, int Y);
 	virtual void __fastcall ExecuteCommand(Syneditkeycmds::TSynEditorCommand Command, System::WideChar AChar, void * Data);
-	void __fastcall LoadMemo(void);
+	void __fastcall LoadMemo();
 	virtual void __fastcall Notification(System::Classes::TComponent* AComponent, System::Classes::TOperation Operation);
 	
 protected:
@@ -172,7 +172,7 @@ __published:
 	__property OnPaintTransient;
 public:
 	/* TCustomDBSynEdit.Create */ inline __fastcall virtual TDBSynEdit(System::Classes::TComponent* AOwner) : TCustomDBSynEdit(AOwner) { }
-	/* TCustomDBSynEdit.Destroy */ inline __fastcall virtual ~TDBSynEdit(void) { }
+	/* TCustomDBSynEdit.Destroy */ inline __fastcall virtual ~TDBSynEdit() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TDBSynEdit(HWND ParentWindow) : TCustomDBSynEdit(ParentWindow) { }

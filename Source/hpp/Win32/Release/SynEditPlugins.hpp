@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPlugins.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPlugins.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditpluginsHPP
 #define SyneditpluginsHPP
@@ -38,8 +38,8 @@ class PASCALIMPLEMENTATION TAbstractSynPlugin : public System::Classes::TCompone
 private:
 	void __fastcall SetEditor(Synedit::TCustomSynEdit* const Value);
 	Synedit::TCustomSynEdit* __fastcall GetEditors(int aIndex);
-	Synedit::TCustomSynEdit* __fastcall GetEditor(void);
-	int __fastcall GetEditorCount(void);
+	Synedit::TCustomSynEdit* __fastcall GetEditor();
+	int __fastcall GetEditorCount();
 	
 protected:
 	System::Classes::TList* fEditors;
@@ -50,7 +50,7 @@ protected:
 	int __fastcall RemoveEditor(Synedit::TCustomSynEdit* aEditor);
 	
 public:
-	__fastcall virtual ~TAbstractSynPlugin(void);
+	__fastcall virtual ~TAbstractSynPlugin();
 	__property Synedit::TCustomSynEdit* Editors[int aIndex] = {read=GetEditors};
 	__property int EditorCount = {read=GetEditorCount, nodefault};
 	
@@ -71,7 +71,7 @@ protected:
 	void __fastcall UnHookEditor(Synedit::TCustomSynEdit* aEditor, Syneditkeycmds::TSynEditorCommand aCommandID, System::Classes::TShortCut aShortCut);
 	virtual void __fastcall OnCommand(System::TObject* Sender, bool AfterProcessing, bool &Handled, Syneditkeycmds::TSynEditorCommand &Command, System::WideChar &AChar, void * Data, void * HandlerData) = 0 ;
 public:
-	/* TAbstractSynPlugin.Destroy */ inline __fastcall virtual ~TAbstractSynHookerPlugin(void) { }
+	/* TAbstractSynPlugin.Destroy */ inline __fastcall virtual ~TAbstractSynHookerPlugin() { }
 	
 public:
 	/* TComponent.Create */ inline __fastcall virtual TAbstractSynHookerPlugin(System::Classes::TComponent* AOwner) : TAbstractSynPlugin(AOwner) { }
@@ -87,7 +87,7 @@ class PASCALIMPLEMENTATION TAbstractSynSingleHookPlugin : public TAbstractSynHoo
 	
 private:
 	Syneditkeycmds::TSynEditorCommand fCommandID;
-	bool __fastcall IsShortCutStored(void);
+	bool __fastcall IsShortCutStored();
 	void __fastcall SetShortCut(const System::Classes::TShortCut Value);
 	
 protected:
@@ -97,19 +97,19 @@ protected:
 	__classmethod virtual System::Classes::TShortCut __fastcall DefaultShortCut();
 	virtual void __fastcall DoAddEditor(Synedit::TCustomSynEdit* aEditor);
 	virtual void __fastcall DoRemoveEditor(Synedit::TCustomSynEdit* aEditor);
-	virtual void __fastcall DoExecute(void) = 0 ;
-	virtual void __fastcall DoAccept(void) = 0 ;
-	virtual void __fastcall DoCancel(void) = 0 ;
+	virtual void __fastcall DoExecute() = 0 ;
+	virtual void __fastcall DoAccept() = 0 ;
+	virtual void __fastcall DoCancel() = 0 ;
 	
 public:
 	__fastcall virtual TAbstractSynSingleHookPlugin(System::Classes::TComponent* aOwner);
-	__fastcall virtual ~TAbstractSynSingleHookPlugin(void);
+	__fastcall virtual ~TAbstractSynSingleHookPlugin();
 	__property Syneditkeycmds::TSynEditorCommand CommandID = {read=fCommandID, nodefault};
 	__property Synedit::TCustomSynEdit* CurrentEditor = {read=fCurrentEditor};
-	bool __fastcall Executing(void);
+	bool __fastcall Executing();
 	void __fastcall Execute(Synedit::TCustomSynEdit* aEditor);
-	void __fastcall Accept(void);
-	void __fastcall Cancel(void);
+	void __fastcall Accept();
+	void __fastcall Cancel();
 	
 __published:
 	__property System::Classes::TShortCut ShortCut = {read=fShortCut, write=SetShortCut, stored=IsShortCutStored, nodefault};
@@ -124,23 +124,23 @@ protected:
 	System::UnicodeString fCurrentString;
 	virtual void __fastcall SetCurrentString(const System::UnicodeString Value);
 	virtual void __fastcall OnCommand(System::TObject* Sender, bool AfterProcessing, bool &Handled, Syneditkeycmds::TSynEditorCommand &Command, System::WideChar &AChar, void * Data, void * HandlerData);
-	virtual void __fastcall DoExecute(void);
-	virtual void __fastcall DoAccept(void);
-	virtual void __fastcall DoCancel(void);
-	virtual System::UnicodeString __fastcall GetCurrentEditorString(void);
+	virtual void __fastcall DoExecute();
+	virtual void __fastcall DoAccept();
+	virtual void __fastcall DoCancel();
+	virtual System::UnicodeString __fastcall GetCurrentEditorString();
 	
 public:
 	HIDESBASE void __fastcall AddEditor(Synedit::TCustomSynEdit* aEditor);
 	__property System::UnicodeString CurrentString = {read=fCurrentString, write=SetCurrentString};
 public:
 	/* TAbstractSynSingleHookPlugin.Create */ inline __fastcall virtual TAbstractSynCompletion(System::Classes::TComponent* aOwner) : TAbstractSynSingleHookPlugin(aOwner) { }
-	/* TAbstractSynSingleHookPlugin.Destroy */ inline __fastcall virtual ~TAbstractSynCompletion(void) { }
+	/* TAbstractSynSingleHookPlugin.Destroy */ inline __fastcall virtual ~TAbstractSynCompletion() { }
 	
 };
 
 
 //-- var, const, procedure ---------------------------------------------------
-extern DELPHI_PACKAGE Syneditkeycmds::TSynEditorCommand __fastcall NewPluginCommand(void);
+extern DELPHI_PACKAGE Syneditkeycmds::TSynEditorCommand __fastcall NewPluginCommand();
 extern DELPHI_PACKAGE void __fastcall ReleasePluginCommand(Syneditkeycmds::TSynEditorCommand aCmd);
 }	/* namespace Syneditplugins */
 #if !defined(DELPHIHEADER_NO_IMPLICIT_NAMESPACE_USE) && !defined(NO_USING_NAMESPACE_SYNEDITPLUGINS)

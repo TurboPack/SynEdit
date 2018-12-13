@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditWildcardSearch.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditWildcardSearch.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditwildcardsearchHPP
 #define SyneditwildcardsearchHPP
@@ -35,17 +35,17 @@ private:
 	System::UnicodeString fPattern;
 	
 protected:
-	virtual System::UnicodeString __fastcall GetPattern(void);
+	virtual System::UnicodeString __fastcall GetPattern();
 	virtual void __fastcall SetPattern(const System::UnicodeString Value);
 	virtual void __fastcall SetOptions(const Synedittypes::TSynSearchOptions Value);
 	virtual int __fastcall GetLength(int Index);
 	virtual int __fastcall GetResult(int Index);
-	virtual int __fastcall GetResultCount(void);
+	virtual int __fastcall GetResultCount();
 	System::UnicodeString __fastcall WildCardToRegExpr(System::UnicodeString AWildCard);
 	
 public:
 	__fastcall virtual TSynEditWildcardSearch(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynEditWildcardSearch(void);
+	__fastcall virtual ~TSynEditWildcardSearch();
 	virtual int __fastcall FindAll(const System::UnicodeString NewText);
 	virtual System::UnicodeString __fastcall Replace(const System::UnicodeString aOccurrence, const System::UnicodeString aReplacement);
 };

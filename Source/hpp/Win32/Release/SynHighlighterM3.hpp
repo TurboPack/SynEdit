@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterM3.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterM3.pas' rev: 33.00 (Windows)
 
 #ifndef Synhighlighterm3HPP
 #define Synhighlighterm3HPP
@@ -78,38 +78,38 @@ private:
 	void __fastcall DoAddKeyword(System::UnicodeString AKeyword, int AKind);
 	int __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall SymAsciiCharProc(void);
-	void __fastcall SymCommentHelpProc(void);
-	void __fastcall SymCRProc(void);
-	void __fastcall SymIdentProc(void);
-	void __fastcall SymLFProc(void);
+	void __fastcall SymAsciiCharProc();
+	void __fastcall SymCommentHelpProc();
+	void __fastcall SymCRProc();
+	void __fastcall SymIdentProc();
+	void __fastcall SymLFProc();
 	void __fastcall SymNestedHelperProc(System::WideChar AOpenChar, System::WideChar ACloseChar);
-	void __fastcall SymNullProc(void);
-	void __fastcall SymNumberProc(void);
-	void __fastcall SymPragmaProc(void);
-	void __fastcall SymPragmaHelpProc(void);
-	void __fastcall SymRoundOpenProc(void);
-	void __fastcall SymSpaceProc(void);
-	void __fastcall SymStringProc(void);
-	void __fastcall SymSymbolProc(void);
-	void __fastcall SymUnknownProc(void);
+	void __fastcall SymNullProc();
+	void __fastcall SymNumberProc();
+	void __fastcall SymPragmaProc();
+	void __fastcall SymPragmaHelpProc();
+	void __fastcall SymRoundOpenProc();
+	void __fastcall SymSpaceProc();
+	void __fastcall SymStringProc();
+	void __fastcall SymSymbolProc();
+	void __fastcall SymUnknownProc();
 	
 protected:
-	virtual bool __fastcall IsFilterStored(void);
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynM3Syn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynM3Syn(void);
+	__fastcall virtual ~TSynM3Syn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
-	virtual void __fastcall ResetRange(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	
 __published:

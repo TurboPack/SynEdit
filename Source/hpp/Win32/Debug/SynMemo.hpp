@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynMemo.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynMemo.pas' rev: 33.00 (Windows)
 
 #ifndef SynmemoHPP
 #define SynmemoHPP
@@ -50,7 +50,7 @@ private:
 	MESSAGE void __fastcall EMCharFromPos(Winapi::Messages::TMessage &Message);
 public:
 	/* TCustomSynEdit.Create */ inline __fastcall virtual TSynMemo(System::Classes::TComponent* AOwner) : Synedit::TSynEdit(AOwner) { }
-	/* TCustomSynEdit.Destroy */ inline __fastcall virtual ~TSynMemo(void) { }
+	/* TCustomSynEdit.Destroy */ inline __fastcall virtual ~TSynMemo() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TSynMemo(HWND ParentWindow) : Synedit::TSynEdit(ParentWindow) { }

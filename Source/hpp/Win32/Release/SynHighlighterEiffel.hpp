@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterEiffel.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterEiffel.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightereiffelHPP
 #define SynhighlightereiffelHPP
@@ -151,37 +151,37 @@ private:
 	TtkTokenKind __fastcall FuncYes(int Index);
 	unsigned __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall IdentProc(void);
-	void __fastcall InitIdent(void);
-	void __fastcall OperatorAndSymbolProc(void);
-	void __fastcall UnknownProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall EiffelCommentOpenProc(void);
-	void __fastcall EiffelCommentProc(void);
-	void __fastcall StringOpenProc(void);
-	void __fastcall StringProc(void);
+	void __fastcall IdentProc();
+	void __fastcall InitIdent();
+	void __fastcall OperatorAndSymbolProc();
+	void __fastcall UnknownProc();
+	void __fastcall NullProc();
+	void __fastcall SpaceProc();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
+	void __fastcall EiffelCommentOpenProc();
+	void __fastcall EiffelCommentProc();
+	void __fastcall StringOpenProc();
+	void __fastcall StringProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__fastcall virtual TSynEiffelSyn(System::Classes::TComponent* AOwner);
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
-	virtual void * __fastcall GetRange(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void * __fastcall GetRange();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
+	virtual bool __fastcall GetEol();
 	virtual System::UnicodeString __fastcall GetKeyWords(int TokenKind);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	bool __fastcall IsOperatorChar(System::WideChar AChar);
 	
 __published:
@@ -196,7 +196,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* SpaceAttri = {read=fSpaceAttri, write=fSpaceAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* StringAttri = {read=fStringAttri, write=fStringAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynEiffelSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynEiffelSyn() { }
 	
 };
 

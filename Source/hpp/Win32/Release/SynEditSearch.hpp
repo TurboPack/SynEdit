@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditSearch.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditSearch.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditsearchHPP
 #define SyneditsearchHPP
@@ -47,27 +47,27 @@ private:
 	System::Classes::TList* fResults;
 	bool fShiftInitialized;
 	System::UnicodeString FTextToSearch;
-	bool __fastcall GetFinished(void);
-	void __fastcall InitShiftTable(void);
+	bool __fastcall GetFinished();
+	void __fastcall InitShiftTable();
 	void __fastcall SetCaseSensitive(const bool Value);
 	
 protected:
-	bool __fastcall TestWholeWord(void);
+	bool __fastcall TestWholeWord();
 	virtual void __fastcall SetPattern(const System::UnicodeString Value);
-	virtual System::UnicodeString __fastcall GetPattern(void);
+	virtual System::UnicodeString __fastcall GetPattern();
 	virtual int __fastcall GetLength(int Index);
 	virtual int __fastcall GetResult(int Index);
-	virtual int __fastcall GetResultCount(void);
+	virtual int __fastcall GetResultCount();
 	virtual void __fastcall SetOptions(const Synedittypes::TSynSearchOptions Value);
 	
 public:
 	__fastcall virtual TSynEditSearch(System::Classes::TComponent* aOwner);
-	__fastcall virtual ~TSynEditSearch(void);
+	__fastcall virtual ~TSynEditSearch();
 	virtual int __fastcall FindAll(const System::UnicodeString NewText);
 	virtual System::UnicodeString __fastcall Replace(const System::UnicodeString aOccurrence, const System::UnicodeString aReplacement);
 	int __fastcall FindFirst(const System::UnicodeString NewText);
 	void __fastcall FixResults(int First, int Delta);
-	int __fastcall Next(void);
+	int __fastcall Next();
 	__property int Count = {read=fCount, write=fCount, nodefault};
 	__property bool Finished = {read=GetFinished, nodefault};
 	__property Pattern = {read=CasedPat, default=0};

@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterRC.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterRC.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterrcHPP
 #define SynhighlighterrcHPP
@@ -58,39 +58,39 @@ private:
 	TtkTokenKind __fastcall KeyWordFunc(int Index);
 	unsigned __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall InitIdent(void);
-	void __fastcall CommentProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall DirectiveProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall QuoteProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall SymbolProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall InitIdent();
+	void __fastcall CommentProc();
+	void __fastcall CRProc();
+	void __fastcall DirectiveProc();
+	void __fastcall IdentProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall QuoteProc();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall SymbolProc();
+	void __fastcall UnknownProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual Synedithighlighter::TSynHighlighterCapabilities __fastcall GetCapabilities();
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynRCSyn(System::Classes::TComponent* aOwner);
-	__fastcall virtual ~TSynRCSyn(void);
+	__fastcall virtual ~TSynRCSyn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	virtual bool __fastcall UseUserSettings(int SettingIndex);
 	virtual void __fastcall EnumUserSettings(System::Classes::TStrings* Settings);
 	

@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditExport.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditExport.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditexportHPP
 #define SyneditexportHPP
@@ -50,7 +50,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall ESynEncoding(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : Synedittypes::ESynError(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEncoding(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEncoding(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : Synedittypes::ESynError(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~ESynEncoding(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~ESynEncoding() { }
 	
 };
 
@@ -90,36 +90,36 @@ protected:
 	bool fUseBackground;
 	void __fastcall AddData(const System::UnicodeString AText);
 	void __fastcall AddDataNewLine(const System::UnicodeString AText);
-	void __fastcall AddNewLine(void);
+	void __fastcall AddNewLine();
 	void __fastcall CopyToClipboardFormat(unsigned AFormat);
 	virtual void __fastcall DefineProperties(System::Classes::TFiler* Filer);
 	virtual void __fastcall FormatAttributeDone(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged) = 0 ;
 	virtual void __fastcall FormatAttributeInit(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged) = 0 ;
-	virtual void __fastcall FormatAfterLastAttribute(void) = 0 ;
+	virtual void __fastcall FormatAfterLastAttribute() = 0 ;
 	virtual void __fastcall FormatBeforeFirstAttribute(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged) = 0 ;
 	virtual void __fastcall FormatToken(System::UnicodeString Token);
-	virtual void __fastcall FormatNewLine(void) = 0 ;
-	int __fastcall GetBufferSize(void);
-	virtual unsigned __fastcall GetClipboardFormat(void);
-	virtual System::UnicodeString __fastcall GetFooter(void) = 0 ;
-	virtual System::UnicodeString __fastcall GetFormatName(void);
-	virtual System::UnicodeString __fastcall GetHeader(void) = 0 ;
+	virtual void __fastcall FormatNewLine() = 0 ;
+	int __fastcall GetBufferSize();
+	virtual unsigned __fastcall GetClipboardFormat();
+	virtual System::UnicodeString __fastcall GetFooter() = 0 ;
+	virtual System::UnicodeString __fastcall GetFormatName();
+	virtual System::UnicodeString __fastcall GetHeader() = 0 ;
 	void __fastcall InsertData(int APos, const System::UnicodeString AText);
 	virtual System::UnicodeString __fastcall ReplaceReservedChar(System::WideChar AChar) = 0 ;
 	System::UnicodeString __fastcall ReplaceReservedChars(System::UnicodeString AToken);
 	virtual void __fastcall SetTokenAttribute(Synedithighlighter::TSynHighlighterAttributes* Attri);
-	virtual bool __fastcall UseBom(void) = 0 ;
+	virtual bool __fastcall UseBom() = 0 ;
 	
 public:
 	__fastcall virtual TSynCustomExporter(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynCustomExporter(void);
-	virtual void __fastcall Clear(void);
-	void __fastcall CopyToClipboard(void);
+	__fastcall virtual ~TSynCustomExporter();
+	virtual void __fastcall Clear();
+	void __fastcall CopyToClipboard();
 	void __fastcall ExportAll(System::Classes::TStrings* ALines);
 	void __fastcall ExportRange(System::Classes::TStrings* ALines, const Synedittypes::TBufferCoord &Start, const Synedittypes::TBufferCoord &Stop);
 	void __fastcall SaveToFile(const System::UnicodeString FileName);
 	void __fastcall SaveToStream(System::Classes::TStream* Stream);
-	virtual Synunicode::TSynEncodings __fastcall SupportedEncodings(void) = 0 ;
+	virtual Synunicode::TSynEncodings __fastcall SupportedEncodings() = 0 ;
 	__property System::Uitypes::TColor Color = {read=fBackgroundColor, write=fBackgroundColor, nodefault};
 	__property System::UnicodeString DefaultFilter = {read=fDefaultFilter, write=fDefaultFilter};
 	__property Synunicode::TSynEncoding Encoding = {read=FEncoding, write=SetEncoding, default=0};

@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditKbdHandler.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditKbdHandler.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditkbdhandlerHPP
 #define SyneditkbdhandlerHPP
@@ -44,7 +44,7 @@ public:
 public:
 	/* TWinControl.Create */ inline __fastcall virtual TKeyboardControl(System::Classes::TComponent* AOwner) : Vcl::Controls::TWinControl(AOwner) { }
 	/* TWinControl.CreateParented */ inline __fastcall TKeyboardControl(HWND ParentWindow) : Vcl::Controls::TWinControl(ParentWindow) { }
-	/* TWinControl.Destroy */ inline __fastcall virtual ~TKeyboardControl(void) { }
+	/* TWinControl.Destroy */ inline __fastcall virtual ~TKeyboardControl() { }
 	
 };
 
@@ -62,11 +62,11 @@ public:
 private:
 	System::Classes::TList* fData;
 	System::TMethod __fastcall GetItem(int Index);
-	int __fastcall GetCount(void);
+	int __fastcall GetCount();
 	
 public:
-	__fastcall TMethodList(void);
-	__fastcall virtual ~TMethodList(void);
+	__fastcall TMethodList();
+	__fastcall virtual ~TMethodList();
 	void __fastcall Add(const System::TMethod &aHandler);
 	void __fastcall Remove(const System::TMethod &aHandler);
 	__property System::TMethod Items[int Index] = {read=GetItem/*, default*/};
@@ -95,8 +95,8 @@ private:
 	bool fInMouseCursor;
 	
 public:
-	__fastcall TSynEditKbdHandler(void);
-	__fastcall virtual ~TSynEditKbdHandler(void);
+	__fastcall TSynEditKbdHandler();
+	__fastcall virtual ~TSynEditKbdHandler();
 	void __fastcall ExecuteKeyPress(System::TObject* Sender, System::WideChar &Key);
 	void __fastcall ExecuteKeyDown(System::TObject* Sender, System::Word &Key, System::Classes::TShiftState Shift);
 	void __fastcall ExecuteKeyUp(System::TObject* Sender, System::Word &Key, System::Classes::TShiftState Shift);

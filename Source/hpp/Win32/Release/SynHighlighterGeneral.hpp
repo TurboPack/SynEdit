@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterGeneral.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterGeneral.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightergeneralHPP
 #define SynhighlightergeneralHPP
@@ -63,30 +63,30 @@ private:
 	bool fDetectPreprocessor;
 	TGetTokenAttributeEvent fOnGetTokenAttribute;
 	bool FStringMultiLine;
-	void __fastcall AsciiCharProc(void);
-	void __fastcall BraceOpenProc(void);
-	void __fastcall PointCommaProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall IntegerProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall RoundOpenProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall UnknownProc(void);
-	void __fastcall AnsiProc(void);
-	void __fastcall PasStyleProc(void);
-	void __fastcall CStyleProc(void);
+	void __fastcall AsciiCharProc();
+	void __fastcall BraceOpenProc();
+	void __fastcall PointCommaProc();
+	void __fastcall CRProc();
+	void __fastcall IdentProc();
+	void __fastcall IntegerProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall RoundOpenProc();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall UnknownProc();
+	void __fastcall AnsiProc();
+	void __fastcall PasStyleProc();
+	void __fastcall CStyleProc();
 	void __fastcall SetKeyWords(System::Classes::TStrings* const Value);
 	void __fastcall SetComments(TCommentStyles Value);
-	TStringDelim __fastcall GetStringDelim(void);
+	TStringDelim __fastcall GetStringDelim();
 	void __fastcall SetStringDelim(const TStringDelim Value);
-	System::UnicodeString __fastcall GetIdentifierChars(void);
+	System::UnicodeString __fastcall GetIdentifierChars();
 	void __fastcall SetIdentifierChars(const System::UnicodeString Value);
-	bool __fastcall StoreIdentChars(void);
+	bool __fastcall StoreIdentChars();
 	void __fastcall SetDetectPreprocessor(bool Value);
 	
 public:
@@ -94,20 +94,20 @@ public:
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	bool __fastcall IsStringDelim(System::WideChar aChar);
 	__fastcall virtual TSynGeneralSyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynGeneralSyn(void);
+	__fastcall virtual ~TSynGeneralSyn();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
 	System::WideChar __fastcall GetCharBeforeToken(int offset = 0xffffffff);
 	System::WideChar __fastcall GetCharAfterToken(int offset = 0x1);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
 	virtual bool __fastcall IsKeyword(const System::UnicodeString AKeyword);
 	virtual bool __fastcall IsWordBreakChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall Next();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual bool __fastcall SaveToRegistry(HKEY RootKey, System::UnicodeString Key);
 	virtual bool __fastcall LoadFromRegistry(HKEY RootKey, System::UnicodeString Key);

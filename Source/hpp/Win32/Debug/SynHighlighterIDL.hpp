@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterIDL.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterIDL.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighteridlHPP
 #define SynhighlighteridlHPP
@@ -54,9 +54,9 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* fStringAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fSymbolAttri;
 	TtkTokenKind __fastcall AltFunc(int Index);
-	void __fastcall IdentProc(void);
-	void __fastcall SymbolProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall IdentProc();
+	void __fastcall SymbolProc();
+	void __fastcall UnknownProc();
 	TtkTokenKind __fastcall FuncAbstract(int Index);
 	TtkTokenKind __fastcall FuncAny(int Index);
 	TtkTokenKind __fastcall FuncAttribute(int Index);
@@ -107,38 +107,38 @@ private:
 	TtkTokenKind __fastcall FuncWstring(int Index);
 	unsigned __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall InitIdent(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall CommentOpenProc(void);
-	void __fastcall CommentProc(void);
-	void __fastcall StringOpenProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall CharOpenProc(void);
-	void __fastcall CharProc(void);
-	void __fastcall PreProcessorProc(void);
+	void __fastcall InitIdent();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall SpaceProc();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
+	void __fastcall CommentOpenProc();
+	void __fastcall CommentProc();
+	void __fastcall StringOpenProc();
+	void __fastcall StringProc();
+	void __fastcall CharOpenProc();
+	void __fastcall CharProc();
+	void __fastcall PreProcessorProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__fastcall virtual TSynIdlSyn(System::Classes::TComponent* AOwner);
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
-	virtual void * __fastcall GetRange(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void * __fastcall GetRange();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	virtual bool __fastcall GetEol();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};
@@ -151,7 +151,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* StringAttri = {read=fStringAttri, write=fStringAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* SymbolAttri = {read=fSymbolAttri, write=fSymbolAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynIdlSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynIdlSyn() { }
 	
 };
 

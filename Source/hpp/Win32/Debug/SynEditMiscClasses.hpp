@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditMiscClasses.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditMiscClasses.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditmiscclassesHPP
 #define SyneditmiscclassesHPP
@@ -60,7 +60,7 @@ private:
 	void __fastcall SetFG(System::Uitypes::TColor Value);
 	
 public:
-	__fastcall TSynSelectedColor(void);
+	__fastcall TSynSelectedColor();
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	
 __published:
@@ -68,7 +68,7 @@ __published:
 	__property System::Uitypes::TColor Foreground = {read=fFG, write=SetFG, default=-16777202};
 	__property System::Classes::TNotifyEvent OnChange = {read=fOnChange, write=fOnChange};
 public:
-	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynSelectedColor(void) { }
+	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynSelectedColor() { }
 	
 };
 
@@ -122,15 +122,16 @@ private:
 	void __fastcall SetGradientStartColor(const System::Uitypes::TColor Value);
 	void __fastcall SetGradientEndColor(const System::Uitypes::TColor Value);
 	void __fastcall SetGradientSteps(const int Value);
-	int __fastcall GetWidth(void);
+	int __fastcall GetWidth();
 	
 public:
-	__fastcall TSynGutter(void);
-	__fastcall virtual ~TSynGutter(void);
+	__fastcall TSynGutter();
+	__fastcall virtual ~TSynGutter();
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	void __fastcall AutoSizeDigitCount(int LinesCount);
 	System::UnicodeString __fastcall FormatLineNumber(int Line);
 	int __fastcall RealGutterWidth(int CharWidth);
+	virtual void __fastcall ChangeScale(int M, int D);
 	
 __published:
 	__property bool AutoSize = {read=fAutoSize, write=SetAutoSize, default=0};
@@ -179,6 +180,7 @@ private:
 public:
 	__fastcall TSynBookMarkOpt(System::Classes::TComponent* AOwner);
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
+	virtual void __fastcall ChangeScale(int M, int D);
 	
 __published:
 	__property Vcl::Controls::TImageList* BookmarkImages = {read=fBookmarkImages, write=SetBookmarkImages};
@@ -189,7 +191,7 @@ __published:
 	__property int Xoffset = {read=fXoffset, write=SetXOffset, default=12};
 	__property System::Classes::TNotifyEvent OnChange = {read=fOnChange, write=fOnChange};
 public:
-	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynBookMarkOpt(void) { }
+	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynBookMarkOpt() { }
 	
 };
 
@@ -209,16 +211,17 @@ private:
 	void __fastcall GlyphChange(System::TObject* Sender);
 	void __fastcall SetMaskColor(System::Uitypes::TColor Value);
 	void __fastcall SetVisible(bool Value);
-	int __fastcall GetWidth(void);
-	int __fastcall GetHeight(void);
+	int __fastcall GetWidth();
+	int __fastcall GetHeight();
 	
 public:
 	__fastcall TSynGlyph(NativeUInt aModule, const System::UnicodeString aName, System::Uitypes::TColor aMaskColor);
-	__fastcall virtual ~TSynGlyph(void);
+	__fastcall virtual ~TSynGlyph();
 	virtual void __fastcall Assign(System::Classes::TPersistent* aSource);
 	void __fastcall Draw(Vcl::Graphics::TCanvas* aCanvas, int aX, int aY, int aLineHeight);
 	__property int Width = {read=GetWidth, nodefault};
 	__property int Height = {read=GetHeight, nodefault};
+	virtual void __fastcall ChangeScale(int M, int D);
 	
 __published:
 	__property Vcl::Graphics::TBitmap* Glyph = {read=fGlyph, write=SetGlyph};
@@ -246,7 +249,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall ESynMethodChain(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynMethodChain(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynMethodChain(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~ESynMethodChain(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~ESynMethodChain() { }
 	
 };
 
@@ -268,11 +271,11 @@ protected:
 	__property TSynExceptionEvent ExceptionHandler = {read=FExceptionHandler, write=FExceptionHandler};
 	
 public:
-	__fastcall virtual TSynMethodChain(void);
-	__fastcall virtual ~TSynMethodChain(void);
+	__fastcall virtual TSynMethodChain();
+	__fastcall virtual ~TSynMethodChain();
 	void __fastcall Add(const System::TMethod &AEvent);
 	void __fastcall Remove(const System::TMethod &AEvent);
-	void __fastcall Fire(void);
+	void __fastcall Fire();
 };
 
 
@@ -293,8 +296,8 @@ public:
 	__property ExceptionHandler;
 	__property System::TObject* Sender = {read=FSender, write=FSender};
 public:
-	/* TSynMethodChain.Create */ inline __fastcall virtual TSynNotifyEventChain(void) : TSynMethodChain() { }
-	/* TSynMethodChain.Destroy */ inline __fastcall virtual ~TSynNotifyEventChain(void) { }
+	/* TSynMethodChain.Create */ inline __fastcall virtual TSynNotifyEventChain() : TSynMethodChain() { }
+	/* TSynMethodChain.Destroy */ inline __fastcall virtual ~TSynNotifyEventChain() { }
 	
 };
 
@@ -310,13 +313,14 @@ private:
 	int fHeight;
 	int fCount;
 	Vcl::Graphics::TBitmap* __fastcall CreateBitmapFromInternalList(NativeUInt aModule, const System::UnicodeString Name);
-	void __fastcall FreeBitmapFromInternalList(void);
+	void __fastcall FreeBitmapFromInternalList();
 	
 public:
 	__fastcall TSynInternalImage(NativeUInt aModule, const System::UnicodeString Name, int Count);
-	__fastcall virtual ~TSynInternalImage(void);
+	__fastcall virtual ~TSynInternalImage();
 	void __fastcall Draw(Vcl::Graphics::TCanvas* ACanvas, int Number, int X, int Y, int LineHeight);
 	void __fastcall DrawTransparent(Vcl::Graphics::TCanvas* ACanvas, int Number, int X, int Y, int LineHeight, System::Uitypes::TColor TransparentColor);
+	virtual void __fastcall ChangeScale(int M, int D);
 };
 
 #pragma pack(pop)
@@ -351,11 +355,11 @@ private:
 	
 protected:
 	virtual void __fastcall CreateParams(Vcl::Controls::TCreateParams &Params);
-	DYNAMIC void __fastcall DoExit(void);
+	DYNAMIC void __fastcall DoExit();
 	DYNAMIC void __fastcall KeyDown(System::Word &Key, System::Classes::TShiftState Shift);
 	DYNAMIC void __fastcall KeyUp(System::Word &Key, System::Classes::TShiftState Shift);
 	DYNAMIC void __fastcall MouseDown(System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
-	virtual void __fastcall Paint(void);
+	virtual void __fastcall Paint();
 	
 public:
 	__fastcall virtual TSynHotKey(System::Classes::TComponent* AOwner);
@@ -366,7 +370,7 @@ __published:
 	__property THKInvalidKeys InvalidKeys = {read=FInvalidKeys, write=SetInvalidKeys, default=3};
 	__property THKModifiers Modifiers = {read=FModifiers, write=SetModifiers, default=4};
 public:
-	/* TCustomControl.Destroy */ inline __fastcall virtual ~TSynHotKey(void) { }
+	/* TCustomControl.Destroy */ inline __fastcall virtual ~TSynHotKey() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TSynHotKey(HWND ParentWindow) : Vcl::Controls::TCustomControl(ParentWindow) { }
@@ -379,11 +383,11 @@ class PASCALIMPLEMENTATION TSynEditSearchCustom : public System::Classes::TCompo
 	typedef System::Classes::TComponent inherited;
 	
 protected:
-	virtual System::UnicodeString __fastcall GetPattern(void) = 0 ;
+	virtual System::UnicodeString __fastcall GetPattern() = 0 ;
 	virtual void __fastcall SetPattern(const System::UnicodeString Value) = 0 ;
 	virtual int __fastcall GetLength(int Index) = 0 ;
 	virtual int __fastcall GetResult(int Index) = 0 ;
-	virtual int __fastcall GetResultCount(void) = 0 ;
+	virtual int __fastcall GetResultCount() = 0 ;
 	virtual void __fastcall SetOptions(const Synedittypes::TSynSearchOptions Value) = 0 ;
 	
 public:
@@ -396,7 +400,7 @@ public:
 	__property Synedittypes::TSynSearchOptions Options = {write=SetOptions, nodefault};
 public:
 	/* TComponent.Create */ inline __fastcall virtual TSynEditSearchCustom(System::Classes::TComponent* AOwner) : System::Classes::TComponent(AOwner) { }
-	/* TComponent.Destroy */ inline __fastcall virtual ~TSynEditSearchCustom(void) { }
+	/* TComponent.Destroy */ inline __fastcall virtual ~TSynEditSearchCustom() { }
 	
 };
 
@@ -409,9 +413,9 @@ class PASCALIMPLEMENTATION TBetterRegistry : public System::Win::Registry::TRegi
 public:
 	HIDESBASE bool __fastcall OpenKeyReadOnly(const System::UnicodeString Key);
 public:
-	/* TRegistry.Create */ inline __fastcall TBetterRegistry(void)/* overload */ : System::Win::Registry::TRegistry() { }
+	/* TRegistry.Create */ inline __fastcall TBetterRegistry()/* overload */ : System::Win::Registry::TRegistry() { }
 	/* TRegistry.Create */ inline __fastcall TBetterRegistry(unsigned AAccess)/* overload */ : System::Win::Registry::TRegistry(AAccess) { }
-	/* TRegistry.Destroy */ inline __fastcall virtual ~TBetterRegistry(void) { }
+	/* TRegistry.Destroy */ inline __fastcall virtual ~TBetterRegistry() { }
 	
 };
 
@@ -419,6 +423,7 @@ public:
 
 //-- var, const, procedure ---------------------------------------------------
 static const System::Int8 BorderWidth = System::Int8(0x0);
+extern DELPHI_PACKAGE void __fastcall ResizeBitmap(Vcl::Graphics::TBitmap* Bitmap, const int NewWidth, const int NewHeight);
 }	/* namespace Syneditmiscclasses */
 #if !defined(DELPHIHEADER_NO_IMPLICIT_NAMESPACE_USE) && !defined(NO_USING_NAMESPACE_SYNEDITMISCCLASSES)
 using namespace Syneditmiscclasses;

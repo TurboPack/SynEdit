@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterJScript.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterJScript.pas' rev: 32.00 (Windows)
 
 #ifndef SynhighlighterjscriptHPP
 #define SynhighlighterjscriptHPP
@@ -21,6 +21,7 @@
 #include <SynUnicode.hpp>
 #include <System.SysUtils.hpp>
 #include <System.Classes.hpp>
+#include <SynEditCodeFolding.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
@@ -37,9 +38,9 @@ typedef TtkTokenKind __fastcall (__closure *TIdentFuncTableFunc)(int Index);
 
 typedef TIdentFuncTableFunc *PIdentFuncTableFunc;
 
-class PASCALIMPLEMENTATION TSynJScriptSyn : public Synedithighlighter::TSynCustomHighlighter
+class PASCALIMPLEMENTATION TSynJScriptSyn : public Syneditcodefolding::TSynCustomCodeFoldingHighlighter
 {
-	typedef Synedithighlighter::TSynCustomHighlighter inherited;
+	typedef Syneditcodefolding::TSynCustomCodeFoldingHighlighter inherited;
 	
 private:
 	TRangeState fRange;
@@ -479,6 +480,7 @@ public:
 	virtual void __fastcall Next(void);
 	virtual void __fastcall SetRange(void * Value);
 	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ScanForFoldRanges(Syneditcodefolding::TSynFoldRanges* FoldRanges, System::Classes::TStrings* LinesToScan, int FromLine, int ToLine);
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};

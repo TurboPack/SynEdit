@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrintMargins.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrintMargins.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditprintmarginsHPP
 #define SyneditprintmarginsHPP
@@ -47,16 +47,16 @@ private:
 	Syneditprinttypes::TUnitSystem FUnitSystem;
 	double __fastcall ConvertTo(double Value);
 	double __fastcall ConvertFrom(double Value);
-	double __fastcall GetBottom(void);
-	double __fastcall GetFooter(void);
-	double __fastcall GetGutter(void);
-	double __fastcall GetHeader(void);
-	double __fastcall GetLeft(void);
-	double __fastcall GetRight(void);
-	double __fastcall GetTop(void);
-	double __fastcall GetLeftHFTextIndent(void);
-	double __fastcall GetRightHFTextIndent(void);
-	double __fastcall GetHFInternalMargin(void);
+	double __fastcall GetBottom();
+	double __fastcall GetFooter();
+	double __fastcall GetGutter();
+	double __fastcall GetHeader();
+	double __fastcall GetLeft();
+	double __fastcall GetRight();
+	double __fastcall GetTop();
+	double __fastcall GetLeftHFTextIndent();
+	double __fastcall GetRightHFTextIndent();
+	double __fastcall GetHFInternalMargin();
 	void __fastcall SetBottom(const double Value);
 	void __fastcall SetFooter(const double Value);
 	void __fastcall SetGutter(const double Value);
@@ -79,7 +79,7 @@ public:
 	int PRightHFTextIndent;
 	int PHFInternalMargin;
 	int PGutter;
-	__fastcall TSynEditPrintMargins(void);
+	__fastcall TSynEditPrintMargins();
 	void __fastcall InitPage(Vcl::Graphics::TCanvas* ACanvas, int PageNum, Syneditprinterinfo::TSynEditPrinterInfo* PrinterInfo, bool LineNumbers, bool LineNumbersInMargin, int MaxLineNum);
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	void __fastcall LoadFromStream(System::Classes::TStream* AStream);
@@ -99,7 +99,7 @@ __published:
 	__property double Gutter = {read=GetGutter, write=SetGutter};
 	__property bool MirrorMargins = {read=FMirrorMargins, write=FMirrorMargins, nodefault};
 public:
-	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynEditPrintMargins(void) { }
+	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynEditPrintMargins() { }
 	
 };
 

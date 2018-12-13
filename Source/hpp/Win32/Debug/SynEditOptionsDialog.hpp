@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditOptionsDialog.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditOptionsDialog.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditoptionsdialogHPP
 #define SyneditoptionsdialogHPP
@@ -196,8 +196,8 @@ private:
 	bool InChanging;
 	bool FExtended;
 	System::Uitypes::TColor __fastcall GetColor(Vcl::Menus::TMenuItem* Item);
-	void __fastcall GetData(void);
-	void __fastcall PutData(void);
+	void __fastcall GetData();
+	void __fastcall PutData();
 	void __fastcall EditStrCallback(const System::UnicodeString S);
 	void __fastcall FillInKeystrokeInfo(Syneditkeycmds::TSynEditKeyStroke* AKey, Vcl::Comctrls::TListItem* AItem);
 	
@@ -211,7 +211,7 @@ public:
 public:
 	/* TCustomForm.Create */ inline __fastcall virtual TfmEditorOptionsDialog(System::Classes::TComponent* AOwner) : Vcl::Forms::TForm(AOwner) { }
 	/* TCustomForm.CreateNew */ inline __fastcall virtual TfmEditorOptionsDialog(System::Classes::TComponent* AOwner, int Dummy) : Vcl::Forms::TForm(AOwner, Dummy) { }
-	/* TCustomForm.Destroy */ inline __fastcall virtual ~TfmEditorOptionsDialog(void) { }
+	/* TCustomForm.Destroy */ inline __fastcall virtual ~TfmEditorOptionsDialog() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TfmEditorOptionsDialog(HWND ParentWindow) : Vcl::Forms::TForm(ParentWindow) { }
@@ -225,16 +225,16 @@ class PASCALIMPLEMENTATION TSynEditOptionsDialog : public System::Classes::TComp
 	
 private:
 	TfmEditorOptionsDialog* FForm;
-	TSynEditorOptionsUserCommand __fastcall GetUserCommandNames(void);
+	TSynEditorOptionsUserCommand __fastcall GetUserCommandNames();
 	void __fastcall SetUserCommandNames(const TSynEditorOptionsUserCommand Value);
-	TSynEditorOptionsAllUserCommands __fastcall GetUserCommands(void);
+	TSynEditorOptionsAllUserCommands __fastcall GetUserCommands();
 	void __fastcall SetUserCommands(const TSynEditorOptionsAllUserCommands Value);
-	bool __fastcall GetExtended(void);
+	bool __fastcall GetExtended();
 	void __fastcall SetExtended(const bool Value);
 	
 public:
 	__fastcall virtual TSynEditOptionsDialog(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynEditOptionsDialog(void);
+	__fastcall virtual ~TSynEditOptionsDialog();
 	bool __fastcall Execute(TSynEditorOptionsContainer* EditOptions);
 	__property TfmEditorOptionsDialog* Form = {read=FForm};
 	
@@ -275,7 +275,7 @@ private:
 	
 public:
 	__fastcall virtual TSynEditorOptionsContainer(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynEditorOptionsContainer(void);
+	__fastcall virtual ~TSynEditorOptionsContainer();
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	virtual void __fastcall AssignTo(System::Classes::TPersistent* Dest);
 	

@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterCache.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterCache.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightercacheHPP
 #define SynhighlightercacheHPP
@@ -69,39 +69,39 @@ private:
 	TtkTokenKind __fastcall Func38sql(int Index);
 	unsigned __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall InitIdent(void);
-	void __fastcall CRProc(void);
-	void __fastcall CommentProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall UnknownProc(void);
-	void __fastcall IndirectProc(void);
-	void __fastcall SymbolProc(void);
-	void __fastcall FuncProc(void);
-	void __fastcall DirectiveProc(void);
-	void __fastcall EmbeddedProc(void);
+	void __fastcall InitIdent();
+	void __fastcall CRProc();
+	void __fastcall CommentProc();
+	void __fastcall IdentProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall UnknownProc();
+	void __fastcall IndirectProc();
+	void __fastcall SymbolProc();
+	void __fastcall FuncProc();
+	void __fastcall DirectiveProc();
+	void __fastcall EmbeddedProc();
 	
 protected:
-	virtual bool __fastcall IsFilterStored(void);
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynCacheSyn(System::Classes::TComponent* AOwner);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* ClassAttri = {read=fClassAttri, write=fClassAttri};
@@ -121,7 +121,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* EmbededSQLandHTMLAttri = {read=fEmbedSQLAttri, write=fEmbedSQLAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* EmbededTextAttri = {read=fEmbedTextAttri, write=fEmbedTextAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynCacheSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynCacheSyn() { }
 	
 };
 

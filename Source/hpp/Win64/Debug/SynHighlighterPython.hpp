@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterPython.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterPython.pas' rev: 32.00 (Windows)
 
 #ifndef SynhighlighterpythonHPP
 #define SynhighlighterpythonHPP
@@ -20,6 +20,8 @@
 #include <SynUnicode.hpp>
 #include <System.SysUtils.hpp>
 #include <System.Classes.hpp>
+#include <SynEditCodeFolding.hpp>
+#include <SynRegExpr.hpp>
 
 //-- user supplied -----------------------------------------------------------
 
@@ -32,9 +34,9 @@ enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkComment, tkIdentifier, tkKe
 
 enum DECLSPEC_DENUM TRangeState : unsigned char { rsANil, rsComment, rsUnKnown, rsMultilineString, rsMultilineString2, rsMultilineString3 };
 
-class PASCALIMPLEMENTATION TSynPythonSyn : public Synedithighlighter::TSynCustomHighlighter
+class PASCALIMPLEMENTATION TSynPythonSyn : public Syneditcodefolding::TSynCustomCodeFoldingHighlighter
 {
-	typedef Synedithighlighter::TSynCustomHighlighter inherited;
+	typedef Syneditcodefolding::TSynCustomCodeFoldingHighlighter inherited;
 	
 private:
 	System::WideChar fStringStarter;
@@ -55,6 +57,7 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* fIdentifierAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fSpaceAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fErrorAttri;
+	Synregexpr::TRegExpr* BlockOpenerRE;
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
 	void __fastcall SymbolProc(void);
 	void __fastcall CRProc(void);
@@ -94,6 +97,8 @@ public:
 	virtual void __fastcall Next(void);
 	virtual void __fastcall SetRange(void * Value);
 	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall InitFoldRanges(Syneditcodefolding::TSynFoldRanges* FoldRanges);
+	virtual void __fastcall ScanForFoldRanges(Syneditcodefolding::TSynFoldRanges* FoldRanges, System::Classes::TStrings* LinesToScan, int FromLine, int ToLine);
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* CommentAttri = {read=fCommentAttri, write=fCommentAttri};

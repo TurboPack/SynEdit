@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterMulti.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterMulti.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightermultiHPP
 #define SynhighlightermultiHPP
@@ -55,12 +55,12 @@ private:
 	
 protected:
 	virtual void __fastcall DefineProperties(System::Classes::TFiler* Filer);
-	virtual System::UnicodeString __fastcall GetDisplayName(void);
+	virtual System::UnicodeString __fastcall GetDisplayName();
 	virtual void __fastcall SetDisplayName(const System::UnicodeString Value);
 	
 public:
 	__fastcall virtual TScheme(System::Classes::TCollection* Collection);
-	__fastcall virtual ~TScheme(void);
+	__fastcall virtual ~TScheme();
 	
 __published:
 	__property bool CaseSensitive = {read=fCaseSensitive, write=SetCaseSensitive, default=1};
@@ -90,14 +90,14 @@ private:
 	void __fastcall SetItems(int Index, TScheme* const Value);
 	
 protected:
-	DYNAMIC System::Classes::TPersistent* __fastcall GetOwner(void);
+	DYNAMIC System::Classes::TPersistent* __fastcall GetOwner();
 	virtual void __fastcall Update(System::Classes::TCollectionItem* Item);
 	
 public:
 	__fastcall TSchemes(TSynMultiSyn* aOwner);
 	__property TScheme* Items[int aIndex] = {read=GetItems, write=SetItems/*, default*/};
 public:
-	/* TCollection.Destroy */ inline __fastcall virtual ~TSchemes(void) { }
+	/* TCollection.Destroy */ inline __fastcall virtual ~TSchemes() { }
 	
 };
 
@@ -118,7 +118,7 @@ protected:
 public:
 	__fastcall TMarker(int aScheme, int aStartPos, int aMarkerLen, bool aIsOpenMarker, const System::UnicodeString aMarkerText);
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TMarker(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TMarker() { }
 	
 };
 
@@ -157,16 +157,16 @@ protected:
 	Synedithighlighter::TSynCustomHighlighter* fDefaultHighlighter;
 	int fLineNumber;
 	System::UnicodeString fSampleSource;
-	virtual void __fastcall Loaded(void);
+	virtual void __fastcall Loaded();
 	void __fastcall SetSchemes(TSchemes* const Value);
-	void __fastcall ClearMarkers(void);
+	void __fastcall ClearMarkers();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual int __fastcall GetAttribCount(void);
+	virtual int __fastcall GetAttribCount();
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetAttribute(int Index);
 	void __fastcall HookHighlighter(Synedithighlighter::TSynCustomHighlighter* aHL);
 	void __fastcall UnhookHighlighter(Synedithighlighter::TSynCustomHighlighter* aHL);
 	virtual void __fastcall Notification(System::Classes::TComponent* aComp, System::Classes::TOperation aOp);
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
 	virtual void __fastcall SetSampleSource(System::UnicodeString Value);
 	virtual void __fastcall DoSetLine(const System::UnicodeString Value, int LineNumber);
 	void __fastcall OldRangeProc(TRangeOperation Operation, NativeUInt &Range);
@@ -177,17 +177,17 @@ public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynMultiSyn(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynMultiSyn(void);
-	virtual bool __fastcall GetEol(void);
-	virtual System::UnicodeString __fastcall GetExpandedToken(void);
-	virtual void * __fastcall GetRange(void);
-	virtual System::UnicodeString __fastcall GetToken(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	__fastcall virtual ~TSynMultiSyn();
+	virtual bool __fastcall GetEol();
+	virtual System::UnicodeString __fastcall GetExpandedToken();
+	virtual void * __fastcall GetRange();
+	virtual System::UnicodeString __fastcall GetToken();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
-	bool __fastcall UpdateRangeProcs(void);
+	virtual void __fastcall ResetRange();
+	bool __fastcall UpdateRangeProcs();
 	__property int CurrScheme = {read=fCurrScheme, write=fCurrScheme, nodefault};
 	__property System::UnicodeString CurrLine = {read=fLineStr};
 	virtual bool __fastcall LoadFromRegistry(HKEY RootKey, System::UnicodeString Key);

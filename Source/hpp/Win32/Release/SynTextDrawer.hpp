@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynTextDrawer.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynTextDrawer.pas' rev: 33.00 (Windows)
 
 #ifndef SyntextdrawerHPP
 #define SyntextdrawerHPP
@@ -85,8 +85,8 @@ private:
 	void __fastcall RetrieveLogFontForComparison(Vcl::Graphics::TFont* ABaseFont, tagLOGFONTW &LF);
 	
 public:
-	__fastcall TheFontsInfoManager(void);
-	__fastcall virtual ~TheFontsInfoManager(void);
+	__fastcall TheFontsInfoManager();
+	__fastcall virtual ~TheFontsInfoManager();
 	void __fastcall LockFontsInfo(PheSharedFontsInfo pFontsInfo);
 	void __fastcall UnLockFontsInfo(PheSharedFontsInfo pFontsInfo);
 	PheSharedFontsInfo __fastcall GetFontsInfo(Vcl::Graphics::TFont* ABaseFont);
@@ -119,7 +119,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall EheFontStockException(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall EheFontStockException(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall EheFontStockException(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~EheFontStockException(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~EheFontStockException() { }
 	
 };
 
@@ -139,19 +139,19 @@ private:
 	System::Uitypes::TFontStyles FCrntStyle;
 	TheFontData *FpCrntFontData;
 	tagLOGFONTW FBaseLF;
-	Vcl::Graphics::TFont* __fastcall GetBaseFont(void);
-	bool __fastcall GetIsTrueType(void);
+	Vcl::Graphics::TFont* __fastcall GetBaseFont();
+	bool __fastcall GetIsTrueType();
 	
 protected:
-	virtual HDC __fastcall InternalGetDC(void);
+	virtual HDC __fastcall InternalGetDC();
 	virtual void __fastcall InternalReleaseDC(HDC Value);
 	virtual HFONT __fastcall InternalCreateFont(System::Uitypes::TFontStyles Style);
 	virtual int __fastcall CalcFontAdvance(HDC DC, System::PInteger pCharHeight);
-	virtual int __fastcall GetCharAdvance(void);
-	virtual int __fastcall GetCharHeight(void);
+	virtual int __fastcall GetCharAdvance();
+	virtual int __fastcall GetCharHeight();
 	virtual PheFontData __fastcall GetFontData(int idx);
-	void __fastcall UseFontHandles(void);
-	void __fastcall ReleaseFontsInfo(void);
+	void __fastcall UseFontHandles();
+	void __fastcall ReleaseFontsInfo();
 	virtual void __fastcall SetBaseFont(Vcl::Graphics::TFont* Value);
 	virtual void __fastcall SetStyle(System::Uitypes::TFontStyles Value);
 	__property PheFontData FontData[int idx] = {read=GetFontData};
@@ -159,8 +159,8 @@ protected:
 	
 public:
 	__fastcall virtual TheFontStock(Vcl::Graphics::TFont* InitialFont);
-	__fastcall virtual ~TheFontStock(void);
-	virtual void __fastcall ReleaseFontHandles(void);
+	__fastcall virtual ~TheFontStock();
+	virtual void __fastcall ReleaseFontHandles();
 	__property Vcl::Graphics::TFont* BaseFont = {read=GetBaseFont};
 	__property System::Uitypes::TFontStyles Style = {read=FCrntStyle, write=SetStyle, nodefault};
 	__property HFONT FontHandle = {read=FCrntFont, nodefault};
@@ -189,7 +189,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall EheTextDrawerException(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall EheTextDrawerException(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall EheTextDrawerException(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~EheTextDrawerException(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~EheTextDrawerException() { }
 	
 };
 
@@ -218,10 +218,10 @@ private:
 	System::StaticArray<int, 128> FCharWidthCache;
 	
 protected:
-	virtual void __fastcall ReleaseETODist(void);
-	virtual void __fastcall AfterStyleSet(void);
+	virtual void __fastcall ReleaseETODist();
+	virtual void __fastcall AfterStyleSet();
 	virtual void __fastcall DoSetCharExtra(int Value);
-	void __fastcall FlushCharABCWidthCache(void);
+	void __fastcall FlushCharABCWidthCache();
 	bool __fastcall GetCachedABCWidth(unsigned c, _ABC &abc);
 	__property HDC StockDC = {read=FDC, nodefault};
 	__property int DrawingCount = {read=FDrawingCount, nodefault};
@@ -231,11 +231,11 @@ protected:
 	
 public:
 	__fastcall virtual TheTextDrawer(System::Uitypes::TFontStyles CalcExtentBaseStyle, Vcl::Graphics::TFont* BaseFont);
-	__fastcall virtual ~TheTextDrawer(void);
-	virtual int __fastcall GetCharWidth(void);
-	virtual int __fastcall GetCharHeight(void);
+	__fastcall virtual ~TheTextDrawer();
+	virtual int __fastcall GetCharWidth();
+	virtual int __fastcall GetCharHeight();
 	virtual void __fastcall BeginDrawing(HDC DC);
-	virtual void __fastcall EndDrawing(void);
+	virtual void __fastcall EndDrawing();
 	virtual void __fastcall TextOut(int X, int Y, System::WideChar * Text, int Length);
 	virtual void __fastcall ExtTextOut(int X, int Y, TTextOutOptions Options, const System::Types::TRect &ARect, System::WideChar * Text, int Length);
 	System::Types::TSize __fastcall TextExtent(const System::UnicodeString Text)/* overload */;
@@ -248,7 +248,7 @@ public:
 	virtual void __fastcall SetForeColor(System::Uitypes::TColor Value);
 	virtual void __fastcall SetBackColor(System::Uitypes::TColor Value);
 	virtual void __fastcall SetCharExtra(int Value);
-	virtual void __fastcall ReleaseTemporaryResources(void);
+	virtual void __fastcall ReleaseTemporaryResources();
 	__property int CharWidth = {read=GetCharWidth, nodefault};
 	__property int CharHeight = {read=GetCharHeight, nodefault};
 	__property Vcl::Graphics::TFont* BaseFont = {write=SetBaseFont};
@@ -264,7 +264,7 @@ public:
 //-- var, const, procedure ---------------------------------------------------
 static const System::Int8 FontStyleCount = System::Int8(0x4);
 static const System::Int8 FontStyleCombineCount = System::Int8(0x10);
-extern DELPHI_PACKAGE TheFontsInfoManager* __fastcall GetFontsInfoManager(void);
+extern DELPHI_PACKAGE TheFontsInfoManager* __fastcall GetFontsInfoManager();
 extern DELPHI_PACKAGE bool __fastcall UniversalExtTextOut(HDC DC, int X, int Y, TTextOutOptions Options, const System::Types::TRect &Rect, System::WideChar * Str, int Count, PIntegerArray ETODist);
 }	/* namespace Syntextdrawer */
 #if !defined(DELPHIHEADER_NO_IMPLICIT_NAMESPACE_USE) && !defined(NO_USING_NAMESPACE_SYNTEXTDRAWER)

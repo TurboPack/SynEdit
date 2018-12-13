@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditKeyCmdEditor.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditKeyCmdEditor.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditkeycmdeditorHPP
 #define SyneditkeycmdeditorHPP
@@ -62,9 +62,9 @@ private:
 	void __fastcall SetCommand(const Syneditkeycmds::TSynEditorCommand Value);
 	void __fastcall SetKeystroke(const System::Classes::TShortCut Value);
 	void __fastcall AddEditorCommand(const System::UnicodeString S);
-	Syneditkeycmds::TSynEditorCommand __fastcall GetCommand(void);
-	System::Classes::TShortCut __fastcall GetKeystroke(void);
-	System::Classes::TShortCut __fastcall GetKeystroke2(void);
+	Syneditkeycmds::TSynEditorCommand __fastcall GetCommand();
+	System::Classes::TShortCut __fastcall GetKeystroke();
+	System::Classes::TShortCut __fastcall GetKeystroke2();
 	void __fastcall SetKeystroke2(const System::Classes::TShortCut Value);
 	
 public:
@@ -77,7 +77,7 @@ public:
 public:
 	/* TCustomForm.Create */ inline __fastcall virtual TSynEditKeystrokeEditorForm(System::Classes::TComponent* AOwner) : Vcl::Forms::TForm(AOwner) { }
 	/* TCustomForm.CreateNew */ inline __fastcall virtual TSynEditKeystrokeEditorForm(System::Classes::TComponent* AOwner, int Dummy) : Vcl::Forms::TForm(AOwner, Dummy) { }
-	/* TCustomForm.Destroy */ inline __fastcall virtual ~TSynEditKeystrokeEditorForm(void) { }
+	/* TCustomForm.Destroy */ inline __fastcall virtual ~TSynEditKeystrokeEditorForm() { }
 	
 public:
 	/* TWinControl.CreateParented */ inline __fastcall TSynEditKeystrokeEditorForm(HWND ParentWindow) : Vcl::Forms::TForm(ParentWindow) { }

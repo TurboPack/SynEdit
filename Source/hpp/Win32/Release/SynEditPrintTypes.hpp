@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrintTypes.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrintTypes.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditprinttypesHPP
 #define SyneditprinttypesHPP
@@ -45,8 +45,8 @@ class PASCALIMPLEMENTATION TWrapPos : public System::TObject
 public:
 	int Index;
 public:
-	/* TObject.Create */ inline __fastcall TWrapPos(void) : System::TObject() { }
-	/* TObject.Destroy */ inline __fastcall virtual ~TWrapPos(void) { }
+	/* TObject.Create */ inline __fastcall TWrapPos() : System::TObject() { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TWrapPos() { }
 	
 };
 

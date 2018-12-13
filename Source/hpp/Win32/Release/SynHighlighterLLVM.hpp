@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterLLVM.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterLLVM.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterllvmHPP
 #define SynhighlighterllvmHPP
@@ -32,7 +32,7 @@ enum DECLSPEC_DENUM TtkTokenKind : unsigned char { tkBoolean, tkComment, tkConst
 
 enum DECLSPEC_DENUM TRangeState : unsigned char { rsUnKnown, rsSingleComment, rsString };
 
-typedef void __fastcall (__closure *TProcTableProc)(void);
+typedef void __fastcall (__closure *TProcTableProc)();
 
 typedef TtkTokenKind __fastcall (__closure *TIdentFuncTableFunc)(int Index);
 
@@ -63,43 +63,43 @@ private:
 	TtkTokenKind __fastcall FuncInstruction(int Index);
 	TtkTokenKind __fastcall FuncKey(int Index);
 	TtkTokenKind __fastcall FuncType(int Index);
-	void __fastcall IdentProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall IdentProc();
+	void __fastcall UnknownProc();
 	TtkTokenKind __fastcall AltFunc(int Index);
-	void __fastcall InitIdent(void);
+	void __fastcall InitIdent();
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall NullProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall IntegerTypeProc(void);
-	void __fastcall SingleCommentOpenProc(void);
-	void __fastcall SingleCommentProc(void);
-	void __fastcall StringOpenProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall AtTypeProc(void);
-	void __fastcall PercentTypeProc(void);
-	void __fastcall NumberProc(void);
+	void __fastcall NullProc();
+	void __fastcall SpaceProc();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
+	void __fastcall IntegerTypeProc();
+	void __fastcall SingleCommentOpenProc();
+	void __fastcall SingleCommentProc();
+	void __fastcall StringOpenProc();
+	void __fastcall StringProc();
+	void __fastcall AtTypeProc();
+	void __fastcall PercentTypeProc();
+	void __fastcall NumberProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__fastcall virtual TSynLLVMIRSyn(System::Classes::TComponent* AOwner);
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
-	virtual void * __fastcall GetRange(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void * __fastcall GetRange();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
+	virtual bool __fastcall GetEol();
 	virtual System::UnicodeString __fastcall GetKeyWords(int TokenKind);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* BooleanAttribute = {read=fBooleanAttri, write=fBooleanAttri};
@@ -114,7 +114,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* StringAttribute = {read=fStringAttri, write=fStringAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* TypesAttribute = {read=fTypesAttri, write=fTypesAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynLLVMIRSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynLLVMIRSyn() { }
 	
 };
 

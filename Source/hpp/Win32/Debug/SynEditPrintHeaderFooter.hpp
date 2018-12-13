@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrintHeaderFooter.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrintHeaderFooter.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditprintheaderfooterHPP
 #define SyneditprintheaderfooterHPP
@@ -45,13 +45,13 @@ private:
 	int FLineNumber;
 	System::Classes::TAlignment FAlignment;
 	int FIndex;
-	System::UnicodeString __fastcall GetAsString(void);
+	System::UnicodeString __fastcall GetAsString();
 	void __fastcall SetAsString(const System::UnicodeString Value);
 	void __fastcall SetFont(Vcl::Graphics::TFont* const Value);
 	
 public:
-	__fastcall THeaderFooterItem(void);
-	__fastcall virtual ~THeaderFooterItem(void);
+	__fastcall THeaderFooterItem();
+	__fastcall virtual ~THeaderFooterItem();
 	System::UnicodeString __fastcall GetText(int NumPages, int PageNum, bool Roman, System::UnicodeString Title, System::UnicodeString ATime, System::UnicodeString ADate);
 	void __fastcall LoadFromStream(System::Classes::TStream* AStream);
 	void __fastcall SaveToStream(System::Classes::TStream* AStream);
@@ -75,8 +75,8 @@ public:
 	int LineHeight;
 	int MaxBaseDist;
 public:
-	/* TObject.Create */ inline __fastcall TLineInfo(void) : System::TObject() { }
-	/* TObject.Destroy */ inline __fastcall virtual ~TLineInfo(void) { }
+	/* TObject.Create */ inline __fastcall TLineInfo() : System::TObject() { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TLineInfo() { }
 	
 };
 
@@ -112,22 +112,22 @@ private:
 	void __fastcall CalcHeight(Vcl::Graphics::TCanvas* ACanvas);
 	void __fastcall SaveFontPenBrush(Vcl::Graphics::TCanvas* ACanvas);
 	void __fastcall RestoreFontPenBrush(Vcl::Graphics::TCanvas* ACanvas);
-	System::UnicodeString __fastcall GetAsString(void);
+	System::UnicodeString __fastcall GetAsString();
 	void __fastcall SetAsString(const System::UnicodeString Value);
 	
 public:
-	__fastcall THeaderFooter(void);
-	__fastcall virtual ~THeaderFooter(void);
+	__fastcall THeaderFooter();
+	__fastcall virtual ~THeaderFooter();
 	int __fastcall Add(System::UnicodeString Text, Vcl::Graphics::TFont* Font, System::Classes::TAlignment Alignment, int LineNumber);
 	void __fastcall Delete(int Index);
-	void __fastcall Clear(void);
-	int __fastcall Count(void);
+	void __fastcall Clear();
+	int __fastcall Count();
 	THeaderFooterItem* __fastcall Get(int Index);
 	void __fastcall SetPixPrInch(int Value);
 	void __fastcall InitPrint(Vcl::Graphics::TCanvas* ACanvas, int NumPages, System::UnicodeString Title, Syneditprintmargins::TSynEditPrintMargins* Margins);
 	void __fastcall Print(Vcl::Graphics::TCanvas* ACanvas, int PageNum);
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
-	void __fastcall FixLines(void);
+	void __fastcall FixLines();
 	__property System::UnicodeString AsString = {read=GetAsString, write=SetAsString};
 	void __fastcall LoadFromStream(System::Classes::TStream* AStream);
 	void __fastcall SaveToStream(System::Classes::TStream* AStream);
@@ -149,9 +149,9 @@ class PASCALIMPLEMENTATION THeader : public THeaderFooter
 	typedef THeaderFooter inherited;
 	
 public:
-	__fastcall THeader(void);
+	__fastcall THeader();
 public:
-	/* THeaderFooter.Destroy */ inline __fastcall virtual ~THeader(void) { }
+	/* THeaderFooter.Destroy */ inline __fastcall virtual ~THeader() { }
 	
 };
 
@@ -163,9 +163,9 @@ class PASCALIMPLEMENTATION TFooter : public THeaderFooter
 	typedef THeaderFooter inherited;
 	
 public:
-	__fastcall TFooter(void);
+	__fastcall TFooter();
 public:
-	/* THeaderFooter.Destroy */ inline __fastcall virtual ~TFooter(void) { }
+	/* THeaderFooter.Destroy */ inline __fastcall virtual ~TFooter() { }
 	
 };
 

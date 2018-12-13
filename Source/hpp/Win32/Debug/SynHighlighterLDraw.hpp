@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterLDraw.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterLDraw.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterldrawHPP
 #define SynhighlighterldrawHPP
@@ -62,34 +62,34 @@ private:
 	TtkTokenKind __fastcall FuncAuthor(int Index);
 	unsigned __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall InitIdent(void);
-	void __fastcall IdentProc(void);
-	void __fastcall Number1Proc(void);
-	void __fastcall UnknownProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall LFProc(void);
+	void __fastcall InitIdent();
+	void __fastcall IdentProc();
+	void __fastcall Number1Proc();
+	void __fastcall UnknownProc();
+	void __fastcall NullProc();
+	void __fastcall CRProc();
+	void __fastcall LFProc();
 	System::WideChar __fastcall FirstChar(System::WideChar * DatLine);
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__fastcall virtual TSynLDRSyn(System::Classes::TComponent* AOwner);
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
-	virtual void * __fastcall GetRange(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void * __fastcall GetRange();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
+	virtual bool __fastcall GetEol();
 	virtual System::UnicodeString __fastcall GetKeyWords(int TokenKind);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* ColorAttri = {read=fColorAttri, write=fColorAttri};
@@ -105,7 +105,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* ThirdTriAttri = {read=fThirdTriAttri, write=fThirdTriAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* TriangleAttri = {read=fTriangleAttri, write=fTriangleAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynLDRSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynLDRSyn() { }
 	
 };
 

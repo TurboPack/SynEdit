@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPythonBehaviour.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPythonBehaviour.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditpythonbehaviourHPP
 #define SyneditpythonbehaviourHPP
@@ -52,7 +52,7 @@ __published:
 	__property Synedit::TSynEdit* Editor = {read=FEditor, write=SetEditor};
 	__property int Indent = {read=fIndent, write=fIndent, default=4};
 public:
-	/* TComponent.Destroy */ inline __fastcall virtual ~TSynEditPythonBehaviour(void) { }
+	/* TComponent.Destroy */ inline __fastcall virtual ~TSynEditPythonBehaviour() { }
 	
 };
 

@@ -831,8 +831,8 @@ begin
   r := TBetterRegistry.Create;
   try
     r.RootKey := RootKey;
-    if r.OpenKey(Key, true) then begin
-      Result := true;
+    if r.OpenKey(Key, true) then
+    begin
       r.WriteString('AsmKeyWordList', AsmKeywords.Text);
       r.WriteString('RplKeyWordList', RplKeywords.Text);
       Result := inherited SaveToRegistry(RootKey, Key);

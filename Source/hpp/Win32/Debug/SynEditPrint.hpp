@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrint.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrint.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditprintHPP
 #define SyneditprintHPP
@@ -46,8 +46,8 @@ class PASCALIMPLEMENTATION TPageLine : public System::TObject
 public:
 	int FirstLine;
 public:
-	/* TObject.Create */ inline __fastcall TPageLine(void) : System::TObject() { }
-	/* TObject.Destroy */ inline __fastcall virtual ~TPageLine(void) { }
+	/* TObject.Create */ inline __fastcall TPageLine() : System::TObject() { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TPageLine() { }
 	
 };
 
@@ -102,23 +102,23 @@ private:
 	Synedittypes::TBufferCoord fBlockBegin;
 	Synedittypes::TBufferCoord fBlockEnd;
 	Syneditmiscprocs::TIntArray *FETODist;
-	void __fastcall CalcPages(void);
+	void __fastcall CalcPages();
 	void __fastcall SetLines(System::Classes::TStrings* const Value);
 	void __fastcall SetFont(Vcl::Graphics::TFont* const Value);
 	void __fastcall SetCharWidth(const int Value);
 	void __fastcall SetMaxLeftChar(const int Value);
 	void __fastcall PrintPage(int Num);
 	void __fastcall WriteLine(const System::UnicodeString Text);
-	void __fastcall WriteLineNumber(void);
+	void __fastcall WriteLineNumber();
 	void __fastcall HandleWrap(const System::UnicodeString Text, int MaxWidth);
 	void __fastcall TextOut(const System::UnicodeString Text, System::Classes::TList* AList);
 	void __fastcall SetHighlighter(Synedithighlighter::TSynCustomHighlighter* const Value);
-	void __fastcall RestoreCurrentFont(void);
-	void __fastcall SaveCurrentFont(void);
-	void __fastcall SetPixelsPrInch(void);
-	void __fastcall InitPrint(void);
-	void __fastcall InitRanges(void);
-	int __fastcall GetPageCount(void);
+	void __fastcall RestoreCurrentFont();
+	void __fastcall SaveCurrentFont();
+	void __fastcall SetPixelsPrInch();
+	void __fastcall InitPrint();
+	void __fastcall InitRanges();
+	int __fastcall GetPageCount();
 	void __fastcall SetSynEdit(Synedit::TCustomSynEdit* const Value);
 	void __fastcall SetFooter(Syneditprintheaderfooter::TFooter* const Value);
 	void __fastcall SetHeader(Syneditprintheaderfooter::THeader* const Value);
@@ -135,10 +135,10 @@ protected:
 	
 public:
 	__fastcall virtual TSynEditPrint(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynEditPrint(void);
+	__fastcall virtual ~TSynEditPrint();
 	void __fastcall UpdatePages(Vcl::Graphics::TCanvas* ACanvas);
 	void __fastcall PrintToCanvas(Vcl::Graphics::TCanvas* ACanvas, int PageNumber);
-	void __fastcall Print(void);
+	void __fastcall Print();
 	void __fastcall PrintRange(int StartPage, int EndPage);
 	__property Syneditprinterinfo::TSynEditPrinterInfo* PrinterInfo = {read=FPrinterInfo};
 	__property int PageCount = {read=GetPageCount, nodefault};

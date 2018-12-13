@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPropertyReg.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPropertyReg.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditpropertyregHPP
 #define SyneditpropertyregHPP
@@ -39,10 +39,10 @@ class PASCALIMPLEMENTATION TSynEditFontProperty : public Vcleditors::TFontProper
 	typedef Vcleditors::TFontProperty inherited;
 	
 public:
-	virtual void __fastcall Edit(void);
+	virtual void __fastcall Edit();
 public:
 	/* TPropertyEditor.Create */ inline __fastcall virtual TSynEditFontProperty(const Designintf::_di_IDesigner ADesigner, int APropCount) : Vcleditors::TFontProperty(ADesigner, APropCount) { }
-	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditFontProperty(void) { }
+	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditFontProperty() { }
 	
 };
 
@@ -54,14 +54,14 @@ class PASCALIMPLEMENTATION TSynEditCommandProperty : public Designeditors::TInte
 	typedef Designeditors::TIntegerProperty inherited;
 	
 public:
-	virtual void __fastcall Edit(void);
-	virtual Designintf::TPropertyAttributes __fastcall GetAttributes(void);
-	virtual System::UnicodeString __fastcall GetValue(void);
+	virtual void __fastcall Edit();
+	virtual Designintf::TPropertyAttributes __fastcall GetAttributes();
+	virtual System::UnicodeString __fastcall GetValue();
 	virtual void __fastcall GetValues(System::Classes::TGetStrProc Proc);
 	virtual void __fastcall SetValue(const System::UnicodeString Value)/* overload */;
 public:
 	/* TPropertyEditor.Create */ inline __fastcall virtual TSynEditCommandProperty(const Designintf::_di_IDesigner ADesigner, int APropCount) : Designeditors::TIntegerProperty(ADesigner, APropCount) { }
-	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditCommandProperty(void) { }
+	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditCommandProperty() { }
 	
 	/* Hoisted overloads: */
 	
@@ -78,11 +78,11 @@ class PASCALIMPLEMENTATION TSynEditKeystrokesProperty : public Designeditors::TC
 	typedef Designeditors::TClassProperty inherited;
 	
 public:
-	virtual void __fastcall Edit(void);
-	virtual Designintf::TPropertyAttributes __fastcall GetAttributes(void);
+	virtual void __fastcall Edit();
+	virtual Designintf::TPropertyAttributes __fastcall GetAttributes();
 public:
 	/* TPropertyEditor.Create */ inline __fastcall virtual TSynEditKeystrokesProperty(const Designintf::_di_IDesigner ADesigner, int APropCount) : Designeditors::TClassProperty(ADesigner, APropCount) { }
-	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditKeystrokesProperty(void) { }
+	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditKeystrokesProperty() { }
 	
 };
 
@@ -94,11 +94,11 @@ class PASCALIMPLEMENTATION TSynEditPrintMarginsProperty : public Designeditors::
 	typedef Designeditors::TClassProperty inherited;
 	
 public:
-	virtual void __fastcall Edit(void);
-	virtual Designintf::TPropertyAttributes __fastcall GetAttributes(void);
+	virtual void __fastcall Edit();
+	virtual Designintf::TPropertyAttributes __fastcall GetAttributes();
 public:
 	/* TPropertyEditor.Create */ inline __fastcall virtual TSynEditPrintMarginsProperty(const Designintf::_di_IDesigner ADesigner, int APropCount) : Designeditors::TClassProperty(ADesigner, APropCount) { }
-	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditPrintMarginsProperty(void) { }
+	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TSynEditPrintMarginsProperty() { }
 	
 };
 
@@ -110,12 +110,12 @@ class PASCALIMPLEMENTATION TAutoCorrectionProperty : public Designeditors::TProp
 	typedef Designeditors::TPropertyEditor inherited;
 	
 public:
-	virtual void __fastcall Edit(void);
-	virtual Designintf::TPropertyAttributes __fastcall GetAttributes(void);
-	virtual System::UnicodeString __fastcall GetValue(void);
+	virtual void __fastcall Edit();
+	virtual Designintf::TPropertyAttributes __fastcall GetAttributes();
+	virtual System::UnicodeString __fastcall GetValue();
 public:
 	/* TPropertyEditor.Create */ inline __fastcall virtual TAutoCorrectionProperty(const Designintf::_di_IDesigner ADesigner, int APropCount) : Designeditors::TPropertyEditor(ADesigner, APropCount) { }
-	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TAutoCorrectionProperty(void) { }
+	/* TPropertyEditor.Destroy */ inline __fastcall virtual ~TAutoCorrectionProperty() { }
 	
 };
 
@@ -127,22 +127,22 @@ class PASCALIMPLEMENTATION TSynAutoCorrectComponentEditor : public Designeditors
 	typedef Designeditors::TDefaultEditor inherited;
 	
 public:
-	virtual void __fastcall Edit(void);
+	virtual void __fastcall Edit();
 	virtual void __fastcall ExecuteVerb(int Index);
 	virtual System::UnicodeString __fastcall GetVerb(int Index);
-	virtual int __fastcall GetVerbCount(void);
+	virtual int __fastcall GetVerbCount();
 public:
 	/* TComponentEditor.Create */ inline __fastcall virtual TSynAutoCorrectComponentEditor(System::Classes::TComponent* AComponent, Designintf::_di_IDesigner ADesigner) : Designeditors::TDefaultEditor(AComponent, ADesigner) { }
 	
 public:
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynAutoCorrectComponentEditor(void) { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynAutoCorrectComponentEditor() { }
 	
 };
 
 #pragma pack(pop)
 
 //-- var, const, procedure ---------------------------------------------------
-extern DELPHI_PACKAGE void __fastcall Register(void);
+extern DELPHI_PACKAGE void __fastcall Register();
 }	/* namespace Syneditpropertyreg */
 #if !defined(DELPHIHEADER_NO_IMPLICIT_NAMESPACE_USE) && !defined(NO_USING_NAMESPACE_SYNEDITPROPERTYREG)
 using namespace Syneditpropertyreg;

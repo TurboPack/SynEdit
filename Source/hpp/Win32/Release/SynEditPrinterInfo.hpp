@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditPrinterInfo.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditPrinterInfo.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditprinterinfoHPP
 #define SyneditprinterinfoHPP
@@ -43,22 +43,22 @@ private:
 	float FXPixPrmm;
 	float FYPixPrmm;
 	bool FIsUpdated;
-	void __fastcall FillDefault(void);
-	int __fastcall GetBottomGutter(void);
-	int __fastcall GetLeftGutter(void);
-	int __fastcall GetPhysicalHeight(void);
-	int __fastcall GetPhysicalWidth(void);
-	int __fastcall GetPrintableHeight(void);
-	int __fastcall GetPrintableWidth(void);
-	int __fastcall GetRightGutter(void);
-	int __fastcall GetTopGutter(void);
-	int __fastcall GetXPixPrInch(void);
-	int __fastcall GetYPixPrInch(void);
-	float __fastcall GetXPixPrmm(void);
-	float __fastcall GetYPixPrmm(void);
+	void __fastcall FillDefault();
+	int __fastcall GetBottomGutter();
+	int __fastcall GetLeftGutter();
+	int __fastcall GetPhysicalHeight();
+	int __fastcall GetPhysicalWidth();
+	int __fastcall GetPrintableHeight();
+	int __fastcall GetPrintableWidth();
+	int __fastcall GetRightGutter();
+	int __fastcall GetTopGutter();
+	int __fastcall GetXPixPrInch();
+	int __fastcall GetYPixPrInch();
+	float __fastcall GetXPixPrmm();
+	float __fastcall GetYPixPrmm();
 	
 public:
-	void __fastcall UpdatePrinter(void);
+	void __fastcall UpdatePrinter();
 	int __fastcall PixFromLeft(double mmValue);
 	int __fastcall PixFromRight(double mmValue);
 	int __fastcall PixFromTop(double mmValue);
@@ -76,8 +76,8 @@ public:
 	__property float XPixPrmm = {read=GetXPixPrmm};
 	__property float YPixPrmm = {read=GetYPixPrmm};
 public:
-	/* TObject.Create */ inline __fastcall TSynEditPrinterInfo(void) : System::TObject() { }
-	/* TObject.Destroy */ inline __fastcall virtual ~TSynEditPrinterInfo(void) { }
+	/* TObject.Create */ inline __fastcall TSynEditPrinterInfo() : System::TObject() { }
+	/* TObject.Destroy */ inline __fastcall virtual ~TSynEditPrinterInfo() { }
 	
 };
 

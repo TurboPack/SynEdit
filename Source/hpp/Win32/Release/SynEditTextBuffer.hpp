@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditTextBuffer.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditTextBuffer.pas' rev: 33.00 (Windows)
 
 #ifndef SynedittextbufferHPP
 #define SynedittextbufferHPP
@@ -98,9 +98,9 @@ private:
 	System::UnicodeString __fastcall ExpandString(int Index);
 	System::UnicodeString __fastcall GetExpandedString(int Index);
 	int __fastcall GetExpandedStringLength(int Index);
-	int __fastcall GetLengthOfLongestLine(void);
+	int __fastcall GetLengthOfLongestLine();
 	void * __fastcall GetRange(int Index);
-	void __fastcall Grow(void);
+	void __fastcall Grow();
 	void __fastcall InsertItem(int Index, const System::UnicodeString S);
 	void __fastcall PutRange(int Index, void * ARange);
 	void __fastcall SetFileFormat(const TSynEditFileFormat Value);
@@ -108,23 +108,23 @@ private:
 protected:
 	bool FStreaming;
 	virtual System::UnicodeString __fastcall Get(int Index);
-	virtual int __fastcall GetCapacity(void);
-	virtual int __fastcall GetCount(void);
+	virtual int __fastcall GetCapacity();
+	virtual int __fastcall GetCount();
 	virtual System::TObject* __fastcall GetObject(int Index);
-	virtual System::UnicodeString __fastcall GetTextStr(void);
+	virtual System::UnicodeString __fastcall GetTextStr();
 	virtual void __fastcall Put(int Index, const System::UnicodeString S);
 	virtual void __fastcall PutObject(int Index, System::TObject* AObject);
 	virtual void __fastcall SetCapacity(int NewCapacity);
 	void __fastcall SetTabWidth(int Value);
 	virtual void __fastcall SetUpdateState(bool Updating);
-	void __fastcall UpdateCharIndexes(void);
+	void __fastcall UpdateCharIndexes();
 	
 public:
 	__fastcall TSynEditStringList(TExpandAtWideGlyphsFunc AExpandAtWideGlyphsFunc);
-	__fastcall virtual ~TSynEditStringList(void);
+	__fastcall virtual ~TSynEditStringList();
 	virtual int __fastcall Add(const System::UnicodeString S);
 	virtual void __fastcall AddStrings(System::Classes::TStrings* Strings)/* overload */;
-	virtual void __fastcall Clear(void);
+	virtual void __fastcall Clear();
 	virtual void __fastcall Delete(int Index);
 	void __fastcall DeleteLines(int Index, int NumLines);
 	virtual void __fastcall Exchange(int Index1, int Index2);
@@ -136,7 +136,7 @@ public:
 	System::UnicodeString __fastcall GetSeparatedText(System::UnicodeString Separators);
 	virtual void __fastcall SetTextStr(const System::UnicodeString Value);
 	virtual void __fastcall LoadFromStream(System::Classes::TStream* Stream)/* overload */;
-	void __fastcall FontChanged(void);
+	void __fastcall FontChanged();
 	int __fastcall LineCharLength(int Index);
 	int __fastcall LineCharIndex(int Index);
 	__property bool AppendNewLineAtEOF = {read=fAppendNewLineAtEOF, write=fAppendNewLineAtEOF, nodefault};
@@ -181,7 +181,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall ESynEditStringList(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditStringList(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ESynEditStringList(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~ESynEditStringList(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~ESynEditStringList() { }
 	
 };
 
@@ -211,10 +211,10 @@ public:
 	__property System::UnicodeString ChangeStr = {read=fChangeStr};
 	__property int ChangeNumber = {read=fChangeNumber, nodefault};
 public:
-	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynEditUndoItem(void) { }
+	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynEditUndoItem() { }
 	
 public:
-	/* TObject.Create */ inline __fastcall TSynEditUndoItem(void) : System::Classes::TPersistent() { }
+	/* TObject.Create */ inline __fastcall TSynEditUndoItem() : System::Classes::TPersistent() { }
 	
 };
 
@@ -235,30 +235,30 @@ protected:
 	int fInitialChangeNumber;
 	bool fInsideRedo;
 	System::Classes::TNotifyEvent fOnAddedUndo;
-	void __fastcall EnsureMaxEntries(void);
-	bool __fastcall GetCanUndo(void);
-	int __fastcall GetItemCount(void);
+	void __fastcall EnsureMaxEntries();
+	bool __fastcall GetCanUndo();
+	int __fastcall GetItemCount();
 	void __fastcall SetMaxUndoActions(int Value);
 	void __fastcall SetInitialState(const bool Value);
-	bool __fastcall GetInitialState(void);
+	bool __fastcall GetInitialState();
 	TSynEditUndoItem* __fastcall GetItems(int Index);
 	void __fastcall SetItems(int Index, TSynEditUndoItem* const Value);
 	
 public:
-	__fastcall TSynEditUndoList(void);
-	__fastcall virtual ~TSynEditUndoList(void);
+	__fastcall TSynEditUndoList();
+	__fastcall virtual ~TSynEditUndoList();
 	void __fastcall AddChange(TSynChangeReason AReason, const Synedittypes::TBufferCoord &AStart, const Synedittypes::TBufferCoord &AEnd, const System::UnicodeString ChangeText, Synedittypes::TSynSelectionMode SelMode);
-	void __fastcall BeginBlock(void);
-	void __fastcall Clear(void);
-	void __fastcall EndBlock(void);
-	void __fastcall Lock(void);
-	TSynEditUndoItem* __fastcall PeekItem(void);
-	TSynEditUndoItem* __fastcall PopItem(void);
+	void __fastcall BeginBlock();
+	void __fastcall Clear();
+	void __fastcall EndBlock();
+	void __fastcall Lock();
+	TSynEditUndoItem* __fastcall PeekItem();
+	TSynEditUndoItem* __fastcall PopItem();
 	void __fastcall PushItem(TSynEditUndoItem* Item);
-	void __fastcall Unlock(void);
-	TSynChangeReason __fastcall LastChangeReason(void);
+	void __fastcall Unlock();
+	TSynChangeReason __fastcall LastChangeReason();
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
-	void __fastcall AddGroupBreak(void);
+	void __fastcall AddGroupBreak();
 	void __fastcall DeleteItem(int AIndex);
 	__property int BlockChangeNumber = {read=fBlockChangeNumber, write=fBlockChangeNumber, nodefault};
 	__property bool CanUndo = {read=GetCanUndo, nodefault};

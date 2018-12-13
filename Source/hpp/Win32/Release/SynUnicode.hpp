@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynUnicode.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynUnicode.pas' rev: 33.00 (Windows)
 
 #ifndef SynunicodeHPP
 #define SynunicodeHPP
@@ -89,7 +89,7 @@ extern DELPHI_PACKAGE System::UnicodeString __fastcall WideTrimLeft(const System
 extern DELPHI_PACKAGE System::UnicodeString __fastcall WideTrimRight(const System::UnicodeString S);
 extern DELPHI_PACKAGE TFontCharSet __fastcall CharSetFromLocale(unsigned Language);
 extern DELPHI_PACKAGE int __fastcall CodePageFromLocale(unsigned Language);
-extern DELPHI_PACKAGE System::Word __fastcall KeyboardCodePage(void);
+extern DELPHI_PACKAGE System::Word __fastcall KeyboardCodePage();
 extern DELPHI_PACKAGE System::WideChar __fastcall KeyUnicode(char C);
 extern DELPHI_PACKAGE System::UnicodeString __fastcall StringToUnicodeStringEx(const System::AnsiString S, System::Word CodePage);
 extern DELPHI_PACKAGE System::AnsiString __fastcall UnicodeStringToStringEx(const System::UnicodeString WS, System::Word CodePage);
@@ -113,8 +113,8 @@ extern DELPHI_PACKAGE void __fastcall SaveToStream(System::Classes::TStrings* Un
 extern DELPHI_PACKAGE TSynEncoding __fastcall LoadFromStream(System::Classes::TStrings* UnicodeStrings, System::Classes::TStream* Stream, /* out */ bool &WithBOM)/* overload */;
 extern DELPHI_PACKAGE TSynEncoding __fastcall LoadFromStream(System::Classes::TStrings* UnicodeStrings, System::Classes::TStream* Stream, TSynEncoding Encoding)/* overload */;
 extern DELPHI_PACKAGE TSynEncoding __fastcall LoadFromStream(System::Classes::TStrings* UnicodeStrings, System::Classes::TStream* Stream, TSynEncoding Encoding, /* out */ bool &WithBOM)/* overload */;
-extern DELPHI_PACKAGE bool __fastcall ClipboardProvidesText(void);
-extern DELPHI_PACKAGE System::UnicodeString __fastcall GetClipboardText(void);
+extern DELPHI_PACKAGE bool __fastcall ClipboardProvidesText();
+extern DELPHI_PACKAGE System::UnicodeString __fastcall GetClipboardText();
 extern DELPHI_PACKAGE void __fastcall SetClipboardText(const System::UnicodeString Text);
 extern DELPHI_PACKAGE bool __fastcall IsWideCharMappableToAnsi(const System::WideChar WC);
 extern DELPHI_PACKAGE bool __fastcall IsUnicodeStringMappableToAnsi(const System::UnicodeString WS);

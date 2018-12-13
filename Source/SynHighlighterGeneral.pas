@@ -745,8 +745,8 @@ begin
   r:= TBetterRegistry.Create;
   try
     r.RootKey := RootKey;
-    if r.OpenKey(Key,true) then begin
-      Result := true;
+    if r.OpenKey(Key,true) then
+    begin
       r.WriteString('KeyWords', KeyWords.Text);
       Result := inherited SaveToRegistry(RootKey, Key);
     end

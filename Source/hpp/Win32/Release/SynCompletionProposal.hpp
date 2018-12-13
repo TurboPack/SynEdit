@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynCompletionProposal.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynCompletionProposal.pas' rev: 33.00 (Windows)
 
 #ifndef SyncompletionproposalHPP
 #define SyncompletionproposalHPP
@@ -138,15 +138,15 @@ private:
 	void __fastcall DoDoubleClick(System::TObject* Sender);
 	void __fastcall DoFormShow(System::TObject* Sender);
 	void __fastcall DoFormHide(System::TObject* Sender);
-	void __fastcall AdjustScrollBarPosition(void);
-	void __fastcall AdjustMetrics(void);
+	void __fastcall AdjustScrollBarPosition();
+	void __fastcall AdjustMetrics();
 	void __fastcall SetTitle(const System::UnicodeString Value);
 	HIDESBASE void __fastcall SetFont(Vcl::Graphics::TFont* const Value);
 	void __fastcall SetTitleFont(Vcl::Graphics::TFont* const Value);
 	void __fastcall SetColumns(TProposalColumns* Value);
 	void __fastcall TitleFontChange(System::TObject* Sender);
 	void __fastcall FontChange(System::TObject* Sender);
-	void __fastcall RecalcItemHeight(void);
+	void __fastcall RecalcItemHeight();
 	bool __fastcall IsWordBreakChar(System::WideChar AChar);
 	
 protected:
@@ -154,11 +154,11 @@ protected:
 	DYNAMIC void __fastcall KeyDown(System::Word &Key, System::Classes::TShiftState Shift);
 	DYNAMIC void __fastcall KeyPress(System::WideChar &Key);
 	virtual void __fastcall KeyPressW(System::WideChar &Key);
-	DYNAMIC void __fastcall Paint(void);
-	DYNAMIC void __fastcall Activate(void);
-	DYNAMIC void __fastcall Deactivate(void);
+	DYNAMIC void __fastcall Paint();
+	DYNAMIC void __fastcall Activate();
+	DYNAMIC void __fastcall Deactivate();
 	DYNAMIC void __fastcall MouseDown(System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
-	DYNAMIC void __fastcall Resize(void);
+	DYNAMIC void __fastcall Resize();
 	virtual void __fastcall Notification(System::Classes::TComponent* AComponent, System::Classes::TOperation Operation);
 	HIDESBASE MESSAGE void __fastcall WMChar(Winapi::Messages::TWMKey &Msg);
 	HIDESBASE MESSAGE void __fastcall WMMouseWheel(Winapi::Messages::TMessage &Msg);
@@ -166,12 +166,12 @@ protected:
 	MESSAGE void __fastcall WMEraseBackgrnd(Winapi::Messages::TMessage &Message);
 	MESSAGE void __fastcall WMGetDlgCode(Winapi::Messages::TWMNoParams &Message);
 	virtual void __fastcall CreateParams(Vcl::Controls::TCreateParams &Params);
-	virtual void __fastcall CreateWnd(void);
+	virtual void __fastcall CreateWnd();
 	virtual bool __fastcall CanResize(int &NewWidth, int &NewHeight);
 	
 public:
 	__fastcall virtual TSynBaseCompletionProposalForm(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynBaseCompletionProposalForm(void);
+	__fastcall virtual ~TSynBaseCompletionProposalForm();
 	int __fastcall LogicalToPhysicalIndex(int Index);
 	int __fastcall PhysicalToLogicalIndex(int Index);
 	__property SynCompletionType DisplayType = {read=FDisplayKind, write=FDisplayKind, nodefault};
@@ -235,17 +235,17 @@ private:
 	TSynCompletionOptions FOptions;
 	int FNbLinesInWindow;
 	bool FCanExecute;
-	System::Uitypes::TColor __fastcall GetClSelect(void);
+	System::Uitypes::TColor __fastcall GetClSelect();
 	void __fastcall SetClSelect(const System::Uitypes::TColor Value);
-	System::UnicodeString __fastcall GetCurrentString(void);
-	System::Classes::TStrings* __fastcall GetItemList(void);
-	System::Classes::TStrings* __fastcall GetInsertList(void);
-	System::Classes::TNotifyEvent __fastcall GetOnCancel(void);
-	Synedittypes::TKeyPressWEvent __fastcall GetOnKeyPress(void);
-	TSynBaseCompletionProposalPaintItem __fastcall GetOnPaintItem(void);
-	TSynBaseCompletionProposalMeasureItem __fastcall GetOnMeasureItem(void);
-	TValidateEvent __fastcall GetOnValidate(void);
-	int __fastcall GetPosition(void);
+	System::UnicodeString __fastcall GetCurrentString();
+	System::Classes::TStrings* __fastcall GetItemList();
+	System::Classes::TStrings* __fastcall GetInsertList();
+	System::Classes::TNotifyEvent __fastcall GetOnCancel();
+	Synedittypes::TKeyPressWEvent __fastcall GetOnKeyPress();
+	TSynBaseCompletionProposalPaintItem __fastcall GetOnPaintItem();
+	TSynBaseCompletionProposalMeasureItem __fastcall GetOnMeasureItem();
+	TValidateEvent __fastcall GetOnValidate();
+	int __fastcall GetPosition();
 	void __fastcall SetCurrentString(const System::UnicodeString Value);
 	void __fastcall SetItemList(System::Classes::TStrings* const Value);
 	void __fastcall SetInsertList(System::Classes::TStrings* const Value);
@@ -258,40 +258,40 @@ private:
 	void __fastcall SetOnValidate(const TValidateEvent Value);
 	void __fastcall SetWidth(int Value);
 	void __fastcall SetImages(Vcl::Controls::TImageList* const Value);
-	SynCompletionType __fastcall GetDisplayKind(void);
+	SynCompletionType __fastcall GetDisplayKind();
 	void __fastcall SetDisplayKind(const SynCompletionType Value);
-	TCompletionParameter __fastcall GetParameterToken(void);
+	TCompletionParameter __fastcall GetParameterToken();
 	void __fastcall SetParameterToken(const TCompletionParameter Value);
-	SynCompletionType __fastcall GetDefaultKind(void);
+	SynCompletionType __fastcall GetDefaultKind();
 	void __fastcall SetDefaultKind(const SynCompletionType Value);
-	System::Uitypes::TColor __fastcall GetClBack(void);
+	System::Uitypes::TColor __fastcall GetClBack();
 	void __fastcall SetClBack(const System::Uitypes::TColor Value);
-	System::Uitypes::TColor __fastcall GetClSelectedText(void);
+	System::Uitypes::TColor __fastcall GetClSelectedText();
 	void __fastcall SetClSelectedText(const System::Uitypes::TColor Value);
-	System::UnicodeString __fastcall GetEndOfTokenChar(void);
+	System::UnicodeString __fastcall GetEndOfTokenChar();
 	void __fastcall SetEndOfTokenChar(const System::UnicodeString Value);
-	System::Uitypes::TColor __fastcall GetClTitleBackground(void);
+	System::Uitypes::TColor __fastcall GetClTitleBackground();
 	void __fastcall SetClTitleBackground(const System::Uitypes::TColor Value);
 	void __fastcall SetTitle(const System::UnicodeString Value);
-	System::UnicodeString __fastcall GetTitle(void);
-	Vcl::Graphics::TFont* __fastcall GetFont(void);
-	Vcl::Graphics::TFont* __fastcall GetTitleFont(void);
+	System::UnicodeString __fastcall GetTitle();
+	Vcl::Graphics::TFont* __fastcall GetFont();
+	Vcl::Graphics::TFont* __fastcall GetTitleFont();
 	void __fastcall SetFont(Vcl::Graphics::TFont* const Value);
 	void __fastcall SetTitleFont(Vcl::Graphics::TFont* const Value);
-	TSynCompletionOptions __fastcall GetOptions(void);
-	System::UnicodeString __fastcall GetTriggerChars(void);
+	TSynCompletionOptions __fastcall GetOptions();
+	System::UnicodeString __fastcall GetTriggerChars();
 	void __fastcall SetTriggerChars(const System::UnicodeString Value);
-	TCompletionChange __fastcall GetOnChange(void);
+	TCompletionChange __fastcall GetOnChange();
 	void __fastcall SetOnChange(const TCompletionChange Value);
 	void __fastcall SetColumns(TProposalColumns* const Value);
-	TProposalColumns* __fastcall GetColumns(void);
-	bool __fastcall GetResizeable(void);
+	TProposalColumns* __fastcall GetColumns();
+	bool __fastcall GetResizeable();
 	void __fastcall SetResizeable(const bool Value);
-	int __fastcall GetItemHeight(void);
+	int __fastcall GetItemHeight();
 	void __fastcall SetItemHeight(const int Value);
-	int __fastcall GetMargin(void);
+	int __fastcall GetMargin();
 	void __fastcall SetMargin(const int Value);
-	Vcl::Controls::TImageList* __fastcall GetImages(void);
+	Vcl::Controls::TImageList* __fastcall GetImages();
 	bool __fastcall IsWordBreakChar(System::WideChar AChar);
 	
 protected:
@@ -304,14 +304,14 @@ public:
 	__fastcall virtual TSynBaseCompletionProposal(System::Classes::TComponent* Aowner);
 	void __fastcall Execute(System::UnicodeString s, int x, int y);
 	virtual void __fastcall ExecuteEx(System::UnicodeString s, int x, int y, SynCompletionType Kind = (SynCompletionType)(0x0));
-	void __fastcall Activate(void);
-	void __fastcall Deactivate(void);
-	void __fastcall ClearList(void);
+	void __fastcall Activate();
+	void __fastcall Deactivate();
+	void __fastcall ClearList();
 	System::UnicodeString __fastcall DisplayItem(int AIndex);
 	System::UnicodeString __fastcall InsertItem(int AIndex);
 	void __fastcall AddItemAt(int Where, System::UnicodeString ADisplayText, System::UnicodeString AInsertText);
 	void __fastcall AddItem(System::UnicodeString ADisplayText, System::UnicodeString AInsertText);
-	void __fastcall ResetAssignedList(void);
+	void __fastcall ResetAssignedList();
 	__property Synedittypes::TKeyPressWEvent OnKeyPress = {read=GetOnKeyPress, write=SetOnKeyPress};
 	__property TValidateEvent OnValidate = {read=GetOnValidate, write=SetOnValidate};
 	__property System::Classes::TNotifyEvent OnCancel = {read=GetOnCancel, write=SetOnCancel};
@@ -351,7 +351,7 @@ __published:
 	__property TCompletionParameter OnParameterToken = {read=GetParameterToken, write=SetParameterToken};
 	__property System::Classes::TNotifyEvent OnShow = {read=FOnShow, write=FOnShow};
 public:
-	/* TComponent.Destroy */ inline __fastcall virtual ~TSynBaseCompletionProposal(void) { }
+	/* TComponent.Destroy */ inline __fastcall virtual ~TSynBaseCompletionProposal() { }
 	
 };
 
@@ -382,10 +382,10 @@ private:
 	void __fastcall TimerExecute(System::TObject* Sender);
 	System::UnicodeString __fastcall GetPreviousToken(Synedit::TCustomSynEdit* AEditor);
 	System::UnicodeString __fastcall GetCurrentInput(Synedit::TCustomSynEdit* AEditor);
-	int __fastcall GetTimerInterval(void);
+	int __fastcall GetTimerInterval();
 	void __fastcall SetTimerInterval(const int Value);
 	Synedit::TCustomSynEdit* __fastcall GetEditor(int i);
-	void __fastcall InternalCancelCompletion(void);
+	void __fastcall InternalCancelCompletion();
 	
 protected:
 	virtual void __fastcall DoExecute(Synedit::TCustomSynEdit* AEditor);
@@ -397,15 +397,15 @@ protected:
 	
 public:
 	__fastcall virtual TSynCompletionProposal(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynCompletionProposal(void);
+	__fastcall virtual ~TSynCompletionProposal();
 	void __fastcall AddEditor(Synedit::TCustomSynEdit* AEditor);
 	bool __fastcall RemoveEditor(Synedit::TCustomSynEdit* AEditor);
-	int __fastcall EditorsCount(void);
+	int __fastcall EditorsCount();
 	virtual void __fastcall ExecuteEx(System::UnicodeString s, int x, int y, SynCompletionType Kind = (SynCompletionType)(0x0));
-	void __fastcall ActivateCompletion(void);
-	void __fastcall CancelCompletion(void);
+	void __fastcall ActivateCompletion();
+	void __fastcall CancelCompletion();
 	void __fastcall ActivateTimer(Synedit::TCustomSynEdit* ACurrentEditor);
-	void __fastcall DeactivateTimer(void);
+	void __fastcall DeactivateTimer();
 	__property Synedit::TCustomSynEdit* Editors[int i] = {read=GetEditor};
 	__property int CompletionStart = {read=FCompletionStart, write=FCompletionStart, nodefault};
 	
@@ -437,11 +437,11 @@ private:
 	void __fastcall SetAutoCompleteList(System::Classes::TStrings* List);
 	void __fastcall SetEditor(Synedit::TCustomSynEdit* const Value);
 	void __fastcall SetDoLookup(const bool Value);
-	void __fastcall CreateInternalCompletion(void);
-	TSynCompletionOptions __fastcall GetOptions(void);
+	void __fastcall CreateInternalCompletion();
+	TSynCompletionOptions __fastcall GetOptions();
 	void __fastcall SetOptions(const TSynCompletionOptions Value);
 	void __fastcall DoInternalAutoCompletion(System::TObject* Sender, const System::UnicodeString Value, System::Classes::TShiftState Shift, int Index, System::WideChar EndToken);
-	bool __fastcall GetExecuting(void);
+	bool __fastcall GetExecuting();
 	
 protected:
 	void __fastcall SetShortCut(System::Classes::TShortCut Value);
@@ -452,12 +452,12 @@ protected:
 	
 public:
 	__fastcall virtual TSynAutoComplete(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynAutoComplete(void);
+	__fastcall virtual ~TSynAutoComplete();
 	void __fastcall Execute(System::UnicodeString Token, Synedit::TCustomSynEdit* Editor);
 	void __fastcall ExecuteEx(System::UnicodeString Token, Synedit::TCustomSynEdit* Editor, bool LookupIfNotExact);
-	System::UnicodeString __fastcall GetTokenList(void);
+	System::UnicodeString __fastcall GetTokenList();
 	System::UnicodeString __fastcall GetTokenValue(System::UnicodeString Token);
-	void __fastcall CancelCompletion(void);
+	void __fastcall CancelCompletion();
 	__property bool Executing = {read=GetExecuting, nodefault};
 	
 __published:
@@ -487,7 +487,7 @@ protected:
 	
 public:
 	__fastcall virtual TProposalColumn(System::Classes::TCollection* Collection);
-	__fastcall virtual ~TProposalColumn(void);
+	__fastcall virtual ~TProposalColumn();
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	
 __published:
@@ -511,16 +511,16 @@ private:
 	HIDESBASE void __fastcall SetItem(int Index, TProposalColumn* Value);
 	
 protected:
-	DYNAMIC System::Classes::TPersistent* __fastcall GetOwner(void);
+	DYNAMIC System::Classes::TPersistent* __fastcall GetOwner();
 	
 public:
 	__fastcall TProposalColumns(System::Classes::TPersistent* AOwner, System::Classes::TCollectionItemClass ItemClass);
-	HIDESBASE TProposalColumn* __fastcall Add(void);
+	HIDESBASE TProposalColumn* __fastcall Add();
 	HIDESBASE TProposalColumn* __fastcall FindItemID(int ID);
 	HIDESBASE TProposalColumn* __fastcall Insert(int Index);
 	__property TProposalColumn* Items[int Index] = {read=GetItem, write=SetItem/*, default*/};
 public:
-	/* TCollection.Destroy */ inline __fastcall virtual ~TProposalColumns(void) { }
+	/* TCollection.Destroy */ inline __fastcall virtual ~TProposalColumns() { }
 	
 };
 

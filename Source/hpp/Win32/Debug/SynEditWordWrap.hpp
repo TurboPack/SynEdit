@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditWordWrap.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditWordWrap.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditwordwrapHPP
 #define SyneditwordwrapHPP
@@ -59,29 +59,29 @@ private:
 	void __fastcall MoveLines(TLineIndex aStart, int aMoveBy);
 	void __fastcall GrowRows(int aMinSize);
 	void __fastcall MoveRows(TRowIndex aStart, int aMoveBy);
-	void __fastcall SetEmpty(void);
+	void __fastcall SetEmpty();
 	
 protected:
-	void __fastcall WrapLines(void);
+	void __fastcall WrapLines();
 	int __fastcall ReWrapLine(TLineIndex aIndex);
-	void __fastcall TrimArrays(void);
+	void __fastcall TrimArrays();
 	__property PRowIndexArray LineOffsets = {read=fLineOffsets};
 	__property PRowLengthArray RowLengths = {read=fRowLengths};
 	__property Synedit::TCustomSynEdit* Editor = {read=fEditor};
 	
 public:
 	__fastcall TSynWordWrapPlugin(Synedit::TCustomSynEdit* aOwner);
-	__fastcall virtual ~TSynWordWrapPlugin(void);
+	__fastcall virtual ~TSynWordWrapPlugin();
 	__property int LineCount = {read=fLineCount, nodefault};
 	Synedittypes::TDisplayCoord __fastcall BufferToDisplayPos(const Synedittypes::TBufferCoord &aPos);
 	Synedittypes::TBufferCoord __fastcall DisplayToBufferPos(const Synedittypes::TDisplayCoord &aPos);
-	int __fastcall RowCount(void);
+	int __fastcall RowCount();
 	int __fastcall GetRowLength(int aRow);
 	int __fastcall LinesInserted(int aIndex, int aCount);
 	int __fastcall LinesDeleted(int aIndex, int aCount);
 	int __fastcall LinesPutted(int aIndex, int aCount);
-	void __fastcall Reset(void);
-	void __fastcall DisplayChanged(void);
+	void __fastcall Reset();
+	void __fastcall DisplayChanged();
 private:
 	void *__ISynEditBufferPlugin;	// Synedit::ISynEditBufferPlugin 
 	

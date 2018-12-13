@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterWebIDL.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterWebIDL.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterwebidlHPP
 #define SynhighlighterwebidlHPP
@@ -34,7 +34,7 @@ enum DECLSPEC_DENUM TstkSymbolTokenKind : unsigned char { stkBraceOpen, stkBrace
 
 enum DECLSPEC_DENUM TRangeState : unsigned char { rsUnknown, rsSingleComment, rsCStyleComment, rsString, rsExtendedAttributes };
 
-typedef void __fastcall (__closure *TProcTableProc)(void);
+typedef void __fastcall (__closure *TProcTableProc)();
 
 typedef TtkTokenKind __fastcall (__closure *TIdentFuncTableFunc)(int Index);
 
@@ -98,48 +98,48 @@ private:
 	TtkTokenKind __fastcall FuncUnrestricted(int Index);
 	TtkTokenKind __fastcall FuncUnsigned(int Index);
 	TtkTokenKind __fastcall FuncVoid(int Index);
-	void __fastcall IdentProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall IdentProc();
+	void __fastcall UnknownProc();
 	TtkTokenKind __fastcall AltFunc(int Index);
-	void __fastcall InitIdent(void);
+	void __fastcall InitIdent();
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall BraceCloseProc(void);
-	void __fastcall BraceOpenProc(void);
-	void __fastcall ColonProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall CStyleCommentProc(void);
-	void __fastcall GreaterProc(void);
-	void __fastcall LessProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall QuestionMarkProc(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall SquareCloseProc(void);
-	void __fastcall SquareOpenProc(void);
-	void __fastcall StringOpenProc(void);
-	void __fastcall StringProc(void);
+	void __fastcall BraceCloseProc();
+	void __fastcall BraceOpenProc();
+	void __fastcall ColonProc();
+	void __fastcall CRProc();
+	void __fastcall CStyleCommentProc();
+	void __fastcall GreaterProc();
+	void __fastcall LessProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall QuestionMarkProc();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall SquareCloseProc();
+	void __fastcall SquareOpenProc();
+	void __fastcall StringOpenProc();
+	void __fastcall StringProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__fastcall virtual TSynWebIDLSyn(System::Classes::TComponent* AOwner);
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
-	virtual void * __fastcall GetRange(void);
-	virtual void __fastcall ResetRange(void);
+	virtual void * __fastcall GetRange();
+	virtual void __fastcall ResetRange();
 	virtual void __fastcall SetRange(void * Value);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
+	virtual bool __fastcall GetEol();
 	virtual System::UnicodeString __fastcall GetKeyWords(int TokenKind);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
 	virtual bool __fastcall IsIdentChar(System::WideChar AChar);
-	virtual void __fastcall Next(void);
+	virtual void __fastcall Next();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* ArgumentsAttri = {read=fArgumentsAttri, write=fArgumentsAttri};
@@ -153,7 +153,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* SymbolAttri = {read=fSymbolAttri, write=fSymbolAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* TypesAttri = {read=fTypesAttri, write=fTypesAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynWebIDLSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynWebIDLSyn() { }
 	
 };
 

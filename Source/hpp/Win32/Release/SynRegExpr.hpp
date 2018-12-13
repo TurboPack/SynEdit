@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynRegExpr.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynRegExpr.pas' rev: 33.00 (Windows)
 
 #ifndef SynregexprHPP
 #define SynregexprHPP
@@ -85,11 +85,11 @@ private:
 	bool fLinePairedSeparatorAssigned;
 	System::WideChar fLinePairedSeparatorHead;
 	System::WideChar fLinePairedSeparatorTail;
-	void __fastcall InvalidateProgramm(void);
-	bool __fastcall IsProgrammOk(void);
-	System::UnicodeString __fastcall GetExpression(void);
+	void __fastcall InvalidateProgramm();
+	bool __fastcall IsProgrammOk();
+	System::UnicodeString __fastcall GetExpression();
 	void __fastcall SetExpression(const System::UnicodeString s);
-	System::UnicodeString __fastcall GetModifierStr(void);
+	System::UnicodeString __fastcall GetModifierStr();
 	__classmethod bool __fastcall ParseModifiersStr(const System::UnicodeString AModifiers, int &AModifiersInt);
 	void __fastcall SetModifierStr(const System::UnicodeString AModifiers);
 	bool __fastcall GetModifier(int AIndex);
@@ -105,26 +105,26 @@ private:
 	System::WideChar * __fastcall ParseBranch(int &flagp);
 	System::WideChar * __fastcall ParsePiece(int &flagp);
 	System::WideChar * __fastcall ParseAtom(int &flagp);
-	int __fastcall GetCompilerErrorPos(void);
+	int __fastcall GetCompilerErrorPos();
 	int __fastcall regrepeat(System::WideChar * p, int AMax);
 	System::WideChar * __fastcall regnext(System::WideChar * p);
 	bool __fastcall MatchPrim(System::WideChar * prog);
 	bool __fastcall ExecPrim(int AOffset);
 	System::UnicodeString __fastcall DumpOp(System::WideChar op);
-	int __fastcall GetSubExprMatchCount(void);
+	int __fastcall GetSubExprMatchCount();
 	int __fastcall GetMatchPos(int Idx);
 	int __fastcall GetMatchLen(int Idx);
 	System::UnicodeString __fastcall GetMatch(int Idx);
-	System::UnicodeString __fastcall GetInputString(void);
+	System::UnicodeString __fastcall GetInputString();
 	void __fastcall SetInputString(const System::UnicodeString AInputString);
 	System::WideChar * __fastcall StrScanCI(System::WideChar * s, System::WideChar ch);
 	void __fastcall SetLineSeparators(const System::UnicodeString AStr);
 	void __fastcall SetLinePairedSeparator(const System::UnicodeString AStr);
-	System::UnicodeString __fastcall GetLinePairedSeparator(void);
+	System::UnicodeString __fastcall GetLinePairedSeparator();
 	
 public:
-	__fastcall TRegExpr(void);
-	__fastcall virtual ~TRegExpr(void);
+	__fastcall TRegExpr();
+	__fastcall virtual ~TRegExpr();
 	__classmethod int __fastcall VersionMajor();
 	__classmethod int __fastcall VersionMinor();
 	__property System::UnicodeString Expression = {read=GetExpression, write=SetExpression};
@@ -136,9 +136,9 @@ public:
 	__property bool ModifierM = {read=GetModifier, write=SetModifier, index=5, nodefault};
 	__property bool ModifierX = {read=GetModifier, write=SetModifier, index=6, nodefault};
 	bool __fastcall Exec(const System::UnicodeString AInputString)/* overload */;
-	bool __fastcall Exec(void)/* overload */;
+	bool __fastcall Exec()/* overload */;
 	bool __fastcall Exec(int AOffset)/* overload */;
-	bool __fastcall ExecNext(void);
+	bool __fastcall ExecNext();
 	bool __fastcall ExecPos(int AOffset = 0x1);
 	__property System::UnicodeString InputString = {read=GetInputString, write=SetInputString};
 	System::UnicodeString __fastcall Substitute(const System::UnicodeString ATemplate);
@@ -150,7 +150,7 @@ public:
 	__property int MatchPos[int Idx] = {read=GetMatchPos};
 	__property int MatchLen[int Idx] = {read=GetMatchLen};
 	__property System::UnicodeString Match[int Idx] = {read=GetMatch};
-	int __fastcall LastError(void);
+	int __fastcall LastError();
 	virtual System::UnicodeString __fastcall ErrorMsg(int AErrorID);
 	__property int CompilerErrorPos = {read=GetCompilerErrorPos, nodefault};
 	__property System::UnicodeString SpaceChars = {read=fSpaceChars, write=fSpaceChars};
@@ -159,8 +159,8 @@ public:
 	__property System::UnicodeString LinePairedSeparator = {read=GetLinePairedSeparator, write=SetLinePairedSeparator};
 	__classmethod System::WideChar __fastcall InvertCaseFunction(const System::WideChar Ch);
 	__property TRegExprInvertCaseFunction InvertCase = {read=fInvertCase, write=fInvertCase};
-	void __fastcall Compile(void);
-	System::UnicodeString __fastcall Dump(void);
+	void __fastcall Compile();
+	System::UnicodeString __fastcall Dump();
 };
 
 
@@ -185,7 +185,7 @@ public:
 	/* Exception.CreateResHelp */ inline __fastcall ERegExpr(System::PResStringRec ResStringRec, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ERegExpr(System::PResStringRec ResStringRec, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(ResStringRec, Args, Args_High, AHelpContext) { }
 	/* Exception.CreateResFmtHelp */ inline __fastcall ERegExpr(NativeUInt Ident, const System::TVarRec *Args, const int Args_High, int AHelpContext)/* overload */ : System::Sysutils::Exception(Ident, Args, Args_High, AHelpContext) { }
-	/* Exception.Destroy */ inline __fastcall virtual ~ERegExpr(void) { }
+	/* Exception.Destroy */ inline __fastcall virtual ~ERegExpr() { }
 	
 };
 

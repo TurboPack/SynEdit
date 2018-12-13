@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynExportTeX.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynExportTeX.pas' rev: 33.00 (Windows)
 
 #ifndef SynexporttexHPP
 #define SynexporttexHPP
@@ -40,29 +40,29 @@ private:
 	bool __fastcall AttriToCommandCallback(Synedithighlighter::TSynCustomHighlighter* Highlighter, Synedithighlighter::TSynHighlighterAttributes* Attri, System::UnicodeString UniqueAttriName, void * *Params, const int Params_High);
 	bool __fastcall CommandNameCallback(Synedithighlighter::TSynCustomHighlighter* Highlighter, Synedithighlighter::TSynHighlighterAttributes* Attri, System::UnicodeString UniqueAttriName, void * *Params, const int Params_High);
 	System::UnicodeString __fastcall GetCommandName(Synedithighlighter::TSynCustomHighlighter* Highlighter, Synedithighlighter::TSynHighlighterAttributes* Attri);
-	System::UnicodeString __fastcall GetNewCommands(void);
+	System::UnicodeString __fastcall GetNewCommands();
 	System::UnicodeString __fastcall MakeValidName(System::UnicodeString Name);
 	
 protected:
 	bool fCreateTeXFragment;
 	int fTabWidth;
 	bool fPageStyleEmpty;
-	virtual void __fastcall FormatAfterLastAttribute(void);
+	virtual void __fastcall FormatAfterLastAttribute();
 	virtual void __fastcall FormatAttributeDone(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged);
 	virtual void __fastcall FormatAttributeInit(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged);
 	virtual void __fastcall FormatBeforeFirstAttribute(bool BackgroundChanged, bool ForegroundChanged, System::Uitypes::TFontStyles FontStylesChanged);
-	virtual void __fastcall FormatNewLine(void);
+	virtual void __fastcall FormatNewLine();
 	virtual void __fastcall FormatToken(System::UnicodeString Token);
-	virtual System::UnicodeString __fastcall GetFooter(void);
-	virtual System::UnicodeString __fastcall GetFormatName(void);
-	virtual System::UnicodeString __fastcall GetHeader(void);
+	virtual System::UnicodeString __fastcall GetFooter();
+	virtual System::UnicodeString __fastcall GetFormatName();
+	virtual System::UnicodeString __fastcall GetHeader();
 	virtual System::UnicodeString __fastcall ReplaceReservedChar(System::WideChar AChar);
 	virtual void __fastcall SetTokenAttribute(Synedithighlighter::TSynHighlighterAttributes* Attri);
-	virtual bool __fastcall UseBom(void);
+	virtual bool __fastcall UseBom();
 	
 public:
 	__fastcall virtual TSynExporterTeX(System::Classes::TComponent* AOwner);
-	virtual Synunicode::TSynEncodings __fastcall SupportedEncodings(void);
+	virtual Synunicode::TSynEncodings __fastcall SupportedEncodings();
 	
 __published:
 	__property int Margin = {read=fMargin, write=fMargin, default=2};
@@ -77,7 +77,7 @@ __published:
 	__property Title = {default=0};
 	__property UseBackground;
 public:
-	/* TSynCustomExporter.Destroy */ inline __fastcall virtual ~TSynExporterTeX(void) { }
+	/* TSynCustomExporter.Destroy */ inline __fastcall virtual ~TSynExporterTeX() { }
 	
 };
 

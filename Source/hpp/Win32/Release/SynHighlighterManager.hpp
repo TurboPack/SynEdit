@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterManager.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterManager.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlightermanagerHPP
 #define SynhighlightermanagerHPP
@@ -30,7 +30,7 @@ class PASCALIMPLEMENTATION TSynHighlighterManager : public System::Classes::TCom
 public:
 	__fastcall virtual TSynHighlighterManager(System::Classes::TComponent* AOwner);
 public:
-	/* TComponent.Destroy */ inline __fastcall virtual ~TSynHighlighterManager(void) { }
+	/* TComponent.Destroy */ inline __fastcall virtual ~TSynHighlighterManager() { }
 	
 };
 

@@ -1,8 +1,8 @@
 ﻿// CodeGear C++Builder
-// Copyright (c) 1995, 2016 by Embarcadero Technologies, Inc.
+// Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterXML.pas' rev: 31.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterXML.pas' rev: 33.00 (Windows)
 
 #ifndef SynhighlighterxmlHPP
 #define SynhighlighterxmlHPP
@@ -57,47 +57,47 @@ private:
 	Synedithighlighter::TSynHighlighterAttributes* fnsAttributeValueAttri;
 	Synedithighlighter::TSynHighlighterAttributes* fSymbolAttri;
 	bool FWantBracesParsed;
-	void __fastcall NullProc(void);
-	void __fastcall CarriageReturnProc(void);
-	void __fastcall LineFeedProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall LessThanProc(void);
-	void __fastcall GreaterThanProc(void);
-	void __fastcall CommentProc(void);
-	void __fastcall ProcessingInstructionProc(void);
-	void __fastcall DocTypeProc(void);
-	void __fastcall CDATAProc(void);
-	void __fastcall TextProc(void);
-	void __fastcall ElementProc(void);
-	void __fastcall AttributeProc(void);
-	void __fastcall QAttributeValueProc(void);
-	void __fastcall AAttributeValueProc(void);
-	void __fastcall EqualProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall NextProcedure(void);
+	void __fastcall NullProc();
+	void __fastcall CarriageReturnProc();
+	void __fastcall LineFeedProc();
+	void __fastcall SpaceProc();
+	void __fastcall LessThanProc();
+	void __fastcall GreaterThanProc();
+	void __fastcall CommentProc();
+	void __fastcall ProcessingInstructionProc();
+	void __fastcall DocTypeProc();
+	void __fastcall CDATAProc();
+	void __fastcall TextProc();
+	void __fastcall ElementProc();
+	void __fastcall AttributeProc();
+	void __fastcall QAttributeValueProc();
+	void __fastcall AAttributeValueProc();
+	void __fastcall EqualProc();
+	void __fastcall IdentProc();
+	void __fastcall NextProcedure();
 	bool __fastcall NextTokenIs(System::UnicodeString Token);
-	void __fastcall EntityRefProc(void);
-	void __fastcall QEntityRefProc(void);
-	void __fastcall AEntityRefProc(void);
+	void __fastcall EntityRefProc();
+	void __fastcall QEntityRefProc();
+	void __fastcall AEntityRefProc();
 	
 protected:
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
-	virtual bool __fastcall IsFilterStored(void);
-	virtual bool __fastcall IsNameChar(void);
+	virtual System::UnicodeString __fastcall GetSampleSource();
+	virtual bool __fastcall IsFilterStored();
+	virtual bool __fastcall IsNameChar();
 	
 public:
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynXMLSyn(System::Classes::TComponent* AOwner);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	
 __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* ElementAttri = {read=fElementAttri, write=fElementAttri};
@@ -115,7 +115,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* SymbolAttri = {read=fSymbolAttri, write=fSymbolAttri};
 	__property bool WantBracesParsed = {read=FWantBracesParsed, write=FWantBracesParsed, default=1};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynXMLSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynXMLSyn() { }
 	
 };
 

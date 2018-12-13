@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynAutoCorrect.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynAutoCorrect.pas' rev: 33.00 (Windows)
 
 #ifndef SynautocorrectHPP
 #define SynautocorrectHPP
@@ -62,8 +62,8 @@ private:
 	int FPrevLine;
 	int __fastcall CorrectItemStart(System::UnicodeString EditLine, System::UnicodeString SearchString, int StartPos, bool MatchCase, bool WholeWord);
 	bool __fastcall FindAndCorrect(System::UnicodeString &EditLine, System::UnicodeString Original, System::UnicodeString Correction, int &CurrentX);
-	System::UnicodeString __fastcall PreviousToken(void);
-	System::Classes::TStrings* __fastcall GetItems(void);
+	System::UnicodeString __fastcall PreviousToken();
+	System::Classes::TStrings* __fastcall GetItems();
 	void __fastcall SetItems(System::Classes::TStrings* const Value);
 	
 protected:
@@ -75,9 +75,9 @@ protected:
 	
 public:
 	__fastcall virtual TCustomSynAutoCorrect(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TCustomSynAutoCorrect(void);
+	__fastcall virtual ~TCustomSynAutoCorrect();
 	void __fastcall Add(System::UnicodeString AOriginal, System::UnicodeString ACorrection);
-	bool __fastcall AutoCorrectAll(void);
+	bool __fastcall AutoCorrectAll();
 	void __fastcall Delete(int AIndex);
 	void __fastcall Edit(int AIndex, System::UnicodeString ANewOriginal, System::UnicodeString ANewCorrection);
 	void __fastcall LoadFromINI(System::UnicodeString AFileName, System::UnicodeString ASection);
@@ -111,7 +111,7 @@ __published:
 	__property OnCorrected;
 public:
 	/* TCustomSynAutoCorrect.Create */ inline __fastcall virtual TSynAutoCorrect(System::Classes::TComponent* AOwner) : TCustomSynAutoCorrect(AOwner) { }
-	/* TCustomSynAutoCorrect.Destroy */ inline __fastcall virtual ~TSynAutoCorrect(void) { }
+	/* TCustomSynAutoCorrect.Destroy */ inline __fastcall virtual ~TSynAutoCorrect() { }
 	
 };
 

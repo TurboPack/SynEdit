@@ -2174,7 +2174,6 @@ procedure TSynBaseCompletionProposal.ExecuteEx(s: string; x, y: integer; Kind : 
     BorderWidth: Integer;
     NewWidth: Integer;
   begin
-
     tmpX := x;
     tmpY := y;
     tmpWidth := 0;

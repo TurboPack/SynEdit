@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditHighlighter.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditHighlighter.pas' rev: 33.00 (Windows)
 
 #ifndef SynedithighlighterHPP
 #define SynedithighlighterHPP
@@ -51,21 +51,21 @@ private:
 	System::Uitypes::TFontStyles fStyle;
 	System::Uitypes::TFontStyles fStyleDefault;
 	System::Classes::TNotifyEvent fOnChange;
-	virtual void __fastcall Changed(void);
-	bool __fastcall GetBackgroundColorStored(void);
-	bool __fastcall GetForegroundColorStored(void);
-	bool __fastcall GetFontStyleStored(void);
+	virtual void __fastcall Changed();
+	bool __fastcall GetBackgroundColorStored();
+	bool __fastcall GetForegroundColorStored();
+	bool __fastcall GetFontStyleStored();
 	void __fastcall SetBackground(System::Uitypes::TColor Value);
 	void __fastcall SetForeground(System::Uitypes::TColor Value);
 	void __fastcall SetStyle(System::Uitypes::TFontStyles Value);
-	int __fastcall GetStyleFromInt(void);
+	int __fastcall GetStyleFromInt();
 	void __fastcall SetStyleFromInt(const int Value);
 	
 public:
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
 	void __fastcall AssignColorAndStyle(TSynHighlighterAttributes* Source);
 	__fastcall TSynHighlighterAttributes(System::UnicodeString AName, System::UnicodeString AFriendlyName);
-	void __fastcall InternalSaveDefaultValues(void);
+	void __fastcall InternalSaveDefaultValues();
 	virtual bool __fastcall LoadFromBorlandRegistry(HKEY RootKey, System::UnicodeString AttrKey, System::UnicodeString AttrName, bool OldStyle);
 	bool __fastcall LoadFromRegistry(Syneditmiscclasses::TBetterRegistry* Reg);
 	bool __fastcall SaveToRegistry(Syneditmiscclasses::TBetterRegistry* Reg);
@@ -82,7 +82,7 @@ __published:
 	__property System::Uitypes::TColor Foreground = {read=fForeground, write=SetForeground, stored=GetForegroundColorStored, nodefault};
 	__property System::Uitypes::TFontStyles Style = {read=fStyle, write=SetStyle, stored=GetFontStyleStored, nodefault};
 public:
-	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynHighlighterAttributes(void) { }
+	/* TPersistent.Destroy */ inline __fastcall virtual ~TSynHighlighterAttributes() { }
 	
 };
 
@@ -104,7 +104,7 @@ private:
 	System::Sysutils::TSysCharSet FAdditionalIdentChars;
 	System::UnicodeString FExportName;
 	Synedithighlighteroptions::TSynEditHighlighterOptions* FOptions;
-	System::UnicodeString __fastcall GetExportName(void);
+	System::UnicodeString __fastcall GetExportName();
 	void __fastcall SetEnabled(const bool Value);
 	void __fastcall SetAdditionalIdentChars(const System::Sysutils::TSysCharSet &Value);
 	void __fastcall SetAdditionalWordBreakChars(const System::Sysutils::TSysCharSet &Value);
@@ -129,53 +129,53 @@ protected:
 	int Run;
 	int ExpandedRun;
 	int fOldRun;
-	virtual void __fastcall Loaded(void);
+	virtual void __fastcall Loaded();
 	void __fastcall AddAttribute(TSynHighlighterAttributes* Attri);
 	void __fastcall DefHighlightChange(System::TObject* Sender);
 	virtual void __fastcall DefineProperties(System::Classes::TFiler* Filer);
-	void __fastcall FreeHighlighterAttributes(void);
-	virtual int __fastcall GetAttribCount(void);
+	void __fastcall FreeHighlighterAttributes();
+	virtual int __fastcall GetAttribCount();
 	virtual TSynHighlighterAttributes* __fastcall GetAttribute(int Index);
 	virtual TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index) = 0 ;
-	virtual System::UnicodeString __fastcall GetDefaultFilter(void);
-	virtual System::UnicodeString __fastcall GetSampleSource(void);
+	virtual System::UnicodeString __fastcall GetDefaultFilter();
+	virtual System::UnicodeString __fastcall GetSampleSource();
 	virtual void __fastcall DoSetLine(const System::UnicodeString Value, int LineNumber);
 	virtual bool __fastcall IsCurrentToken(const System::UnicodeString Token);
-	virtual bool __fastcall IsFilterStored(void);
+	virtual bool __fastcall IsFilterStored();
 	virtual bool __fastcall IsLineEnd(int Run);
 	void __fastcall SetAttributesOnChange(System::Classes::TNotifyEvent AEvent);
 	virtual void __fastcall SetDefaultFilter(System::UnicodeString Value);
 	virtual void __fastcall SetSampleSource(System::UnicodeString Value);
-	TSynHighlighterCapabilities __fastcall GetCapabilitiesProp(void);
-	System::UnicodeString __fastcall GetFriendlyLanguageNameProp(void);
-	System::UnicodeString __fastcall GetLanguageNameProp(void);
+	TSynHighlighterCapabilities __fastcall GetCapabilitiesProp();
+	System::UnicodeString __fastcall GetFriendlyLanguageNameProp();
+	System::UnicodeString __fastcall GetLanguageNameProp();
 	
 public:
 	__classmethod virtual TSynHighlighterCapabilities __fastcall GetCapabilities();
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__classmethod virtual System::UnicodeString __fastcall GetLanguageName();
 	__fastcall virtual TSynCustomHighlighter(System::Classes::TComponent* AOwner);
-	__fastcall virtual ~TSynCustomHighlighter(void);
+	__fastcall virtual ~TSynCustomHighlighter();
 	virtual void __fastcall Assign(System::Classes::TPersistent* Source);
-	void __fastcall BeginUpdate(void);
-	void __fastcall EndUpdate(void);
-	virtual bool __fastcall GetEol(void) = 0 ;
-	virtual System::UnicodeString __fastcall GetExpandedToken(void);
-	virtual int __fastcall GetExpandedTokenPos(void);
+	void __fastcall BeginUpdate();
+	void __fastcall EndUpdate();
+	virtual bool __fastcall GetEol() = 0 ;
+	virtual System::UnicodeString __fastcall GetExpandedToken();
+	virtual int __fastcall GetExpandedTokenPos();
 	virtual System::UnicodeString __fastcall GetKeyWords(int TokenKind);
-	virtual void * __fastcall GetRange(void);
-	virtual System::UnicodeString __fastcall GetToken(void);
-	virtual TSynHighlighterAttributes* __fastcall GetTokenAttribute(void) = 0 ;
-	virtual int __fastcall GetTokenKind(void) = 0 ;
-	virtual int __fastcall GetTokenPos(void);
+	virtual void * __fastcall GetRange();
+	virtual System::UnicodeString __fastcall GetToken();
+	virtual TSynHighlighterAttributes* __fastcall GetTokenAttribute() = 0 ;
+	virtual int __fastcall GetTokenKind() = 0 ;
+	virtual int __fastcall GetTokenPos();
 	virtual bool __fastcall IsKeyword(const System::UnicodeString AKeyword);
-	virtual void __fastcall Next(void);
-	void __fastcall NextToEol(void);
+	virtual void __fastcall Next();
+	void __fastcall NextToEol();
 	int __fastcall PosToExpandedPos(int Pos);
 	virtual void __fastcall SetLineExpandedAtWideGlyphs(const System::UnicodeString Line, const System::UnicodeString ExpandedLine, int LineNumber);
 	virtual void __fastcall SetLine(const System::UnicodeString Value, int LineNumber);
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	virtual bool __fastcall UseUserSettings(int settingIndex);
 	virtual void __fastcall EnumUserSettings(System::Classes::TStrings* Settings);
 	virtual bool __fastcall LoadFromRegistry(HKEY RootKey, System::UnicodeString Key);
@@ -225,9 +225,9 @@ private:
 	TSynCustomHighlighterClass __fastcall GetItem(int Index);
 	
 public:
-	__fastcall TSynHighlighterList(void);
-	__fastcall virtual ~TSynHighlighterList(void);
-	HIDESBASE int __fastcall Count(void);
+	__fastcall TSynHighlighterList();
+	__fastcall virtual ~TSynHighlighterList();
+	HIDESBASE int __fastcall Count();
 	int __fastcall FindByFriendlyName(System::UnicodeString FriendlyName);
 	int __fastcall FindByName(System::UnicodeString Name);
 	int __fastcall FindByClass(System::Classes::TComponent* Comp);
@@ -243,7 +243,7 @@ static const System::Int8 SYN_ATTR_KEYWORD = System::Int8(0x2);
 static const System::Int8 SYN_ATTR_STRING = System::Int8(0x3);
 static const System::Int8 SYN_ATTR_WHITESPACE = System::Int8(0x4);
 static const System::Int8 SYN_ATTR_SYMBOL = System::Int8(0x5);
-extern DELPHI_PACKAGE TSynHighlighterList* __fastcall GetPlaceableHighlighters(void);
+extern DELPHI_PACKAGE TSynHighlighterList* __fastcall GetPlaceableHighlighters();
 extern DELPHI_PACKAGE void __fastcall RegisterPlaceableHighlighter(TSynCustomHighlighterClass highlighter);
 }	/* namespace Synedithighlighter */
 #if !defined(DELPHIHEADER_NO_IMPLICIT_NAMESPACE_USE) && !defined(NO_USING_NAMESPACE_SYNEDITHIGHLIGHTER)

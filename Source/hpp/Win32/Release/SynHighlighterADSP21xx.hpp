@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynHighlighterADSP21xx.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynHighlighterADSP21xx.pas' rev: 33.00 (Windows)
 
 #ifndef Synhighlighteradsp21xxHPP
 #define Synhighlighteradsp21xxHPP
@@ -237,28 +237,28 @@ private:
 	TtkTokenKind __fastcall FuncXor(int Index);
 	unsigned __fastcall HashKey(System::WideChar * Str);
 	TtkTokenKind __fastcall IdentKind(System::WideChar * MayBe);
-	void __fastcall InitIdent(void);
-	void __fastcall PascalCommentProc(void);
-	void __fastcall BraceCloseProc(void);
-	void __fastcall BraceOpenProc(void);
-	void __fastcall CCommentProc(void);
-	void __fastcall CRProc(void);
-	void __fastcall ExclamationProc(void);
-	void __fastcall IdentProc(void);
-	void __fastcall IntegerProc(void);
-	void __fastcall IncludeCloseProc(void);
-	void __fastcall LFProc(void);
-	void __fastcall NullProc(void);
-	void __fastcall NumberProc(void);
-	void __fastcall BinaryNumber(void);
-	void __fastcall HexNumber(void);
-	void __fastcall SlashProc(void);
-	void __fastcall SpaceProc(void);
-	void __fastcall StringProc(void);
-	void __fastcall UnknownProc(void);
+	void __fastcall InitIdent();
+	void __fastcall PascalCommentProc();
+	void __fastcall BraceCloseProc();
+	void __fastcall BraceOpenProc();
+	void __fastcall CCommentProc();
+	void __fastcall CRProc();
+	void __fastcall ExclamationProc();
+	void __fastcall IdentProc();
+	void __fastcall IntegerProc();
+	void __fastcall IncludeCloseProc();
+	void __fastcall LFProc();
+	void __fastcall NullProc();
+	void __fastcall NumberProc();
+	void __fastcall BinaryNumber();
+	void __fastcall HexNumber();
+	void __fastcall SlashProc();
+	void __fastcall SpaceProc();
+	void __fastcall StringProc();
+	void __fastcall UnknownProc();
 	
 protected:
-	virtual bool __fastcall IsFilterStored(void);
+	virtual bool __fastcall IsFilterStored();
 	
 public:
 	__classmethod virtual Synedithighlighter::TSynHighlighterCapabilities __fastcall GetCapabilities();
@@ -266,14 +266,14 @@ public:
 	__classmethod virtual System::UnicodeString __fastcall GetFriendlyLanguageName();
 	__fastcall virtual TSynADSP21xxSyn(System::Classes::TComponent* AOwner);
 	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetDefaultAttribute(int Index);
-	virtual bool __fastcall GetEol(void);
-	virtual void * __fastcall GetRange(void);
-	TtkTokenKind __fastcall GetTokenID(void);
-	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute(void);
-	virtual int __fastcall GetTokenKind(void);
-	virtual void __fastcall Next(void);
+	virtual bool __fastcall GetEol();
+	virtual void * __fastcall GetRange();
+	TtkTokenKind __fastcall GetTokenID();
+	virtual Synedithighlighter::TSynHighlighterAttributes* __fastcall GetTokenAttribute();
+	virtual int __fastcall GetTokenKind();
+	virtual void __fastcall Next();
 	virtual void __fastcall SetRange(void * Value);
-	virtual void __fastcall ResetRange(void);
+	virtual void __fastcall ResetRange();
 	virtual bool __fastcall UseUserSettings(int settingIndex);
 	virtual void __fastcall EnumUserSettings(System::Classes::TStrings* settings);
 	
@@ -288,7 +288,7 @@ __published:
 	__property Synedithighlighter::TSynHighlighterAttributes* SpaceAttri = {read=fSpaceAttri, write=fSpaceAttri};
 	__property Synedithighlighter::TSynHighlighterAttributes* SymbolAttri = {read=fSymbolAttri, write=fSymbolAttri};
 public:
-	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynADSP21xxSyn(void) { }
+	/* TSynCustomHighlighter.Destroy */ inline __fastcall virtual ~TSynADSP21xxSyn() { }
 	
 };
 

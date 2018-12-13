@@ -2,7 +2,7 @@
 // Copyright (c) 1995, 2017 by Embarcadero Technologies, Inc.
 // All rights reserved
 
-// (DO NOT EDIT: machine generated header) 'SynEditReg.pas' rev: 32.00 (Windows)
+// (DO NOT EDIT: machine generated header) 'SynEditReg.pas' rev: 33.00 (Windows)
 
 #ifndef SyneditregHPP
 #define SyneditregHPP
@@ -103,7 +103,7 @@ namespace Syneditreg
 //-- forward type declarations -----------------------------------------------
 //-- type declarations -------------------------------------------------------
 //-- var, const, procedure ---------------------------------------------------
-extern DELPHI_PACKAGE void __fastcall Register(void);
+extern DELPHI_PACKAGE void __fastcall Register();
 }	/* namespace Syneditreg */
 #if !defined(DELPHIHEADER_NO_IMPLICIT_NAMESPACE_USE) && !defined(NO_USING_NAMESPACE_SYNEDITREG)
 using namespace Syneditreg;
