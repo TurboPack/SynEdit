@@ -51,7 +51,7 @@
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_WriteableConstants>true</DCC_WriteableConstants>
         <DesignOnlyPackage>true</DesignOnlyPackage>
-        <DllSuffix>250</DllSuffix>
+        <DllSuffix>260</DllSuffix>
         <GenDll>true</GenDll>
         <GenPackage>true</GenPackage>
         <SkipResGeneration>false</SkipResGeneration>
