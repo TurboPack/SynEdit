@@ -37,3 +37,4 @@ __history
 *.tds
 *.vlb
 *.tvsconfig
+*.hpp
