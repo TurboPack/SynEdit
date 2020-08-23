@@ -43,21 +43,22 @@ unit SynEditMiscClasses;
 interface
 
 uses
-  Consts,
   Windows,
   Messages,
+  Registry,
+  Consts,
+  SysUtils,
+  Classes,
+  Math,
   Graphics,
   Controls,
   Forms,
   StdCtrls,
   Menus,
-  Registry,
+  ImgList,
   SynEditTypes,
   SynEditKeyConst,
-  SynUnicode,
-  Math,
-  Classes,
-  SysUtils;
+  SynUnicode;
 
 type
   TSynSelectedColor = class(TPersistent)
@@ -90,6 +91,7 @@ type
     fZeroStart: boolean;
     fLeftOffset: integer;
     fRightOffset: integer;
+    fRightMargin: integer;
     fOnChange: TNotifyEvent;
     fCursor: TCursor;
     fVisible: boolean;
@@ -109,6 +111,7 @@ type
     procedure SetLeadingZeros(const Value: boolean);
     procedure SetLeftOffset(Value: integer);
     procedure SetRightOffset(Value: integer);
+    procedure SetRightMargin(Value: integer);
     procedure SetShowLineNumbers(const Value: boolean);
     procedure SetUseFontStyle(Value: boolean);
     procedure SetVisible(Value: boolean);
@@ -149,6 +152,8 @@ type
       default 16;
     property RightOffset: integer read fRightOffset write SetRightOffset
       default 2;
+    property RightMargin: integer read fRightMargin write SetRightMargin
+      default 2;
     property ShowLineNumbers: boolean read fShowLineNumbers
       write SetShowLineNumbers default FALSE;
     property UseFontStyle: boolean read fUseFontStyle write SetUseFontStyle
@@ -167,7 +172,7 @@ type
 
   TSynBookMarkOpt = class(TPersistent)
   private
-    fBookmarkImages: TImageList;
+    fBookmarkImages: TCustomImageList;
     fDrawBookmarksFirst: boolean;
     fEnableKeys: Boolean;
     fGlyphsVisible: Boolean;
@@ -175,7 +180,7 @@ type
     fOwner: TComponent;
     fXoffset: integer;
     fOnChange: TNotifyEvent;
-    procedure SetBookmarkImages(const Value: TImageList);
+    procedure SetBookmarkImages(const Value: TCustomImageList);
     procedure SetDrawBookmarksFirst(Value: boolean);
     procedure SetGlyphsVisible(Value: Boolean);
     procedure SetLeftMargin(Value: Integer);
@@ -187,7 +192,7 @@ type
     procedure ChangeScale(M, D: Integer); virtual;
 //-- DPI-Aware
   published
-    property BookmarkImages: TImageList
+    property BookmarkImages: TCustomImageList
       read fBookmarkImages write SetBookmarkImages;
     property DrawBookmarksFirst: boolean read fDrawBookmarksFirst
       write SetDrawBookmarksFirst default True;
@@ -327,6 +332,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
   published
+    property Font;
+    property Color;
     property BorderStyle: TSynBorderStyle read FBorderStyle write SetBorderStyle
       default bsSingle;
     property HotKey: TShortCut read FHotKey write SetHotKey default $0041; { Alt+A }
@@ -430,7 +437,8 @@ begin
  fWidth := MulDiv(fWidth, M, D);
  fLeftOffset := MulDiv(fLeftOffset, M, D);
  fRightOffset := MulDiv(fRightOffset, M, D);
- fFont.Height := MulDiv(fFont.Height, M, D);
+ fRightMargin := MulDiv(fRightMargin, M, D);
+ fFont.Height := Round(fFont.Height * M / D);
  if Assigned(fOnChange) then fOnChange(Self);
 end;
 //-- DPI-Aware
@@ -439,7 +447,7 @@ constructor TSynGutter.Create;
 begin
   inherited Create;
   fFont := TFont.Create;
-  fFont.Name := 'Courier New';
+  fFont.Name := DefaultFontName;
   fFont.Size := 8;
   fFont.Style := [];
   fUseFontStyle := True;
@@ -452,6 +460,7 @@ begin
   fDigitCount := 4;
   fAutoSizeDigitCount := fDigitCount;
   fRightOffset := 2;
+  fRightMargin := 2;
   fBorderColor := clWindow;
   fBorderStyle := gbsMiddle;
   fLineNumberStart := 1;
@@ -485,7 +494,11 @@ begin
     fZeroStart := Src.fZeroStart;
     fLeftOffset := Src.fLeftOffset;
     fDigitCount := Src.fDigitCount;
-    fRightOffset := Src.fRightOffset;
+//++  Code Folding
+    // Do not change RightOffset since it varies with Code Folding
+    //fRightOffset := Src.fRightOffset;
+//--  Code Folding
+    fRightMargin := Src.fRightMargin;
     fAutoSize := Src.fAutoSize;
     fAutoSizeDigitCount := Src.fAutoSizeDigitCount;
     fLineNumberStart := Src.fLineNumberStart;
@@ -542,7 +555,9 @@ begin
   if not fVisible then
     Result := 0
   else if fShowLineNumbers then
-    Result := fLeftOffset + fRightOffset + fAutoSizeDigitCount * CharWidth + 2
+    Result := fLeftOffset + fRightOffset + fAutoSizeDigitCount * CharWidth + fRightMargin
+  else if fAutoSize then
+    Result := fLeftOffset + fRightOffset + fRightMargin
   else
     Result := fWidth;
 end;
@@ -605,6 +620,15 @@ begin
   Value := Max(0, Value);
   if fRightOffset <> Value then begin
     fRightOffset := Value;
+    if Assigned(fOnChange) then fOnChange(Self);
+  end;
+end;
+
+procedure TSynGutter.SetRightMargin(Value: integer);
+begin
+  Value := Max(0, Value);
+  if fRightMargin <> Value then begin
+    fRightMargin := Value;
     if Assigned(fOnChange) then fOnChange(Self);
   end;
 end;
@@ -767,7 +791,7 @@ begin
     inherited Assign(Source);
 end;
 
-procedure TSynBookMarkOpt.SetBookmarkImages(const Value: TImageList);
+procedure TSynBookMarkOpt.SetBookmarkImages(const Value: TCustomImageList);
 begin
   if fBookmarkImages <> Value then begin
     fBookmarkImages := Value;
@@ -1339,7 +1363,7 @@ begin
   begin
     Text := ShortCutToTextEx(Key, Shift);
     Invalidate;
-    SetCaretPos(BorderWidth + 1 + TextWidth(Canvas, Text), BorderWidth + 1);
+    SetCaretPos(BorderWidth + 1 + Canvas.TextWidth(Text), BorderWidth + 1);
   end;
 
   Key := SavedKey;
@@ -1351,7 +1375,7 @@ begin
   begin
     Text := srNone;
     Invalidate;
-    SetCaretPos(BorderWidth + 1 + TextWidth(Canvas, Text), BorderWidth + 1);
+    SetCaretPos(BorderWidth + 1 + Canvas.TextWidth(Text), BorderWidth + 1);
   end;
 end;
 
@@ -1372,7 +1396,8 @@ begin
   Canvas.Brush.Color := Color;
   InflateRect(r, -BorderWidth, -BorderWidth);
   Canvas.FillRect(r);
-  TextRect(Canvas, r, BorderWidth + 1, BorderWidth + 1, Text);
+  Canvas.Font := Font;
+  Canvas.TextRect(r, BorderWidth + 1, BorderWidth + 1, Text);
 end;
 
 procedure TSynHotKey.SetBorderStyle(const Value: TSynBorderStyle);
@@ -1400,7 +1425,7 @@ begin
   Text := ShortCutToTextEx(Key, Shift);
   Invalidate;
   if not Visible then
-    SetCaretPos(BorderWidth + 1 + TextWidth(Canvas, Text), BorderWidth + 1);
+    SetCaretPos(BorderWidth + 1 + Canvas.TextWidth(Text), BorderWidth + 1);
 end;
 
 procedure TSynHotKey.SetInvalidKeys(const Value: THKInvalidKeys);
@@ -1429,7 +1454,7 @@ procedure TSynHotKey.WMSetFocus(var Msg: TWMSetFocus);
 begin
   Canvas.Font := Font;
   CreateCaret(Handle, 0, 1, -Canvas.Font.Height + 2);
-  SetCaretPos(BorderWidth + 1 + TextWidth(Canvas, Text), BorderWidth + 1);
+  SetCaretPos(BorderWidth + 1 + Canvas.TextWidth(Text), BorderWidth + 1);
   ShowCaret(Handle);
 end;
 

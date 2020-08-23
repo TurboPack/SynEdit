@@ -28,11 +28,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditTextBuffer.pas,v 1.14 2011/12/28 09:24:20 Egg Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 //todo: Avoid calculating expanded string unncessarily (just calculate expandedLength instead).
@@ -60,11 +55,7 @@ type
 
   PSynEditStringRec = ^TSynEditStringRec;
   TSynEditStringRec = record
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    FString: PWideChar; // "array of WideChar";
-    {$ELSE}
     FString: string;
-    {$ENDIF OWN_UnicodeString_MEMMGR}
     fObject: TObject;
     fRange: TSynEditRange;
     fExpandedLength: Integer;
@@ -121,9 +112,6 @@ type
     procedure InsertItem(Index: integer; const S: string);
     procedure PutRange(Index: integer; ARange: TSynEditRange);
     procedure SetFileFormat(const Value: TSynEditFileFormat);
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    procedure SetListString(Index: Integer; const S: string);
-    {$ENDIF OWN_UnicodeString_MEMMGR}
   protected
     FStreaming: Boolean;
     function Get(Index: Integer): string; override;
@@ -177,19 +165,17 @@ type
 
   ESynEditStringList = class(Exception);
 
-  TSynChangeReason = (crInsert, crPaste, crDragDropInsert,
-    // Note: several undo entries can be chained together via the ChangeNumber
-    // see also TCustomSynEdit.[Begin|End]UndoBlock methods
-    crDeleteAfterCursor, crDelete,
+  // Note: several undo entries can be chained together via the ChangeNumber
+  // see also TCustomSynEdit.[Begin|End]UndoBlock methods
+  TSynChangeReason = (crInsert,
+    crDelete, crSilentDelete,
     crLineBreak, crIndent, crUnindent,
-    crSilentDelete, crSilentDeleteAfterCursor,
     crAutoCompleteBegin, crAutoCompleteEnd,
     crPasteBegin, crPasteEnd, // for pasting, since it might do a lot of operations
-    crSpecial1Begin, crSpecial1End,
-    crSpecial2Begin, crSpecial2End,
+    crSpecialBegin, crSpecialEnd,
     crCaret,      // just restore the Caret, allowing better Undo behavior
     crSelection,  // restore Selection
-    crNothing,
+    crNothing,    // can be used to break group undo
     crGroupBreak,
     crDeleteAll,
     crWhiteSpaceAdd // for undo/redo of adding a character past EOL and repositioning the caret
@@ -292,15 +278,10 @@ begin
   fOnChange := nil;
   fOnChanging := nil;
   inherited Destroy;
-  {$IFDEF OWN_UnicodeString_MEMMGR}
-  fOnCleared := nil;
-  Clear;
-  {$ELSE}
   if fCount <> 0 then
     Finalize(fList^[0], fCount);
   fCount := 0;
   SetCapacity(0);
-  {$ENDIF OWN_UnicodeString_MEMMGR}
 end;
 
 function TSynEditStringList.Add(const S: string): integer;
@@ -328,11 +309,7 @@ begin
       for i := 0 to Strings.Count - 1 do begin
         with fList^[fCount] do begin
           Pointer(fString) := nil;
-          {$IFDEF OWN_UnicodeString_MEMMGR}
-          SetListString(fCount, Strings[i]);
-          {$ELSE}
           fString := Strings[i];
-          {$ENDIF OWN_UnicodeString_MEMMGR}
           fObject := Strings.Objects[i];
           fRange := NullRange;
           fExpandedLength := -1;
@@ -349,21 +326,10 @@ begin
 end;
 
 procedure TSynEditStringList.Clear;
-{$IFDEF OWN_UnicodeString_MEMMGR}
-var
-  I: Integer;
-{$ENDIF OWN_UnicodeString_MEMMGR}
 begin
   if fCount <> 0 then begin
     BeginUpdate;
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    for I := 0 to FCount - 1 do
-      with FList[I] do
-        if TDynWideCharArray(FString) <> nil then
-          TDynWideCharArray(FString) := nil;
-    {$ELSE}
     Finalize(fList^[0], fCount);
-    {$ENDIF OWN_UnicodeString_MEMMGR}
     fCount := 0;
     SetCapacity(0);
     if Assigned(fOnCleared) then
@@ -378,18 +344,11 @@ begin
   if (Index < 0) or (Index >= fCount) then
     ListIndexOutOfBounds(Index);
   BeginUpdate;
-  {$IFDEF OWN_UnicodeString_MEMMGR}
-  SetListString(Index, '');
-  {$ELSE}
   Finalize(fList^[Index]);
-  {$ENDIF OWN_UnicodeString_MEMMGR}
   Dec(fCount);
   if Index < fCount then begin
     System.Move(fList^[Index + 1], fList^[Index],
       (fCount - Index) * SynEditStringRecSize);
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    Pointer(FList[fCount].fString) := nil; // avoid freeing the string, the address is now used in another element
-    {$ENDIF OWN_UnicodeString_MEMMGR}
   end;
   fIndexOfLongestLine := -1;
   if Assigned(fOnDeleted) then
@@ -400,9 +359,6 @@ end;
 procedure TSynEditStringList.DeleteLines(Index, NumLines: Integer);
 var
   LinesAfter: integer;
-{$IFDEF OWN_UnicodeString_MEMMGR}
-  I: Integer;
-{$ENDIF OWN_UnicodeString_MEMMGR}
 begin
   if NumLines > 0 then begin
     if (Index < 0) or (Index >= fCount) then
@@ -410,14 +366,7 @@ begin
     LinesAfter := fCount - (Index + NumLines);
     if LinesAfter < 0 then
       NumLines := fCount - Index;
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    for I := Index to Index + NumLines - 1 do
-      with FList[I] do
-        if TDynWideCharArray(FString) <> nil then
-          TDynWideCharArray(FString) := nil;
-    {$ELSE}
     Finalize(fList^[Index], NumLines);
-    {$ENDIF OWN_UnicodeString_MEMMGR}
 
     if LinesAfter > 0 then begin
       BeginUpdate;
@@ -458,11 +407,7 @@ var
   HasTabs: Boolean;
 begin
   with fList^[Index] do
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    if Length(TDynWideCharArray(FString)) = 0 then
-    {$ELSE}
     if Length(FString) = 0 then
-    {$ENDIF}
     begin
       Result := '';
       Exclude(fFlags, sfExpandedLengthUnknown);
@@ -485,28 +430,9 @@ begin
 end;
 
 function TSynEditStringList.Get(Index: integer): string;
-{$IFDEF OWN_UnicodeString_MEMMGR}
-var
-  Len: Integer;
-{$ENDIF OWN_UnicodeString_MEMMGR}
 begin
   if Cardinal(Index)<Cardinal(fCount) then
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    with FList[Index] do
-    begin
-      Len := Length(TDynWideCharArray(FString));
-      if Len > 0 then
-      begin
-        SetLength(Result, Len - 1); // exclude #0
-        if Result <> '' then
-          System.Move(FString^, Result[1], Len * SizeOf(WideChar));
-      end
-      else
-        Result := '';
-    end
-    {$ELSE}
     Result := fList^[Index].fString
-    {$ENDIF OWN_UnicodeString_MEMMGR}
   else
     Result := '';
 end;
@@ -744,11 +670,7 @@ begin
   with fList^[Index] do
   begin
     Pointer(fString) := nil;
-    {$IFDEF OWN_UnicodeString_MEMMGR}
-    SetListString(Index, S);
-    {$ELSE}
     fString := S;
-    {$ENDIF OWN_UnicodeString_MEMMGR}
     fObject := nil;
     fRange := NullRange;
     fExpandedLength := -1;
@@ -853,11 +775,7 @@ begin
       Include(fFlags, sfExpandedLengthUnknown);
       Exclude(fFlags, sfHasTabs);
       Exclude(fFlags, sfHasNoTabs);
-      {$IFDEF OWN_UnicodeString_MEMMGR}
-        SetListString(Index, S);
-      {$ELSE}
       fString := S;
-      {$ENDIF OWN_UnicodeString_MEMMGR}
     end;
     if Assigned(fOnPutted) then
       fOnPutted( Self, Index, 1 );
@@ -884,18 +802,10 @@ begin
 end;
 
 procedure TSynEditStringList.SetCapacity(NewCapacity: integer);
-{$IFDEF OWN_UnicodeString_MEMMGR}
-var
-  I : integer;
-{$ENDIF OWN_UnicodeString_MEMMGR}
 begin
   if NewCapacity < Count then
     EListError.Create( SInvalidCapacity );
   ReallocMem(fList, NewCapacity * SynEditStringRecSize);
-  {$IFDEF OWN_UnicodeString_MEMMGR}
-  for I := fCount to NewCapacity - 1 do
-    Pointer(fList[I].fString) := nil;  // so that it does not get freed
-  {$ENDIF OWN_UnicodeString_MEMMGR}
   fCapacity := NewCapacity;
 end;
 
@@ -913,32 +823,6 @@ begin
       LineBreak := WideLineSeparator;
   end;
 end;
-
-{$IFDEF OWN_UnicodeString_MEMMGR}
-procedure TSynEditStringList.SetListString(Index: Integer; const S: string);
-var
-  Len: Integer;
-  A: TDynWideCharArray;
-begin
-  with FList[Index] do
-  begin
-    Pointer(A) := TDynWideCharArray(FString);
-    if A <> nil then
-      A := nil; // free memory
-
-    Len := Length(S);
-    if Len > 0 then
-    begin
-      SetLength(A, Len + 1); // include #0
-      System.Move(S[1], A[0], Len * SizeOf(WideChar));
-      A[Len] := #0;
-    end;
-
-    FString := PWideChar(A);
-    Pointer(A) := nil; // do not release the array on procedure exit
-  end;
-end;
-{$ENDIF OWN_UnicodeString_MEMMGR}
 
 procedure TSynEditStringList.SetTabWidth(Value: integer);
 var

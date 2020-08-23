@@ -2,7 +2,7 @@
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>None</FrameworkType>
         <MainSource>SynEditDD.dpk</MainSource>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -42,11 +42,14 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <SanitizedProjectName>SynEditDD</SanitizedProjectName>
+        <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_Description>TurboPack SynEdit Delphi designtime package</DCC_Description>
+        <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Winapi;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_WriteableConstants>true</DCC_WriteableConstants>
         <DesignOnlyPackage>true</DesignOnlyPackage>
@@ -206,16 +209,8 @@
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
             </Deployment>
             <Platforms>
-                <Platform value="Android">False</Platform>
-                <Platform value="Android64">False</Platform>
-                <Platform value="Linux64">False</Platform>
-                <Platform value="OSX32">False</Platform>
-                <Platform value="OSX64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">False</Platform>
-                <Platform value="iOSDevice32">False</Platform>
-                <Platform value="iOSDevice64">False</Platform>
-                <Platform value="iOSSimulator">False</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

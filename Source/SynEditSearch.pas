@@ -225,7 +225,7 @@ begin
     if CaseSensitive then
       Pat := CasedPat
     else
-      Pat := SynWideLowerCase(CasedPat);
+      Pat := SysUtils.AnsiLowerCase(CasedPat);
     fShiftInitialized := False;
   end;
   fCount := 0;
@@ -239,7 +239,7 @@ begin
     if fCaseSensitive then
       Pat := CasedPat
     else
-      Pat := SynWideLowerCase(CasedPat);
+      Pat := SysUtils.AnsiLowerCase(CasedPat);
     fShiftInitialized := False;
   end;
 end;
@@ -275,7 +275,7 @@ begin
     if CaseSensitive then
       FTextToSearch := NewText
     else
-      FTextToSearch := SynWideLowerCase(NewText);
+      FTextToSearch := SysUtils.AnsiLowerCase(NewText);
     Origin := PWideChar(FTextToSearch);
     TheEnd := Origin + fTextLen;
     Run := (Origin - 1);

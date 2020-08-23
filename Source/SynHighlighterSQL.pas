@@ -1848,7 +1848,7 @@ procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
   HashValue: Integer;
 begin
-  AKeyword := SynWideLowerCase(AKeyword);
+  AKeyword := SysUtils.AnsiLowerCase(AKeyword);
   HashValue := HashKey(PWideChar(AKeyword));
   fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
 end;
@@ -1873,7 +1873,7 @@ begin
     Entry := fKeywords[HashKey(PWideChar(fTableNames[i]))];
     while Assigned(Entry) do
     begin
-      if SynWideLowerCase(Entry.Keyword) = SynWideLowerCase(fTableNames[i]) then
+      if SysUtils.AnsiLowerCase(Entry.Keyword) = SysUtils.AnsiLowerCase(fTableNames[i]) then
         Break;
       Entry := Entry.Next;
     end;
@@ -1892,7 +1892,7 @@ begin
     Entry := fKeywords[HashKey(PWideChar(fFunctionNames[i]))];
     while Assigned(Entry) do
     begin
-      if SynWideLowerCase(Entry.Keyword) = SynWideLowerCase(fFunctionNames[i]) then
+      if SysUtils.AnsiLowerCase(Entry.Keyword) = SysUtils.AnsiLowerCase(fFunctionNames[i]) then
         Break;
       Entry := Entry.Next;
     end;

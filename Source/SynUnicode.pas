@@ -10,8 +10,6 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is SynUnicode.pas by Maël Hörz, released 2004-05-30.
 All Rights Reserved.
-TStrings/TStringList-code (originally written by Mike Lischke) is based
-on JclUnicode.pas which is part of the JCL (www.delphi-jedi.org).
 
 Contributors to the SynEdit and mwEdit projects are listed in the
 Contributors.txt file.
@@ -26,24 +24,15 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynUnicode.pas,v 1.1.3.19 2012/11/07 08:54:20 CodehunterWorks Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Provides:
 - Unicode(PWideChar) versions of the most important PAnsiChar-functions in
   SysUtils and some functions unavailable in Delphi 5.
-- An adapted and lighter version of TStrings/TStringList taken
-  from JCL, but made portable.
 - function for loading and saving of Unicode files, and detecting the encoding
 - Unicode clipboard support
 - Unicode-version of TCanvas-methods
 - Some character constants like CR&LF.
 
-Last Changes:
-- 1.1.3.19: Added TStringList.CustomSort
--------------------------------------------------------------------------------}
+------------------------------------------------------------------------------}
 
 unit SynUnicode;
 
@@ -57,7 +46,7 @@ uses
   Controls,
   Forms,
   Graphics,
-  Clipbrd,  
+  Clipbrd,
   Types,
   Classes,
   SysUtils,
@@ -75,7 +64,7 @@ const
   // constants describing range of the Unicode Private Use Area (Unicode 3.2)
   PrivateUseLow = WideChar($E000);
   PrivateUseHigh = WideChar($F8FF);
-  // filler char: helper for painting wide glyphs 
+  // filler char: helper for painting wide glyphs
   FillerChar = PrivateUseLow;
 
 const
@@ -102,62 +91,25 @@ const
   BOM_MSB_FIRST = WideChar($FFFE);
 
 type
-  TSaveFormat = (sfUTF16LSB, sfUTF16MSB, sfUTF8, sfAnsi);
-
-const
-  sfUnicodeLSB = sfUTF16LSB;
-  sfUnicodeMSB = sfUTF16MSB;
-
-type
   TFontCharSet = 0..255;
 
-function WCharUpper(lpsz: PWideChar): PWideChar;
-function WCharUpperBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
-function WCharLower(lpsz: PWideChar): PWideChar;
-function WCharLowerBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
-function SynWideUpperCase(const S: string): string;
-function SynWideLowerCase(const S: string): string;
-function SynIsCharAlpha(const C: WideChar): Boolean;
-function SynIsCharAlphaNumeric(const C: WideChar): Boolean;
-
-function WideLastDelimiter(const Delimiters, S: string): Integer;
-function UnicodeStringReplace(const S, OldPattern, NewPattern: string;
-  Flags: TReplaceFlags): string;
+function SynCharNext(P: PWideChar): PWideChar; overload;
+function SynCharNext(P: PWideChar; out Element: String): PWideChar; overload;
+function SynUniElementsCount(S: string) : integer;
 
 { functions taken from JCLUnicode.pas }
-function WStrComp(Str1, Str2: PWideChar): Integer;
-function WStrLComp(Str1, Str2: PWideChar; MaxLen: Cardinal): Integer;
 procedure StrSwapByteOrder(Str: PWideChar);
-function WideQuotedStr(const S: string; Quote: WideChar): string;
-function WideExtractQuotedStr(var Src: PWideChar; Quote: WideChar): string;
-function UnicodeStringOfChar(C: WideChar; Count: Cardinal): string;
-function WideTrim(const S: string): string;
-function WideTrimLeft(const S: string): string;
-function WideTrimRight(const S: string): string;
 function CharSetFromLocale(Language: LCID): TFontCharSet;
 function CodePageFromLocale(Language: LCID): Integer;
 function KeyboardCodePage: Word;
-function KeyUnicode(C: AnsiChar): WideChar;
-function StringToUnicodeStringEx(const S: AnsiString; CodePage: Word): string;
-function UnicodeStringToStringEx(const WS: string; CodePage: Word): AnsiString;
 
 { functions providing same behavior on Win9x and WinNT based systems}
 function GetTextSize(DC: HDC; Str: PWideChar; Count: Integer): TSize;
-
-{ Unicode versions of TCanvas-methods }
-function TextExtent(ACanvas: TCanvas; const Text: string): TSize;
-function TextWidth(ACanvas: TCanvas; const Text: string): Integer;
-function TextHeight(ACanvas: TCanvas; const Text: string): Integer;
-procedure TextOut(ACanvas: TCanvas; X, Y: Integer; const Text: string);
-procedure TextRect(ACanvas: TCanvas; Rect: TRect; X, Y: Integer;
-  const Text: string);
 
 { Unicode streaming-support }
 type
   TSynEncoding = (seUTF8, seUTF16LE, seUTF16BE, seAnsi);
   TSynEncodings = set of TSynEncoding;
-
-  TWideFileStream = TFileStream;
 
 function IsAnsiOnly(const WS: string): Boolean;
 function IsUTF8(Stream: TStream; out WithBOM: Boolean): Boolean; overload;
@@ -191,9 +143,6 @@ procedure SetClipboardText(const Text: string);
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
 function IsUnicodeStringMappableToAnsi(const WS: string): Boolean;
 
-var
-  Win32PlatformIsUnicode: Boolean;
-
 implementation
 
 uses
@@ -202,359 +151,32 @@ uses
   SysConst,
   RTLConsts;
 
-function WStrLen(const Str: PWideChar): Cardinal;
-asm
-        MOV     EDX,EDI
-        MOV     EDI,EAX
-        MOV     ECX,0FFFFFFFFH
-        XOR     AX,AX
-        REPNE   SCASW
-        MOV     EAX,0FFFFFFFEH
-        SUB     EAX,ECX
-        MOV     EDI,EDX
-end;
 
-function WStrEnd(const Str: PWideChar): PWideChar;
-asm
-        MOV     EDX,EDI
-        MOV     EDI,EAX
-        MOV     ECX,0FFFFFFFFH
-        XOR     AX,AX
-        REPNE   SCASW
-        LEA     EAX,[EDI-2]
-        MOV     EDI,EDX
-end;
-
-function WStrMove(Dest: PWideChar; const Source: PWideChar; Count: Integer): PWideChar;
+function SynCharNext(P: PWideChar): PWideChar;
 begin
-  Result := Dest;
-  System.Move(Source^, Dest^, Count * SizeOf(WideChar));
+  Result := Windows.CharNext(P);
 end;
 
-function WStrCopy(Dest: PWideChar; const Source: PWideChar): PWideChar;
+function SynCharNext(P: PWideChar; out Element: String): PWideChar; overload;
+Var
+  Start : PWideChar;
 begin
-  Result := SysUtils.StrCopy(Dest, Source)
+  Start := P;
+  Result := Windows.CharNext(P);
+  SetString(Element, Start, Result - Start);
 end;
 
-function WStrLCopy(Dest: PWideChar; const Source: PWideChar; MaxLen: Cardinal): PWideChar;
+function SynUniElementsCount(S: string) : integer;
+Var
+  P : PWideChar;
 begin
-  Result := SysUtils.StrLCopy(Dest, Source, MaxLen)
-end;
-
-function WStrCat(Dest: PWideChar; const Source: PWideChar): PWideChar;
-begin
-  WStrCopy(WStrEnd(Dest), Source);
-  Result := Dest;
-end;
-
-function WStrScan(const Str: PWideChar; Chr: WideChar): PWideChar;
-begin
-  Result := Str;
-  while Result^ <> Chr do
+  Result := 0;
+  P := PWideChar(S);
+  while P^ <> #0 do
   begin
-    if Result^ = #0 then
-    begin
-      Result := nil;
-      Exit;
-    end;
+    P := Windows.CharNext(P);
     Inc(Result);
   end;
-end;
-
-function WStrAlloc(Size: Cardinal): PWideChar;
-begin
-  Size := SizeOf(WideChar) * Size + SizeOf(Cardinal);
-  GetMem(Result, Size);
-  Cardinal(Pointer(Result)^) := Size;
-  Inc(PByte(Result), SizeOf(Cardinal));
-end;
-
-function WStrNew(const Str: PWideChar): PWideChar;
-var
-  Size: Cardinal;
-begin
-  if Str = nil then
-    Result := nil
-  else
-  begin
-    Size := WStrLen(Str) + 1;
-    Result := WStrMove(WStrAlloc(Size), Str, Size);
-  end;
-end;
-
-procedure WStrDispose(Str: PWideChar);
-begin
-  if Str <> nil then
-  begin
-    Dec(PByte(Str), SizeOf(Cardinal));
-    FreeMem(Str, Cardinal(Pointer(Str)^));
-  end;
-end;
-
-// The Win9X fix for SynWideUpperCase and SynWideLowerCase was taken
-// from Troy Wolbrinks, TntUnicode-package.
-
-function WCharUpper(lpsz: PWideChar): PWideChar;
-var
-  AStr: AnsiString;
-  WStr: string;
-begin
-  if Win32PlatformIsUnicode then
-    Result := Windows.CharUpperW(lpsz)
-  else
-  begin
-    if HiWord(Cardinal(lpsz)) = 0 then
-    begin
-      // literal char mode
-      Result := lpsz;
-      if IsWideCharMappableToAnsi(WideChar(lpsz)) then
-      begin
-        AStr := AnsiString(WideChar(lpsz)); // single character may be more than one byte
-        Windows.CharUpperA(PAnsiChar(AStr));
-        WStr := string(AStr); // should always be single wide char
-        if Length(WStr) = 1 then
-          Result := PWideChar(WStr[1]);
-      end
-    end
-    else
-    begin
-      // null-terminated string mode
-      Result := lpsz;
-      while lpsz^ <> #0 do
-      begin
-        lpsz^ := WideChar(SynUnicode.WCharUpper(PWideChar(lpsz^)));
-        Inc(lpsz);
-      end;
-    end;
-  end;
-end;
-
-function WCharUpperBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
-var
-  i: integer;
-begin
-  if Win32PlatformIsUnicode then
-    Result := Windows.CharUpperBuffW(lpsz, cchLength)
-  else
-  begin
-    Result := cchLength;
-    for i := 1 to cchLength do
-    begin
-      lpsz^ := WideChar(SynUnicode.WCharUpper(PWideChar(lpsz^)));
-      Inc(lpsz);
-    end;
-  end;
-end;
-
-function WCharLower(lpsz: PWideChar): PWideChar;
-var
-  AStr: AnsiString;
-  WStr: string;
-begin
-  if Win32PlatformIsUnicode then
-    Result := Windows.CharLowerW(lpsz)
-  else
-  begin
-    if HiWord(Cardinal(lpsz)) = 0 then
-    begin
-      // literal char mode
-      Result := lpsz;
-      if IsWideCharMappableToAnsi(WideChar(lpsz)) then
-      begin
-        AStr := AnsiString(WideChar(lpsz)); // single character may be more than one byte
-        Windows.CharLowerA(PAnsiChar(AStr));
-        WStr := string(AStr); // should always be single wide char
-        if Length(WStr) = 1 then
-          Result := PWideChar(WStr[1]);
-      end
-    end
-    else
-    begin
-      // null-terminated string mode
-      Result := lpsz;
-      while lpsz^ <> #0 do
-      begin
-        lpsz^ := WideChar(SynUnicode.WCharLower(PWideChar(lpsz^)));
-        Inc(lpsz);
-      end;
-    end;
-  end;
-end;
-
-function WCharLowerBuff(lpsz: PWideChar; cchLength: DWORD): DWORD;
-var
-  i: integer;
-begin
-  if Win32PlatformIsUnicode then
-    Result := Windows.CharLowerBuffW(lpsz, cchLength)
-  else
-  begin
-    Result := cchLength;
-    for i := 1 to cchLength do
-    begin
-      lpsz^ := WideChar(SynUnicode.WCharLower(PWideChar(lpsz^)));
-      Inc(lpsz);
-    end;
-  end;
-end;
-
-function SynWideUpperCase(const S: string): string;
-var
-  Len: Integer;
-begin
-  Len := Length(S);
-  SetString(Result, PWideChar(S), Len);
-  if Len > 0 then
-    SynUnicode.WCharUpperBuff(Pointer(Result), Len);
-end;
-
-function SynWideLowerCase(const S: string): string;
-var
-  Len: Integer;
-begin
-  Len := Length(S);
-  SetString(Result, PWideChar(S), Len);
-  if Len > 0 then
-    SynUnicode.WCharLowerBuff(Pointer(Result), Len);
-end;
-
-function SynIsCharAlpha(const C: WideChar): Boolean;
-begin
-  if Win32PlatformIsUnicode then
-    Result := IsCharAlphaW(C)
-  else
-    // returns false if C is not mappable to ANSI
-    Result := IsCharAlphaA(AnsiChar(C));
-end;
-
-function SynIsCharAlphaNumeric(const C: WideChar): Boolean;
-begin
-  if Win32PlatformIsUnicode then
-    Result := IsCharAlphaNumericW(C)
-  else
-    // returns false if C is not mappable to ANSI
-    Result := IsCharAlphaNumericA(AnsiChar(C));
-end;
-
-function WideLastDelimiter(const Delimiters, S: string): Integer;
-var
-  P: PWideChar;
-begin
-  Result := Length(S);
-  P := PWideChar(Delimiters);
-  while Result > 0 do
-  begin
-    if (S[Result] <> #0) and (WStrScan(P, S[Result]) <> nil) then
-      Exit;
-    Dec(Result);
-  end;
-end;
-
-function UnicodeStringReplace(const S, OldPattern, NewPattern: string;
-  Flags: TReplaceFlags): string;
-var
-  SearchStr, Patt, NewStr: string;
-  Offset: Integer;
-begin
-  if rfIgnoreCase in Flags then
-  begin
-    SearchStr := SynWideUpperCase(S);
-    Patt := SynWideUpperCase(OldPattern);
-  end
-  else
-  begin
-    SearchStr := S;
-    Patt := OldPattern;
-  end;
-  NewStr := S;
-  Result := '';
-  while SearchStr <> '' do
-  begin
-    Offset := Pos(Patt, SearchStr);
-    if Offset = 0 then
-    begin
-      Result := Result + NewStr;
-      Break;
-    end;
-    Result := Result + Copy(NewStr, 1, Offset - 1) + NewPattern;
-    NewStr := Copy(NewStr, Offset + Length(OldPattern), MaxInt);
-    if not (rfReplaceAll in Flags) then
-    begin
-      Result := Result + NewStr;
-      Break;
-    end;
-    SearchStr := Copy(SearchStr, Offset + Length(Patt), MaxInt);
-  end;
-end;
-
-const
-  // data used to bring UTF-16 coded strings into correct UTF-32 order for correct comparation
-  UTF16Fixup: array[0..31] of Word = (
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    $2000, $F800, $F800, $F800, $F800
-  );
-
-// Binary comparation of Str1 and Str2 with surrogate fix-up.
-// Returns < 0 if Str1 is smaller in binary order than Str2, = 0 if both strings are
-// equal and > 0 if Str1 is larger than Str2.
-//
-// This code is based on an idea of Markus W. Scherer (IBM).
-// Note: The surrogate fix-up is necessary because some single value code points have
-//       larger values than surrogates which are in UTF-32 actually larger.
-function WStrComp(Str1, Str2: PWideChar): Integer;
-var
-  C1, C2: Word;
-  Run1, Run2: PWideChar;
-begin
-  Run1 := Str1;
-  Run2 := Str2;
-  repeat
-    C1 := Word(Run1^);
-    C1 := Word(C1 + UTF16Fixup[C1 shr 11]);
-    C2 := Word(Run2^);
-    C2 := Word(C2 + UTF16Fixup[C2 shr 11]);
-
-    // now C1 and C2 are in UTF-32-compatible order
-    Result := Integer(C1) - Integer(C2);
-    if(Result <> 0) or (C1 = 0) or (C2 = 0) then
-      Break;
-    Inc(Run1);
-    Inc(Run2);
-  until False;
-
-  // If the strings have different lengths but the comparation returned equity so far
-  // then adjust the result so that the longer string is marked as the larger one.
-  if Result = 0 then
-    Result := (Run1 - Str1) - (Run2 - Str2);
-end;
-
-// compares strings up to MaxLen code points
-// see also StrCompW
-function WStrLComp(Str1, Str2: PWideChar; MaxLen: Cardinal): Integer;
-var
-  C1, C2: Word;
-begin
-  if MaxLen > 0 then
-  begin
-    repeat
-      C1 := Word(Str1^);
-      C1 := Word(C1 + UTF16Fixup[C1 shr 11]);
-      C2 := Word(Str2^);
-      C2 := Word(C2 + UTF16Fixup[C2 shr 11]);
-
-      // now C1 and C2 are in UTF-32-compatible order
-      { TODO : surrogates take up 2 words and are counted twice here, count them only once }
-      Result := Integer(C1) - Integer(C2);
-      Dec(MaxLen);
-      if(Result <> 0) or (C1 = 0) or (C2 = 0) or (MaxLen = 0) then
-        Break;
-      Inc(Str1);
-      Inc(Str2);
-    until False;
-  end
-  else
-    Result := 0;
 end;
 
 // exchanges in each character of the given string the low order and high order
@@ -570,147 +192,6 @@ begin
     P^ := MakeWord(HiByte(P^), LoByte(P^));
     Inc(P);
   end;
-end;
-
-// works like QuotedStr from SysUtils.pas but can insert any quotation character
-function WideQuotedStr(const S: string; Quote: WideChar): string;
-var
-  P, Src,
-  Dest: PWideChar;
-  AddCount: Integer;
-begin
-  AddCount := 0;
-  P := WStrScan(PWideChar(S), Quote);
-  while (P <> nil) do
-  begin
-    Inc(P);
-    Inc(AddCount);
-    P := WStrScan(P, Quote);
-  end;
-
-  if AddCount = 0 then
-    Result := Quote + S + Quote
-  else
-  begin
-    SetLength(Result, Length(S) + AddCount + 2);
-    Dest := PWideChar(Result);
-    Dest^ := Quote;
-    Inc(Dest);
-    Src := PWideChar(S);
-    P := WStrScan(Src, Quote);
-    repeat
-      Inc(P);
-      Move(Src^, Dest^, 2 * (P - Src));
-      Inc(Dest, P - Src);
-      Dest^ := Quote;
-      Inc(Dest);
-      Src := P;
-      P := WStrScan(Src, Quote);
-    until P = nil;
-    P := WStrEnd(Src);
-    Move(Src^, Dest^, 2 * (P - Src));
-    Inc(Dest, P - Src);
-    Dest^ := Quote;
-  end;
-end;
-
-// extracts a string enclosed in quote characters given by Quote
-function WideExtractQuotedStr(var Src: PWideChar; Quote: WideChar): string;
-var
-  P, Dest: PWideChar;
-  DropCount: Integer;
-begin
-  Result := '';
-  if (Src = nil) or (Src^ <> Quote) then
-    Exit;
-
-  Inc(Src);
-  DropCount := 1;
-  P := Src;
-  Src := WStrScan(Src, Quote);
-
-  while Src <> nil do   // count adjacent pairs of quote chars
-  begin
-    Inc(Src);
-    if Src^ <> Quote then
-      Break;
-    Inc(Src);
-    Inc(DropCount);
-    Src := WStrScan(Src, Quote);
-  end;
-
-  if Src = nil then
-    Src := WStrEnd(P);
-  if (Src - P) <= 1 then
-    Exit;
-
-  if DropCount = 1 then
-    SetString(Result, P, Src - P - 1)
-  else
-  begin
-    SetLength(Result, Src - P - DropCount);
-    Dest := PWideChar(Result);
-    Src := WStrScan(P, Quote);
-    while Src <> nil do
-    begin
-      Inc(Src);
-      if Src^ <> Quote then
-        Break;
-      Move(P^, Dest^, 2 * (Src - P));
-      Inc(Dest, Src - P);
-      Inc(Src);
-      P := Src;
-      Src := WStrScan(Src, Quote);
-    end;
-    if Src = nil then
-      Src := WStrEnd(P);
-    Move(P^, Dest^, 2 * (Src - P - 1));
-  end;
-end;
-
-// returns a string of Count characters filled with C
-function UnicodeStringOfChar(C: WideChar; Count: Cardinal): string;
-var
-  I: Integer;
-begin
-  SetLength(Result, Count);
-  for I := 1 to Count do
-    Result[I] := C;
-end;
-
-function WideTrim(const S: string): string;
-var
-  I, L: Integer;
-begin
-  L := Length(S);
-  I := 1;
-  while (I <= L) and (S[I] <= ' ') do Inc(I);
-  if I > L then
-    Result := ''
-  else
-  begin
-    while S[L] <= ' ' do Dec(L);
-    Result := Copy(S, I, L - I + 1);
-  end;
-end;
-
-function WideTrimLeft(const S: string): string;
-var
-  I, L: Integer;
-begin
-  L := Length(S);
-  I := 1;
-  while (I <= L) and (S[I] <= ' ') do Inc(I);
-  Result := Copy(S, I, Maxint);
-end;
-
-function WideTrimRight(const S: string): string;
-var
-  I: Integer;
-begin
-  I := Length(S);
-  while (I > 0) and (S[I] <= ' ') do Dec(I);
-  Result := Copy(S, 1, I);
 end;
 
 function TranslateCharsetInfoEx(lpSrc: PDWORD; var lpCs: TCharsetInfo; dwFlags: DWORD): BOOL; stdcall;
@@ -740,153 +221,13 @@ begin
   Result := CodePageFromLocale(GetKeyboardLayout(0) and $FFFF);
 end;
 
-// converts the given character (as it comes with a WM_CHAR message) into its
-// corresponding Unicode character depending on the active keyboard layout
-function KeyUnicode(C: AnsiChar): WideChar;
-begin
-  MultiByteToWideChar(KeyboardCodePage, MB_USEGLYPHCHARS, @C, 1, @Result, 1);
-end;
-
-function StringToUnicodeStringEx(const S: AnsiString; CodePage: Word): string;
-var
-  InputLength,
-  OutputLength: Integer;
-begin
-  InputLength := Length(S);
-  OutputLength := MultiByteToWideChar(CodePage, 0, PAnsiChar(S), InputLength,
-    nil, 0);
-  SetLength(Result, OutputLength);
-  MultiByteToWideChar(CodePage, 0, PAnsiChar(S), InputLength, PWideChar(Result),
-    OutputLength);
-end;
-
-function UnicodeStringToStringEx(const WS: string; CodePage: Word): AnsiString;
-var
-  InputLength,
-  OutputLength: Integer;
-begin
-  InputLength := Length(WS);
-  OutputLength := WideCharToMultiByte(CodePage, 0, PWideChar(WS), InputLength,
-    nil, 0, nil, nil);
-  SetLength(Result, OutputLength);
-  WideCharToMultiByte(CodePage, 0, PWideChar(WS), InputLength, PAnsiChar(Result),
-    OutputLength, nil, nil);
-end;
-
 function GetTextSize(DC: HDC; Str: PWideChar; Count: Integer): TSize;
-{$IFDEF SYN_UNISCRIBE}
-const
-  SSAnalyseFlags = SSA_GLYPHS or SSA_FALLBACK or SSA_LINK;
-{$ENDIF}
-var
-  tm: TTextMetricA;
-  {$IFDEF SYN_UNISCRIBE}
-  GlyphBufferSize: Integer;
-  saa: TScriptStringAnalysis;
-  lpSize: PSize;
-  {$ENDIF}
 begin
   Result.cx := 0;
   Result.cy := 0;
 
-{$IFDEF SYN_UNISCRIBE}
-  if Usp10IsInstalled then
-  begin
-    if Count <= 0 then Exit;
-
-    // According to the MS Windows SDK (1.5 * Count + 16) is the recommended
-    // value for GlyphBufferSize (see documentation of cGlyphs parameter of
-    // ScriptStringAnalyse function)
-    GlyphBufferSize := (3 * Count) div 2 + 16;
-    
-    if Succeeded(ScriptStringAnalyse(DC, Str, Count, GlyphBufferSize, -1,
-      SSAnalyseFlags, 0, nil, nil, nil, nil, nil, @saa)) then
-    begin
-      lpSize := ScriptString_pSize(saa);
-      if lpSize <> nil then
-      begin
-        Result := lpSize^;
-        if Result.cx = 0 then
-        begin
-          GetTextMetricsA(DC, tm);
-          Result.cx := tm.tmAveCharWidth;
-        end;
-      end;
-      ScriptStringFree(@saa);
-    end;
-  end
-  else
-{$ENDIF}
   begin
     GetTextExtentPoint32W(DC, Str, Count, Result);
-    if not Win32PlatformIsUnicode then
-    begin
-      GetTextMetricsA(DC, tm);
-      if tm.tmPitchAndFamily and TMPF_TRUETYPE <> 0 then
-        Result.cx := Result.cx - tm.tmOverhang
-      else
-        Result.cx := tm.tmAveCharWidth * Count;
-    end;
-  end;
-end;
-
-type
-  TAccessCanvas = class(TCanvas)
-  end;
-
-function TextExtent(ACanvas: TCanvas; const Text: string): TSize;
-begin
-  with TAccessCanvas(ACanvas) do
-  begin
-    RequiredState([csHandleValid, csFontValid]);
-    Result := GetTextSize(Handle, PWideChar(Text), Length(Text));
-  end;
-end;
-
-function TextWidth(ACanvas: TCanvas; const Text: string): Integer;
-begin
-  Result := TextExtent(ACanvas, Text).cX;
-end;
-
-function TextHeight(ACanvas: TCanvas; const Text: string): Integer;
-begin
-  Result := TextExtent(ACanvas, Text).cY;
-end;
-
-procedure TextOut(ACanvas: TCanvas; X, Y: Integer; const Text: string);
-begin
-  with TAccessCanvas(ACanvas) do
-  begin
-    Changing;
-    RequiredState([csHandleValid, csFontValid, csBrushValid]);
-    if CanvasOrientation = coRightToLeft then
-      Inc(X, SynUnicode.TextWidth(ACanvas, Text) + 1);
-    Windows.ExtTextOutW(Handle, X, Y, TextFlags, nil, PWideChar(Text),
-     Length(Text), nil);
-    MoveTo(X + SynUnicode.TextWidth(ACanvas, Text), Y);
-    Changed;
-  end;
-end;
-
-procedure TextRect(ACanvas: TCanvas; Rect: TRect; X, Y: Integer;
-  const Text: string);
-var
-  Options: Integer;
-begin
-  with TAccessCanvas(ACanvas) do
-  begin
-    Changing;
-    RequiredState([csHandleValid, csFontValid, csBrushValid]);
-    Options := ETO_CLIPPED or TextFlags;
-    if Brush.Style <> bsClear then
-      Options := Options or ETO_OPAQUE;
-    if ((TextFlags and ETO_RTLREADING) <> 0) and
-       (CanvasOrientation = coRightToLeft)
-    then
-      Inc(X, SynUnicode.TextWidth(ACanvas, Text) + 1);
-    Windows.ExtTextOutW(Handle, X, Y, Options, @Rect, PWideChar(Text),
-      Length(Text), nil);
-    Changed;
   end;
 end;
 
@@ -899,7 +240,7 @@ function IsUTF8(const FileName: string; out WithBOM: Boolean): Boolean;
 var
   Stream: TStream;
 begin
-  Stream := TWideFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     Result := IsUTF8(Stream, WithBOM);
   finally
@@ -1044,7 +385,7 @@ function GetEncoding(const FileName: string; out WithBOM: Boolean): TSynEncoding
 var
   Stream: TStream;
 begin
-  Stream := TWideFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     Result := GetEncoding(Stream, WithBOM);
   finally
@@ -1059,7 +400,7 @@ var
 begin
   // if Stream is nil, let Delphi raise the exception, by accessing Stream,
   // to signal an invalid result
-  
+
   // start analysis at actual Stream.Position
   Size := Stream.Size - Stream.Position;
 
@@ -1098,7 +439,7 @@ procedure SaveToFile(const WS: string; const FileName: string;
 var
   Stream: TStream;
 begin
-  Stream := TWideFileStream.Create(FileName, fmCreate);
+  Stream := TFileStream.Create(FileName, fmCreate);
   try
     SaveToStream(WS, Stream, Encoding, WithBom);
   finally
@@ -1111,7 +452,7 @@ procedure SaveToFile(UnicodeStrings: TStrings; const FileName: string;
 var
   Stream: TStream;
 begin
-  Stream := TWideFileStream.Create(FileName, fmCreate);
+  Stream := TFileStream.Create(FileName, fmCreate);
   try
     SaveToStream(UnicodeStrings, Stream, Encoding, WithBom);
   finally
@@ -1124,7 +465,7 @@ function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
 var
   Stream: TStream;
 begin
-  Stream := TWideFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     Result := LoadFromStream(UnicodeStrings, Stream, WithBOM);
   finally
@@ -1137,7 +478,7 @@ function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
 var
   Stream: TStream;
 begin
-  Stream := TWideFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     Result := LoadFromStream(UnicodeStrings, Stream, Encoding, WithBOM);
   finally
@@ -1327,107 +668,17 @@ end;
 
 function ClipboardProvidesText: Boolean;
 begin
-  Result := IsClipboardFormatAvailable(CF_TEXT) or IsClipboardFormatAvailable(CF_UNICODETEXT);
+  Result := IsClipboardFormatAvailable(CF_UNICODETEXT);
 end;
 
 function GetClipboardText: string;
-var
-  Mem: HGLOBAL;
-  LocaleID: LCID;
-  P: PByte;
 begin
-  Result := '';
-  Clipboard.Open;
-  try
-    if Clipboard.HasFormat(CF_UNICODETEXT) then
-    begin
-      Mem := Clipboard.GetAsHandle(CF_UNICODETEXT);
-        try
-          if Mem <> 0 then
-            Result := PWideChar(GlobalLock(Mem));
-        finally
-          if Mem <> 0 then GlobalUnlock(Mem);
-        end;
-    end
-    else
-    begin
-      LocaleID := 0;
-      Mem := Clipboard.GetAsHandle(CF_LOCALE);
-      try
-        if Mem <> 0 then LocaleID := PInteger(GlobalLock(Mem))^;
-      finally
-        if Mem <> 0 then GlobalUnlock(Mem);
-      end;
-
-      Mem := Clipboard.GetAsHandle(CF_TEXT);
-      try
-        if Mem <> 0 then
-        begin
-          P := GlobalLock(Mem);
-          Result := StringToUnicodeStringEx(PAnsiChar(P), CodePageFromLocale(LocaleID));
-        end
-      finally
-        if Mem <> 0 then GlobalUnlock(Mem);
-      end;
-    end;
-  finally
-    Clipboard.Close;
-  end;
+  Result := Clipboard.AsText;
 end;
 
 procedure SetClipboardText(const Text: string);
-var
-  Mem: HGLOBAL;
-  P: PByte;
-  SLen: Integer;
 begin
-  if Text = '' then Exit;
-  SLen := Length(Text);
-  Clipboard.Open;
-  try
-    Clipboard.Clear;
-
-    // set ANSI text only on Win9X, WinNT automatically creates ANSI from Unicode
-    if Win32Platform <> VER_PLATFORM_WIN32_NT then
-    begin
-      Mem := GlobalAlloc(GMEM_MOVEABLE or GMEM_DDESHARE, SLen + 1);
-      if Mem <> 0 then
-      begin
-        P := GlobalLock(Mem);
-        try
-          if P <> nil then
-          begin
-            Move(PAnsiChar(AnsiString(Text))^, P^, SLen + 1);
-            Clipboard.SetAsHandle(CF_TEXT, Mem);
-          end;
-        finally
-          GlobalUnlock(Mem);
-        end;
-      end;
-    end;
-
-    // set unicode text, this also works on Win9X, even if the clipboard-viewer
-    // can't show it, Word 2000+ can paste it including the unicode only characters
-    Mem := GlobalAlloc(GMEM_MOVEABLE or GMEM_DDESHARE,
-      (SLen + 1) * sizeof(WideChar));
-    if Mem <> 0 then
-    begin
-      P := GlobalLock(Mem);
-      try
-        if P <> nil then
-        begin
-          Move(PWideChar(Text)^, P^, (SLen + 1) * sizeof(WideChar));
-          Clipboard.SetAsHandle(CF_UNICODETEXT, Mem);
-        end;
-      finally
-        GlobalUnlock(Mem);
-      end;
-    end;
-    // Don't free Mem!  It belongs to the clipboard now, and it will free it
-    // when it is done with it.
-  finally
-    Clipboard.Close;
-  end;
+  Clipboard.AsText := Text;
 end;
 
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
@@ -1449,6 +700,6 @@ begin
 end;
 
 initialization
-  Win32PlatformIsUnicode := (Win32Platform = VER_PLATFORM_WIN32_NT);
+  Assert(Win32Platform = VER_PLATFORM_WIN32_NT, 'Unsupported Windows version');
 
 end.

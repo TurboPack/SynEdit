@@ -112,8 +112,8 @@ type
     procedure RemoveKeyDownHandler(aHandler: TKeyEvent);
     procedure AddKeyUpHandler(aHandler: TKeyEvent);
     procedure RemoveKeyUpHandler(aHandler: TKeyEvent);
-    procedure AddKeyPressHandler(aHandler: TKeyPressWEvent);
-    procedure RemoveKeyPressHandler(aHandler: TKeyPressWEvent);
+    procedure AddKeyPressHandler(aHandler: TKeyPressEvent);
+    procedure RemoveKeyPressHandler(aHandler: TKeyPressEvent);
     procedure AddMouseDownHandler(aHandler: TMouseEvent);
     procedure RemoveMouseDownHandler(aHandler: TMouseEvent);
     procedure AddMouseUpHandler(aHandler: TMouseEvent);
@@ -137,7 +137,7 @@ begin
   fKeyUpChain.Add(TMethod(aHandler));
 end;
 
-procedure TSynEditKbdHandler.AddKeyPressHandler(aHandler: TKeyPressWEvent);
+procedure TSynEditKbdHandler.AddKeyPressHandler(aHandler: TKeyPressEvent);
 begin
   fKeyPressChain.Add(TMethod(aHandler));
 end;
@@ -252,7 +252,7 @@ begin
     begin
       for idx := Count - 1 downto 0 do
       begin
-        TKeyPressWEvent(Items[idx])(Sender, Key);
+        TKeyPressEvent(Items[idx])(Sender, Key);
         if (Key = #0) then
         begin
           fInKeyPress := False;
@@ -323,7 +323,7 @@ begin
   fKeyUpChain.Remove(TMethod(aHandler));
 end;
 
-procedure TSynEditKbdHandler.RemoveKeyPressHandler(aHandler: TKeyPressWEvent);
+procedure TSynEditKbdHandler.RemoveKeyPressHandler(aHandler: TKeyPressEvent);
 begin
   fKeyPressChain.Remove(TMethod(aHandler));
 end;

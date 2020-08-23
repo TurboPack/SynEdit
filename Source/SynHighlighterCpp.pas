@@ -496,7 +496,7 @@ end;
 
 procedure TSynCppSyn.DirectiveProc;
 begin
-  if WideTrim(fLine)[1] <> '#' then // '#' is not first char on the line, treat it as an invalid char
+  if Trim(fLine)[1] <> '#' then // '#' is not first char on the line, treat it as an invalid char
   begin
     fTokenID := tkUnknown;
     Inc(Run);
