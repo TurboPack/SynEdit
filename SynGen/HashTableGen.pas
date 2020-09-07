@@ -156,7 +156,7 @@ begin
        KeyWords[i] := KeyWordsList[i]
     else
       for i := 0 to KeyWordsList.Count - 1 do
-        KeyWords[i] := SynWideLowerCase(KeyWordsList[i]);
+        KeyWords[i] := SysUtils.AnsiLowerCase(KeyWordsList[i]);
 
     FKeyList := KeyList;
   finally
@@ -189,7 +189,7 @@ begin
     for i := 0 to FKeyList.Count - 1 do
       with TLexKeys(FKeyList[i]) do
       begin
-        Key := FinalHashKey(SynWideLowerCase(KeyName));
+        Key := FinalHashKey(SysUtils.AnsiLowerCase(KeyName));
       end;
   end;
 end;

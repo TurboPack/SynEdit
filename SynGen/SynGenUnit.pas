@@ -237,9 +237,9 @@ end;
 
 function FirstLetterCap(S: string): string;
 begin
-  Result := SynWideLowerCase(S);
+  Result := SysUtils.AnsiLowerCase(S);
   if Length(Result) > 0 then
-    Result[1] := SynWideUpperCase(S[1])[1];
+    Result[1] := SysUtils.AnsiUpperCase(S[1])[1];
 end;
 
 {$IFNDEF SYN_COMPILER_6_UP}
