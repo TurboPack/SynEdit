@@ -10493,8 +10493,9 @@ begin
      and StopScanning will be called when LinesChanged is executed }
   if not (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
   begin
-    TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
-      fLines);
+    if fHighlighter is TSynCustomCodeFoldingHighlighter then
+      TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
+        fLines);
     InvalidateGutter;
     Include(fStateFlags, sfScrollbarChanged);
   end;
@@ -10503,7 +10504,7 @@ end;
 procedure TCustomSynEdit.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine : Integer; ToLine : Integer);
 begin
-  if Assigned(fHighlighter) and (fHighlighter is TSynCustomCodeFoldingHighlighter) then
+  if fHighlighter is TSynCustomCodeFoldingHighlighter then
     TSynCustomCodeFoldingHighlighter(fHighlighter).ScanForFoldRanges(FoldRanges,
       LinesToScan, FromLine, ToLine);
 
