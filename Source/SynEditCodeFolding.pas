@@ -251,18 +251,19 @@ type
   published
     // Size of the gutter shapes in pixels at 96 PPI - had to be odd number
     property  GutterShapeSize: Integer read fGutterShapeSize
-      write SetGutterShapeSize;
+      write SetGutterShapeSize default 11;
     property CollapsedLineColor: TColor read fCollapsedLineColor
-      write SetCollapsedLineColor;
+      write SetCollapsedLineColor default clGrayText;
     property FolderBarLinesColor: TColor read fFolderBarLinesColor
-      write SetFolderBarLinesColor;
+      write SetFolderBarLinesColor default clGrayText;
     property IndentGuidesColor: TColor read fIndentGuidesColor
-      write SetIndentGuidesColor;
-    property IndentGuides: Boolean read fIndentGuides write SetIndentGuides;
+      write SetIndentGuidesColor default clGray;
+    property IndentGuides: Boolean read fIndentGuides write SetIndentGuides
+      default True;
     property ShowCollapsedLine: Boolean read fShowCollapsedLine
-      write SetShowCollapsedLine;
+      write SetShowCollapsedLine default False;
     property ShowHintMark: Boolean read fShowHintMark
-      write SetShowHintMark;
+      write SetShowHintMark default True;
   end;
 
   TSynCustomCodeFoldingHighlighter = class(TSynCustomHighlighter)
