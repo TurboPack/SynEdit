@@ -2695,16 +2695,17 @@ function TCustomSynEdit.ShrinkAtWideGlyphs(const S: string; First: Integer;
 var
   i, j: Integer;
 begin
-  SetLength(Result, Length(S));
+  SetLength(Result, CharCount);
 
   i := First;
   j := 0;
   while i < First + CharCount do
   begin
-    inc(j);
-    while S[i] = FillerChar do
-      inc(i);
-    Result[j] := S[i];
+    if S[i] <> FillerChar then
+    begin
+      inc(j);
+      Result[j] := S[i];
+    end;
     inc(i);
   end;
 
