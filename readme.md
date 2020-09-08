@@ -14,7 +14,7 @@ You can still access [10.2 Tokyo](https://github.com/TurboPack/SynEdit/releases/
 
 ## 1. Introduction
 
-![SynEdit](https://raw.githubusercontent.com/TurboPack/SynEdit/master/SynEdit-1.3.png "TurboPower SynEdit")
+![SynEdit](https://raw.githubusercontent.com/TurboPack/SynEdit/master/Doc/SynEdit-1.3.png "TurboPower SynEdit")
 
 
 SynEdit is a syntax highlighting edit control, not based on the Windows 
