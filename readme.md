@@ -2,7 +2,7 @@
 
 Updated for **10.4 Sydney** / VER340 / PKG 270
 
-You can still access [10.3 Rio](https://github.com/TurboPack/SynEdit/releases/tag/103RIO), [10.2 Tokyo](https://github.com/TurboPack/SynEdit/releases/tag/102Tokyo) and [10.1 Berlin](https://github.com/TurboPack/SynEdit/releases/tag/101Berlin) versions.
+The master branch remains compatible with Delphi 10.1 Berlin or later. You can also access the [10.3 Rio](https://github.com/TurboPack/SynEdit/releases/tag/103RIO), [10.2 Tokyo](https://github.com/TurboPack/SynEdit/releases/tag/102Tokyo) and [10.1 Berlin](https://github.com/TurboPack/SynEdit/releases/tag/101Berlin) releases.
 
 ### Table of contents
 1.  [Introduction](#Introduction)
