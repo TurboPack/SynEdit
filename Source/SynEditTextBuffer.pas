@@ -173,7 +173,7 @@ type
     crAutoCompleteBegin, crAutoCompleteEnd,
     crPasteBegin, crPasteEnd, // for pasting, since it might do a lot of operations
     crSpecialBegin, crSpecialEnd,
-    crCaret,      // just restore the Caret, allowing better Undo behavior
+    crCaret, crMultiCaret,    // just restore the Caret, allowing better Undo behavior
     crSelection,  // restore Selection
     crNothing,    // can be used to break group undo
     crGroupBreak,
@@ -188,7 +188,9 @@ type
     fChangeStartPos: TBufferCoord;
     fChangeEndPos: TBufferCoord;
     fChangeStr: string;
-    fChangeNumber: integer;                                                     
+    fChangeNumber: integer;
+    fMultiBlockNumber: integer;
+    fMultiCaretDump: TBytes;
   public
     procedure Assign(Source: TPersistent); override;
     property ChangeReason: TSynChangeReason read fChangeReason;
@@ -197,12 +199,16 @@ type
     property ChangeEndPos: TBufferCoord read fChangeEndPos;
     property ChangeStr: string read fChangeStr;
     property ChangeNumber: integer read fChangeNumber;
+    property MultiBlockNumber: integer read fMultiBlockNumber;
+    property MultiCaretDump: TBytes read fMultiCaretDump;
   end;
 
   TSynEditUndoList = class(TPersistent)
   protected
     fBlockChangeNumber: integer;
+    fMultiBlockChangeNumber: integer;
     fBlockCount: integer;
+    fMultiBlockCount: integer;
     fFullUndoImposible: boolean;
     fItems: TList;
     fLockCount: integer;
@@ -223,10 +229,13 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure AddChange(AReason: TSynChangeReason; const AStart, AEnd: TBufferCoord;
-      const ChangeText: string; SelMode: TSynSelectionMode);
-    procedure BeginBlock;                                                       
+      const ChangeText: string; SelMode: TSynSelectionMode); overload;
+    procedure AddMultiCaretChange(const AMultiCaretDump: TBytes);
+    procedure BeginBlock;
+    procedure BeginMultiBlock;
     procedure Clear;
     procedure EndBlock;
+    procedure EndMultiBlock;
     procedure Lock;
     function PeekItem: TSynEditUndoItem;
     function PopItem: TSynEditUndoItem;
@@ -946,6 +955,8 @@ begin
     fChangeEndPos:=TSynEditUndoItem(Source).fChangeEndPos;
     fChangeStr:=TSynEditUndoItem(Source).fChangeStr;
     fChangeNumber:=TSynEditUndoItem(Source).fChangeNumber;
+    fMultiBlockNumber:=TSynEditUndoItem(Source).fMultiBlockNumber;
+    fMultiCaretDump:=TSynEditUndoItem(Source).fMultiCaretDump;
   end
   else
     inherited Assign(Source);
@@ -1010,6 +1021,7 @@ begin
         fChangeStartPos := AStart;
         fChangeEndPos := AEnd;
         fChangeStr := ChangeText;
+        fMultiBlockNumber := Self.fMultiBlockChangeNumber;
         if fBlockChangeNumber <> 0 then
           fChangeNumber := fBlockChangeNumber
         else begin
@@ -1033,6 +1045,12 @@ procedure TSynEditUndoList.BeginBlock;
 begin
   Inc(fBlockCount);
   fBlockChangeNumber := fNextChangeNumber;
+end;
+
+procedure TSynEditUndoList.BeginMultiBlock;
+begin
+  Inc(fMultiBlockCount);
+  fMultiBlockChangeNumber := fMultiBlockCount;
 end;
 
 procedure TSynEditUndoList.Clear;
@@ -1064,6 +1082,11 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TSynEditUndoList.EndMultiBlock;
+begin
+  fMultiBlockChangeNumber := 0;
 end;
 
 procedure TSynEditUndoList.EnsureMaxEntries;
@@ -1162,6 +1185,17 @@ begin
   begin
     AddChange(crGroupBreak, vDummy, vDummy, '', smNormal);
   end;
+end;
+
+procedure TSynEditUndoList.AddMultiCaretChange(const AMultiCaretDump: TBytes);
+const
+  cEmptyCoord: TBufferCoord = (Char: 0; Line: 0);
+var
+  NewItem: TSynEditUndoItem;
+begin
+  AddChange(crMultiCaret, cEmptyCoord, cEmptyCoord, '', smNormal);
+  NewItem := TSynEditUndoItem(fItems.Last);
+  NewItem.fMultiCaretDump := AMultiCaretDump;
 end;
 
 procedure TSynEditUndoList.SetInitialState(const Value: boolean);
