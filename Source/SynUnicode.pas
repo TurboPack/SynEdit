@@ -24,14 +24,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-Provides:
-- Unicode(PWideChar) versions of the most important PAnsiChar-functions in
-  SysUtils and some functions unavailable in Delphi 5.
-- function for loading and saving of Unicode files, and detecting the encoding
-- Unicode clipboard support
-- Unicode-version of TCanvas-methods
-- Some character constants like CR&LF.
-
 ------------------------------------------------------------------------------}
 
 unit SynUnicode;
@@ -53,7 +45,6 @@ uses
   TypInfo;
 
 const
-  SLineBreak = #13#10;
   UTF8BOM: array[0..2] of Byte = ($EF, $BB, $BF);
   UTF16BOMLE: array[0..1] of Byte = ($FF, $FE);
   UTF16BOMBE: array[0..1] of Byte = ($FE, $FF);
@@ -83,13 +74,6 @@ const
   WideLineSeparator = WideChar($2028);
   WideParagraphSeparator = WideChar($2029);
 
-  // byte order marks for Unicode files
-  // Unicode text files (in UTF-16 format) should contain $FFFE as first character to
-  // identify such a file clearly. Depending on the system where the file was created
-  // on this appears either in big endian or little endian style.
-  BOM_LSB_FIRST = WideChar($FEFF);
-  BOM_MSB_FIRST = WideChar($FFFE);
-
 type
   TFontCharSet = 0..255;
 
@@ -112,28 +96,11 @@ type
   TSynEncodings = set of TSynEncoding;
 
 function IsAnsiOnly(const WS: string): Boolean;
-function IsUTF8(Stream: TStream; out WithBOM: Boolean): Boolean; overload;
-function IsUTF8(const FileName: string; out WithBOM: Boolean): Boolean; overload;
-function GetEncoding(const FileName: string; out WithBOM: Boolean): TSynEncoding; overload;
-function GetEncoding(Stream: TStream; out WithBOM: Boolean): TSynEncoding; overload;
-procedure SaveToFile(const WS: string; const FileName: string;
-  Encoding: TSynEncoding; WithBom: Boolean = True); overload;
-procedure SaveToFile(UnicodeStrings: TStrings; const FileName: string;
-  Encoding: TSynEncoding; WithBom: Boolean = True); overload;
-function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
-  out WithBOM: Boolean): TSynEncoding; overload;
-function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
-  Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding; overload;
-procedure SaveToStream(const WS: string; Stream: TStream;
-  Encoding: TSynEncoding; WithBom: Boolean  = True); overload;
-procedure SaveToStream(UnicodeStrings: TStrings; Stream: TStream;
-  Encoding: TSynEncoding; WithBom: Boolean  = True); overload;
-function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
-  out WithBOM: Boolean): TSynEncoding; overload;
-function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
-  Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding; overload;
-function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
-  Encoding: TSynEncoding): TSynEncoding; overload;
+function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: integer = $4000): Boolean; overload;
+function IsUTF8(const FileName: string; out WithBOM: Boolean; BytesToCheck: integer = $4000): Boolean; overload;
+function IsUTF8(const Bytes: TBytes; Start: Integer = 0; BytesToCheck: integer = $4000): Boolean; overload;
+function GetEncoding(const FileName: string; out WithBOM: Boolean): TEncoding; overload;
+function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding; overload;
 
 function ClipboardProvidesText: Boolean;
 function GetClipboardText: string;
@@ -141,7 +108,6 @@ procedure SetClipboardText(const Text: string);
 
 { misc functions }
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
-function IsUnicodeStringMappableToAnsi(const WS: string): Boolean;
 
 implementation
 
@@ -232,17 +198,21 @@ begin
 end;
 
 function IsAnsiOnly(const WS: string): Boolean;
+var
+  UsedDefaultChar: BOOL;
 begin
-  Result := IsUnicodeStringMappableToAnsi(WS);
+  WideCharToMultiByte(DefaultSystemCodePage, 0, PWideChar(WS), Length(WS), nil, 0,
+    nil, @UsedDefaultChar);
+  Result := not UsedDefaultChar;
 end;
 
-function IsUTF8(const FileName: string; out WithBOM: Boolean): Boolean;
+function IsUTF8(const FileName: string; out WithBOM: Boolean; BytesToCheck: integer): Boolean;
 var
   Stream: TStream;
 begin
   Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
-    Result := IsUTF8(Stream, WithBOM);
+    Result := IsUTF8(Stream, WithBOM, BytesToCheck);
   finally
     Stream.Free;
   end;
@@ -250,36 +220,18 @@ end;
 
 // checks for a BOM in UTF-8 format or searches the first 4096 bytes for
 // typical UTF-8 octet sequences
-function IsUTF8(Stream: TStream; out WithBOM: Boolean): Boolean;
-const
-  MinimumCountOfUTF8Strings = 1;
-  MaxBufferSize = $4000;
+function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: integer): Boolean;
 var
-  Buffer: array of Byte;
-  BufferSize, i, FoundUTF8Strings: Integer;
-
-  // 3 trailing bytes are the maximum in valid UTF-8 streams,
-  // so a count of 4 trailing bytes is enough to detect invalid UTF-8 streams
-  function CountOfTrailingBytes: Integer;
-  begin
-    Result := 0;
-    inc(i);
-    while (i < BufferSize) and (Result < 4) do
-    begin
-      if Buffer[i] in [$80..$BF] then
-        inc(Result)
-      else
-        Break;
-      inc(i);
-    end;
-  end;
-
+  Buffer: TBytes;
+  BufferSize: Integer;
+  BomLen: Integer;
+  Encoding: TEncoding;
 begin
   // if Stream is nil, let Delphi raise the exception, by accessing Stream,
   // to signal an invalid result
 
   // start analysis at actual Stream.Position
-  BufferSize := Min(MaxBufferSize, Stream.Size - Stream.Position);
+  BufferSize := Min(BytesToCheck, Stream.Size - Stream.Position);
 
   // if no special characteristics are found it is not UTF-8
   Result := False;
@@ -288,32 +240,58 @@ begin
   if BufferSize > 0 then
   begin
     SetLength(Buffer, BufferSize);
-    Stream.ReadBuffer(Buffer[0], BufferSize);
+    Stream.Read(Buffer, 0, BufferSize);
     Stream.Seek(-BufferSize, soFromCurrent);
 
     { first search for BOM }
+    Encoding := nil;
+    BomLen := TEncoding.GetBufferEncoding(Buffer, Encoding);
+    WithBOM := BOMLen > 0;
+    if Encoding = TEncoding.UTF8 then
+      Exit(True)
+    else if WithBom then
+      Exit(False);
 
-    if (BufferSize >= Length(UTF8BOM)) and CompareMem(@Buffer[0], @UTF8BOM[0], Length(UTF8BOM)) then
+    { Now check the content for UTF8 sequences }
+    Result := IsUtf8(Buffer, 0, BytesToCheck);
+  end;
+end;
+
+function IsUTF8(const Bytes: TBytes; Start: Integer; BytesToCheck: integer): Boolean; overload;
+const
+  MinimumCountOfUTF8Strings = 1;
+var
+   Len, i, FoundUTF8Strings: Integer;
+
+  // 3 trailing bytes are the maximum in valid UTF-8 streams,
+  // so a count of 4 trailing bytes is enough to detect invalid UTF-8 streams
+  function CountOfTrailingBytes: Integer;
+  begin
+    Result := 0;
+    inc(i);
+    while (i < Len) and (Result < 4) do
     begin
-      WithBOM := True;
-      Result := True;
-      Exit;
+      if Bytes[i] in [$80..$BF] then
+        inc(Result)
+      else
+        Break;
+      inc(i);
     end;
+  end;
 
-    { If no BOM was found, check for leading/trailing byte sequences,
-      which are uncommon in usual non UTF-8 encoded text.
-
-      NOTE: There is no 100% save way to detect UTF-8 streams. The bigger
+begin
+   {  NOTE: There is no 100% save way to detect UTF-8 streams. The bigger
             MinimumCountOfUTF8Strings, the lower is the probability of
             a false positive. On the other hand, a big MinimumCountOfUTF8Strings
             makes it unlikely to detect files with only little usage of non
             US-ASCII chars, like usual in European languages. }
-
+    Result := False;
+    Len := Min(Start + BytesToCheck, Length(Bytes));
     FoundUTF8Strings := 0;
-    i := 0;
-    while i < BufferSize do
+    i := Start;
+    while i < Len do
     begin
-      case Buffer[i] of
+      case Bytes[i] of
         $00..$7F: // skip US-ASCII characters as they could belong to various charsets
           ;
         $C2..$DF:
@@ -324,7 +302,7 @@ begin
         $E0:
           begin
             inc(i);
-            if (i < BufferSize) and (Buffer[i] in [$A0..$BF]) and (CountOfTrailingBytes = 1) then
+            if (i < Len) and (Bytes[i] in [$A0..$BF]) and (CountOfTrailingBytes = 1) then
               inc(FoundUTF8Strings)
             else
               Break;
@@ -337,7 +315,7 @@ begin
         $ED:
           begin
             inc(i);
-            if (i < BufferSize) and (Buffer[i] in [$80..$9F]) and (CountOfTrailingBytes = 1) then
+            if (i < Len) and (Bytes[i] in [$80..$9F]) and (CountOfTrailingBytes = 1) then
               inc(FoundUTF8Strings)
             else
               Break;
@@ -345,7 +323,7 @@ begin
         $F0:
           begin
             inc(i);
-            if (i < BufferSize) and (Buffer[i] in [$90..$BF]) and (CountOfTrailingBytes = 2) then
+            if (i < Len) and (Bytes[i] in [$90..$BF]) and (CountOfTrailingBytes = 2) then
               inc(FoundUTF8Strings)
             else
               Break;
@@ -358,7 +336,7 @@ begin
         $F4:
           begin
             inc(i);
-            if (i < BufferSize) and (Buffer[i] in [$80..$8F]) and (CountOfTrailingBytes = 2) then
+            if (i < Len) and (Bytes[i] in [$80..$8F]) and (CountOfTrailingBytes = 2) then
               inc(FoundUTF8Strings)
             else
               Break;
@@ -370,7 +348,7 @@ begin
           Break;
       end;
 
-      if FoundUTF8Strings = MinimumCountOfUTF8Strings then
+      if FoundUTF8Strings >= MinimumCountOfUTF8Strings then
       begin
         Result := True;
         Break;
@@ -378,10 +356,9 @@ begin
 
       inc(i);
     end;
-  end;
 end;
 
-function GetEncoding(const FileName: string; out WithBOM: Boolean): TSynEncoding;
+function GetEncoding(const FileName: string; out WithBOM: Boolean): TEncoding;
 var
   Stream: TStream;
 begin
@@ -393,10 +370,21 @@ begin
   end;
 end;
 
-function GetEncoding(Stream: TStream; out WithBOM: Boolean): TSynEncoding;
+function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding;
+
+  function TBytesEqual(A, B: TBytes; Len: Integer): Boolean;
+  Var
+    I: Integer;
+  begin
+    Result := True;
+    for I := 0 to Len - 1 do
+      if A[i] <> B[i] then Exit(False)
+  end;
+
 var
-  BOM: WideChar;
+  Buffer: TBytes;
   Size: Integer;
+  Preamble: TBytes;
 begin
   // if Stream is nil, let Delphi raise the exception, by accessing Stream,
   // to signal an invalid result
@@ -405,265 +393,36 @@ begin
   Size := Stream.Size - Stream.Position;
 
   // if no special characteristics are found it is probably ANSI
-  Result := seAnsi;
+  Result := TEncoding.ANSI;
 
-  if IsUTF8(Stream, WithBOM) then
-  begin
-    Result := seUTF8;
-    Exit;
-  end;
+  if IsUTF8(Stream, WithBOM) then Exit(TEncoding.UTF8);
 
   { try to detect UTF-16 by finding a BOM in UTF-16 format }
 
-  if Size >= 2 then
+  // Check for Unicode
+  Preamble := TEncoding.Unicode.GetPreamble;
+  if Size >= Length(Preamble) then
   begin
-    Stream.ReadBuffer(BOM, sizeof(BOM));
-    Stream.Seek(-sizeof(BOM), soFromCurrent);
-    if BOM = WideChar(UTF16BOMLE) then
+    Stream.Read(Buffer, 0, Length(Preamble));
+    Stream.Seek(-Length(Preamble), soFromCurrent);
+    if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin
-      Result := seUTF16LE;
       WithBOM := True;
-      Exit;
-    end
-    else if BOM = WideChar(UTF16BOMBE) then
+      Exit(TEncoding.Unicode);
+    end;
+  end;
+  // Check for BigEndianUnicode
+  Preamble := TEncoding.BigEndianUnicode.GetPreamble;
+  if Size >= Length(Preamble) then
+  begin
+    Stream.Read(Buffer, 0, Length(Preamble));
+    Stream.Seek(-Length(Preamble), soFromCurrent);
+    if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin
-      Result := seUTF16BE;
       WithBOM := True;
-      Exit;
-    end
-  end;
-end;
-
-procedure SaveToFile(const WS: string; const FileName: string;
-  Encoding: TSynEncoding; WithBom: Boolean = True);
-var
-  Stream: TStream;
-begin
-  Stream := TFileStream.Create(FileName, fmCreate);
-  try
-    SaveToStream(WS, Stream, Encoding, WithBom);
-  finally
-    Stream.Free;
-  end;
-end;
-
-procedure SaveToFile(UnicodeStrings: TStrings; const FileName: string;
-  Encoding: TSynEncoding; WithBom: Boolean = True);
-var
-  Stream: TStream;
-begin
-  Stream := TFileStream.Create(FileName, fmCreate);
-  try
-    SaveToStream(UnicodeStrings, Stream, Encoding, WithBom);
-  finally
-    Stream.Free;
-  end;
-end;
-
-function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
-  out WithBOM: Boolean): TSynEncoding;
-var
-  Stream: TStream;
-begin
-  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-  try
-    Result := LoadFromStream(UnicodeStrings, Stream, WithBOM);
-  finally
-    Stream.Free;
-  end;
-end;
-
-function LoadFromFile(UnicodeStrings: TStrings; const FileName: string;
-  Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding;
-var
-  Stream: TStream;
-begin
-  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-  try
-    Result := LoadFromStream(UnicodeStrings, Stream, Encoding, WithBOM);
-  finally
-    Stream.Free;
-  end;
-end;
-
-procedure SaveToStream(const WS: string; Stream: TStream; Encoding: TSynEncoding;
-  WithBom: Boolean  = True);
-var
-  UTF16BOM: string;
-
-  UTF8Str: UTF8String;
-  AnsiStr: AnsiString;
-begin
-  if WithBom then
-    case Encoding of
-      seUTF8:
-        Stream.WriteBuffer(UTF8BOM, 3);
-      seUTF16LE:
-        begin
-          UTF16BOM := BOM_LSB_FIRST;
-          Stream.WriteBuffer(PWideChar(UTF16BOM)^, 2);
-        end;
-      seUTF16BE:
-        begin
-          UTF16BOM := BOM_MSB_FIRST;
-          Stream.WriteBuffer(PWideChar(UTF16BOM)^, 2);
-        end;
+      Exit(TEncoding.BigEndianUnicode);
     end;
-
-  case Encoding of
-    seUTF8:
-      begin
-        UTF8Str := UTF8Encode(WS);
-        Stream.WriteBuffer(UTF8Str[1], Length(UTF8Str));
-      end;
-    seUTF16LE:
-      Stream.WriteBuffer(WS[1], Length(WS) * sizeof(WideChar));
-    seUTF16BE:
-      begin
-        StrSwapByteOrder(PWideChar(WS));
-        Stream.WriteBuffer(WS[1], Length(WS) * sizeof(WideChar));
-      end;
-    seAnsi:
-      begin
-        AnsiStr := AnsiString(PWideChar(WS));
-        Stream.WriteBuffer(AnsiStr[1], Length(AnsiStr));
-      end;
   end;
-end;
-
-type
-  TSynEditStringListAccess = class(TSynEditStringList);
-
-procedure SaveToStream(UnicodeStrings: TStrings; Stream: TStream;
-  Encoding: TSynEncoding; WithBom: Boolean = True);
-var
-  SText: string;
-  SaveFStreaming: Boolean;
-begin
-  // if UnicodeStrings or Stream is nil, let Delphi raise the exception to flag the error
-
-  if UnicodeStrings is TSynEditStringList then
-  begin
-    SaveFStreaming := TSynEditStringListAccess(UnicodeStrings).FStreaming;
-    TSynEditStringListAccess(UnicodeStrings).FStreaming := True;
-    SText := UnicodeStrings.Text;
-    TSynEditStringListAccess(UnicodeStrings).FStreaming := SaveFStreaming;
-  end
-  else
-    SText := UnicodeStrings.Text;
-  SaveToStream(SText, Stream, Encoding, WithBom);
-end;
-
-function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
-  out WithBOM: Boolean): TSynEncoding;
-var
-  Dummy: Boolean;
-begin
-  Result := LoadFromStream(UnicodeStrings, Stream, GetEncoding(Stream, WithBOM),
-    Dummy);
-end;
-
-function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
-  Encoding: TSynEncoding): TSynEncoding; overload;
-var
-  Dummy: Boolean;
-begin
-  Result := LoadFromStream(UnicodeStrings, Stream, Encoding, Dummy);
-end;
-
-function LoadFromStream(UnicodeStrings: TStrings; Stream: TStream;
-  Encoding: TSynEncoding; out WithBOM: Boolean): TSynEncoding;
-var
-  WideStr: string;
-  UTF8Str: UTF8String;
-  AnsiStr: AnsiString;
-  Size: Integer;
-
-  function SkipBOM: Boolean;
-  var
-    BOM: array of Byte;
-  begin
-    Result := False;
-    case Encoding of
-      seUTF8:
-        begin
-          SetLength(BOM, Min(Length(UTF8BOM), Size));
-          Stream.ReadBuffer(BOM[0], Length(BOM));
-          if (Length(BOM) <> Length(UTF8BOM)) or
-            not CompareMem(@BOM[0], @UTF8BOM[0], Length(UTF8BOM))
-          then
-            Stream.Seek(-Length(BOM), soCurrent)
-          else
-            Result := True;
-        end;
-      seUTF16LE:
-        begin
-          SetLength(BOM, Min(Length(UTF16BOMLE), Size));
-          Stream.ReadBuffer(BOM[0], Length(BOM));
-          if (Length(BOM) <> Length(UTF16BOMLE)) or
-            not CompareMem(@BOM[0], @UTF16BOMLE[0], Length(UTF16BOMLE))
-          then
-            Stream.Seek(-Length(BOM), soCurrent)
-          else
-            Result := True;
-        end;
-      seUTF16BE:
-        begin
-          SetLength(BOM, Min(Length(UTF16BOMBE), Size));
-          Stream.ReadBuffer(BOM[0], Length(BOM));
-          if (Length(BOM) <> Length(UTF16BOMBE)) or
-            not CompareMem(@BOM[0], @UTF16BOMBE[0], Length(UTF16BOMBE))
-          then
-            Stream.Seek(-Length(BOM), soCurrent)
-          else
-            Result := True;
-        end;
-    end;
-    Size := Stream.Size - Stream.Position;
-  end;
-
-begin
-  // if UnicodeStrings or Stream is nil, let Delphi raise the exception to
-  // signal an invalid result
-  UnicodeStrings.BeginUpdate;
-  try
-    Result := Encoding;
-    // start decoding at actual Stream.Position
-    Size := Stream.Size - Stream.Position;
-
-    // skip BOM, if it exists
-    WithBOM := SkipBOM;
-
-    case Result of
-      seUTF8:
-        begin
-          SetLength(UTF8Str, Size);
-          Stream.ReadBuffer(UTF8Str[1], Size);
-          UnicodeStrings.Text := UTF8ToUnicodeString(UTF8Str);
-        end;
-      seUTF16LE:
-        begin
-          SetLength(WideStr, Size div 2);
-          Stream.ReadBuffer(WideStr[1], Size);
-          UnicodeStrings.Text := WideStr;
-        end;
-      seUTF16BE:
-        begin
-          SetLength(WideStr, Size div 2);
-          Stream.ReadBuffer(WideStr[1], Size);
-          StrSwapByteOrder(PWideChar(WideStr));
-          UnicodeStrings.Text := WideStr;
-        end;
-      seAnsi:
-        begin
-          SetLength(AnsiStr, Size);
-          Stream.ReadBuffer(AnsiStr[1], Size);
-          UnicodeStrings.Text := string(AnsiStr);
-        end;
-    end;
-  finally
-    UnicodeStrings.EndUpdate
-  end
 end;
 
 function ClipboardProvidesText: Boolean;
@@ -687,15 +446,6 @@ var
 begin
   WideCharToMultiByte(DefaultSystemCodePage, 0, PWideChar(@WC), 1, nil, 0, nil,
     @UsedDefaultChar);
-  Result := not UsedDefaultChar;
-end;
-
-function IsUnicodeStringMappableToAnsi(const WS: string): Boolean;
-var
-  UsedDefaultChar: BOOL;
-begin
-  WideCharToMultiByte(DefaultSystemCodePage, 0, PWideChar(WS), Length(WS), nil, 0,
-    nil, @UsedDefaultChar);
   Result := not UsedDefaultChar;
 end;
 

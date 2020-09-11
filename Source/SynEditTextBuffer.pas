@@ -83,26 +83,26 @@ type
 
   TExpandAtWideGlyphsFunc = function (const S: string): string of object;
 
-  TSynEditFileFormat = (sffDos, sffUnix, sffMac, sffUnicode); // DOS: CRLF, UNIX: LF, Mac: CR, Unicode: LINE SEPARATOR
-
   TSynEditStringList = class(TStrings)
   private
     fList: PSynEditStringRecList;
     fCount: integer;
     fCapacity: integer;
     fFileFormat: TSynEditFileFormat;
-    fAppendNewLineAtEOF: Boolean;
     fConvertTabsProc: TConvertTabsProcEx;
     fIndexOfLongestLine: integer;
     fTabWidth: integer;
-    FExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc;
-    FCharIndexesAreValid : Boolean;
+    fExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc;
+    fCharIndexesAreValid : Boolean;
+    fDetectUTF8: Boolean;
+    fUTF8CheckLen: Integer;
     fOnChange: TNotifyEvent;
     fOnChanging: TNotifyEvent;
     fOnCleared: TNotifyEvent;
     fOnDeleted: TStringListChangeEvent;
     fOnInserted: TStringListChangeEvent;
     fOnPutted: TStringListChangeEvent;
+    fOnInfoLoss: TSynInfoLossEvent;
     function ExpandString(Index: integer): string;
     function GetExpandedString(Index: integer): string;
     function GetExpandedStringLength(Index: integer): integer;
@@ -111,14 +111,11 @@ type
     procedure Grow;
     procedure InsertItem(Index: integer; const S: string);
     procedure PutRange(Index: integer; ARange: TSynEditRange);
-    procedure SetFileFormat(const Value: TSynEditFileFormat);
   protected
-    FStreaming: Boolean;
     function Get(Index: Integer): string; override;
     function GetCapacity: integer; override;
     function GetCount: integer; override;
     function GetObject(Index: integer): TObject; override;
-    function GetTextStr: string; override;
     procedure Put(Index: integer; const S: string); override;
     procedure PutObject(Index: integer; AObject: TObject); override;
     procedure SetCapacity(NewCapacity: integer); override;
@@ -138,22 +135,23 @@ type
     procedure InsertLines(Index, NumLines: integer);
     procedure InsertStrings(Index: integer; NewStrings: TStrings);
     procedure InsertText(Index: integer; NewText: string);
+    procedure LoadFromStream(Stream: TStream; Encoding: TEncoding); override;
     procedure SaveToStream(Stream: TStream; Encoding: TEncoding); override;
     function GetSeparatedText(Separators: string): string;
-    procedure SetTextStr(const Value: string); override;
-    procedure LoadFromStream(Stream: TStream); override;
     procedure FontChanged;
     function LineCharLength(Index : Integer) : Integer;
     function LineCharIndex(Index : Integer) : Integer;
+    procedure SetTextAndFileFormat(const Value: string);
+    procedure SetEncoding(const Value: TEncoding); override;
 
-    property AppendNewLineAtEOF: Boolean read fAppendNewLineAtEOF write fAppendNewLineAtEOF;
-
-    property FileFormat: TSynEditFileFormat read fFileFormat write SetFileFormat;
+    property FileFormat: TSynEditFileFormat read fFileFormat write fFileFormat;
     property ExpandedStrings[Index: integer]: string read GetExpandedString;
     property ExpandedStringLengths[Index: integer]: integer read GetExpandedStringLength;
     property LengthOfLongestLine: Integer read GetLengthOfLongestLine;
     property Ranges[Index: integer]: TSynEditRange read GetRange write PutRange;
     property TabWidth: integer read fTabWidth write SetTabWidth;
+    property UTF8CheckLen: Integer read fUTF8CheckLen write fUTF8CheckLen;
+    property DetectUTF8: Boolean read fDetectUTF8 write fDetectUTF8;
     property OnChange: TNotifyEvent read fOnChange write fOnChange;
     property OnChanging: TNotifyEvent read fOnChanging write fOnChanging;
     property OnCleared: TNotifyEvent read fOnCleared write fOnCleared;
@@ -161,6 +159,7 @@ type
     property OnInserted: TStringListChangeEvent read fOnInserted
       write fOnInserted;
     property OnPutted: TStringListChangeEvent read fOnPutted write fOnPutted;
+    property OnInfoLoss: TSynInfoLossEvent read fOnInfoLoss write fOnInfoLoss;
   end;
 
   ESynEditStringList = class(Exception);
@@ -267,10 +266,13 @@ end;
 constructor TSynEditStringList.Create(AExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc);
 begin
   inherited Create;
-  FExpandAtWideGlyphsFunc := AExpandAtWideGlyphsFunc;
-  SetFileFormat(sffDos);
+  fExpandAtWideGlyphsFunc := AExpandAtWideGlyphsFunc;
+  fFileFormat := sffDos;
   fIndexOfLongestLine := -1;
   TabWidth := 8;
+  fUTF8CheckLen := -1;
+  Options := Options - [soWriteBOM, soTrailingLineBreak];
+  fDetectUTF8 := True;
 end;
 
 destructor TSynEditStringList.Destroy;
@@ -323,6 +325,11 @@ begin
       EndUpdate;
     end;
   end;
+end;
+
+procedure TSynEditStringList.SetEncoding(const Value: TEncoding);
+begin
+  inherited;
 end;
 
 procedure TSynEditStringList.Clear;
@@ -418,7 +425,7 @@ begin
     else
     begin
       Result := fConvertTabsProc(fstring, fTabWidth, HasTabs);
-      fExpandedLength := Length(FExpandAtWideGlyphsFunc(Result));
+      fExpandedLength := Length(fExpandAtWideGlyphsFunc(Result));
       Exclude(fFlags, sfExpandedLengthUnknown);
       Exclude(fFlags, sfHasTabs);
       Exclude(fFlags, sfHasNoTabs);
@@ -442,7 +449,7 @@ var
   i, n : Integer;
   p : PSynEditStringRec;
 begin
-  FCharIndexesAreValid:=True;
+  fCharIndexesAreValid:=True;
   if fCount=0 then Exit;
   p:=@fList^[0];
   n:=0;
@@ -463,7 +470,7 @@ end;
 function TSynEditStringList.LineCharIndex(Index : Integer) : Integer;
 begin
   if Cardinal(Index)<Cardinal(fCount) then begin
-    if not FCharIndexesAreValid then
+    if not fCharIndexesAreValid then
       UpdateCharIndexes;
     Result:=fList^[Index].fCharIndex;
   end else Result:=0;
@@ -608,32 +615,6 @@ begin
   end;
 end;
 
-function TSynEditStringList.GetTextStr: string;
-var
-  LB: string;
-begin
-  if not FStreaming then
-  begin
-    Result := GetSeparatedText(sLineBreak);
-  end
-  else
-  begin
-    case FileFormat of
-      sffDos:
-        LB := WideCRLF;
-      sffUnix:
-        LB := WideLF;
-      sffMac:
-        LB := WideCR;
-      sffUnicode:
-        LB := WideLineSeparator;
-    end;
-    Result := GetSeparatedText(LB);
-    if AppendNewLineAtEOF then
-      Result := Result + LB;
-  end;
-end;
-
 procedure TSynEditStringList.Grow;
 var
   Delta: Integer;
@@ -748,18 +729,64 @@ begin
   end;
 end;
 
-procedure TSynEditStringList.LoadFromStream(Stream: TStream);
+procedure TSynEditStringList.LoadFromStream(Stream: TStream; Encoding: TEncoding);
+var
+  Size: Integer;
+  Buffer: TBytes;
 begin
-  FStreaming := True;
-  inherited;
-  FStreaming := False;
+  BeginUpdate;
+  try
+    Size := Stream.Size - Stream.Position;
+    SetLength(Buffer, Size);
+    Stream.Read(Buffer, 0, Size);
+    Size := TEncoding.GetBufferEncoding(Buffer, Encoding, DefaultEncoding);
+    WriteBOM := Size > 0; // Keep WriteBom in case the stream is saved
+    // If the encoding is ANSI and DetectUtf8 is True try to Detect UTF8
+    if (Encoding = TEncoding.ANSI) and DetectUTF8 and IsUTF8(Buffer, Size) then
+      Encoding := TEncoding.UTF8;
+    SetEncoding(Encoding); // Keep Encoding in case the stream is saved
+    SetTextAndFileFormat(Encoding.GetString(Buffer, Size, Length(Buffer) - Size));
+  finally
+    EndUpdate;
+  end;
 end;
 
 procedure TSynEditStringList.SaveToStream(Stream: TStream; Encoding: TEncoding);
+Var
+  Cancel: Boolean;
+  OldLineBreak: string;
+  S: string;
+  Buffer, Preamble: TBytes;
 begin
-  FStreaming := True;
-  inherited;
-  FStreaming := False;
+  if Encoding = nil then
+    Encoding := DefaultEncoding;
+
+  OldLineBreak := LineBreak;
+  try
+    LineBreak := LineBreakFromFileFormat(fFileFormat);
+    S := GetTextStr;
+  finally
+    LineBreak := OldLineBreak;
+  end;
+
+  Cancel := False;
+  if (Encoding = TEncoding.ANSI) and Assigned(fOnInfoLoss) and not IsAnsiOnly(S) then
+  begin
+    fOnInfoLoss(Encoding, Cancel);
+    if Cancel then
+      Exit;
+    if Encoding <> TEncoding.ANSI then
+      SetEncoding(Encoding);
+  end;
+
+  Buffer := Encoding.GetBytes(S);
+  if WriteBOM then
+  begin
+    Preamble := Encoding.GetPreamble;
+    if Length(Preamble) > 0 then
+      Stream.WriteBuffer(Preamble, Length(Preamble));
+  end;
+  Stream.WriteBuffer(Buffer, Length(Buffer));
 end;
 
 procedure TSynEditStringList.Put(Index: integer; const S: string);
@@ -809,21 +836,6 @@ begin
   fCapacity := NewCapacity;
 end;
 
-procedure TSynEditStringList.SetFileFormat(const Value: TSynEditFileFormat);
-begin
-  fFileFormat := Value;
-  case FileFormat of
-    sffDos:
-      LineBreak := WideCRLF;
-    sffUnix:
-      LineBreak := WideLF;
-    sffMac:
-      LineBreak := WideCR;
-    sffUnicode:
-      LineBreak := WideLineSeparator;
-  end;
-end;
-
 procedure TSynEditStringList.SetTabWidth(Value: integer);
 var
   i: integer;
@@ -841,7 +853,7 @@ begin
   end;
 end;
 
-procedure TSynEditStringList.SetTextStr(const Value: string);
+procedure TSynEditStringList.SetTextAndFileFormat(const Value: string);
 var
   S: string;
   Size: Integer;
@@ -862,7 +874,7 @@ begin
       while (P <= Pmax) do
       begin
         Start := P;
-        while (P^ <> WideCR) and (P^ <> WideLF) and (P^ <> WideLineSeparator) and (P <= Pmax) do
+        while not (Ord(P^) in [0, $A, $D]) and (P^ <> WideLineSeparator) do
         begin
           Inc(P);
         end;
@@ -888,7 +900,7 @@ begin
         end;
       end;
       // keep the old format of the file
-      if not AppendNewLineAtEOF and
+      if not TrailingLineBreak and
         (CharInSet(Value[Size], [#10, #13]) or (Value[Size] = WideLineSeparator))
       then
         InsertItem(fCount, '');
@@ -910,7 +922,7 @@ end;
 
 procedure TSynEditStringList.SetUpdateState(Updating: Boolean);
 begin
-  FCharIndexesAreValid:=False;
+  fCharIndexesAreValid:=False;
   if Updating then begin
     if Assigned(fOnChanging) then
       fOnChanging(Self);

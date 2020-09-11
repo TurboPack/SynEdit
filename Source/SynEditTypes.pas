@@ -56,6 +56,9 @@ const
 type
   ESynError = class(Exception);
 
+  // DOS: CRLF, UNIX: LF, Mac: CR, Unicode: LINE SEPARATOR
+  TSynEditFileFormat = (sffDos, sffUnix, sffMac, sffUnicode);
+
   TSynSearchOption = (ssoMatchCase, ssoWholeWord, ssoBackwards,
     ssoEntireScope, ssoSelectedOnly, ssoReplace, ssoReplaceAll, ssoPrompt);
   TSynSearchOptions = set of TSynSearchOption;
@@ -67,6 +70,8 @@ type
   THookedCommandEvent = procedure(Sender: TObject; AfterProcessing: Boolean;
     var Handled: Boolean; var Command: TSynEditorCommand; var AChar: WideChar;
     Data: pointer; HandlerData: pointer) of object;
+
+  TSynInfoLossEvent = procedure (var Encoding: TEncoding; Cancel: Boolean) of object;
 
   PSynSelectionMode = ^TSynSelectionMode;
   TSynSelectionMode = (smNormal, smLine, smColumn);
@@ -99,8 +104,11 @@ type
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
+function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
 
 implementation
+Uses
+  SynUnicode;
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 begin
@@ -224,6 +232,16 @@ end;
 class operator TDisplayCoord.NotEqual(a, b: TDisplayCoord): Boolean;
 begin
   Result := (a.Row <> b.Row) or (a.Column <> b.Column);
+end;
+
+function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
+begin
+  case FileFormat of
+    sffDos: Result := WideCRLF;
+    sffUnix: Result := WideLF;
+    sffMac: Result := WideCR;
+    sffUnicode: Result := WideLineSeparator;
+  end;
 end;
 
 end.
