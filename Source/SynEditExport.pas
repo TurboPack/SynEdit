@@ -487,7 +487,7 @@ function TSynCustomExporter.ReplaceReservedChars(AToken: string): string;
 var
   I, ISrc, IDest, SrcLen, DestLen: Integer;
   Replace: string;
-  c: WideChar;                                                                      //mh 2000-10-10
+  c: WideChar;
 begin
   if AToken <> '' then
   begin
