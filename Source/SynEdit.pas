@@ -4512,7 +4512,6 @@ begin
     else
       Invalidate;
 
-    UpdateWindow(Handle);
     UpdateScrollBars;
     StatusChanged([scTopLine]);
   end;
