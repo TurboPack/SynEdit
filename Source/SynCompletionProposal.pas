@@ -182,6 +182,7 @@ type
     procedure FontChange(Sender: TObject);
     procedure RecalcItemHeight;
     function IsWordBreakChar(AChar: WideChar): Boolean;
+    procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
   protected
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure KeyPress(var Key: Char); override;
@@ -256,6 +257,7 @@ type
     FDotOffset: Integer;
     FOptions: TSynCompletionOptions;
     FNbLinesInWindow: Integer;
+    FFontsAreScaled: Boolean;
 
     FCanExecute: Boolean;
     function GetClSelect: TColor;
@@ -346,6 +348,7 @@ type
     property Form: TSynBaseCompletionProposalForm read FForm;
     property PreviousToken: string read FPreviousToken;
     property Position: Integer read GetPosition write SetPosition;
+    property FontsAreScaled: Boolean read fFontsAreScaled write fFontsAreScaled;
   published
     property DefaultType: SynCompletionType read GetDefaultKind write SetDefaultKind default ctCode;
     property Options: TSynCompletionOptions read GetOptions write SetOptions default DefaultProposalOptions;
@@ -364,7 +367,7 @@ type
     property Font: TFont read GetFont write SetFont;
     property TitleFont: TFont read GetTitleFont write SetTitleFont;
     property Columns: TProposalColumns read GetColumns write SetColumns;
-    property Resizeable: Boolean read GetResizeable write SetResizeable default True;
+    property Resizeable: Boolean read GetResizeable write SetResizeable default False;
     property ItemHeight: Integer read GetItemHeight write SetItemHeight default 0;
     property Images: TCustomImageList read GetImages write SetImages default nil;
     property Margin: Integer read GetMargin write SetMargin default 2;
@@ -1212,19 +1215,8 @@ begin
   OnShow := DoFormShow;
   OnHide := DoFormHide;
 
-  StyleElements := [seBorder];
-  {$IF CompilerVersion > 33}
-  with CustomTitleBar do
-  begin
-    Enabled := False;
-    ShowCaption := False;
-    ShowIcon := False;
-    SystemButtons := False;
-    SystemHeight := False;
-    SystemColors := False;
-  end;
-  {$IFEND}
-  Resizeable := True;
+  StyleElements := [seClient];
+  Resizeable := False;
   Visible := False;
 end;
 
@@ -1236,12 +1228,18 @@ begin
     Style := WS_POPUP;
     ExStyle := WS_EX_TOOLWINDOW;
 
-   //Params.WindowClass.style := Params.WindowClass.style or CS_DROPSHADOW;
+   Params.WindowClass.style := Params.WindowClass.style or CS_DROPSHADOW;
 
+    {
+      WS_THICKFRAME causes Windows 10 to display a 6 pixel title bar
+      Also with VCL Styles the window is not resizable
+      So we use WS_DLGFRAME (could instead use WS_SBORDER)
+      and make the window sizeable by handling WM_NCHITTEST
+    }
     if DisplayType = ctCode then
-      if FResizeable then
-        Style := Style or WS_THICKFRAME
-      else
+      //if FResizeable then
+      //  Style := Style or WS_THICKFRAME
+      //else
         Style := Style or WS_DLGFRAME;
   end;
 end;
@@ -1533,6 +1531,11 @@ begin
             ResetCanvas;
         end;
       end;
+      if TStyleManager.IsCustomStyleActive then
+      begin
+        TmpRect := ClientRect;
+        DrawStyleEdge(Canvas, TmpRect, [eeRaisedOuter], [efRect, efFlat]);
+      end;
     end;
     Canvas.Draw(0, FHeightBuffer, Bitmap);
 
@@ -1573,7 +1576,8 @@ begin
       ResetCanvas;
       tmpRect := Rect(0, 0, ClientWidth, ClientHeight);
       Canvas.FillRect(tmpRect);
-      Frame3D(Canvas, tmpRect, cl3DLight, cl3DDkShadow, 1);
+      if StyleServices.IsSystemStyle then
+        Frame3D(Canvas, tmpRect, cl3DLight, cl3DDkShadow, 1);
 
       for i := 0 to FAssignedList.Count - 1 do
       begin
@@ -1794,18 +1798,6 @@ end;
 procedure TSynBaseCompletionProposalForm.SetResizeable(const Value: Boolean);
 begin
   FResizeable := Value;
-  {$IF CompilerVersion > 33}
-  if FResizeable then
-  begin
-    BorderStyle := bsSizeToolWin;
-    CustomTitleBar.Enabled := True;
-  end
-  else
-  begin
-    BorderStyle := bsNone;
-    CustomTitleBar.Enabled := False;
-  end;
-  {$IFEND}
   RecreateWnd;
 end;
 
@@ -1873,6 +1865,51 @@ begin
 //  (CurrentEditor as TCustomSynEdit).UpdateCaret;
 end;
 
+procedure TSynBaseCompletionProposalForm.WMNCHitTest(var Message: TWMNCHitTest);
+var
+  D: Integer;
+  P: TPoint;
+begin
+  if not FResizeable then
+  begin
+    inherited;
+    Exit;
+  end;
+
+  D := GetSystemMetrics(SM_CXSIZEFRAME);
+
+  P := Self.ScreenToClient(Message.Pos);
+
+  if P.Y < D then
+  begin
+    if P.X < D then
+      Message.Result := HTTOPLEFT
+    else if P.X > ClientWidth - D then
+      Message.Result := HTTOPRIGHT
+    else
+      Message.Result := HTTOP;
+  end
+  else if P.Y > ClientHeight - D then
+  begin
+    if P.X < D then
+      Message.Result := HTBOTTOMLEFT
+    else if P.X > ClientWidth - D then
+      Message.Result := HTBOTTOMRIGHT
+    else
+      Message.Result := HTBOTTOM;
+  end
+  else
+  begin
+    if P.X < D then
+      Message.Result := HTLEFT
+    else if P.X > ClientWidth - D then
+      Message.Result := HTRIGHT
+  end;
+
+  if Message.Result = 0 then
+    inherited;
+end;
+
 function GetMDIParent (const Form: TSynForm): TSynForm;
 { Returns the parent of the specified MDI child form. But, if Form isn't a
   MDI child, it simply returns Form. }
@@ -1921,12 +1958,16 @@ begin
   begin
     (CurrentEditor as TCustomSynEdit).AlwaysShowCaret := OldShowCaret;
 //    (CurrentEditor as TCustomSynEdit).UpdateCaret;
+    if (Owner as TSynBaseCompletionProposal).FontsAreScaled then
+    begin
+      TitleFont.Height := MulDiv(TitleFont.Height, 96, CurrentEditor.CurrentPPI);
+      Font.Height := MulDiv(Font.Height, 96, CurrentEditor.CurrentPPI);
+      TSynBaseCompletionProposal(Owner).FontsAreScaled := False;
+    end;
     if DisplayType = ctCode then
     begin
       // Save after removing the PPI scaling
       (Owner as TSynBaseCompletionProposal).FWidth := MulDiv(ClientWidth, 96, CurrentPPI);
-      TitleFont.Height := MulDiv(TitleFont.Height, 96, CurrentEditor.CurrentPPI);
-      Font.Height := MulDiv(Font.Height, 96, CurrentEditor.CurrentPPI);
       (Owner as TSynBaseCompletionProposal).FNbLinesInWindow := FLinesInWindow;
     end;
   end;
@@ -2143,7 +2184,6 @@ Var
     tmpStr: string;
     NewWidth: Integer;
     ScaledMargin: Integer;
-    ScaledWidth: Integer;
     ActivePPI: integer;
   begin
     if Assigned(FForm.CurrentEditor) then
@@ -2151,9 +2191,12 @@ Var
     else
       ActivePPI := 96;
     ScaledMargin := MulDiv(Form.Margin, ActivePPI, 96);
-    ScaledWidth := MulDiv(FWidth, ActivePPI, 96);
-    TitleFont.Height := MulDiv(TitleFont.Height, ActivePPI, 96);
-    Font.Height := MulDiv(Font.Height, ActivePPI, 96);
+    if not FFontsAreScaled then
+    begin
+      TitleFont.Height := MulDiv(TitleFont.Height, ActivePPI, 96);
+      Font.Height := MulDiv(Font.Height, ActivePPI, 96);
+      FFontsAreScaled := True;
+    end;
 
     tmpX := x;
     tmpY := Y + 2;
@@ -2162,7 +2205,7 @@ Var
     case Kind of
     ctCode:
       begin
-        tmpWidth := ScaledWidth;
+        tmpWidth := MulDiv(FWidth, ActivePPI, 96);
         tmpHeight := Form.FHeightBuffer + Form.FEffectiveItemHeight * FNbLinesInWindow;
       end;
     ctHint:
