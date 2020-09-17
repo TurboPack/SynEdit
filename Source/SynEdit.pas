@@ -1185,8 +1185,8 @@ begin
     Inc(ScrollAreaSize, 2);
 
   InflateRect(iScrollBounds,
-    -MulDiv(ScrollAreaSize, Screen.PixelsPerInch, 96),
-    -MulDiv(ScrollAreaSize, Screen.PixelsPerInch, 96));
+    -MulDiv(ScrollAreaSize, FCurrentPPI, 96),
+    -MulDiv(ScrollAreaSize, FCurrentPPI, 96));
 
   if (X < iScrollBounds.Left) and (LeftChar > 1) then
     fScrollDeltaX := (X - iScrollBounds.Left) div fCharWidth - 1
@@ -2376,8 +2376,7 @@ procedure TCustomSynEdit.PaintGutter(const AClip: TRect;
           fInternalImage := TSynInternalImage.Create(HINSTANCE,
             'SynEditInternalImages', 10);
 //++ DPI-Aware
-          if Screen.PixelsPerInch >= 120 then
-            fInternalImage.ChangeScale(Screen.PixelsPerInch, 96);
+          fInternalImage.ChangeScale(FCurrentPPI, 96);
 //-- DPI-Aware
         end;
         if aGutterOff = 0 then
@@ -2520,7 +2519,7 @@ begin
 //++ CodeFolding
   // Draw the folding lines and squares
   if UseCodeFolding then begin
-    PlusMinusMargin := MulDiv(2, Screen.PixelsPerInch, 96);
+    PlusMinusMargin := MulDiv(2, FCurrentPPI, 96);
     for cRow := aFirstRow to aLastRow do begin
       vLine := RowToLine(cRow);
       if (vLine > Lines.Count) and not (Lines.Count = 0) then
@@ -6520,11 +6519,12 @@ end;
 procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif});
 begin
   {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
-    if Assigned(fGutter) then fGutter.ChangeScale(M,D);
-    CodeFolding.GutterShapeSize := MulDiv(CodeFolding.GutterShapeSize, M, D);
-    if Assigned(fBookMarkOpt) then fBookMarkOpt.ChangeScale(M, D);
-    if Assigned(fWordWrapGlyph) then fWordWrapGlyph.ChangeScale(M, D);
-  {$if CompilerVersion >= 31}end;{$endif}
+    fGutter.ChangeScale(M,D);
+    CodeFolding.ChangeScale(M, D);
+    fBookMarkOpt.ChangeScale(M, D);
+    fWordWrapGlyph.ChangeScale(M, D);
+    if Assigned(fInternalImage) then fInternalImage.ChangeScale(M, D);
+   {$if CompilerVersion >= 31}end;{$endif}
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
  end;
 //-- DPI-Aware

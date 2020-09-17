@@ -372,6 +372,7 @@ type
 implementation
 
 uses
+  Winapi.Wincodec,
   SynEditMiscProcs;
 
 //++ DPI-Aware
@@ -434,12 +435,12 @@ end;
  //++ DPI-Aware
 procedure TSynGutter.ChangeScale(M, D: Integer);
 begin
- fWidth := MulDiv(fWidth, M, D);
- fLeftOffset := MulDiv(fLeftOffset, M, D);
- fRightOffset := MulDiv(fRightOffset, M, D);
- fRightMargin := MulDiv(fRightMargin, M, D);
- fFont.Height := Round(fFont.Height * M / D);
- if Assigned(fOnChange) then fOnChange(Self);
+  fWidth := MulDiv(fWidth, M, D);
+  fLeftOffset := MulDiv(fLeftOffset, M, D);
+  fRightOffset := MulDiv(fRightOffset, M, D);
+  fRightMargin := MulDiv(fRightMargin, M, D);
+  fFont.Height := Round(fFont.Height * M / D);
+  if Assigned(fOnChange) then fOnChange(Self);
 end;
 //-- DPI-Aware
 
@@ -754,12 +755,9 @@ end;
 
 //++ DPI-Aware
 procedure TSynBookMarkOpt.ChangeScale(M, D: Integer);
-Var
-  L : Integer;
 begin
-  L := (M div D) * D;    // Factor multiple of 100%
-  fLeftMargin := MulDiv(fLeftMargin, L, D);
-  fXoffset := MulDiv(fXoffset, L, D);
+  fLeftMargin := MulDiv(fLeftMargin, M, D);
+  fXoffset := MulDiv(fXoffset, M, D);
 end;
 //-- DPI-Aware
 
@@ -836,12 +834,10 @@ end;
 
 //++ DPI-Aware
 procedure TSynGlyph.ChangeScale(M, D: Integer);
-Var
-  L : Integer;
 begin
-  L := (M div D) * D;    // Factor multiple of 100%
-  ResizeBitmap(fInternalGlyph, MulDiv(fInternalGlyph.Width, L, D), MulDiv(fInternalGlyph.Height, L, D));
-  ResizeBitmap(fGlyph, MulDiv(fGlyph.Width, L, D), MulDiv(fGlyph.Height, L, D));
+  ResizeBitmap(fInternalGlyph, MulDiv(fInternalGlyph.Width, M, D), MulDiv(fInternalGlyph.Height, M, D));
+  if not fGlyph.Empty then
+    ResizeBitmap(fGlyph, MulDiv(fGlyph.Width, M, D), MulDiv(fGlyph.Height, M, D));
 end;
 //-- DPI-Aware
 
@@ -1108,12 +1104,11 @@ var
   InternalResources: TList;
 
 procedure TSynInternalImage.ChangeScale(M, D: Integer);
-Var
-  L: Integer;
 begin
-  L := (M div D) * D;    // Factor multiple of 100%
-  fWidth := MulDiv(fWidth, L, D);
-  ResizeBitmap(fImages, fWidth * fCount, MulDiv(fImages.Height, L, D));
+  if M = D then Exit;
+
+  fWidth := MulDiv(fWidth, M, D);
+  ResizeBitmap(fImages, fWidth * fCount, MulDiv(fImages.Height, M, D));
   fHeight := fImages.Height;
 end;
 

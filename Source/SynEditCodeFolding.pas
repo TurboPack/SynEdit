@@ -244,13 +244,15 @@ type
     procedure SetShowCollapsedLine(const Value: Boolean);
     procedure SetShowHintMark(const Value: Boolean);
     procedure SetGutterShapeSize(const Value: Integer);
+    function GetGutterShapeSize: Integer;
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
+    procedure ChangeScale(M, D: Integer); virtual;
     property OnChange: TSynCodeFoldingChangeEvent read fOnChange write fOnChange;
   published
     // Size of the gutter shapes in pixels at 96 PPI - had to be odd number
-    property  GutterShapeSize: Integer read fGutterShapeSize
+    property  GutterShapeSize: Integer read GetGutterShapeSize
       write SetGutterShapeSize default 11;
     property CollapsedLineColor: TColor read fCollapsedLineColor
       write SetCollapsedLineColor default clGrayText;
@@ -295,8 +297,9 @@ type
 implementation
 
 Uses
-  SynEditTextBuffer,
-  System.Math;
+  Winapi.Windows,
+  System.Math,
+  SynEditTextBuffer;
 
 { TSynEditFoldRanges }
 
@@ -925,6 +928,11 @@ begin
    inherited Assign(Source);
 end;
 
+procedure TSynCodeFolding.ChangeScale(M, D: Integer);
+begin
+  fGutterShapeSize := MulDiv(fGutterShapeSize, M, D);
+end;
+
 constructor TSynCodeFolding.Create;
 begin
   fIndentGuides := True;
@@ -934,6 +942,14 @@ begin
   fShowCollapsedLine := False;
   fShowHintMark := True;
   fGutterShapeSize := 11;
+end;
+
+function TSynCodeFolding.GetGutterShapeSize: Integer;
+{ Always returns an odd number }
+begin
+  Result := fGutterShapeSize;
+  if not Odd(Result) then
+    Dec(Result);
 end;
 
 { TSynFoldRanges.TLineFoldInfo }
@@ -1044,8 +1060,6 @@ Var
   NewValue: Integer;
 begin
   NewValue := Value;
-  if not Odd(NewValue) then
-    Dec(NewValue);
   if fGutterShapeSize <> NewValue then begin
     fGutterShapeSize := NewValue;
     if Assigned(fOnChange) then fOnChange(Self);

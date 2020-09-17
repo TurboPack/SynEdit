@@ -43,6 +43,9 @@ interface
 uses
   Types,
   Math,
+  {$IF CompilerVersion <= 32}
+  Controls,
+  {$IFEND}
   SysUtils;
 
 const
@@ -101,6 +104,16 @@ type
     class function Min(a, b: TDisplayCoord): TDisplayCoord; static;
     class function Max(a, b: TDisplayCoord): TDisplayCoord; static;
   end;
+
+  (*  Helper methods for TControl - for backwward compatibility *)
+  {$IF CompilerVersion <= 32}
+  TControlHelper = class helper for TControl
+  public
+    function CurrentPPI: Integer;
+    function FCurrentPPI: Integer;
+  end;
+  {$IFEND}
+
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
@@ -243,6 +256,22 @@ begin
     sffUnicode: Result := WideLineSeparator;
   end;
 end;
+
+{$IF CompilerVersion <= 32}
+{ TControlHelper }
+
+function TControlHelper.CurrentPPI: Integer;
+begin
+  Result := Screen.PixelsPerInch;
+end;
+
+function TControlHelper.FCurrentPPI: Integer;
+begin
+  Result := Screen.PixelsPerInch;
+end;
+{$IFEND}
+
+
 
 end.
 

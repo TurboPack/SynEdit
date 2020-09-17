@@ -1870,7 +1870,7 @@ var
   D: Integer;
   P: TPoint;
 begin
-  if not FResizeable then
+  if not (FResizeable and (DisplayType = ctCode)) then
   begin
     inherited;
     Exit;
