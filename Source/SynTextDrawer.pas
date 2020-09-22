@@ -333,7 +333,7 @@ begin
     // value for GlyphBufferSize (see documentation of cGlyphs parameter of
     // ScriptStringAnalyse function)
     GlyphBufferSize := (3 * Count) div 2 + 16;
-    
+
     Result := Succeeded(ScriptStringAnalyse(DC, Str, Count, GlyphBufferSize, -1,
       SSAnalyseFlags, 0, nil, nil, Pointer(ETODist), nil, nil, @saa));
     Result := Result and Succeeded(ScriptStringOut(saa, X, Y, TextOutFlags,
@@ -343,7 +343,7 @@ begin
   else
 {$ENDIF}
   begin
-    if UseLigatures then
+    if UseLigatures and (Str <> nil)  and (Str^ <>  WideNull) then
     begin
       TextOutFlags := TextOutFlags or ETO_GLYPH_INDEX;
       ZeroMemory(@CharPlaceInfo, SizeOf(CharPlaceInfo));

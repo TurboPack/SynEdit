@@ -2930,7 +2930,7 @@ var
       end;
 
       fTextDrawer.ExtTextOut(nX, rcToken.Top, ETOOptions, rcToken,
-        PWideChar(Text), nCharsToPaint, (eoShowLigatures in fOptions));
+        PWideChar(Text), nCharsToPaint, (eoShowLigatures in fOptions) and not bCurrentLine);
 
       if DoTabPainting then
       begin
@@ -3947,7 +3947,7 @@ begin
       end;
       if fCaretY <> Value.Line then
       begin
-        if ActiveLineColor <> clNone then
+        if (ActiveLineColor <> clNone) or (eoShowLigatures in fOptions) then
         begin
           InvalidateLine(Value.Line);
           InvalidateLine(fCaretY);
