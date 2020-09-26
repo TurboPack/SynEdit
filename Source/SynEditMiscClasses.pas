@@ -1119,7 +1119,7 @@ begin
   fWidth := (fImages.Width + Count shr 1) div Count;
   fHeight := fImages.Height;
   fCount := Count;
-  end;
+end;
 
 destructor TSynInternalImage.Destroy;
 begin

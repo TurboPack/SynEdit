@@ -159,6 +159,8 @@ end;
 
 constructor TSynEditKbdHandler.Create;
 begin
+  inherited Create;
+
   { Elements to handle KeyDown-Events }
   fKeyDownChain := TMethodList.Create;
 
@@ -353,12 +355,14 @@ end;
 
 constructor TMethodList.Create;
 begin
+  inherited Create;
   fData := TList.Create;
 end;
 
 destructor TMethodList.Destroy;
 begin
   fData.Free;
+  inherited Destroy;
 end;
 
 function TMethodList.GetCount: Integer;
