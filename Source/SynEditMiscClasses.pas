@@ -281,8 +281,6 @@ type
     fHeight : Integer;
     fCount  : Integer;
 
-    function CreateBitmapFromInternalList(aModule: THandle; const Name: string): TBitmap;
-    procedure FreeBitmapFromInternalList;
   public
     constructor Create(aModule: THandle; const Name: string; Count: integer);
     destructor Destroy; override;
@@ -376,19 +374,29 @@ uses
   SynEditMiscProcs;
 
 //++ DPI-Aware
-procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth,
-  NewHeight: integer);
+procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
 var
-  buffer: TBitmap;
+  Factory: IWICImagingFactory;
+  Scaler: IWICBitmapScaler;
+  Source : TWICImage;
 begin
-  buffer := TBitmap.Create;
+  //Bitmap.AlphaFormat := afDefined;
+  Source := TWICImage.Create;
   try
-    buffer.SetSize(NewWidth, NewHeight);
-    buffer.Canvas.StretchDraw(Rect(0, 0, NewWidth, NewHeight), Bitmap);
-    Bitmap.SetSize(NewWidth, NewHeight);
-    Bitmap.Canvas.Draw(0, 0, buffer);
+    Source.Assign(Bitmap);
+    Factory := TWICImage.ImagingFactory;
+    Factory.CreateBitmapScaler(Scaler);
+    try
+      Scaler.Initialize(Source.Handle, NewWidth, NewHeight,
+        WICBitmapInterpolationModeHighQualityCubic);
+      Source.Handle := IWICBitmap(Scaler);
+    finally
+      Scaler := nil;
+      Factory := nil;
+    end;
+    Bitmap.Assign(Source);
   finally
-    buffer.Free;
+    Source.Free;
   end;
 end;
 //-- DPI-Aware
@@ -1100,9 +1108,6 @@ type
       Bitmap     : TBitmap;
   end;
 
-var
-  InternalResources: TList;
-
 procedure TSynInternalImage.ChangeScale(M, D: Integer);
 begin
   if M = D then Exit;
@@ -1115,7 +1120,8 @@ end;
 constructor TSynInternalImage.Create(aModule: THandle; const Name: string; Count: integer);
 begin
   inherited Create;
-  fImages := CreateBitmapFromInternalList( aModule, Name );
+  fImages := TBitmap.Create;
+  fImages.LoadFromResourceName(aModule, Name);
   fWidth := (fImages.Width + Count shr 1) div Count;
   fHeight := fImages.Height;
   fCount := Count;
@@ -1123,77 +1129,8 @@ end;
 
 destructor TSynInternalImage.Destroy;
 begin
-  FreeBitmapFromInternalList;
+  fImages.Free;
   inherited Destroy;
-end;
-
-function TSynInternalImage.CreateBitmapFromInternalList(aModule: THandle;
-  const Name: string): TBitmap;
-var
-  idx: Integer;
-  newIntRes: TInternalResource;
-begin
-  { There is no list until now }
-  if (InternalResources = nil) then
-    InternalResources := TList.Create;
-
-  { Search the list for the needed resource }
-  for idx := 0 to InternalResources.Count - 1 do
-    if (TInternalResource(InternalResources[idx]).Name = UpperCase(Name)) then
-      with TInternalResource(InternalResources[idx]) do begin
-        UsageCount := UsageCount + 1;
-        Result := Bitmap;
-        exit;
-      end;
-
-  { There is no loaded resource in the list so let's create a new one }
-  Result := TBitmap.Create;
-  Result.LoadFromResourceName(aModule, Name);
-
-  { Add the new resource to our list }
-  newIntRes:= TInternalResource.Create;
-  newIntRes.UsageCount := 1;
-  newIntRes.Name := UpperCase(Name);
-  newIntRes.Bitmap := Result;
-  InternalResources.Add(newIntRes);
-end;
-
-procedure TSynInternalImage.FreeBitmapFromInternalList;
-var
-  idx: Integer;
-  intRes: TInternalResource;
-  function FindImageInList: Integer;
-  begin
-    for Result := 0 to InternalResources.Count - 1 do
-      if (TInternalResource (InternalResources[Result]).Bitmap = fImages) then
-        exit;
-    Result := -1;
-  end;
-begin
-  { Search the index of our resource in the list }
-  idx := FindImageInList;
-
-  { Ey, what's this ???? }
-  if (idx = -1) then
-    exit;
-
-  { Decrement the usagecount in the object. If there are no more users
-    remove the object from the list and free it }
-  intRes := TInternalResource (InternalResources[idx]);
-  with intRes do begin
-    UsageCount := UsageCount - 1;
-    if (UsageCount = 0) then begin
-      Bitmap.Free;
-      InternalResources.Delete (idx);
-      intRes.Free;
-    end;
-  end;
-
-  { If there are no more entries in the list free it }
-  if (InternalResources.Count = 0) then begin
-    InternalResources.Free;
-    InternalResources := nil;
-  end;
 end;
 
 procedure TSynInternalImage.Draw(ACanvas: TCanvas;
@@ -1481,6 +1418,4 @@ begin
   end;
 end; { TBetterRegistry.OpenKeyReadOnly }
 
-begin
-  InternalResources := nil;
 end.
