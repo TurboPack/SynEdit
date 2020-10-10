@@ -13,7 +13,7 @@ The Original Code is based on mwCompletionProposal.pas by Cyrille de Brebisson,
 part of the mwEdit component suite.
 Portions created by Cyrille de Brebisson are Copyright (C) 1999
 Cyrille de Brebisson.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -2769,10 +2769,10 @@ begin
         if FAdjustCompletionStart then
           FCompletionStart := BufferCoord(FCompletionStart, CaretY).Char;
         BlockBegin := BufferCoord(FCompletionStart, CaretY);
-        //if EndToken = #0 then
-          BlockEnd := BufferCoord(WordEnd.Char, CaretY);
-        //else
-        //  BlockEnd := BufferCoord(CaretX, CaretY);
+        if (scoEndCharCompletion in fOptions) or (EndToken = #0) then
+          BlockEnd := BufferCoord(WordEnd.Char, CaretY)
+        else
+          BlockEnd := BufferCoord(CaretX, CaretY);
 
         if scoUseInsertList in FOptions then
         begin
