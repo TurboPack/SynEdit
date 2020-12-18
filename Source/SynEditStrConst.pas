@@ -61,6 +61,7 @@ const
   SYNS_AttrAsmComment           =  'AsmComment';
   SYNS_AttrAsmKey               =  'AsmKey';
   SYNS_AttrAssembler            =  'Assembler';
+  SYNS_AttrAtRules              =  'AtRules';
   SYNS_AttrAttribute            =  'Attribute';
   SYNS_AttrAttributeName        =  'AttributeName';
   SYNS_AttrAttributeValue       =  'AttributeValue';
@@ -127,7 +128,7 @@ const
   SYNS_AttrOperatorAndSymbols   =  'OperatorAndSymbols';
   SYNS_AttrOpLine               =  'OpLine';
   SYNS_AttrOptions              =  'Options';
-  SYNS_AttrPath                 =  'PathName';  
+  SYNS_AttrPath                 =  'PathName';
   SYNS_AttrPLSQL                =  'PLSQL-ReservedWord';
   SYNS_AttrPragma               =  'Pragma';
   SYNS_AttrPredefined           =  'Predefined';
@@ -275,6 +276,7 @@ resourcestring
   SYNS_FriendlyAttrAsmComment           =  'Asm Comment';
   SYNS_FriendlyAttrAsmKey               =  'Asm Key';
   SYNS_FriendlyAttrAssembler            =  'Assembler';
+  SYNS_FriendlyAttrAtRules              =  '@-Rules';
   SYNS_FriendlyAttrAttribute            =  'Attribute';
   SYNS_FriendlyAttrAttributeName        =  'Attribute Name';
   SYNS_FriendlyAttrAttributeValue       =  'Attribute Value';
@@ -384,7 +386,7 @@ resourcestring
   SYNS_FriendlyAttrText                 =  'Text';
   SYNS_FriendlyAttrTextMathMode         =  'Text in Math Mode';
   SYNS_FriendlyAttrThirdTri             =  'ThirdTri';
-  SYNS_FriendlyAttrTixKeyWords          =  'Tix Keywords';  
+  SYNS_FriendlyAttrTixKeyWords          =  'Tix Keywords';
   SYNS_FriendlyAttrTriangle             =  'Triangle';
   SYNS_FriendlyAttrUndefinedProperty    =  'Undefined Property';
   SYNS_FriendlyAttrUnknownWord          =  'Unknown Word';
