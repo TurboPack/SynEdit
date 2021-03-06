@@ -47,3 +47,5 @@
 ###################
 *.prjmgc
 
+Packages/Sydney/CBuilder/Win64/
+Packages/Sydney/cpp/
