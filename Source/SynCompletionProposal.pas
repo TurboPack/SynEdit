@@ -1398,7 +1398,6 @@ begin
       ExecuteCmdAndCancel;
     end;
   end;
-  Invalidate;
 end;
 
 procedure TSynBaseCompletionProposalForm.KeyPress(var Key: Char);
@@ -1614,7 +1613,7 @@ begin
     if Position > FScrollbar.Position + FLinesInWindow - 1 then
       Position := FScrollbar.Position + FLinesInWindow - 1
     else
-      Repaint;
+      Invalidate;
 end;
 
 procedure TSynBaseCompletionProposalForm.ScrollbarOnScroll(Sender: TObject;
@@ -1636,18 +1635,12 @@ begin
 end;
 
 procedure TSynBaseCompletionProposalForm.MoveLine(cnt: Integer);
+var
+  NewPos: Integer;
 begin
-  if (cnt > 0) then begin
-    if (Position < (FAssignedList.Count - cnt)) then
-      Position := Position + cnt
-    else
-      Position := FAssignedList.Count - 1;
-  end else begin
-    if (Position + cnt) > 0 then
-      Position := Position + cnt
-    else
-      Position := 0;
-  end;
+  NewPos := EnsureRange(Position + cnt, 0, FAssignedList.Count - 1);
+  if NewPos <> Position then
+    Position := NewPos;
 end;
 
 function TSynBaseCompletionProposalForm.LogicalToPhysicalIndex(Index: Integer): Integer;
@@ -1740,7 +1733,7 @@ begin
       FOnChangePosition(Owner as TSynBaseCompletionProposal,
         LogicalToPhysicalIndex(FPosition));
 
-    Repaint;
+    Invalidate;
   end
   else
   begin
@@ -1791,7 +1784,7 @@ begin
       FOnChangePosition(Owner as TSynBaseCompletionProposal,
         LogicalToPhysicalIndex(FPosition));
 
-    Repaint;
+    Invalidate;
   end;
 end;
 
@@ -2323,7 +2316,7 @@ begin
       //ShowWindow(Form.Handle, SW_SHOWNOACTIVATE);
       ShowWindow(Form.Handle, SW_SHOWNA);
       Form.Visible := True;
-      Form.Repaint;
+      Form.Invalidate;
     end;
   end;
 end;
