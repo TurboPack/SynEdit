@@ -941,7 +941,7 @@ begin
         end;
       fcHSpace:
         begin
-          inc(X, Integer(C^.Data));
+          inc(X, MulDiv(Integer(C^.Data), PPI, 96));
           if X > Rect.Right then
             break;
         end;
