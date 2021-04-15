@@ -4679,7 +4679,7 @@ begin
   //  to the right of RightOffset and 2 * Gutter.RightMagin to the left of
   //  fGuttterWidth.  It is centered vertically.
   //  Gutter.RightMargin is 2 at 96 DPI
-    Gutter.RightOffset := CodeFolding.GutterShapeSize + 2 * Gutter.RightMargin
+    Gutter.RightOffset := CodeFolding.ScaledGutterShapeSize(FCurrentPPI) + 2 * Gutter.RightMargin
   else
     Gutter.RightOffset := Gutter.RightMargin;
   Invalidate;
@@ -4719,12 +4719,15 @@ begin
 end;
 
 function TCustomSynEdit.GetFoldShapeRect(Row: Integer): TRect;
+var
+  GutterShapeSize: Integer;
 begin
   // Form a square rect for the square the user can click on
   // The fold shape is drawn in a square 4 pixels to the right of RightOffset
   // 4 pixels from the fGuttterWidth.  It is  vertically centered within a line.
-  Result.Left := fGutterWidth - CodeFolding.GutterShapeSize - 2 * Gutter.RightMargin;
-  Result.Right := Result.Left + CodeFolding.GutterShapeSize;
+  GutterShapeSize := CodeFolding.ScaledGutterShapeSize(FCurrentPPI);
+  Result.Left := fGutterWidth - GutterShapeSize - 2 * Gutter.RightMargin;
+  Result.Right := Result.Left + GutterShapeSize;
   Result.Top := (Row - fTopLine) * LineHeight;
   // make a square rect
   Result.Top := Result.Top + ((LineHeight - (Result.Right - Result.Left)) div 2);
@@ -6521,7 +6524,7 @@ procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; i
 begin
   {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
     fGutter.ChangeScale(M,D);
-    CodeFolding.ChangeScale(M, D);
+    OnCodeFoldingChange(Self); // To recalculate Gutter.RightOffset
     fBookMarkOpt.ChangeScale(M, D);
     fWordWrapGlyph.ChangeScale(M, D);
     if Assigned(fInternalImage) then fInternalImage.ChangeScale(M, D);
