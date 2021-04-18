@@ -1991,6 +1991,7 @@ begin
     if not (eoScrollPastEof in Options) then
       TopLine := TopLine;
   end;
+  DoChange;
 end;
 
 procedure TCustomSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
@@ -4480,12 +4481,12 @@ begin
       if CaretY < 1 then
         InternalCaretY := 1;
     finally
-      DecPaintLock;
-      Lines.EndUpdate;
+      if AddToUndoList and (Length(Value) > 0) then
+        EndUndoBlock;
     end;
   finally
-    if AddToUndoList and (Length(Value) > 0) then
-      EndUndoBlock;
+    DecPaintLock;
+    Lines.EndUpdate;
   end;
 end;
 
@@ -8680,11 +8681,11 @@ begin
   RecalcCharExtent;
   if Sender is TSynCustomHighlighter then
   begin
-    Lines.BeginUpdate;
+    IncPaintLock;
     try
       ScanRanges;
     finally
-      Lines.EndUpdate;
+      DecPaintLock;
     end;
   end
   else
@@ -9901,8 +9902,6 @@ begin
   if (Sender = fUndoList) and not fUndoList.InsideRedo and
      (fUndoList.PeekItem<>nil) and (fUndoList.PeekItem.ChangeReason<>crGroupBreak) then
     fRedoList.Clear;
-  if TSynEditUndoList(Sender).BlockCount = 0 then
-    DoChange;
 end;
 
 function TCustomSynEdit.GetWordAtRowCol(XY: TBufferCoord): string;
