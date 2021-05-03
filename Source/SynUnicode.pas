@@ -403,6 +403,7 @@ begin
   Preamble := TEncoding.Unicode.GetPreamble;
   if Size >= Length(Preamble) then
   begin
+    Setlength(Buffer, Length(Preamble));
     Stream.Read(Buffer, 0, Length(Preamble));
     Stream.Seek(-Length(Preamble), soFromCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
@@ -415,6 +416,7 @@ begin
   Preamble := TEncoding.BigEndianUnicode.GetPreamble;
   if Size >= Length(Preamble) then
   begin
+    Setlength(Buffer, Length(Preamble));
     Stream.Read(Buffer, 0, Length(Preamble));
     Stream.Seek(-Length(Preamble), soFromCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
