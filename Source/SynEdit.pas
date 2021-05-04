@@ -5615,10 +5615,10 @@ begin
          (FSpecial and (FRedoList.LastChangeReason = crSpecialEnd)) then
       begin
         RedoItem;
-        UpdateModifiedStatus;
       end;
 
     finally
+      UpdateModifiedStatus;
       fUndoList.BlockChangeNumber := SaveChangeNumber;
     end;
     RemoveGroupBreak;
@@ -6231,10 +6231,10 @@ begin
          (FSpecial and (FUndoList.LastChangeReason = crSpecialBegin)) then
       begin
         UndoItem;
-        UpdateModifiedStatus;
        end;
 
     finally
+      UpdateModifiedStatus;
       fRedoList.BlockChangeNumber := SaveChangeNumber;
     end;
   end;
