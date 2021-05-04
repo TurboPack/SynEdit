@@ -2016,12 +2016,11 @@ begin
   TmpBegin := FBlockBegin;
   TmpEnd := FBlockEnd;
 
-  bWasSel := False;
+  //remember selection state, as it will be cleared later
+  bWasSel := SelAvail;
+
   if (Button = mbLeft) and ((Shift + [ssDouble]) = [ssLeft, ssDouble]) then
   begin
-    if SelAvail then
-      //remember selection state, as it will be cleared later
-      bWasSel := True;
     if (FClickCount > 0)
        and (Abs(fMouseDownX - X) < GetSystemMetrics(SM_CXDRAG))
        and (Abs(fMouseDownY - Y) < GetSystemMetrics(SM_CYDRAG))
@@ -2072,7 +2071,7 @@ begin
     MouseCapture := True;
     //if mousedown occurred in selected block begin drag operation
     if bWasSel and (eoDragDropEditing in fOptions) and (X >= fGutterWidth + 2)
-      and (SelectionMode = smNormal) and not (ssAlt in Shift)
+      and (SelectionMode = smNormal) and ([ssAlt, ssLeft] * Shift = [ssLeft])
       and IsPointInSelection(DisplayToBufferPos(PixelsToRowColumn(X, Y))) then
     begin
       if DragDetect(Handle, Point(X,Y)) then begin
