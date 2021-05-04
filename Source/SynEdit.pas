@@ -286,6 +286,8 @@ type
     procedure PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType); virtual;
     procedure LinesInserted(FirstLine, Count: Integer); virtual;
     procedure LinesDeleted(FirstLine, Count: Integer); virtual;
+    procedure LinesPutted(aIndex: Integer; aCount: Integer); virtual;
+    procedure LinesChanged; virtual;
   protected
     property Editor: TCustomSynEdit read fOwner;
   public
@@ -453,8 +455,10 @@ type
     procedure ComputeScroll(X, Y: Integer);
     procedure DoHomeKey(Selection:boolean);
     procedure DoEndKey(Selection: Boolean);
+    procedure DoLinesChanged;
     procedure DoLinesDeleted(FirstLine, Count: integer);
     procedure DoLinesInserted(FirstLine, Count: integer);
+    procedure DoLinesPutted(FirstLine, Count: integer);
     procedure DoShiftTabKey;
     procedure DoTabKey;
     function FindHookedCmdEvent(AHandlerProc: THookedCommandEvent): integer;
@@ -1964,6 +1968,8 @@ procedure TCustomSynEdit.LinesChanged(Sender: TObject);
 var
   vOldMode: TSynSelectionMode;
 begin
+  DoLinesChanged;
+
 //++ CodeFolding
   if (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
   begin
@@ -5386,6 +5392,8 @@ var
   FoldIndex: Integer;
 //-- CodeFolding
 begin
+  DoLinesPutted(Index, aCount);
+
   vEndLine := Index +1;
   if WordWrap then
   begin
@@ -10017,6 +10025,16 @@ begin
   end;
 end;
 
+procedure TCustomSynEdit.DoLinesChanged;
+var
+  i: Integer;
+begin
+  // plugins
+  if fPlugins <> nil then
+    for i := 0 to fPlugins.Count - 1 do
+      TSynEditPlugin(fPlugins[i]).LinesChanged;
+end;
+
 procedure TCustomSynEdit.DoLinesDeleted(FirstLine, Count: Integer);
 var
   i: Integer;
@@ -10047,6 +10065,16 @@ begin
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
       TSynEditPlugin(fPlugins[i]).LinesInserted(FirstLine, Count);
+end;
+
+procedure TCustomSynEdit.DoLinesPutted(FirstLine, Count: integer);
+var
+  i: Integer;
+begin
+  // plugins
+  if fPlugins <> nil then
+    for i := 0 to fPlugins.Count - 1 do
+      TSynEditPlugin(fPlugins[i]).LinesPutted(FirstLine, Count);
 end;
 
 procedure TCustomSynEdit.PluginsAfterPaint(ACanvas: TCanvas; const AClip: TRect;
@@ -10926,7 +10954,17 @@ begin
   // nothing
 end;
 
+procedure TSynEditPlugin.LinesChanged;
+begin
+  // nothing
+end;
+
 procedure TSynEditPlugin.LinesInserted(FirstLine, Count: Integer);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.LinesPutted(aIndex, aCount: Integer);
 begin
   // nothing
 end;
