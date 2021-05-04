@@ -1,4 +1,4 @@
-ï»¿{------------------------------------------------------------------------------
+{------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -13,7 +13,7 @@ The Original Code is based on the mwPasSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Martin Waldenburg.
 Portions created by Martin Waldenburg are Copyright (C) 1998 Martin Waldenburg.
-Unicode translation by MaÃ«l HÃ¶rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -61,15 +61,15 @@ uses
   SynEditHighlighter,
   SynUnicode,
   SysUtils,
+  Classes,
 //++ CodeFolding
-  SynEditCodeFolding,
-  RegularExpressions,
-//-- CodeFolding
-  Classes;
+  System.RegularExpressions,
+  SynEditCodeFolding;
+//++ CodeFolding
 
 type
-  TtkTokenKind = (tkAsm, tkComment, tkIdentifier, tkKey, tkNull, tkNumber,
-    tkSpace, tkString, tkSymbol, tkUnknown, tkFloat, tkHex, tkDirec, tkChar);
+  TtkTokenKind = (tkSymbol, tkKey, tkAsm, tkComment, tkIdentifier, tkNull, tkNumber,
+    tkSpace, tkString, tkUnknown, tkFloat, tkHex, tkDirec, tkChar, tkType);
 
   TRangeState = (rsANil, rsAnsi, rsAnsiAsm, rsAsm, rsBor, rsBorAsm, rsProperty,
     rsExports, rsDirective, rsDirectiveAsm, rsUnKnown);
@@ -85,13 +85,14 @@ const
   BDSVersionPrefix = 'BDS';
 
 type
+//  TSynPasSyn = class(TSynCustomHighlighter)
 //++ CodeFolding
   TSynPasSyn = class(TSynCustomCodeFoldingHighlighter)
 //-- CodeFolding
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
-    fIdentFuncTable: array[0..388] of TIdentFuncTableFunc;
+    fIdentFuncTable: array[0..640] of TIdentFuncTableFunc;
     fTokenID: TtkTokenKind;
     fStringAttri: TSynHighlighterAttributes;
     fCharAttri: TSynHighlighterAttributes;
@@ -107,6 +108,7 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fDelphiVersion: TDelphiVersion;
     fPackageSource: Boolean;
+    fTypeAttri: TSynHighlighterAttributes;
 //++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
@@ -148,6 +150,7 @@ type
     function FuncThreadvar(Index: Integer): TtkTokenKind;
     function FuncWrite(Index: Integer): TtkTokenKind;
     function FuncWriteonly(Index: Integer): TtkTokenKind;
+    function FuncType(Index: Integer): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -224,6 +227,8 @@ type
       write fCharAttri;
     property SymbolAttri: TSynHighlighterAttributes read fSymbolAttri
       write fSymbolAttri;
+    property TypeAttri: TSynHighlighterAttributes read fTypeAttri
+      write fTypeAttri;
     property DelphiVersion: TDelphiVersion read fDelphiVersion write SetDelphiVersion
       default LastDelphiVersion;
     property PackageSource: Boolean read fPackageSource write SetPackageSource default True;
@@ -236,47 +241,64 @@ uses
 
 const
   // if the language is case-insensitive keywords *must* be in lowercase
-  KeyWords: array[0..110] of string = (
-    'absolute', 'abstract', 'and', 'array', 'as', 'asm', 'assembler',
-    'automated', 'begin', 'case', 'cdecl', 'class', 'const', 'constructor',
-    'contains', 'default', 'deprecated', 'destructor', 'dispid',
-    'dispinterface', 'div', 'do', 'downto', 'dynamic', 'else', 'end', 'except',
-    'export', 'exports', 'external', 'far', 'file', 'final', 'finalization',
-    'finally', 'for', 'forward', 'function', 'goto', 'helper', 'if',
-    'implementation', 'implements', 'in', 'index', 'inherited',
-    'initialization', 'inline', 'interface', 'is', 'label', 'library',
-    'message', 'mod', 'name', 'near', 'nil', 'nodefault', 'not', 'object', 'of',
-    'on', 'operator', 'or', 'out', 'overload', 'override', 'package', 'packed',
-    'pascal', 'platform', 'private', 'procedure', 'program', 'property',
-    'protected', 'public', 'published', 'raise', 'read', 'readonly', 'record',
-    'register', 'reintroduce', 'repeat', 'requires', 'resourcestring',
-    'safecall', 'sealed', 'set', 'shl', 'shr', 'stdcall', 'stored', 'string',
-    'stringresource', 'then', 'threadvar', 'to', 'try', 'type', 'unit', 'until',
-    'uses', 'var', 'virtual', 'while', 'with', 'write', 'writeonly', 'xor'
+  KeyWords: array[0..131] of string = (
+    'absolute', 'abstract', 'and', 'ansistring', 'array', 'as', 'asm',
+    'assembler', 'automated', 'begin', 'boolean', 'byte', 'bytebool',
+    'cardinal', 'case', 'cdecl', 'class', 'const', 'constructor', 'contains',
+    'currency', 'default', 'deprecated', 'destructor', 'dispid',
+    'dispinterface', 'div', 'do', 'double', 'downto', 'dynamic', 'else', 'end',
+    'except', 'export', 'exports', 'extended', 'external', 'far', 'file',
+    'final', 'finalization', 'finally', 'for', 'forward', 'function', 'goto',
+    'helper', 'if', 'implementation', 'implements', 'in', 'index', 'inherited',
+    'initialization', 'inline', 'int64', 'integer', 'interface', 'is', 'label',
+    'library', 'longbool', 'longint', 'longword', 'message', 'mod', 'name',
+    'near', 'nil', 'nodefault', 'not', 'object', 'of', 'on', 'operator', 'or',
+    'out', 'overload', 'override', 'package', 'packed', 'pascal', 'platform',
+    'private', 'procedure', 'program', 'property', 'protected', 'public',
+    'published', 'raise', 'read', 'readonly', 'real48', 'record', 'register',
+    'reintroduce', 'repeat', 'requires', 'resourcestring', 'safecall', 'sealed',
+    'set', 'shl', 'shortint', 'shortstring', 'shr', 'single', 'smallint',
+    'stdcall', 'stored', 'string', 'stringresource', 'then', 'threadvar', 'to',
+    'try', 'type', 'unit', 'until', 'uses', 'var', 'virtual', 'while',
+    'string', 'with', 'word', 'wordbool', 'write', 'writeonly', 'xor'
   );
 
-  KeyIndices: array[0..388] of Integer = (
-    -1, -1, -1, 105, -1, 51, -1, 108, -1, -1, -1, -1, -1, 75, -1, -1, 46, -1,
-    -1, 103, -1, -1, -1, -1, 55, -1, -1, -1, -1, 76, -1, -1, 96, 14, -1, 31, 3,
-    102, -1, -1, -1, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, 78, -1, -1, 25, -1,
-    -1, 56, 65, 95, -1, -1, -1, 34, -1, 85, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, 22, -1, -1, -1, -1, -1, -1, 80, -1, -1, -1, -1, 50, -1, -1, 109, 98, -1,
-    86, -1, 13, -1, -1, -1, 107, -1, -1, 60, -1, 0, 64, -1, -1, -1, -1, 8, 10,
-    -1, -1, -1, 67, -1, -1, -1, 74, -1, 17, -1, 73, 69, -1, 68, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, 16, -1, -1, 23, 39, -1, 35, 30, -1, -1, -1, 70, -1, 37,
-    -1, -1, 89, 71, 84, 72, -1, 29, 40, -1, -1, -1, 32, -1, -1, -1, 94, -1, -1,
-    87, -1, -1, -1, -1, -1, -1, 77, -1, -1, -1, -1, -1, -1, 11, 57, 41, 6, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 24, -1, -1, -1, -1, 97, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, 44, 12, -1, -1, 101, -1, 58, -1, -1, -1, 99, -1, -1,
-    -1, -1, 53, 20, -1, -1, -1, 36, -1, -1, 63, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, 45, -1, -1, -1, -1, 27, -1, -1, -1, -1, -1, 59,
-    -1, 110, -1, 15, -1, 52, -1, -1, -1, -1, 5, 48, -1, -1, -1, 81, -1, 28, -1,
-    -1, -1, 2, -1, 1, -1, 106, -1, -1, -1, -1, 90, -1, 83, -1, -1, -1, -1, -1,
-    79, -1, -1, 33, 62, -1, -1, -1, -1, -1, -1, 4, -1, -1, -1, -1, -1, -1, 88,
-    61, 54, -1, 42, -1, -1, -1, 66, -1, -1, -1, 92, 100, -1, -1, -1, -1, -1, 18,
-    -1, -1, 26, 47, 38, -1, -1, 93, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    9, -1, 91, -1, -1, -1, -1, -1, -1, 49, -1, 21, -1, -1, -1, -1, -1, -1, 43,
-    -1, 82, -1, 19, 104, -1, -1, -1, -1, -1
+  KeyIndices: array[0..640] of Integer = (
+    -1, -1, -1, 34, -1, -1, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, 122, -1, 78, -1, -1, 11, -1, -1, -1, -1, -1, -1, -1, 128, -1, -1,
+    -1, -1, -1, -1, -1, -1, 107, -1, -1, 31, -1, -1, -1, -1, -1, -1, -1, -1, 35,
+    -1, -1, -1, 4, 79, -1, 36, -1, -1, 117, -1, -1, -1, -1, -1, 49, -1, -1, -1,
+    77, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 105, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 113, -1, 112,
+    -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 72, -1, 40, -1, 121, 83, 98,
+    -1, -1, -1, -1, -1, 38, -1, -1, -1, -1, 74, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, 100, -1, 86, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 64, 32, -1,
+    -1, -1, -1, 58, 44, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 67, -1, 6,
+    13, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 71, -1, -1, -1, -1,
+    -1, -1, -1, -1, 48, -1, -1, -1, 3, -1, 43, -1, -1, -1, 96, -1, -1, 53, -1,
+    76, -1, -1, -1, -1, -1, -1, -1, -1, -1, 104, -1, -1, -1, -1, -1, 12, -1, -1,
+    -1, -1, -1, -1, 37, 90, -1, 126, -1, -1, 85, 81, -1, -1, -1, -1, -1, -1, -1,
+    52, -1, -1, -1, 124, -1, -1, -1, 69, -1, -1, -1, -1, -1, -1, 42, -1, -1, 29,
+    -1, 127, -1, -1, -1, -1, -1, -1, 129, -1, -1, -1, 16, -1, -1, 108, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, 28, -1, 101, 61, -1, -1, 26, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, 59, 131, -1, -1, -1, -1, -1, -1, -1, -1, 65, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 19, -1, 41, 2, -1,
+    -1, 82, -1, -1, -1, 30, -1, -1, 33, -1, -1, -1, -1, 95, -1, -1, -1, -1, -1,
+    -1, -1, 114, -1, 51, -1, 9, -1, 21, -1, 0, -1, -1, 66, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, 55, 14, 18, -1, -1, -1, -1, 110, -1, -1, -1, -1, 10, -1, -1,
+    -1, 97, -1, -1, 15, -1, -1, -1, -1, -1, -1, -1, -1, 20, -1, -1, -1, -1, -1,
+    8, 70, -1, -1, -1, -1, -1, -1, 27, 116, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, 87, 111, -1, -1, 25, 50, -1, 57, -1, 24, -1, -1, -1, -1, -1, 39, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 109, -1, 123, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, 130, -1, -1, -1, -1, -1, -1, -1, -1, 102, -1, -1,
+    -1, -1, 17, 63, -1, -1, -1, -1, -1, -1, -1, -1, -1, 125, -1, -1, -1, -1,
+    103, -1, -1, -1, 99, -1, -1, -1, -1, -1, -1, -1, 120, -1, -1, -1, -1, -1,
+    -1, -1, 119, -1, 118, -1, -1, -1, -1, 88, 7, -1, -1, -1, -1, -1, -1, -1, 46,
+    89, -1, -1, -1, -1, -1, 62, -1, -1, -1, -1, -1, -1, -1, 45, -1, -1, 54, -1,
+    75, -1, -1, 56, -1, -1, -1, -1, -1, -1, 68, -1, 115, -1, 60, -1, -1, 91, -1,
+    -1, -1, -1, -1, -1, 93, -1, -1, 106, -1, 94, 73, -1, -1, -1, -1, -1, 22, -1,
+    -1, -1, 84, -1, 92, -1, -1, 47, -1, -1, -1, -1, -1, 23, -1, -1, -1, -1, -1,
+    -1, 80
   );
 
 {$Q-}
@@ -285,10 +307,10 @@ begin
   Result := 0;
   while IsIdentChar(Str^) do
   begin
-    Result := Result * 812 + Ord(Str^) * 76;
+    Result := Result * 526 + Ord(Str^) * 502;
     inc(Str);
   end;
-  Result := Result mod 389;
+  Result := Result mod 641;
   fStringLen := Str - fToIdent;
 end;
 {$Q+}
@@ -313,40 +335,63 @@ begin
     if KeyIndices[i] = -1 then
       fIdentFuncTable[i] := AltFunc;
 
-  fIdentFuncTable[275] := FuncAsm;
-  fIdentFuncTable[41] := FuncAutomated;
-  fIdentFuncTable[112] := FuncCdecl;
-  fIdentFuncTable[33] := FuncContains;
-  fIdentFuncTable[137] := FuncDeprecated;
-  fIdentFuncTable[340] := FuncDispid;
-  fIdentFuncTable[382] := FuncDispinterface;
-  fIdentFuncTable[54] := FuncEnd;
-  fIdentFuncTable[282] := FuncExports;
-  fIdentFuncTable[163] := FuncFinal;
-  fIdentFuncTable[306] := FuncFinalization;
-  fIdentFuncTable[141] := FuncHelper;
-  fIdentFuncTable[325] := FuncImplements;
-  fIdentFuncTable[214] := FuncIndex;
-  fIdentFuncTable[323] := FuncName;
-  fIdentFuncTable[185] := FuncNodefault;
-  fIdentFuncTable[307] := FuncOperator;
-  fIdentFuncTable[58] := FuncOverload;
-  fIdentFuncTable[116] := FuncPackage;
-  fIdentFuncTable[148] := FuncPlatform;
-  fIdentFuncTable[120] := FuncProperty;
-  fIdentFuncTable[303] := FuncRead;
-  fIdentFuncTable[83] := FuncReadonly;
-  fIdentFuncTable[297] := FuncReintroduce;
-  fIdentFuncTable[65] := FuncRequires;
-  fIdentFuncTable[94] := FuncResourcestring;
-  fIdentFuncTable[170] := FuncSafecall;
-  fIdentFuncTable[321] := FuncSealed;
-  fIdentFuncTable[333] := FuncStdcall;
-  fIdentFuncTable[348] := FuncStored;
-  fIdentFuncTable[59] := FuncStringresource;
-  fIdentFuncTable[204] := FuncThreadvar;
-  fIdentFuncTable[7] := FuncWrite;
-  fIdentFuncTable[91] := FuncWriteonly;
+  fIdentFuncTable[215] := FuncType;
+  fIdentFuncTable[412] := FuncType;
+  fIdentFuncTable[26] := FuncType;
+  fIdentFuncTable[242] := FuncType;
+  fIdentFuncTable[188] := FuncType;
+  fIdentFuncTable[428] := FuncType;
+  fIdentFuncTable[310] := FuncType;
+  fIdentFuncTable[62] := FuncType;
+  fIdentFuncTable[585] := FuncType;
+  fIdentFuncTable[462] := FuncType;
+  fIdentFuncTable[569] := FuncType;
+  fIdentFuncTable[511] := FuncType;
+  fIdentFuncTable[166] := FuncType;
+  fIdentFuncTable[611] := FuncType;
+  fIdentFuncTable[86] := FuncType;
+  fIdentFuncTable[609] := FuncType;
+  fIdentFuncTable[298] := FuncType;
+  fIdentFuncTable[484] := FuncType;
+  fIdentFuncTable[521] := FuncType;
+  fIdentFuncTable[284] := FuncType;
+  fIdentFuncTable[34] := FuncType;
+  fIdentFuncTable[111] := FuncType;
+
+  fIdentFuncTable[187] := FuncAsm;
+  fIdentFuncTable[434] := FuncAutomated;
+  fIdentFuncTable[419] := FuncCdecl;
+  fIdentFuncTable[353] := FuncContains;
+  fIdentFuncTable[618] := FuncDeprecated;
+  fIdentFuncTable[464] := FuncDispid;
+  fIdentFuncTable[459] := FuncDispinterface;
+  fIdentFuncTable[167] := FuncEnd;
+  fIdentFuncTable[55] := FuncExports;
+  fIdentFuncTable[126] := FuncFinal;
+  fIdentFuncTable[355] := FuncFinalization;
+  fIdentFuncTable[627] := FuncHelper;
+  fIdentFuncTable[460] := FuncImplements;
+  fIdentFuncTable[264] := FuncIndex;
+  fIdentFuncTable[185] := FuncName;
+  fIdentFuncTable[435] := FuncNodefault;
+  fIdentFuncTable[582] := FuncOperator;
+  fIdentFuncTable[23] := FuncOverload;
+  fIdentFuncTable[640] := FuncPackage;
+  fIdentFuncTable[129] := FuncPlatform;
+  fIdentFuncTable[455] := FuncProperty;
+  fIdentFuncTable[624] := FuncRead;
+  fIdentFuncTable[606] := FuncReadonly;
+  fIdentFuncTable[416] := FuncReintroduce;
+  fIdentFuncTable[530] := FuncRequires;
+  fIdentFuncTable[153] := FuncResourcestring;
+  fIdentFuncTable[312] := FuncSafecall;
+  fIdentFuncTable[505] := FuncSealed;
+  fIdentFuncTable[407] := FuncStdcall;
+  fIdentFuncTable[456] := FuncStored;
+  fIdentFuncTable[109] := FuncStringresource;
+  fIdentFuncTable[594] := FuncThreadvar;
+  fIdentFuncTable[291] := FuncWrite;
+  fIdentFuncTable[496] := FuncWriteonly;
 
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if @fIdentFuncTable[i] = nil then
@@ -651,6 +696,15 @@ begin
     Result := tkIdentifier;
 end;
 
+function TSynPasSyn.FuncType(Index: Integer): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkType
+  else
+    Result := tkIdentifier
+end;
+
+
 constructor TSynPasSyn.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -686,6 +740,8 @@ begin
   AddAttribute(fCharAttri);
   fSymbolAttri := TSynHighlighterAttributes.Create(SYNS_AttrSymbol, SYNS_FriendlyAttrSymbol);
   AddAttribute(fSymbolAttri);
+  fTypeAttri := TSynHighlighterAttributes.Create(SYNS_AttrDataType, SYNS_FriendlyAttrDataType);
+  AddAttribute(fTypeAttri);
   SetAttributesOnChange(DefHighlightChange);
 
   InitIdent;
@@ -694,9 +750,11 @@ begin
   fDefaultFilter := SYNS_FilterPascal;
 
 //++ CodeFolding
-  RE_BlockBegin.Create('\b(begin|record|class)\b', [roNotEmpty, roIgnoreCase]);
-  RE_BlockEnd.Create('\bend\b', [roNotEmpty, roIgnoreCase]);
-  RE_Code.Create('^\s*(function|procedure)\b', [roNotEmpty, roIgnoreCase]);
+  RE_BlockBegin := TRegEx.Create('\b(begin|record|class)\b', [roIgnoreCase]);
+
+  RE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
+
+  RE_Code := TRegEx.Create('^\s*(function|procedure)\b', [roIgnoreCase]);
 //-- CodeFolding
 end;
 
@@ -1069,6 +1127,7 @@ begin
     tkString: Result := fStringAttri;
     tkChar: Result := fCharAttri;
     tkSymbol: Result := fSymbolAttri;
+    tkType: Result := fTypeAttri;
     tkUnknown: Result := fSymbolAttri;
   else
     Result := nil;
@@ -1083,6 +1142,261 @@ end;
 function TSynPasSyn.GetRange: Pointer;
 begin
   Result := Pointer(fRange);
+end;
+
+procedure TSynPasSyn.SetRange(Value: Pointer);
+begin
+  fRange := TRangeState(Value);
+end;
+
+procedure TSynPasSyn.ResetRange;
+begin
+  fRange:= rsUnknown;
+end;
+
+procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
+
+  procedure LoadKeyVersions(const Key, Prefix: string);
+  var
+    Versions: TStringList;
+    i: Integer;
+  begin
+    with TBetterRegistry.Create do
+    begin
+      try
+        RootKey := HKEY_LOCAL_MACHINE;
+        if OpenKeyReadOnly(Key) then
+        begin
+          try
+            Versions := TStringList.Create;
+            try
+              GetKeyNames(Versions);
+              for i := 0 to Versions.Count - 1 do
+                DelphiVersions.Add(Prefix + Versions[i]);
+            finally
+              FreeAndNil(Versions);
+            end;
+          finally
+            CloseKey;
+          end;
+        end;
+      finally
+        Free;
+      end;
+    end;
+  end;
+
+begin
+  { returns the user settings that exist in the registry }
+  // See UseUserSettings below where these strings are used
+  LoadKeyVersions('\SOFTWARE\Borland\Delphi', '');
+  LoadKeyVersions('\SOFTWARE\Borland\BDS', BDSVersionPrefix);
+  LoadKeyVersions('\SOFTWARE\CodeGear\BDS', BDSVersionPrefix);
+end;
+
+function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
+// Possible parameter values:
+//   index into TStrings returned by EnumUserSettings
+// Possible return values:
+//   True : settings were read and used
+//   False: problem reading settings or invalid version specified - old settings
+//          were preserved
+
+  function ReadDelphiSettings(settingIndex: Integer): Boolean;
+
+    function ReadDelphiSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
+    var
+      Version: Currency;
+      VersionStr: string;
+
+      function ReadDelphi2Or3(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
+      var
+        i: Integer;
+      begin
+        for i := 1 to Length(name) do
+          if name[i] = ' ' then name[i] := '_';
+        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
+                '\Software\Borland\Delphi\'+settingTag+'\Highlight',name,True);
+      end; { ReadDelphi2Or3 }
+
+      function ReadDelphi4OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
+      begin
+        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
+               '\Software\Borland\Delphi\'+settingTag+'\Editor\Highlight',key,False);
+      end; { ReadDelphi4OrMore }
+
+      function ReadDelphi8To2007(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
+      begin
+        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
+               '\Software\Borland\BDS\'+settingTag+'\Editor\Highlight',key,False);
+      end; { ReadDelphi8OrMore }
+
+      function ReadDelphi2009OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
+      begin
+        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
+               '\Software\CodeGear\BDS\'+settingTag+'\Editor\Highlight',key,False);
+      end; { ReadDelphi2009OrMore }
+
+    begin { ReadDelphiSetting }
+      try
+        if Pos('BDS', settingTag) = 1 then // BDS product
+        begin
+          VersionStr := Copy(settingTag, Length(BDSVersionPrefix) + 1, 999);
+          Version := 0;
+          if not TryStrToCurr(StringReplace(VersionStr, '.', FormatSettings.DecimalSeparator, []), Version) then
+          begin
+            Result := False;
+            Exit;
+          end;
+          if Version >= 6 then
+            Result := ReadDelphi2009OrMore(VersionStr, attri, key)
+          else
+            Result := ReadDelphi8To2007(VersionStr, attri, key);
+        end
+        else begin // Borland Delphi 7 or earlier
+          if (settingTag[1] = '2') or (settingTag[1] = '3')
+            then Result := ReadDelphi2Or3(settingTag, attri, key)
+            else Result := ReadDelphi4OrMore(settingTag, attri, key);
+        end;
+      except Result := False; end;
+    end; { ReadDelphiSetting }
+
+  var
+    tmpAsmAttri, tmpCommentAttri, tmpIdentAttri, tmpKeyAttri, tmpNumberAttri,
+    tmpSpaceAttri, tmpStringAttri, tmpSymbolAttri: TSynHighlighterAttributes;
+    iVersions: TStringList;
+    iVersionTag: string;
+  begin { ReadDelphiSettings }
+    {$IFDEF SYN_COMPILER_7_UP}
+    {$IFNDEF SYN_COMPILER_9_UP}
+    Result := False; // Silence the compiler warning 
+    {$ENDIF}
+    {$ENDIF}
+    iVersions := TStringList.Create;
+    try
+      EnumUserSettings(iVersions);
+      if (settingIndex < 0) or (settingIndex >= iVersions.Count) then
+      begin
+        Result := False;
+        Exit;
+      end;
+      iVersionTag := iVersions[settingIndex];
+    finally
+      iVersions.Free;
+    end;
+    tmpAsmAttri     := TSynHighlighterAttributes.Create('', '');
+    tmpCommentAttri := TSynHighlighterAttributes.Create('', '');
+    tmpIdentAttri   := TSynHighlighterAttributes.Create('', '');
+    tmpKeyAttri     := TSynHighlighterAttributes.Create('', '');
+    tmpNumberAttri  := TSynHighlighterAttributes.Create('', '');
+    tmpSpaceAttri   := TSynHighlighterAttributes.Create('', '');
+    tmpStringAttri  := TSynHighlighterAttributes.Create('', '');
+    tmpSymbolAttri  := TSynHighlighterAttributes.Create('', '');
+
+    Result := ReadDelphiSetting(iVersionTag, tmpAsmAttri,'Assembler') and
+      ReadDelphiSetting(iVersionTag, tmpCommentAttri,'Comment') and
+      ReadDelphiSetting(iVersionTag, tmpIdentAttri,'Identifier') and
+      ReadDelphiSetting(iVersionTag, tmpKeyAttri,'Reserved word') and
+      ReadDelphiSetting(iVersionTag, tmpNumberAttri,'Number') and
+      ReadDelphiSetting(iVersionTag, tmpSpaceAttri,'Whitespace') and
+      ReadDelphiSetting(iVersionTag, tmpStringAttri,'String') and
+      ReadDelphiSetting(iVersionTag, tmpSymbolAttri,'Symbol');
+
+    if Result then
+    begin
+      fAsmAttri.AssignColorAndStyle(tmpAsmAttri);
+      fCharAttri.AssignColorAndStyle(tmpStringAttri); { Delphi lacks Char attribute }
+      fCommentAttri.AssignColorAndStyle(tmpCommentAttri);
+      fDirecAttri.AssignColorAndStyle(tmpCommentAttri); { Delphi lacks Directive attribute }
+      fFloatAttri.AssignColorAndStyle(tmpNumberAttri); { Delphi lacks Float attribute }
+      fHexAttri.AssignColorAndStyle(tmpNumberAttri); { Delphi lacks Hex attribute }
+      fIdentifierAttri.AssignColorAndStyle(tmpIdentAttri);
+      fKeyAttri.AssignColorAndStyle(tmpKeyAttri);
+      fNumberAttri.AssignColorAndStyle(tmpNumberAttri);
+      fSpaceAttri.AssignColorAndStyle(tmpSpaceAttri);
+      fStringAttri.AssignColorAndStyle(tmpStringAttri);
+      fSymbolAttri.AssignColorAndStyle(tmpSymbolAttri);
+    end;
+    tmpAsmAttri.Free;
+    tmpCommentAttri.Free;
+    tmpIdentAttri.Free;
+    tmpKeyAttri.Free;
+    tmpNumberAttri.Free;
+    tmpSpaceAttri.Free;
+    tmpStringAttri.Free;
+    tmpSymbolAttri.Free;
+  end;
+
+begin
+  Result := ReadDelphiSettings(VersionIndex);
+end;
+
+function TSynPasSyn.GetSampleSource: string;                                   
+begin
+  Result := '{ Syntax highlighting }'#13#10 +
+             'procedure TForm1.Button1Click(Sender: TObject);'#13#10 +
+             'var'#13#10 +
+             '  Number, I, X: Integer;'#13#10 +
+             'begin'#13#10 +
+             '  Number := 123456;'#13#10 +
+             '  Caption := ''The Number is'' + #32 + IntToStr(Number);'#13#10 +
+             '  for I := 0 to Number do'#13#10 +
+             '  begin'#13#10 +
+             '    Inc(X);'#13#10 +
+             '    Dec(X);'#13#10 +
+             '    X := X + 1.0;'#13#10 +
+             '    X := X - $5E;'#13#10 +
+             '  end;'#13#10 +
+             '  {$R+}'#13#10 +
+             '  asm'#13#10 +
+             '    mov AX, 1234H'#13#10 +
+             '    mov Number, AX'#13#10 +
+             '  end;'#13#10 +
+             '  {$R-}'#13#10 +
+             'end;';
+end;
+
+
+class function TSynPasSyn.GetLanguageName: string;
+begin
+  Result := SYNS_LangPascal;
+end;
+
+class function TSynPasSyn.GetCapabilities: TSynHighlighterCapabilities;
+begin
+  Result := inherited GetCapabilities + [hcUserSettings];
+end;
+
+function TSynPasSyn.IsFilterStored: Boolean;
+begin
+  Result := fDefaultFilter <> SYNS_FilterPascal;
+end;
+
+procedure TSynPasSyn.SetDelphiVersion(const Value: TDelphiVersion);
+begin
+  if fDelphiVersion <> Value then
+  begin
+    fDelphiVersion := Value;
+    if (fDelphiVersion < dvDelphi3) and fPackageSource then
+      fPackageSource := False;
+    DefHighlightChange(Self);
+  end;
+end;
+
+procedure TSynPasSyn.SetPackageSource(const Value: Boolean);
+begin
+  if fPackageSource <> Value then
+  begin
+    fPackageSource := Value;
+    if fPackageSource and (fDelphiVersion < dvDelphi3) then
+      fDelphiVersion := dvDelphi3;
+    DefHighlightChange(Self);
+  end;
+end;
+
+class function TSynPasSyn.GetFriendlyLanguageName: string;
+begin
+  Result := SYNS_FriendlyLangPascal;
 end;
 
 //++ CodeFolding
@@ -1105,37 +1419,48 @@ procedure TSynPasSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
 var
   CurLine: String;
   Line: Integer;
+  ok: Boolean;
 
   function BlockDelimiter(Line: Integer): Boolean;
   var
     Index: Integer;
-    Match : TMatch;
+    mcb: TMatchCollection;
+    mce: TMatchCollection;
+    match: TMatch;
   begin
     Result := False;
 
-    Match := RE_BlockBegin.Match(CurLine);
-    if Match.Success then
+    mcb := RE_BlockBegin.Matches(CurLine);
+    if mcb.Count > 0 then
     begin
       // Char must have proper highlighting (ignore stuff inside comments...)
-      Index :=  Match.Index;
+      Index :=  mcb.Item[0].Index;
       if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
       begin
+        ok := False;
         // And ignore lines with both opening and closing chars in them
-        if not RE_BlockEnd.IsMatch(CurLine, Index + 1) then begin
+        for match in Re_BlockEnd.Matches(CurLine) do
+          if match.Index > Index then
+          begin
+            OK := True;
+            Break;
+          end;
+        if not OK then begin
           FoldRanges.StartFoldRange(Line + 1, FT_Standard);
           Result := True;
         end;
       end;
-    end else begin
-      Match := RE_BlockEnd.Match(CurLine);
-      if Match.Success then begin
+    end
+    else
+    begin
+      mce := RE_BlockEnd.Matches(CurLine);
+      if mce.Count > 0 then
+      begin
+        Index :=  mce.Item[0].Index;
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
         begin
-          Index :=  Match.Index;
-          if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
-          begin
-            FoldRanges.StopFoldRange(Line + 1, FT_Standard);
-            Result := True;
-          end;
+          FoldRanges.StopFoldRange(Line + 1, FT_Standard);
+          Result := True;
         end;
       end;
     end;
@@ -1226,7 +1551,7 @@ begin
     if Uppercase(TrimLeft(CurLine)) = 'IMPLEMENTATION' then
       FoldRanges.StartFoldRange(Line +1, FT_Implementation)
     // Functions and procedures
-    else if RE_Code.IsMatch(CurLine) then
+    else if RE_Code.Matches(CurLine).Count > 0 then
       FoldRanges.StartFoldRange(Line +1, FT_CodeDeclaration)
     // Find begin or end  (Fold Type 1)
     else if not BlockDelimiter(Line) then
@@ -1243,7 +1568,7 @@ Var
   i, j, SkipTo: Integer;
   ImplementationIndex: Integer;
   FoldRange: TSynFoldRange;
-  Match : TMatch;
+  mc: TMatchCollection;
 begin
   ImplementationIndex := - 1;
   for i  := FoldRanges.Ranges.Count - 1 downto 0 do
@@ -1275,11 +1600,12 @@ begin
           // possibly begin end;
             if FoldRange.ToLine <= SkipTo then
               Continue
-            else begin
-              Match := RE_BlockBegin.Match(LinesToScan[FoldRange.FromLine - 1]);
-              if Match.Success then
+            else
+            begin
+              mc := RE_BlockBegin.Matches(LinesToScan[FoldRange.FromLine - 1]);
+              if mc.Count > 0 then
               begin
-                if LowerCase(Match.Value) = 'begin' then
+                if mc.Item[0].Value.ToLower = 'begin' then
                 begin
                   // function or procedure followed by begin end block
                   // Adjust ToLine
@@ -1293,7 +1619,7 @@ begin
                   break;
                  end;
               end else
-                Assert(False, 'TSynHighlighterPas.AdjustFoldRanges');
+                Assert(False, 'TSynDWSSyn.AdjustFoldRanges');
             end;
         else
           begin
@@ -1317,266 +1643,11 @@ begin
 end;
 //-- CodeFolding
 
-procedure TSynPasSyn.SetRange(Value: Pointer);
-begin
-  fRange := TRangeState(Value);
-end;
 
-procedure TSynPasSyn.ResetRange;
-begin
-  fRange:= rsUnknown;
-end;
-
-procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
-
-  procedure LoadKeyVersions(const Key, Prefix: string);
-  var
-    Versions: TStringList;
-    i: Integer;
-  begin
-    with TBetterRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
-    begin
-      try
-        RootKey := HKEY_LOCAL_MACHINE;
-        if OpenKeyReadOnly(Key) then
-        begin
-          try
-            Versions := TStringList.Create;
-            try
-              GetKeyNames(Versions);
-              for i := 0 to Versions.Count - 1 do
-                DelphiVersions.Add(Prefix + Versions[i]);
-            finally
-              FreeAndNil(Versions);
-            end;
-          finally
-            CloseKey;
-          end;
-        end;
-      finally
-        Free;
-      end;
-    end;
-  end;
-
-begin
-  LoadKeyVersions('\SOFTWARE\Borland\Delphi', '');
-  LoadKeyVersions('\SOFTWARE\Borland\BDS', BDSVersionPrefix);
-  LoadKeyVersions('\SOFTWARE\CodeGear\BDS', BDSVersionPrefix);
-  LoadKeyVersions('\SOFTWARE\Embarcadero\BDS', BDSVersionPrefix);
-end;
-
-function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
-// Possible parameter values:
-//   index into TStrings returned by EnumUserSettings
-// Possible return values:
-//   True : settings were read and used
-//   False: problem reading settings or invalid version specified - old settings
-//          were preserved
-
-  function ReadDelphiSettings(settingIndex: Integer): Boolean;
-
-    function ReadDelphiSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
-    var
-      Version: Currency;
-      VersionStr: string;
-
-      function ReadDelphi2Or3(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
-      var
-        i: Integer;
-      begin
-        for i := 1 to Length(name) do
-          if name[i] = ' ' then name[i] := '_';
-        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-                '\Software\Borland\Delphi\'+settingTag+'\Highlight',name,True);
-      end; { ReadDelphi2Or3 }
-
-      function ReadDelphi4OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
-      begin
-        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-               '\Software\Borland\Delphi\'+settingTag+'\Editor\Highlight',key,False);
-      end; { ReadDelphi4OrMore }
-
-      function ReadDelphi8To2007(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
-      begin
-        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-               '\Software\Borland\BDS\'+settingTag+'\Editor\Highlight',key,False);
-      end; { ReadDelphi8OrMore }
-
-      function ReadDelphi2009OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
-      begin
-        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-               '\Software\CodeGear\BDS\'+settingTag+'\Editor\Highlight',key,False);
-      end; { ReadDelphi2009OrMore }
-
-      function ReadDelphiXEOrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
-      begin
-        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-               '\Software\Embarcadero\BDS\'+settingTag+'\Editor\Highlight',key,False);
-      end; { ReadDelphi2009OrMore }
-
-
-    begin { ReadDelphiSetting }
-      try
-        if Pos('BDS', settingTag) = 1 then // BDS product
-        begin
-          VersionStr := Copy(settingTag, Length(BDSVersionPrefix) + 1, 999);
-          Version := 0;
-          if not TryStrToCurr(StringReplace(VersionStr, '.', FormatSettings.DecimalSeparator, []), Version) then
-          begin
-            Result := False;
-            Exit;
-          end;
-          if Version >= 8 then
-            Result := ReadDelphiXEOrMore(VersionStr, attri, key)
-          else
-            if Version >= 6 then
-              Result := ReadDelphi2009OrMore(VersionStr, attri, key)
-            else
-              Result := ReadDelphi8To2007(VersionStr, attri, key);
-        end
-        else begin // Borland Delphi 7 or earlier
-          if (settingTag[1] = '2') or (settingTag[1] = '3')
-            then Result := ReadDelphi2Or3(settingTag, attri, key)
-            else Result := ReadDelphi4OrMore(settingTag, attri, key);
-        end;
-      except Result := False; end;
-    end; { ReadDelphiSetting }
-
-  var
-    tmpAsmAttri, tmpCommentAttri, tmpIdentAttri, tmpKeyAttri, tmpNumberAttri,
-    tmpSpaceAttri, tmpStringAttri, tmpSymbolAttri: TSynHighlighterAttributes;
-    iVersions: TStringList;
-    iVersionTag: string;
-  begin { ReadDelphiSettings }
-    iVersions := TStringList.Create;
-    try
-      EnumUserSettings(iVersions);
-      if (settingIndex < 0) or (settingIndex >= iVersions.Count) then
-      begin
-        Result := False;
-        Exit;
-      end;
-      iVersionTag := iVersions[settingIndex];
-    finally
-      iVersions.Free;
-    end;
-    tmpAsmAttri     := TSynHighlighterAttributes.Create('', '');
-    tmpCommentAttri := TSynHighlighterAttributes.Create('', '');
-    tmpIdentAttri   := TSynHighlighterAttributes.Create('', '');
-    tmpKeyAttri     := TSynHighlighterAttributes.Create('', '');
-    tmpNumberAttri  := TSynHighlighterAttributes.Create('', '');
-    tmpSpaceAttri   := TSynHighlighterAttributes.Create('', '');
-    tmpStringAttri  := TSynHighlighterAttributes.Create('', '');
-    tmpSymbolAttri  := TSynHighlighterAttributes.Create('', '');
-
-    Result := ReadDelphiSetting(iVersionTag, tmpAsmAttri,'Assembler') and
-      ReadDelphiSetting(iVersionTag, tmpCommentAttri,'Comment') and
-      ReadDelphiSetting(iVersionTag, tmpIdentAttri,'Identifier') and
-      ReadDelphiSetting(iVersionTag, tmpKeyAttri,'Reserved word') and
-      ReadDelphiSetting(iVersionTag, tmpNumberAttri,'Number') and
-      ReadDelphiSetting(iVersionTag, tmpSpaceAttri,'Whitespace') and
-      ReadDelphiSetting(iVersionTag, tmpStringAttri,'String') and
-      ReadDelphiSetting(iVersionTag, tmpSymbolAttri,'Symbol');
-
-    if Result then
-    begin
-      fAsmAttri.AssignColorAndStyle(tmpAsmAttri);
-      fCharAttri.AssignColorAndStyle(tmpStringAttri); { Delphi lacks Char attribute }
-      fCommentAttri.AssignColorAndStyle(tmpCommentAttri);
-      fDirecAttri.AssignColorAndStyle(tmpCommentAttri); { Delphi lacks Directive attribute }
-      fFloatAttri.AssignColorAndStyle(tmpNumberAttri); { Delphi lacks Float attribute }
-      fHexAttri.AssignColorAndStyle(tmpNumberAttri); { Delphi lacks Hex attribute }
-      fIdentifierAttri.AssignColorAndStyle(tmpIdentAttri);
-      fKeyAttri.AssignColorAndStyle(tmpKeyAttri);
-      fNumberAttri.AssignColorAndStyle(tmpNumberAttri);
-      fSpaceAttri.AssignColorAndStyle(tmpSpaceAttri);
-      fStringAttri.AssignColorAndStyle(tmpStringAttri);
-      fSymbolAttri.AssignColorAndStyle(tmpSymbolAttri);
-    end;
-    tmpAsmAttri.Free;
-    tmpCommentAttri.Free;
-    tmpIdentAttri.Free;
-    tmpKeyAttri.Free;
-    tmpNumberAttri.Free;
-    tmpSpaceAttri.Free;
-    tmpStringAttri.Free;
-    tmpSymbolAttri.Free;
-  end;
-
-begin
-  Result := ReadDelphiSettings(VersionIndex);
-end;
-
-function TSynPasSyn.GetSampleSource: string;
-begin
-  Result := '{ Syntax highlighting }'#13#10 +
-             'procedure TForm1.Button1Click(Sender: TObject);'#13#10 +
-             'var'#13#10 +
-             '  Number, I, X: Integer;'#13#10 +
-             'begin'#13#10 +
-             '  Number := 123456;'#13#10 +
-             '  Caption := ''The Number is'' + #32 + IntToStr(Number);'#13#10 +
-             '  for I := 0 to Number do'#13#10 +
-             '  begin'#13#10 +
-             '    Inc(X);'#13#10 +
-             '    Dec(X);'#13#10 +
-             '    X := X + 1.0;'#13#10 +
-             '    X := X - $5E;'#13#10 +
-             '  end;'#13#10 +
-             '  {$R+}'#13#10 +
-             '  asm'#13#10 +
-             '    mov AX, 1234H'#13#10 +
-             '    mov Number, AX'#13#10 +
-             '  end;'#13#10 +
-             '  {$R-}'#13#10 +
-             'end;';
-end;
-
-
-class function TSynPasSyn.GetLanguageName: string;
-begin
-  Result := SYNS_LangPascal;
-end;
-
-class function TSynPasSyn.GetCapabilities: TSynHighlighterCapabilities;
-begin
-  Result := inherited GetCapabilities + [hcUserSettings];
-end;
-
-function TSynPasSyn.IsFilterStored: Boolean;
-begin
-  Result := fDefaultFilter <> SYNS_FilterPascal;
-end;
-
-procedure TSynPasSyn.SetDelphiVersion(const Value: TDelphiVersion);
-begin
-  if fDelphiVersion <> Value then
-  begin
-    fDelphiVersion := Value;
-    if (fDelphiVersion < dvDelphi3) and fPackageSource then
-      fPackageSource := False;
-    DefHighlightChange(Self);
-  end;
-end;
-
-procedure TSynPasSyn.SetPackageSource(const Value: Boolean);
-begin
-  if fPackageSource <> Value then
-  begin
-    fPackageSource := Value;
-    if fPackageSource and (fDelphiVersion < dvDelphi3) then
-      fDelphiVersion := dvDelphi3;
-    DefHighlightChange(Self);
-  end;
-end;
-
-class function TSynPasSyn.GetFriendlyLanguageName: string;
-begin
-  Result := SYNS_FriendlyLangPascal;
-end;
 
 initialization
+{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynPasSyn);
+{$ENDIF}
 end.
 

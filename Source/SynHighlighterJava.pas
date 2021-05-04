@@ -1,4 +1,4 @@
-ï»¿{-------------------------------------------------------------------------------
+{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterJava.pas, released 2000-04-10.
 The Original Code is based on the DcjSynJava.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Trier.
-Unicode translation by MaÃ«l HÃ¶rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -28,7 +28,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterJava.pas,v 1.18.2.10 2008/09/14 16:25:00 maelh Exp $
+$Id: SynHighlighterJava.pas,v 1.18.2.8 2005/12/16 20:09:37 maelh Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -53,12 +53,17 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  Windows,
+  SysUtils,
   SynUnicode,
-  SysUtils, Classes;
+  Classes,
+//++ CodeFolding
+  SynEditCodeFolding;
+//++ CodeFolding
 
 type
-  TtkTokenKind = (tkComment, tkDocument, tkIdentifier, tkInvalid, tkKey,
-    tkNull, tkNumber, tkSpace, tkString, tkSymbol, tkUnknown);
+  TtkTokenKind = (tkSymbol, tkKey, tkComment, tkDocument, tkIdentifier, tkInvalid,
+    tkNull, tkNumber, tkSpace, tkString, tkUnknown);
 
   TxtkTokenKind = (
     xtkAdd, xtkAddAssign, xtkAnd, xtkAndAssign, xtkAssign, xtkBitComplement,
@@ -77,7 +82,10 @@ type
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
-  TSynJavaSyn = class(TSynCustomHighlighter)
+//  TSynJavaSyn = class(TSynCustomHighlighter)
+//++ CodeFolding
+  TSynJavaSyn = class(TSynCustomCodeFoldingHighlighter)
+//-- CodeFolding
   private
     fRange: TRangeState;
     FRoundCount: Integer;
@@ -156,6 +164,10 @@ type
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
+//++ CodeFolding
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+//-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -275,6 +287,7 @@ begin
   fNumberAttri := TSynHighlighterAttributes.Create(SYNS_AttrNumber, SYNS_FriendlyAttrNumber);
   AddAttribute(fNumberAttri);
   fSpaceAttri := TSynHighlighterAttributes.Create(SYNS_AttrSpace, SYNS_FriendlyAttrSpace);
+  fSpaceAttri.Foreground := clWindow;
   AddAttribute(fSpaceAttri);
   fStringAttri := TSynHighlighterAttributes.Create(SYNS_AttrString, SYNS_FriendlyAttrString);
   AddAttribute(fStringAttri);
@@ -583,7 +596,7 @@ procedure TSynJavaSyn.NumberProc;
   function IsNumberChar: Boolean;
   begin
     case fLine[Run] of
-      '0'..'9', '.', '-', 'l', 'L', 'x', 'X', 'A'..'F', 'a'..'f':
+      '0'..'9', '.', 'l', 'L', 'x', 'X', 'A'..'F', 'a'..'f':                    //Fiala
         Result := True;
       else
         Result := False;
@@ -710,6 +723,123 @@ begin
   inc(FRoundCount);
 end;
 
+//++ CodeFolding
+procedure TSynJavaSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+var
+  CurLine: String;
+  Line: Integer;
+
+  function LineHasChar(Line: Integer; character: char;
+  StartCol : Integer): boolean; // faster than Pos!
+  var
+    i: Integer;
+  begin
+    result := false;
+    for I := StartCol to Length(CurLine) do begin
+      if CurLine[i] = character then begin
+        // Char must have proper highlighting (ignore stuff inside comments...)
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> fCommentAttri then begin
+          result := true;
+          break;
+        end;
+      end;
+    end;
+  end;
+
+  function FindBraces(Line: Integer) : Boolean;
+  Var
+    Col : Integer;
+  begin
+    Result := False;
+
+    for Col := 1 to Length(CurLine) do
+    begin
+      // We've found a starting character
+      if CurLine[col] = '{' then
+      begin
+        // Char must have proper highlighting (ignore stuff inside comments...)
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
+        begin
+          // And ignore lines with both opening and closing chars in them
+          if not LineHasChar(Line, '}', col + 1) then begin
+            FoldRanges.StartFoldRange(Line + 1, 1);
+            Result := True;
+          end;
+          // Skip until a newline
+          break;
+        end;
+      end else if CurLine[col] = '}' then
+      begin
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
+        begin
+          // And ignore lines with both opening and closing chars in them
+          if not LineHasChar(Line, '{', col + 1) then begin
+            FoldRanges.StopFoldRange(Line + 1, 1);
+            Result := True;
+          end;
+          // Skip until a newline
+          break;
+        end;
+      end;
+    end; // for Col
+  end;
+
+  function FoldRegion(Line: Integer): Boolean;
+  Var
+    S : string;
+  begin
+    Result := False;
+    S := TrimLeft(CurLine);
+    if Uppercase(Copy(S, 1, 9)) = '//#REGION' then
+    begin
+      FoldRanges.StartFoldRange(Line + 1, FoldRegionType);
+      Result := True;
+    end
+    else if Uppercase(Copy(S, 1, 12)) = '//#ENDREGION' then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, FoldRegionType);
+      Result := True;
+    end;
+  end;
+
+begin
+  for Line := FromLine to ToLine do
+  begin
+    // Deal first with Multiline comments (Fold Type 2)
+    if TRangeState(GetLineRange(LinesToScan, Line)) in [rsComment, rsDocument] then
+    begin
+      if not (TRangeState(GetLineRange(LinesToScan, Line - 1)) in [rsComment, rsDocument]) then
+        FoldRanges.StartFoldRange(Line + 1, 2)
+      else
+        FoldRanges.NoFoldInfo(Line + 1);
+      Continue;
+    end
+    else if TRangeState(GetLineRange(LinesToScan, Line - 1)) in [rsComment, rsDocument] then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, 2);
+      Continue;
+    end;
+
+    CurLine := LinesToScan[Line];
+
+    // Skip empty lines
+    if CurLine = '' then begin
+      FoldRanges.NoFoldInfo(Line + 1);
+      Continue;
+    end;
+
+    // Find Fold regions
+    if FoldRegion(Line) then
+      Continue;
+
+    // Find an braces on this line  (Fold Type 1)
+    if not FindBraces(Line) then
+      FoldRanges.NoFoldInfo(Line + 1);
+  end; // while Line
+end;
+//-- CodeFolding
+
 procedure TSynJavaSyn.SemiColonProc;
 begin
   inc(Run);                            {semicolon}
@@ -753,7 +883,7 @@ begin
                 fRange := rsUnknown;
                 break;
               end else inc(Run);
-          else
+            else
             inc(Run);
           end;
       end;
@@ -847,6 +977,9 @@ begin
     rsComment: CommentProc;
     rsDocument: CommentProc;
     else
+    if IsCharAlphaNumeric(fLine[Run]) and not CharInSet(fLine[Run], ['0'..'9']) then //Fiala
+      IdentProc
+    else
     begin
       fRange := rsUnknown;
       case fLine[Run] of
@@ -860,7 +993,8 @@ begin
         ',': CommaProc;
         '=': EqualProc;
         '>': GreaterProc;
-        'A'..'Z', 'a'..'z', '_', '$', 'Ã€'..'Ã–', 'Ã˜'..'Ã¶', 'Ã¸'..'Ã¿': IdentProc;
+//        'A'..'Z', 'a'..'z', '_', '$', 'L'..'Ö', 'Ø'..'ö', 'ø'..'ÿ': IdentProc;  //Fiala
+        '_': IdentProc;                                                         //Fiala
         #10: LFProc;
         '<': LowerProc;
         '-': MinusProc;
@@ -964,12 +1098,15 @@ end;
 
 function TSynJavaSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
+  Result := IsCharAlphaNumeric(AChar) or CharInSet(AChar, ['_', '$']);       //Fiala
+(*
   case AChar of
-    '_', '$', '0'..'9', 'a'..'z', 'A'..'Z', 'Ã€'..'Ã–', 'Ã˜'..'Ã¶', 'Ã¸'..'Ã¿':
+    '_', '$', '0'..'9', 'a'..'z', 'A'..'Z', 'L'..'Ö', 'Ø'..'ö', 'ø'..'ÿ':
       Result := True;
     else
       Result := False;
   end;
+*)
 end;
 
 class function TSynJavaSyn.GetLanguageName: string;
@@ -998,5 +1135,7 @@ begin
 end;
 
 initialization
+{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynJavaSyn);
+{$ENDIF}
 end.
