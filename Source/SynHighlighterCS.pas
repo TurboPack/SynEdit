@@ -275,7 +275,7 @@ uses
   SynEditStrConst;
 
  const
-  KeyWords: array[0..76] of WideString = (
+  KeyWords: array[0..76] of string = (
     'abstract', 'as', 'base', 'bool', 'break', 'byte', 'case', 'catch', 'class',
     'const', 'continue', 'decimal', 'default', 'delegate', 'do', 'double',
     'else', 'enum', 'event', 'explicit', 'extern', 'false', 'finally', 'fixed',

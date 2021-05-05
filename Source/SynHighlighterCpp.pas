@@ -208,7 +208,7 @@ uses
   SynEditStrConst;
 
 const                                                                           //Fiala new keywords from C++ 9.9 and 11
-  KeyWords: array[0..129] of WideString = (
+  KeyWords: array[0..129] of string = (
     '__asm', '__automated', '__cdecl', '__classid', '__closure', '__declspec', 
     '__dispid', '__except', '__export', '__fastcall', '__finally', '__import', 
     '__int16', '__int32', '__int64', '__int8', '__pascal', '__property', 

@@ -206,7 +206,7 @@ uses
 const
 
 { expanded keyword list }                                                       //Fiala
- KeyWords: array[0..109] of WideString = (
+ KeyWords: array[0..109] of string = (
     '__autoload', '__call', '__callstatic', '__class__', '__clone',
     '__construct', '__debuginfo', '__destruct', '__dir__', '__file__',
     '__function__', '__get', '__halt_compiler', '__invoke', '__isset',
