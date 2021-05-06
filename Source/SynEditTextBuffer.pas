@@ -882,7 +882,11 @@ begin
         begin
           SetString(S, Start, P - Start);
           InsertItem(fCount, S);
-        end else InsertItem(fCount, '');
+        end
+        else
+          InsertItem(fCount, '');
+        if P^ = #0 then
+          Inc(P);
         if P^ = WideLineSeparator then
         begin
           fLINESEPARATOR := True;
