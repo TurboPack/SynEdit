@@ -93,7 +93,7 @@ type
     fHeredocChecksum: Word;
 {$ENDIF}
     FTokenID: TtkTokenKind;
-    fIdentFuncTable: array[0..420] of TIdentFuncTableFunc;                      //Fiala
+    fIdentFuncTable: array[0..420] of TIdentFuncTableFunc;
     fCommentAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
     fKeyAttri: TSynHighlighterAttributes;
@@ -167,8 +167,8 @@ type
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
-    function IsIdentChar(AChar: WideChar): Boolean; override;                   //Fiala
-    function IsWordBreakChar(AChar: WideChar): Boolean; override;               //Fiala  
+    function IsIdentChar(AChar: WideChar): Boolean; override;
+    function IsWordBreakChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -201,11 +201,11 @@ implementation
 uses
   SynEditMiscProcs,
   SynEditStrConst,
-  Windows;                                                                      //Fiala
+  Windows;
 
 const
 
-{ expanded keyword list }                                                       //Fiala
+{ expanded keyword list }
  KeyWords: array[0..109] of string = (
     '__autoload', '__call', '__callstatic', '__class__', '__clone',
     '__construct', '__debuginfo', '__destruct', '__dir__', '__file__',
@@ -822,7 +822,7 @@ begin
       end;
     '*':
       begin
-        if (fLine[Run+2] = '*') and (fLine[Run+3] <> '/') then     {documentation comment}  //Fiala
+        if (fLine[Run+2] = '*') and (fLine[Run+3] <> '/') then     {documentation comment}
         begin
           fRange := rsDocument;
           fTokenID := tkDocument;
@@ -952,7 +952,7 @@ begin
     iSyntax := esComplex;
     Inc(Run, 2); { skips '{$' }
   end
-  else 
+  else
   begin
     Inc( Run );
     if FLine[Run] = '{' then
@@ -982,7 +982,7 @@ begin
       Inc(Run);
     end;
   end
-  else 
+  else
   begin
     while IsIdentChar(FLine[Run]) do
       Inc(Run);
@@ -1049,7 +1049,7 @@ begin
   inc(Run);
   while IsIdentChar(fLine[Run]) do inc(Run);
 *)
-{begin}                                                                         //Fiala
+{begin}
   if IsIdentChar(fLine[Run+1]) then
   begin
     inc(Run);
@@ -1074,7 +1074,7 @@ begin
     fTokenID := tkSymbol;
     inc(Run);
   end;
-{end}                                                                           //Fiala
+{end}
 end;
 
 procedure TSynPHPSyn.XOrSymbolProc;
@@ -1408,10 +1408,10 @@ end;
 
 function TSynPHPSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or CharInSet(AChar, ['_', '$']);                   //Fiala
+  Result := IsCharAlphaNumeric(AChar) or CharInSet(AChar, ['_', '$']);
 end;
 
-function TSynPHPSyn.IsWordBreakChar(AChar: WideChar): Boolean;                  //Fiala
+function TSynPHPSyn.IsWordBreakChar(AChar: WideChar): Boolean;
 begin
   case AChar of
     #0..#32, '.', ',', ';', ':', '"', '''', '+', '`', '-', '^', '!', '?', '&',
