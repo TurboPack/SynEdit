@@ -28,7 +28,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterCpp.pas,v 1.22.2.9 2008/09/14 16:25:00 maelh Exp $
+$Id: SynHighlighterCpp.pas,v 1.22.2.7 2006/05/21 11:59:35 maelh Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -54,13 +54,16 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
   SysUtils,
-  Classes;
+  SynUnicode,
+  Classes,
+//++ CodeFolding
+  SynEditCodeFolding;
+//++ CodeFolding
 
 type
-  TtkTokenKind = (tkAsm, tkComment, tkDirective, tkIdentifier, tkKey, tkNull,
-    tkNumber, tkSpace, tkString, tkSymbol, tkUnknown,
+  TtkTokenKind = (tkBracket, tkKey, tkSymbol, tkAsm, tkComment, tkDirective, tkIdentifier, tkNull,
+    tkNumber, tkSpace, tkString, tkUnknown,
     tkChar, tkFloat, tkHex, tkOctal);
 
   TxtkTokenKind = (
@@ -82,13 +85,14 @@ type
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
-  TSynCppSyn = class(TSynCustomHighlighter)
+//  TSynCppSyn = class(TSynCustomHighlighter)
+  TSynCppSyn = class(TSynCustomCodeFoldingHighlighter)
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
     FTokenID: TtkTokenKind;
     FExtTokenID: TxtkTokenKind;
-    fIdentFuncTable: array[0..342] of TIdentFuncTableFunc;
+    fIdentFuncTable: array[0..640] of TIdentFuncTableFunc;
     fAsmAttri: TSynHighlighterAttributes;
     fCommentAttri: TSynHighlighterAttributes;
     fDirecAttri: TSynHighlighterAttributes;
@@ -103,6 +107,8 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fCharAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
+    fBracketAttri: TSynHighlighterAttributes;
+    FNewPreprocesorStyle: boolean;
     function AltFunc(Index: Integer): TtkTokenKind;
     function KeyWordFunc(Index: Integer): TtkTokenKind;
     function FuncAsm(Index: Integer): TtkTokenKind;
@@ -147,6 +153,7 @@ type
     procedure XOrSymbolProc;
     procedure UnknownProc;
     procedure StringEndProc;
+    procedure SetNewPreprocesorStyle(const Value: boolean);
   protected
     function GetExtTokenID: TxtkTokenKind;
     function GetSampleSource: string; override;
@@ -170,33 +177,27 @@ type
     function UseUserSettings(settingIndex: integer): boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
+    property NewPreprocesorStyle: boolean read FNewPreprocesorStyle write SetNewPreprocesorStyle;
+//++ CodeFolding
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+//-- CodeFolding
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
-    property CommentAttri: TSynHighlighterAttributes read fCommentAttri
-      write fCommentAttri;
-    property DirecAttri: TSynHighlighterAttributes read fDirecAttri
-      write fDirecAttri;
-    property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri
-      write fIdentifierAttri;
-    property InvalidAttri: TSynHighlighterAttributes read fInvalidAttri
-      write fInvalidAttri;
+    property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
+    property BracketAttri: TSynHighlighterAttributes read fBracketAttri write fBracketAttri;
+    property DirecAttri: TSynHighlighterAttributes read fDirecAttri write fDirecAttri;
+    property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri write fIdentifierAttri;
+    property InvalidAttri: TSynHighlighterAttributes read fInvalidAttri write fInvalidAttri;
     property KeyAttri: TSynHighlighterAttributes read fKeyAttri write fKeyAttri;
-    property NumberAttri: TSynHighlighterAttributes read fNumberAttri
-      write fNumberAttri;
-    property FloatAttri: TSynHighlighterAttributes read fFloatAttri
-      write fFloatAttri;
-    property HexAttri: TSynHighlighterAttributes read fHexAttri
-      write fHexAttri;
-    property OctalAttri: TSynHighlighterAttributes read fOctalAttri
-      write fOctalAttri;
-    property SpaceAttri: TSynHighlighterAttributes read fSpaceAttri
-      write fSpaceAttri;
-    property StringAttri: TSynHighlighterAttributes read fStringAttri
-      write fStringAttri;
-    property CharAttri: TSynHighlighterAttributes read fCharAttri
-      write fCharAttri;
-    property SymbolAttri: TSynHighlighterAttributes read fSymbolAttri
-      write fSymbolAttri;
+    property NumberAttri: TSynHighlighterAttributes read fNumberAttri write fNumberAttri;
+    property FloatAttri: TSynHighlighterAttributes read fFloatAttri write fFloatAttri;
+    property HexAttri: TSynHighlighterAttributes read fHexAttri write fHexAttri;
+    property OctalAttri: TSynHighlighterAttributes read fOctalAttri write fOctalAttri;
+    property SpaceAttri: TSynHighlighterAttributes read fSpaceAttri write fSpaceAttri;
+    property StringAttri: TSynHighlighterAttributes read fStringAttri write fStringAttri;
+    property CharAttri: TSynHighlighterAttributes read fCharAttri write fCharAttri;
+    property SymbolAttri: TSynHighlighterAttributes read fSymbolAttri write fSymbolAttri;
   end;
 
 implementation
@@ -206,43 +207,64 @@ uses
   SynEditStrConst;
 
 const
-  KeyWords: array[0..94] of string = (
-    '__asm', '__automated', '__cdecl', '__classid', '__closure', '__declspec', 
-    '__dispid', '__except', '__export', '__fastcall', '__finally', '__import', 
-    '__int16', '__int32', '__int64', '__int8', '__pascal', '__property', 
-    '__published', '__rtti', '__stdcall', '__thread', '__try', '_asm', '_cdecl', 
-    '_export', '_fastcall', '_import', '_pascal', '_stdcall', 'asm', 'auto', 
-    'bool', 'break', 'case', 'catch', 'cdecl', 'char', 'class', 'const', 
-    'const_cast', 'continue', 'default', 'delete', 'do', 'double', 
-    'dynamic_cast', 'else', 'enum', 'explicit', 'extern', 'false', 'float', 
-    'for', 'friend', 'goto', 'if', 'inline', 'int', 'interface', 'long', 
-    'mutable', 'namespace', 'new', 'operator', 'pascal', 'private', 'protected', 
-    'public', 'register', 'reinterpret_cast', 'return', 'short', 'signed', 
-    'sizeof', 'static', 'static_cast', 'struct', 'switch', 'template', 'this', 
-    'throw', 'true', 'try', 'typedef', 'typeid', 'typename', 'union', 
-    'unsigned', 'using', 'virtual', 'void', 'volatile', 'wchar_t', 'while' 
+  KeyWords: array[0..129] of string = (
+    '__asm', '__automated', '__cdecl', '__classid', '__closure', '__declspec',
+    '__dispid', '__except', '__export', '__fastcall', '__finally', '__import',
+    '__int16', '__int32', '__int64', '__int8', '__pascal', '__property',
+    '__published', '__rtti', '__stdcall', '__thread', '__try', '_Alignas',
+    '_Alignof', '_asm', '_Atomic', '_Bool', '_cdecl', '_Complex', '_export',
+    '_fastcall', '_Generic', '_Imaginary', '_import', '_Noreturn', '_pascal',
+    '_Pragma', '_Static_assert', '_stdcall', '_Thread_local', 'alignas',
+    'alignof', 'and', 'and_eq', 'asm', 'auto', 'bitand', 'bitor', 'bool',
+    'break', 'case', 'catch', 'cdecl', 'class', 'compl', 'const', 'const_cast',
+    'constexpr', 'continue', 'decltype', 'default', 'delete', 'do', 'double',
+    'dynamic_cast', 'else', 'enum', 'explicit', 'extern', 'false', 'final',
+    'float', 'for', 'friend', 'goto', 'char', 'char16_t', 'char32_t', 'if',
+    'inline', 'int', 'interface', 'long', 'mutable', 'namespace', 'new',
+    'noexcept', 'not', 'not_eq', 'nullptr', 'operator', 'or', 'or_eq',
+    'override', 'pascal', 'private', 'protected', 'public', 'register',
+    'reinterpret_cast', 'restrict', 'return', 'short', 'signed', 'sizeof',
+    'static', 'static_assert', 'static_cast', 'struct', 'switch', 'template',
+    'this', 'thread_local', 'throw', 'true', 'try', 'typedef', 'typeid',
+    'typename', 'union', 'unsigned', 'using', 'virtual', 'void', 'volatile',
+    'while', 'wchar_t', 'xor', 'xor_eq'
   );
 
-  KeyIndices: array[0..342] of Integer = (
-    -1, 34, -1, -1, 57, 72, -1, 39, -1, 9, -1, 86, -1, -1, -1, -1, -1, -1, -1, 
-    -1, -1, 88, -1, 12, 66, -1, -1, -1, -1, -1, 42, -1, -1, -1, -1, -1, 56, 51, 
-    40, 87, 77, -1, -1, -1, -1, 64, -1, -1, -1, -1, -1, -1, -1, -1, -1, 28, 41, 
-    -1, 63, 6, -1, -1, -1, -1, -1, -1, -1, -1, 55, 65, 0, -1, -1, -1, -1, -1, 
-    -1, 26, 83, -1, 38, 92, -1, -1, 93, 33, -1, -1, -1, -1, -1, -1, -1, 35, -1, 
-    -1, -1, -1, -1, -1, -1, 79, 27, -1, -1, -1, 43, -1, -1, 20, -1, -1, 31, -1, 
-    -1, -1, -1, -1, 89, -1, -1, -1, -1, 59, -1, 58, -1, -1, 46, -1, -1, 3, -1, 
-    -1, 17, -1, 54, -1, 45, -1, -1, -1, -1, -1, -1, 53, -1, -1, -1, 1, -1, -1, 
-    -1, -1, 44, 90, 32, -1, -1, -1, -1, -1, -1, 91, 13, -1, -1, -1, 60, -1, -1, 
-    -1, -1, -1, 49, -1, -1, -1, -1, -1, -1, 75, -1, -1, 76, -1, -1, -1, -1, 30, 
-    68, 23, 82, -1, 15, -1, -1, 2, -1, 70, -1, -1, -1, 73, 18, -1, -1, -1, -1, 
-    -1, 47, 24, 52, 14, 84, -1, -1, -1, -1, -1, 25, -1, -1, -1, 80, 69, -1, -1, 
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 21, -1, 19, -1, -1, -1, 
-    -1, -1, -1, 74, -1, -1, -1, 29, -1, -1, -1, 67, -1, 7, -1, -1, -1, 50, 61, 
-    -1, -1, -1, 4, -1, 94, 85, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-    81, -1, -1, -1, -1, -1, 10, 16, -1, -1, 36, 37, -1, -1, -1, 8, -1, 22, -1, 
-    -1, -1, -1, 78, 62, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-    -1, -1, -1, -1, 71, -1, -1, -1, 5, -1, -1, -1, -1, -1, -1, -1, 11, -1, 48, 
-    -1 
+  KeyIndices: array[0..640] of Integer = (
+    68, -1, -1, -1, -1, -1, -1, -1, -1, 110, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, 1, -1, -1, 17, -1, -1, -1, -1, 97, -1, -1, -1, -1,
+    -1, 62, -1, 28, -1, -1, -1, -1, -1, -1, 64, 21, 90, -1, -1, -1, -1, 108, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, 81, -1, 3, -1, 69, -1,
+    -1, -1, -1, -1, 127, -1, 98, 54, -1, -1, -1, -1, -1, -1, 101, -1, -1, -1,
+    65, -1, -1, -1, 58, -1, -1, -1, -1, -1, -1, -1, -1, -1, 78, -1, -1, -1, -1,
+    -1, -1, -1, -1, 75, -1, -1, 93, 121, 99, -1, -1, 12, -1, -1, -1, -1, -1, -1,
+    -1, 100, -1, -1, 57, 120, 4, -1, 86, -1, -1, -1, -1, 44, -1, -1, -1, -1, 56,
+    -1, -1, -1, -1, -1, -1, -1, -1, 124, -1, -1, -1, -1, 50, -1, -1, -1, 112,
+    -1, -1, -1, -1, 40, -1, -1, -1, -1, -1, -1, -1, -1, 73, -1, -1, -1, -1, -1,
+    -1, -1, -1, 41, -1, -1, -1, 55, 109, 89, -1, 9, 114, 128, -1, 123, -1, 8,
+    -1, -1, -1, -1, -1, -1, 36, -1, -1, -1, 34, -1, 103, -1, -1, 22, -1, 20, -1,
+    -1, -1, -1, -1, 94, -1, 83, -1, 51, -1, 33, -1, -1, -1, -1, -1, 47, -1, -1,
+    -1, -1, 74, -1, -1, -1, -1, -1, -1, -1, -1, 116, 91, -1, 6, -1, -1, -1, -1,
+    -1, -1, 53, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 129, -1, -1, 35, -1,
+    -1, -1, -1, -1, -1, -1, 92, -1, -1, -1, 7, -1, 23, -1, -1, -1, -1, -1, -1,
+    59, -1, -1, -1, 48, -1, -1, -1, -1, -1, -1, -1, -1, -1, 119, 67, -1, -1, 60,
+    -1, -1, -1, 38, -1, -1, -1, 111, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 88,
+    -1, -1, -1, -1, -1, 80, -1, 42, -1, -1, -1, -1, -1, 25, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, 95, 26, -1, -1, -1, -1, -1, -1, -1, 61, -1, -1, -1,
+    32, 46, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 122, -1, -1, -1,
+    -1, -1, -1, -1, 5, -1, -1, -1, -1, -1, -1, -1, -1, 66, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, 71, 72, -1, -1, -1, -1, -1, -1, -1, 0,
+    -1, -1, -1, -1, -1, -1, 39, -1, -1, -1, -1, -1, -1, -1, 43, 24, 105, -1, -1,
+    -1, -1, -1, -1, -1, 118, -1, -1, -1, -1, -1, -1, -1, -1, 45, 49, -1, -1, -1,
+    14, -1, -1, -1, -1, -1, -1, -1, -1, -1, 77, 82, -1, -1, 125, 70, -1, -1, -1,
+    -1, -1, -1, -1, 29, -1, -1, -1, -1, -1, -1, -1, 113, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, 16, -1, -1, -1, 11, -1, -1, 104, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, 117, -1, -1, -1, -1, 30, -1, -1,
+    -1, -1, -1, -1, -1, 27, -1, -1, 84, -1, -1, -1, -1, -1, 106, -1, 126, -1,
+    -1, -1, -1, 13, -1, -1, -1, -1, -1, -1, 52, -1, -1, 107, -1, 37, -1, -1, -1,
+    -1, -1, -1, -1, 115, 87, -1, -1, 85, -1, -1, -1, -1, -1, -1, -1, 31, 19,
+    102, 79, -1, -1, -1, 18, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, 10, -1, -1, -1, -1, -1, -1, 63, -1, 96, -1, -1, -1, 76, -1, -1, -1
   );
 
 {$Q-}
@@ -251,10 +273,10 @@ begin
   Result := 0;
   while IsIdentChar(Str^) do
   begin
-    Result := Result * 179 + Ord(Str^) * 44;
+    Result := Result * 61 + Ord(Str^) * 145;
     inc(Str);
   end;
-  Result := Result mod 343;
+  Result := Result mod 641;
   fStringLen := Str - fToIdent;
 end;
 {$Q+}
@@ -279,9 +301,9 @@ begin
     if KeyIndices[i] = -1 then
       fIdentFuncTable[i] := AltFunc;
 
-  fIdentFuncTable[70] := FuncAsm;
-  fIdentFuncTable[191] := FuncAsm;
-  fIdentFuncTable[189] := FuncAsm;
+  fIdentFuncTable[352] := FuncAsm;
+  fIdentFuncTable[433] := FuncAsm;
+  fIdentFuncTable[467] := FuncAsm;
 
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if @fIdentFuncTable[i] = nil then
@@ -318,9 +340,12 @@ begin
   inherited Create(AOwner);
 
   fCaseSensitive := True;
+  FNewPreprocesorStyle := False;
 
   fAsmAttri := TSynHighlighterAttributes.Create(SYNS_AttrAssembler, SYNS_FriendlyAttrAssembler);
   AddAttribute(fAsmAttri);
+  fBracketAttri := TSynHighLighterAttributes.Create(SYNS_AttrBrackets, SYNS_AttrBrackets);
+  AddAttribute(fBracketAttri);
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style:= [fsItalic];
   AddAttribute(fCommentAttri);
@@ -446,7 +471,7 @@ end;
 procedure TSynCppSyn.BraceCloseProc;
 begin
   inc(Run);
-  fTokenId := tkSymbol;
+  fTokenID := tkBracket;
   FExtTokenID := xtkBraceClose;
   if fRange = rsAsmBlock then fRange := rsUnknown;
 end;
@@ -454,7 +479,7 @@ end;
 procedure TSynCppSyn.BraceOpenProc;
 begin
   inc(Run);
-  fTokenId := tkSymbol;
+  fTokenID := tkBracket;
   FExtTokenID := xtkBraceOpen;
   if fRange = rsAsm then
   begin
@@ -495,37 +520,58 @@ begin
 end;
 
 procedure TSynCppSyn.DirectiveProc;
+var
+  WasWord: Boolean;
 begin
-  if Trim(fLine)[1] <> '#' then // '#' is not first char on the line, treat it as an invalid char
+  if FNewPreprocesorStyle then
   begin
-    fTokenID := tkUnknown;
-    Inc(Run);
-    Exit;
-  end;
-  fTokenID := tkDirective;
-  repeat
-    if fLine[Run] = '/' then // comment?
+    if Trim(fLine)[1] <> '#' then
     begin
-      if fLine[Run + 1] = '/' then // is end of directive as well
-      begin
-        fRange := rsUnknown;
-        Exit;
-      end
-      else
-        if fLine[Run + 1] = '*' then // might be embedded only
-        begin
-          fRange := rsDirectiveComment;
-          Exit;
-        end;
-    end;
-    if (fLine[Run] = '\') and (fLine[Run +1 ] = #0) then // a multiline directive
-    begin
+      fTokenID := tkUnknown;
       Inc(Run);
-      fRange := rsMultiLineDirective;
       Exit;
     end;
-    Inc(Run);
-  until IsLineEnd(Run)
+    WasWord := False;
+    fTokenID := tkDirective;
+    fRange := rsUnknown;
+    repeat
+      if not WasWord and IsIdentChar(FLine[Run]) then WasWord := True;
+      Inc(Run);
+    until IsLineEnd(Run) or (fLine[Run] = ' ') and WasWord;
+  end
+  else
+  begin
+    if Trim(fLine)[1] <> '#' then // '#' is not first char on the line, treat it as an invalid char
+    begin
+      fTokenID := tkUnknown;
+      Inc(Run);
+      Exit;
+    end;
+    fTokenID := tkDirective;
+    repeat
+      if fLine[Run] = '/' then // comment?
+      begin
+        if fLine[Run + 1] = '/' then // is end of directive as well
+        begin
+          fRange := rsUnknown;
+          Exit;
+        end
+        else
+          if fLine[Run + 1] = '*' then // might be embedded only
+          begin
+            fRange := rsDirectiveComment;
+            Exit;
+          end;
+      end;
+      if (fLine[Run] = '\') and (fLine[Run +1 ] = #0) then // a multiline directive
+      begin
+        Inc(Run);
+        fRange := rsMultiLineDirective;
+        Exit;
+      end;
+      Inc(Run);
+    until IsLineEnd(Run)
+  end;
 end;
 
 procedure TSynCppSyn.DirectiveEndProc;
@@ -906,7 +952,7 @@ begin
     Inc(Run);
   end; // while
   if IsAlphaUncerscore(Run) then
-    fTokenID := tkUnknown;   
+    fTokenID := tkUnknown;
 end;
 
 procedure TSynCppSyn.OrSymbolProc;
@@ -977,15 +1023,130 @@ end;
 procedure TSynCppSyn.RoundCloseProc;
 begin
   inc(Run);
-  fTokenID := tkSymbol;
+  fTokenID := tkBracket;
   FExtTokenID := xtkRoundClose;
 end;
 
 procedure TSynCppSyn.RoundOpenProc;
 begin
   inc(Run);
-  FTokenID := tkSymbol;
+  fTokenID := tkBracket;
   FExtTokenID := xtkRoundOpen;
+end;
+
+procedure TSynCppSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+var
+  CurLine: String;
+  Line: Integer;
+
+  function InsideComment(Line : Integer; Col : Integer): Boolean;
+  begin
+    Result := GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) = fCommentAttri;
+  end;
+
+  function LineHasChar(Line: Integer; character: char;
+  StartCol : Integer): boolean; // faster than Pos!
+  var
+    i: Integer;
+  begin
+    result := false;
+    for I := StartCol to Length(CurLine) do begin
+      if CurLine[i] = character then begin
+        // Char must have proper highlighting (ignore stuff inside comments...)
+        if not InsideComment(Line, I) then begin
+          result := true;
+          break;
+        end;
+      end;
+    end;
+  end;
+
+  function FindBraces(Line: Integer) : Boolean;
+  Var
+    Col : Integer;
+  begin
+    Result := False;
+
+    for Col := 1 to Length(CurLine) do
+    begin
+      // We've found a starting character
+      if CurLine[col] = '{' then
+      begin
+        // Char must have proper highlighting (ignore stuff inside comments...)
+        if not InsideComment(Line, Col) then
+        begin
+          // And ignore lines with both opening and closing chars in them
+          if not LineHasChar(Line, '}', col + 1) then begin
+            FoldRanges.StartFoldRange(Line + 1, 1);
+            Result := True;
+          end;
+          // Skip until a newline
+          break;
+        end;
+      end else if CurLine[col] = '}' then
+      begin
+        // Char must have symbol attri too
+        if not InsideComment(Line, Col) then
+        begin
+          // And ignore lines with both opening and closing chars in them
+          if not LineHasChar(Line, '{', col + 1) then begin
+            FoldRanges.StopFoldRange(Line + 1, 1);
+            Result := True;
+          end;
+          // Skip until a newline
+          break;
+        end;
+      end;
+    end; // for Col
+  end;
+
+  function FoldRegion(Line: Integer): Boolean;
+  Var
+    S : string;
+  begin
+    Result := False;
+    S := TrimLeft(CurLine);
+    if Uppercase(Copy(S, 1, 14)) = '#PRAGMA REGION' then
+    begin
+      FoldRanges.StartFoldRange(Line + 1, FoldRegionType);
+      Result := True;
+    end
+    else if Uppercase(Copy(S, 1, 17)) = '#PRAGMA ENDREGION' then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, FoldRegionType);
+      Result := True;
+    end;
+  end;
+
+begin
+  for Line := FromLine to ToLine do
+  begin
+    // Deal first with Multiline comments (Fold Type 2)
+    if TRangeState(GetLineRange(LinesToScan, Line)) = rsANSIc then
+    begin
+      if TRangeState(GetLineRange(LinesToScan, Line - 1)) <> rsANSIc then
+        FoldRanges.StartFoldRange(Line + 1, 2)
+      else
+        FoldRanges.NoFoldInfo(Line + 1);
+      Continue;
+    end
+    else if TRangeState(GetLineRange(LinesToScan, Line - 1)) = rsANSIc then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, 2);
+      Continue;
+    end;
+
+    // Find Fold regions
+    CurLine := LinesToScan[Line];
+    if FoldRegion(Line) then
+      Continue;
+
+    // Find an braces on this line  (Fold Type 1)
+    CurLine := LinesToScan[Line];
+    if not FindBraces(Line) then
+      FoldRanges.NoFoldInfo(Line + 1);
+  end; // while Line
 end;
 
 procedure TSynCppSyn.SemiColonProc;
@@ -1068,14 +1229,14 @@ end;
 procedure TSynCppSyn.SquareCloseProc;
 begin
   inc(Run);
-  fTokenID := tkSymbol;
+  fTokenID := tkBracket;
   FExtTokenID := xtkSquareClose;
 end;
 
 procedure TSynCppSyn.SquareOpenProc;
 begin
   inc(Run);
-  fTokenID := tkSymbol;
+  fTokenID := tkBracket;
   FExtTokenID := xtkSquareOpen;
 end;
 
@@ -1207,6 +1368,7 @@ begin
     rsMultilineString: StringEndProc;
   else
     begin
+//      fRange := rsUnknown;
       case fLine[Run] of
         '&': AndSymbolProc;
         #39: AsciiCharProc;
@@ -1305,6 +1467,7 @@ begin
     tkChar: Result := fCharAttri;
     tkSymbol: Result := fSymbolAttri;
     tkUnknown: Result := fInvalidAttri;
+    tkBracket: Result := fBracketAttri;
     else Result := nil;
   end;
 end;
@@ -1534,6 +1697,17 @@ begin
   Result := SYNS_FriendlyLangCPP;
 end;
 
+procedure TSynCppSyn.SetNewPreprocesorStyle(const Value: boolean);
+begin
+  if FNewPreprocesorStyle <> Value then
+  begin
+    FNewPreprocesorStyle := Value;
+    ResetRange;
+  end;
+end;
+
 initialization
+{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynCppSyn);
+{$ENDIF}
 end.
