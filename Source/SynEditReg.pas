@@ -80,7 +80,7 @@ uses
   SynHighlighterFortran,
   SynHighlighterFoxpro,
   SynHighlighterGalaxy,
-  SynHighlighterGeneral, 
+  SynHighlighterGeneral,
   SynHighlighterHaskell,
   SynHighlighterHC11,
   SynHighlighterHP48, 
@@ -118,6 +118,7 @@ uses
   SynHighlighterUnreal,
   SynHighlighterST,
   SynHighlighterLDraw,   
+  SynSpellCheck,
   SynURIOpener,
   Classes;
 
@@ -154,6 +155,7 @@ begin
     TSynEditPrint, TSynEditPrintPreview, TSynAutoCorrect,
     TSynEditSearch, TSynEditRegexSearch, TSynEditOptionsDialog, TSynURIOpener]);
   RegisterComponents(SYNS_ComponentsPage, [TSynHighlighterManager]);
+  RegisterComponents(SYNS_ComponentsPage, [TSynSpellCheck]);
 
 // SynEdit highlighters
   RegisterComponents(SYNS_HighlightersPage, [
@@ -177,7 +179,7 @@ begin
     //data
     TSynDfmSyn, TSynIniSyn, TSynInnoSyn,
     // other
-    TSynBaanSyn, TSynGalaxySyn, TSynProgressSyn, TSynMsgSyn, 
+    TSynBaanSyn, TSynGalaxySyn, TSynProgressSyn, TSynMsgSyn,
     TSynIdlSyn, TSynUnrealSyn, TSynCPMSyn, TSynTeXSyn,
     TSynHaskellSyn, TSynLDRSyn, TSynURISyn, TSynDOTSyn, TSynRCSyn
   ]);
