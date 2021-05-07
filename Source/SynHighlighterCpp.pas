@@ -56,7 +56,6 @@ uses
   SynEditHighlighter,
   SysUtils,
   SynUnicode,
-  JCLUnicode,
   Classes,
 //++ CodeFolding
   SynEditCodeFolding;
@@ -526,7 +525,7 @@ var
 begin
   if FNewPreprocesorStyle then
   begin
-    if WideTrim(fLine)[1] <> '#' then
+    if Trim(fLine)[1] <> '#' then
     begin
       fTokenID := tkUnknown;
       Inc(Run);
@@ -542,7 +541,7 @@ begin
   end
   else
   begin
-    if WideTrim(fLine)[1] <> '#' then // '#' is not first char on the line, treat it as an invalid char
+    if Trim(fLine)[1] <> '#' then // '#' is not first char on the line, treat it as an invalid char
     begin
       fTokenID := tkUnknown;
       Inc(Run);
