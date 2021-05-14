@@ -823,9 +823,7 @@ procedure TSynEditStringList.PutRange(Index: integer; ARange: TSynEditRange);
 begin
   if Cardinal(Index)>=Cardinal(fCount) then
     ListIndexOutOfBounds(Index);
-  BeginUpdate;
   fList^[Index].fRange := ARange;
-  EndUpdate;
 end;
 
 procedure TSynEditStringList.SetCapacity(NewCapacity: integer);
