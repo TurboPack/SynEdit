@@ -51,10 +51,10 @@ uses
 const
 // These might need to be localized depending on the characterset because they might be
 // interpreted as valid ident characters.
-  SynTabGlyph = WideChar($2192);       //'->'
-  SynSoftBreakGlyph = WideChar($00AC); //'¬'
-  SynLineBreakGlyph = WideChar($00B6); //'¶'
-  SynSpaceGlyph = WideChar($2219);     //'·'
+  SynTabGlyph: WideChar = #$2192;       //'->'
+  SynSoftBreakGlyph: WideChar = #$00AC; //'¬'
+  SynLineBreakGlyph: WideChar = #$00B6; //'¶'
+  SynSpaceGlyph: WideChar = #$2219;     //'·'
 
 type
   ESynError = class(Exception);
