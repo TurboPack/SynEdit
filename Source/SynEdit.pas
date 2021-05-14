@@ -8144,7 +8144,7 @@ var
   ptStart, ptEnd: TBufferCoord; // start and end of the search range
   ptCurrent: TBufferCoord; // current search position
   nSearchLen, nReplaceLen, n, nFound: integer;
-  nInLine: integer;
+  nInLine, nEOLCount, i: integer;
   bBackward, bFromCursor: boolean;
   bPrompt: boolean;
   bReplace, bReplaceAll: boolean;
@@ -8212,6 +8212,17 @@ begin
       if bBackward then ptEnd := CaretXY else ptStart := CaretXY;
     if bBackward then ptCurrent := ptEnd else ptCurrent := ptStart;
   end;
+  //count future line ends
+  nEOLCount := 0;
+  i := 1;
+  repeat
+    i := PosEx(WideCrLf, AReplace, i);
+    if i <> 0 then
+    begin
+      i := i + Length(WideCrLf);
+      Inc(nEolCount);
+    end;
+  until i = 0;
   // initialize the search engine
   fSearchEngine.Options := AOptions;
   fSearchEngine.Pattern := ASearch;
@@ -8302,6 +8313,9 @@ begin
               BlockEnd := ptEnd;
             end;
           end;
+          //Fix new line ends
+          if nEOLCount > 0 then
+            Inc(ptEnd.Line, nEOLCount);
         end;
         if not bReplaceAll then
           exit;
