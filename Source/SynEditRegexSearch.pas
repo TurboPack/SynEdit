@@ -105,7 +105,7 @@ end;
 constructor TSynEditRegexSearch.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fOptions := [roNotEmpty];
+  fOptions := [];
 end;
 
 function TSynEditRegexSearch.FindAll(const NewText: string): Integer;
@@ -142,9 +142,9 @@ end;
 procedure TSynEditRegexSearch.SetOptions(const Value: TSynSearchOptions);
 begin
   if ssoMatchCase in Value then
-    fOptions := [roNotEmpty]
+    fOptions := []
   else
-    fOptions := [roNotEmpty, roIgnoreCase];
+    fOptions := [roIgnoreCase];
   RegEx := TRegEx.Create(fPattern, fOptions);
   RegEx.SetAdditionalPCREOptions(PCRE_UCP);
 end;
