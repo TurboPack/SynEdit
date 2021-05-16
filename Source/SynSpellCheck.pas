@@ -263,7 +263,6 @@ uses
   Windows,
   Controls,
   Forms,
-  JclUnicode,
   StrUtils,
   SysUtils,
   SynEdit,
@@ -645,9 +644,9 @@ function TSynSpellCheck.GetDictionaryDir: string;
 begin
 {$IFDEF SYN_WIN32}
   if FDictPath <> '' then
-    Result := IncludeTrailingBackslash(FDictPath)
+    Result := IncludeTrailingPathDelimiter(FDictPath)
   else
-    Result := IncludeTrailingBackslash(GetDefaultDictionaryDir);
+    Result := IncludeTrailingPathDelimiter(GetDefaultDictionaryDir);
 {$ELSE}
   if FDictPath <> '' then
     Result := FDictPath
@@ -660,9 +659,9 @@ function TSynSpellCheck.GetUserDictionaryDir;
 begin
 {$IFDEF SYN_WIN32}
   if FUserDictPath <> '' then
-    Result := IncludeTrailingBackslash(FUserDictPath)
+    Result := IncludeTrailingPathDelimiter(FUserDictPath)
   else
-    Result := IncludeTrailingBackslash(GetDefaultDictionaryDir);
+    Result := IncludeTrailingPathDelimiter(GetDefaultDictionaryDir);
 {$ELSE}
   if FUserDictPath <> '' then
     Result := FUserDictPath
@@ -1034,7 +1033,7 @@ function TSynSpellCheck.DictionaryExists(Language: string; Path: string = ''): B
 var
   sTemp: string;
 begin
-  if WideTrim(Path) = '' then
+  if Trim(Path) = '' then
     sTemp := GetDictionaryDir // Search in shared dictionary directory
   else
     sTemp := Path; // Search in user specified directory
@@ -1224,7 +1223,7 @@ var
   end;
 
 begin
-  if WideTrim(Word) = '' then
+  if Trim(Word) = '' then
     Exit;
   Word := WideLowerCase(Word);
   if FindWord(Word) = -1 then
@@ -1302,7 +1301,7 @@ end;
 
 procedure TSynSpellCheck.AddSkipWord(Word: string);
 begin
-  if WideTrim(Word) <> '' then
+  if Trim(Word) <> '' then
     FSkipList.Add(WideLowerCase(Word));
 end;
 
@@ -1342,7 +1341,7 @@ function TSynSpellCheck.CheckWord(Word: string): Boolean;
 var
   iI: Integer;
 begin
-  Word := WideTrim(Word);
+  Word := Trim(Word);
   if (Word = '') or (sscoIgnoreSingleChars in FOptions) and (Length(Word) = 1)
     then
   begin
@@ -1525,7 +1524,7 @@ var
   Differences: TJHCMPLongintMatrix;
 begin
   Result := 0;
-  if WideTrim(Word) = '' then
+  if Trim(Word) = '' then
     Exit;
   sLower := WideLowerCase(Word);
   chFirst := Ansi2Ascii(sLower[1])[1];
@@ -1614,7 +1613,7 @@ var
 begin
   FMaxWordLength := 0;
   FDictionary := ChangeFileExt(Language, '');
-  if WideTrim(FileName) = '' then
+  if Trim(FileName) = '' then
     sName := GetDictionaryDir + GetNewestDictionary(Language)
   else
     sName := FileName;
@@ -1623,7 +1622,7 @@ begin
   while not Eof(fOut) do
   begin
     ReadLn(fOut, sLine);
-    if WideTrim(sLine) <> '' then
+    if Trim(sLine) <> '' then
     begin
       FMaxWordLength := Max(FMaxWordLength, Length(sLine));
       AddNewWord(sLine, False);
@@ -1645,7 +1644,7 @@ begin
   begin
     if FUserDictPath = '' then
       FUserDictPath := GetUserDictionaryDir;
-    sName := IncludeTrailingBackslash(FUserDictPath) + FUserFileName;
+    sName := IncludeTrailingPathDelimiter(FUserDictPath) + FUserFileName;
     if FileExists(sName) then
     begin
       AssignFile(fOut, sName);
@@ -1654,7 +1653,7 @@ begin
       begin
         ReadLn(fOut, sLine);
         FMaxWordLength := Max(FMaxWordLength, Length(sLine));
-        if WideTrim(sLine) <> '' then
+        if Trim(sLine) <> '' then
           AddNewWord(sLine, True);
       end;
       CloseFile(fOut);
@@ -1748,7 +1747,7 @@ var
   iI: Integer;
 begin
   for iI := 0 to FSkipList.Count - 1 do
-    if WideTrim(FSkipList.Strings[iI]) = '' then
+    if Trim(FSkipList.Strings[iI]) = '' then
       FSkipList.Delete(iI);
   FSkipList.SaveToFile(FileName);
 end;
@@ -1761,7 +1760,7 @@ begin
   if not FModified then Exit;
   if not ForceDirectories(ExtractFileDir(FUserDictPath)) then Exit;
   try
-    AssignFile(fIn, IncludeTrailingBackslash(FUserDictPath) + FUserFileName);
+    AssignFile(fIn, IncludeTrailingPathDelimiter(FUserDictPath) + FUserFileName);
     Rewrite(fIn);
     for iI := 0 to FWordList.Count - 1 do
       if TWordRec(FWordList.Items[iI]^).User then
@@ -2000,7 +1999,7 @@ begin
 
   with TSynEditEx(FEditor) do
   begin
-    if WideTrim(Lines.Text) = '' then
+    if Trim(Lines.Text) = '' then
     begin
       Screen.Cursor := FCursor;
       FOnDone(Self);
@@ -2038,7 +2037,7 @@ begin
       //////////////////////////////////////////////////////////////////////////
       // Make sure we do not get any 'blank' words
       //////////////////////////////////////////////////////////////////////////
-      while WideTrim(GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True)) = '' do
+      while Trim(GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True)) = '' do
       begin
         { Just move to next word }
         if sscoGoUp in FOptions then
@@ -2153,7 +2152,7 @@ begin
   FBusy := True;
   with TSynEditEx(FEditor) do
   begin
-    if WideTrim(Lines.Text) = '' then
+    if Trim(Lines.Text) = '' then
     begin
       FBusy := False;
       Exit;
@@ -2178,7 +2177,7 @@ begin
       //////////////////////////////////////////////////////////////////////////
       // Make sure we do not get any 'blank' words
       //////////////////////////////////////////////////////////////////////////
-      while WideTrim(GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True)) = '' do
+      while Trim(GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True)) = '' do
       begin
         pNextWord := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
         CaretXY := pNextWord;

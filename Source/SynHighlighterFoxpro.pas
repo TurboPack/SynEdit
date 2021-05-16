@@ -272,7 +272,7 @@ const
 {$Q-}
 function TSynFoxProSyn.HashKey(Str: PWideChar): Cardinal;
 
-  function GetOrd: Integer;
+  function GetOrd: Cardinal;
   begin
     case Str^ of
       'a'..'z': Result := 1 + Ord(Str^) - Ord('a');
