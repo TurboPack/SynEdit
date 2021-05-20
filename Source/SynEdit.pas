@@ -10145,14 +10145,16 @@ begin
   if Assigned(Highlighter) then
     Result := Highlighter.IsIdentChar(AChar)
   else
-    Result := AChar >= #33;
-
-  if Assigned(Highlighter) then
-    Result := Result or CharInSet(AChar, Highlighter.AdditionalIdentChars)
-  else
-    Result := Result or CharInSet(AChar, Self.AdditionalIdentChars);
-
-  Result := Result and not IsWordBreakChar(AChar);
+  begin
+    case AChar of
+      '_', '0'..'9', 'A'..'Z', 'a'..'z':
+        Result := True;
+      else
+        Result := False;
+    end;
+    Result := Result or CharInSet(AChar, FAdditionalIdentChars);
+    Result := Result and not IsWordBreakChar(AChar);
+  end;
 end;
 
 function TCustomSynEdit.IsWhiteChar(AChar: WideChar): Boolean;
@@ -10173,6 +10175,7 @@ begin
   if Assigned(Highlighter) then
     Result := Highlighter.IsWordBreakChar(AChar)
   else
+  begin
     case AChar of
       #0..#32, '.', ',', ';', ':', '"', '''', WideChar(#$00B4), '`',
       WideChar(#$00B0), '^', '!', '?', '&', '$', '@', WideChar(#$00A7), '%',
@@ -10183,15 +10186,8 @@ begin
         Result := False;
     end;
 
-  if Assigned(Highlighter) then
-  begin
-    Result := Result or CharInSet(AChar, Highlighter.AdditionalWordBreakChars);
-    Result := Result and not CharInSet(AChar, Highlighter.AdditionalIdentChars);
-  end
-  else
-  begin
-    Result := Result or CharInSet(AChar, Self.AdditionalWordBreakChars);
-    Result := Result and not CharInSet(AChar, Self.AdditionalIdentChars);
+    Result := Result or CharInSet(AChar, FAdditionalWordBreakChars);
+    Result := Result and not CharInSet(AChar, FAdditionalIdentChars);
   end;
 end;
 

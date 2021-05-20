@@ -1078,6 +1078,8 @@ begin
     else
       Result := False;
   end;
+  Result := Result or CharInSet(AChar, FAdditionalIdentChars);
+  Result := Result and not IsWordBreakChar(AChar);
 end;
 
 function TSynCustomHighlighter.IsKeyword(const AKeyword: string): Boolean;
@@ -1116,6 +1118,8 @@ begin
       end;
     end;
   end;
+  Result := Result or CharInSet(AChar, FAdditionalWordBreakChars);
+  Result := Result and not CharInSet(AChar, FAdditionalIdentChars);
 end;
 
 function TSynCustomHighlighter.SaveToIniFile(AIni: TCustomIniFile): Boolean;
