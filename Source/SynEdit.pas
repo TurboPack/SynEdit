@@ -8147,10 +8147,11 @@ var
   nInLine, nEOLCount, i: integer;
   bBackward, bFromCursor: boolean;
   bPrompt: boolean;
-  bReplace, bReplaceAll: boolean;
+  bReplace, bReplaceAll boolean;
   bEndUndoBlock: boolean;
   nAction: TSynReplaceAction;
   iResultOffset: Integer;
+  fixReplace: string;
 
   function InValidSearchRange(First, Last: Integer): Boolean;
   begin
@@ -8212,11 +8213,14 @@ begin
       if bBackward then ptEnd := CaretXY else ptStart := CaretXY;
     if bBackward then ptCurrent := ptEnd else ptCurrent := ptStart;
   end;
-  //count future line ends
+  //  translate \n and \t to real chars for regular expressions
+  fixReplace := fSearchEngine.FixReplaceExpression(AReplace);
+
+  //count line ends
   nEOLCount := 0;
   i := 1;
   repeat
-    i := PosEx(WideCrLf, AReplace, i);
+    i := PosEx(WideCrLf, fixReplace, i);
     if i <> 0 then
     begin
       i := i + Length(WideCrLf);
@@ -8264,7 +8268,9 @@ begin
         BlockBegin := ptCurrent;
         // Be sure to use the Ex version of CursorPos so that it appears in the middle if necessary
         SetCaretXYEx(False, BufferCoord(1, ptCurrent.Line));
-        EnsureCursorPosVisibleEx(True);
+        // there is no necessary to see changes without confirmation. It signicatntly slow down replace
+        if not (bReplaceAll) then
+            EnsureCursorPosVisibleEx(True);
         Inc(ptCurrent.Char, nSearchLen);
         BlockEnd := ptCurrent;
         InternalCaretXY := ptCurrent;
@@ -8275,7 +8281,7 @@ begin
         // all after prompting, turn off prompting.
         if bPrompt and Assigned(fOnReplaceText) then
         begin
-          nAction := DoOnReplaceText(ASearch, AReplace, ptCurrent.Line, nFound);
+          nAction := DoOnReplaceText(ASearch, fixReplace, ptCurrent.Line, nFound);
           if nAction = raCancel then
             exit;
         end
@@ -8298,7 +8304,7 @@ begin
             bEndUndoBlock:= true;
           end;
           // Allow advanced substition in the search engine
-          SelText := fSearchEngine.Replace(SelText, AReplace);
+          SelText := fSearchEngine.Replace(SelText, fixReplace);
           nReplaceLen := CaretX - nFound;
         end;
         // fix the caret position and the remaining results
@@ -10159,14 +10165,16 @@ begin
   if Assigned(Highlighter) then
     Result := Highlighter.IsIdentChar(AChar)
   else
-    Result := AChar >= #33;
-
-  if Assigned(Highlighter) then
-    Result := Result or CharInSet(AChar, Highlighter.AdditionalIdentChars)
-  else
-    Result := Result or CharInSet(AChar, Self.AdditionalIdentChars);
-
-  Result := Result and not IsWordBreakChar(AChar);
+  begin
+    case AChar of
+      '_', '0'..'9', 'A'..'Z', 'a'..'z':
+        Result := True;
+      else
+        Result := False;
+    end;
+    Result := Result or CharInSet(AChar, FAdditionalIdentChars);
+    Result := Result and not IsWordBreakChar(AChar);
+  end;
 end;
 
 function TCustomSynEdit.IsWhiteChar(AChar: WideChar): Boolean;
@@ -10187,6 +10195,7 @@ begin
   if Assigned(Highlighter) then
     Result := Highlighter.IsWordBreakChar(AChar)
   else
+  begin
     case AChar of
       #0..#32, '.', ',', ';', ':', '"', '''', WideChar(#$00B4), '`',
       WideChar(#$00B0), '^', '!', '?', '&', '$', '@', WideChar(#$00A7), '%',
@@ -10197,15 +10206,8 @@ begin
         Result := False;
     end;
 
-  if Assigned(Highlighter) then
-  begin
-    Result := Result or CharInSet(AChar, Highlighter.AdditionalWordBreakChars);
-    Result := Result and not CharInSet(AChar, Highlighter.AdditionalIdentChars);
-  end
-  else
-  begin
-    Result := Result or CharInSet(AChar, Self.AdditionalWordBreakChars);
-    Result := Result and not CharInSet(AChar, Self.AdditionalIdentChars);
+    Result := Result or CharInSet(AChar, FAdditionalWordBreakChars);
+    Result := Result and not CharInSet(AChar, FAdditionalIdentChars);
   end;
 end;
 
