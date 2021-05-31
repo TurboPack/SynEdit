@@ -65,7 +65,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     function FindAll(const NewText: string): Integer; override;
-    function FixReplaceExpression(const AReplace: string): string; override;    
+    function PreprocessReplaceExpression(const AReplace: string): string; override;    
     function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
 
@@ -117,7 +117,7 @@ begin
 end;
 
 // replace new line and tab symbol to real chars
-function TSynEditRegexSearch.FixReplaceExpression(
+function TSynEditRegexSearch.PreprocessReplaceExpression(
   const AReplace: string): string;
 begin
   Result := StringReplace(AReplace, '\n', WideCRLF, [rfReplaceAll]);

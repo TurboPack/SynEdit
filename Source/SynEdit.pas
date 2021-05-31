@@ -8151,7 +8151,7 @@ var
   bEndUndoBlock: boolean;
   nAction: TSynReplaceAction;
   iResultOffset: Integer;
-  fixReplace: string;
+  sReplace: string;
 
   function InValidSearchRange(First, Last: Integer): Boolean;
   begin
@@ -8214,13 +8214,13 @@ begin
     if bBackward then ptCurrent := ptEnd else ptCurrent := ptStart;
   end;
   //  translate \n and \t to real chars for regular expressions
-  fixReplace := fSearchEngine.FixReplaceExpression(AReplace);
+  sReplace := fSearchEngine.PreprocessReplaceExpression(AReplace);
 
   //count line ends
   nEOLCount := 0;
   i := 1;
   repeat
-    i := PosEx(WideCrLf, fixReplace, i);
+    i := PosEx(WideCrLf, sReplace, i);
     if i <> 0 then
     begin
       i := i + Length(WideCrLf);
@@ -8281,7 +8281,7 @@ begin
         // all after prompting, turn off prompting.
         if bPrompt and Assigned(fOnReplaceText) then
         begin
-          nAction := DoOnReplaceText(ASearch, fixReplace, ptCurrent.Line, nFound);
+          nAction := DoOnReplaceText(ASearch, sReplace, ptCurrent.Line, nFound);
           if nAction = raCancel then
             exit;
         end
@@ -8304,7 +8304,7 @@ begin
             bEndUndoBlock:= true;
           end;
           // Allow advanced substition in the search engine
-          SelText := fSearchEngine.Replace(SelText, fixReplace);
+          SelText := fSearchEngine.Replace(SelText, sReplace);
           nReplaceLen := CaretX - nFound;
         end;
         // fix the caret position and the remaining results
