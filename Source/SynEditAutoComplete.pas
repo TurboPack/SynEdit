@@ -233,9 +233,9 @@ begin
       while i > -1 do
       begin
         s := fCompletions[i];
-        if WideCompareStr(s, AToken) = 0 then
+        if CompareStr(s, AToken) = 0 then
           break
-        else if WideCompareStr(Copy(s, 1, Len), AToken) = 0 then
+        else if CompareStr(Copy(s, 1, Len), AToken) = 0 then
         begin
           Inc(NumMaybe);
           IdxMaybe := i;
@@ -248,9 +248,9 @@ begin
       while i > -1 do
       begin
         s := fCompletions[i];
-        if WideCompareText(s, AToken) = 0 then
+        if CompareText(s, AToken) = 0 then
           break
-        else if WideCompareText(Copy(s, 1, Len), AToken) = 0 then
+        else if CompareText(Copy(s, 1, Len), AToken) = 0 then
         begin
           Inc(NumMaybe);
           IdxMaybe := i;

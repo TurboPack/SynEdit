@@ -175,7 +175,7 @@ begin
   Result := Self;
   if Assigned(NewEntry) then
   begin
-    if WideCompareText(NewEntry.Keyword, fKeyword) = 0 then
+    if CompareText(NewEntry.Keyword, fKeyword) = 0 then
       raise Exception.CreateFmt('Keyword "%s" already in list', [fKeyword]);
     if NewEntry.fKeyLen < fKeyLen then
     begin

@@ -842,9 +842,9 @@ begin
     Directive := Directive + fLine[Run];
     Inc(Run);
   end;
-  if (WideCompareStr(Directive, '#include') = 0) then
+  if (CompareStr(Directive, '#include') = 0) then
     fTokenID := tkPreprocessor
-  else if (WideCompareStr(Directive, '#pragma') = 0) then
+  else if (CompareStr(Directive, '#pragma') = 0) then
     fTokenID := tkPreprocessor
   else
     fTokenID := tkIdentifier;

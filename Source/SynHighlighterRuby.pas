@@ -178,7 +178,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := WideCompareStr(fKeywords[I], Token);
+    Compare := CompareStr(fKeywords[I], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -203,7 +203,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := WideCompareStr(fSecondKeys[i], Token);
+    Compare := CompareStr(fSecondKeys[i], Token);
     if Compare = 0 then
     begin
       Result := True;

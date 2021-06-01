@@ -194,7 +194,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := WideCompareStr(ShellScriptKeys[I], Token);
+    Compare := CompareStr(ShellScriptKeys[I], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -217,7 +217,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := WideCompareStr(ShellScriptSecondKeys[i], Token);
+    Compare := CompareStr(ShellScriptSecondKeys[i], Token);
     if Compare = 0 then
     begin
       Result := True;

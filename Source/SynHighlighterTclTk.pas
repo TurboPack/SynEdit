@@ -253,7 +253,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := WideCompareStr(KeyWordList[i], Token);
+    Compare := CompareStr(KeyWordList[i], Token);
     if Compare = 0 then
     begin
       Result := True;
