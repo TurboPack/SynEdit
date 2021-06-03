@@ -161,7 +161,7 @@ begin
   // background color
   if BackgroundChanged then
   begin
-    AddData(Format('\cb%d', [GetColorIndex(fLastBG)]));
+    AddData(Format('\chshdng10000\chcbpat%d\cb%d', [GetColorIndex(fLastBG), GetColorIndex(fLastBG)]));
     fAttributesChanged := True;
   end;
   // text color
