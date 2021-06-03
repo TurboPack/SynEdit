@@ -6322,7 +6322,8 @@ begin
             then
               TmpStr := TmpStr + StringofChar(#32, CaretX - 1 - Length(TmpStr));
             ProperSetLine(CaretY - 1, TmpStr + Item.ChangeStr);
-            Lines.Delete(Item.ChangeEndPos.Line);
+            if Item.ChangeEndPos.Line < Lines.Count then
+              Lines.Delete(Item.ChangeEndPos.Line);
           end
           else
             ProperSetLine(CaretY - 1, Item.ChangeStr);
