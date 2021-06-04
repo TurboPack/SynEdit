@@ -214,7 +214,7 @@ end;
 
 procedure TSynExporterHTML.FormatNewLine;
 begin
-  AddNewLine;
+  AddData('<br>');
 end;
 
 function TSynExporterHTML.GetFooter: string;
@@ -316,6 +316,7 @@ begin
     '<': Result := '&lt;';
     '>': Result := '&gt;';
     '"': Result := '&quot;';
+    ' ': Result := '&nbsp;';
     else Result := '';
   end
 end;

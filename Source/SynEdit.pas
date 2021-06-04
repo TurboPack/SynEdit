@@ -1079,7 +1079,6 @@ uses
   Types,
   Consts,
   Character,
-  AnsiStrings,
   Clipbrd,
   ShellAPI,
   SynEditWordWrap,
@@ -8148,7 +8147,7 @@ var
   nInLine, nEOLCount, i: integer;
   bBackward, bFromCursor: boolean;
   bPrompt: boolean;
-  bReplace, bReplaceAll boolean;
+  bReplace, bReplaceAll: boolean;
   bEndUndoBlock: boolean;
   nAction: TSynReplaceAction;
   iResultOffset: Integer;
@@ -8221,7 +8220,7 @@ begin
   nEOLCount := 0;
   i := 1;
   repeat
-    i := PosEx(WideCrLf, sReplace, i);
+    i := Pos(WideCrLf, sReplace, i);
     if i <> 0 then
     begin
       i := i + Length(WideCrLf);
