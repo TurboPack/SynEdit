@@ -1417,6 +1417,7 @@ begin
   if (fChainedEditor <> nil) or (fLines <> fOrigLines) then
     RemoveLinesPointer;
 
+  inherited Destroy;
   // free listeners while other fields are still valid
   // do not use FreeAndNil, it first nils and then freey causing problems with
   // code accessing fHookedCommandHandlers while destruction
@@ -1445,7 +1446,6 @@ begin
   fCodeFolding.Free;
   fAllFoldRanges.Free;
 //-- CodeFolding
-  inherited Destroy;
 end;
 
 function TCustomSynEdit.GetBlockBegin: TBufferCoord;
