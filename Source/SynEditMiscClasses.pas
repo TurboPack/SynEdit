@@ -349,6 +349,7 @@ type
     procedure SetOptions(const Value: TSynSearchOptions); virtual; abstract;
   public
     function FindAll(const NewText: string): Integer; virtual; abstract;
+    function PreprocessReplaceExpression(const AReplace: string): string; virtual; 
     function Replace(const aOccurrence, aReplacement: string): string; virtual; abstract;
     property Pattern: string read GetPattern write SetPattern;
     property ResultCount: Integer read GetResultCount;
@@ -1417,5 +1418,14 @@ begin
     ChangeKey(TempKey, S);
   end;
 end; { TBetterRegistry.OpenKeyReadOnly }
+
+{ TSynEditSearchCustom }
+
+// possibility to preprocess search expression before is send to SynEdit.SearchReplace()
+function TSynEditSearchCustom.PreprocessReplaceExpression(
+  const AReplace: string): string;
+begin
+  Result := AReplace;
+end;
 
 end.

@@ -65,6 +65,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     function FindAll(const NewText: string): Integer; override;
+    function PreprocessReplaceExpression(const AReplace: string): string; override;    
     function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
 
@@ -74,6 +75,7 @@ implementation
 
 uses
   RegularExpressionsAPI,
+  System.SysUtils,
   Consts;
 
 
@@ -112,6 +114,14 @@ function TSynEditRegexSearch.FindAll(const NewText: string): Integer;
 begin
   fMatchCollection :=  RegEx.Matches(NewText);
   Result := fMatchCollection.Count;
+end;
+
+// replace new line and tab symbol to real chars
+function TSynEditRegexSearch.PreprocessReplaceExpression(
+  const AReplace: string): string;
+begin
+  Result := StringReplace(AReplace, '\n', WideCRLF, [rfReplaceAll]);
+  Result := StringReplace(Result, '\t', #9, [rfReplaceAll]);
 end;
 
 function TSynEditRegexSearch.Replace(const aOccurrence, aReplacement: string): string;

@@ -8145,13 +8145,14 @@ var
   ptStart, ptEnd: TBufferCoord; // start and end of the search range
   ptCurrent: TBufferCoord; // current search position
   nSearchLen, nReplaceLen, n, nFound: integer;
-  nInLine: integer;
+  nInLine, nEOLCount, i: integer;
   bBackward, bFromCursor: boolean;
   bPrompt: boolean;
-  bReplace, bReplaceAll: boolean;
+  bReplace, bReplaceAll boolean;
   bEndUndoBlock: boolean;
   nAction: TSynReplaceAction;
   iResultOffset: Integer;
+  sReplace: string;
 
   function InValidSearchRange(First, Last: Integer): Boolean;
   begin
@@ -8213,6 +8214,20 @@ begin
       if bBackward then ptEnd := CaretXY else ptStart := CaretXY;
     if bBackward then ptCurrent := ptEnd else ptCurrent := ptStart;
   end;
+  //  translate \n and \t to real chars for regular expressions
+  sReplace := fSearchEngine.PreprocessReplaceExpression(AReplace);
+
+  //count line ends
+  nEOLCount := 0;
+  i := 1;
+  repeat
+    i := PosEx(WideCrLf, sReplace, i);
+    if i <> 0 then
+    begin
+      i := i + Length(WideCrLf);
+      Inc(nEolCount);
+    end;
+  until i = 0;
   // initialize the search engine
   fSearchEngine.Options := AOptions;
   fSearchEngine.Pattern := ASearch;
@@ -8254,7 +8269,9 @@ begin
         BlockBegin := ptCurrent;
         // Be sure to use the Ex version of CursorPos so that it appears in the middle if necessary
         SetCaretXYEx(False, BufferCoord(1, ptCurrent.Line));
-        EnsureCursorPosVisibleEx(True);
+        // there is no necessary to see changes without confirmation. It signicatntly slow down replace
+        if not (bReplaceAll) then
+            EnsureCursorPosVisibleEx(True);
         Inc(ptCurrent.Char, nSearchLen);
         BlockEnd := ptCurrent;
         InternalCaretXY := ptCurrent;
@@ -8265,7 +8282,7 @@ begin
         // all after prompting, turn off prompting.
         if bPrompt and Assigned(fOnReplaceText) then
         begin
-          nAction := DoOnReplaceText(ASearch, AReplace, ptCurrent.Line, nFound);
+          nAction := DoOnReplaceText(ASearch, sReplace, ptCurrent.Line, nFound);
           if nAction = raCancel then
             exit;
         end
@@ -8288,7 +8305,7 @@ begin
             bEndUndoBlock:= true;
           end;
           // Allow advanced substition in the search engine
-          SelText := fSearchEngine.Replace(SelText, AReplace);
+          SelText := fSearchEngine.Replace(SelText, sReplace);
           nReplaceLen := CaretX - nFound;
         end;
         // fix the caret position and the remaining results
@@ -8303,6 +8320,9 @@ begin
               BlockEnd := ptEnd;
             end;
           end;
+          //Fix new line ends
+          if nEOLCount > 0 then
+            Inc(ptEnd.Line, nEOLCount);
         end;
         if not bReplaceAll then
           exit;
