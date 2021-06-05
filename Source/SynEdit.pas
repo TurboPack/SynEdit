@@ -7012,6 +7012,27 @@ var
   vCaretRow: Integer;
   s: string;
   i: Integer;
+  OldSmartTabs: Boolean;
+
+  // expand tabs to spaces - used in Autoindent
+  function ExpandTabs(const AInput: string): string;
+  var
+    ss: string;
+    i, myCount: Integer;
+  begin
+    ss := AInput;
+    repeat
+      i := Pos(#9, ss);
+      if i > 0 then
+      begin
+        Delete(ss, i, 1);
+        myCount := FTabWidth - ((i - 1) mod FTabWidth);
+        Insert(StringOfChar(' ', myCount), ss, i);
+      end;
+    until i = 0;
+    Result := ss;
+  end;
+  
 begin
   IncPaintLock;
   try
@@ -7420,11 +7441,24 @@ begin
                 InternalCaretXY := BufferCoord(1, CaretY +1);
                 if SpaceCount2 > 0 then
                 begin
+                  // AutoIndent with SmartTabs - ecTab creates all spaces/tabs in one step
+                  // so easier is switch it off now and return it back after AutoIndent
+                  //  cause AutoIndent without SmartTabs copy all whitechars from begin
+                  OldSmartTabs := (eoSmartTabs in FOptions);                    
+                  if OldSmartTabs then
+                  begin
+                    fOptions := FOptions - [eoSmartTabs];
+                    // for not real tabs used we need to covert tabs to spaces
+                    if eoTabsToSpaces in  FOptions then
+                      SpaceBuffer := ExpandTabs(SpaceBuffer);
+                  end;
                   for i := 1 to Length(SpaceBuffer) do
                     if SpaceBuffer[i] = #9 then
                       CommandProcessor(ecTab, #0, nil)
                     else
                       CommandProcessor(ecChar, SpaceBuffer[i], nil);
+                  // now we return SmartTabs
+                  if OldSmartTabs then fOptions := FOptions + [eoSmartTabs]; 
                 end;
               end;
             end;
