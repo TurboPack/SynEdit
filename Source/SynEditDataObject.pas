@@ -55,11 +55,11 @@ Type
 
   TSynEditDataObject = class (TInterfacedObject, IDataObject)
   private
-    Editor: TObject; // TSynEdit
     fText : string;
     FFormatEtc : TList<TClipFormat>;
     MemoryStream : TMemoryStream;
-    function HTMLData: hGlobal;
+    HtmlStream : TMemoryStream;
+    procedure StreamHTML(Editor: TObject; Stream: TStream);
   protected
     function GetData (const formatetcIn: TFormatEtc; out medium: TStgMedium): HResult; overload; stdcall;
     function GetDataHere (const formatetc: TFormatEtc; out medium: TStgMedium): HResult; overload; stdcall;
@@ -145,8 +145,8 @@ end;
 constructor TSynEditDataObject.Create(ASynEdit : TObject);
 begin
   inherited Create;
-  Editor := ASynEdit;
   MemoryStream := TMemoryStream.Create;
+  HtmlStream := TMemoryStream.Create;
   FFormatEtc := TList<TClipFormat>.Create;
   FFormatEtc.Add(CF_UNICODETEXT);
   FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
@@ -154,12 +154,14 @@ begin
   fText := (ASynEdit as TCustomSynEdit).SelText;
   MemoryStream.Write((ASynEdit as TCustomSynEdit).ActiveSelectionMode,
     SizeOf(TCustomSynEdit(ASynEdit).ActiveSelectionMode));
+  StreamHtml(ASynEdit, HtmlStream);
 end;
 
 destructor TSynEditDataObject.Destroy;
 begin
   FFormatEtc.Free;
   MemoryStream.Free;
+  HtmlStream.Free;
   inherited Destroy
 end;
 
@@ -176,7 +178,7 @@ begin
       else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
         Medium.hGlobal := MakeGlobal(MemoryStream.Memory^, MemoryStream.Position)
       else if FormatEtcIn.cfFormat = HTMLClipboardFormat then
-        Medium.hGlobal := HTMLData
+        Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position)
       else
         Exit;
       Result := S_OK
@@ -191,29 +193,21 @@ begin
   Result := E_NOTIMPL;
 end;
 
-function TSynEditDataObject.HTMLData: hGlobal;
+procedure TSynEditDataObject.StreamHTML(Editor: TObject; Stream: TStream);
 var
-  Stream: TMemoryStream;
   HTMLExport: TSynExporterHTML;
+  Ed: TSynEdit;
 begin
-  Stream := TMemoryStream.Create;
+  Ed := Editor as TSynEdit;
+  HTMLExport := TSynExporterHTML.Create(nil);
   try
-    HTMLExport := TSynExporterHTML.Create(nil);
-    try
-      HTMLExport.CreateHTMLFragment := True;
-      HTMLExport.UseBackground := True;
-      with TSynEdit(Editor) do
-      begin
-        HTMLExport.Highlighter := Highlighter;
-        HTMLExport.ExportRange(Lines, BlockBegin, BlockEnd);
-      end;
-      HTMLExport.SaveToStream(Stream);
-    finally
-      HTMLExport.Free;
-    end;
-    Result := MakeGlobal(Stream.Memory^, Stream.Position)
+    HTMLExport.CreateHTMLFragment := True;
+    HTMLExport.UseBackground := True;
+    HTMLExport.Highlighter := Ed.Highlighter;
+    HTMLExport.ExportRange(Ed.Lines, Ed.BlockBegin, Ed.BlockEnd);
+    HTMLExport.SaveToStream(Stream);
   finally
-    Stream.Free;
+    HTMLExport.Free;
   end;
 end;
 
