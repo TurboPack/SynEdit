@@ -309,25 +309,6 @@ begin
   Result := Result + '{$Q+}'#13#10;
 end;
 
-{$IFNDEF SYN_COMPILER_6_UP}
-function DupeString(const AText: string; ACount: Integer): string;
-var
-  P: PChar;
-  C: Integer;
-begin
-  C := Length(AText);
-  SetLength(Result, C * ACount);
-  P := Pointer(Result);
-  if P = nil then Exit;
-  while ACount > 0 do
-  begin
-    Move(Pointer(AText)^, P^, C);
-    Inc(P, C);
-    Dec(ACount);
-  end;
-end;
-{$ENDIF}
-
 function TFrmHashTableGen.GetKeyWordConstantsSource(CaseSensitive: Boolean): string;
 var
   i: Integer;

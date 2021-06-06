@@ -7,8 +7,9 @@ function metaphone(a: PWideChar; lg: Integer): PWideChar; stdcall;
 implementation
 
 uses
-  SynUnicode, {$IFDEF USE_JCL_UNICODE_SUPPORT}JclUnicode, {$ENDIF}
-  Classes, SysUtils;
+  SynUnicode,
+  Classes,
+  SysUtils;
 
 type
   TRuleType = (

@@ -1267,11 +1267,6 @@ function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
     iVersions: TStringList;
     iVersionTag: string;
   begin { ReadDelphiSettings }
-    {$IFDEF SYN_COMPILER_7_UP}
-    {$IFNDEF SYN_COMPILER_9_UP}
-    Result := False; // Silence the compiler warning 
-    {$ENDIF}
-    {$ENDIF}
     iVersions := TStringList.Create;
     try
       EnumUserSettings(iVersions);
@@ -1646,8 +1641,6 @@ end;
 
 
 initialization
-{$IFNDEF SYN_CPPB_1}
   RegisterPlaceableHighlighter(TSynPasSyn);
-{$ENDIF}
 end.
 

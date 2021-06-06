@@ -252,7 +252,6 @@
 unit SynSpellCheck;
 
 {$I synedit.inc}
-{$Define SYN_WIN32}
 
 interface
 
@@ -532,7 +531,6 @@ procedure Register;
 
 implementation
 
-{$IFDEF SYN_WIN32}
 uses
   Dialogs,
   System.Win.Registry,
@@ -540,7 +538,6 @@ uses
   SynEditMiscProcs,
   SynHighlighterURI,
   System.UITypes;
-{$ENDIF}
 
 procedure Register;
 begin
@@ -621,7 +618,6 @@ end;
 
 function TSynSpellCheck.GetDefaultDictionaryDir: string;
 begin
-{$IFDEF SYN_WIN32}
   Result := 'C:\Program Files\Common Files\SynSpell\';
   with TRegistry.Create do
   try
@@ -635,39 +631,22 @@ begin
   finally
     Free;
   end;
-{$ELSE}
-  Result := '/usr/local/SynSpell/';
-{$ENDIF}
 end;
 
 function TSynSpellCheck.GetDictionaryDir: string;
 begin
-{$IFDEF SYN_WIN32}
   if FDictPath <> '' then
     Result := IncludeTrailingPathDelimiter(FDictPath)
   else
     Result := IncludeTrailingPathDelimiter(GetDefaultDictionaryDir);
-{$ELSE}
-  if FDictPath <> '' then
-    Result := FDictPath
-  else
-    Result := '/usr/local/SynSpell/';
-{$ENDIF}
 end;
 
 function TSynSpellCheck.GetUserDictionaryDir;
 begin
-{$IFDEF SYN_WIN32}
   if FUserDictPath <> '' then
     Result := IncludeTrailingPathDelimiter(FUserDictPath)
   else
     Result := IncludeTrailingPathDelimiter(GetDefaultDictionaryDir);
-{$ELSE}
-  if FUserDictPath <> '' then
-    Result := FUserDictPath
-  else
-    Result := '/usr/local/SynSpell/';
-{$ENDIF}
 end;
 
 function IsNumber(const PWord: PWideChar): Boolean;
