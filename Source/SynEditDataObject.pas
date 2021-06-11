@@ -150,11 +150,14 @@ begin
   FFormatEtc := TList<TClipFormat>.Create;
   FFormatEtc.Add(CF_UNICODETEXT);
   FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
-  FFormatEtc.Add(HTMLClipboardFormat); // HTMLFormat
   fText := (ASynEdit as TCustomSynEdit).SelText;
   MemoryStream.Write((ASynEdit as TCustomSynEdit).ActiveSelectionMode,
     SizeOf(TCustomSynEdit(ASynEdit).ActiveSelectionMode));
-  StreamHtml(ASynEdit, HtmlStream);
+  if Assigned(TCustomSynEdit(ASynEdit).Highlighter) then
+  begin
+    FFormatEtc.Add(HTMLClipboardFormat); // HTMLFormat
+    StreamHtml(ASynEdit, HtmlStream);
+  end;
 end;
 
 destructor TSynEditDataObject.Destroy;
