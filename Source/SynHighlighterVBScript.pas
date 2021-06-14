@@ -120,6 +120,7 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
@@ -273,8 +274,7 @@ begin
   fConstAttri.Style := [fsbold];
   AddAttribute(fConstAttri);
 
-  fFunctionAttri := TSynHighlighterAttributes.Create(SYNS_AttrSystem,
-                                             SYNS_FriendlyAttrSystem);
+  fFunctionAttri := TSynHighlighterAttributes.Create(SYNS_AttrSystem, SYNS_FriendlyAttrSystem);
   AddAttribute(fFunctionAttri);
   fIdentifierAttri := TSynHighlighterAttributes.Create(SYNS_AttrIdentifier, SYNS_FriendlyAttrIdentifier);
   AddAttribute(fIdentifierAttri);
@@ -300,7 +300,12 @@ begin
   RE_BlockBegin := TRegEx.Create('\b^(sub |function |private sub |private function |class )\b', [roIgnoreCase]);
   RE_BlockEnd := TRegEx.Create('\b^(end sub|end function|end class)\b', [roIgnoreCase]);
 //-- CodeFolding
+end;
 
+destructor TSynVBScriptSyn.Destroy;
+begin
+  fKeywords.Free;
+  inherited Destroy;
 end;
 
 //++ CodeFolding
