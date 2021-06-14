@@ -7016,21 +7016,17 @@ var
 
   // expand tabs to spaces - used in Autoindent
   function ExpandTabs(const AInput: string): string;
+  //  Assumes AInput consists of tabs and spaces
   var
-    ss: string;
-    i, myCount: Integer;
+    I, DestLen: integer;
   begin
-    ss := AInput;
-    repeat
-      i := Pos(#9, ss);
-      if i > 0 then
-      begin
-        Delete(ss, i, 1);
-        myCount := FTabWidth - ((i - 1) mod FTabWidth);
-        Insert(StringOfChar(' ', myCount), ss, i);
-      end;
-    until i = 0;
-    Result := ss;
+    DestLen  := 0;
+    for I := 1 to Length(AInput) do
+      if AInput[I] = #9 then
+        Inc(DestLen, FTabWidth - (DestLen mod FTabWidth))
+      else
+        Inc(DestLen);
+    Result := StringOfChar(' ', DestLen);
   end;
   
 begin
