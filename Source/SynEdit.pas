@@ -2068,7 +2068,7 @@ begin
     MouseCapture := True;
     //if mousedown occurred in selected block begin drag operation
     if bWasSel and (eoDragDropEditing in fOptions) and (X >= fGutterWidth + 2)
-      and (SelectionMode = smNormal) and ([ssAlt, ssLeft] * Shift = [ssLeft])
+      and ([ssAlt, ssLeft] * Shift = [ssLeft])
       and IsPointInSelection(DisplayToBufferPos(PixelsToRowColumn(X, Y))) then
     begin
       if DragDetect(Handle, Point(X,Y)) then begin
