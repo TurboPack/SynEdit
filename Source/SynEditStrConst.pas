@@ -166,6 +166,7 @@ const
   SYNS_AttrSystemValue          =  'SystemValue';
   SYNS_AttrTagArea              =  'TagArea';
   SYNS_AttrTableName            =  'TableName';
+  SYNS_AttrTemplate             = 'Template';
   SYNS_AttrTerminator           =  'Terminator';
   SYNS_AttrTeXCommand           =  'TeX-Command';
   SYNS_AttrText                 =  'Text';
@@ -381,6 +382,7 @@ resourcestring
   SYNS_FriendlyAttrSystemValue          =  'System Value';
   SYNS_FriendlyAttrTagArea              =  'Tag Area';
   SYNS_FriendlyAttrTableName            =  'Table Name';
+  SYNS_FriendlyAttrTemplate             = 'Template';
   SYNS_FriendlyAttrTerminator           =  'Terminator';
   SYNS_FriendlyAttrTeXCommand           =  'TeX Command';
   SYNS_FriendlyAttrText                 =  'Text';
