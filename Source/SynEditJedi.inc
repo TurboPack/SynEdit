@@ -1,6 +1,5 @@
 {$IFNDEF JEDI_INC}
 {$DEFINE JEDI_INC}
-
 {**************************************************************************************************}
 {                                                                                                  }
 {  The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");}
@@ -44,15 +43,11 @@
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
-
 (*
-
 - Development environment directives
-
   This file defines two directives to indicate which development environment the
   library is being compiled with. Currently this can either be Delphi, Kylix,
   C++Builder or FPC.
-
   Directive           Description
   ------------------------------------------------------------------------------
   DELPHI              Defined if compiled with Delphi
@@ -64,12 +59,9 @@
   DELPHILANGUAGE      Defined if compiled with Delphi, Kylix or C++Builder
   BORLAND             Defined if compiled with Delphi, Kylix or C++Builder
   FPC                 Defined if compiled with FPC
-
 - Platform Directives
-
   Platform directives are not all explicitly defined in this file, some are
   defined by the compiler itself. They are listed here only for completeness.
-
   Directive           Description
   ------------------------------------------------------------------------------
   WIN32               Defined when target platform is 32 bit Windows
@@ -78,48 +70,37 @@
   LINUX               Defined when target platform is Linux
   UNIX                Defined when target platform is Unix-like (including Linux)
   CLR                 Defined when target platform is .NET
-
 - Architecture directives. These are auto-defined by FPC
   CPU32 and CPU64 are mostly for generic pointer size dependant differences rather
   than for a specific architecture.
-
   CPU386              Defined when target platform is native x86 (win32)
   CPUx86_64           Defined when target platform is native x86_64 (win64)
   CPU32               Defined when target is 32-bit
   CPU64	              Defined when target is 64-bit
   CPUASM              Defined when target assembler is available
-
 - Visual library Directives
-
   The following directives indicate for a visual library. In a Delphi/BCB
   (Win32) application you need to define the VisualCLX symbol in the project
   options, if  you want to use the VisualCLX library. Alternatively you can use
   the IDE expert, which is distributed with the JCL to do this automatically.
-
   Directive           Description
   ------------------------------------------------------------------------------
   VCL                 Defined for Delphi/BCB (Win32) exactly if VisualCLX is not defined
   VisualCLX           Defined for Kylix; needs to be defined for Delphi/BCB to
                       use JCL with VisualCLX applications.
 
-
 - Other cross-platform related defines
-
   These symbols are intended to help in writing portable code.
-
   Directive           Description
   ------------------------------------------------------------------------------
   PUREPASCAL          Code is machine-independent (as opposed to assembler code)
   Win32API            Code is specific for the Win32 API;
                       use instead of "{$IFNDEF CLR} {$IFDEF MSWINDOWS}" constructs
 
-
 - Delphi Versions
-
   The following directives are direct mappings from the VERXXX directives to a
   friendly name of the associated compiler. These directives are only defined if
   the compiler is Delphi (ie DELPHI is defined).
-
   Directive           Description
   ------------------------------------------------------------------------------
   DELPHI1             Defined when compiling with Delphi 1 (Codename WASABI/MANGO)
@@ -208,13 +189,10 @@
   DELPHIX_RIO_UP      Alias for DELPHI26_UP
   DELPHI27_UP         Defined when compiling with Delphi 10.4 for Win32 or higher
 
-
 - Kylix Versions
-
   The following directives are direct mappings from the VERXXX directives to a
   friendly name of the associated compiler. These directives are only defined if
   the compiler is Kylix (ie KYLIX is defined).
-
   Directive           Description
   ------------------------------------------------------------------------------
   KYLIX1              Defined when compiling with Kylix 1
@@ -224,9 +202,7 @@
   KYLIX2_UP           Defined when compiling with Kylix 2 or higher
   KYLIX3_UP           Defined when compiling with Kylix 3 or higher
 
-
 - Delphi Compiler Versions (Delphi / Kylix, not in BCB mode)
-
   Directive           Description
   ------------------------------------------------------------------------------
   DELPHICOMPILER1      Defined when compiling with Delphi 1
@@ -282,13 +258,10 @@
   DELPHICOMPILER26_UP  Defined when compiling with Delphi 10.3 for Win32 or higher
   DELPHICOMPILER27_UP  Defined when compiling with Delphi 10.4 for Win32 or higher
 
-
 - C++Builder Versions
-
   The following directives are direct mappings from the VERXXX directives to a
   friendly name of the associated compiler. These directives are only defined if
   the compiler is C++Builder (ie BCB is defined).
-
   Directive    Description
   ------------------------------------------------------------------------------
   BCB1         Defined when compiling with C++Builder 1
@@ -336,16 +309,12 @@
   BCB26_UP     Defined when compiling with C++Builder Personality of RAD Studio 10.3 or higher
   BCB27_UP     Defined when compiling with C++Builder Personality of RAD Studio 10.4 or higher
 
-
 - RAD Studio / Borland Developer Studio Versions
-
   The following directives are direct mappings from the VERXXX directives to a
   friendly name of the associated IDE. These directives are only defined if
   the IDE is Borland Developer Studio Version 2 or above.
-
   Note: Borland Developer Studio 2006 is marketed as Delphi 2006 or C++Builder 2006,
   but those provide only different labels for identical content.
-
   Directive    Description
   ------------------------------------------------------------------------------
   BDS          Defined when compiling with BDS version of dcc32.exe (Codename SIDEWINDER)
@@ -387,15 +356,12 @@
   BDS19_UP     Defined when compiling with BDS 19.0 or higher
   BDS20_UP     Defined when compiling with BDS 20.0 or higher
   BDS21_UP     Defined when compiling with BDS 21.0 or higher
-
 - Compiler Versions
-
   The following directives are direct mappings from the VERXXX directives to a
   friendly name of the associated compiler. Unlike the DELPHI_X and BCB_X
   directives, these directives are indepedent of the development environment.
   That is, they are defined regardless of whether compilation takes place using
   Delphi or C++Builder.
-
   Directive     Description
   ------------------------------------------------------------------------------
   COMPILER1      Defined when compiling with Delphi 1
@@ -453,9 +419,7 @@
   COMPILER26_UP  Defined when compiling with Delphi or C++Builder Personalities of BDS 20.0 or higher
   COMPILER27_UP  Defined when compiling with Delphi or C++Builder Personalities of BDS 21.0 or higher
 
-
 - RTL Versions
-
   Use e.g. following to determine the exact RTL version since version 14.0:
     {$IFDEF CONDITIONALEXPRESSIONS}
       {$IF Declared(RTLVersion) and (RTLVersion >= 14.2)}
@@ -463,7 +427,6 @@
         ...
       {$IFEND}
     {$ENDIF}
-
   Directive     Description
   ------------------------------------------------------------------------------
   RTL80_UP      Defined when compiling with Delphi 1 or higher
@@ -497,9 +460,7 @@
   RTL330_UP     Defined when compiling with Delphi or C++Builder Personalities of BDS 20.0 or higher
   RTL340_UP     Defined when compiling with Delphi or C++Builder Personalities of BDS 21.0 or higher
 
-
 - CLR Versions
-
   Directive     Description
   ------------------------------------------------------------------------------
   CLR            Defined when compiling for .NET
@@ -510,14 +471,11 @@
   CLR20          Defined when compiling for .NET 2.0 (may be overriden by FORCE_CLR20)
   CLR20_UP       Defined when compiling for .NET 2.0 or higher
 
-
 - Feature Directives
-
   The features directives are used to test if the compiler supports specific
   features, such as method overloading, and adjust the sources accordingly. Use
   of these directives is preferred over the use of the DELPHI and COMPILER
   directives.
-
   Directive              Description
   ------------------------------------------------------------------------------
   SUPPORTS_CONSTPARAMS           Compiler supports const parameters (D1+)
@@ -613,13 +571,10 @@
   SUPPORTS_LEGACYIFEND           Compiler supports the LEGACYIFEND directive (D17+)
   DEPRECATED_TCHARACTER          TCharacter is deprecated and replaced by a record helper on Char (D18+)
 
-
 - Compiler Settings
-
   The compiler settings directives indicate whether a specific compiler setting
   is in effect. This facilitates changing compiler settings locally in a more
   compact and readible manner.
-
   Directive              Description
   ------------------------------------------------------------------------------
   ALIGN_ON               Compiling in the A+ state (no alignment)
@@ -643,9 +598,7 @@
   STACKFRAMES_ON         Compiling in the W+ state (generation of stack frames)
   EXTENDEDSYNTAX_ON      Compiling in the X+ state (Delphi extended syntax enabled)
 *)
-
 {$DEFINE BORLAND}
-
 { Set FreePascal to Delphi mode }
 {$IFDEF FPC}
   {$MODE DELPHI}
@@ -654,7 +607,6 @@
   {$DEFINE CPUASM}
    // FPC defines CPU32, CPU64 and Unix automatically
 {$ENDIF}
-
 {$IFDEF BORLAND}
   {$IFDEF LINUX}
     {$IFDEF VER140} // Only under Delphi 6, LINUX implies Kylix
@@ -680,7 +632,6 @@
       {$DEFINE CPU386}
       {$DEFINE CPU32}
     {$ENDIF ~CPUX86}
-
     // The ASSEMBLER symbol appeared with Delphi 7
     {$IFNDEF COMPILER7_UP}
       {$DEFINE CPUASM}
@@ -691,18 +642,14 @@
     {$ENDIF ~COMPILER7_UP}
   {$ENDIF ~CLR}
 {$ENDIF BORLAND}
-
 {------------------------------------------------------------------------------}
 { VERXXX to COMPILERX, DELPHIX and BCBX mappings                               }
 {------------------------------------------------------------------------------}
-
 {$IFDEF BORLAND}
   {$IFDEF KYLIX}
     {$I kylix.inc} // FPC incompatible stuff
   {$ELSE ~KYLIX}
-
     {$DEFINE UNKNOWN_COMPILER_VERSION}
-
     {$IFDEF VER80}
       {$DEFINE COMPILER1}
       {$DEFINE DELPHI1}
@@ -710,7 +657,6 @@
       {$DEFINE RTL80_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER90}
       {$DEFINE COMPILER2}
       {$DEFINE DELPHI2}
@@ -718,7 +664,6 @@
       {$DEFINE RTL90_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER93}
       {$DEFINE COMPILER2}
       {$DEFINE BCB1}
@@ -726,7 +671,6 @@
       {$DEFINE RTL93_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER100}
       {$DEFINE COMPILER3}
       {$DEFINE DELPHI3}
@@ -734,7 +678,6 @@
       {$DEFINE RTL100_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER110}
       {$DEFINE COMPILER35}
       {$DEFINE BCB3}
@@ -742,7 +685,6 @@
       {$DEFINE RTL110_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER120}
       {$DEFINE COMPILER4}
       {$DEFINE DELPHI4}
@@ -750,7 +692,6 @@
       {$DEFINE RTL120_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER125}
       {$DEFINE COMPILER4}
       {$DEFINE BCB4}
@@ -758,7 +699,6 @@
       {$DEFINE RTL125_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER130}
       {$DEFINE COMPILER5}
       {$IFDEF BCB}
@@ -770,7 +710,6 @@
       {$DEFINE RTL130_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER140}
       {$DEFINE COMPILER6}
       {$IFDEF BCB}
@@ -782,7 +721,6 @@
       {$DEFINE RTL140_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER150}
       {$DEFINE COMPILER7}
       {$DEFINE DELPHI7}
@@ -790,7 +728,6 @@
       {$DEFINE RTL150_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER160}
       {$DEFINE BDS2}
       {$DEFINE BDS}
@@ -803,7 +740,6 @@
       {$DEFINE RTL160_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER170}
       {$DEFINE BDS3}
       {$DEFINE BDS}
@@ -817,7 +753,6 @@
       {$DEFINE RTL170_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER180}
       {$DEFINE BDS}
       {$IFDEF CLR}
@@ -848,7 +783,6 @@
       {$ENDIF ~VER185}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
     {$IFDEF VER190} // Delphi 2007 for .NET
       {$DEFINE BDS}
       {$DEFINE BDS5}
@@ -862,7 +796,6 @@
       {$DEFINE RTL190_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER190}
-
     {$IFDEF VER200} // RAD Studio 2009
       {$DEFINE BDS}
       {$DEFINE BDS6}
@@ -884,7 +817,6 @@
       {$ENDIF}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER200}
-
     {$IFDEF VER210} // RAD Studio 2010
       {$DEFINE BDS}
       {$DEFINE BDS7}
@@ -899,7 +831,6 @@
       {$DEFINE RTL210_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER210}
-
     {$IFDEF VER220} // RAD Studio XE
       {$DEFINE BDS}
       {$DEFINE BDS8}
@@ -914,7 +845,6 @@
       {$DEFINE RTL220_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER220}
-
     {$IFDEF VER230} // RAD Studio XE2
       {$DEFINE BDS}
       {$DEFINE BDS9}
@@ -929,7 +859,6 @@
       {$DEFINE RTL230_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER230}
-
     {$IFDEF VER240} // RAD Studio XE3
       {$DEFINE BDS}
       {$DEFINE BDS10}
@@ -944,7 +873,6 @@
       {$DEFINE RTL240_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER240}
-
     {$IFDEF VER250} // RAD Studio XE4
       {$DEFINE BDS}
       {$DEFINE BDS11}
@@ -959,7 +887,6 @@
       {$DEFINE RTL250_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER250}
-
     {$IFDEF VER260} // RAD Studio XE5
       {$DEFINE BDS}
       {$DEFINE BDS12}
@@ -974,7 +901,6 @@
       {$DEFINE RTL260_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER260}
-
     {$IFDEF VER270} // RAD Studio XE6
       {$DEFINE BDS}
       {$DEFINE BDS14}
@@ -989,7 +915,6 @@
       {$DEFINE RTL270_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER270}
-
     {$IFDEF VER280} // RAD Studio XE7
       {$DEFINE BDS}
       {$DEFINE BDS15}
@@ -1004,7 +929,6 @@
       {$DEFINE RTL280_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER280}
-
     {$IFDEF VER290} // RAD Studio XE8
       {$DEFINE BDS}
       {$DEFINE BDS16}
@@ -1019,7 +943,6 @@
       {$DEFINE RTL290_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER290}
-
     {$IFDEF VER300} // RAD Studio 10
       {$DEFINE BDS}
       {$DEFINE BDS17}
@@ -1034,7 +957,6 @@
       {$DEFINE RTL300_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER300}
-
     {$IFDEF VER310} // RAD Studio 10.1
       {$DEFINE BDS}
       {$DEFINE BDS18}
@@ -1049,7 +971,6 @@
       {$DEFINE RTL310_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER310}
-
     {$IFDEF VER320} // RAD Studio 10.2
       {$DEFINE BDS}
       {$DEFINE BDS19}
@@ -1064,7 +985,6 @@
       {$DEFINE RTL320_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER320}
-
     {$IFDEF VER330} // RAD Studio 10.3
       {$DEFINE BDS}
       {$DEFINE BDS20}
@@ -1079,7 +999,6 @@
       {$DEFINE RTL330_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER330}
-
     {$IFDEF VER340} // RAD Studio 10.4
       {$DEFINE BDS}
       {$DEFINE BDS21}
@@ -1093,7 +1012,6 @@
       {$DEFINE RTL340_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF VER340}
-
     {$IFDEF UNKNOWN_COMPILER_VERSION} // adjust for newer version (always use latest version)
       {$DEFINE BDS}
       {$DEFINE BDS21}
@@ -1107,9 +1025,7 @@
       {$DEFINE RTL340_UP}
       {$UNDEF UNKNOWN_COMPILER_VERSION}
     {$ENDIF}
-
   {$ENDIF ~KYLIX}
-
   {$IFDEF BCB}
     {$DEFINE CPPBUILDER}
     {$DEFINE BCBCOMPILER}
@@ -1117,13 +1033,10 @@
     {$DEFINE DELPHI}
     {$DEFINE DELPHICOMPILER}
   {$ENDIF ~BCB}
-
 {$ENDIF BORLAND}
-
 {------------------------------------------------------------------------------}
 { DELPHIX_UP from DELPHIX mappings                                             }
 {------------------------------------------------------------------------------}
-
 {$IFDEF DELPHI27} {$DEFINE DELPHI27_UP} {$ENDIF}
 {$IFDEF DELPHI26} {$DEFINE DELPHI26_UP} {$ENDIF}
 {$IFDEF DELPHI25} {$DEFINE DELPHI25_UP} {$ENDIF}
@@ -1150,100 +1063,80 @@
 {$IFDEF DELPHI3}  {$DEFINE DELPHI3_UP}  {$ENDIF}
 {$IFDEF DELPHI2}  {$DEFINE DELPHI2_UP}  {$ENDIF}
 {$IFDEF DELPHI1}  {$DEFINE DELPHI1_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { DELPHIX_UP from DELPHIX_UP mappings                                          }
 {------------------------------------------------------------------------------}
-
 {$IFDEF DELPHI27_UP}
   {$DEFINE DELPHI26_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI26_UP}
   {$DEFINE DELPHIX_RIO_UP} // synonym to DELPHI26_UP
   {$DEFINE DELPHI25_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI25_UP}
   {$DEFINE DELPHIX_TOKYO_UP} // synonym to DELPHI25_UP
   {$DEFINE DELPHI24_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI24_UP}
   {$DEFINE DELPHIX_BERLIN_UP} // synonym to DELPHI24_UP
   {$DEFINE DELPHI23_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI23_UP}
   {$DEFINE DELPHIX_SEATTLE_UP} // synonym to DELPHI23_UP
   {$DEFINE DELPHI22_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI22_UP}
   {$DEFINE DELPHIXE8_UP} // synonym to DELPHI22_UP
   {$DEFINE DELPHI21_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI21_UP}
   {$DEFINE DELPHIXE7_UP} // synonym to DELPHI21_UP
   {$DEFINE DELPHI20_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI20_UP}
   {$DEFINE DELPHIXE6_UP} // synonym to DELPHI20_UP
   {$DEFINE DELPHI19_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI19_UP}
   {$DEFINE DELPHIXE5_UP} // synonym to DELPHI19_UP
   {$DEFINE DELPHI18_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI18_UP}
   {$DEFINE DELPHIXE4_UP} // synonym to DELPHI18_UP
   {$DEFINE DELPHI17_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI17_UP}
   {$DEFINE DELPHIXE3_UP} // synonym to DELPHI17_UP
   {$DEFINE DELPHI16_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI16_UP}
   {$DEFINE DELPHIXE2_UP} // synonym to DELPHI16_UP
   {$DEFINE DELPHI15_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI15_UP}
   {$DEFINE DELPHIXE_UP} // synonym to DELPHI15_UP
   {$DEFINE DELPHI14_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI14_UP}
   {$DEFINE DELPHI2010_UP} // synonym to DELPHI14_UP
   {$DEFINE DELPHI12_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI12_UP}
   {$DEFINE DELPHI2009_UP} // synonym to DELPHI12_UP
   {$DEFINE DELPHI11_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI11_UP}
   {$DEFINE DELPHI2007_UP} // synonym to DELPHI11_UP
   {$DEFINE DELPHI10_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI10_UP}
   {$DEFINE DELPHI2006_UP} // synonym to DELPHI10_UP
   {$DEFINE DELPHI9_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI9_UP}
   {$DEFINE DELPHI2005_UP} // synonym to DELPHI9_UP
   {$DEFINE DELPHI8_UP}
 {$ENDIF}
-
 {$IFDEF DELPHI8_UP} {$DEFINE DELPHI7_UP} {$ENDIF}
 {$IFDEF DELPHI7_UP} {$DEFINE DELPHI6_UP} {$ENDIF}
 {$IFDEF DELPHI6_UP} {$DEFINE DELPHI5_UP} {$ENDIF}
@@ -1251,11 +1144,9 @@
 {$IFDEF DELPHI4_UP} {$DEFINE DELPHI3_UP} {$ENDIF}
 {$IFDEF DELPHI3_UP} {$DEFINE DELPHI2_UP} {$ENDIF}
 {$IFDEF DELPHI2_UP} {$DEFINE DELPHI1_UP} {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { BCBX_UP from BCBX mappings                                                   }
 {------------------------------------------------------------------------------}
-
 {$IFDEF BCB27} {$DEFINE BCB27_UP} {$ENDIF}
 {$IFDEF BCB26} {$DEFINE BCB26_UP} {$ENDIF}
 {$IFDEF BCB25} {$DEFINE BCB25_UP} {$ENDIF}
@@ -1278,11 +1169,9 @@
 {$IFDEF BCB4}  {$DEFINE BCB4_UP}  {$ENDIF}
 {$IFDEF BCB3}  {$DEFINE BCB3_UP}  {$ENDIF}
 {$IFDEF BCB1}  {$DEFINE BCB1_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { BCBX_UP from BCBX_UP mappings                                                }
 {------------------------------------------------------------------------------}
-
 {$IFDEF BCB27_UP} {$DEFINE BCB26_UP} {$ENDIF}
 {$IFDEF BCB26_UP} {$DEFINE BCB25_UP} {$ENDIF}
 {$IFDEF BCB25_UP} {$DEFINE BCB24_UP} {$ENDIF}
@@ -1304,11 +1193,9 @@
 {$IFDEF BCB5_UP}  {$DEFINE BCB4_UP}  {$ENDIF}
 {$IFDEF BCB4_UP}  {$DEFINE BCB3_UP}  {$ENDIF}
 {$IFDEF BCB3_UP}  {$DEFINE BCB1_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { BDSX_UP from BDSX mappings                                                   }
 {------------------------------------------------------------------------------}
-
 {$IFDEF BDS21} {$DEFINE BDS21_UP} {$ENDIF}
 {$IFDEF BDS20} {$DEFINE BDS20_UP} {$ENDIF}
 {$IFDEF BDS19} {$DEFINE BDS19_UP} {$ENDIF}
@@ -1328,11 +1215,9 @@
 {$IFDEF BDS4} {$DEFINE BDS4_UP} {$ENDIF}
 {$IFDEF BDS3} {$DEFINE BDS3_UP} {$ENDIF}
 {$IFDEF BDS2} {$DEFINE BDS2_UP} {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { BDSX_UP from BDSX_UP mappings                                                }
 {------------------------------------------------------------------------------}
-
 {$IFDEF BDS21_UP} {$DEFINE BDS20_UP} {$ENDIF}
 {$IFDEF BDS20_UP} {$DEFINE BDS19_UP} {$ENDIF}
 {$IFDEF BDS19_UP} {$DEFINE BDS18_UP} {$ENDIF}
@@ -1351,11 +1236,9 @@
 {$IFDEF BDS5_UP} {$DEFINE BDS4_UP} {$ENDIF}
 {$IFDEF BDS4_UP} {$DEFINE BDS3_UP} {$ENDIF}
 {$IFDEF BDS3_UP} {$DEFINE BDS2_UP} {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { DELPHICOMPILERX_UP from DELPHICOMPILERX mappings                             }
 {------------------------------------------------------------------------------}
-
 {$IFDEF DELPHICOMPILER27} {$DEFINE DELPHICOMPILER27_UP} {$ENDIF}
 {$IFDEF DELPHICOMPILER26} {$DEFINE DELPHICOMPILER26_UP} {$ENDIF}
 {$IFDEF DELPHICOMPILER25} {$DEFINE DELPHICOMPILER25_UP} {$ENDIF}
@@ -1382,11 +1265,9 @@
 {$IFDEF DELPHICOMPILER3}  {$DEFINE DELPHICOMPILER3_UP}  {$ENDIF}
 {$IFDEF DELPHICOMPILER2}  {$DEFINE DELPHICOMPILER2_UP}  {$ENDIF}
 {$IFDEF DELPHICOMPILER1}  {$DEFINE DELPHICOMPILER1_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { DELPHICOMPILERX_UP from DELPHICOMPILERX_UP mappings                          }
 {------------------------------------------------------------------------------}
-
 {$IFDEF DELPHICOMPILER27_UP} {$DEFINE DELPHICOMPILER26_UP} {$ENDIF}
 {$IFDEF DELPHICOMPILER26_UP} {$DEFINE DELPHICOMPILER25_UP} {$ENDIF}
 {$IFDEF DELPHICOMPILER25_UP} {$DEFINE DELPHICOMPILER24_UP} {$ENDIF}
@@ -1413,11 +1294,9 @@
 {$IFDEF DELPHICOMPILER4_UP}  {$DEFINE DELPHICOMPILER3_UP}  {$ENDIF}
 {$IFDEF DELPHICOMPILER3_UP}  {$DEFINE DELPHICOMPILER2_UP}  {$ENDIF}
 {$IFDEF DELPHICOMPILER2_UP}  {$DEFINE DELPHICOMPILER1_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { COMPILERX_UP from COMPILERX mappings                                         }
 {------------------------------------------------------------------------------}
-
 {$IFDEF COMPILER27} {$DEFINE COMPILER27_UP} {$ENDIF}
 {$IFDEF COMPILER26} {$DEFINE COMPILER26_UP} {$ENDIF}
 {$IFDEF COMPILER25} {$DEFINE COMPILER25_UP} {$ENDIF}
@@ -1445,11 +1324,9 @@
 {$IFDEF COMPILER3}  {$DEFINE COMPILER3_UP}  {$ENDIF}
 {$IFDEF COMPILER2}  {$DEFINE COMPILER2_UP}  {$ENDIF}
 {$IFDEF COMPILER1}  {$DEFINE COMPILER1_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { COMPILERX_UP from COMPILERX_UP mappings                                      }
 {------------------------------------------------------------------------------}
-
 {$IFDEF COMPILER27_UP} {$DEFINE COMPILER26_UP} {$ENDIF}
 {$IFDEF COMPILER26_UP} {$DEFINE COMPILER25_UP} {$ENDIF}
 {$IFDEF COMPILER25_UP} {$DEFINE COMPILER24_UP} {$ENDIF}
@@ -1476,11 +1353,9 @@
 {$IFDEF COMPILER35_UP} {$DEFINE COMPILER3_UP}  {$ENDIF}
 {$IFDEF COMPILER3_UP}  {$DEFINE COMPILER2_UP}  {$ENDIF}
 {$IFDEF COMPILER2_UP}  {$DEFINE COMPILER1_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { RTLX_UP from RTLX_UP mappings                                                }
 {------------------------------------------------------------------------------}
-
 {$IFDEF RTL340_UP} {$DEFINE RTL330_UP} {$ENDIF}
 {$IFDEF RTL330_UP} {$DEFINE RTL320_UP} {$ENDIF}
 {$IFDEF RTL320_UP} {$DEFINE RTL310_UP} {$ENDIF}
@@ -1512,81 +1387,63 @@
 {$IFDEF RTL100_UP} {$DEFINE RTL93_UP}  {$ENDIF}
 {$IFDEF RTL93_UP}  {$DEFINE RTL90_UP}  {$ENDIF}
 {$IFDEF RTL90_UP}  {$DEFINE RTL80_UP}  {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { Check for CLR overrides of default detection                                 }
 {------------------------------------------------------------------------------}
-
 {$IFDEF CLR}
   {$IFDEF FORCE_CLR10}
     {$DEFINE CLR10}
     {$UNDEF CLR11}
     {$UNDEF CLR20}
   {$ENDIF FORCE_CLR10}
-
   {$IFDEF FORCE_CLR11}
     {$UNDEF CLR10}
     {$DEFINE CLR11}
     {$UNDEF CLR20}
   {$ENDIF FORCE_CLR11}
-
   {$IFDEF FORCE_CLR20}
     {$UNDEF CLR10}
     {$UNDEF CLR11}
     {$DEFINE CLR20}
   {$ENDIF FORCE_CLR20}
 {$ENDIF CLR}
-
 {------------------------------------------------------------------------------}
 { CLRX from CLRX_UP mappings                                                   }
 {------------------------------------------------------------------------------}
-
 {$IFDEF CLR10} {$DEFINE CLR10_UP} {$ENDIF}
 {$IFDEF CLR11} {$DEFINE CLR11_UP} {$ENDIF}
 {$IFDEF CLR20} {$DEFINE CLR20_UP} {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { CLRX_UP from CLRX_UP mappings                                                }
 {------------------------------------------------------------------------------}
-
 {$IFDEF CLR20_UP} {$DEFINE CLR11_UP} {$ENDIF}
 {$IFDEF CLR11_UP} {$DEFINE CLR10_UP} {$ENDIF}
-
 {------------------------------------------------------------------------------}
-
 {$IFDEF DELPHICOMPILER}
   {$DEFINE DELPHILANGUAGE}
 {$ENDIF}
-
 {$IFDEF BCBCOMPILER}
   {$DEFINE DELPHILANGUAGE}
 {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { KYLIXX_UP from KYLIXX mappings                                               }
 {------------------------------------------------------------------------------}
-
 {$IFDEF KYLIX3} {$DEFINE KYLIX3_UP} {$ENDIF}
 {$IFDEF KYLIX2} {$DEFINE KYLIX2_UP} {$ENDIF}
 {$IFDEF KYLIX1} {$DEFINE KYLIX1_UP} {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { KYLIXX_UP from KYLIXX_UP mappings                                            }
 {------------------------------------------------------------------------------}
-
 {$IFDEF KYLIX3_UP} {$DEFINE KYLIX2_UP} {$ENDIF}
 {$IFDEF KYLIX2_UP} {$DEFINE KYLIX1_UP} {$ENDIF}
-
 {------------------------------------------------------------------------------}
 { Map COMPILERX_UP to friendly feature names                                   }
 {------------------------------------------------------------------------------}
-
 {$IFDEF FPC}
   {$IFDEF  VER1_0}
      Please use FPC 2.0 or higher to compile this.
   {$ELSE}
     { FPC_FULLVERSION is available from 2.2.4 on }
-
     {$DEFINE SUPPORTS_OUTPARAMS}
     {$DEFINE SUPPORTS_WIDECHAR}
     {$DEFINE SUPPORTS_WIDESTRING}
@@ -1637,7 +1494,6 @@
     {$DEFINE SUPPORTS_INLINE}
     {$DEFINE SUPPORTS_STATIC}
     {$DEFINE SUPPORTS_COMPILETIME_MESSAGES}
-
     {$DEFINE SUPPORTS_CUSTOMVARIANTS}
     {$DEFINE SUPPORTS_VARARGS}
     {$DEFINE SUPPORTS_ENUMVALUE}
@@ -1650,26 +1506,20 @@
     {$DEFINE HAS_UNIT_STRUTILS}
     {$DEFINE HAS_UNIT_DATEUTILS}
     {$DEFINE HAS_UNIT_RTLCONSTS}
-
     {$DEFINE XPLATFORM_RTL}
-
     {$IF DEFINED(FPC_FULLVERSION)}
       { 2.2.4 or newer }
-
       {$DEFINE SUPPORTS_SETPEFLAGS}
       {$DEFINE SUPPORTS_STRICT}
-
       {$IF defined(FPC_FULLVERSION) and (FPC_FULLVERSION >= 20400)}
         {$DEFINE SUPPORTS_UINT64}
         {$DEFINE SUPPORTS_EXPERIMENTAL_WARNINGS}
         {$DEFINE SUPPORTS_REGION}
         {$DEFINE SUPPORTS_UNICODE_STRING}
       {$IFEND}
-
       {$IF defined(FPC_FULLVERSION) and (FPC_FULLVERSION >= 20402)}
         {$DEFINE SUPPORTS_FOR_IN}
       {$IFEND}
-
       {$IF defined(FPC_FULLVERSION) and (FPC_FULLVERSION >= 20600)}
         {$DEFINE SUPPORTS_LIBRARY_WARNINGS}
         {$DEFINE SUPPORTS_DEPRECATED_DETAILS}
@@ -1682,34 +1532,26 @@
         {$DEFINE SUPPORTS_CLASS_CTORDTORS}
         {$DEFINE SUPPORTS_FINAL}
         {$DEFINE SUPPORTS_CAST_INTERFACE_TO_OBJ}
-
         {$DEFINE HAS_ENOTIMPLEMENTED}
       {$IFEND}
-
       {$IF defined(FPC_FULLVERSION) and (FPC_FULLVERSION >= 20602)}
         {$DEFINE SUPPORTS_INT_ALIASES}
-
         {$DEFINE HAS_EARGUMENTEXCEPTION}
       {$IFEND}
-
       {$IF defined(FPC_FULLVERSION) and (FPC_FULLVERSION >= 30000)}
         {$DEFINE SUPPORTS_GENERICS}
         {$DEFINE SUPPORTS_GENERIC_TYPES}
-
         {$DEFINE HAS_UNIT_CHARACTER}
       {$IFEND}
-
       {$IF defined(FPC_FULLVERSION) and (FPC_FULLVERSION >= 30200)}
         {$DEFINE SUPPORTS_GENERIC_METHODS}
         {$DEFINE SUPPORTS_GENERIC_ROUTINES}
         {$DEFINE SUPPORTS_WEAKPACKAGEUNIT}
-
         {$DEFINE HAS_UNIT_RTTI}
         {$DEFINE HAS_UNIT_SYSTEM_UITYPES}
       {$IFEND}
     {$ELSE}
       { older than 2.2.4 }
-
       {$IFDEF VER2_2}
         {$SUPPORTS_SETPEFLAGS}
         {$SUPPORTS_STRICT}
@@ -1717,11 +1559,9 @@
     {$IFEND}
   {$ENDIF}
 {$ENDIF FPC}
-
 {$IFDEF CLR}
   {$DEFINE SUPPORTS_UNICODE}
 {$ENDIF CLR}
-
 {$IFDEF COMPILER1_UP}
   {$DEFINE SUPPORTS_CONSTPARAMS}
   {$DEFINE SUPPORTS_SINGLE}
@@ -1729,14 +1569,12 @@
   {$DEFINE SUPPORTS_EXTENDED}
   {$DEFINE SUPPORTS_PACKAGES}
 {$ENDIF COMPILER1_UP}
-
 {$IFDEF COMPILER2_UP}
   {$DEFINE SUPPORTS_CURRENCY}
   {$DEFINE SUPPORTS_THREADVAR}
   {$DEFINE SUPPORTS_VARIANT}
   {$DEFINE SUPPORTS_WIDECHAR}
 {$ENDIF COMPILER2_UP}
-
 {$IFDEF COMPILER3_UP}
   {$DEFINE SUPPORTS_OUTPARAMS}
   {$DEFINE SUPPORTS_WIDESTRING}
@@ -1745,12 +1583,10 @@
   {$DEFINE SUPPORTS_DISPID}
   {$DEFINE SUPPORTS_WEAKPACKAGEUNIT}
 {$ENDIF COMPILER3_UP}
-
 {$IFDEF COMPILER35_UP}
   {$DEFINE SUPPORTS_EXTSYM}
   {$DEFINE SUPPORTS_NODEFINE}
 {$ENDIF COMPILER35_UP}
-
 {$IFDEF COMPILER4_UP}
   {$DEFINE SUPPORTS_LONGWORD}
   {$DEFINE SUPPORTS_INT64}
@@ -1759,7 +1595,6 @@
   {$DEFINE SUPPORTS_OVERLOAD}
   {$DEFINE SUPPORTS_IMPLEMENTS}
 {$ENDIF COMPILER4_UP}
-
 {$IFDEF COMPILER6_UP}
   {$DEFINE SUPPORTS_DEPRECATED}
   {$DEFINE SUPPORTS_LIBRARY}
@@ -1778,12 +1613,10 @@
   {$DEFINE SUPPORTS_ENUMVALUE}
   {$DEFINE SUPPORTS_COMPILETIME_MESSAGES}
 {$ENDIF COMPILER6_UP}
-
 {$IFDEF COMPILER7_UP}
   {$DEFINE SUPPORTS_UNSAFE_WARNINGS}
   {$DEFINE SUPPORTS_UINT64}
 {$ENDIF COMPILER7_UP}
-
 {$IFDEF COMPILER9_UP}
   {$DEFINE SUPPORTS_FOR_IN}
   {$DEFINE SUPPORTS_INLINE}
@@ -1800,7 +1633,6 @@
     {$DEFINE SUPPORTS_FINAL}
   {$ENDIF CLR}
 {$ENDIF COMPILER9_UP}
-
 {$IFDEF COMPILER10_UP}
   {$DEFINE SUPPORTS_ENHANCED_RECORDS}
   {$DEFINE SUPPORTS_CLASS_FIELDS}
@@ -1811,7 +1643,6 @@
   {$DEFINE SUPPORTS_FINAL}
   {$DEFINE SUPPORTS_METHODINFO}
 {$ENDIF COMPILER10_UP}
-
 {$IFDEF COMPILER11_UP}
   {$IFDEF CLR}
     {$DEFINE SUPPORTS_GENERICS}
@@ -1820,7 +1651,6 @@
     {$DEFINE SUPPORTS_DEPRECATED_DETAILS}
   {$ENDIF CLR}
 {$ENDIF COMPILER11_UP}
-
 {$IFDEF COMPILER12_UP}
   {$DEFINE SUPPORTS_GENERICS}
   {$DEFINE SUPPORTS_GENERIC_TYPES}
@@ -1832,26 +1662,21 @@
     {$DEFINE SUPPORTS_UNICODE_STRING}
   {$ENDIF  CLR}
 {$ENDIF COMPILER12_UP}
-
 {$IFDEF COMPILER14_UP}
   {$DEFINE SUPPORTS_CLASS_CTORDTORS}
   {$DEFINE HAS_UNIT_RTTI}
   {$DEFINE SUPPORTS_CAST_INTERFACE_TO_OBJ}
   {$DEFINE SUPPORTS_DELAYED_LOADING}
 {$ENDIF COMPILER14_UP}
-
 {$IFDEF COMPILER16_UP}
   {$DEFINE USE_64BIT_TYPES}
 {$ENDIF COMPILER16_UP}
-
 {$IFDEF COMPILER17_UP}
   {$DEFINE SUPPORTS_LEGACYIFEND}
 {$ENDIF COMPILER17_UP}
-
 {$IFDEF RTL130_UP}
   {$DEFINE HAS_UNIT_CONTNRS}
 {$ENDIF RTL130_UP}
-
 {$IFDEF RTL140_UP}
   {$IFDEF LINUX}
     {$DEFINE HAS_UNIT_LIBC}
@@ -1863,73 +1688,58 @@
   {$DEFINE HAS_UNIT_DATEUTILS}
   {$DEFINE XPLATFORM_RTL}
 {$ENDIF RTL140_UP}
-
 {$IFDEF RTL150_UP}
   {$DEFINE HAS_UNIT_UXTHEME}
 {$ENDIF RTL150_UP}
-
 {$IFDEF RTL170_UP}
   {$DEFINE HAS_UNIT_HTTPPROD}
 {$ENDIF RTL170_UP}
-
 {$IFDEF RTL185_UP}
   {$DEFINE HAS_UNIT_GIFIMG}
 {$ENDIF RTL185_UP}
-
 {$IFDEF RTL200_UP}
   {$DEFINE HAS_UNIT_ANSISTRINGS}
   {$DEFINE HAS_UNIT_PNGIMAGE}
   {$DEFINE HAS_UNIT_CHARACTER}
   {$DEFINE HAS_EXCEPTION_STACKTRACE}
 {$ENDIF RTL200_UP}
-
 {$IFDEF RTL210_UP}
   {$DEFINE HAS_EARGUMENTEXCEPTION}
 {$ENDIF RTL210_UP}
-
 {$IFDEF RTL220_UP}
   {$DEFINE HAS_UNIT_REGULAREXPRESSIONSAPI}
   {$DEFINE HAS_ENOTIMPLEMENTED}
 {$ENDIF RTL220_UP}
-
 {$IFDEF RTL230_UP}
   {$DEFINE HAS_UNITSCOPE}
   {$DEFINE HAS_UNIT_SYSTEM_UITYPES}
   {$DEFINE HAS_UNIT_VCL_THEMES}
 {$ENDIF RTL230_UP}
-
 {$IFDEF RTL240_UP}
   {$DEFINE HAS_UNIT_SYSTEM_ACTIONS}
   {$DEFINE HAS_PROPERTY_STYLEELEMENTS}
 {$ENDIF RTL240_UP}
-
 {$IFDEF RTL250_UP}
   {$DEFINE DEPRECATED_SYSUTILS_ANSISTRINGS}
   {$DEFINE DEPRECATED_TCHARACTER}
 {$ENDIF RTL250_UP}
-
 {$IFDEF RTL270_UP}
   {$DEFINE HAS_AUTOMATIC_DB_FIELDS}
 {$ENDIF RTL270_UP}
-
 {------------------------------------------------------------------------------}
 { Cross-platform related defines                                               }
 {------------------------------------------------------------------------------}
-
 {$IFNDEF CPUASM}
   {$DEFINE PUREPASCAL}
 {$ENDIF ~CPUASM}
-
 {$IFDEF WIN32}
   {$DEFINE MSWINDOWS} // predefined for D6+/BCB6+
   {$DEFINE Win32API}
 {$ENDIF}
-
 {$IFDEF DELPHILANGUAGE}
   {$IFDEF LINUX}
     {$DEFINE UNIX}
   {$ENDIF}
-
   {$IFNDEF CONSOLE}
     {$IFDEF LINUX}
       {$DEFINE VisualCLX}
@@ -1939,11 +1749,9 @@
     {$ENDIF}
   {$ENDIF ~CONSOLE}
 {$ENDIF DELPHILANGUAGE}
-
 {------------------------------------------------------------------------------}
 { Compiler settings                                                            }
 {------------------------------------------------------------------------------}
-
 {$IFOPT A+} {$DEFINE ALIGN_ON} {$ENDIF}
 {$IFOPT B+} {$DEFINE BOOLEVAL_ON} {$ENDIF}
 {$IFDEF COMPILER2_UP}
@@ -1954,7 +1762,6 @@
 {$IFDEF COMPILER2_UP}
   {$IFOPT H+} {$DEFINE LONGSTRINGS_ON} {$ENDIF}
 {$ENDIF}
-
 // Hints
 {$IFOPT I+} {$DEFINE IOCHECKS_ON} {$ENDIF}
 {$IFDEF COMPILER2_UP}
@@ -1966,17 +1773,13 @@
 {$IFOPT P+} {$DEFINE OPENSTRINGS_ON} {$ENDIF}
 {$IFOPT Q+} {$DEFINE OVERFLOWCHECKS_ON} {$ENDIF}
 {$IFOPT R+} {$DEFINE RANGECHECKS_ON} {$ENDIF}
-
 // Real compatibility
 {$IFOPT T+} {$DEFINE TYPEDADDRESS_ON} {$ENDIF}
 {$IFOPT U+} {$DEFINE SAFEDIVIDE_ON} {$ENDIF}
 {$IFOPT V+} {$DEFINE VARSTRINGCHECKS_ON} {$ENDIF}
 {$IFOPT W+} {$DEFINE STACKFRAMES_ON} {$ENDIF}
-
 // Warnings
 {$IFOPT X+} {$DEFINE EXTENDEDSYNTAX_ON} {$ENDIF}
-
 // for Delphi/BCB trial versions remove the point from the line below
 {.$UNDEF SUPPORTS_WEAKPACKAGEUNIT}
-
 {$ENDIF ~JEDI_INC}

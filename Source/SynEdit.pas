@@ -5582,6 +5582,7 @@ begin
     OldChangeNumber := Item.ChangeNumber;
     SaveChangeNumber := fUndoList.BlockChangeNumber;
     fUndoList.BlockChangeNumber := Item.ChangeNumber;
+    Lines.BeginUpdate;
     try
       repeat
         RedoItem;
@@ -5617,6 +5618,7 @@ begin
     finally
       UpdateModifiedStatus;
       fUndoList.BlockChangeNumber := SaveChangeNumber;
+      Lines.EndUpdate;
     end;
     RemoveGroupBreak;
   end;
@@ -6198,7 +6200,8 @@ begin
     SaveChangeNumber := fRedoList.BlockChangeNumber;
     fRedoList.BlockChangeNumber := Item.ChangeNumber;
 
-    try
+   Lines.BeginUpdate;
+   try
       repeat
         UndoItem;
         Item := fUndoList.PeekItem;
@@ -6233,6 +6236,7 @@ begin
     finally
       UpdateModifiedStatus;
       fRedoList.BlockChangeNumber := SaveChangeNumber;
+      Lines.EndUpdate;
     end;
   end;
 end;
