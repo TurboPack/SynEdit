@@ -1281,7 +1281,7 @@ begin
   fGutter := TSynGutter.Create;
   fGutter.OnChange := GutterChanged;
   fGutterWidth := fGutter.Width;
-  fWordWrapGlyph := TSynGlyph.Create(HINSTANCE, 'SynEditWrapped', clLime);
+  fWordWrapGlyph := TSynGlyph.Create(HINSTANCE, 'SynEditWrapped');
   fWordWrapGlyph.OnChange := WordWrapGlyphChange;
   fTextOffset := fGutterWidth + 2;
   ControlStyle := ControlStyle + [csOpaque, csSetCaption];

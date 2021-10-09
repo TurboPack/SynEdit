@@ -209,16 +209,14 @@ type
   private
     fVisible: boolean;
     fInternalGlyph, fGlyph: TBitmap;
-    fInternalMaskColor, fMaskColor: TColor;
     fOnChange: TNotifyEvent;
     procedure SetGlyph(Value: TBitmap);
     procedure GlyphChange(Sender: TObject);
-    procedure SetMaskColor(Value: TColor);
     procedure SetVisible(Value: boolean);
     function GetWidth : integer;
     function GetHeight : integer;
   public
-    constructor Create(aModule: THandle; const aName: string; aMaskColor: TColor);
+    constructor Create(aModule: THandle; const aName: string);
     destructor Destroy; override;
     procedure Assign(aSource: TPersistent); override;
     procedure Draw(aCanvas: TCanvas; aX, aY, aLineHeight: integer);
@@ -229,7 +227,6 @@ type
 //-- DPI-Aware
   published
     property Glyph: TBitmap read fGlyph write SetGlyph;
-    property MaskColor: TColor read fMaskColor write SetMaskColor default clNone;
     property Visible: boolean read fVisible write SetVisible default True;
     property OnChange: TNotifyEvent read fOnChange write fOnChange;
   end;
@@ -285,8 +282,6 @@ type
     constructor Create(aModule: THandle; const Name: string; Count: integer);
     destructor Destroy; override;
     procedure Draw(ACanvas: TCanvas; Number, X, Y, LineHeight: integer);
-    procedure DrawTransparent(ACanvas: TCanvas; Number, X, Y,
-      LineHeight: integer; TransparentColor: TColor);
  //++ DPI-Aware
     procedure ChangeScale(M, D: Integer); virtual;
 //-- DPI-Aware
@@ -372,6 +367,7 @@ implementation
 
 uses
   Winapi.Wincodec,
+  Vcl.GraphUtil,
   SynEditMiscProcs;
 
 //++ DPI-Aware
@@ -381,7 +377,7 @@ var
   Scaler: IWICBitmapScaler;
   Source : TWICImage;
 begin
-  //Bitmap.AlphaFormat := afDefined;
+  Bitmap.AlphaFormat := afDefined;
   Source := TWICImage.Create;
   try
     Source.Assign(Bitmap);
@@ -850,7 +846,7 @@ begin
 end;
 //-- DPI-Aware
 
-constructor TSynGlyph.Create(aModule: THandle; const aName: string; aMaskColor: TColor);
+constructor TSynGlyph.Create(aModule: THandle; const aName: string);
 begin
   inherited Create;
 
@@ -858,15 +854,11 @@ begin
   begin
     fInternalGlyph := TBitmap.Create;
     fInternalGlyph.LoadFromResourceName(aModule, aName);
-    fInternalMaskColor := aMaskColor;
-  end
-  else
-    fInternalMaskColor := clNone;
+  end;
 
   fVisible := True;
   fGlyph := TBitmap.Create;
   fGlyph.OnChange := GlyphChange;
-  fMaskColor := clNone;
 end;
 
 destructor TSynGlyph.Destroy;
@@ -887,10 +879,8 @@ begin
   begin
     vSrc := TSynGlyph(aSource);
     fInternalGlyph := vSrc.fInternalGlyph;
-    fInternalMaskColor := vSrc.fInternalMaskColor;
     fVisible := vSrc.fVisible;
     fGlyph := vSrc.fGlyph;
-    fMaskColor := vSrc.fMaskColor;
     if Assigned(fOnChange) then fOnChange(Self);
   end
   else
@@ -904,15 +894,9 @@ var
   vMaskColor : TColor;
 begin
   if not fGlyph.Empty then
-  begin
-    vGlyph := fGlyph;
-    vMaskColor := fMaskColor;
-  end
+    vGlyph := fGlyph
   else if Assigned(fInternalGlyph) then
-  begin
-    vGlyph := fInternalGlyph;
-    vMaskColor := fInternalMaskColor;
-  end
+    vGlyph := fInternalGlyph
   else
     Exit;
 
@@ -929,7 +913,7 @@ begin
     rcSrc := Rect(0, aY, vGlyph.Width, aY + aLineHeight);
   end;
 
-  aCanvas.BrushCopy(rcDest, vGlyph, rcSrc, vMaskColor);
+  DrawTransparentBitmap(vGlyph, rcSrc, aCanvas, rcDest, 255);
 end;
 
 procedure TSynGlyph.SetGlyph(Value: TBitmap);
@@ -940,15 +924,6 @@ end;
 procedure TSynGlyph.GlyphChange(Sender: TObject);
 begin
   if Assigned(fOnChange) then fOnChange(Self);
-end;
-
-procedure TSynGlyph.SetMaskColor(Value: TColor);
-begin
-  if fMaskColor <> Value then
-  begin
-    fMaskColor := Value;
-    if Assigned(fOnChange) then fOnChange(Self);
-  end;
 end;
 
 procedure TSynGlyph.SetVisible(Value: boolean);
@@ -1151,28 +1126,7 @@ begin
       rcSrc := Rect(Number * fWidth, Y, (Number + 1) * fWidth,
         Y + LineHeight);
     end;
-    ACanvas.CopyRect(rcDest, fImages.Canvas, rcSrc);
-  end;
-end;
-
-procedure TSynInternalImage.DrawTransparent(ACanvas: TCanvas; Number, X, Y,
-  LineHeight: integer; TransparentColor: TColor);
-var
-  rcSrc, rcDest: TRect;
-begin
-  if (Number >= 0) and (Number < fCount) then
-  begin
-    if LineHeight >= fHeight then begin
-      rcSrc := Rect(Number * fWidth, 0, (Number + 1) * fWidth, fHeight);
-      Inc(Y, (LineHeight - fHeight) div 2);
-      rcDest := Rect(X, Y, X + fWidth, Y + fHeight);
-    end else begin
-      rcDest := Rect(X, Y, X + fWidth, Y + LineHeight);
-      Y := (fHeight - LineHeight) div 2;
-      rcSrc := Rect(Number * fWidth, Y, (Number + 1) * fWidth,
-        Y + LineHeight);
-    end;
-    ACanvas.BrushCopy(rcDest, fImages, rcSrc, TransparentColor);
+    DrawTransparentBitmap(fImages, rcSrc, ACanvas, rcDest, 255);
   end;
 end;
 
