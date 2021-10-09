@@ -891,7 +891,6 @@ procedure TSynGlyph.Draw(aCanvas: TCanvas; aX, aY, aLineHeight: integer);
 var
   rcSrc, rcDest : TRect;
   vGlyph : TBitmap;
-  vMaskColor : TColor;
 begin
   if not fGlyph.Empty then
     vGlyph := fGlyph
