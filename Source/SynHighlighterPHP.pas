@@ -93,7 +93,7 @@ type
     fHeredocChecksum: Word;
 {$ENDIF}
     FTokenID: TtkTokenKind;
-    fIdentFuncTable: array[0..420] of TIdentFuncTableFunc;
+    fIdentFuncTable: array[0..438] of TIdentFuncTableFunc;
     fCommentAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
     fKeyAttri: TSynHighlighterAttributes;
@@ -109,12 +109,7 @@ type
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
     procedure AndSymbolProc;
-    procedure AtSymbolProc;
-    procedure BraceCloseProc;
-    procedure BraceOpenProc;
     procedure CRProc;
-    procedure ColonProc;
-    procedure CommaProc;
     procedure EqualProc;
     procedure GreaterProc;
     procedure IdentProc;
@@ -127,20 +122,13 @@ type
     procedure NumberProc;
     procedure OrSymbolProc;
     procedure PlusProc;
-    procedure PointProc;
     procedure PoundProc;
-    procedure QuestionProc;
     procedure RemainderSymbolProc;
-    procedure RoundCloseProc;
-    procedure RoundOpenProc;
-    procedure SemiColonProc;
+    procedure SymbolProc;
     procedure SlashProc;
     procedure SpaceProc;
-    procedure SquareCloseProc;
-    procedure SquareOpenProc;
     procedure StringProc;
     procedure VarExpansionProc;
-    procedure TildeProc;
     procedure VariableProc;
     procedure XOrSymbolProc;
     procedure UnknownProc;
@@ -206,7 +194,7 @@ uses
 const
 
 { expanded keyword list }
- KeyWords: array[0..109] of string = (
+  KeyWords: array[0..110] of WideString = (
     '__autoload', '__call', '__callstatic', '__class__', '__clone',
     '__construct', '__debuginfo', '__destruct', '__dir__', '__file__',
     '__function__', '__get', '__halt_compiler', '__invoke', '__isset',
@@ -219,37 +207,38 @@ const
     'endwhile', 'eval', 'exception', 'exit', 'extends', 'false', 'final',
     'finally', 'float', 'for', 'foreach', 'function', 'global', 'goto', 'if',
     'implements', 'include', 'include_once', 'instanceof', 'insteadof', 'int',
-    'integer', 'interface', 'isset', 'list', 'namespace', 'new', 'null',
-    'object', 'old_function', 'or', 'parent', 'print', 'private', 'protected',
-    'public', 'real', 'require', 'require_once', 'return', 'self', 'static',
-    'string', 'switch', 'throw', 'trait', 'true', 'try', 'unset', 'use', 'var',
-    'void', 'while', 'xor', 'yield'
+    'integer', 'interface', 'isset', 'list', 'mixed', 'namespace', 'new',
+    'null', 'object', 'old_function', 'or', 'parent', 'print', 'private',
+    'protected', 'public', 'real', 'require', 'require_once', 'return', 'self',
+    'static', 'string', 'switch', 'throw', 'trait', 'true', 'try', 'unset',
+    'use', 'var', 'void', 'while', 'xor', 'yield'
   );
 
-  KeyIndices: array[0..420] of Integer = (
-    -1, -1, 83, -1, -1, -1, -1, 9, -1, -1, -1, -1, -1, -1, -1, -1, 44, -1, -1,
-    -1, -1, -1, 5, -1, -1, 13, -1, -1, -1, 89, -1, 27, 59, -1, -1, -1, -1, -1,
-    24, -1, -1, -1, -1, -1, -1, -1, 28, -1, -1, 100, -1, -1, -1, -1, -1, 103,
-    40, 85, -1, -1, -1, 55, 74, -1, -1, -1, -1, -1, -1, -1, 92, -1, -1, -1, -1,
-    -1, -1, -1, 0, -1, -1, -1, -1, 88, 47, 94, 46, -1, -1, -1, 54, -1, 34, 106,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6, -1, 49, -1, -1, 87, -1,
-    -1, -1, 95, 65, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 43, -1, 32, -1, -1,
-    -1, -1, -1, -1, 60, -1, 109, 63, -1, 19, 25, -1, -1, -1, 93, -1, -1, 56, -1,
-    81, 102, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 33, -1, -1, -1, -1, -1, -1,
-    -1, -1, 71, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, 99, -1, -1, 62, -1, -1, -1, 86, -1, -1, 105, 2, 77, 61, 20, -1, 76, 10,
-    -1, -1, 96, -1, -1, 52, -1, -1, 1, -1, 7, 82, -1, -1, 11, -1, -1, -1, -1,
-    -1, -1, 66, -1, -1, -1, -1, -1, -1, 68, -1, -1, -1, 107, 37, -1, 45, -1, 91,
-    -1, 22, -1, -1, -1, -1, -1, 17, -1, -1, -1, 16, 73, -1, 41, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 48, -1, -1, 53, -1, -1, -1, 67, -1,
-    -1, 38, -1, -1, -1, 101, -1, 79, -1, -1, 57, -1, 51, -1, -1, -1, 21, -1, 15,
-    -1, -1, -1, -1, -1, 70, -1, -1, 84, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, 75, -1, -1, -1, 14, -1, 39, -1, -1, -1, -1, -1, -1, -1, -1, 90,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 35, -1, -1, 50, -1, 30,
-    -1, 26, 104, -1, -1, -1, -1, 108, -1, -1, -1, 29, -1, -1, -1, 69, 58, 31,
-    -1, 12, -1, -1, -1, -1, -1, -1, 64, -1, -1, -1, -1, -1, 36, 80, -1, -1, -1,
-    -1, 97, -1, 78, 4, -1, -1, -1, 23, -1, 42, -1, 98, -1, 8, 18, -1, -1, -1,
-    -1, -1, -1, 72, -1
+  KeyIndices: array[0..438] of Integer = (
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 31, -1, -1, -1, -1, -1, -1, -1, -1,
+    25, -1, 110, -1, -1, 72, 88, -1, 67, -1, -1, -1, -1, -1, -1, -1, -1, 75, -1,
+    -1, 38, -1, 80, -1, -1, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, 53, -1, 102,
+    43, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 52, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, 104, -1, 40, -1, -1, -1, -1, -1, -1, -1, 76, -1, 101,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1, 98, -1, -1, 64, -1,
+    -1, -1, 37, -1, 29, -1, -1, -1, 36, 60, -1, -1, -1, -1, 54, -1, -1, -1, -1,
+    -1, -1, -1, -1, 27, -1, 32, -1, 51, 94, -1, 73, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, 79, -1, -1, -1, 10, -1, -1, -1, -1, -1, 96, -1, -1, 9, -1, 100, -1,
+    -1, -1, -1, -1, 57, -1, -1, -1, -1, -1, -1, 85, -1, -1, -1, 39, -1, -1, 109,
+    0, 44, -1, -1, -1, 78, -1, -1, -1, 65, 19, -1, 81, -1, 46, 1, 6, -1, 69, -1,
+    14, -1, -1, 35, -1, 71, -1, -1, -1, 33, -1, -1, -1, -1, -1, -1, -1, -1, 50,
+    -1, -1, -1, -1, -1, 4, -1, 20, 8, -1, -1, 47, 7, -1, 68, -1, 5, 49, -1, -1,
+    -1, 93, -1, -1, 89, -1, -1, -1, 34, -1, 59, -1, 86, -1, -1, 103, -1, -1, -1,
+    -1, -1, 26, -1, -1, -1, -1, -1, 23, -1, 83, 66, 58, -1, -1, -1, 63, -1, 45,
+    -1, -1, -1, -1, -1, -1, -1, 70, -1, -1, 105, -1, -1, 62, -1, -1, -1, -1, -1,
+    -1, 42, 82, 24, 30, -1, -1, -1, 97, -1, -1, -1, 17, -1, 74, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 106, -1, 22, 3, -1, -1, -1, 90, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, 15, -1, -1, -1, -1, 41, -1, 16, -1, -1, -1, -1,
+    -1, -1, -1, -1, 61, -1, -1, -1, -1, -1, -1, 77, -1, 84, -1, -1, 92, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 18, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    13, -1, 48, 12, -1, 28, -1, -1, -1, -1, -1, -1, 21, -1, 95, 108, 91, -1, -1,
+    -1, -1, -1, 99, -1, -1, -1, -1, -1, 55, -1, -1, 107, 56, -1, -1, -1, -1, -1,
+    87
   );
 
 {$Q-}
@@ -258,10 +247,10 @@ begin
   Result := 0;
   while IsIdentChar(Str^) do
   begin
-    Result := Result * 818 + Ord(Str^) * 366;
+    Result := Result * 155 + Ord(Str^) * 90;
     inc(Str);
   end;
-  Result := Result mod 421;
+  Result := Result mod 439;
   fStringLen := Str - fToIdent;
 end;
 {$Q+}
@@ -339,41 +328,15 @@ end;
 
 procedure TSynPHPSyn.AndSymbolProc;
 begin
-  case FLine[Run + 1] of
-    '=':                               {and assign}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '&':                               {conditional and}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-  else                                 {and}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
+  begin
+    fTokenID := tkSymbol;
+    case FLine[Run + 1] of
+      '=':  inc(Run, 2);                 {and assign}
+      '&':  inc(Run, 2);                 {conditional and}
+    else                                 {and}
+        inc(Run);
     end;
   end;
-end;
-
-procedure TSynPHPSyn.AtSymbolProc;
-begin
-  inc(Run);
-  fTokenId := tkSymbol;
-end;
-
-procedure TSynPHPSyn.BraceCloseProc;
-begin
-  inc(Run);
-  fTokenId := tkSymbol;
-end;
-
-procedure TSynPHPSyn.BraceOpenProc;
-begin
-  inc(Run);
-  fTokenId := tkSymbol;
 end;
 
 procedure TSynPHPSyn.CRProc;
@@ -385,57 +348,25 @@ begin
   end;
 end;
 
-procedure TSynPHPSyn.ColonProc;
-begin
-  inc(Run);                            {colon - conditional}
-  fTokenID := tkSymbol;
-end;
-
-procedure TSynPHPSyn.CommaProc;
-begin
-  inc(Run);
-  fTokenID := tkSymbol;
-end;
-
 procedure TSynPHPSyn.EqualProc;
 begin
+  fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=':                               {logical equal}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '>':                               {Hash operator}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
+    '=': inc(Run, 2);                  {logical equal}
+    '>': inc(Run, 2);                  {Hash operator}
   else                                 {assign}
-    begin
       inc(Run);
-      fTokenID := tkSymbol;
-    end;
   end;
 end;
 
 procedure TSynPHPSyn.GreaterProc;
 begin
+  fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=':                               {greater than or equal to}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '>':
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
+    '=': inc(Run, 2);                   {greater than or equal to}
+    '>': inc(Run, 2);
   else                                 {greater than}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
-    end;
+    inc(Run);
   end;
 end;
 
@@ -458,111 +389,85 @@ var
   i, Len : Integer;
 {$ENDIF}
 begin
-  case FLine[Run + 1] of
-    '=':                               {less than or equal to}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '<':
-      begin
-        fTokenID := tkSymbol;
-{$IFDEF SYN_HEREDOC}
-        if (FLine[Run + 2] = '<') and IsIdentChar(FLine[Run + 3]) then
-        begin
-          inc(Run, 3);
-
-          i := Run;
-          while IsIdentChar(FLine[i]) do Inc(i);
-          Len := i - Run;
-
-          if Len > 255 then
-          begin
-            fTokenID := tkUnknown;
-            Exit;
-          end;
-
-          fRange := rsHeredoc;
-          fHeredocLength := Len;
-          fHeredocChecksum := CalcFCS(FLine[Run], Len);
-
-          Inc(Run, Len);
-          fTokenID := tkString;
-        end
-        else
-{$ENDIF}
-        if FLine[Run + 2] = '=' then   {shift left assign}
-        begin
-          inc(Run, 3)
-        end
-        else                           {shift left}
+    case FLine[Run + 1] of
+      '=':                               {less than or equal to}
         begin
           inc(Run, 2);
+          fTokenID := tkSymbol;
         end;
+      '<':
+        begin
+          fTokenID := tkSymbol;
+{$IFDEF SYN_HEREDOC}
+          if (FLine[Run + 2] = '<') and IsIdentChar(FLine[Run + 3]) then
+          begin
+            inc(Run, 3);
+
+            i := Run;
+            while IsIdentChar(FLine[i]) do Inc(i);
+            Len := i - Run;
+
+            if Len > 255 then
+            begin
+              fTokenID := tkUnknown;
+              Exit;
+            end;
+
+            fRange := rsHeredoc;
+            fHeredocLength := Len;
+            fHeredocChecksum := CalcFCS(FLine[Run], Len);
+
+            Inc(Run, Len);
+            fTokenID := tkString;
+          end
+          else
+{$ENDIF}
+          if FLine[Run + 2] = '=' then   {shift left assign}
+          begin
+            inc(Run, 3)
+          end
+          else                           {shift left}
+          begin
+            inc(Run, 2);
+          end;
+        end;
+    else                                 {less than}
+      begin
+        inc(Run);
+        fTokenID := tkSymbol;
       end;
-  else                                 {less than}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
     end;
-  end;
 end;
 
 procedure TSynPHPSyn.MinusProc;
 begin
-  case FLine[Run + 1] of
-    '=':                               {subtract assign}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '-':                               {decrement}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '>':                               {Class operator}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-  else                                 {subtract}
-    begin
+    fTokenID := tkSymbol;
+    case FLine[Run + 1] of
+      '=': inc(Run, 2);                  {subtract assign}
+      '-': inc(Run, 2);                  {decrement}
+      '>': inc(Run, 2);                  {Class operator}
+    else                                 {subtract}
       inc(Run);
-      fTokenID := tkSymbol;
     end;
-  end;
 end;
 
 procedure TSynPHPSyn.MultiplyProc;
 begin
+  fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=':                               {multiply assign}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
+    '=': inc(Run, 2);                  {multiply assign}
   else                                 {multiply}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
-    end;
+    inc(Run);
   end;
 end;
 
 procedure TSynPHPSyn.NotSymbolProc;
 begin
+  fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=':                               {not equal}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
+    '=': inc(Run, 2);                  {not equal}
   else                                 {logical complement}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
-    end;
+    inc(Run);
   end;
 end;
 
@@ -599,50 +504,24 @@ end;
 
 procedure TSynPHPSyn.OrSymbolProc;
 begin
+  fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=':                               {inclusive or assign}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '|':                               {conditional or}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
+    '=': inc(Run, 2);                  {inclusive or assign}
+    '|': inc(Run, 2);                  {conditional or}
   else                                 {inclusive or}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
-    end;
+    inc(Run);
   end;
 end;
 
 procedure TSynPHPSyn.PlusProc;
 begin
-  case FLine[Run + 1] of
-    '=':                               {add assign}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-    '+':                               {increment}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
-  else                                 {add}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
-    end;
-  end;
-end;
-
-procedure TSynPHPSyn.PointProc;
-begin
-  inc(Run);                            {point}
   fTokenID := tkSymbol;
+  case FLine[Run + 1] of
+    '=': inc(Run, 2);                  {add assign}
+    '|': inc(Run, 2);                  {increment}
+  else                                 {add}
+    inc(Run);
+  end;
 end;
 
 procedure TSynPHPSyn.PoundProc;
@@ -653,35 +532,17 @@ begin
   fTokenID := tkComment;
 end;
 
-procedure TSynPHPSyn.QuestionProc;
-begin
-  fTokenID := tkSymbol;                {question mark - conditional}
-  inc(Run);
-end;
-
 procedure TSynPHPSyn.RemainderSymbolProc;
 begin
+  fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=':                               {remainder assign}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
+    '=': inc(Run, 2);                  {remainder assign}
   else                                 {remainder}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
-    end;
+    inc(Run);
   end;
 end;
 
-procedure TSynPHPSyn.RoundCloseProc;
-begin
-  inc(Run);
-  fTokenID := tkSymbol;
-end;
-
-procedure TSynPHPSyn.RoundOpenProc;
+procedure TSynPHPSyn.SymbolProc;
 begin
   inc(Run);
   FTokenID := tkSymbol;
@@ -804,64 +665,58 @@ begin
 end;
 //-- CodeFolding
 
-procedure TSynPHPSyn.SemiColonProc;
-begin
-  inc(Run);                            {semicolon}
-  fTokenID := tkSymbol;
-end;
-
 procedure TSynPHPSyn.SlashProc;
 begin
-  case FLine[Run + 1] of
-    '/':                               {c++ style comments}
-      begin
-        inc(Run, 2);
-        fTokenID := tkComment;
-        while not IsLineEnd(Run) do
-          inc(Run);
-      end;
-    '*':
-      begin
-        if (fLine[Run+2] = '*') and (fLine[Run+3] <> '/') then     {documentation comment}
+    case FLine[Run + 1] of
+      '/':                               {c++ style comments}
         begin
-          fRange := rsDocument;
-          fTokenID := tkDocument;
-          inc(Run);
-        end
-        else                           {c style comment}
-        begin
-          fRange := rsComment;
+          inc(Run, 2);
           fTokenID := tkComment;
-          inc(Run);
+          while not IsLineEnd(Run) do
+            inc(Run);
         end;
-
-        inc(Run);
-        while not IsLineEnd(Run) do
-          if fLine[Run] = '*' then
+      '*':
+        begin
+          if (fLine[Run+2] = '*') and (fLine[Run+3] <> '/') then     {documentation comment}
           begin
-            if fLine[Run + 1] = '/' then
+            fRange := rsDocument;
+            fTokenID := tkDocument;
+            inc(Run);
+          end
+          else                           {c style comment}
+          begin
+            fRange := rsComment;
+            fTokenID := tkComment;
+            inc(Run);
+          end;
+
+          inc(Run);
+          while not IsLineEnd(Run) do
+            if fLine[Run] = '*' then
             begin
-              fRange := rsUnKnown;
-              inc(Run, 2);
-              break;
+              if fLine[Run + 1] = '/' then
+              begin
+                fRange := rsUnKnown;
+                inc(Run, 2);
+                break;
+              end
+              else
+                inc(Run)
             end
             else
-              inc(Run)
-          end
-          else
-            inc(Run);
-      end;
-    '=':                               {division assign}
+              inc(Run);
+        end;
+      '=':                               {division assign}
+        begin
+          inc(Run, 2);
+          fTokenID := tkSymbol;
+        end;
+    else                                 {division}
       begin
-        inc(Run, 2);
+        inc(Run);
         fTokenID := tkSymbol;
       end;
-  else                                 {division}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
     end;
-  end;
 end;
 
 procedure TSynPHPSyn.SpaceProc;
@@ -869,18 +724,6 @@ begin
   inc(Run);
   fTokenID := tkSpace;
   while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
-end;
-
-procedure TSynPHPSyn.SquareCloseProc;
-begin
-  inc(Run);
-  fTokenID := tkSymbol;
-end;
-
-procedure TSynPHPSyn.SquareOpenProc;
-begin
-  inc(Run);
-  fTokenID := tkSymbol;
 end;
 
 procedure TSynPHPSyn.StringProc;
@@ -1036,19 +879,8 @@ begin
   end;
 end;
 
-procedure TSynPHPSyn.TildeProc;
-begin
-  inc(Run);                            {bitwise complement}
-  fTokenId := tkSymbol;
-end;
-
 procedure TSynPHPSyn.VariableProc;
 begin
-(*
-  fTokenID := tkVariable;
-  inc(Run);
-  while IsIdentChar(fLine[Run]) do inc(Run);
-*)
 {begin}
   if IsIdentChar(fLine[Run+1]) then
   begin
@@ -1079,17 +911,11 @@ end;
 
 procedure TSynPHPSyn.XOrSymbolProc;
 begin
-  Case FLine[Run + 1] of
-    '=':                               {xor assign}
-      begin
-        inc(Run, 2);
-        fTokenID := tkSymbol;
-      end;
+  fTokenID := tkSymbol;
+  case FLine[Run + 1] of
+    '=': inc(Run, 2);                  {xor assign}
   else                                 {xor}
-    begin
-      inc(Run);
-      fTokenID := tkSymbol;
-    end;
+    inc(Run);
   end;
 end;
 
@@ -1239,38 +1065,26 @@ begin
   case fLine[Run] of
     '&': AndSymbolProc;
     #39: String39Proc; // single quote
-    '@': AtSymbolProc;
-    '}': BraceCloseProc;
-    '{': BraceOpenProc;
+    #0: NullProc;
+    #10: LFProc;
     #13: CRProc;
-    ':': ColonProc;
-    ',': CommaProc;
     '=': EqualProc;
     '>': GreaterProc;
     'A'..'Z', 'a'..'z', '_': IdentProc;
-    #10: LFProc;
     '<': LowerProc;
     '-': MinusProc;
     '*': MultiplyProc;
     '!': NotSymbolProc;
-    #0: NullProc;
     '0'..'9': NumberProc;
     '|': OrSymbolProc;
     '+': PlusProc;
-    '.', '\': PointProc;
     '#': PoundProc;
-    '?': QuestionProc;
     '%': RemainderSymbolProc;
-    ')': RoundCloseProc;
-    '(': RoundOpenProc;
-    ';': SemiColonProc;
+    '(', ')', '{', '}', '[', ']', '@', ':', ',', '.', '\', '?', '~', ';': SymbolProc;
     '/': SlashProc;
     #1..#9, #11, #12, #14..#32: SpaceProc;
-    ']': SquareCloseProc;
-    '[': SquareOpenProc;
     #34: String34Proc; // double quote
     '`': String96Proc;
-    '~': TildeProc;
     '$': VariableProc;
     '^': XOrSymbolProc;
     else UnknownProc;
