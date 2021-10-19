@@ -105,7 +105,7 @@ type
     function GetRowLength(aRow: integer): integer;
     function LinesInserted(aIndex: integer; aCount: integer): integer;
     function LinesDeleted(aIndex: integer; aCount: integer): integer;
-    function LinesPutted(aIndex: integer; aCount: integer): integer;
+    function LinePut(aIndex: integer; const OldLine: string): integer;
     procedure Reset;
     procedure DisplayChanged; 
   end;
@@ -320,9 +320,7 @@ begin
     Inc(Result, ReWrapLine(cLine));
 end;
 
-function TSynWordWrapPlugin.LinesPutted(aIndex: integer; aCount: integer): integer;
-var
-  cLine: integer;
+function TSynWordWrapPlugin.LinePut(aIndex: integer; const OldLine: string): integer;
 begin
   if fMaxRowLength = 0 then
   begin
@@ -330,12 +328,10 @@ begin
     Exit;
   end;
   Assert(aIndex >= 0);
-  Assert(aCount >= 1);
-  Assert(aIndex + aCount <= LineCount);
+  Assert(aIndex < LineCount);
   // Rewrap
   Result := 0;
-  for cLine := aIndex to aIndex + aCount - 1 do
-    Inc(Result, ReWrapLine(cLine));
+  Inc(Result, ReWrapLine(aIndex));
 end;
 
 procedure TSynWordWrapPlugin.MoveLines(aStart: TLineIndex; aMoveBy: integer);

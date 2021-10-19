@@ -270,14 +270,14 @@ type
     // plugin notifications
     function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
     function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
-    function LinesPutted(aIndex: Integer; aCount: Integer): Integer;
+    function LinePut(aIndex: Integer; const OldLine: string): Integer;
     // font or size change
     procedure DisplayChanged;
     // pretty clear, heh?
     procedure Reset;
   end;
 
-  TPluginHandler = (phLinesInserted, phLinesDeleted, phLinesPutted,
+  TPluginHandler = (phLinesInserted, phLinesDeleted, phLinePut,
     phLinesChanging, phLinesChanged, phPaintTransient, phAfterPaint);
   TPlugInHandlers = set of TPluginHandler;
 
@@ -291,7 +291,7 @@ type
     procedure PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType); virtual;
     procedure LinesInserted(FirstLine, Count: Integer); virtual;
     procedure LinesDeleted(FirstLine, Count: Integer); virtual;
-    procedure LinesPutted(aIndex: Integer; aCount: Integer); virtual;
+    procedure LinePut(aIndex: Integer; const OldLine: string); virtual;
     procedure LinesChanging; virtual;
     procedure LinesChanged; virtual;
   protected
@@ -441,7 +441,7 @@ type
     fChainListCleared: TNotifyEvent;
     fChainListDeleted: TStringListChangeEvent;
     fChainListInserted: TStringListChangeEvent;
-    fChainListPutted: TStringListChangeEvent;
+    fChainListPut: TStringListPutEvent;
     fChainLinesChanging: TNotifyEvent;
     fChainLinesChanged: TNotifyEvent;
     fChainedEditor: TCustomSynEdit;
@@ -465,9 +465,9 @@ type
     procedure DoEndKey(Selection: Boolean);
     procedure DoLinesChanging;
     procedure DoLinesChanged;
-    procedure DoLinesDeleted(FirstLine, Count: integer);
-    procedure DoLinesInserted(FirstLine, Count: integer);
-    procedure DoLinesPutted(FirstLine, Count: integer);
+    procedure DoLinesDeleted(FirstLine, Count: Integer);
+    procedure DoLinesInserted(FirstLine, Count: Integer);
+    procedure DoLinePut(FirstLine: Integer; const OldLine: string);
     procedure DoShiftTabKey;
     procedure DoTabKey;
     function FindHookedCmdEvent(AHandlerProc: THookedCommandEvent): integer;
@@ -615,12 +615,12 @@ type
     procedure ListCleared(Sender: TObject);
     procedure ListDeleted(Sender: TObject; aIndex: Integer; aCount: Integer);
     procedure ListInserted(Sender: TObject; Index: Integer; aCount: Integer);
-    procedure ListPutted(Sender: TObject; Index: Integer; aCount: Integer);
+    procedure ListPut(Sender: TObject; Index: Integer; const OldLine: string);
     //helper procs to chain list commands
     procedure ChainListCleared(Sender: TObject);
     procedure ChainListDeleted(Sender: TObject; aIndex: Integer; aCount: Integer);
     procedure ChainListInserted(Sender: TObject; aIndex: Integer; aCount: Integer);
-    procedure ChainListPutted(Sender: TObject; aIndex: Integer; aCount: Integer);
+    procedure ChainListPut(Sender: TObject; aIndex: Integer; const OldLine: string);
     procedure ChainLinesChanging(Sender: TObject);
     procedure ChainLinesChanged(Sender: TObject);
     procedure ChainUndoRedoAdded(Sender: TObject);
@@ -1269,7 +1269,7 @@ begin
     OnCleared := ListCleared;
     OnDeleted := ListDeleted;
     OnInserted := ListInserted;
-    OnPutted := ListPutted;
+    OnPut := ListPut;
   end;
   fFontDummy := TFont.Create;
   fUndoList := TSynEditUndoList.Create;
@@ -5389,8 +5389,8 @@ begin
 //-- Flicker Reduction
 end;
 
-procedure TCustomSynEdit.ListPutted(Sender: TObject; Index: Integer;
-  aCount: Integer);
+procedure TCustomSynEdit.ListPut(Sender: TObject; Index: Integer;
+  const OldLine: string);
 var
   vEndLine: Integer;
 //++ CodeFolding
@@ -5398,12 +5398,12 @@ var
   FoldIndex: Integer;
 //-- CodeFolding
 begin
-  DoLinesPutted(Index, aCount);
+  DoLinePut(Index, OldLine);
 
   vEndLine := Index +1;
   if WordWrap then
   begin
-    if fWordWrapPlugin.LinesPutted(Index, aCount) <> 0 then
+    if fWordWrapPlugin.LinePut(Index, OldLine) <> 0 then
       vEndLine := MaxInt;
     InvalidateGutterLines(Index + 1, vEndLine);
   end;
@@ -5425,7 +5425,7 @@ begin
     if fAllFoldRanges.CollapsedFoldStartAtLine(Index + 1, FoldIndex) then
       // modification happens at collapsed fold
       Uncollapse(FoldIndex);
-    AllFoldRanges.LinesPutted(Index, aCount);
+    AllFoldRanges.LinePut(Index, OldLine);
     // Scan the same lines the highlighter has scanned
     ReScanForFoldRanges(Index, vLastScan);
   end;
@@ -6497,12 +6497,12 @@ begin
   TSynEditStringList(fOrigLines).OnInserted(Sender, aIndex, aCount);
 end;
 
-procedure TCustomSynEdit.ChainListPutted(Sender: TObject; aIndex: Integer;
-  aCount: Integer);
+procedure TCustomSynEdit.ChainListPut(Sender: TObject; aIndex: Integer;
+  const OldLine: string);
 begin
-  if Assigned(fChainListPutted) then
-    fChainListPutted(Sender, aIndex, aCount);
-  TSynEditStringList(fOrigLines).OnPutted(Sender, aIndex, aCount);
+  if Assigned(fChainListPut) then
+    fChainListPut(Sender, aIndex, OldLine);
+  TSynEditStringList(fOrigLines).OnPut(Sender, aIndex, OldLine);
 end;
 
 procedure TCustomSynEdit.ChainLinesChanging(Sender: TObject);
@@ -6570,7 +6570,7 @@ begin
     OnCleared := fChainListCleared;
     OnDeleted := fChainListDeleted;
     OnInserted := fChainListInserted;
-    OnPutted := fChainListPutted;
+    OnPut := fChainListPut;
     OnChanging := fChainLinesChanging;
     OnChange := fChainLinesChanged;
   end;
@@ -6580,7 +6580,7 @@ begin
   fChainListCleared := nil;
   fChainListDeleted := nil;
   fChainListInserted := nil;
-  fChainListPutted := nil;
+  fChainListPut := nil;
   fChainLinesChanging := nil;
   fChainLinesChanged := nil;
   fChainUndoAdded := nil;
@@ -6617,8 +6617,8 @@ begin
     aBuffer.OnDeleted := ChainListDeleted;
   fChainListInserted := aBuffer.OnInserted;
     aBuffer.OnInserted := ChainListInserted;
-  fChainListPutted := aBuffer.OnPutted;
-    aBuffer.OnPutted := ChainListPutted;
+  fChainListPut := aBuffer.OnPut;
+    aBuffer.OnPut := ChainListPut;
   fChainLinesChanging := aBuffer.OnChanging;
     aBuffer.OnChanging := ChainLinesChanging;
   fChainLinesChanged := aBuffer.OnChange;
@@ -10163,7 +10163,7 @@ begin
     end;
 end;
 
-procedure TCustomSynEdit.DoLinesPutted(FirstLine, Count: integer);
+procedure TCustomSynEdit.DoLinePut(FirstLine: Integer; const OldLine: string);
 var
   i: Integer;
   Plugin: TSynEditPlugin;
@@ -10173,8 +10173,8 @@ begin
     for i := 0 to fPlugins.Count - 1 do
     begin
       PlugIn := TSynEditPlugin(fPlugins[i]);
-      if phLinesPutted in Plugin.Handlers then
-        Plugin.LinesPutted(FirstLine, Count);
+      if phLinePut in Plugin.Handlers then
+        Plugin.LinePut(FirstLine, OldLine);
     end;
 end;
 
@@ -11028,7 +11028,7 @@ end;
 
 constructor TSynEditPlugin.Create(AOwner: TCustomSynEdit);
 const
-  AllPlugInHandlers = [phLinesInserted, phLinesDeleted, phLinesPutted,
+  AllPlugInHandlers = [phLinesInserted, phLinesDeleted, phLinePut,
   phLinesChanging, phLinesChanged, phPaintTransient, phAfterPaint];
 
 begin
@@ -11083,7 +11083,7 @@ begin
   // nothing
 end;
 
-procedure TSynEditPlugin.LinesPutted(aIndex, aCount: Integer);
+procedure TSynEditPlugin.LinePut(aIndex: Integer; const OldLine: string);
 begin
   // nothing
 end;

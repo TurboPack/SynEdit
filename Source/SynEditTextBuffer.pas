@@ -55,7 +55,7 @@ type
 
   PSynEditStringRec = ^TSynEditStringRec;
   TSynEditStringRec = record
-    FString: string;
+    fString: string;
     fObject: TObject;
     fRange: TSynEditRange;
     fExpandedLength: Integer;
@@ -80,6 +80,8 @@ type
 
   TStringListChangeEvent = procedure(Sender: TObject; Index: Integer;
     Count: integer) of object;
+  TStringListPutEvent = procedure(Sender: TObject; Index: Integer;
+    const OldLine: string) of object;
 
   TExpandAtWideGlyphsFunc = function (const S: string): string of object;
 
@@ -101,7 +103,7 @@ type
     fOnCleared: TNotifyEvent;
     fOnDeleted: TStringListChangeEvent;
     fOnInserted: TStringListChangeEvent;
-    fOnPutted: TStringListChangeEvent;
+    fOnPut: TStringListPutEvent;
     fOnInfoLoss: TSynInfoLossEvent;
     function ExpandString(Index: integer): string;
     function GetExpandedString(Index: integer): string;
@@ -158,7 +160,7 @@ type
     property OnDeleted: TStringListChangeEvent read fOnDeleted write fOnDeleted;
     property OnInserted: TStringListChangeEvent read fOnInserted
       write fOnInserted;
-    property OnPutted: TStringListChangeEvent read fOnPutted write fOnPutted;
+    property OnPut: TStringListPutEvent read fOnPut write fOnPut;
     property OnInfoLoss: TSynInfoLossEvent read fOnInfoLoss write fOnInfoLoss;
   end;
 
@@ -790,6 +792,8 @@ begin
 end;
 
 procedure TSynEditStringList.Put(Index: integer; const S: string);
+var
+  OldLine: string;
 begin
   if (Index = 0) and (fCount = 0) or (fCount = Index) then
     Add(S)
@@ -802,10 +806,11 @@ begin
       Include(fFlags, sfExpandedLengthUnknown);
       Exclude(fFlags, sfHasTabs);
       Exclude(fFlags, sfHasNoTabs);
+      OldLine := fString;
       fString := S;
     end;
-    if Assigned(fOnPutted) then
-      fOnPutted( Self, Index, 1 );
+    if Assigned(fOnPut) then
+      fOnPut(Self, Index, OldLine);
     EndUpdate;
   end;
 end;

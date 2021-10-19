@@ -211,7 +211,7 @@ type
     function FoldRowToLine(Row: Integer): Integer;
     function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
     function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
-    function LinesPutted(aIndex: Integer; aCount: Integer): Integer;
+    function LinePut(aIndex: Integer; const OldLine: string): Integer;
     procedure Reset;
 
     {Access to the internal FoldRange list routines}
@@ -697,7 +697,7 @@ begin
     end;
 end;
 
-function TSynFoldRanges.LinesPutted(aIndex, aCount: Integer): Integer;
+function TSynFoldRanges.LinePut(aIndex: Integer; const OldLine: string): Integer;
 begin
    Result := 1;
 end;
