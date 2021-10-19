@@ -277,9 +277,14 @@ type
     procedure Reset;
   end;
 
+  TPluginHandler = (phLinesInserted, phLinesDeleted, phLinesPutted,
+    phLinesChanging, phLinesChanged, phPaintTransient, phAfterPaint);
+  TPlugInHandlers = set of TPluginHandler;
+
   TSynEditPlugin = class(TObject)
   private
     fOwner: TCustomSynEdit;
+    FHandlers: TPlugInHandlers;
   protected
     procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect;
       FirstLine, LastLine: Integer); virtual;
@@ -287,12 +292,15 @@ type
     procedure LinesInserted(FirstLine, Count: Integer); virtual;
     procedure LinesDeleted(FirstLine, Count: Integer); virtual;
     procedure LinesPutted(aIndex: Integer; aCount: Integer); virtual;
+    procedure LinesChanging; virtual;
     procedure LinesChanged; virtual;
   protected
     property Editor: TCustomSynEdit read fOwner;
   public
-    constructor Create(AOwner: TCustomSynEdit);
+    constructor Create(AOwner: TCustomSynEdit); overload;
+    constructor Create(AOwner: TCustomSynEdit; AHandlers: TPlugInHandlers); overload;
     destructor Destroy; override;
+    property Handlers: TPlugInHandlers read FHandlers;
   end;
 
   TCustomSynEditSearchNotFoundEvent = procedure(Sender: TObject;
@@ -455,6 +463,7 @@ type
     procedure ComputeScroll(X, Y: Integer);
     procedure DoHomeKey(Selection:boolean);
     procedure DoEndKey(Selection: Boolean);
+    procedure DoLinesChanging;
     procedure DoLinesChanged;
     procedure DoLinesDeleted(FirstLine, Count: integer);
     procedure DoLinesInserted(FirstLine, Count: integer);
@@ -1959,6 +1968,7 @@ end;
 procedure TCustomSynEdit.LinesChanging(Sender: TObject);
 begin
   Include(fStateFlags, sfLinesChanging);
+  DoLinesChanging;
 end;
 
 procedure TCustomSynEdit.LinesChanged(Sender: TObject);
@@ -7504,7 +7514,7 @@ begin
         begin
           if SelAvail then
             SetSelText(AChar)
-         else
+          else
           begin
             SpaceCount2 := 0;
             Temp := LineText;
@@ -9876,6 +9886,7 @@ procedure TCustomSynEdit.DoOnPaintTransientEx(TransientType: TTransientType; Loc
 var
   DoTransient: Boolean;
   i: Integer;
+  Plugin: TSynEditPlugin;
 begin
   DoTransient:=(FPaintTransientLock=0);
   if Lock then
@@ -9890,10 +9901,14 @@ begin
 
   if DoTransient then
   begin
-    // plugins
-    if fPlugins <> nil then
-      for i := 0 to fPlugins.Count - 1 do
-        TSynEditPlugin(fPlugins[i]).PaintTransient(Canvas, TransientType);
+  // plugins
+  if fPlugins <> nil then
+    for i := 0 to fPlugins.Count - 1 do
+    begin
+      PlugIn := TSynEditPlugin(fPlugins[i]);
+      if phPaintTransient in Plugin.Handlers then
+        PlugIn.PaintTransient(Canvas, TransientType);
+    end;
     // event
     if Assigned(fOnPaintTransient) then
     begin
@@ -10076,19 +10091,40 @@ begin
   end;
 end;
 
-procedure TCustomSynEdit.DoLinesChanged;
+procedure TCustomSynEdit.DoLinesChanging;
 var
   i: Integer;
+  Plugin: TSynEditPlugin;
 begin
   // plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
-      TSynEditPlugin(fPlugins[i]).LinesChanged;
+    begin
+      PlugIn := TSynEditPlugin(fPlugins[i]);
+      if phLinesChanging in Plugin.Handlers then
+        PlugIn.LinesChanging;
+    end;
+end;
+
+procedure TCustomSynEdit.DoLinesChanged;
+var
+  i: Integer;
+  Plugin: TSynEditPlugin;
+begin
+  // plugins
+  if fPlugins <> nil then
+    for i := 0 to fPlugins.Count - 1 do
+    begin
+      PlugIn := TSynEditPlugin(fPlugins[i]);
+      if phLinesChanged in Plugin.Handlers then
+        PlugIn.LinesChanged;
+    end;
 end;
 
 procedure TCustomSynEdit.DoLinesDeleted(FirstLine, Count: Integer);
 var
   i: Integer;
+  Plugin: TSynEditPlugin;
 begin
   // gutter marks
   for i := 0 to Marks.Count - 1 do
@@ -10100,12 +10136,17 @@ begin
   // plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
-      TSynEditPlugin(fPlugins[i]).LinesDeleted(FirstLine, Count);
+    begin
+      PlugIn := TSynEditPlugin(fPlugins[i]);
+      if phLinesDeleted in Plugin.Handlers then
+        Plugin.LinesDeleted(FirstLine, Count);
+    end;
 end;
 
 procedure TCustomSynEdit.DoLinesInserted(FirstLine, Count: Integer);
 var
   i: Integer;
+  Plugin: TSynEditPlugin;
 begin
   // gutter marks
   for i := 0 to Marks.Count - 1 do
@@ -10115,27 +10156,41 @@ begin
   // plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
-      TSynEditPlugin(fPlugins[i]).LinesInserted(FirstLine, Count);
+    begin
+      PlugIn := TSynEditPlugin(fPlugins[i]);
+      if phLinesInserted in Plugin.Handlers then
+        Plugin.LinesInserted(FirstLine, Count);
+    end;
 end;
 
 procedure TCustomSynEdit.DoLinesPutted(FirstLine, Count: integer);
 var
   i: Integer;
+  Plugin: TSynEditPlugin;
 begin
   // plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
-      TSynEditPlugin(fPlugins[i]).LinesPutted(FirstLine, Count);
+    begin
+      PlugIn := TSynEditPlugin(fPlugins[i]);
+      if phLinesPutted in Plugin.Handlers then
+        Plugin.LinesPutted(FirstLine, Count);
+    end;
 end;
 
 procedure TCustomSynEdit.PluginsAfterPaint(ACanvas: TCanvas; const AClip: TRect;
   FirstLine, LastLine: Integer);
 var
   i: Integer;
+  Plugin: TSynEditPlugin;
 begin
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
-      TSynEditPlugin(fPlugins[i]).AfterPaint(ACanvas, AClip, FirstLine, LastLine);
+    begin
+      PlugIn := TSynEditPlugin(fPlugins[i]);
+      if phAfterPaint in Plugin.Handlers then
+        Plugin.AfterPaint(ACanvas, AClip, FirstLine, LastLine);
+    end;
 end;
 
 procedure TCustomSynEdit.ProperSetLine(ALine: Integer; const ALineText: string);
@@ -10972,6 +11027,10 @@ end;
 { TSynEditPlugin }
 
 constructor TSynEditPlugin.Create(AOwner: TCustomSynEdit);
+const
+  AllPlugInHandlers = [phLinesInserted, phLinesDeleted, phLinesPutted,
+  phLinesChanging, phLinesChanged, phPaintTransient, phAfterPaint];
+
 begin
   inherited Create;
   if AOwner <> nil then
@@ -10981,6 +11040,14 @@ begin
       fOwner.fPlugins := TObjectList.Create;
     fOwner.fPlugins.Add(Self);
   end;
+  FHandlers := AllPlugInHandlers;  // for backward compatibility
+end;
+
+constructor TSynEditPlugin.Create(AOwner: TCustomSynEdit;
+  AHandlers: TPlugInHandlers);
+begin
+  Create(AOwner);
+  FHandlers := AHandlers;
 end;
 
 destructor TSynEditPlugin.Destroy;
@@ -11002,6 +11069,11 @@ begin
 end;
 
 procedure TSynEditPlugin.LinesChanged;
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.LinesChanging;
 begin
   // nothing
 end;
