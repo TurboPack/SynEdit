@@ -43,7 +43,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, ToolWin, ImgList, ActnList, SynEdit, SynEditRegexSearch,
-  SynEditMiscClasses, SynEditSearch, SynUnicode;
+  SynEditMiscClasses, SynEditSearch, SynUnicode, System.Actions,
+  System.ImageList;
 
 type
   TSearchReplaceDemoForm = class(TForm)
@@ -75,7 +76,7 @@ type
     procedure actSearchUpdate(Sender: TObject);
     procedure ActionSearchReplaceUpdate(Sender: TObject);
     procedure SynEditorReplaceText(Sender: TObject; const ASearch,
-      AReplace: UnicodeString; Line, Column: Integer;
+      AReplace: string; Line, Column: Integer;
       var Action: TSynReplaceAction);
     procedure FormCreate(Sender: TObject);
   private
@@ -258,9 +259,9 @@ begin
     and not SynEditor.ReadOnly;
 end;
 
-procedure TSearchReplaceDemoForm.SynEditorReplaceText(Sender: TObject;
-  const ASearch, AReplace: UnicodeString; Line, Column: Integer;
-  var Action: TSynReplaceAction);
+procedure TSearchReplaceDemoForm.SynEditorReplaceText(Sender: TObject; const
+    ASearch, AReplace: string; Line, Column: Integer; var Action:
+    TSynReplaceAction);
 var
   APos: TPoint;
   EditRect: TRect;

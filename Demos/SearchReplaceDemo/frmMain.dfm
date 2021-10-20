@@ -25,14 +25,15 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
     Font.Height = -13
     Font.Name = 'Courier New'
     Font.Style = []
+    Font.Quality = fqClearTypeNatural
     TabOrder = 0
+    UseCodeFolding = False
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
     Gutter.Font.Name = 'Terminal'
     Gutter.Font.Style = []
     OnReplaceText = SynEditorReplaceText
-    FontSmoothing = fsmNone
     RemovedKeystrokes = <
       item
         Command = ecDeleteLastChar

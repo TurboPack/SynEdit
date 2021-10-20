@@ -73,7 +73,7 @@ type
     procedure SynEditorEnter(Sender: TObject);
     procedure SynEditorExit(Sender: TObject);
     procedure SynEditorReplaceText(Sender: TObject; const ASearch,
-      AReplace: UnicodeString; Line, Column: Integer;
+      AReplace: string; Line, Column: Integer;
       var Action: TSynReplaceAction);
     procedure SynEditorStatusChange(Sender: TObject;
       Changes: TSynStatusChanges);
@@ -673,7 +673,7 @@ begin
 end;
 
 procedure TEditorForm.SynEditorReplaceText(Sender: TObject; const ASearch,
-  AReplace: UnicodeString; Line, Column: Integer; var Action: TSynReplaceAction);
+    AReplace: string; Line, Column: Integer; var Action: TSynReplaceAction);
 var
   APos: TPoint;
   EditRect: TRect;

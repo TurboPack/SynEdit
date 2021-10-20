@@ -1,10 +1,10 @@
 object EditorForm: TEditorForm
   Left = 338
   Top = 199
-  Width = 470
-  Height = 326
   ActiveControl = SynEditor
   Caption = 'Editor'
+  ClientHeight = 287
+  ClientWidth = 454
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,18 +23,20 @@ object EditorForm: TEditorForm
   object SynEditor: TSynEdit
     Left = 0
     Top = 0
-    Width = 462
-    Height = 292
+    Width = 454
+    Height = 287
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Courier New'
     Font.Style = []
+    Font.Quality = fqClearTypeNatural
     PopupMenu = pmnuEditor
     TabOrder = 0
     OnEnter = SynEditorEnter
     OnExit = SynEditorExit
+    UseCodeFolding = False
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
