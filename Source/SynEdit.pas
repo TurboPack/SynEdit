@@ -284,8 +284,8 @@ type
   TSynEditPlugin = class(TObject)
   private
     fOwner: TCustomSynEdit;
-    FHandlers: TPlugInHandlers;
   protected
+    FHandlers: TPlugInHandlers;
     procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect;
       FirstLine, LastLine: Integer); virtual;
     procedure PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType); virtual;
