@@ -493,6 +493,9 @@
         <DelphiCompile Include="..\..\..\Source\SynURIOpener.pas">
             <BuildOrder>108</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditUndo.pas">
+            <BuildOrder>109</BuildOrder>
+        </DelphiCompile>
         <FormResources Include="..\..\..\Source\SynEditKeyCmdEditor.dfm"/>
         <FormResources Include="..\..\..\Source\SynEditOptionsDialog.dfm"/>
         <FormResources Include="..\..\..\Source\SynEditKeyCmdsEditor.dfm"/>

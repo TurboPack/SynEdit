@@ -65,6 +65,7 @@ uses
   SynEditMiscProcs,
   SynEditMiscClasses,
   SynEditTextBuffer,
+  SynEditUndo,
   SynEditKeyCmds,
   SynEditHighlighter,
   SynEditKbdHandler,
@@ -121,7 +122,7 @@ type
 
   TSynStateFlag = (sfCaretChanged, sfScrollbarChanged, sfLinesChanging,
     sfIgnoreNextChar, sfCaretVisible, sfPossibleGutterClick,
-    sfInsideRedo, sfOleDragSource, sfGutterDragging);
+    sfOleDragSource, sfGutterDragging);
 
   TSynStateFlags = set of TSynStateFlag;
 
@@ -350,8 +351,7 @@ type
     fInserting: Boolean;
     fLines: TStrings;
     fOrigLines: TStrings;
-    fOrigUndoList: TSynEditUndoList;
-    fOrigRedoList: TSynEditUndoList;
+    fOrigUndoRedo: TSynEditUndo;
     fLinesInWindow: Integer;
     fLeftChar: Integer;
     fPaintLock: Integer;
@@ -367,8 +367,7 @@ type
     fHighlighter: TSynCustomHighlighter;
     fSelectedColor: TSynSelectedColor;
     fActiveLineColor: TColor;
-    fUndoList: TSynEditUndoList;
-    fRedoList: TSynEditUndoList;
+    fUndoRedo: TSynEditUndo;
     fBookMarks: array[0..9] of TSynEditMark; // these are just references, fMarkList is the owner
     fMouseDownX: Integer;
     fMouseDownY: Integer;
@@ -380,7 +379,6 @@ type
     fInsertCaret: TSynEditCaretType;
     fCaretOffset: TPoint;
     fKeyStrokes: TSynEditKeyStrokes;
-    fModified: Boolean;
     fMarkList: TSynEditMarkList;
     fExtraLineSpacing: Integer;
     fSelectionMode: TSynSelectionMode;
@@ -445,8 +443,7 @@ type
     fChainLinesChanging: TNotifyEvent;
     fChainLinesChanged: TNotifyEvent;
     fChainedEditor: TCustomSynEdit;
-    fChainUndoAdded: TNotifyEvent;
-    fChainRedoAdded: TNotifyEvent;
+    fChainModifiedChanged: TNotifyEvent;
     fSearchNotFound: TCustomSynEditSearchNotFoundEvent;
     OnFindBeforeSearch: TNotifyEvent;
     OnReplaceBeforeSearch: TNotifyEvent;
@@ -487,6 +484,7 @@ type
     function GetHookedCommandHandlersCount: Integer;
     function GetLineText: string;
     function GetMaxUndo: Integer;
+    function GetModified: Boolean;
     function GetOptions: TSynEditorOptions;
     function GetSelAvail: Boolean;
     function GetSelTabBlock: Boolean;
@@ -553,8 +551,7 @@ type
     procedure WordWrapGlyphChange(Sender: TObject);
     procedure SizeOrFontChanged(bFont: boolean);
     procedure ProperSetLine(ALine: Integer; const ALineText: string);
-    procedure UpdateModifiedStatus;
-    procedure UndoRedoAdded(Sender: TObject);
+    procedure ModifiedChanged(Sender: TObject);
     procedure UpdateLastCaretX;
     procedure UpdateScrollBars;
     procedure WriteAddedKeystrokes(Writer: TWriter);
@@ -623,7 +620,7 @@ type
     procedure ChainListPut(Sender: TObject; aIndex: Integer; const OldLine: string);
     procedure ChainLinesChanging(Sender: TObject);
     procedure ChainLinesChanged(Sender: TObject);
-    procedure ChainUndoRedoAdded(Sender: TObject);
+    procedure ChainModifiedChanged(Sender: TObject);
     procedure ScanRanges;
     procedure Loaded; override;
     procedure MarkListChange(Sender: TObject);
@@ -640,7 +637,7 @@ type
     procedure PaintTextLines(AClip: TRect; const aFirstRow, aLastRow,
       FirstCol, LastCol: Integer); virtual;
     procedure RecalcCharExtent;
-    procedure RedoItem;
+    procedure RedoItem(Item: TSynEditUndoItem);
     procedure InternalSetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXYEx(CallEnsureCursorPos: Boolean; Value: TBufferCoord); virtual;
@@ -657,7 +654,7 @@ type
     // GetMem call.  The client must call FreeMem on Data if it is not NIL.
     function TranslateKeyCode(Code: word; Shift: TShiftState;
       var Data: pointer): TSynEditorCommand;
-    procedure UndoItem;
+    procedure UndoItem(Item: TSynEditUndoItem);
     procedure UpdateMouseCursor; virtual;
   protected
     fGutterWidth: Integer;
@@ -816,8 +813,7 @@ type
     procedure WndProc(var Msg: TMessage); override;
     procedure SetLinesPointer(ASynEdit: TCustomSynEdit);
     procedure RemoveLinesPointer;
-    procedure HookTextBuffer(aBuffer: TSynEditStringList;
-      aUndo, aRedo: TSynEditUndoList);
+    procedure HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo: TSynEditUndo);
     procedure UnHookTextBuffer;
     {Command implementations}
     procedure ExecCmdDeleteLine;
@@ -866,7 +862,7 @@ type
     property LineText: string read GetLineText write SetLineText;
     property Lines: TStrings read fLines write SetLines;
     property Marks: TSynEditMarkList read fMarkList;
-    property Modified: Boolean read fModified write SetModified;
+    property Modified: Boolean read GetModified write SetModified;
     property PaintLock: Integer read fPaintLock;
     property ReadOnly: Boolean read GetReadOnly write SetReadOnly default False;
     property SearchEngine: TSynEditSearchCustom read fSearchEngine write SetSearchEngine;
@@ -880,8 +876,7 @@ type
     property TopLine: Integer read fTopLine write SetTopLine;
     property WordAtCursor: string read GetWordAtCursor;
     property WordAtMouse: string read GetWordAtMouse;
-    property UndoList: TSynEditUndoList read fUndoList;
-    property RedoList: TSynEditUndoList read fRedoList;
+    property UndoRedo: TSynEditUndo read fUndoRedo;
   public
     property OnProcessCommand: TProcessCommandEvent
       read FOnProcessCommand write FOnProcessCommand;
@@ -907,7 +902,7 @@ type
     property IsScrolling : Boolean read FIsScrolling;
     property Keystrokes: TSynEditKeyStrokes
       read FKeystrokes write SetKeystrokes stored False;
-    property MaxUndo: Integer read GetMaxUndo write SetMaxUndo default 1024;
+    property MaxUndo: Integer read GetMaxUndo write SetMaxUndo default 0;
     property Options: TSynEditorOptions read GetOptions write SetOptions
       default SYNEDIT_DEFAULT_OPTIONS;
     property OverwriteCaret: TSynEditCaretType read FOverwriteCaret
@@ -1272,12 +1267,9 @@ begin
     OnPut := ListPut;
   end;
   fFontDummy := TFont.Create;
-  fUndoList := TSynEditUndoList.Create;
-  fUndoList.OnAddedUndo := UndoRedoAdded;
-  fOrigUndoList := fUndoList;
-  fRedoList := TSynEditUndoList.Create;
-  fRedoList.OnAddedUndo := UndoRedoAdded;
-  fOrigRedoList := fRedoList;
+  fUndoRedo := TSynEditUndo.Create(UndoItem, RedoItem);
+  fUndoRedo.OnModifiedChanged := ModifiedChanged;
+  fOrigUndoRedo := fUndoRedo;
 
   DoubleBuffered := False;
   fActiveLineColor := clNone;
@@ -1442,8 +1434,7 @@ begin
   fKbdHandler.Free;
   fFocusList.Free;
   fSelectedColor.Free;
-  fOrigUndoList.Free;
-  fOrigRedoList.Free;
+  fOrigUndoRedo.Free;
   fGutter.Free;
   fWordWrapGlyph.Free;
   fTextDrawer.Free;
@@ -3649,7 +3640,6 @@ end;
 
 procedure TCustomSynEdit.PasteFromClipboard;
 var
-  AddPasteEndMarker: boolean;
   StoredPaintLock: Integer;
   PasteMode: TSynSelectionMode;
   Mem: HGLOBAL;
@@ -3658,38 +3648,30 @@ begin
   if not CanPaste then
     exit;
   DoOnPaintTransient(ttBefore);
-  AddPasteEndMarker := False;
   PasteMode := SelectionMode;
-  try
-    // Check for our special format and read PasteMode.
-    // The text is ignored as it is ANSI-only to stay compatible with programs
-    // using the ANSI version of SynEdit.
-    //
-    // Instead we take the text stored in CF_UNICODETEXT or CF_TEXT.
-    if Clipboard.HasFormat(SynEditClipboardFormat) then
-    begin
-      Clipboard.Open;
+  // Check for our special format and read PasteMode.
+  // The text is ignored as it is ANSI-only to stay compatible with programs
+  // using the ANSI version of SynEdit.
+  //
+  // Instead we take the text stored in CF_UNICODETEXT or CF_TEXT.
+  if Clipboard.HasFormat(SynEditClipboardFormat) then
+  begin
+    Clipboard.Open;
+    try
+      Mem := Clipboard.GetAsHandle(SynEditClipboardFormat);
+      P := GlobalLock(Mem);
       try
-        Mem := Clipboard.GetAsHandle(SynEditClipboardFormat);
-        P := GlobalLock(Mem);
-        try
-          if P <> nil then
-            PasteMode := PSynSelectionMode(P)^;
-        finally
-          GlobalUnlock(Mem);
-        end
+        if P <> nil then
+          PasteMode := PSynSelectionMode(P)^;
       finally
-        Clipboard.Close;
-      end;
+        GlobalUnlock(Mem);
+      end
+    finally
+      Clipboard.Close;
     end;
-    fUndoList.AddChange(crPasteBegin, BlockBegin, BlockEnd, '', smNormal);
-    AddPasteEndMarker := True;
-
-    SetSelTextPrimitiveEx(PasteMode, PWideChar(GetClipboardText), True);
-  finally
-    if AddPasteEndMarker then
-      fUndoList.AddChange(crPasteEnd, BlockBegin, BlockEnd, '', smNormal);
   end;
+  // SetSelTextPrimitiveEx Encloses the undo actions in Begin/EndUndoBlock
+  SetSelTextPrimitiveEx(PasteMode, PWideChar(GetClipboardText), True);
 
   // ClientRect can be changed by UpdateScrollBars if eoHideShowScrollBars
   // is enabled
@@ -4341,7 +4323,7 @@ var
             begin
               LineBreakPos.Line := CaretY -1;
               LineBreakPos.Char := Length(Lines[CaretY - 2]) + 1;
-              fUndoList.AddChange(crLineBreak, LineBreakPos, LineBreakPos, '', smNormal);
+              fUndoRedo.AddUndoChange(crLineBreak, LineBreakPos, LineBreakPos, '', smNormal);
             end;
           end
           else begin
@@ -4359,7 +4341,7 @@ var
           // Add undo change here from PasteFromClipboard
           if AddToUndoList then
           begin
-            fUndoList.AddChange(crInsert, BufferCoord(InsertPos, CaretY),
+            fUndoRedo.AddUndoChange(crInsert, BufferCoord(InsertPos, CaretY),
                BufferCoord(InsertPos + (P - Start), CaretY), '', fActiveSelectionMode);
           end;
         end;
@@ -4463,10 +4445,10 @@ begin
         if AddToUndoList then
         begin
           if SilentDelete then
-            fUndoList.AddChange(crSilentDelete, fBlockBegin, fBlockEnd,
+            fUndoRedo.AddUndoChange(crSilentDelete, fBlockBegin, fBlockEnd,
               SelectedText, fActiveSelectionMode)
           else
-            fUndoList.AddChange(crDelete,  fBlockBegin, fBlockEnd,
+            fUndoRedo.AddUndoChange(crDelete,  fBlockBegin, fBlockEnd,
               SelectedText, fActiveSelectionMode);
         end;
         DeleteSelection;
@@ -4486,7 +4468,7 @@ begin
             BE.Char := MaxInt;
             BE.Line := BE.Line - 1;
           end;
-          fUndoList.AddChange(crInsert, BB, BE, '', PasteMode)
+          fUndoRedo.AddUndoChange(crInsert, BB, BE, '', PasteMode)
         end;
       end;
 
@@ -4674,7 +4656,7 @@ begin
             Exclude(fOptions, eoScrollPastEol);
         end;
         SetCaretAndSelection(CaretXY, vNewCaret, CaretXY);
-        fUndoList.AddChange(crSelection, fBlockBegin, fBlockEnd, '', ActiveSelectionMode);
+        fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', ActiveSelectionMode);
       finally
         EndUndoBlock;
       end;
@@ -5519,12 +5501,12 @@ end;
 
 function TCustomSynEdit.GetCanUndo: Boolean;
 begin
-  result := not ReadOnly and fUndoList.CanUndo;
+  result := not ReadOnly and fUndoRedo.CanUndo;
 end;
 
 function TCustomSynEdit.GetCanRedo: Boolean;
 begin
-  result := not ReadOnly and fRedoList.CanUndo;
+  result := not ReadOnly and fUndoRedo.CanUndo;
 end;
 
 function TCustomSynEdit.GetCanPaste;
@@ -5547,96 +5529,24 @@ begin
 end;
 
 procedure TCustomSynEdit.Redo;
-
-  procedure RemoveGroupBreak;
-  var
-    Item: TSynEditUndoItem;
-    OldBlockNumber: Integer;
-  begin
-    if fRedoList.LastChangeReason = crGroupBreak then
-    begin
-      OldBlockNumber := UndoList.BlockChangeNumber;
-      Item := fRedoList.PopItem;
-      try
-        UndoList.BlockChangeNumber := Item.ChangeNumber;
-        fUndoList.AddGroupBreak;
-      finally
-        UndoList.BlockChangeNumber := OldBlockNumber;
-        Item.Free;
-      end;
-      UpdateModifiedStatus;
-    end;
-  end;
-
-var
-  Item: TSynEditUndoItem;
-  OldChangeNumber: integer;
-  SaveChangeNumber: integer;
-  FLastChange : TSynChangeReason;
-  FAutoComplete: Boolean;
-  FPasteAction: Boolean;
-  FSpecial: Boolean;
-  FKeepGoing: Boolean;
 begin
   if ReadOnly then
     exit;
 
-  FLastChange := FRedoList.LastChangeReason;
-  FAutoComplete := FLastChange = crAutoCompleteBegin;
-  FPasteAction := FLastChange = crPasteBegin;
-  FSpecial := FLastChange = crSpecialBegin;
-
-  Item := fRedoList.PeekItem;
-  if Item <> nil then
-  begin
-    OldChangeNumber := Item.ChangeNumber;
-    SaveChangeNumber := fUndoList.BlockChangeNumber;
-    fUndoList.BlockChangeNumber := Item.ChangeNumber;
-    Lines.BeginUpdate;
-    try
-      repeat
-        RedoItem;
-        Item := fRedoList.PeekItem;
-        if Item = nil then
-          FKeepGoing := False
-        else begin
-          if FAutoComplete then
-             FKeepGoing:= (FRedoList.LastChangeReason <> crAutoCompleteEnd)
-          else if FPasteAction then
-             FKeepGoing:= (FRedoList.LastChangeReason <> crPasteEnd)
-          else if FSpecial then
-             FKeepGoing := (FRedoList.LastChangeReason <> crSpecialEnd)
-          else if Item.ChangeNumber = OldChangeNumber then
-             FKeepGoing := True
-          else begin
-            FKeepGoing := ((eoGroupUndo in FOptions) and
-              (FLastChange = Item.ChangeReason) and
-              not(FLastChange in [crIndent, crUnindent]));
-          end;
-          FLastChange := Item.ChangeReason;
-        end;
-      until not(FKeepGoing);
-
-      //we need to eat the last command since it does nothing and also update modified status...
-      if (FAutoComplete and (FRedoList.LastChangeReason = crAutoCompleteEnd)) or
-         (FPasteAction and (FRedoList.LastChangeReason = crPasteEnd)) or
-         (FSpecial and (FRedoList.LastChangeReason = crSpecialEnd)) then
-      begin
-        RedoItem;
-      end;
-
-    finally
-      UpdateModifiedStatus;
-      fUndoList.BlockChangeNumber := SaveChangeNumber;
-      Lines.EndUpdate;
-    end;
-    RemoveGroupBreak;
+  DoOnPaintTransientEx(ttBefore,true);
+  IncPaintLock;
+  Lines.BeginUpdate;
+  try
+    FUndoRedo.Redo;
+  finally
+    Lines.EndUpdate;
+    DecPaintLock;
+    DoOnPaintTransientEx(ttAfter,true);
   end;
 end;
 
-procedure TCustomSynEdit.RedoItem;
+procedure TCustomSynEdit.RedoItem(Item: TSynEditUndoItem);
 var
-  Item: TSynEditUndoItem;
   Run, StrToDelete: PWideChar;
   Len: Integer;
   TempString: string;
@@ -5644,26 +5554,26 @@ var
   ChangeScrollPastEol: boolean;
   BeginX: integer;
   OldSelectionMode : TSynSelectionMode;
+  GroupBreak: Boolean;
 begin
   ChangeScrollPastEol := not (eoScrollPastEol in Options);
-  Item := fRedoList.PopItem;
   OldSelectionMode := ActiveSelectionMode;
+  GroupBreak := Item.GroupBreak;
   if Assigned(Item) then
   try
     ActiveSelectionMode := Item.ChangeSelMode;
-    DoOnPaintTransientEx(ttBefore,true);
-    IncPaintLock;
     Include(fOptions, eoScrollPastEol);
-    fUndoList.InsideRedo := True;
     case Item.ChangeReason of
       crCaret:
         begin
-          fUndoList.AddChange(Item.ChangeReason, CaretXY, CaretXY, '', fActiveSelectionMode);
+          fUndoRedo.AddUndoChange(Item.ChangeReason, CaretXY, CaretXY, '',
+            fActiveSelectionMode, GroupBreak);
           InternalCaretXY := Item.ChangeStartPos;
         end;
       crSelection:
         begin
-          fUndoList.AddChange(Item.ChangeReason, BlockBegin, BlockEnd, '', fActiveSelectionMode);
+          fUndoRedo.AddUndoChange(Item.ChangeReason, BlockBegin, BlockEnd, '',
+            fActiveSelectionMode, GroupBreak);
           SetCaretAndSelection(CaretXY, Item.ChangeStartPos, Item.ChangeEndPos);
         end;
       crInsert:
@@ -5673,8 +5583,8 @@ begin
           SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr),
             False);
           InternalCaretXY := Item.ChangeEndPos;
-          fUndoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, SelText, Item.ChangeSelMode);
+          fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
+            Item.ChangeEndPos, SelText, Item.ChangeSelMode, GroupBreak);
         end;
       crDelete, crSilentDelete:
         begin
@@ -5683,8 +5593,8 @@ begin
           TempString := SelText;
           SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr),
             False);
-          fUndoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, TempString, Item.ChangeSelMode);
+          fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
+            Item.ChangeEndPos, TempString, Item.ChangeSelMode, GroupBreak);
           InternalCaretXY := Item.ChangeStartPos;
         end;
       crLineBreak:
@@ -5697,8 +5607,8 @@ begin
         begin
           SetCaretAndSelection(Item.ChangeEndPos, Item.ChangeStartPos,
             Item.ChangeEndPos);
-          fUndoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode);
+          fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
+            Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
         end;
        crUnindent :
          begin // re-delete the (raggered) column
@@ -5743,22 +5653,18 @@ begin
               BufferCoord(Item.ChangeEndPos.Char - Len, Item.ChangeEndPos.Line) );
           end;
            // add to undo list
-           fUndoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-             Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode);
+           fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
+             Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
          end;
-      crNothing, crPasteBegin, crPasteEnd:
-        fUndoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-           Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode);
+      crNothing:
+        fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
+           Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
     end;
   finally
     ActiveSelectionMode := OldSelectionMode;
-    fUndoList.InsideRedo := False;
     if ChangeScrollPastEol then
       Exclude(fOptions, eoScrollPastEol);
-    Item.Free;
-    DecPaintLock;
-    DoOnPaintTransientEx(ttAfter,true);
- end;
+  end;
 end;
 
 //++ CodeFolding
@@ -6075,8 +5981,8 @@ begin
     BeginUndoBlock;
     try
       // Save caret and selection, so that they can be restored by undo
-      fUndoList.AddChange(crCaret, Caret, Caret, '', OldSelectionMode);
-      fUndoList.AddChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
+      fUndoRedo.AddUndoChange(crCaret, Caret, Caret, '', OldSelectionMode);
+      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
 
       // Insert/replace text at selection BB-BE
       SetCaretAndSelection(BB, BB, BE);
@@ -6091,11 +5997,8 @@ begin
       end;
       SetCaretAndSelection(Caret, StartOfBlock, EndOfBlock);
       // Save caret and selection, so that they can be restored by redo
-      fUndoList.AddChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
-      fUndoList.AddChange(crCaret, Caret, Caret, '', OldSelectionMode);
-      // this does nothing but prevents undoing a subsequent Move Line down
-      // to be merged with this one
-      fUndoList.AddChange(crNothing, Caret, Caret, '', fActiveSelectionMode);
+      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
+      fUndoRedo.AddUndoChange(crCaret, Caret, Caret, '', OldSelectionMode);
     finally
       EndUndoBlock;
       DoOnPaintTransientEx(ttAfter, true);
@@ -6119,8 +6022,8 @@ begin
     BeginUndoBlock;
     try
       // Save caret and selection, so that they can be restored by undo
-      fUndoList.AddChange(crCaret, CaretXY, CaretXY, '', OldSelectionMode);
-      fUndoList.AddChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
+      fUndoRedo.AddUndoChange(crCaret, CaretXY, CaretXY, '', OldSelectionMode);
+      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
       // Nomalize selection
       if fBlockBegin > fBlockEnd then
         SetCaretAndSelection(BlockBegin, BlockBegin, BlockEnd);
@@ -6135,9 +6038,8 @@ begin
       SetSelText('');
       SetCaretAndSelection(fBlockBegin, fBlockBegin, fBlockBegin);
       // Save caret and selection, so that they can be restored by redo
-      fUndoList.AddChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
-      fUndoList.AddChange(crCaret, fBlockBegin, fBlockBegin, '', OldSelectionMode);
-      fUndoList.AddChange(crNothing, fBlockBegin, fBlockBegin, '', fActiveSelectionMode);
+      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
+      fUndoRedo.AddUndoChange(crCaret, fBlockBegin, fBlockBegin, '', OldSelectionMode);
     finally
       EndUndoBlock;
       // Restore Selection mode
@@ -6163,119 +6065,47 @@ end;
 //-- CodeFolding
 
 procedure TCustomSynEdit.Undo;
-
-  procedure RemoveGroupBreak;
-  var
-    Item: TSynEditUndoItem;
-    OldBlockNumber: Integer;
-  begin
-    if fUndoList.LastChangeReason = crGroupBreak then
-    begin
-      OldBlockNumber := RedoList.BlockChangeNumber;
-      try
-        Item := fUndoList.PopItem;
-        RedoList.BlockChangeNumber := Item.ChangeNumber;
-        Item.Free;
-        fRedoList.AddGroupBreak;
-      finally
-        RedoList.BlockChangeNumber := OldBlockNumber;
-      end;
-    end;
-  end;
-
-var
-  Item: TSynEditUndoItem;
-  OldChangeNumber: integer;
-  SaveChangeNumber: integer;
-  FLastChange : TSynChangeReason;
-  FAutoComplete: Boolean;
-  FPasteAction: Boolean;
-  FSpecial: Boolean;
-  FKeepGoing: Boolean;
 begin
   if ReadOnly then
     exit;
 
-  RemoveGroupBreak;
-
-  FLastChange := FUndoList.LastChangeReason;
-  FAutoComplete := FLastChange = crAutoCompleteEnd;
-  FPasteAction := FLastChange = crPasteEnd;
-  FSpecial := FLastChange = crSpecialEnd;
-
-  Item := fUndoList.PeekItem;
-  if Item <> nil then
-  begin
-    OldChangeNumber := Item.ChangeNumber;
-    SaveChangeNumber := fRedoList.BlockChangeNumber;
-    fRedoList.BlockChangeNumber := Item.ChangeNumber;
-
-   Lines.BeginUpdate;
-   try
-      repeat
-        UndoItem;
-        Item := fUndoList.PeekItem;
-        if Item = nil then
-          FKeepGoing := False
-        else begin
-          if FAutoComplete then
-             FKeepGoing := (FUndoList.LastChangeReason <> crAutoCompleteBegin)
-          else if FPasteAction then
-             FKeepGoing := (FUndoList.LastChangeReason <> crPasteBegin)
-          else if FSpecial then
-             FKeepGoing := (FUndoList.LastChangeReason <> crSpecialBegin)
-          else if Item.ChangeNumber = OldChangeNumber then
-             FKeepGoing := True
-          else begin
-            FKeepGoing := ((eoGroupUndo in FOptions) and
-              (FLastChange = Item.ChangeReason) and
-              not(FLastChange in [crIndent, crUnindent]));
-          end;
-          FLastChange := Item.ChangeReason;
-        end;
-      until not(FKeepGoing);
-
-      //we need to eat the last command since it does nothing and also update modified status...
-      if (FAutoComplete and (FUndoList.LastChangeReason = crAutoCompleteBegin)) or
-         (FPasteAction and (FUndoList.LastChangeReason = crPasteBegin)) or
-         (FSpecial and (FUndoList.LastChangeReason = crSpecialBegin)) then
-      begin
-        UndoItem;
-       end;
-
-    finally
-      UpdateModifiedStatus;
-      fRedoList.BlockChangeNumber := SaveChangeNumber;
-      Lines.EndUpdate;
-    end;
+  DoOnPaintTransientEx(ttBefore,true);
+  IncPaintLock;
+  Lines.BeginUpdate;
+  try
+    FUndoRedo.Undo;
+  finally
+    Lines.EndUpdate;
+    DecPaintLock;
+    DoOnPaintTransientEx(ttAfter,true);
   end;
 end;
 
-procedure TCustomSynEdit.UndoItem;
+procedure TCustomSynEdit.UndoItem(Item: TSynEditUndoItem);
 var
-  Item: TSynEditUndoItem;
   TmpPos: TBufferCoord;
   TmpStr: string;
   ChangeScrollPastEol: Boolean;
   BeginX: Integer;
+  GroupBreak: Boolean;
 begin
   ChangeScrollPastEol := not (eoScrollPastEol in Options);
-  Item := fUndoList.PopItem;
   if Assigned(Item) then
   try
+    GroupBreak := Item.GroupBreak;
     ActiveSelectionMode := Item.ChangeSelMode;
-    DoOnPaintTransientEx(ttBefore,true);
-    IncPaintLock;
     Include(fOptions, eoScrollPastEol);
     case Item.ChangeReason of
       crCaret:
         begin
-          fRedoList.AddChange(Item.ChangeReason, CaretXY, CaretXY, '', fActiveSelectionMode);
+          fUndoRedo.AddRedoChange(Item.ChangeReason, CaretXY, CaretXY, '',
+            fActiveSelectionMode, GroupBreak);
           InternalCaretXY := Item.ChangeStartPos;
         end;
       crSelection:
         begin
-          fRedoList.AddChange(Item.ChangeReason, BlockBegin, BlockEnd, '', fActiveSelectionMode);
+          fUndoRedo.AddRedoChange(Item.ChangeReason, BlockBegin, BlockEnd, '',
+            fActiveSelectionMode, GroupBreak);
           SetCaretAndSelection(CaretXY, Item.ChangeStartPos, Item.ChangeEndPos);
         end;
       crInsert:
@@ -6285,11 +6115,11 @@ begin
           TmpStr := SelText;
           SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr),
             False);
-          fRedoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, TmpStr, Item.ChangeSelMode);
+          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
+            Item.ChangeEndPos, TmpStr, Item.ChangeSelMode, GroupBreak);
           InternalCaretXY := Item.ChangeStartPos;
         end;
-      crDelete, crSilentDelete, crDeleteAll:
+      crDelete, crSilentDelete:
         begin
           // If there's no selection, we have to set
           // the Caret's position manualy.
@@ -6314,12 +6144,8 @@ begin
           else
             SetCaretAndSelection(TmpPos, Item.ChangeStartPos,
               Item.ChangeEndPos);
-          fRedoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, '', Item.ChangeSelMode);
-          if Item.ChangeReason = crDeleteAll then begin
-            InternalCaretXY := BufferCoord(1, 1);
-            fBlockEnd := BufferCoord(1, 1);
-          end;
+          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
+            Item.ChangeEndPos, '', Item.ChangeSelMode, GroupBreak);
           EnsureCursorPosVisible;
         end;
       crLineBreak:
@@ -6340,15 +6166,15 @@ begin
           end
           else
             ProperSetLine(CaretY - 1, Item.ChangeStr);
-          fRedoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, '', Item.ChangeSelMode);
+          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
+            Item.ChangeEndPos, '', Item.ChangeSelMode, GroupBreak);
         end;
       crIndent:
         begin
           SetCaretAndSelection(Item.ChangeEndPos, Item.ChangeStartPos,
             Item.ChangeEndPos);
-          fRedoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode);
+          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
+            Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
         end;
        crUnindent: // reinsert the (raggered) column that was deleted
          begin
@@ -6366,8 +6192,8 @@ begin
           end;
            SetCaretAndSelection(Item.ChangeStartPos, Item.ChangeStartPos,
              Item.ChangeEndPos);
-          fRedoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-             Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode);
+          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
+             Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
         end;
       crWhiteSpaceAdd:
         begin
@@ -6377,16 +6203,13 @@ begin
           SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr), True);
           InternalCaretXY := Item.ChangeStartPos;
         end;
-      crNothing, crPasteBegin, crPasteEnd:
-        fRedoList.AddChange(Item.ChangeReason, Item.ChangeStartPos,
-           Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode);
+      crNothing:
+        fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
+           Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
     end;
   finally
     if ChangeScrollPastEol then
       Exclude(fOptions, eoScrollPastEol);
-    Item.Free;
-    DecPaintLock;
-    DoOnPaintTransientEx(ttAfter,true);
  end;
 end;
 
@@ -6519,24 +6342,11 @@ begin
   TSynEditStringList(fOrigLines).OnChange(Sender);
 end;
 
-procedure TCustomSynEdit.ChainUndoRedoAdded(Sender: TObject);
-var
-  iList: TSynEditUndoList;
-  iHandler: TNotifyEvent;
+procedure TCustomSynEdit.ChainModifiedChanged(Sender: TObject);
 begin
-  if Sender = fUndoList then
-  begin
-    iList := fOrigUndoList;
-    iHandler := fChainUndoAdded;
-  end
-  else { if Sender = fRedoList then }
-  begin
-    iList := fOrigRedoList;
-    iHandler := fChainRedoAdded;
-  end;
-  if Assigned(iHandler) then
-    iHandler(Sender);
-  iList.OnAddedUndo(Sender);
+  if Assigned(fChainModifiedChanged) then
+     fChainModifiedChanged(Sender);
+  FOrigUndoRedo.OnModifiedChanged(Sender);
 end;
 
 //++ DPI-Aware
@@ -6574,8 +6384,7 @@ begin
     OnChanging := fChainLinesChanging;
     OnChange := fChainLinesChanged;
   end;
-  fUndoList.OnAddedUndo := fChainUndoAdded;
-  fRedoList.OnAddedUndo := fChainRedoAdded;
+  fUndoRedo.OnModifiedChanged := fChainModifiedChanged;
 
   fChainListCleared := nil;
   fChainListDeleted := nil;
@@ -6583,19 +6392,18 @@ begin
   fChainListPut := nil;
   fChainLinesChanging := nil;
   fChainLinesChanged := nil;
-  fChainUndoAdded := nil;
+  fChainModifiedChanged := nil;
 
   //make the switch
   fLines := fOrigLines;
-  fUndoList := fOrigUndoList;
-  fRedoList := fOrigRedoList;
+  fUndoRedo := fOrigUndoRedo;
   LinesHookChanged;
 
   WordWrap := vOldWrap;
 end;
 
 procedure TCustomSynEdit.HookTextBuffer(aBuffer: TSynEditStringList;
-  aUndo, aRedo: TSynEditUndoList);
+  aUndoRedo: TSynEditUndo);
 var
   vOldWrap: Boolean;
 begin
@@ -6624,15 +6432,12 @@ begin
   fChainLinesChanged := aBuffer.OnChange;
     aBuffer.OnChange := ChainLinesChanged;
 
-  fChainUndoAdded := aUndo.OnAddedUndo;
-    aUndo.OnAddedUndo := ChainUndoRedoAdded;
-  fChainRedoAdded := aRedo.OnAddedUndo;
-    aRedo.OnAddedUndo := ChainUndoRedoAdded;
+  fChainModifiedChanged := aUndoRedo.OnModifiedChanged;
+    aUndoRedo.OnModifiedChanged := ChainModifiedChanged;
 
   //make the switch
   fLines := aBuffer;
-  fUndoList := aUndo;
-  fRedoList := aRedo;
+  fUndoRedo := aUndoRedo;
   LinesHookChanged;
 
   WordWrap := vOldWrap;
@@ -6646,8 +6451,7 @@ end;
 
 procedure TCustomSynEdit.SetLinesPointer(ASynEdit: TCustomSynEdit);
 begin
-  HookTextBuffer(TSynEditStringList(ASynEdit.Lines),
-    ASynEdit.UndoList, ASynEdit.RedoList);
+  HookTextBuffer(TSynEditStringList(ASynEdit.Lines), ASynEdit.UndoRedo);
 
   fChainedEditor := ASynEdit;
   ASynEdit.FreeNotification(Self);
@@ -6690,16 +6494,17 @@ end;
 
 function TCustomSynEdit.GetMaxUndo: Integer;
 begin
-  result := fUndoList.MaxUndoActions;
+  result := fUndoRedo.MaxUndoActions;
+end;
+
+function TCustomSynEdit.GetModified: Boolean;
+begin
+  Result := fUndoRedo.Modified;
 end;
 
 procedure TCustomSynEdit.SetMaxUndo(const Value: Integer);
 begin
-  if Value > -1 then
-  begin
-    fUndoList.MaxUndoActions := Value;
-    fRedoList.MaxUndoActions := Value;
-  end;
+  fUndoRedo.MaxUndoActions := Value;
 end;
 
 procedure TCustomSynEdit.Notification(AComponent: TComponent;
@@ -7282,7 +7087,7 @@ begin
               end;
               if (Caret.Char <> CaretX) or (Caret.Line <> CaretY) then
               begin
-                fUndoList.AddChange(crSilentDelete, CaretXY, Caret, Helper,
+                fUndoRedo.AddUndoChange(crSilentDelete, CaretXY, Caret, Helper,
                   smNormal);
               end;
             end;
@@ -7327,7 +7132,7 @@ begin
             end;
             if (Caret.Char <> CaretX) or (Caret.Line <> CaretY) then
             begin
-              fUndoList.AddChange(crSilentDelete, Caret, CaretXY,
+              fUndoRedo.AddUndoChange(crSilentDelete, Caret, CaretXY,
                 Helper, smNormal);
             end;
           end;
@@ -7394,7 +7199,7 @@ begin
       ecInsertLine,
       ecLineBreak:
         if not ReadOnly then begin
-          UndoList.BeginBlock;
+          BeginUndoBlock;
           try
           if SelAvail then
             SetSelText('');
@@ -7414,7 +7219,7 @@ begin
                 Delete(Temp2, 1, CaretX - 1);
                 Lines.Insert(CaretY, GetLeftSpacing(SpaceCount1, True) + Temp2);
                 Lines[CaretY - 1] := Temp;
-                fUndoList.AddChange(crLineBreak, CaretXY, CaretXY, Temp2,
+                fUndoRedo.AddUndoChange(crLineBreak, CaretXY, CaretXY, Temp2,
                   smNormal);
                 if Command = ecLineBreak then
                   InternalCaretXY := BufferCoord(
@@ -7423,7 +7228,7 @@ begin
               end
               else begin
                 Lines.Insert(CaretY - 1, '');
-                fUndoList.AddChange(crLineBreak, CaretXY, CaretXY, Temp2,
+                fUndoRedo.AddUndoChange(crLineBreak, CaretXY, CaretXY, Temp2,
                   smNormal);
                 if Command = ecLineBreak then
                   InternalCaretY := CaretY + 1;
@@ -7443,7 +7248,7 @@ begin
               Lines.Insert(CaretY, '');
               Caret := CaretXY;
 
-              fUndoList.AddChange(crLineBreak, Caret, Caret, '', smNormal);   //KV
+              fUndoRedo.AddUndoChange(crLineBreak, Caret, Caret, '', smNormal);   //KV
               if Command = ecLineBreak then
               begin
                 if SpaceCount2 > 0 then
@@ -7488,7 +7293,7 @@ begin
               end;
             end;
             Lines.Insert(CaretY - 1, '');
-            fUndoList.AddChange(crLineBreak, CaretXY, CaretXY, '', smNormal);
+            fUndoRedo.AddUndoChange(crLineBreak, CaretXY, CaretXY, '', smNormal);
             if Command = ecLineBreak then
               InternalCaretX := SpaceCount2 + 1;
             if Command = ecLineBreak then
@@ -7499,7 +7304,7 @@ begin
           EnsureCursorPosVisible;
           UpdateLastCaretX;
           finally
-            UndoList.EndBlock;
+            EndUndoBlock;
           end;
         end;
       ecTab:
@@ -7558,18 +7363,18 @@ begin
                     EndOfBlock := CaretXY;
                     EndOfBlock.Char := EndOfBlock.Char - 1;
                     //The added whitespace
-                    fUndoList.AddChange(crWhiteSpaceAdd, EndOfBlock, StartOfBlock, '',
+                    fUndoRedo.AddUndoChange(crWhiteSpaceAdd, EndOfBlock, StartOfBlock, '',
                       smNormal);
                     StartOfBlock.Char := StartOfBlock.Char + SpaceCount2;
 
-                    fUndoList.AddChange(crInsert, StartOfBlock, CaretXY, '',
+                    fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretXY, '',
                       smNormal);
                   finally
                     EndUndoBlock;
                   end;
                 end
                 else begin
-                  fUndoList.AddChange(crInsert, StartOfBlock, CaretXY, '',
+                  fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretXY, '',
                     smNormal);
                 end;
               end
@@ -7581,7 +7386,7 @@ begin
                 CaretNew.Char := CaretX + counter;
                 CaretNew.Line := CaretY;
                 Lines[CaretY - 1] := Temp;
-                fUndoList.AddChange(crInsert, StartOfBlock, CaretNew, Helper,
+                fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretNew, Helper,
                   smNormal);
                 InternalCaretX := CaretX + 1;
               end;
@@ -7740,7 +7545,7 @@ begin
               Lines[CaretY - 1] := Temp;
               if fInserting then
                 Helper := '';
-              fUndoList.AddChange(crInsert, StartOfBlock, CaretXY, Helper,
+              fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretXY, Helper,
                 smNormal);
               if CaretX >= LeftChar + fCharsInWindow then
                 LeftChar := LeftChar + min(25, fCharsInWindow - 1);
@@ -7797,8 +7602,7 @@ begin
   Lines.Clear;
   fMarkList.Clear; // fMarkList.Clear also frees all bookmarks,
   FillChar(fBookMarks, sizeof(fBookMarks), 0); // so fBookMarks should be cleared too
-  fUndoList.Clear;
-  fRedoList.Clear;
+  fUndoRedo.Clear;
   Modified := False;
 end;
 
@@ -7980,7 +7784,7 @@ end;
 
 procedure TCustomSynEdit.BeginUndoBlock;
 begin
-  fUndoList.BeginBlock;
+  fUndoRedo.BeginBlock;
 end;
 
 procedure TCustomSynEdit.BeginUpdate;
@@ -7990,7 +7794,7 @@ end;
 
 procedure TCustomSynEdit.EndUndoBlock;
 begin
-  fUndoList.EndBlock;
+  fUndoRedo.EndBlock;
 end;
 
 procedure TCustomSynEdit.EndUpdate;
@@ -8105,8 +7909,7 @@ end;
 
 procedure TCustomSynEdit.ClearUndo;
 begin
-  fUndoList.Clear;
-  fRedoList.Clear;
+  fUndoRedo.Clear;
 end;
 
 procedure TCustomSynEdit.SetGutter(const Value: TSynGutter);
@@ -8139,14 +7942,12 @@ end;
 
 procedure TCustomSynEdit.LockUndo;
 begin
-  fUndoList.Lock;
-  fRedoList.Lock;
+  fUndoRedo.Lock;
 end;
 
 procedure TCustomSynEdit.UnlockUndo;
 begin
-  fUndoList.Unlock;
-  fRedoList.Unlock;
+  fUndoRedo.Unlock;
 end;
 
 procedure TCustomSynEdit.WMSetCursor(var Msg: TWMSetCursor);
@@ -8490,6 +8291,8 @@ begin
     bInvalidate := (eoShowSpecialChars in fOptions) <> (eoShowSpecialChars in Value);
     bUpdateScroll := (Options * ScrollOptions) <> (Value * ScrollOptions);
 
+    FUndoRedo.GroupUndo := eoGroupUndo in Options;
+
     if not (eoScrollPastEol in Options) then
       LeftChar := LeftChar;
     if not (eoScrollPastEof in Options) then
@@ -8666,8 +8469,8 @@ end;
 procedure TCustomSynEdit.MoveCaretAndSelection(const ptBefore, ptAfter: TBufferCoord;
   SelectionCommand: Boolean);
 begin
-  if (eoGroupUndo in FOptions) and UndoList.CanUndo then
-    fUndoList.AddGroupBreak;
+  if (eoGroupUndo in FOptions) and fUndoRedo.CanUndo then
+    fUndoRedo.AddGroupBreak;
 
   IncPaintLock;
   if SelectionCommand then
@@ -8835,10 +8638,10 @@ begin
       BeginUndoBlock;
       try
         if bHadSel then
-          fUndoList.AddChange(crSelection, oldBlockBegin, oldBlockEnd, '', fActiveSelectionMode)
+          fUndoRedo.AddUndoChange(crSelection, oldBlockBegin, oldBlockEnd, '', fActiveSelectionMode)
         else
-          fUndoList.AddChange(crSelection, oldCaret, oldCaret, '', fActiveSelectionMode);
-        fUndoList.AddChange(crCaret, oldCaret, oldCaret, '', fActiveSelectionMode);
+          fUndoRedo.AddUndoChange(crSelection, oldCaret, oldCaret, '', fActiveSelectionMode);
+        fUndoRedo.AddUndoChange(crCaret, oldCaret, oldCaret, '', fActiveSelectionMode);
         SelText := w;
       finally
         EndUndoBlock;
@@ -8911,7 +8714,7 @@ begin
     else
       vIgnoreSmartTabs := True;
   end;
-  fUndoList.BeginBlock;
+  BeginUndoBlock;
   try
     if SelAvail then
       SetSelText('');
@@ -8974,7 +8777,7 @@ begin
     SetSelText(Spaces);
     if TrimTrailingActive then Include(fOptions, eoTrimTrailingSpaces);
   finally
-    fUndoList.EndBlock;
+    EndUndoBlock;
   end;
   ForceCaretX(NewCaretX);
 
@@ -9296,7 +9099,7 @@ begin
     end;
     StrCopy(Run, PWideChar(Spaces));
 
-    fUndoList.BeginBlock;
+    BeginUndoBlock;
     try
       InsertionPos.Line := BB.Line;
       if fActiveSelectionMode = smColumn then
@@ -9304,14 +9107,14 @@ begin
       else
         InsertionPos.Char := 1;
       InsertBlock(InsertionPos, InsertionPos, StrToInsert, True);
-      fUndoList.AddChange(crIndent, BB, BE, '', smColumn);
+      fUndoRedo.AddUndoChange(crIndent, BB, BE, '', smColumn);
       //We need to save the position of the end block for redo
-      fUndoList.AddChange(crIndent,
+      fUndoRedo.AddUndoChange(crIndent,
         BufferCoord(BB.Char + length(Spaces), BB.Line),
         BufferCoord(BE.Char + length(Spaces), BE.Line),
         '', smColumn);
     finally
-      fUndoList.EndBlock;
+      EndUndoBlock;
     end;
 
     //adjust the x position of orgcaretpos appropriately
@@ -9446,7 +9249,7 @@ begin
         StrToDelete := Run;
       until Run^ = #0;
       LastIndent := Len;
-      fUndoList.AddChange(crUnindent, BB, BE, FullStrToDelete, fActiveSelectionMode);
+      fUndoRedo.AddUndoChange(crUnindent, BB, BE, FullStrToDelete, fActiveSelectionMode);
     end;
     // restore selection
     if FirstIndent = -1 then
@@ -9560,11 +9363,10 @@ end;
 
 procedure TCustomSynEdit.SetModified(Value: Boolean);
 begin
-  if Value <> fModified then begin
-    fModified := Value;
-    if (eoGroupUndo in Options) and (not Value) and UndoList.CanUndo then
-      UndoList.AddGroupBreak;
-    UndoList.InitialState := not Value;
+  if Value <> FUndoRedo.Modified then begin
+    fUndoRedo.Modified := Value;
+    if (eoGroupUndo in Options) and (not Value) and fUndoRedo.CanUndo then
+      fUndoRedo.AddGroupBreak;
     StatusChanged([scModified]);
   end;
 end;
@@ -9962,20 +9764,9 @@ begin
   end;
 end;
 
-procedure TCustomSynEdit.UpdateModifiedStatus;
+procedure TCustomSynEdit.ModifiedChanged(Sender: TObject);
 begin
-  Modified := not UndoList.InitialState;
-end;
-
-procedure TCustomSynEdit.UndoRedoAdded(Sender: TObject);
-begin
-  UpdateModifiedStatus;
-
-  // we have to clear the redo information, since adding undo info removes
-  // the necessary context to undo earlier edit actions
-  if (Sender = fUndoList) and not fUndoList.InsideRedo and
-     (fUndoList.PeekItem<>nil) and (fUndoList.PeekItem.ChangeReason<>crGroupBreak) then
-    fRedoList.Clear;
+  StatusChanged([scModified]);
 end;
 
 function TCustomSynEdit.GetWordAtRowCol(XY: TBufferCoord): string;

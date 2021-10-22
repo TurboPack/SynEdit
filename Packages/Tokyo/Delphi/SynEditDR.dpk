@@ -139,6 +139,7 @@ contains
   SynTextDrawer in '..\..\..\Source\SynTextDrawer.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
   SynURIOpener in '..\..\..\Source\SynURIOpener.pas',
+  SynEditUndo in '..\..\..\Source\SynEditUndo.pas',
   SynUsp10 in '..\..\..\Source\SynUsp10.pas';
 
 end.

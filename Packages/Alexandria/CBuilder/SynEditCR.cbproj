@@ -529,6 +529,9 @@
         <DelphiCompile Include="..\..\..\Source\SynUsp10.pas">
             <BuildOrder>117</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditUndo.pas">
+            <BuildOrder>118</BuildOrder>
+        </DelphiCompile>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
