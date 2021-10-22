@@ -453,7 +453,7 @@ begin
   InsertCaret := ctVerticalLine;
   OverwriteCaret := ctBlock;
   MaxScrollWidth := 1024;
-  MaxUndo := 1024;
+  MaxUndo := 0;
   RightEdge := 80;
   RightEdgeColor := clSilver;
   TabWidth := 8;

@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -3332,6 +3332,7 @@ begin
     if (Length(Token) > 0) and (i <> -1) then
     begin
       Editor.Lines.BeginUpdate;
+      Editor.BeginUndoBlock;
       try
         TmpOptions := Editor.Options;
         OrigOptions := Editor.Options;
@@ -3343,9 +3344,6 @@ begin
 
         if ChangedIndent or ChangedTrailing then
           Editor.Options := TmpOptions;
-
-        Editor.UndoList.AddChange(crAutoCompleteBegin, StartOfBlock, StartOfBlock, '',
-          smNormal);
 
         fNoNextKey := True;
         for j := 1 to Length(Token) do
@@ -3403,10 +3401,9 @@ begin
 
         if ChangedIndent or ChangedTrailing then Editor.Options := OrigOptions;
 
-        Editor.UndoList.AddChange(crAutoCompleteEnd, StartOfBlock, StartOfBlock,
-          '', smNormal);
         fNoNextKey := False;
       finally
+        Editor.EndUndoBlock;
         Editor.Lines.EndUpdate;
       end;
     end

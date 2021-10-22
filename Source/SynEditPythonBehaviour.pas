@@ -104,12 +104,12 @@ begin
     iPrevLine := TrimRight(iEditor.Lines[iEditor.CaretY - 2]);
     if (iPrevLine <> '') and (iPrevLine[Length(iPrevLine)] = ':') then
     begin
-      iEditor.UndoList.BeginBlock;
+      iEditor.BeginUndoBlock;
       try
         for cSpace := 1 to Indent do
           iEditor.ExecuteCommand(ecChar, #32, nil);
       finally
-        iEditor.UndoList.EndBlock;
+        iEditor.EndUndoBlock;
       end;
     end;
   end;
