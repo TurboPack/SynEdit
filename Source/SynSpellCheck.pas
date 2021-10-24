@@ -336,8 +336,6 @@ type
     { Procedures }
     procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect; FirstLine,
       LastLine: Integer); override;
-    procedure LinesInserted(FirstLine, Count: Integer); override;
-    procedure LinesDeleted(FirstLine, Count: Integer); override;
   public
     constructor Create(AOwner: TCustomSynEdit);
     { Properties }
@@ -771,6 +769,7 @@ end;
 constructor TDrawAutoSpellCheckPlugin.Create(AOwner: TCustomSynEdit);
 begin
   inherited;
+  FHandlers := [phAfterPaint];
   FPenColor := clRed;
   FUnderlineStyle := usMicrosoftWord;
 end;
@@ -897,16 +896,6 @@ begin
     end;
     Inc(FirstLine);
   end;
-end;
-
-procedure TDrawAutoSpellCheckPlugin.LinesDeleted(FirstLine, Count: Integer);
-begin
-  // This is only for the compiler hint
-end;
-
-procedure TDrawAutoSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);
-begin
-  // This is only for the compiler hint
 end;
 
 procedure TDrawAutoSpellCheckPlugin.SetPenColor(const Value: TColor);
