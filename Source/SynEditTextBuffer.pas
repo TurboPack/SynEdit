@@ -817,11 +817,10 @@ begin
       while (P <= Pmax) do
       begin
         Start := P;
-        while ((P < Pmax) and (Word(P^) > 13)) or
-          not((Word(P^) in [10, 13]) or (P^ = WideLineSeparator)) do
-        begin
+        while (P < Pmax) and ((Word(P^) > 13) or
+          not ((Word(P^) in [10, 13]) or (P^ = WideLineSeparator)))
+        do
           Inc(P);
-        end;
         if P <> Start then
         begin
           SetString(S, Start, P - Start);
