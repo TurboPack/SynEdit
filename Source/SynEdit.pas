@@ -4217,29 +4217,19 @@ var
 
   procedure InsertText;
 
-    function CountLines(p: PWideChar): Integer;
-    begin
-      Result := 0;
-      while p^ <> #0 do
-      begin
-        if p^ = #13 then
-          Inc(p);
-        if p^ = #10 then
-          Inc(p);
-        Inc(Result);
-        p := GetEOL(p);
-      end;
-    end;
-
-    function InsertNormal: Integer;
+    procedure InsertNormal;
     var
       sLeftSide: string;
       sRightSide: string;
-      Str: string;
-      Start: PWideChar;
-      P: PWideChar;
+      NewLines: TArray<string>;
+      LineCount: Integer;
+      I: Integer;
     begin
-      Result := 0;
+      NewLines := StringToLines(Value);
+      LineCount := Length(NewLines);
+
+      if LineCount = 0 then Exit;
+
       sLeftSide := Copy(LineText, 1, CaretX - 1);
       if CaretX - 1 > Length(sLeftSide) then
       begin
@@ -4247,55 +4237,32 @@ var
           CaretX - 1 - Length(sLeftSide));
       end;
       sRightSide := Copy(LineText, CaretX, Length(LineText) - (CaretX - 1));
+
       // step1: insert the first line of Value into current line
-      Start := PWideChar(Value);
-      P := GetEOL(Start);
-      if P^ <> #0 then
-      begin
-        Str := sLeftSide + Copy(Value, 1, P - Start);
-        ProperSetLine(CaretY - 1, Str);
-        TSynEditStringList(Lines).InsertLines(CaretY, CountLines(P));
-      end
-      else begin
-        Str := sLeftSide + Value + sRightSide;
-        ProperSetLine(CaretY -1, Str);
-      end;
+      NewLines[0] := sLeftSide + NewLines[0];
       // step2: insert left lines of Value
-      while P^ <> #0 do
-      begin
-        if P^ = #13 then
-          Inc(P);
-        if P^ = #10 then
-          Inc(P);
-        Inc(fCaretY);
-        Include(fStatusChanges, scCaretY);
-        Start := P;
-        P := GetEOL(Start);
-        if P = Start then
-        begin
-          if p^ <> #0 then
-            Str := ''
-          else
-            Str := sRightSide;
-        end
-        else begin
-          SetString(Str, Start, P - Start);
-          if p^ = #0 then
-            Str := Str + sRightSide
-        end;
-        ProperSetLine(CaretY -1, Str);
-        Inc(Result);
-      end;
+      NewLines[LineCount - 1] := NewLines[LineCount - 1] + sRightSide;
+
       if eoTrimTrailingSpaces in Options then
-        if sRightSide = '' then
-          fCaretX := GetExpandedLength(Str, TabWidth) + 1
-        else
-          fCaretX := 1 + Length(Lines[CaretY - 1]) - Length(TrimTrailingSpaces(sRightSide))
-      else fCaretX := 1 + Length(Lines[CaretY - 1]) - Length(sRightSide);
+        for I := 0 to LineCount - 1 do
+          NewLines[I] := TrimTrailingSpaces(NewLines[I]);
+
+      Lines[CaretY -1] := NewLines[0];
+      if LineCount > 1 then
+      begin
+        TSynEditStringList(Lines).InsertStrings(CaretY, NewLines, 1);
+        Inc(fCaretY, LineCount - 1);
+        Include(fStatusChanges, scCaretY);
+      end;
+
+      if eoTrimTrailingSpaces in Options then
+        fCaretX := 1 + Length(Lines[CaretY - 1]) - Length(TrimTrailingSpaces(sRightSide))
+      else
+        fCaretX := 1 + Length(Lines[CaretY - 1]) - Length(sRightSide);
       StatusChanged([scCaretX]);
     end;
 
-    function InsertColumn: Integer;
+    procedure InsertColumn;
     var
       Str: string;
       Start: PWideChar;
@@ -4304,7 +4271,6 @@ var
       InsertPos: Integer;
       LineBreakPos: TBufferCoord;
     begin
-      Result := 0;
       // Insert string at current position
       InsertPos := CaretX;
       Start := PWideChar(Value);
@@ -4316,7 +4282,6 @@ var
           Move(Start^, Str[1], (P - Start) * sizeof(WideChar));
           if CaretY > Lines.Count then
           begin
-            Inc(Result);
             TempString := StringofChar(#32, InsertPos - 1) + Str;
             Lines.Add('');
             if AddToUndoList then
@@ -4359,56 +4324,61 @@ var
       Include(fStatusChanges, scCaretX);
     end;
 
-    function InsertLine: Integer;
+    procedure InsertLine;
     var
-      Start: PWideChar;
-      P: PWideChar;
       Str: string;
-      n: Integer;
+      NewLines: TArray<string>;
+      LineCount: Integer;
+      I: Integer;
+      Index: Integer;
     begin
-      Result := 0;
-      fCaretX := 1;
-      // Insert string before current line
-      Start := PWideChar(Value);
-      repeat
-        P := GetEOL(Start);
-        if P <> Start then
+      NewLines := StringToLines(Value);
+      LineCount := Length(NewLines);
+
+      if LineCount = 0 then Exit;
+
+      if LineCount = 1 then
+      { When triggered from copy/past in smLineMode Value contains at least
+        one LB and theLineCount would be at least 2.  This is the case
+        that occurs when text is selected in line mode and say you type
+        a single character}
+      begin
+          Str := NewLines[0];
+         if eoTrimTrailingSpaces in Options then
+           Str := TrimTrailingSpaces(Str);
+         if (CaretY <= Lines.Count) then
+         begin
+           Str := NewLines[0] + Lines[CaretY - 1];
+           Lines[CaretY - 1] := Str;
+         end
+         else
+           Lines.Add(Str);
+         fCaretX := 1 + Length(Str);
+      end
+      else
+      begin
+        fCaretX := 1;
+        // Remove last empty line
+        if NewLines[LineCount - 1]  = '' then
         begin
-          SetLength(Str, P - Start);
-          Move(Start^, Str[1], (P - Start) * sizeof(WideChar));
-        end
-        else
-          Str := '';
-        if (P^ = #0) then
-        begin
-          n := Lines.Count;
-          if (n >= CaretY) then
-            Lines[CaretY - 1] := Str + Lines[CaretY - 1]
-          else
-            Lines.Add(Str);
-          if eoTrimTrailingSpaces in Options then
-            Lines[CaretY - 1] := TrimTrailingSpaces(Lines[CaretY - 1]);
-          fCaretX := 1 + Length(Str);
-        end
-        else begin
-          //--------- KV from SynEditStudio
-          if (CaretY = Lines.Count) or InsertMode then
-          begin
-            Lines.Insert(CaretY -1, '');
-            Inc(Result);
-          end;
-          //---------
-          ProperSetLine(CaretY - 1, Str);
-          Inc(fCaretY);
-          Include(fStatusChanges, scCaretY);
-          Inc(Result);
-          if P^ = #13 then
-            Inc(P);
-          if P^ = #10 then
-            Inc(P);
-          Start := P;
+          Delete(NewLines, LineCount - 1, 1);
+          Dec(LineCount);
         end;
-      until P^ = #0;
+        if eoTrimTrailingSpaces in Options then
+          for I := 0 to LineCount - 1 do
+            NewLines[I] := TrimTrailingSpaces(NewLines[I]);
+        Index := fCaretY - 1;  // zero based
+        if not InsertMode then
+        begin
+          // Delete Lines that will be overwritten
+          TSynEditStringList(Lines).DeleteLines(Index,
+            Min(LineCount, Lines.Count - Index));
+        end;
+        // Now add the lines
+        TSynEditStringList(Lines).InsertStrings(Index, NewLines);
+        Inc(fCaretY, LineCount);
+        Include(fStatusChanges, scCaretY);
+      end;
       StatusChanged([scCaretX]);
     end;
 
