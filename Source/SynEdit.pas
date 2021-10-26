@@ -65,7 +65,6 @@ uses
   SynEditMiscProcs,
   SynEditMiscClasses,
   SynEditTextBuffer,
-  SynEditUndo,
   SynEditKeyCmds,
   SynEditHighlighter,
   SynEditKbdHandler,
@@ -260,24 +259,6 @@ type
   TGutterClickEvent = procedure(Sender: TObject; Button: TMouseButton;
     X, Y, Line: Integer; Mark: TSynEditMark) of object;
 
-  // aIndex parameters of Line notifications are 0-based.
-  // aRow parameter of GetRowLength() is 1-based.
-  ISynEditBufferPlugin = interface
-    // conversion methods
-    function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
-    function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
-    function RowCount: Integer;
-    function GetRowLength(aRow: Integer): Integer;
-    // plugin notifications
-    function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
-    function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
-    function LinePut(aIndex: Integer; const OldLine: string): Integer;
-    // font or size change
-    procedure DisplayChanged;
-    // pretty clear, heh?
-    procedure Reset;
-  end;
-
   TPluginHandler = (phLinesInserted, phLinesDeleted, phLinePut,
     phLinesChanging, phLinesChanged, phPaintTransient, phAfterPaint);
   TPlugInHandlers = set of TPluginHandler;
@@ -351,7 +332,7 @@ type
     fInserting: Boolean;
     fLines: TStrings;
     fOrigLines: TStrings;
-    fOrigUndoRedo: TSynEditUndo;
+    fOrigUndoRedo: ISynEditUndo;
     fLinesInWindow: Integer;
     fLeftChar: Integer;
     fPaintLock: Integer;
@@ -367,7 +348,7 @@ type
     fHighlighter: TSynCustomHighlighter;
     fSelectedColor: TSynSelectedColor;
     fActiveLineColor: TColor;
-    fUndoRedo: TSynEditUndo;
+    fUndoRedo: ISynEditUndo;
     fBookMarks: array[0..9] of TSynEditMark; // these are just references, fMarkList is the owner
     fMouseDownX: Integer;
     fMouseDownY: Integer;
@@ -813,7 +794,7 @@ type
     procedure WndProc(var Msg: TMessage); override;
     procedure SetLinesPointer(ASynEdit: TCustomSynEdit);
     procedure RemoveLinesPointer;
-    procedure HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo: TSynEditUndo);
+    procedure HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo: ISynEditUndo);
     procedure UnHookTextBuffer;
     {Command implementations}
     procedure ExecCmdDeleteLine;
@@ -876,7 +857,7 @@ type
     property TopLine: Integer read fTopLine write SetTopLine;
     property WordAtCursor: string read GetWordAtCursor;
     property WordAtMouse: string read GetWordAtMouse;
-    property UndoRedo: TSynEditUndo read fUndoRedo;
+    property UndoRedo: ISynEditUndo read fUndoRedo;
   public
     property OnProcessCommand: TProcessCommandEvent
       read FOnProcessCommand write FOnProcessCommand;
@@ -1085,6 +1066,7 @@ uses
   Character,
   Clipbrd,
   ShellAPI,
+  SynEditUndo,
   SynEditWordWrap,
   SynEditStrConst,
   SynEditDataObject,
@@ -1267,7 +1249,7 @@ begin
     OnPut := ListPut;
   end;
   fFontDummy := TFont.Create;
-  fUndoRedo := TSynEditUndo.Create(UndoItem, RedoItem);
+  fUndoRedo := CreateSynEditUndo(UndoItem, RedoItem);
   fUndoRedo.OnModifiedChanged := ModifiedChanged;
   fOrigUndoRedo := fUndoRedo;
 
@@ -1434,7 +1416,8 @@ begin
   fKbdHandler.Free;
   fFocusList.Free;
   fSelectedColor.Free;
-  fOrigUndoRedo.Free;
+  fUndoRedo := nil;
+  fOrigUndoRedo := nil;
   fGutter.Free;
   fWordWrapGlyph.Free;
   fTextDrawer.Free;
@@ -6372,8 +6355,8 @@ begin
   WordWrap := vOldWrap;
 end;
 
-procedure TCustomSynEdit.HookTextBuffer(aBuffer: TSynEditStringList;
-  aUndoRedo: TSynEditUndo);
+procedure TCustomSynEdit.HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo:
+    ISynEditUndo);
 var
   vOldWrap: Boolean;
 begin

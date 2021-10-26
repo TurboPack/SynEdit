@@ -31,46 +31,24 @@ unit SynEditUndo;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  System.Generics.Collections,
   SynEditTypes;
 
 type
-  // Note: several undo entries can be chained together via the ChangeNumber
-  // see also TCustomSynEdit.[Begin|End]UndoBlock methods
-  TSynChangeReason = (
-    crNothing,
-    crInsert, crDelete, crSilentDelete,
-    crLineBreak,
-    crIndent, crUnindent,
-    crCaret, // just restore the Caret, allowing better Undo behavior
-    crSelection, // restore Selection
-    crWhiteSpaceAdd
-    // for undo/redo of adding a character past EOL and repositioning the caret
-    );
+  TSynUndoRedoItem = procedure(Item: TSynEditUndoItem) of object;
 
-  TSynEditUndoItem = class(TObject)
-  protected
-    FChangeStartPos: TBufferCoord;
-    FChangeEndPos: TBufferCoord;
-    FChangeStr: string;
-    FChangeNumber: Integer;
-    FChangeReason: TSynChangeReason;
-    FChangeSelMode: TSynSelectionMode;
-    // the following undo item cannot be grouped with this one  when undoing
-    // don't group the previous one with this one when redoing
-    FGroupBreak: Boolean;
-  public
-    property ChangeReason: TSynChangeReason read FChangeReason;
-    property ChangeSelMode: TSynSelectionMode read FChangeSelMode;
-    property ChangeStartPos: TBufferCoord read FChangeStartPos;
-    property ChangeEndPos: TBufferCoord read FChangeEndPos;
-    property ChangeStr: string read FChangeStr;
-    property ChangeNumber: Integer read FChangeNumber;
-    property GroupBreak: Boolean read FGroupBreak;
-  end;
+{ Factory Method}
 
+function CreateSynEditUndo(UndoMethod, RedoMethod: TSynUndoRedoItem):
+  ISynEditUndo;
+
+implementation
+
+uses
+  System.Classes,
+  System.SysUtils,
+  System.Generics.Collections;
+
+type
   TSynEditUndo = class;
 
   TSynEditUndoList = class(TObjectStack<TSynEditUndoItem>)
@@ -91,9 +69,7 @@ type
       write FBlockChangeNumber;
   end;
 
-  TSynUndoRedoItem = procedure(Item: TSynEditUndoItem) of object;
-
-  TSynEditUndo = class(TObject)
+  TSynEditUndo = class(TInterfacedObject, ISynEditUndo)
     { Class that handles undo/redo and manages Modified status }
   private
     FGroupUndo: Boolean;
@@ -109,11 +85,15 @@ type
     FUndoItem: TSynUndoRedoItem;
     FRedoItem: TSynUndoRedoItem;
     function GetModified: Boolean;
-    procedure SetModified(const Value: Boolean);
-    procedure SetMaxUndoActions(Value: Integer);
     function GetCanUndo: Boolean;
     function GetCanRedo: Boolean;
     function GetFullUndoImposible: Boolean;
+    function GetOnModifiedChanged: TNotifyEvent;
+    procedure SetModified(const Value: Boolean);
+    procedure SetMaxUndoActions(const Value: Integer);
+    procedure SetOnModifiedChanged(const Value: TNotifyEvent);
+    procedure SetGroupUndo(const Value: Boolean);
+    function GetMaxUndoActions: Integer;
   public
     constructor Create(UndoMethod, RedoMethod: TSynUndoRedoItem);
     destructor Destroy; override;
@@ -142,21 +122,7 @@ type
     {Note: Undo/Redo are not reentrant}
     procedure Undo;
     procedure Redo;
-    property CanRedo: Boolean read GetCanRedo;
-    property CanUndo: Boolean read GetCanUndo;
-    property GroupUndo: Boolean write FGroupUndo;
-    property Modified: Boolean read GetModified write SetModified;
-    { MaxUndoActions zero or less indicates unlimited undo. It grows as needed.
-      If it is a positive number, when the limit is reached 1/4 of the
-      Undo history is discarded to make space for following undo actions }
-    property MaxUndoActions: Integer read FMaxUndoActions
-      write SetMaxUndoActions;
-    property FullUndoImpossible: Boolean read GetFullUndoImposible;
-    property OnModifiedChanged: TNotifyEvent read FOnModifiedChanged
-      write FOnModifiedChanged;
   end;
-
-implementation
 
 { TSynEditUndoList }
 
@@ -179,16 +145,16 @@ begin
     try
       with NewItem do
       begin
-        FChangeReason := AReason;
-        FChangeSelMode := SelMode;
-        FChangeStartPos := AStart;
-        FChangeEndPos := AEnd;
-        FChangeStr := ChangeText;
-        FGroupBreak := IsGroupBreak;
+        ChangeReason := AReason;
+        ChangeSelMode := SelMode;
+        ChangeStartPos := AStart;
+        ChangeEndPos := AEnd;
+        ChangeStr := ChangeText;
+        GroupBreak := IsGroupBreak;
         if FBlockChangeNumber <> 0 then
-          FChangeNumber := FBlockChangeNumber
+          ChangeNumber := FBlockChangeNumber
         else
-          FChangeNumber := NextChangeNumber;
+          ChangeNumber := NextChangeNumber;
       end;
       Push(NewItem);
     except
@@ -246,28 +212,28 @@ procedure TSynEditUndo.AddUndoChange(AReason: TSynChangeReason; const AStart,
 var
   OldModified: Boolean;
 begin
-  OldModified := Modified;
+  OldModified := GetModified;
   FUndoList.AddChange(AReason, AStart, AEnd, ChangeText, SelMode, IsGroupBreak);
   if not FInsideRedo then
     FRedoList.Clear;
   // Do not sent unnecessary notifications
-  if not FInsideRedo and (FBlockCount = 0) and (OldModified xor Modified) and
-    Assigned(OnModifiedChanged)
+  if not FInsideRedo and (FBlockCount = 0) and (OldModified xor GetModified) and
+    Assigned(FOnModifiedChanged)
   then
-    OnModifiedChanged(Self);
+    FOnModifiedChanged(Self);
 end;
 
 procedure TSynEditUndo.AddGroupBreak;
 begin
   if (FUndoList.Count > 0) and (FBlockCount = 0) then
-    FUndoList.Peek.FGroupBreak := True;
+    FUndoList.Peek.GroupBreak := True;
 end;
 
 procedure TSynEditUndo.BeginBlock;
 begin
   if FBlockCount = 0 then
   begin
-    FBlockStartModified := Modified;
+    FBlockStartModified := GetModified;
     FUndoList.FBlockChangeNumber := FUndoList.NextChangeNumber;
   end;
   Inc(FBlockCount);
@@ -306,8 +272,8 @@ begin
     begin
       FUndoList.FBlockChangeNumber := 0;
       AddGroupBreak;
-      if FBlockStartModified xor Modified and Assigned(OnModifiedChanged) then
-        OnModifiedChanged(Self);
+      if FBlockStartModified xor GetModified and Assigned(FOnModifiedChanged) then
+        FOnModifiedChanged(Self);
     end;
   end;
 end;
@@ -322,12 +288,22 @@ begin
   Result := FUndoList.FFullUndoImposible;
 end;
 
+function TSynEditUndo.GetMaxUndoActions: Integer;
+begin
+  Result := FMaxUndoActions;
+end;
+
 function TSynEditUndo.GetModified: Boolean;
 begin
   if FUndoList.Count = 0 then
     Result := FInitialChangeNumber <> 0
   else
     Result := FUndoList.Peek.ChangeNumber <> FInitialChangeNumber;
+end;
+
+function TSynEditUndo.GetOnModifiedChanged: TNotifyEvent;
+begin
+  Result := FOnModifiedChanged;
 end;
 
 function TSynEditUndo.GetCanRedo: Boolean;
@@ -355,13 +331,13 @@ begin
   if FRedoList.Count > 0 then
   begin
     Item := FRedoList.Peek;
-    OldModified := Modified;
+    OldModified := GetModified;
     OldChangeNumber := Item.ChangeNumber;
     FUndoList.BlockChangeNumber := FUndoList.NextChangeNumber;
     try
       repeat
         Item := FRedoList.Extract;
-        LastItemHasGroupBreak := Item.FGroupBreak;
+        LastItemHasGroupBreak := Item.GroupBreak;
         FLastChange := Item.ChangeReason;
         FInsideRedo := True;
         try
@@ -388,17 +364,20 @@ begin
             not(FLastChange in [crIndent, crUnindent]));
       until not(FKeepGoing);
     finally
-      if (OldModified xor Modified) and Assigned(OnModifiedChanged) then
-        OnModifiedChanged(Self);
+      if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
+        FOnModifiedChanged(Self);
       FUndoList.BlockChangeNumber := 0;
     end;
   end;
 end;
 
-procedure TSynEditUndo.SetMaxUndoActions(Value: Integer);
+procedure TSynEditUndo.SetGroupUndo(const Value: Boolean);
 begin
-  if Value < 0 then
-    Value := 0;
+  FGroupUndo := Value;
+end;
+
+procedure TSynEditUndo.SetMaxUndoActions(const Value: Integer);
+begin
   if Value <> FMaxUndoActions then
   begin
     FMaxUndoActions := Value;
@@ -425,6 +404,11 @@ begin
     FInitialChangeNumber := -1
 end;
 
+procedure TSynEditUndo.SetOnModifiedChanged(const Value: TNotifyEvent);
+begin
+  FOnModifiedChanged := Value;
+end;
+
 procedure TSynEditUndo.Undo;
 var
   Item: TSynEditUndoItem;
@@ -440,7 +424,7 @@ begin
   if FUndoList.Count > 0 then
   begin
     Item := FUndoList.Peek;
-    OldModified := Modified;
+    OldModified := GetModified;
     OldChangeNumber := Item.ChangeNumber;
     FRedoList.BlockChangeNumber := FRedoList.NextChangeNumber;
 
@@ -463,14 +447,14 @@ begin
             { Group together same undo actions }
             (FGroupUndo and (FLastChange = Item.ChangeReason) and
             // Next item is not a group break
-            not Item.FGroupBreak and
+            not Item.GroupBreak and
             { crUn/Indent act as a group break }
             not(FLastChange in [crIndent, crUnindent]));
       until not(FKeepGoing);
 
     finally
-      if (OldModified xor Modified) and Assigned(OnModifiedChanged) then
-        OnModifiedChanged(Self);
+      if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
+        FOnModifiedChanged(Self);
 
       FRedoList.BlockChangeNumber := 0;
     end;
@@ -481,6 +465,14 @@ procedure TSynEditUndo.Unlock;
 begin
   if FLockCount > 0 then
     Dec(FLockCount);
+end;
+
+{ Factory Method}
+
+function CreateSynEditUndo(UndoMethod, RedoMethod: TSynUndoRedoItem):
+  ISynEditUndo;
+begin
+  Result := TSynEditUndo.Create(UndoMethod, RedoMethod);
 end;
 
 end.

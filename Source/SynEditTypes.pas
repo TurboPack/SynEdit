@@ -41,12 +41,13 @@ unit SynEditTypes;
 interface
 
 uses
-  Types,
-  Math,
+  System.Types,
+  System.Math,
   {$IF CompilerVersion <= 32}
-  Controls,
+  Vcl.Controls,
   {$IFEND}
-  SysUtils;
+  System.SysUtils,
+  System.Classes;
 
 const
 // These might need to be localized depending on the characterset because they might be
@@ -114,10 +115,102 @@ type
   end;
   {$IFEND}
 
-
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
 function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
+
+type
+{ ************************* For Word Wrap ********************************}
+
+  // aIndex parameters of Line notifications are 0-based.
+  // aRow parameter of GetRowLength() is 1-based.
+  ISynEditBufferPlugin = interface
+    // conversion methods
+    function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
+    function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
+    function RowCount: Integer;
+    function GetRowLength(aRow: Integer): Integer;
+    // plugin notifications
+    function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
+    function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
+    function LinePut(aIndex: Integer; const OldLine: string): Integer;
+    // font or size change
+    procedure DisplayChanged;
+    // pretty clear, heh?
+    procedure Reset;
+  end;
+
+{ ************************* For Undo Redo ********************************}
+
+  // Note: several undo entries can be chained together via the ChangeNumber
+  // see also TCustomSynEdit.[Begin|End]UndoBlock methods
+  TSynChangeReason = (
+    crNothing,
+    crInsert, crDelete, crSilentDelete,
+    crLineBreak,
+    crIndent, crUnindent,
+    crCaret, // just restore the Caret, allowing better Undo behavior
+    crSelection, // restore Selection
+    crWhiteSpaceAdd
+    // for undo/redo of adding a character past EOL and repositioning the caret
+    );
+
+  TSynEditUndoItem = class(TObject)
+    ChangeStartPos: TBufferCoord;
+    ChangeEndPos: TBufferCoord;
+    ChangeStr: string;
+    ChangeNumber: Integer;
+    ChangeReason: TSynChangeReason;
+    ChangeSelMode: TSynSelectionMode;
+    // the following undo item cannot be grouped with this one  when undoing
+    // don't group the previous one with this one when redoing
+    GroupBreak: Boolean;
+  end;
+
+  ISynEditUndo =  interface
+    function GetModified: Boolean;
+    function GetMaxUndoActions: Integer;
+    function GetCanUndo: Boolean;
+    function GetCanRedo: Boolean;
+    function GetFullUndoImposible: Boolean;
+    function GetOnModifiedChanged: TNotifyEvent;
+    procedure SetModified(const Value: Boolean);
+    procedure SetMaxUndoActions(const Value: Integer);
+    procedure SetGroupUndo(const Value: Boolean);
+    procedure SetOnModifiedChanged(const Event: TNotifyEvent);
+    procedure BeginBlock;
+    procedure EndBlock;
+    { Lock disables undo/redo - useful if you are about to do a large number of
+      changes and planning to clear undo afterwards }
+    procedure Lock;
+    procedure Unlock;
+    procedure Clear;
+    procedure AddUndoChange(AReason: TSynChangeReason;
+      const AStart, AEnd: TBufferCoord; const ChangeText: string;
+      SelMode: TSynSelectionMode; IsGroupBreak: Boolean = False);
+    {Only used insede TSynEdit.UndoItem}
+    procedure AddRedoChange(AReason: TSynChangeReason;
+      const AStart, AEnd: TBufferCoord; const ChangeText: string;
+      SelMode: TSynSelectionMode; IsGroupBreak: Boolean);
+    { Call AddGroupBreak to signal that the next undo action
+      cannot be grouped with the current one }
+    procedure AddGroupBreak;
+    {Note: Undo/Redo are not reentrant}
+    procedure Undo;
+    procedure Redo;
+    property CanRedo: Boolean read GetCanRedo;
+    property CanUndo: Boolean read GetCanUndo;
+    property GroupUndo: Boolean write SetGroupUndo;
+    property Modified: Boolean read GetModified write SetModified;
+    { MaxUndoActions zero or less indicates unlimited undo. It grows as needed.
+      If it is a positive number, when the limit is reached 1/4 of the
+      Undo history is discarded to make space for following undo actions }
+    property MaxUndoActions: Integer read GetMaxUndoActions
+      write SetMaxUndoActions;
+    property FullUndoImpossible: Boolean read GetFullUndoImposible;
+    property OnModifiedChanged: TNotifyEvent read GetOnModifiedChanged
+      write SetOnModifiedChanged;
+  end;
 
 implementation
 Uses
