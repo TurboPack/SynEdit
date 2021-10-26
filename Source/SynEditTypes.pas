@@ -167,6 +167,7 @@ type
     GroupBreak: Boolean;
   end;
 
+  { Handles undo/redo and manages Modified status }
   ISynEditUndo =  interface
     function GetModified: Boolean;
     function GetMaxUndoActions: Integer;

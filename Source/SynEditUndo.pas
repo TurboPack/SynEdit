@@ -70,7 +70,6 @@ type
   end;
 
   TSynEditUndo = class(TInterfacedObject, ISynEditUndo)
-    { Class that handles undo/redo and manages Modified status }
   private
     FGroupUndo: Boolean;
     FBlockCount: Integer;
@@ -94,34 +93,23 @@ type
     procedure SetOnModifiedChanged(const Value: TNotifyEvent);
     procedure SetGroupUndo(const Value: Boolean);
     function GetMaxUndoActions: Integer;
-  public
-    constructor Create(UndoMethod, RedoMethod: TSynUndoRedoItem);
-    destructor Destroy; override;
-    { Use Begin/EndBlock pairs to group undo actions together.
-      The Begin/EndBlock pairs can be nested but do make sure
-      that you call EndBlock for every call to BeginBlock.
-      Do not call Undo/Redo inside Begin/EndBlock
-      The implementation is very efficient but mind-bending }
     procedure BeginBlock;
     procedure EndBlock;
-    { Lock disables undo/redo - useful if you are about to do a large number of
-      changes and planning to clear undo afterwards }
     procedure Lock;
     procedure Unlock;
     procedure Clear;
     procedure AddUndoChange(AReason: TSynChangeReason;
       const AStart, AEnd: TBufferCoord; const ChangeText: string;
       SelMode: TSynSelectionMode; IsGroupBreak: Boolean = False);
-    {Only used insede TSynEdit.UndoItem}
     procedure AddRedoChange(AReason: TSynChangeReason;
       const AStart, AEnd: TBufferCoord; const ChangeText: string;
       SelMode: TSynSelectionMode; IsGroupBreak: Boolean);
-    { Call AddGroupBreak to signal that the next undo action
-      cannot be grouped with the current one }
     procedure AddGroupBreak;
-    {Note: Undo/Redo are not reentrant}
     procedure Undo;
     procedure Redo;
+  public
+    constructor Create(UndoMethod, RedoMethod: TSynUndoRedoItem);
+    destructor Destroy; override;
   end;
 
 { TSynEditUndoList }
