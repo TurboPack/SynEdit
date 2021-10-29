@@ -102,6 +102,7 @@ type
     FOnChange: TNotifyEvent;
     FOnChanging: TNotifyEvent;
     FOnCleared: TNotifyEvent;
+    FOnBeforeDeleted: TStringListChangeEvent;
     FOnDeleted: TStringListChangeEvent;
     FOnInserted: TStringListChangeEvent;
     FOnPut: TStringListPutEvent;
@@ -115,6 +116,7 @@ type
     procedure InsertItem(Index: Integer; const S: string);
     procedure PutRange(Index: Integer; ARange: TSynEditRange);
   protected
+    // TStrings overriden protected methods
     function Get(Index: Integer): string; override;
     function GetCapacity: Integer; override;
     function GetCount: Integer; override;
@@ -122,32 +124,30 @@ type
     procedure Put(Index: Integer; const S: string); override;
     procedure PutObject(Index: Integer; AObject: TObject); override;
     procedure SetCapacity(NewCapacity: Integer); override;
-    procedure SetTabWidth(Value: Integer);
     procedure SetUpdateState(Updating: Boolean); override;
+    // Other protected methods
+    procedure SetTabWidth(Value: Integer);
     procedure UpdateCharIndexes;
   public
-    constructor Create(AExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc);
-    destructor Destroy; override;
-    function Add(const S: string): Integer; override;
-    procedure AddStrings(Strings: TStrings); override;
+    // TStrings overriden public methods
     procedure Clear; override;
     procedure Delete(Index: Integer); override;
     procedure DeleteLines(Index, NumLines: Integer);
-    procedure Exchange(Index1, Index2: Integer); override;
     procedure Insert(Index: Integer; const S: string); override;
-    procedure InsertLines(Index, NumLines: Integer);
-    procedure InsertStrings(Index: Integer; Strings: TArray<string>;
-      FromIndex: Integer = 0); overload;
-    procedure InsertStrings(Index: Integer; Strings: TStrings); overload;
-    procedure InsertText(Index: Integer; NewText: string);
     procedure LoadFromStream(Stream: TStream; Encoding: TEncoding); override;
     procedure SaveToStream(Stream: TStream; Encoding: TEncoding); override;
+    procedure SetEncoding(const Value: TEncoding); override; // just to elevate
+    // Other public methods
+    constructor Create(AExpandAtWideGlyphsFunc: TExpandAtWideGlyphsFunc);
+    destructor Destroy; override;
+    procedure InsertStrings(Index: Integer; Strings: TArray<string>;
+      FromIndex: Integer = 0);
+    procedure InsertText(Index: Integer; NewText: string);
     function GetSeparatedText(Separators: string): string;
     procedure FontChanged;
     function LineCharLength(Index: Integer): Integer;
     function LineCharIndex(Index: Integer): Integer;
     procedure SetTextAndFileFormat(const Value: string);
-    procedure SetEncoding(const Value: TEncoding); override;
 
     property FileFormat: TSynEditFileFormat read FFileFormat write FFileFormat;
     property ExpandedStrings[Index: Integer]: string read GetExpandedString;
@@ -161,6 +161,8 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnChanging: TNotifyEvent read FOnChanging write FOnChanging;
     property OnCleared: TNotifyEvent read FOnCleared write FOnCleared;
+    property OnBeforeDeleted: TStringListChangeEvent read FOnBeforeDeleted
+      write FOnBeforeDeleted;
     property OnDeleted: TStringListChangeEvent read FOnDeleted write FOnDeleted;
     property OnInserted: TStringListChangeEvent read FOnInserted
       write FOnInserted;
@@ -207,26 +209,6 @@ begin
   SetCapacity(0);
 end;
 
-function TSynEditStringList.Add(const S: string): Integer;
-begin
-  BeginUpdate;
-  Result := FCount;
-  InsertItem(Result, S);
-  if Assigned(OnInserted) then
-    OnInserted(Self, Result, 1);
-  EndUpdate;
-end;
-
-procedure TSynEditStringList.AddStrings(Strings: TStrings);
-begin
-  InsertStrings(FCount, Strings);
-end;
-
-procedure TSynEditStringList.SetEncoding(const Value: TEncoding);
-begin
-  inherited;
-end;
-
 procedure TSynEditStringList.Clear;
 begin
   if FCount <> 0 then
@@ -247,6 +229,8 @@ begin
   if (Index < 0) or (Index >= FCount) then
     ListIndexOutOfBounds(Index);
   BeginUpdate;
+  if Assigned(FOnBeforeDeleted) then
+    FOnBeforeDeleted(Self, Index, 1);
   Finalize(FList^[Index]);
   Dec(FCount);
   if Index < FCount then
@@ -268,13 +252,17 @@ begin
   begin
     if (Index < 0) or (Index >= FCount) then
       ListIndexOutOfBounds(Index);
-    LinesAfter := FCount - (Index + NumLines);
-    if LinesAfter < 0 then
-      NumLines := FCount - Index;
-    Finalize(FList^[Index], NumLines);
 
     BeginUpdate;
     try
+      if Assigned(FOnBeforeDeleted) then
+        FOnBeforeDeleted(Self, Index, NumLines);
+
+      LinesAfter := FCount - (Index + NumLines);
+      if LinesAfter < 0 then
+        NumLines := FCount - Index;
+      Finalize(FList^[Index], NumLines);
+
       if LinesAfter > 0 then
         System.Move(FList^[Index + NumLines], FList^[Index],
           LinesAfter * SynEditStringRecSize);
@@ -285,25 +273,6 @@ begin
       EndUpdate;
     end;
   end;
-end;
-
-procedure TSynEditStringList.Exchange(Index1, Index2: Integer);
-var
-  Temp: TSynEditStringRec;
-begin
-  if (Index1 < 0) or (Index1 >= FCount) then
-    ListIndexOutOfBounds(Index1);
-  if (Index2 < 0) or (Index2 >= FCount) then
-    ListIndexOutOfBounds(Index2);
-  BeginUpdate;
-  Temp := FList^[Index1];
-  FList^[Index1] := FList^[Index2];
-  FList^[Index2] := Temp;
-  if FIndexOfLongestLine = Index1 then
-    FIndexOfLongestLine := Index2
-  else if FIndexOfLongestLine = Index2 then
-    FIndexOfLongestLine := Index1;
-  EndUpdate;
 end;
 
 function TSynEditStringList.ExpandString(Index: Integer): string;
@@ -523,25 +492,13 @@ begin
 end;
 
 procedure TSynEditStringList.Grow;
-var
-  Delta: Integer;
 begin
-  if FCapacity > 64 then
-    Delta := FCapacity div 4
-  else
-    Delta := 16;
-  SetCapacity(FCapacity + Delta);
+  SetCapacity(GrowCollection(FCapacity, FCount + 1));
 end;
 
 procedure TSynEditStringList.Insert(Index: Integer; const S: string);
 begin
-  if (Index < 0) or (Index > FCount) then
-    ListIndexOutOfBounds(Index);
-  BeginUpdate;
-  InsertItem(Index, S);
-  if Assigned(FOnInserted) then
-    FOnInserted(Self, Index, 1);
-  EndUpdate;
+  InsertStrings(Index, [S]);
 end;
 
 procedure TSynEditStringList.InsertItem(Index: Integer; const S: string);
@@ -568,40 +525,6 @@ begin
   EndUpdate;
 end;
 
-procedure TSynEditStringList.InsertLines(Index, NumLines: Integer);
-var
-  c_Line: Integer;
-begin
-  if (Index < 0) or (Index > FCount) then
-    ListIndexOutOfBounds(Index);
-  if NumLines > 0 then
-  begin
-    BeginUpdate;
-    try
-      SetCapacity(FCount + NumLines);
-      if Index < FCount then
-      begin
-        System.Move(FList^[Index], FList^[Index + NumLines],
-          (FCount - Index) * SynEditStringRecSize);
-      end;
-      for c_Line := Index to Index + NumLines - 1 do
-        with FList^[c_Line] do
-        begin
-          Pointer(FString) := nil;
-          FObject := nil;
-          FRange := NullRange;
-          FExpandedLength := -1;
-          FFlags := [sfExpandedLengthUnknown];
-        end;
-      Inc(FCount, NumLines);
-      if Assigned(OnInserted) then
-        OnInserted(Self, Index, NumLines);
-    finally
-      EndUpdate;
-    end;
-  end;
-end;
-
 procedure TSynEditStringList.InsertStrings(Index: Integer;
   Strings: TArray<string>; FromIndex: Integer);
 var
@@ -616,7 +539,8 @@ begin
   begin
     BeginUpdate;
     try
-      SetCapacity(FCount + LineCount);
+      if FCapacity < FCount + LineCount then
+        SetCapacity(GrowCollection(FCapacity, FCount + LineCount));
       if Index < FCount then
       begin
         System.Move(FList^[Index], FList^[Index + LineCount],
@@ -641,11 +565,6 @@ begin
   end;
 end;
 
-procedure TSynEditStringList.InsertStrings(Index: Integer; Strings: TStrings);
-begin
-  InsertStrings(Index, Strings.ToStringArray);
-end;
-
 procedure TSynEditStringList.InsertText(Index: Integer; NewText: string);
 var
   TmpStringList: TStringList;
@@ -656,7 +575,7 @@ begin
   TmpStringList := TStringList.Create;
   try
     TmpStringList.Text := NewText;
-    InsertStrings(Index, TmpStringList);
+    InsertStrings(Index, TmpStringList.ToStringArray);
   finally
     TmpStringList.Free;
   end;
@@ -731,13 +650,16 @@ procedure TSynEditStringList.Put(Index: Integer; const S: string);
 var
   OldLine: string;
 begin
-  if (Index = 0) and (FCount = 0) or (FCount = Index) then
-    Add(S)
-  else
-  begin
+  BeginUpdate;
+  try
+    if (Index = 0) and (FCount = 0) or (FCount = Index) then
+      // This is not undoable.
+      // A buffer with one empty line is considered empty
+      InsertItem(0, '');
+
     if Cardinal(Index) >= Cardinal(FCount) then
       ListIndexOutOfBounds(Index);
-    BeginUpdate;
+
     FIndexOfLongestLine := -1;
     with FList^[Index] do
     begin
@@ -749,6 +671,7 @@ begin
     end;
     if Assigned(FOnPut) then
       FOnPut(Self, Index, OldLine);
+  finally
     EndUpdate;
   end;
 end;
@@ -775,6 +698,11 @@ begin
     EListError.Create(SInvalidCapacity);
   ReallocMem(FList, NewCapacity * SynEditStringRecSize);
   FCapacity := NewCapacity;
+end;
+
+procedure TSynEditStringList.SetEncoding(const Value: TEncoding);
+begin
+  inherited;
 end;
 
 procedure TSynEditStringList.SetTabWidth(Value: Integer);

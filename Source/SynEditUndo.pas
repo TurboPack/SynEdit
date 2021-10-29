@@ -31,27 +31,97 @@ unit SynEditUndo;
 interface
 
 uses
-  SynEditTypes;
-
-type
-  TSynUndoRedoItem = procedure(Item: TSynEditUndoItem) of object;
+  SynEdit,
+  SynEditTypes,
+  SynEditKeyCmds;
 
 { Factory Method}
 
-function CreateSynEditUndo(UndoMethod, RedoMethod: TSynUndoRedoItem):
-  ISynEditUndo;
+function CreateSynEditUndo(Editor: TCustomSynEdit): ISynEditUndo;
 
 implementation
 
 uses
   System.Classes,
   System.SysUtils,
-  System.Generics.Collections;
+  System.Math,
+  System.Generics.Collections,
+  Vcl.Controls,
+  SynEditTextBuffer;
 
 type
+
+  TSynUndoItem = class abstract(TObject)
+    ChangeNumber: Integer;
+    FCaret: TBufferCoord;
+    GroupBreak: Boolean;
+  public
+    procedure Undo(Editor: TCustomSynEdit); virtual; abstract;
+    procedure Redo(Editor: TCustomSynEdit); virtual; abstract;
+  end;
+
+  TSynLinePutUndoItem = class(TSynUndoItem)
+  private
+    FIndex: Integer;
+    FStartPos: Integer;
+    FOldValue: string;
+    FNewValue: string;
+    FCommandProcessed: TSynEditorCommand;
+  public
+    function GroupWith(Item:TSynLinePutUndoItem): Boolean;
+    procedure Undo(Editor: TCustomSynEdit); override;
+    procedure Redo(Editor: TCustomSynEdit); override;
+    constructor Create(Editor: TCustomSynEdit; Index: Integer; OldLine: string;
+        Command: TSynEditorCommand);
+  end;
+
+  TSynLinesInsertedUndoItem = class(TSynUndoItem)
+  private
+    FIndex: Integer;
+    FLines: TArray<string>;
+  public
+    procedure Undo(Editor: TCustomSynEdit); override;
+    procedure Redo(Editor: TCustomSynEdit); override;
+    constructor Create(Editor: TCustomSynEdit; Index, Count: Integer);
+  end;
+
+  TSynLinesDeletedUndoItem = class(TSynUndoItem)
+  private
+    FIndex: Integer;
+    FLines: TArray<string>;
+  public
+    procedure Undo(Editor: TCustomSynEdit); override;
+    procedure Redo(Editor: TCustomSynEdit); override;
+    constructor Create(Editor: TCustomSynEdit; Index: Integer; DeletedLines:
+        TArray<string>);
+  end;
+
+  TSynCaretAndSelectionUndoItem = class(TSynUndoItem)
+  private
+    FBlockBegin: TBufferCoord;
+    FBlockEnd: TBufferCoord;
+  public
+    procedure Undo(Editor: TCustomSynEdit); override;
+    procedure Redo(Editor: TCustomSynEdit); override;
+    constructor Create(Editor: TCustomSynEdit);
+  end;
+
   TSynEditUndo = class;
 
-  TSynEditUndoList = class(TObjectStack<TSynEditUndoItem>)
+  TSynUndoPlugin = class(TSynEditPlugin)
+  private
+    FSynEditUndo: TSynEditUndo;
+    FDeletedLines: TArray<string>;
+  protected
+    procedure LinesInserted(FirstLine, Count: Integer); override;
+    procedure LinesBeforeDeleted(FirstLine, Count: Integer); override;
+    procedure LinesDeleted(FirstLine, Count: Integer); override;
+    procedure LinePut(aIndex: Integer; const OldLine: string); override;
+  public
+    constructor Create(SynEditUndo: TSynEditUndo; Editor: TCustomSynEdit);
+  end;
+
+  TSynEditUndoList = class(TObjectStack<TSynUndoItem>)
   protected
     FOwner: TSynEditUndo;
     FBlockChangeNumber: Integer;
@@ -61,16 +131,14 @@ type
     function NextChangeNumber: Integer;
   public
     constructor Create(Owner: TSynEditUndo);
-    procedure Push(const Value: TSynEditUndoItem);
-    procedure AddChange(AReason: TSynChangeReason;
-      const AStart, AEnd: TBufferCoord; const ChangeText: string;
-      SelMode: TSynSelectionMode; IsGroupBreak: Boolean);
+    procedure Push(const Value: TSynUndoItem);
     property BlockChangeNumber: Integer read FBlockChangeNumber
       write FBlockChangeNumber;
   end;
 
   TSynEditUndo = class(TInterfacedObject, ISynEditUndo)
   private
+    FPlugin: TSynUndoPlugin;
     FGroupUndo: Boolean;
     FBlockCount: Integer;
     FLockCount: Integer;
@@ -80,35 +148,31 @@ type
     FUndoList: TSynEditUndoList;
     FRedoList: TSynEditUndoList;
     FOnModifiedChanged: TNotifyEvent;
-    FInsideRedo: Boolean;
-    FUndoItem: TSynUndoRedoItem;
-    FRedoItem: TSynUndoRedoItem;
+    FInsideUndoRedo: Boolean;
+    FCommandProcessed: TSynEditorCommand;
     function GetModified: Boolean;
     function GetCanUndo: Boolean;
     function GetCanRedo: Boolean;
     function GetFullUndoImposible: Boolean;
     function GetOnModifiedChanged: TNotifyEvent;
     procedure SetModified(const Value: Boolean);
+    procedure SetCommandProcessed(const Command: TSynEditorCommand);
     procedure SetMaxUndoActions(const Value: Integer);
     procedure SetOnModifiedChanged(const Value: TNotifyEvent);
     procedure SetGroupUndo(const Value: Boolean);
     function GetMaxUndoActions: Integer;
-    procedure BeginBlock;
-    procedure EndBlock;
+    procedure BeginBlock(Editor: TControl);
+    procedure EndBlock(Editor: TControl);
     procedure Lock;
     procedure Unlock;
+    function IsLocked: Boolean;
     procedure Clear;
-    procedure AddUndoChange(AReason: TSynChangeReason;
-      const AStart, AEnd: TBufferCoord; const ChangeText: string;
-      SelMode: TSynSelectionMode; IsGroupBreak: Boolean = False);
-    procedure AddRedoChange(AReason: TSynChangeReason;
-      const AStart, AEnd: TBufferCoord; const ChangeText: string;
-      SelMode: TSynSelectionMode; IsGroupBreak: Boolean);
+    procedure Undo(Editor: TControl);
+    procedure Redo(Editor: TControl);
     procedure AddGroupBreak;
-    procedure Undo;
-    procedure Redo;
+    procedure AddUndoItem(Item: TSynUndoItem);
   public
-    constructor Create(UndoMethod, RedoMethod: TSynUndoRedoItem);
+    constructor Create(Editor: TCustomSynEdit);
     destructor Destroy; override;
   end;
 
@@ -121,41 +185,10 @@ begin
   FOwner := Owner;
 end;
 
-procedure TSynEditUndoList.AddChange(AReason: TSynChangeReason; const AStart,
-    AEnd: TBufferCoord; const ChangeText: string; SelMode: TSynSelectionMode;
-    IsGroupBreak: Boolean);
-var
-  NewItem: TSynEditUndoItem;
-begin
-  if FOwner.FLockCount = 0 then
-  begin
-    NewItem := TSynEditUndoItem.Create;
-    try
-      with NewItem do
-      begin
-        ChangeReason := AReason;
-        ChangeSelMode := SelMode;
-        ChangeStartPos := AStart;
-        ChangeEndPos := AEnd;
-        ChangeStr := ChangeText;
-        GroupBreak := IsGroupBreak;
-        if FBlockChangeNumber <> 0 then
-          ChangeNumber := FBlockChangeNumber
-        else
-          ChangeNumber := NextChangeNumber;
-      end;
-      Push(NewItem);
-    except
-      NewItem.Free;
-      raise;
-    end;
-  end;
-end;
-
 procedure TSynEditUndoList.EnsureMaxEntries;
 var
   KeepCount: Integer;
-  ItemArray: TArray<TSynEditUndoItem>;
+  ItemArray: TArray<TSynUndoItem>;
   I: Integer;
 begin
   if FOwner.FMaxUndoActions <= 0 then Exit;
@@ -179,33 +212,28 @@ begin
   Inc(FNextChangeNumber);
 end;
 
-procedure TSynEditUndoList.Push(const Value: TSynEditUndoItem);
+procedure TSynEditUndoList.Push(const Value: TSynUndoItem);
 begin
+  if FBlockChangeNumber <> 0 then
+    Value.ChangeNumber := FBlockChangeNumber
+  else
+    Value.ChangeNumber := NextChangeNumber;
   inherited Push(Value);
   EnsureMaxEntries;
 end;
 
 { TSynEditUndo }
 
-procedure TSynEditUndo.AddRedoChange(AReason: TSynChangeReason; const AStart,
-  AEnd: TBufferCoord; const ChangeText: string; SelMode: TSynSelectionMode;
-  IsGroupBreak: Boolean);
-begin
-  FRedoList.AddChange(AReason, AStart, AEnd, ChangeText, SelMode, IsGroupBreak);
-end;
-
-procedure TSynEditUndo.AddUndoChange(AReason: TSynChangeReason; const AStart,
-    AEnd: TBufferCoord; const ChangeText: string; SelMode: TSynSelectionMode;
-    IsGroupBreak: Boolean);
+procedure TSynEditUndo.AddUndoItem(Item: TSynUndoItem);
 var
   OldModified: Boolean;
 begin
+  Assert(not FInsideUndoRedo);
   OldModified := GetModified;
-  FUndoList.AddChange(AReason, AStart, AEnd, ChangeText, SelMode, IsGroupBreak);
-  if not FInsideRedo then
-    FRedoList.Clear;
+  FUndoList.Push(Item);
+  FRedoList.Clear;
   // Do not sent unnecessary notifications
-  if not FInsideRedo and (FBlockCount = 0) and (OldModified xor GetModified) and
+  if (FBlockCount = 0) and (OldModified xor GetModified) and
     Assigned(FOnModifiedChanged)
   then
     FOnModifiedChanged(Self);
@@ -217,14 +245,19 @@ begin
     FUndoList.Peek.GroupBreak := True;
 end;
 
-procedure TSynEditUndo.BeginBlock;
+procedure TSynEditUndo.BeginBlock(Editor: TControl);
+var
+  Item: TSynCaretAndSelectionUndoItem;
 begin
-  if FBlockCount = 0 then
+  Inc(FBlockCount);
+  if FBlockCount = 1 then // it was 0
   begin
     FBlockStartModified := GetModified;
     FUndoList.FBlockChangeNumber := FUndoList.NextChangeNumber;
+    // So that position is restored after Redo
+    Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+    FUndoList.Push(Item);
   end;
-  Inc(FBlockCount);
 end;
 
 procedure TSynEditUndo.Clear;
@@ -233,15 +266,14 @@ begin
   FRedoList.Clear;
 end;
 
-constructor TSynEditUndo.Create(UndoMethod, RedoMethod: TSynUndoRedoItem);
+constructor TSynEditUndo.Create(Editor: TCustomSynEdit);
 begin
   inherited Create;
   FGroupUndo := True;
-  FUndoItem := UndoMethod;
-  FRedoItem := RedoMethod;
   FMaxUndoActions := 0;
   FUndoList := TSynEditUndoList.Create(Self);
   FRedoList := TSynEditUndoList.Create(Self);
+  FPlugin := TSynUndoPlugin.Create(Self, Editor);
 end;
 
 destructor TSynEditUndo.Destroy;
@@ -251,13 +283,20 @@ begin
   inherited;
 end;
 
-procedure TSynEditUndo.EndBlock;
+procedure TSynEditUndo.EndBlock(Editor: TControl);
+var
+  Item: TSynCaretAndSelectionUndoItem;
 begin
+  Assert(FBlockCount > 0);
   if FBlockCount > 0 then
   begin
     Dec(FBlockCount);
     if FBlockCount = 0 then
     begin
+      // So that position is restored after Redo
+      Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+      FUndoList.Push(Item);
+
       FUndoList.FBlockChangeNumber := 0;
       AddGroupBreak;
       if FBlockStartModified xor GetModified and Assigned(FOnModifiedChanged) then
@@ -294,6 +333,11 @@ begin
   Result := FOnModifiedChanged;
 end;
 
+function TSynEditUndo.IsLocked: Boolean;
+begin
+  Result := FLockCount > 0;
+end;
+
 function TSynEditUndo.GetCanRedo: Boolean;
 begin
   Result := FRedoList.Count > 0;
@@ -304,12 +348,11 @@ begin
   Inc(FLockCount);
 end;
 
-procedure TSynEditUndo.Redo;
+procedure TSynEditUndo.Redo(Editor: TControl);
 var
-  Item: TSynEditUndoItem;
+  Item, LastItem: TSynUndoItem;
   OldChangeNumber: Integer;
   OldModified: Boolean;
-  FLastChange: TSynChangeReason;
   FKeepGoing: Boolean;
   LastItemHasGroupBreak: Boolean;
 begin
@@ -326,14 +369,15 @@ begin
       repeat
         Item := FRedoList.Extract;
         LastItemHasGroupBreak := Item.GroupBreak;
-        FLastChange := Item.ChangeReason;
-        FInsideRedo := True;
+        LastItem := Item;
+        FInsideUndoRedo := True;
         try
-        FRedoItem(Item);
+          Item.Redo(Editor as TCustomSynEdit);
         finally
-          Item.Free;
-          FInsideRedo := False;
+          FInsideUndoRedo := False;
         end;
+        // Move it to the UndoList
+        FUndoList.Push(Item);
 
         if FRedoList.Count = 0 then
           Break
@@ -344,19 +388,28 @@ begin
           FKeepGoing := True
         else
           FKeepGoing :=
-            { Group together same undo actions }
-            (FGroupUndo and (FLastChange = Item.ChangeReason) and
+            FGroupUndo and
             { Last Item had a group break - Stop redoing }
             not LastItemHasGroupBreak and
-            { crUn/Indent act as a group break }
-            not(FLastChange in [crIndent, crUnindent]));
+            { Group together same undo actions }
+            (LastItem is TSynLinePutUndoItem) and
+            (Item is TSynLinePutUndoItem) and
+            TSynLinePutUndoItem(LastItem).GroupWith(TSynLinePutUndoItem(Item));
       until not(FKeepGoing);
+
+      if not (Item is TSynCaretAndSelectionUndoItem) then
+        (Editor as TCustomSynEdit).CaretXY := Item.FCaret;  // removes selection
     finally
       if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
         FOnModifiedChanged(Self);
       FUndoList.BlockChangeNumber := 0;
     end;
   end;
+end;
+
+procedure TSynEditUndo.SetCommandProcessed(const Command: TSynEditorCommand);
+begin
+  FCommandProcessed := Command;
 end;
 
 procedure TSynEditUndo.SetGroupUndo(const Value: Boolean);
@@ -397,17 +450,15 @@ begin
   FOnModifiedChanged := Value;
 end;
 
-procedure TSynEditUndo.Undo;
+procedure TSynEditUndo.Undo(Editor: TControl);
 var
-  Item: TSynEditUndoItem;
+  Item, LastItem: TSynUndoItem;
   OldChangeNumber: Integer;
   OldModified: Boolean;
-  FLastChange: TSynChangeReason;
   FKeepGoing: Boolean;
 begin
   Assert((FBlockCount = 0) and (FRedoList.FBlockChangeNumber = 0) and
    (FRedoList.FBlockChangeNumber = 0));
-
 
   if FUndoList.Count > 0 then
   begin
@@ -419,9 +470,15 @@ begin
     try
       repeat
         Item := FUndoList.Extract;
-        FLastChange := Item.ChangeReason;
-        FUndoItem(Item);
-        Item.Free;
+        LastItem := Item;
+        FInsideUndoRedo := True;
+        try
+          Item.Undo(Editor as TCustomSynEdit);
+        finally
+          FInsideUndoRedo := False;
+        end;
+        // Move it to the RedoList
+        FRedoList.Push(Item);
 
         if FUndoList.Count = 0 then
           Break
@@ -432,14 +489,18 @@ begin
           FKeepGoing := True
         else
           FKeepGoing :=
-            { Group together same undo actions }
-            (FGroupUndo and (FLastChange = Item.ChangeReason) and
-            // Next item is not a group break
+            FGroupUndo and
+            { Last Item had a group break - Stop redoing }
             not Item.GroupBreak and
-            { crUn/Indent act as a group break }
-            not(FLastChange in [crIndent, crUnindent]));
+            { Group together same undo actions }
+            (LastItem is TSynLinePutUndoItem) and
+            (Item is TSynLinePutUndoItem) and
+            TSynLinePutUndoItem(Item).GroupWith(TSynLinePutUndoItem(LastItem));
       until not(FKeepGoing);
 
+      if not (LastItem is TSynCaretAndSelectionUndoItem) then
+        (Editor as TCustomSynEdit).SetCaretAndSelection(LastItem.FCaret, LastItem.FCaret,
+          LastItem.FCaret);
     finally
       if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
         FOnModifiedChanged(Self);
@@ -457,10 +518,247 @@ end;
 
 { Factory Method}
 
-function CreateSynEditUndo(UndoMethod, RedoMethod: TSynUndoRedoItem):
-  ISynEditUndo;
+function CreateSynEditUndo(Editor: TCustomSynEdit): ISynEditUndo;
 begin
-  Result := TSynEditUndo.Create(UndoMethod, RedoMethod);
+  Result := TSynEditUndo.Create(Editor);
+end;
+
+{ TSynCaretAndSelectionUndoItem }
+
+constructor TSynCaretAndSelectionUndoItem.Create(Editor: TCustomSynEdit);
+begin
+  inherited Create;
+  FCaret := Editor.CaretXY;
+  FBlockBegin := Editor.BlockBegin;
+  FBlockEnd := Editor.BlockEnd;
+end;
+
+procedure TSynCaretAndSelectionUndoItem.Redo(Editor: TCustomSynEdit);
+begin
+  // Same as Undo
+  Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
+end;
+
+procedure TSynCaretAndSelectionUndoItem.Undo(Editor: TCustomSynEdit);
+begin
+  Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
+end;
+
+{ TSynLinesDeletedUndoItem }
+
+constructor TSynLinesDeletedUndoItem.Create(Editor: TCustomSynEdit;
+  Index: Integer; DeletedLines: TArray<string>);
+begin
+  inherited Create;
+  FIndex := Index;
+  FLines := DeletedLines;
+end;
+
+procedure TSynLinesDeletedUndoItem.Redo(Editor: TCustomSynEdit);
+begin
+  TSynEditStringList(Editor.Lines).DeleteLines(FIndex, Length(FLines));
+  FCaret := BufferCoord(1, FIndex + 1);
+end;
+
+procedure TSynLinesDeletedUndoItem.Undo(Editor: TCustomSynEdit);
+begin
+  TSynEditStringList(Editor.Lines).InsertStrings(FIndex, FLines);
+  FCaret := BufferCoord(1,
+    Min(Editor.Lines.Count, FIndex + Length(FLines) + 1));
+end;
+
+{ TSynLinesInsertedUndoItem }
+
+constructor TSynLinesInsertedUndoItem.Create(Editor: TCustomSynEdit; Index,
+  Count: Integer);
+Var
+  I: Integer;
+begin
+  inherited Create;
+  FIndex := Index;
+  SetLength(FLines, Count);
+  for I := 0 to Count -1 do
+    FLines[I] := Editor.Lines[Index + I];
+end;
+
+procedure TSynLinesInsertedUndoItem.Redo(Editor: TCustomSynEdit);
+begin
+  TSynEditStringList(Editor.Lines).InsertStrings(FIndex, FLines);
+  FCaret := BufferCoord(1,
+    Min(Editor.Lines.Count, FIndex + Length(FLines) + 1));
+end;
+
+procedure TSynLinesInsertedUndoItem.Undo(Editor: TCustomSynEdit);
+begin
+  TSynEditStringList(Editor.Lines).DeleteLines(FIndex, Length(FLines));
+  FCaret := BufferCoord(1, FIndex + 1);
+end;
+
+{ TSynLinePutUndoItem }
+
+function TSynLinePutUndoItem.GroupWith(Item: TSynLinePutUndoItem): Boolean;
+begin
+  if (FNewValue.Length = Item.FNewValue.Length) and
+     (FOldValue.Length = Item.FOldValue.Length) and
+     (FOldValue.Length <= 1) and (FNewValue.Length <= 1) and
+     (Abs(FStartPos - Item.FStartPos) <= 1)
+  then
+    Result := True
+  else
+    Result := False;
+end;
+
+constructor TSynLinePutUndoItem.Create(Editor: TCustomSynEdit; Index: Integer;
+  OldLine: string; Command: TSynEditorCommand);
+var
+  Len1, Len2: Integer;
+  Line: string;
+begin
+  FCommandProcessed := Command;
+
+  FIndex := Index;
+  Line := Editor.Lines[Index];
+  Len1 := OldLine.Length;
+  Len2 := Line.Length;
+  // Compare from start
+  FStartPos := 1;
+  while (Len1 > 0) and (Len2 > 0) and (OldLine[FStartPos] = Line[FStartPos]) do
+  begin
+    Dec(Len1);
+    Dec(Len2);
+    Inc(FStartPos);
+  end;  
+  // Compare from end
+  while (Len1 > 0) and (Len2 > 0) and (OldLine[Len1] = Line[len2]) do
+  begin
+    Dec(len1);
+    Dec(len2);
+  end;
+
+  FOldValue := Copy(OldLine, FStartPos, Len1);
+  FNewValue := Copy(Line, FStartPos, Len2);
+end;
+
+procedure TSynLinePutUndoItem.Redo(Editor: TCustomSynEdit);
+var
+  Line: string;
+  Char: Integer;
+begin
+  Line := Editor.Lines[FIndex];
+  // Delete New
+  Delete(Line, FStartPos, FOldValue.Length);
+  Insert(FNewValue, Line, FStartPos);
+  Editor.Lines[FIndex] := Line;
+  case FCommandProcessed of
+    ecChar:
+      if (FOldValue.Length = 1) and (FNewValue.Length = 1) then
+        Char := FStartPos  // Typing in Insert Mode
+      else
+        Char := FStartPos + FNewValue.Length;
+    ecDeleteChar,
+    ecDeleteWord,
+    ecDeleteEOL:  Char := FStartPos;
+  else
+    Char := FStartPos + FNewValue.Length;      
+  end;
+  FCaret := BufferCoord(Char, FIndex + 1);
+end;
+
+procedure TSynLinePutUndoItem.Undo(Editor: TCustomSynEdit);
+var
+  Line: string;
+  Char: Integer;
+begin
+  Line := Editor.Lines[FIndex];
+  // Delete New
+  Delete(Line, FStartPos, FNewValue.Length);
+  Insert(FOldValue, Line, FStartPos);
+  Editor.Lines[FIndex] := Line;
+  case FCommandProcessed of
+    ecChar:
+      if (FOldValue.Length = 1) and (FNewValue.Length = 1) then
+        Char := FStartPos   // Typing in Insert Mode
+      else
+        Char := FStartPos + FOldValue.Length;
+    ecDeleteChar,
+    ecDeleteWord,
+    ecDeleteEOL:  Char := FStartPos;
+  else
+    Char := FStartPos + FOldValue.Length;      
+  end;
+  FCaret := BufferCoord(Char, FIndex + 1);
+end;
+
+{ TSynUndoPlugin }
+
+constructor TSynUndoPlugin.Create(SynEditUndo: TSynEditUndo;
+  Editor: TCustomSynEdit);
+begin
+  FSynEditUndo := SynEditUndo;
+  inherited Create(Editor,
+    [phLinePut, phLinesInserted, phLinesBeforeDeleted, phLinesDeleted]);
+end;
+
+procedure TSynUndoPlugin.LinePut(aIndex: Integer; const OldLine: string);
+var
+  Line: string;
+  Item: TSynLinePutUndoItem;
+begin
+  if Editor.IsChained or FSynEditUndo.IsLocked or FSynEditUndo.FInsideUndoRedo
+  then
+    Exit;
+
+  Line := Editor.Lines[aIndex];
+  if Line <> OldLine then
+  begin
+    Item := TSynLinePutUndoItem.Create(Editor, aIndex, OldLine,
+      FSynEditUndo.FCommandProcessed);
+    FSynEditUndo.AddUndoItem(Item);
+  end;
+end;
+
+procedure TSynUndoPlugin.LinesBeforeDeleted(FirstLine, Count: Integer);
+var
+  I: Integer;
+begin
+  if Editor.IsChained or FSynEditUndo.IsLocked or FSynEditUndo.FInsideUndoRedo
+  then
+    Exit;
+
+  SetLength(FDeletedLines, Count);
+  for I := 0 to Count -1 do
+    FDeletedLines[I] := Editor.Lines[FirstLine + I];
+end;
+
+procedure TSynUndoPlugin.LinesDeleted(FirstLine, Count: Integer);
+var
+  Item: TSynLinesDeletedUndoItem;
+begin
+  if Editor.IsChained or FSynEditUndo.IsLocked or FSynEditUndo.FInsideUndoRedo
+  then
+    Exit;
+
+  if Count > 0 then
+  begin
+    Item := TSynLinesDeletedUndoItem.Create(Editor, FirstLine,
+      FDeletedLines);
+    FSynEditUndo.AddUndoItem(Item);
+  end;
+end;
+
+procedure TSynUndoPlugin.LinesInserted(FirstLine, Count: Integer);
+var
+  Item: TSynLinesInsertedUndoItem;
+begin
+  if Editor.IsChained or FSynEditUndo.IsLocked or FSynEditUndo.FInsideUndoRedo
+  then
+    Exit;
+
+  if Count > 0 then
+  begin
+    Item := TSynLinesInsertedUndoItem.Create(Editor, FirstLine, Count);
+    FSynEditUndo.AddUndoItem(Item);
+  end;
 end;
 
 end.

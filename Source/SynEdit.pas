@@ -26,11 +26,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-Known Issues:
-- Undo is buggy when dealing with Hard Tabs (when inserting text after EOL and
-  when trimming).
-
 -------------------------------------------------------------------------------}
 //todo: in WordWrap mode, parse lines only once in PaintLines()
 //todo: Remove checks for WordWrap. Must abstract the behaviour with the plugins instead.
@@ -259,8 +254,8 @@ type
   TGutterClickEvent = procedure(Sender: TObject; Button: TMouseButton;
     X, Y, Line: Integer; Mark: TSynEditMark) of object;
 
-  TPluginHandler = (phLinesInserted, phLinesDeleted, phLinePut,
-    phLinesChanging, phLinesChanged, phPaintTransient, phAfterPaint);
+  TPluginHandler = (phLinesInserted, phLinesBeforeDeleted, phLinesDeleted,
+    phLinePut, phLinesChanged, phPaintTransient, phAfterPaint);
   TPlugInHandlers = set of TPluginHandler;
 
   TSynEditPlugin = class(TObject)
@@ -272,9 +267,9 @@ type
       FirstLine, LastLine: Integer); virtual;
     procedure PaintTransient(ACanvas: TCanvas; ATransientType: TTransientType); virtual;
     procedure LinesInserted(FirstLine, Count: Integer); virtual;
+    procedure LinesBeforeDeleted(FirstLine, Count: Integer); virtual;
     procedure LinesDeleted(FirstLine, Count: Integer); virtual;
     procedure LinePut(aIndex: Integer; const OldLine: string); virtual;
-    procedure LinesChanging; virtual;
     procedure LinesChanged; virtual;
   protected
     property Editor: TCustomSynEdit read fOwner;
@@ -441,8 +436,8 @@ type
     procedure ComputeScroll(X, Y: Integer);
     procedure DoHomeKey(Selection:boolean);
     procedure DoEndKey(Selection: Boolean);
-    procedure DoLinesChanging;
     procedure DoLinesChanged;
+    procedure DoLinesBeforeDeleted(FirstLine, Count: Integer);
     procedure DoLinesDeleted(FirstLine, Count: Integer);
     procedure DoLinesInserted(FirstLine, Count: Integer);
     procedure DoLinePut(FirstLine: Integer; const OldLine: string);
@@ -476,10 +471,7 @@ type
     function GetWordAtMouse: string;
     function GetWordWrap: Boolean;
     procedure GutterChanged(Sender: TObject);
-    function LeftSpaces(const Line: string): Integer;
-//++ CodeFolding
-    function LeftSpacesEx(const Line: string; WantTabs: Boolean; CalcAlways : Boolean = False): Integer;
-//-- CodeFolding
+    function LeftSpaces(const Line: string; ExpandTabs: Boolean = False): Integer;
     function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
     procedure LinesChanging(Sender: TObject);
     procedure MoveCaretAndSelection(const ptBefore, ptAfter: TBufferCoord;
@@ -591,6 +583,7 @@ type
     procedure KeyPress(var Key: Char); override;
     procedure LinesChanged(Sender: TObject); virtual;
     procedure ListCleared(Sender: TObject);
+    procedure ListBeforeDeleted(Sender: TObject; aIndex: Integer; aCount: Integer);
     procedure ListDeleted(Sender: TObject; aIndex: Integer; aCount: Integer);
     procedure ListInserted(Sender: TObject; Index: Integer; aCount: Integer);
     procedure ListPut(Sender: TObject; Index: Integer; const OldLine: string);
@@ -618,7 +611,6 @@ type
     procedure PaintTextLines(AClip: TRect; const aFirstRow, aLastRow,
       FirstCol, LastCol: Integer); virtual;
     procedure RecalcCharExtent;
-    procedure RedoItem(Item: TSynEditUndoItem);
     procedure InternalSetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXYEx(CallEnsureCursorPos: Boolean; Value: TBufferCoord); virtual;
@@ -627,15 +619,14 @@ type
     procedure SetReadOnly(Value: boolean); virtual;
     procedure SetWantReturns(Value: Boolean);
     procedure SetSelText(const Value: string);
-    procedure SetSelTextPrimitiveEx(PasteMode: TSynSelectionMode; Value: PWideChar;
-      AddToUndoList: Boolean = True; SilentDelete: Boolean = False);
+    procedure SetSelTextPrimitiveEx(PasteMode: TSynSelectionMode; Value: string;
+        AddToUndoList: Boolean = True; SilentDelete: Boolean = False);
     procedure SetWantTabs(Value: Boolean);
     procedure StatusChanged(AChanges: TSynStatusChanges);
     // If the translations requires Data, memory will be allocated for it via a
     // GetMem call.  The client must call FreeMem on Data if it is not NIL.
     function TranslateKeyCode(Code: word; Shift: TShiftState;
       var Data: pointer): TSynEditorCommand;
-    procedure UndoItem(Item: TSynEditUndoItem);
     procedure UpdateMouseCursor; virtual;
   protected
     fGutterWidth: Integer;
@@ -794,6 +785,7 @@ type
     procedure WndProc(var Msg: TMessage); override;
     procedure SetLinesPointer(ASynEdit: TCustomSynEdit);
     procedure RemoveLinesPointer;
+    function IsChained: Boolean;
     procedure HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo: ISynEditUndo);
     procedure UnHookTextBuffer;
     {Command implementations}
@@ -1244,12 +1236,13 @@ begin
     OnChange := LinesChanged;
     OnChanging := LinesChanging;
     OnCleared := ListCleared;
+    OnBeforeDeleted := ListBeforeDeleted;
     OnDeleted := ListDeleted;
     OnInserted := ListInserted;
     OnPut := ListPut;
   end;
   fFontDummy := TFont.Create;
-  fUndoRedo := CreateSynEditUndo(UndoItem, RedoItem);
+  fUndoRedo := CreateSynEditUndo(Self);
   fUndoRedo.OnModifiedChanged := ModifiedChanged;
   fOrigUndoRedo := fUndoRedo;
 
@@ -1902,32 +1895,23 @@ begin
     Exclude(fStateFlags, sfIgnoreNextChar);
 end;
 
-function TCustomSynEdit.LeftSpaces(const Line: string): Integer;
-begin
-  Result := LeftSpacesEx(Line, False);
-end;
-
-//-- CodeFolding
-function TCustomSynEdit.LeftSpacesEx(const Line: string; WantTabs: Boolean; CalcAlways : Boolean = False): Integer;
-//-- CodeFolding
+function TCustomSynEdit.LeftSpaces(const Line: string; ExpandTabs: Boolean): Integer;
 var
-  p: PWideChar;
+  P: PChar;
 begin
-  p := PWideChar(Line);
-  if Assigned(p) and ((eoAutoIndent in fOptions) or CalcAlways) then
+  Result := 0;
+  P := PChar(Line);
+  if Assigned(P) then
   begin
-    Result := 0;
-    while (p^ >= #1) and (p^ <= #32) do
+    while (P^ >= #1) and (P^ <= #32) do
     begin
-      if (p^ = #9) and WantTabs then
-        Inc(Result, TabWidth)
+      if (P^ = #9) and ExpandTabs then
+        Inc(Result, TabWidth - (Result mod FTabWidth))
       else
         Inc(Result);
-      Inc(p);
+      Inc(P);
     end;
-  end
-  else
-    Result := 0;
+  end;
 end;
 
 function TCustomSynEdit.GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
@@ -1942,7 +1926,6 @@ end;
 procedure TCustomSynEdit.LinesChanging(Sender: TObject);
 begin
   Include(fStateFlags, sfLinesChanging);
-  DoLinesChanging;
 end;
 
 procedure TCustomSynEdit.LinesChanged(Sender: TObject);
@@ -1969,7 +1952,7 @@ begin
 //    UpdateScrollBars;
 //-- Flicker Reduction
     vOldMode := fActiveSelectionMode;
-    SetBlockBegin(CaretXY);
+    //SetBlockBegin(CaretXY);
     fActiveSelectionMode := vOldMode;
     InvalidateRect(fInvalidateRect, False);
     FillChar(fInvalidateRect, SizeOf(TRect), 0);
@@ -3235,7 +3218,7 @@ var
           while (RowToLine(LastNonBlank) <= fLines.Count)
             and (TrimLeft(fLines[RowToLine(LastNonBlank)-1]) = '') do
             Inc(LastNonBlank);
-          LineIndent := LeftSpacesEx(fLines[RowToLine(LastNonBlank)-1], True, True);
+          LineIndent := LeftSpaces(fLines[RowToLine(LastNonBlank)-1], True);
 
    // Step horizontal coord
           TabSteps := TabWidth;
@@ -3654,7 +3637,7 @@ begin
     end;
   end;
   // SetSelTextPrimitiveEx Encloses the undo actions in Begin/EndUndoBlock
-  SetSelTextPrimitiveEx(PasteMode, PWideChar(GetClipboardText), True);
+  SetSelTextPrimitiveEx(PasteMode, GetClipboardText, True);
 
   // ClientRect can be changed by UpdateScrollBars if eoHideShowScrollBars
   // is enabled
@@ -4118,7 +4101,7 @@ end;
 
 procedure TCustomSynEdit.SetSelText(const Value: string);
 begin
-  SetSelTextPrimitiveEx(fActiveSelectionMode, PWideChar(Value), True);
+  SetSelTextPrimitiveEx(fActiveSelectionMode, Value, True);
 end;
 
 // This is really a last minute change and I hope I did it right.
@@ -4127,8 +4110,8 @@ end;
 // as we would typically want the cursor to stay where it is.
 // To fix this (in the absence of a better idea), I changed the code in
 // DeleteSelection not to trim the string if eoScrollPastEol is not set.
-procedure TCustomSynEdit.SetSelTextPrimitiveEx(PasteMode: TSynSelectionMode; Value: PWideChar;
-      AddToUndoList: Boolean = True; SilentDelete: Boolean = False);
+procedure TCustomSynEdit.SetSelTextPrimitiveEx(PasteMode: TSynSelectionMode;
+  Value: string; AddToUndoList: Boolean = True; SilentDelete: Boolean = False);
 {
    Works in two stages:
      -  First deletes selection.
@@ -4142,7 +4125,7 @@ var
 
   procedure DeleteSelection;
   var
-    x: Integer;
+    I: Integer;
   begin
     case fActiveSelectionMode of
       smNormal:
@@ -4169,11 +4152,11 @@ var
           if BB.Char > BE.Char then
             SwapInt(Integer(BB.Char), Integer(BE.Char));
 
-          for x := BB.Line - 1 to BE.Line - 1 do
+          for I := BB.Line - 1 to BE.Line - 1 do
           begin
-            TempString := Lines[x];
+            TempString := Lines[I];
             Delete(TempString, BB.Char, BE.Char - BB.Char);
-            ProperSetLine(x, TempString);
+            ProperSetLine(I, TempString);
           end;
           // Lines never get deleted completely, so keep caret at end.
           InternalCaretXY := BufferCoord(BB.Char, fBlockEnd.Line);
@@ -4185,13 +4168,10 @@ var
           if BE.Line = Lines.Count then
           begin
             Lines[BE.Line - 1] := '';
-            for x := BE.Line - 2 downto BB.Line - 1 do
-              Lines.Delete(x);
+            TSynEditStringList(Lines).DeleteLines(BB.Line, BE.Line - BB.Line);
           end
-          else begin
-            for x := BE.Line - 1 downto BB.Line - 1 do
-              Lines.Delete(x);
-          end;
+          else
+            TSynEditStringList(Lines).DeleteLines(BB.Line - 1, BE.Line - BB.Line + 1);
           // smLine deletion always resets to first column.
           InternalCaretXY := BufferCoord(1, BB.Line);
         end;
@@ -4252,7 +4232,6 @@ var
       P: PWideChar;
       Len: Integer;
       InsertPos: Integer;
-      LineBreakPos: TBufferCoord;
     begin
       // Insert string at current position
       InsertPos := CaretX;
@@ -4267,12 +4246,6 @@ var
           begin
             TempString := StringofChar(#32, InsertPos - 1) + Str;
             Lines.Add('');
-            if AddToUndoList then
-            begin
-              LineBreakPos.Line := CaretY -1;
-              LineBreakPos.Char := Length(Lines[CaretY - 2]) + 1;
-              fUndoRedo.AddUndoChange(crLineBreak, LineBreakPos, LineBreakPos, '', smNormal);
-            end;
           end
           else begin
             TempString := Lines[CaretY - 1];
@@ -4286,12 +4259,6 @@ var
                 Insert(Str, TempString, InsertPos);
           end;
           ProperSetLine(CaretY - 1, TempString);
-          // Add undo change here from PasteFromClipboard
-          if AddToUndoList then
-          begin
-            fUndoRedo.AddUndoChange(crInsert, BufferCoord(InsertPos, CaretY),
-               BufferCoord(InsertPos + (P - Start), CaretY), '', fActiveSelectionMode);
-          end;
         end;
         if P^ = #13 then
         begin
@@ -4378,60 +4345,34 @@ var
         InsertLine;
     end;
     // Force caret reset
-    InternalCaretXY := CaretXY;
+    CaretXY := CaretXY;
   end;
 
 begin
+  BB := BlockBegin;
+  BE := BlockEnd;
+
+  if (Value.Length = 0) and (BB = BE) then Exit;  // nothing to do
+
   Lines.BeginUpdate;
   IncPaintLock;
+  if AddToUndoList then BeginUndoBlock else fUndoRedo.Lock;
   try
-    BB := BlockBegin;
-    BE := BlockEnd;
-
     SelectedText := SelText;
 
-    if AddToUndoList and (Length(Value) > 0) then
-      BeginUndoBlock;
-    try
-      if SelectedText <> '' then
-      begin
-        if AddToUndoList then
-        begin
-          if SilentDelete then
-            fUndoRedo.AddUndoChange(crSilentDelete, fBlockBegin, fBlockEnd,
-              SelectedText, fActiveSelectionMode)
-          else
-            fUndoRedo.AddUndoChange(crDelete,  fBlockBegin, fBlockEnd,
-              SelectedText, fActiveSelectionMode);
-        end;
-        DeleteSelection;
-        InternalCaretXY := BB;
-      end;
-
-      if Length(Value) > 0 then
-      begin
-        InsertText;
-        // In scColumn mode undo is added inside InsertColumn
-        if AddToUndoList and (PasteMode <> smColumn) then
-        begin
-          BE := CaretXY;
-          if PasteMode = smLine then
-          begin
-            BB.Char := 1;
-            BE.Char := MaxInt;
-            BE.Line := BE.Line - 1;
-          end;
-          fUndoRedo.AddUndoChange(crInsert, BB, BE, '', PasteMode)
-        end;
-      end;
-
-      if CaretY < 1 then
-        InternalCaretY := 1;
-    finally
-      if AddToUndoList and (Length(Value) > 0) then
-        EndUndoBlock;
+    if SelectedText <> '' then
+    begin
+      DeleteSelection;
+      CaretXY := BB;
     end;
+
+    if Length(Value) > 0 then
+      InsertText;
+
+    if CaretY < 1 then
+      InternalCaretY := 1;
   finally
+    if AddToUndoList then EndUndoBlock else fUndoRedo.UnLock;
     DecPaintLock;
     Lines.EndUpdate;
   end;
@@ -4609,7 +4550,6 @@ begin
             Exclude(fOptions, eoScrollPastEol);
         end;
         SetCaretAndSelection(CaretXY, vNewCaret, CaretXY);
-        fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', ActiveSelectionMode);
       finally
         EndUndoBlock;
       end;
@@ -5254,6 +5194,12 @@ begin
   Include(fStatusChanges, scAll);
 end;
 
+procedure TCustomSynEdit.ListBeforeDeleted(Sender: TObject; aIndex: Integer;
+  aCount: Integer);
+begin
+  DoLinesBeforeDeleted(aIndex, aCount);
+end;
+
 procedure TCustomSynEdit.ListDeleted(Sender: TObject; aIndex: Integer;
   aCount: Integer);
 //++ CodeFolding
@@ -5459,7 +5405,7 @@ end;
 
 function TCustomSynEdit.GetCanRedo: Boolean;
 begin
-  result := not ReadOnly and fUndoRedo.CanUndo;
+  Result := not ReadOnly and fUndoRedo.CanRedo;
 end;
 
 function TCustomSynEdit.GetCanPaste;
@@ -5476,7 +5422,7 @@ begin
   SetCaretAndSelection(BB, BB, BE);
   OldSelectinonMode := ActiveSelectionMode;
   ActiveSelectionMode := smColumn;
-  SetSelTextPrimitiveEx(smColumn, ChangeStr, AddToUndoList);
+  SetSelTextPrimitiveEx(smColumn, PChar(ChangeStr), AddToUndoList);
   StatusChanged([scSelection]);
   ActiveSelectionMode := OldSelectinonMode;
 end;
@@ -5490,133 +5436,11 @@ begin
   IncPaintLock;
   Lines.BeginUpdate;
   try
-    FUndoRedo.Redo;
+    FUndoRedo.Redo(Self);
   finally
     Lines.EndUpdate;
     DecPaintLock;
     DoOnPaintTransientEx(ttAfter,true);
-  end;
-end;
-
-procedure TCustomSynEdit.RedoItem(Item: TSynEditUndoItem);
-var
-  Run, StrToDelete: PWideChar;
-  Len: Integer;
-  TempString: string;
-  CaretPt: TBufferCoord;
-  ChangeScrollPastEol: boolean;
-  BeginX: integer;
-  OldSelectionMode : TSynSelectionMode;
-  GroupBreak: Boolean;
-begin
-  ChangeScrollPastEol := not (eoScrollPastEol in Options);
-  OldSelectionMode := ActiveSelectionMode;
-  GroupBreak := Item.GroupBreak;
-  if Assigned(Item) then
-  try
-    ActiveSelectionMode := Item.ChangeSelMode;
-    Include(fOptions, eoScrollPastEol);
-    case Item.ChangeReason of
-      crCaret:
-        begin
-          fUndoRedo.AddUndoChange(Item.ChangeReason, CaretXY, CaretXY, '',
-            fActiveSelectionMode, GroupBreak);
-          InternalCaretXY := Item.ChangeStartPos;
-        end;
-      crSelection:
-        begin
-          fUndoRedo.AddUndoChange(Item.ChangeReason, BlockBegin, BlockEnd, '',
-            fActiveSelectionMode, GroupBreak);
-          SetCaretAndSelection(CaretXY, Item.ChangeStartPos, Item.ChangeEndPos);
-        end;
-      crInsert:
-        begin
-          SetCaretAndSelection(Item.ChangeStartPos, Item.ChangeStartPos,
-            Item.ChangeStartPos);
-          SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr),
-            False);
-          InternalCaretXY := Item.ChangeEndPos;
-          fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, SelText, Item.ChangeSelMode, GroupBreak);
-        end;
-      crDelete, crSilentDelete:
-        begin
-          SetCaretAndSelection(Item.ChangeStartPos, Item.ChangeStartPos,
-            Item.ChangeEndPos);
-          TempString := SelText;
-          SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr),
-            False);
-          fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, TempString, Item.ChangeSelMode, GroupBreak);
-          InternalCaretXY := Item.ChangeStartPos;
-        end;
-      crLineBreak:
-        begin
-          CaretPt := Item.ChangeStartPos;
-          SetCaretAndSelection(CaretPt, CaretPt, CaretPt);
-          CommandProcessor(ecLineBreak, #13, nil);
-        end;
-      crIndent:
-        begin
-          SetCaretAndSelection(Item.ChangeEndPos, Item.ChangeStartPos,
-            Item.ChangeEndPos);
-          fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
-        end;
-       crUnindent :
-         begin // re-delete the (raggered) column
-           // Delete string
-           StrToDelete := PWideChar(Item.ChangeStr);
-           InternalCaretY := Item.ChangeStartPos.Line;
-          if Item.ChangeSelMode = smColumn then
-            BeginX := Min(Item.ChangeStartPos.Char, Item.ChangeEndPos.Char)
-          else
-            BeginX := 1;
-           repeat
-             Run := GetEOL(StrToDelete);
-             if Run <> StrToDelete then
-             begin
-               Len := Run - StrToDelete;
-               if Len > 0 then
-               begin
-                 TempString := Lines[CaretY - 1];
-                 Delete(TempString, BeginX, Len);
-                 Lines[CaretY - 1] := TempString;
-               end;
-             end
-             else
-               Len := 0;
-             if Run^ = #13 then
-             begin
-               Inc(Run);
-               if Run^ = #10 then
-                 Inc(Run);
-               Inc(fCaretY);
-             end;
-             StrToDelete := Run;
-           until Run^ = #0;
-          if Item.ChangeSelMode = smColumn then
-            SetCaretAndSelection(Item.ChangeStartPos, Item.ChangeStartPos,
-              Item.ChangeEndPos)
-          else begin
-            // restore selection
-            CaretPt.Char := Item.ChangeStartPos.Char - fTabWidth;
-            CaretPt.Line := Item.ChangeStartPos.Line;
-            SetCaretAndSelection( CaretPt, CaretPt,
-              BufferCoord(Item.ChangeEndPos.Char - Len, Item.ChangeEndPos.Line) );
-          end;
-           // add to undo list
-           fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
-             Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
-         end;
-      crNothing:
-        fUndoRedo.AddUndoChange(Item.ChangeReason, Item.ChangeStartPos,
-           Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
-    end;
-  finally
-    ActiveSelectionMode := OldSelectionMode;
-    if ChangeScrollPastEol then
-      Exclude(fOptions, eoScrollPastEol);
   end;
 end;
 
@@ -5933,10 +5757,6 @@ begin
     DoOnPaintTransientEx(ttBefore, true);
     BeginUndoBlock;
     try
-      // Save caret and selection, so that they can be restored by undo
-      fUndoRedo.AddUndoChange(crCaret, Caret, Caret, '', OldSelectionMode);
-      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
-
       // Insert/replace text at selection BB-BE
       SetCaretAndSelection(BB, BB, BE);
       SetSelText(Text);
@@ -5949,9 +5769,6 @@ begin
         Inc(EndOfBlock.Line, SelShift);
       end;
       SetCaretAndSelection(Caret, StartOfBlock, EndOfBlock);
-      // Save caret and selection, so that they can be restored by redo
-      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
-      fUndoRedo.AddUndoChange(crCaret, Caret, Caret, '', OldSelectionMode);
     finally
       EndUndoBlock;
       DoOnPaintTransientEx(ttAfter, true);
@@ -5974,9 +5791,6 @@ begin
     ActiveSelectionMode := smNormal;
     BeginUndoBlock;
     try
-      // Save caret and selection, so that they can be restored by undo
-      fUndoRedo.AddUndoChange(crCaret, CaretXY, CaretXY, '', OldSelectionMode);
-      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
       // Nomalize selection
       if fBlockBegin > fBlockEnd then
         SetCaretAndSelection(BlockBegin, BlockBegin, BlockEnd);
@@ -5990,9 +5804,6 @@ begin
       end;
       SetSelText('');
       SetCaretAndSelection(fBlockBegin, fBlockBegin, fBlockBegin);
-      // Save caret and selection, so that they can be restored by redo
-      fUndoRedo.AddUndoChange(crSelection, fBlockBegin, fBlockEnd, '', OldSelectionMode);
-      fUndoRedo.AddUndoChange(crCaret, fBlockBegin, fBlockBegin, '', OldSelectionMode);
     finally
       EndUndoBlock;
       // Restore Selection mode
@@ -6026,144 +5837,12 @@ begin
   IncPaintLock;
   Lines.BeginUpdate;
   try
-    FUndoRedo.Undo;
+    FUndoRedo.Undo(Self);
   finally
     Lines.EndUpdate;
     DecPaintLock;
     DoOnPaintTransientEx(ttAfter,true);
   end;
-end;
-
-procedure TCustomSynEdit.UndoItem(Item: TSynEditUndoItem);
-var
-  TmpPos: TBufferCoord;
-  TmpStr: string;
-  ChangeScrollPastEol: Boolean;
-  BeginX: Integer;
-  GroupBreak: Boolean;
-begin
-  ChangeScrollPastEol := not (eoScrollPastEol in Options);
-  if Assigned(Item) then
-  try
-    GroupBreak := Item.GroupBreak;
-    ActiveSelectionMode := Item.ChangeSelMode;
-    Include(fOptions, eoScrollPastEol);
-    case Item.ChangeReason of
-      crCaret:
-        begin
-          fUndoRedo.AddRedoChange(Item.ChangeReason, CaretXY, CaretXY, '',
-            fActiveSelectionMode, GroupBreak);
-          InternalCaretXY := Item.ChangeStartPos;
-        end;
-      crSelection:
-        begin
-          fUndoRedo.AddRedoChange(Item.ChangeReason, BlockBegin, BlockEnd, '',
-            fActiveSelectionMode, GroupBreak);
-          SetCaretAndSelection(CaretXY, Item.ChangeStartPos, Item.ChangeEndPos);
-        end;
-      crInsert:
-        begin
-          SetCaretAndSelection(Item.ChangeStartPos, Item.ChangeStartPos,
-            Item.ChangeEndPos);
-          TmpStr := SelText;
-          SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr),
-            False);
-          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, TmpStr, Item.ChangeSelMode, GroupBreak);
-          InternalCaretXY := Item.ChangeStartPos;
-        end;
-      crDelete, crSilentDelete:
-        begin
-          // If there's no selection, we have to set
-          // the Caret's position manualy.
-          if Item.ChangeSelMode = smColumn then
-            TmpPos := BufferCoord(
-              Min(Item.ChangeStartPos.Char, Item.ChangeEndPos.Char),
-              Min(Item.ChangeStartPos.Line, Item.ChangeEndPos.Line))
-          else
-            TmpPos := TBufferCoord(MinPoint(
-              TPoint(Item.ChangeStartPos), TPoint(Item.ChangeEndPos)));
-          if TmpPos.Line > Lines.Count then // not sure this could ever occur
-          begin
-            InternalCaretXY := BufferCoord(1, Lines.Count);
-            fLines.Add('');
-          end;
-          CaretXY := TmpPos;
-          SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr),
-            False );
-          TmpPos := Item.ChangeEndPos;
-          if Item.ChangeReason = crSilentDelete then
-            SetCaretAndSelection(TmpPos, TmpPos, TmpPos)
-          else
-            SetCaretAndSelection(TmpPos, Item.ChangeStartPos,
-              Item.ChangeEndPos);
-          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, '', Item.ChangeSelMode, GroupBreak);
-          EnsureCursorPosVisible;
-        end;
-      crLineBreak:
-        begin
-          // If there's no selection, we have to set
-          // the Caret's position manualy.
-          InternalCaretXY := Item.ChangeStartPos;
-          if CaretY > 0 then
-          begin
-            TmpStr := Lines.Strings[CaretY - 1];
-            if (Length(TmpStr) < CaretX - 1)
-              and (LeftSpaces(Item.ChangeStr) = 0)
-            then
-              TmpStr := TmpStr + StringofChar(#32, CaretX - 1 - Length(TmpStr));
-            ProperSetLine(CaretY - 1, TmpStr + Item.ChangeStr);
-            if Item.ChangeEndPos.Line < Lines.Count then
-              Lines.Delete(Item.ChangeEndPos.Line);
-          end
-          else
-            ProperSetLine(CaretY - 1, Item.ChangeStr);
-          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, '', Item.ChangeSelMode, GroupBreak);
-        end;
-      crIndent:
-        begin
-          SetCaretAndSelection(Item.ChangeEndPos, Item.ChangeStartPos,
-            Item.ChangeEndPos);
-          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
-            Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
-        end;
-       crUnindent: // reinsert the (raggered) column that was deleted
-         begin
-           // reinsert the string
-          if Item.ChangeSelMode <> smColumn then
-            InsertBlock(BufferCoord(1, Item.ChangeStartPos.Line),
-              BufferCoord(1, Item.ChangeEndPos.Line),
-              PWideChar(Item.ChangeStr), False)
-          else
-          begin
-            BeginX := Min( Item.ChangeStartPos.Char, Item.ChangeEndPos.Char );
-            InsertBlock(BufferCoord(BeginX, Item.ChangeStartPos.Line),
-              BufferCoord(BeginX, Item.ChangeEndPos.Line),
-              PWideChar(Item.ChangeStr), False);
-          end;
-           SetCaretAndSelection(Item.ChangeStartPos, Item.ChangeStartPos,
-             Item.ChangeEndPos);
-          fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
-             Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
-        end;
-      crWhiteSpaceAdd:
-        begin
-          SetCaretAndSelection(Item.ChangeStartPos, Item.ChangeStartPos,
-            Item.ChangeEndPos);
-          TmpStr := SelText;
-          SetSelTextPrimitiveEx(Item.ChangeSelMode, PWideChar(Item.ChangeStr), True);
-          InternalCaretXY := Item.ChangeStartPos;
-        end;
-      crNothing:
-        fUndoRedo.AddRedoChange(Item.ChangeReason, Item.ChangeStartPos,
-           Item.ChangeEndPos, Item.ChangeStr, Item.ChangeSelMode, GroupBreak);
-    end;
-  finally
-    if ChangeScrollPastEol then
-      Exclude(fOptions, eoScrollPastEol);
- end;
 end;
 
 procedure TCustomSynEdit.ClearBookMark(BookMark: Integer);
@@ -6743,6 +6422,7 @@ procedure TCustomSynEdit.CommandProcessor(Command: TSynEditorCommand;
   AChar: WideChar; Data: pointer);
 begin
   // first the program event handler gets a chance to process the command
+  fUndoRedo.CommandProcessed := Command;
   DoOnProcessCommand(Command, AChar, Data);
   if Command <> ecNone then
   begin
@@ -6758,6 +6438,7 @@ begin
       NotifyHookedCommandHandlers(True, Command, AChar, Data);
   end;
   DoOnCommandProcessed(Command, AChar, Data);
+  fUndoRedo.CommandProcessed := ecNone;
 end;
 
 procedure TCustomSynEdit.ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar;
@@ -6774,7 +6455,6 @@ var
   SpaceCount2: Integer;
   BackCounter: Integer;
   StartOfBlock: TBufferCoord;
-  EndOfBlock: TBufferCoord;
   bChangeScroll: Boolean;
   moveBkm: Boolean;
   WP: TBufferCoord;
@@ -6783,24 +6463,7 @@ var
   counter: Integer;
   vCaretRow: Integer;
   s: string;
-  i: Integer;
-  OldSmartTabs: Boolean;
 
-  // expand tabs to spaces - used in Autoindent
-  function ExpandTabs(const AInput: string): string;
-  //  Assumes AInput consists of tabs and spaces
-  var
-    I, DestLen: integer;
-  begin
-    DestLen  := 0;
-    for I := 1 to Length(AInput) do
-      if AInput[I] = #9 then
-        Inc(DestLen, FTabWidth - (DestLen mod FTabWidth))
-      else
-        Inc(DestLen);
-    Result := StringOfChar(' ', DestLen);
-  end;
-  
 begin
   IncPaintLock;
   try
@@ -6911,7 +6574,6 @@ begin
               Caret := CaretXY;
               if CaretX > Len + 1 then
               begin
-                Helper := '';
                 if eoSmartTabDelete in fOptions then
                 begin
                   //It's at the end of the line, move it to the length
@@ -6947,16 +6609,22 @@ begin
                   // only move caret one column
                   InternalCaretX := CaretX - 1;
                 end;
-              end else if CaretX = 1 then begin
+              end // CaretX > Len + 1
+              else if CaretX = 1 then
+              begin
                 // join this line with the last line if possible
                 if CaretY > 1 then
                 begin
-                  InternalCaretY := CaretY - 1;
-                  InternalCaretX := Length(Lines[CaretY - 1]) + 1;
-                  Lines.Delete(CaretY);
+                  BeginUndoBlock;
+                  try
+                    InternalCaretY := CaretY - 1;
+                    InternalCaretX := Length(Lines[CaretY - 1]) + 1;
+                    Lines.Delete(CaretY);
 
-                  LineText := LineText + Temp;
-                  Helper := #13#10;
+                    LineText := LineText + Temp;
+                  finally
+                    EndUndoBlock;
+                  end;
                 end;
               end
               else begin
@@ -6968,23 +6636,22 @@ begin
                   if eoSmartTabDelete in fOptions then
                   begin
                     // unindent
-                    if SpaceCount1 > 0 then
+                    SpaceCount1 := LeftSpaces(Temp, True);
+                    Assert(SpaceCount1 > 0);
+                    BackCounter := CaretY - 2;
+                    while BackCounter >= 0 do
                     begin
-                      BackCounter := CaretY - 2;
-                      while BackCounter >= 0 do
-                      begin
-                        SpaceCount2 := LeftSpaces(Lines[BackCounter]);
-                        if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
-                          break;
-                        Dec(BackCounter);
-                      end;
-                      if (BackCounter = -1) and (SpaceCount2 > SpaceCount1) then
-                        SpaceCount2 := 0;
+                      SpaceCount2 := LeftSpaces(Lines[BackCounter], True);
+                      if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
+                        break;
+                      Dec(BackCounter);
                     end;
-                    if SpaceCount2 = SpaceCount1 then
+                    if (BackCounter = -1) and (SpaceCount2 >= SpaceCount1) then
                       SpaceCount2 := 0;
-                    Helper := Copy(Temp, 1, SpaceCount1 - SpaceCount2);
-                    Delete(Temp, 1, SpaceCount1 - SpaceCount2);
+                    Delete(Temp, 1, LeftSpaces(Temp));
+                    Temp2 := GetLeftSpacing(SpaceCount2, True);
+                    Temp := Temp2 + Temp;
+                    fCaretX := Temp2.Length + 1;
                   end
                   else begin
                     SpaceCount2 := SpaceCount1;
@@ -7011,17 +6678,12 @@ begin
                       SpaceCount1 := SpaceCount1 + 1;
 
                     if SpaceCount2 = SpaceCount1 then
-                    begin
-                      Helper := Copy(Temp, 1, SpaceCount1);
-                      Delete(Temp, 1, SpaceCount1);
-                    end
-                    else begin
-                      Helper := Copy(Temp, SpaceCount2 - SpaceCount1 + 1, SpaceCount1);
+                      Delete(Temp, 1, SpaceCount1)
+                    else
                       Delete(Temp, SpaceCount2 - SpaceCount1 + 1, SpaceCount1);
-                    end;
                     SpaceCount2 := 0;
+                    fCaretX := fCaretX - (SpaceCount1 - SpaceCount2);
                   end;
-                  fCaretX := fCaretX - (SpaceCount1 - SpaceCount2);
                   UpdateLastCaretX;
                   // Stores the previous "expanded" CaretX if the line contains tabs.
                   Lines[CaretY - 1] :=  Temp;
@@ -7030,18 +6692,10 @@ begin
                 end
                 else begin
                   // delete char
-                  counter := 1;
-                  InternalCaretX := CaretX - counter;
-                  // Stores the previous "expanded" CaretX if the line contains tabs.
-                  Helper := Copy(Temp, CaretX, counter);
-                  Delete(Temp, CaretX, counter);
+                  InternalCaretX := CaretX - 1;
+                  Delete(Temp, CaretX, 1);
                   Lines[CaretY - 1] := Temp;
                 end;
-              end;
-              if (Caret.Char <> CaretX) or (Caret.Line <> CaretY) then
-              begin
-                fUndoRedo.AddUndoChange(crSilentDelete, CaretXY, Caret, Helper,
-                  smNormal);
               end;
             end;
             EnsureCursorPosVisible;
@@ -7064,84 +6718,63 @@ begin
             if CaretX <= Len then
             begin
               // delete char
-              counter := 1;
-              Helper := Copy(Temp, CaretX, counter);
-              Caret.Char := CaretX + counter;
-              Caret.Line := CaretY;
-              Delete(Temp, CaretX, counter);
+              Delete(Temp, CaretX, 1);
               Lines[CaretY - 1] := Temp;
             end
             else begin
               // join line with the line after
               if CaretY < Lines.Count then
               begin
-                Helper := StringofChar(#32, CaretX - 1 - Len);
-                Lines[CaretY - 1] := Temp + Helper + Lines[CaretY];
-                Caret.Char := 1;
-                Caret.Line := CaretY + 1;
-                Helper := #13#10;
-                Lines.Delete(CaretY);
+                BeginUndoBlock;
+                try
+                  Helper := StringofChar(#32, CaretX - 1 - Len);
+                  Lines[CaretY - 1] := Temp + Helper + Lines[CaretY];
+                  Lines.Delete(CaretY);
+                finally
+                  EndUndoBlock;
+                end;
               end;
-            end;
-            if (Caret.Char <> CaretX) or (Caret.Line <> CaretY) then
-            begin
-              fUndoRedo.AddUndoChange(crSilentDelete, Caret, CaretXY,
-                Helper, smNormal);
             end;
           end;
           DoOnPaintTransient(ttAfter);
         end;
       ecDeleteWord, ecDeleteEOL:
-        if not ReadOnly then begin
-          DoOnPaintTransient(ttBefore);
+        if not ReadOnly then
+        begin
           Len := Length(LineText);
           if Command = ecDeleteWord then
-          begin
-            WP := WordEnd;
-            Temp := LineText;
-            if (WP.Char < CaretX) or ((WP.Char = CaretX) and (WP.Line < fLines.Count)) then
-            begin
-              if WP.Char > Len then
-              begin
-                Inc(WP.Line);
-                WP.Char := 1;
-                Temp := Lines[WP.Line - 1];
-              end
-              else if Temp[WP.Char] <> #32 then
-                Inc(WP.Char);
-            end;
-          end
+            WP := WordEnd
           else begin
             WP.Char := Len + 1;
             WP.Line := CaretY;
           end;
-          if (WP.Char <> CaretX) or (WP.Line <> CaretY) then
+
+          if (WP > CaretXY) and (WP.Line = CaretY) then
           begin
-            SetBlockBegin(WP);
-            SetBlockEnd(CaretXY);
-            ActiveSelectionMode := smNormal;
-            SetSelTextPrimitiveEx(ActiveSelectionMode, '', True, True);
-            InternalCaretXY := CaretXY;
+            DoOnPaintTransient(ttBefore);
+            Temp := Lines[CaretY - 1];
+            Delete(Temp, CaretX, WP.Char - CaretX + 1);
+            Lines[CaretY - 1] := Temp;
+            DoOnPaintTransient(ttAfter);
           end;
         end;
       ecDeleteLastWord, ecDeleteBOL:
         if not ReadOnly then begin
-          DoOnPaintTransient(ttBefore);
           if Command = ecDeleteLastWord then
-            WP := PrevWordPos
+            WP := WordStart
           else begin
             WP.Char := 1;
             WP.Line := CaretY;
           end;
-          if (WP.Char <> CaretX) or (WP.Line <> CaretY) then
+          if (WP < CaretXY) and (WP.Line = CaretY) then
           begin
-            SetBlockBegin(WP);
-            SetBlockEnd(CaretXY);
-            ActiveSelectionMode := smNormal;
-            SetSelTextPrimitiveEx(ActiveSelectionMode, '', True, True);
-            InternalCaretXY := WP;
+            DoOnPaintTransient(ttBefore);
+            Temp := Lines[CaretY - 1];
+            Delete(Temp, WP.Char, CaretX - WP.Char);
+            Lines[CaretY - 1] := Temp;
+            CaretXY := WP;
+            DoOnPaintTransient(ttAfter);
           end;
-          DoOnPaintTransient(ttAfter);
         end;
       ecDeleteLine:
         ExecCmdDeleteLine;
@@ -7154,108 +6787,54 @@ begin
         if not ReadOnly then begin
           BeginUndoBlock;
           try
-          if SelAvail then
-            SetSelText('');
-          Temp := LineText;
-          Temp2 := Temp;
-          // This is sloppy, but the Right Thing would be to track the column of markers
-          // too, so they could be moved depending on whether they are after the caret...
-          Len := Length(Temp);
-          if Len > 0 then
-          begin
-            if Len >= CaretX then
+            if SelAvail then
+              SetSelText('');
+            Temp := LineText;
+            Temp2 := Temp;
+            Len := Length(Temp);
+            if (Len > 0) and (CaretX < Len) then
             begin
               if CaretX > 1 then
               begin
                 Temp := Copy(LineText, 1, CaretX - 1);
-                SpaceCount1 := LeftSpacesEx(Temp,true);
+                if eoAutoIndent in Options then
+                  SpaceCount1 := LeftSpaces(Temp, True)
+                else
+                  SpaceCount1 := 0;
                 Delete(Temp2, 1, CaretX - 1);
-                Lines.Insert(CaretY, GetLeftSpacing(SpaceCount1, True) + Temp2);
+                SpaceBuffer := GetLeftSpacing(SpaceCount1, True);
+                Lines.Insert(CaretY, SpaceBuffer + Temp2);
                 Lines[CaretY - 1] := Temp;
-                fUndoRedo.AddUndoChange(crLineBreak, CaretXY, CaretXY, Temp2,
-                  smNormal);
                 if Command = ecLineBreak then
-                  InternalCaretXY := BufferCoord(
-                    Length(GetLeftSpacing(SpaceCount1,true)) + 1,
-                    CaretY + 1);
+                  InternalCaretXY := BufferCoord(SpaceBuffer.Length + 1, CaretY + 1);
               end
               else begin
                 Lines.Insert(CaretY - 1, '');
-                fUndoRedo.AddUndoChange(crLineBreak, CaretXY, CaretXY, Temp2,
-                  smNormal);
                 if Command = ecLineBreak then
                   InternalCaretY := CaretY + 1;
               end;
-            end
+            end // (Len > 0) and (CaretX < Len)
             else begin
+              // either emtpy or at the end of line: insert new line below
+              if fLines.Count = 0 then
+                fLines.Add('');
               SpaceCount2 := 0;
-              BackCounter := CaretY;
               if eoAutoIndent in Options then
               begin
+                BackCounter := CaretY;
                 repeat
                   Dec(BackCounter);
                   Temp := Lines[BackCounter];
-                  SpaceCount2 := LeftSpaces(Temp);
+                  SpaceCount2 := LeftSpaces(Temp, True);
                 until (BackCounter = 0) or (Temp <> '');
               end;
-              Lines.Insert(CaretY, '');
-              Caret := CaretXY;
-
-              fUndoRedo.AddUndoChange(crLineBreak, Caret, Caret, '', smNormal);   //KV
+              SpaceBuffer := GetLeftSpacing(SpaceCount2, True);
+              Lines.Insert(CaretY, SpaceBuffer);
               if Command = ecLineBreak then
-              begin
-                if SpaceCount2 > 0 then
-                  SpaceBuffer := Copy(Lines[BackCounter], 1, SpaceCount2);
-                InternalCaretXY := BufferCoord(1, CaretY +1);
-                if SpaceCount2 > 0 then
-                begin
-                  // AutoIndent with SmartTabs - ecTab creates all spaces/tabs in one step
-                  // so easier is switch it off now and return it back after AutoIndent
-                  //  cause AutoIndent without SmartTabs copy all whitechars from begin
-                  OldSmartTabs := (eoSmartTabs in FOptions);                    
-                  if OldSmartTabs then
-                  begin
-                    fOptions := FOptions - [eoSmartTabs];
-                    // for not real tabs used we need to covert tabs to spaces
-                    if eoTabsToSpaces in  FOptions then
-                      SpaceBuffer := ExpandTabs(SpaceBuffer);
-                  end;
-                  for i := 1 to Length(SpaceBuffer) do
-                    if SpaceBuffer[i] = #9 then
-                      CommandProcessor(ecTab, #0, nil)
-                    else
-                      CommandProcessor(ecChar, SpaceBuffer[i], nil);
-                  // now we return SmartTabs
-                  if OldSmartTabs then fOptions := FOptions + [eoSmartTabs]; 
-                end;
-              end;
+                InternalCaretXY := BufferCoord(SpaceBuffer.Length + 1, CaretY + 1);
             end;
-          end
-          else begin
-            if fLines.Count = 0 then
-              fLines.Add('');
-            SpaceCount2 := 0;
-            if eoAutoIndent in Options then
-            begin
-              BackCounter := CaretY - 1;
-              while BackCounter >= 0 do
-              begin
-                SpaceCount2 := LeftSpacesEx(Lines[BackCounter],True);
-                if Length(Lines[BackCounter]) > 0 then break;
-                dec(BackCounter);
-              end;
-            end;
-            Lines.Insert(CaretY - 1, '');
-            fUndoRedo.AddUndoChange(crLineBreak, CaretXY, CaretXY, '', smNormal);
-            if Command = ecLineBreak then
-              InternalCaretX := SpaceCount2 + 1;
-            if Command = ecLineBreak then
-              InternalCaretY := CaretY + 1;
-          end;
-          BlockBegin := CaretXY;
-          BlockEnd   := CaretXY;
-          EnsureCursorPosVisible;
-          UpdateLastCaretX;
+            CaretXY := CaretXY; // Sets BlockEnd = BlockBegin and makes caret visible
+            UpdateLastCaretX;
           finally
             EndUndoBlock;
           end;
@@ -7274,7 +6853,6 @@ begin
             SetSelText(AChar)
           else
           begin
-            SpaceCount2 := 0;
             Temp := LineText;
             Len := Length(Temp);
             if Len < CaretX then
@@ -7283,7 +6861,6 @@ begin
                 SpaceBuffer := StringofChar(#32, CaretX - Len - Ord(fInserting))
               else
                 SpaceBuffer := GetLeftSpacing(CaretX - Len - Ord(fInserting), True);
-              SpaceCount2 := Length(SpaceBuffer);
 
               Temp := Temp + SpaceBuffer;
             end;
@@ -7306,41 +6883,11 @@ begin
                 else
                   InternalCaretX := CaretX + 1;
                 Lines[CaretY - 1] := Temp;
-                if SpaceCount2 > 0 then
-                begin
-                  BeginUndoBlock;
-                  try
-                    //if we inserted spaces with this char, we need to account for those
-                    //in the X Position
-                    StartOfBlock.Char := StartOfBlock.Char - SpaceCount2;
-                    EndOfBlock := CaretXY;
-                    EndOfBlock.Char := EndOfBlock.Char - 1;
-                    //The added whitespace
-                    fUndoRedo.AddUndoChange(crWhiteSpaceAdd, EndOfBlock, StartOfBlock, '',
-                      smNormal);
-                    StartOfBlock.Char := StartOfBlock.Char + SpaceCount2;
-
-                    fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretXY, '',
-                      smNormal);
-                  finally
-                    EndUndoBlock;
-                  end;
-                end
-                else begin
-                  fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretXY, '',
-                    smNormal);
-                end;
               end
               else begin
               // Processing of case character covers on LeadByte.
-                counter := 1;
-                Helper := Copy(Temp, CaretX, counter);
                 Temp[CaretX] := AChar;
-                CaretNew.Char := CaretX + counter;
-                CaretNew.Line := CaretY;
                 Lines[CaretY - 1] := Temp;
-                fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretNew, Helper,
-                  smNormal);
                 InternalCaretX := CaretX + 1;
               end;
               if CaretX >= LeftChar + fCharsInWindow then
@@ -7489,17 +7036,10 @@ begin
               StartOfBlock := CaretXY;
               Len := Length(s);
               if not fInserting then
-              begin
-                Helper := Copy(Temp, CaretX, Len);
                 Delete(Temp, CaretX, Len);
-              end;
               Insert(s, Temp, CaretX);
               InternalCaretX := (CaretX + Len);
               Lines[CaretY - 1] := Temp;
-              if fInserting then
-                Helper := '';
-              fUndoRedo.AddUndoChange(crInsert, StartOfBlock, CaretXY, Helper,
-                smNormal);
               if CaretX >= LeftChar + fCharsInWindow then
                 LeftChar := LeftChar + min(25, fCharsInWindow - 1);
             finally
@@ -7737,7 +7277,7 @@ end;
 
 procedure TCustomSynEdit.BeginUndoBlock;
 begin
-  fUndoRedo.BeginBlock;
+  fUndoRedo.BeginBlock(Self);
 end;
 
 procedure TCustomSynEdit.BeginUpdate;
@@ -7747,7 +7287,7 @@ end;
 
 procedure TCustomSynEdit.EndUndoBlock;
 begin
-  fUndoRedo.EndBlock;
+  fUndoRedo.EndBlock(Self);
 end;
 
 procedure TCustomSynEdit.EndUpdate;
@@ -7858,6 +7398,11 @@ var
   x, y: Integer;
 begin
   Result := GetBookMark(BookMark, x, y);
+end;
+
+function TCustomSynEdit.IsChained: Boolean;
+begin
+  Result := Assigned(fChainedEditor);
 end;
 
 procedure TCustomSynEdit.ClearUndo;
@@ -8554,54 +8099,41 @@ procedure TCustomSynEdit.ExecCmdCaseChange(const Cmd: TSynEditorCommand);
   End;
 
 var
-  w: string;
+  S: string;
   oldCaret, oldBlockBegin, oldBlockEnd: TBufferCoord;
-  bHadSel : Boolean;
 begin
   Assert((Cmd >= ecUpperCase) and (Cmd <= ecTitleCase));
-  if ReadOnly then Exit;
+  if ReadOnly or (GetWordAtRowCol(CaretXY) = '') then Exit;
 
-  if SelAvail then
-  begin
-    bHadSel := True;
+  BeginUndoBlock;
+  try
     oldBlockBegin := BlockBegin;
     oldBlockEnd := BlockEnd;
-  end
-  else begin
-    bHadSel := False;
-  end;
-  oldCaret := CaretXY;
-  try
-    if not SelAvail then
-      SetSelWord;
+    oldCaret := CaretXY;
+    try
+      if not SelAvail then
+        SetSelWord;
 
-    w := SelText;
-    if w <> '' then
-    begin
-      case Cmd of
-        ecUpperCase:
-          w := w.ToUpper;
-        ecLowerCase:
-          w := w.ToLower;
-        ecToggleCase:
-          w := ToggleCase(w);
-        ecTitleCase:
-          w := TitleCase(w);
+      S := SelText;
+      if S <> '' then
+      begin
+        case Cmd of
+          ecUpperCase:
+            S := S.ToUpper;
+          ecLowerCase:
+            S := S.ToLower;
+          ecToggleCase:
+            S := ToggleCase(S);
+          ecTitleCase:
+            S := TitleCase(S);
+        end;
+        SelText := S;
       end;
-      BeginUndoBlock;
-      try
-        if bHadSel then
-          fUndoRedo.AddUndoChange(crSelection, oldBlockBegin, oldBlockEnd, '', fActiveSelectionMode)
-        else
-          fUndoRedo.AddUndoChange(crSelection, oldCaret, oldCaret, '', fActiveSelectionMode);
-        fUndoRedo.AddUndoChange(crCaret, oldCaret, oldCaret, '', fActiveSelectionMode);
-        SelText := w;
-      finally
-        EndUndoBlock;
-      end;
+    finally
+      SetCaretAndSelection(oldCaret, oldBlockBegin, oldBlockEnd);
     end;
   finally
-    SetCaretAndSelection(oldCaret, oldBlockBegin, oldBlockEnd);
+    EndUndoBlock;
   end;
 end;
 
@@ -8746,9 +8278,8 @@ var
   DestX: Integer;
 
   MaxLen, iLine: Integer;
-  PrevLine, OldSelText: string;
+  PrevLine: string;
   p: PWideChar;
-  OldCaretXY: TBufferCoord;
   TrimTrailingActive: Boolean;
 begin
   // Provide Visual Studio like block indenting
@@ -8813,19 +8344,21 @@ begin
   // perform un-tab
   if (NewX <> CaretX) then
   begin
-    SetBlockBegin(BufferCoord(NewX, CaretY));
-    SetBlockEnd(CaretXY);
-    OldCaretXY := CaretXY;
+    BeginUndoBlock;
+    try
+      SetBlockBegin(BufferCoord(NewX, CaretY));
+      SetBlockEnd(CaretXY);
 
-    OldSelText := SelText;
+      // Do not Trim
+      TrimTrailingActive := eoTrimTrailingSpaces in Options;
+      if TrimTrailingActive then Exclude(fOptions, eoTrimTrailingSpaces);
+      SetSelText('');
+      if TrimTrailingActive then Include(fOptions, eoTrimTrailingSpaces);
 
-    // Do not Trim
-    TrimTrailingActive := eoTrimTrailingSpaces in Options;
-    if TrimTrailingActive then Exclude(fOptions, eoTrimTrailingSpaces);
-    SetSelText('');
-    if TrimTrailingActive then Include(fOptions, eoTrimTrailingSpaces);
-
-    ForceCaretX(NewX);
+      ForceCaretX(NewX);
+    finally
+      EndUndoBlock;
+    end;
   end;
 end;
 
@@ -9060,12 +8593,6 @@ begin
       else
         InsertionPos.Char := 1;
       InsertBlock(InsertionPos, InsertionPos, StrToInsert, True);
-      fUndoRedo.AddUndoChange(crIndent, BB, BE, '', smColumn);
-      //We need to save the position of the end block for redo
-      fUndoRedo.AddUndoChange(crIndent,
-        BufferCoord(BB.Char + length(Spaces), BB.Line),
-        BufferCoord(BE.Char + length(Spaces), BE.Line),
-        '', smColumn);
     finally
       EndUndoBlock;
     end;
@@ -9087,7 +8614,6 @@ var
   OrgCaretPos,
   BB, BE: TBufferCoord;
   Line, Run,
-  FullStrToDelete,
   StrToDelete: PWideChar;
   Len, x, StrToDeleteLen, i, TmpDelLen, FirstIndent, LastIndent, e: Integer;
   TempString: string;
@@ -9168,11 +8694,9 @@ begin
       x := x - TmpDelLen;
 
     FirstIndent := -1;
-    FullStrToDelete := nil;
     // Delete string
     if SomethingToDelete then
     begin
-      FullStrToDelete := StrToDelete;
       InternalCaretY := BB.Line;
       if fActiveSelectionMode <> smColumn then
         i := 1
@@ -9202,7 +8726,6 @@ begin
         StrToDelete := Run;
       until Run^ = #0;
       LastIndent := Len;
-      fUndoRedo.AddUndoChange(crUnindent, BB, BE, FullStrToDelete, fActiveSelectionMode);
     end;
     // restore selection
     if FirstIndent = -1 then
@@ -9218,10 +8741,7 @@ begin
       SetCaretAndSelection(OrgCaretPos, BB, BE);
     end;
     ActiveSelectionMode := OrgSelectionMode;
-    if FullStrToDelete <> nil then
-      StrDispose(FullStrToDelete)
-    else
-      StrDispose(StrToDelete);
+    StrDispose(StrToDelete);
   end;
 end;
 
@@ -9835,7 +9355,7 @@ begin
   end;
 end;
 
-procedure TCustomSynEdit.DoLinesChanging;
+procedure TCustomSynEdit.DoLinesBeforeDeleted(FirstLine, Count: Integer);
 var
   i: Integer;
   Plugin: TSynEditPlugin;
@@ -9845,8 +9365,8 @@ begin
     for i := 0 to fPlugins.Count - 1 do
     begin
       PlugIn := TSynEditPlugin(fPlugins[i]);
-      if phLinesChanging in Plugin.Handlers then
-        PlugIn.LinesChanging;
+      if phLinesBeforeDeleted in Plugin.Handlers then
+        PlugIn.LinesBeforeDeleted(FirstLine, Count);
     end;
 end;
 
@@ -10772,8 +10292,8 @@ end;
 
 constructor TSynEditPlugin.Create(AOwner: TCustomSynEdit);
 const
-  AllPlugInHandlers = [phLinesInserted, phLinesDeleted, phLinePut,
-  phLinesChanging, phLinesChanged, phPaintTransient, phAfterPaint];
+  AllPlugInHandlers = [phLinesInserted, phLinesBeforeDeleted, phLinesDeleted,
+    phLinePut, phLinesChanged, phPaintTransient, phAfterPaint];
 
 begin
   inherited Create;
@@ -10817,17 +10337,17 @@ begin
   // nothing
 end;
 
-procedure TSynEditPlugin.LinesChanging;
-begin
-  // nothing
-end;
-
 procedure TSynEditPlugin.LinesInserted(FirstLine, Count: Integer);
 begin
   // nothing
 end;
 
 procedure TSynEditPlugin.LinePut(aIndex: Integer; const OldLine: string);
+begin
+  // nothing
+end;
+
+procedure TSynEditPlugin.LinesBeforeDeleted(FirstLine, Count: Integer);
 begin
   // nothing
 end;

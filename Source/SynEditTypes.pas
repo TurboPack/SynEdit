@@ -43,9 +43,7 @@ interface
 uses
   System.Types,
   System.Math,
-  {$IF CompilerVersion <= 32}
   Vcl.Controls,
-  {$IFEND}
   System.SysUtils,
   System.Classes;
 
@@ -69,7 +67,7 @@ type
 
   TCategoryMethod = function(AChar: WideChar): Boolean of object;
 
-  TSynEditorCommand = type word;
+  TSynEditorCommand = type Word;
 
   THookedCommandEvent = procedure(Sender: TObject; AfterProcessing: Boolean;
     var Handled: Boolean; var Command: TSynEditorCommand; var AChar: WideChar;
@@ -179,30 +177,31 @@ type
     procedure SetMaxUndoActions(const Value: Integer);
     procedure SetGroupUndo(const Value: Boolean);
     procedure SetOnModifiedChanged(const Event: TNotifyEvent);
-    procedure BeginBlock;
-    procedure EndBlock;
+    procedure SetCommandProcessed(const Command: TSynEditorCommand);
+    {  Begin/EndBlock pairs group undo actions together and also
+       store/restore editor caret and selection
+       We need to pass the Editor so that they works with chained SynEdits
+    }
+    procedure BeginBlock(Editor: TControl);
+    procedure EndBlock(Editor: TControl);
     { Lock disables undo/redo - useful if you are about to do a large number of
       changes and planning to clear undo afterwards }
     procedure Lock;
     procedure Unlock;
     procedure Clear;
-    procedure AddUndoChange(AReason: TSynChangeReason;
-      const AStart, AEnd: TBufferCoord; const ChangeText: string;
-      SelMode: TSynSelectionMode; IsGroupBreak: Boolean = False);
-    {Only used insede TSynEdit.UndoItem}
-    procedure AddRedoChange(AReason: TSynChangeReason;
-      const AStart, AEnd: TBufferCoord; const ChangeText: string;
-      SelMode: TSynSelectionMode; IsGroupBreak: Boolean);
     { Call AddGroupBreak to signal that the next undo action
       cannot be grouped with the current one }
     procedure AddGroupBreak;
     {Note: Undo/Redo are not reentrant}
-    procedure Undo;
-    procedure Redo;
+    procedure Undo(Editor: TControl);
+    procedure Redo(Editor: TControl);
     property CanRedo: Boolean read GetCanRedo;
     property CanUndo: Boolean read GetCanUndo;
     property GroupUndo: Boolean write SetGroupUndo;
     property Modified: Boolean read GetModified write SetModified;
+    { Used by SynEdit to inform the Undo system about the command being
+      processed }
+    property CommandProcessed: TSynEditorCommand write SetCommandProcessed;
     { MaxUndoActions zero or less indicates unlimited undo. It grows as needed.
       If it is a positive number, when the limit is reached 1/4 of the
       Undo history is discarded to make space for following undo actions }

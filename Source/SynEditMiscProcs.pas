@@ -60,8 +60,6 @@ type
 
 function MinMax(x, mi, ma: Integer): Integer;
 procedure SwapInt(var l, r: Integer);
-function MaxPoint(const P1, P2: TPoint): TPoint;
-function MinPoint(const P1, P2: TPoint): TPoint;
 
 function GetIntArray(Count: Cardinal; InitialValue: Integer): PIntArray;
 
@@ -154,22 +152,6 @@ begin
   tmp := r;
   r := l;
   l := tmp;
-end;
-
-function MaxPoint(const P1, P2: TPoint): TPoint;
-begin
-  if (P2.y > P1.y) or ((P2.y = P1.y) and (P2.x > P1.x)) then
-    Result := P2
-  else
-    Result := P1;
-end;
-
-function MinPoint(const P1, P2: TPoint): TPoint;
-begin
-  if (P2.y < P1.y) or ((P2.y = P1.y) and (P2.x < P1.x)) then
-    Result := P2
-  else
-    Result := P1;
 end;
 
 function GetIntArray(Count: Cardinal; InitialValue: Integer): PIntArray;

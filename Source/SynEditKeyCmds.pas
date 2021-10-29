@@ -793,7 +793,7 @@ begin
   AddKey(ecPaste, SYNEDIT_INSERT, [ssShift]);
   AddKey(ecDeleteChar, SYNEDIT_DELETE, []);
   AddKey(ecDeleteLastChar, SYNEDIT_BACK, []);
-  AddKey(ecDeleteLastChar, SYNEDIT_BACK, [ssShift]);
+  AddKey(ecDeleteBOL, SYNEDIT_BACK, [ssShift]);
   AddKey(ecDeleteLastWord, SYNEDIT_BACK, [ssCtrl]);
   AddKey(ecUndo, SYNEDIT_BACK, [ssAlt]);
   AddKey(ecRedo, SYNEDIT_BACK, [ssAlt,ssShift]);
