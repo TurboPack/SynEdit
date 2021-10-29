@@ -158,7 +158,6 @@ type
     function InternalGetDC: HDC; virtual;
     procedure InternalReleaseDC(Value: HDC); virtual;
     function InternalCreateFont(Style: TFontStyles): HFONT; virtual;
-    function CalcFontAdvance(DC: HDC; pCharHeight: PInteger): Integer; virtual;
     function GetCharAdvance: Integer; virtual;
     function GetCharHeight: Integer; virtual;
     function GetFontData(idx: Integer): PheFontData; virtual;
@@ -169,6 +168,7 @@ type
     property FontData[idx: Integer]: PheFontData read GetFontData;
     property FontsInfo: PheSharedFontsInfo read FpInfo;
   public
+    class function CalcFontAdvance(DC: HDC; pCharHeight: PInteger): Integer; virtual;
     constructor Create(InitialFont: TFont); virtual;
     destructor Destroy; override;
     procedure ReleaseFontHandles; virtual;
@@ -516,7 +516,7 @@ end;
 
 // CalcFontAdvance : Calculation a advance of a character of a font.
 //  [*]hCalcFont will be selected as FDC's font if FDC wouldn't be zero.
-function TheFontStock.CalcFontAdvance(DC: HDC; pCharHeight: PInteger): Integer;
+class function TheFontStock.CalcFontAdvance(DC: HDC; pCharHeight: PInteger): Integer;
 var
   TM: TTextMetric;
   ABC: TABC;

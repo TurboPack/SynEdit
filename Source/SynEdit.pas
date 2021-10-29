@@ -2374,7 +2374,6 @@ var
   vMarkRow: Integer;
   vGutterRow: Integer;
   vLineTop: Integer;
-  dc: HDC;
   TextSize: TSize;
 //++ CodeFolding
   vLine: Integer;
@@ -2388,34 +2387,26 @@ var
 begin
   vFirstLine := RowToLine(aFirstRow);
   vLastLine := RowToLine(aLastRow);
-  //todo: Does the following comment still apply?
-  // Changed to use fTextDrawer.BeginDrawing and fTextDrawer.EndDrawing only
-  // when absolutely necessary.  Note: Never change brush / pen / font of the
-  // canvas inside of this block (only through methods of fTextDrawer)!
-  // If we have to draw the line numbers then we don't want to erase
-  // the background first. Do it line by line with TextRect instead
-  // and fill only the area after the last visible line.
-  dc := Canvas.Handle;
 
   if fGutter.Gradient then
+  begin
     SynDrawGradient(Canvas, fGutter.GradientStartColor, fGutter.GradientEndColor,
-      fGutter.GradientSteps, Rect(0, 0, fGutterWidth, ClientHeight), True);
-
-  Canvas.Brush.Color := fGutter.Color;
+      fGutter.GradientSteps, Rect(0, AClip.Top, fGutterWidth, AClip.Bottom), True);
+    Canvas.Brush.Color := fGutter.Color;
+  end
+  else
+  begin
+    Canvas.Brush.Color := fGutter.Color;
+    Canvas.FillRect(AClip);
+  end;
+  Canvas.Brush.Style := bsClear;
 
   if fGutter.ShowLineNumbers then
   begin
     if fGutter.UseFontStyle then
-      fTextDrawer.SetBaseFont(fGutter.Font)
+      Canvas.Font := fGutter.Font
     else
-      fTextDrawer.Style := [];
-    fTextDrawer.BeginDrawing(dc);
-    try
-      if fGutter.UseFontStyle then
-        fTextDrawer.SetForeColor(fGutter.Font.Color)
-      else
-        fTextDrawer.SetForeColor(Self.Font.Color);
-      fTextDrawer.SetBackColor(fGutter.Color);
+      Canvas.Font := Font;
 
       // prepare the rect initially
       rcLine := AClip;
@@ -2429,55 +2420,21 @@ begin
           continue;
 //-- CodeFolding
         vLineTop := (LineToRow(cLine) - TopLine) * fTextHeight;
-        if WordWrap and not fGutter.Gradient then
-        begin
-          // erase space between wrapped lines (from previous line to current one)
-          rcLine.Top := rcLine.Bottom;
-          rcLine.Bottom := vLineTop;
-          with rcLine do
-            fTextDrawer.ExtTextOut(Left, Top, [tooOpaque], rcLine, '', 0);
-        end;
         // next line rect
         rcLine.Top := vLineTop;
         rcLine.Bottom := rcLine.Top + fTextHeight;
 
-        s := fGutter.FormatLineNumber(cLine);
+        S := fGutter.FormatLineNumber(cLine);
         if Assigned(OnGutterGetText) then
-          OnGutterGetText(Self, cLine, s);
-        TextSize := GetTextSize(DC, PWideChar(s), Length(s));
-        if fGutter.Gradient then
-        begin
-          SetBkMode(DC, TRANSPARENT);
-          Windows.ExtTextOutW(DC, (fGutterWidth - fGutter.RightOffset - fGutter.RightMargin) - TextSize.cx,
-            rcLine.Top + ((fTextHeight - Integer(TextSize.cy)) div 2), 0,
-            @rcLine, PWideChar(s), Length(s), nil);
-          SetBkMode(DC, OPAQUE);
-        end
-        else
-          Windows.ExtTextOutW(DC, (fGutterWidth - fGutter.RightOffset - fGutter.RightMargin) - TextSize.cx,
-            rcLine.Top + ((fTextHeight - Integer(TextSize.cy)) div 2), ETO_OPAQUE,
-            @rcLine, PWideChar(s), Length(s), nil);
-      end;
-      // now erase the remaining area if any
-      if (AClip.Bottom > rcLine.Bottom) and not fGutter.Gradient then
-      begin
-        rcLine.Top := rcLine.Bottom;
-        rcLine.Bottom := AClip.Bottom;
-        with rcLine do
-          fTextDrawer.ExtTextOut(Left, Top, [tooOpaque], rcLine, '', 0);
-      end;
-    finally
-      fTextDrawer.EndDrawing;
-      if fGutter.UseFontStyle then
-        fTextDrawer.SetBaseFont(Self.Font);
-    end;
-  end
-  else if not fGutter.Gradient then
-    Canvas.FillRect(AClip);
+          OnGutterGetText(Self, cLine, S);
 
-  // draw word wrap glyphs transparently over gradient
-  if fGutter.Gradient then
-    Canvas.Brush.Style := bsClear;
+        TextSize := Canvas.TextExtent(S);
+        Canvas.TextRect(rcLine, (fGutterWidth - fGutter.RightOffset -
+          fGutter.RightMargin) - TextSize.cx,
+          rcLine.Top + ((fTextHeight - Integer(TextSize.cy)) div 2), S);
+      end;
+  end;
+
   // paint wrapped line glyphs
   if WordWrap and fWordWrapGlyph.Visible then
     for cLine := aFirstRow to aLastRow do
@@ -2486,8 +2443,7 @@ begin
                             (fGutterWidth - fGutter.RightOffset - 2) - fWordWrapGlyph.Width,
                             (cLine - TopLine) * fTextHeight, fTextHeight);
   // restore brush
-  if fGutter.Gradient then
-    Canvas.Brush.Style := bsSolid;
+  Canvas.Brush.Style := bsSolid;
 //++ CodeFolding
   // Draw the folding lines and squares
   if UseCodeFolding then begin
@@ -7426,9 +7382,10 @@ begin
       fGutter.AutoSizeDigitCount(Lines.Count);
     if fGutter.UseFontStyle then
     begin
-      fTextDrawer.SetBaseFont(fGutter.Font);
-      nW := fGutter.RealGutterWidth(fTextDrawer.CharWidth);
-      fTextDrawer.SetBaseFont(Font);
+      Canvas.Font := fGutter.Font;
+      nW := fGutter.RealGutterWidth(
+        TheFontStock.CalcFontAdvance(Canvas.Handle, nil));
+      Canvas.Font := Font;
     end
     else
       nW := fGutter.RealGutterWidth(fCharWidth);
@@ -9278,8 +9235,6 @@ var
   i, L: Integer;
   x, CountOfAvgGlyphs: Integer;
 begin
-  Canvas.Font := Font;
-
   Result := TDisplayCoord(p);
   if p.Line - 1 < Lines.Count then
   begin
@@ -9318,8 +9273,6 @@ var
   i, L: Integer;
   x, CountOfAvgGlyphs: Integer;
 begin
-  Canvas.Font := Font;
-
   if WordWrap then
     Result := fWordWrapPlugin.DisplayToBufferPos(p)
   else

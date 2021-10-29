@@ -79,6 +79,18 @@ type
 
   TSynGutterBorderStyle = (gbsNone, gbsMiddle, gbsRight);
 
+  TSynGutterBand = class(TCollectionItem)
+  private
+    FName: string;
+    FVisible: Boolean;
+    FWidth: Integer;
+  protected
+    function GetDisplayName: string; virtual;
+  published
+    property Visible: Boolean read FVisible write FVisible default True;
+    property Width: Integer read FWidth write FWidth;
+  end;
+
   TSynGutter = class(TPersistent)
   private
     fFont: TFont;
@@ -1379,6 +1391,13 @@ function TSynEditSearchCustom.PreprocessReplaceExpression(
   const AReplace: string): string;
 begin
   Result := AReplace;
+end;
+
+{ TSynGutterBand }
+
+function TSynGutterBand.GetDisplayName: string;
+begin
+  Result := FName;
 end;
 
 end.
