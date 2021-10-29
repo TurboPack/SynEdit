@@ -1026,6 +1026,7 @@ type
     property OnClearBookmark;
     property OnCommandProcessed;
     property OnContextHelp;
+    property OnContextPopup;
     property OnDropFiles;
     property OnGutterClick;
     property OnGutterGetText;
