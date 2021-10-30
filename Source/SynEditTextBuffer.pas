@@ -653,9 +653,7 @@ begin
   BeginUpdate;
   try
     if (Index = 0) and (FCount = 0) or (FCount = Index) then
-      // This is not undoable.
-      // A buffer with one empty line is considered empty
-      InsertItem(0, '');
+      Add('');
 
     if Cardinal(Index) >= Cardinal(FCount) then
       ListIndexOutOfBounds(Index);

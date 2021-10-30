@@ -5357,7 +5357,7 @@ end;
 
 function TCustomSynEdit.GetCanUndo: Boolean;
 begin
-  result := not ReadOnly and fUndoRedo.CanUndo;
+  Result := not ReadOnly and fUndoRedo.CanUndo;
 end;
 
 function TCustomSynEdit.GetCanRedo: Boolean;
@@ -7376,7 +7376,7 @@ procedure TCustomSynEdit.GutterChanged(Sender: TObject);
 var
   nW: Integer;
 begin
-  if not (csLoading in ComponentState) then
+  if ComponentState * [csLoading, csDestroying]  = [] then
   begin
     if fGutter.ShowLineNumbers and fGutter.AutoSize then
       fGutter.AutoSizeDigitCount(Lines.Count);

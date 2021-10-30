@@ -328,10 +328,6 @@ begin
     Exit;
   end;
   Assert(aIndex >= 0);
-  if (aIndex = 0) and (OldLine = '') and (LineCount = 0) then
-    // The first ever put is preceded by an unannouced line insertion
-    // See TSynEditStringList.Put
-    LinesInserted(0, 1);
   Assert(aIndex < LineCount);
   // Rewrap
   Result := 0;

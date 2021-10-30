@@ -629,7 +629,8 @@ begin
     Inc(FStartPos);
   end;  
   // Compare from end
-  while (Len1 > 0) and (Len2 > 0) and (OldLine[Len1] = Line[len2]) do
+  while (Len1 > 0) and (Len2 > 0) and
+    (OldLine[Len1 + FStartPos - 1] = Line[len2 + FStartPos - 1]) do
   begin
     Dec(len1);
     Dec(len2);
@@ -751,6 +752,14 @@ var
   Item: TSynLinesInsertedUndoItem;
 begin
   if Editor.IsChained or FSynEditUndo.IsLocked or FSynEditUndo.FInsideUndoRedo
+  then
+    Exit;
+
+  // Consider a file with one empty line as empty
+  // Otherwise when you type in a new file and undo it, CanUndo will still
+  // return True because the initial insertion will be on the Undo list
+  if (FSynEditUndo.FUndoList.Count = 0) and
+    (Editor.Lines.Count = 1)  and (Editor.Lines[0] = '')
   then
     Exit;
 
