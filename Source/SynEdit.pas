@@ -38,6 +38,7 @@ unit SynEdit;
 interface
 
 uses
+  Windows,
   ActiveX,
   Controls,
   Contnrs,
@@ -45,7 +46,6 @@ uses
   Forms,
   StdCtrls,
   ExtCtrls,
-  Windows,
   Messages,
   StdActns,
   Dialogs,
@@ -2399,51 +2399,45 @@ begin
     Canvas.Brush.Color := fGutter.Color;
     Canvas.FillRect(AClip);
   end;
-  Canvas.Brush.Style := bsClear;
 
   if fGutter.ShowLineNumbers then
   begin
+    Canvas.Brush.Style := bsClear;
+
     if fGutter.UseFontStyle then
       Canvas.Font := fGutter.Font
     else
       Canvas.Font := Font;
 
-      // prepare the rect initially
-      rcLine := AClip;
-      rcLine.Right := Max(rcLine.Right, fGutterWidth - 2);
-      rcLine.Bottom := rcLine.Top;
-
-      for cLine := vFirstLine to vLastLine do
+    for cRow := aFirstRow to aLastRow do
+    begin
+      cLine := RowToLine(cRow);
+      vLineTop := (cRow - TopLine) * fTextHeight;
+      if WordWrap and (cRow <> LineToRow(cLine)) then
       begin
-//++ CodeFolding
-        if UseCodeFolding and AllFoldRanges.FoldHidesLine(cLine, Index) then
-          continue;
-//-- CodeFolding
-        vLineTop := (LineToRow(cLine) - TopLine) * fTextHeight;
+        // paint wrapped line glyphs
+        fWordWrapGlyph.Draw(Canvas,
+          (fGutterWidth - fGutter.RightOffset - 2) - fWordWrapGlyph.Width,
+          vLineTop, fTextHeight);
+      end
+      else
+      begin
         // next line rect
-        rcLine.Top := vLineTop;
-        rcLine.Bottom := rcLine.Top + fTextHeight;
+        rcLine := Rect(0, vLineTop,
+          fGutterWidth - fGutter.RightMargin - fGutter.RightOffset,
+          vLineTop + fTextHeight);
 
-        S := fGutter.FormatLineNumber(cLine);
+        S := Gutter.FormatLineNumber(cLine);
         if Assigned(OnGutterGetText) then
           OnGutterGetText(Self, cLine, S);
 
-        TextSize := Canvas.TextExtent(S);
-        Canvas.TextRect(rcLine, (fGutterWidth - fGutter.RightOffset -
-          fGutter.RightMargin) - TextSize.cx,
-          rcLine.Top + ((fTextHeight - Integer(TextSize.cy)) div 2), S);
+        Canvas.TextRect(rcLine, S, [tfSingleLine, tfVerticalCenter, tfRight]);
       end;
+    end;
+    // restore brush
+    Canvas.Brush.Style := bsSolid;
   end;
 
-  // paint wrapped line glyphs
-  if WordWrap and fWordWrapGlyph.Visible then
-    for cLine := aFirstRow to aLastRow do
-      if LineToRow(RowToLine(cLine)) <> cLine then
-        fWordWrapGlyph.Draw(Canvas,
-                            (fGutterWidth - fGutter.RightOffset - 2) - fWordWrapGlyph.Width,
-                            (cLine - TopLine) * fTextHeight, fTextHeight);
-  // restore brush
-  Canvas.Brush.Style := bsSolid;
 //++ CodeFolding
   // Draw the folding lines and squares
   if UseCodeFolding then begin
@@ -7374,7 +7368,8 @@ end;
 
 procedure TCustomSynEdit.GutterChanged(Sender: TObject);
 var
-  nW: Integer;
+  nW, nCW: Integer;
+  Bitmap: TBitmap;
 begin
   if ComponentState * [csLoading, csDestroying]  = [] then
   begin
@@ -7382,13 +7377,26 @@ begin
       fGutter.AutoSizeDigitCount(Lines.Count);
     if fGutter.UseFontStyle then
     begin
-      Canvas.Font := fGutter.Font;
-      nW := fGutter.RealGutterWidth(
-        TheFontStock.CalcFontAdvance(Canvas.Handle, nil));
-      Canvas.Font := Font;
+      if HandleAllocated then
+      begin
+        Canvas.Font := fGutter.Font;
+        nCW := TheFontStock.CalcFontAdvance(Canvas.Handle, nil);
+        Canvas.Font := Font;
+      end
+      else
+      begin
+        BitMap := TBitmap.Create;
+        try
+          BitMap.Canvas.Font := fGutter.Font;
+          nCW := TheFontStock.CalcFontAdvance(Bitmap.Canvas.Handle, nil);
+        finally
+          Bitmap.Free;
+        end;
+      end;
     end
     else
-      nW := fGutter.RealGutterWidth(fCharWidth);
+      nCW := fCharWidth;
+    nW := fGutter.RealGutterWidth(nCW);
     if nW = fGutterWidth then
       InvalidateGutter
     else
