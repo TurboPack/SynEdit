@@ -61,8 +61,6 @@ type
 function MinMax(x, mi, ma: Integer): Integer;
 procedure SwapInt(var l, r: Integer);
 
-function GetIntArray(Count: Cardinal; InitialValue: Integer): PIntArray;
-
 procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
 
 // Converting tabs to spaces: To use the function several times it's better
@@ -152,23 +150,6 @@ begin
   tmp := r;
   r := l;
   l := tmp;
-end;
-
-function GetIntArray(Count: Cardinal; InitialValue: Integer): PIntArray;
-var
-  p: PInteger;
-begin
-  Result := AllocMem(Count * SizeOf(Integer));
-  if Assigned(Result) and (InitialValue <> 0) then
-  begin
-    p := PInteger(Result);
-    while (Count > 0) do
-    begin
-      p^ := InitialValue;
-      Inc(p);
-      Dec(Count);
-    end;
-  end;
 end;
 
 procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
