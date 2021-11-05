@@ -555,7 +555,6 @@ begin
     end;
     fLineOffsets[cLine] := cRow;
   end;
-  fLineCount := Editor.Lines.Count;
 end;
 
 function TSynWordWrapPlugin.RowCount: integer;
