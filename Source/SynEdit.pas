@@ -4095,7 +4095,7 @@ var
               TempString := TrimTrailingSpaces(TempString);
             Lines[BB.Line - 1] := TempString;
           end;
-          InternalCaretXY := BB;
+          CaretXY := BB;
         end;
       smColumn:
         begin
@@ -4110,7 +4110,7 @@ var
             ProperSetLine(I, TempString);
           end;
           // Lines never get deleted completely, so keep caret at end.
-          InternalCaretXY := BufferCoord(BB.Char, fBlockEnd.Line);
+          CaretXY := BufferCoord(BB.Char, fBlockEnd.Line);
           // Column deletion never removes a line entirely, so no mark
           // updating is needed here.
         end;
@@ -4124,7 +4124,7 @@ var
           else
             TSynEditStringList(Lines).DeleteLines(BB.Line - 1, BE.Line - BB.Line + 1);
           // smLine deletion always resets to first column.
-          InternalCaretXY := BufferCoord(1, BB.Line);
+          CaretXY := BufferCoord(1, BB.Line);
         end;
     end;
   end;
@@ -4312,16 +4312,13 @@ begin
     SelectedText := SelText;
 
     if SelectedText <> '' then
-    begin
       DeleteSelection;
-      CaretXY := BB;
-    end;
 
     if Length(Value) > 0 then
       InsertText;
 
     if CaretY < 1 then
-      InternalCaretY := 1;
+      CaretY := 1;
   finally
     if AddToUndoList then EndUndoBlock else fUndoRedo.UnLock;
     DecPaintLock;
@@ -6529,7 +6526,7 @@ begin
                 begin
                   //It's at the end of the line, move it to the length
                   if Len > 0 then
-                    InternalCaretX := Len + 1
+                    CaretX := Len + 1
                   else begin
                     //move it as if there were normal spaces there
                     SpaceCount1 := CaretX - 1;
@@ -6550,7 +6547,7 @@ begin
                     end;
                     if SpaceCount2 = SpaceCount1 then
                       SpaceCount2 := 0;
-                    fCaretX := fCaretX - (SpaceCount1 - SpaceCount2);
+                    CaretX := fCaretX - (SpaceCount1 - SpaceCount2);
                     UpdateLastCaretX;
                     fStateFlags := fStateFlags + [sfCaretChanged];
                     StatusChanged([scCaretX]);
@@ -6558,7 +6555,7 @@ begin
                 end
                 else begin
                   // only move caret one column
-                  InternalCaretX := CaretX - 1;
+                  CaretX := CaretX - 1;
                 end;
               end // CaretX > Len + 1
               else if CaretX = 1 then
@@ -6568,8 +6565,7 @@ begin
                 begin
                   BeginUndoBlock;
                   try
-                    InternalCaretY := CaretY - 1;
-                    InternalCaretX := Length(Lines[CaretY - 1]) + 1;
+                    CaretXY := BufferCoord(Lines[CaretY - 1].Length + 1, CaretY - 1);
                     Lines.Delete(CaretY);
 
                     LineText := LineText + Temp;
@@ -6643,7 +6639,7 @@ begin
                 end
                 else begin
                   // delete char
-                  InternalCaretX := CaretX - 1;
+                  CaretX := CaretX - 1;
                   Delete(Temp, CaretX, 1);
                   Lines[CaretY - 1] := Temp;
                 end;
@@ -6743,7 +6739,7 @@ begin
             Temp := LineText;
             Temp2 := Temp;
             Len := Length(Temp);
-            if (Len > 0) and (CaretX < Len) then
+            if (Len > 0) and (CaretX <= Len) then
             begin
               if CaretX > 1 then
               begin
@@ -6757,12 +6753,12 @@ begin
                 Lines.Insert(CaretY, SpaceBuffer + Temp2);
                 Lines[CaretY - 1] := Temp;
                 if Command = ecLineBreak then
-                  InternalCaretXY := BufferCoord(SpaceBuffer.Length + 1, CaretY + 1);
+                  CaretXY := BufferCoord(SpaceBuffer.Length + 1, CaretY + 1);
               end
               else begin
                 Lines.Insert(CaretY - 1, '');
                 if Command = ecLineBreak then
-                  InternalCaretY := CaretY + 1;
+                  CaretY := CaretY + 1;
               end;
             end // (Len > 0) and (CaretX < Len)
             else begin
@@ -6782,9 +6778,8 @@ begin
               SpaceBuffer := GetLeftSpacing(SpaceCount2, True);
               Lines.Insert(CaretY, SpaceBuffer);
               if Command = ecLineBreak then
-                InternalCaretXY := BufferCoord(SpaceBuffer.Length + 1, CaretY + 1);
+                CaretXY := BufferCoord(SpaceBuffer.Length + 1, CaretY + 1);
             end;
-            CaretXY := CaretXY; // Sets BlockEnd = BlockBegin and makes caret visible
             UpdateLastCaretX;
           finally
             EndUndoBlock;
@@ -6830,16 +6825,16 @@ begin
               begin
                 Insert(AChar, Temp, CaretX);
                 if Len = 0 then
-                  InternalCaretX := Length(Temp) + 1
+                  CaretX := Length(Temp) + 1
                 else
-                  InternalCaretX := CaretX + 1;
+                  CaretX := CaretX + 1;
                 Lines[CaretY - 1] := Temp;
               end
               else begin
               // Processing of case character covers on LeadByte.
                 Temp[CaretX] := AChar;
                 Lines[CaretY - 1] := Temp;
-                InternalCaretX := CaretX + 1;
+                CaretX := CaretX + 1;
               end;
               if CaretX >= LeftChar + fCharsInWindow then
                 LeftChar := LeftChar + Min(25, fCharsInWindow - 1);
@@ -6989,7 +6984,7 @@ begin
               if not fInserting then
                 Delete(Temp, CaretX, Len);
               Insert(s, Temp, CaretX);
-              InternalCaretX := (CaretX + Len);
+              CaretX := (CaretX + Len);
               Lines[CaretY - 1] := Temp;
               if CaretX >= LeftChar + fCharsInWindow then
                 LeftChar := LeftChar + min(25, fCharsInWindow - 1);

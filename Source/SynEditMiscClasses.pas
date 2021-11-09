@@ -85,7 +85,7 @@ type
     FVisible: Boolean;
     FWidth: Integer;
   protected
-    function GetDisplayName: string; virtual;
+    function GetDisplayName: string; override;
   published
     property Visible: Boolean read FVisible write FVisible default True;
     property Width: Integer read FWidth write FWidth;
