@@ -33,7 +33,6 @@ located at http://SynEdit.SourceForge.net
 
 Known Issues:
 -------------------------------------------------------------------------------}
-// TODO: use TntUnicode to enable unicode input
 
 
 unit SynAutoCorrectEditor;
@@ -162,7 +161,7 @@ end;
 
 procedure TfrmAutoCorrectEditor.btnEditClick(Sender: TObject);
 var
-  Original, Correction, CurrText: string;  // TODO: unicode adapt
+  Original, Correction, CurrText: string;
 begin
   if lbxItems.ItemIndex < 0 then
   begin
