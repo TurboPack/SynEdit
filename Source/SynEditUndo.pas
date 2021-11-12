@@ -150,6 +150,7 @@ type
     FOnModifiedChanged: TNotifyEvent;
     FInsideUndoRedo: Boolean;
     FCommandProcessed: TSynEditorCommand;
+    FBlockSelRestoreItem: TSynUndoItem;
     function GetModified: Boolean;
     function GetCanUndo: Boolean;
     function GetCanRedo: Boolean;
@@ -246,8 +247,6 @@ begin
 end;
 
 procedure TSynEditUndo.BeginBlock(Editor: TControl);
-var
-  Item: TSynCaretAndSelectionUndoItem;
 begin
   Inc(FBlockCount);
   if FBlockCount = 1 then // it was 0
@@ -255,8 +254,8 @@ begin
     FBlockStartModified := GetModified;
     FUndoList.FBlockChangeNumber := FUndoList.NextChangeNumber;
     // So that position is restored after Redo
-    Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
-    FUndoList.Push(Item);
+    FBlockSelRestoreItem := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+    FUndoList.Push(FBlockSelRestoreItem);
   end;
 end;
 
@@ -293,9 +292,15 @@ begin
     Dec(FBlockCount);
     if FBlockCount = 0 then
     begin
-      // So that position is restored after Redo
-      Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
-      FUndoList.Push(Item);
+      if FUndoList.Peek = FBlockSelRestoreItem then
+        // No undo items added from BlockBegin to BlockEnd
+        FUndoList.Pop
+      else
+      begin
+        // So that position is restored after Redo
+        Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+        FUndoList.Push(Item);
+      end;
 
       FUndoList.FBlockChangeNumber := 0;
       AddGroupBreak;
