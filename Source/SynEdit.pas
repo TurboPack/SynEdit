@@ -109,9 +109,6 @@ type
   TGutterGetTextEvent = procedure(Sender: TObject; aLine: Integer;
     var aText: string) of object;
 
-  TGutterPaintEvent = procedure(Sender: TObject; aLine: Integer;
-    X, Y: Integer) of object;
-
   TSynEditCaretType = (ctVerticalLine, ctHorizontalLine, ctHalfBlock, ctBlock);
 
   TSynStateFlag = (sfCaretChanged, sfScrollbarChanged, sfLinesChanging,
@@ -407,7 +404,6 @@ type
     fOnPaintTransient: TPaintTransient;
     fOnScroll: TScrollEvent;
     fOnGutterGetText: TGutterGetTextEvent;
-    fOnGutterPaint: TGutterPaintEvent;
     fOnStatusChange: TStatusChangeEvent;
     fOnTripleClick: TNotifyEvent;
     fOnQudrupleClick: TNotifyEvent;
@@ -544,7 +540,6 @@ type
     procedure SetUseCodeFolding(const Value: Boolean);
     procedure OnCodeFoldingChange(Sender: TObject);
     function GetCollapseMarkRect(Row: Integer; Line: Integer = -1): TRect;
-    function GetFoldShapeRect(Row: Integer): TRect;
 //-- CodeFolding
   protected
     FIgnoreNextChar: Boolean;
@@ -628,7 +623,6 @@ type
     procedure UpdateMouseCursor; virtual;
   protected
     fGutterWidth: Integer;
-    fInternalImage: TSynInternalImage;
     procedure HideCaret;
     procedure ShowCaret;
     procedure DoOnClearBookmark(var Mark: TSynEditMark); virtual;
@@ -907,8 +901,6 @@ type
       read fOnGutterClick write fOnGutterClick;
     property OnGutterGetText: TGutterGetTextEvent read fOnGutterGetText
       write fOnGutterGetText;
-    property OnGutterPaint: TGutterPaintEvent read fOnGutterPaint
-      write fOnGutterPaint;
     property OnMouseCursor: TMouseCursorEvent read fOnMouseCursor
       write fOnMouseCursor;
     property OnPaint: TPaintEvent read fOnPaint write fOnPaint;
@@ -1025,7 +1017,6 @@ type
     property OnDropFiles;
     property OnGutterClick;
     property OnGutterGetText;
-    property OnGutterPaint;
     property OnMouseCursor;
     property OnPaint;
     property OnPlaceBookmark;
@@ -1250,12 +1241,10 @@ begin
   fBookMarkOpt.OnChange := BookMarkOptionsChanged;
 // fRightEdge has to be set before FontChanged is called for the first time
   fRightEdge := 80;
-  fGutter := TSynGutter.Create;
+  fGutter := TSynGutter.Create(Self);
   fGutter.OnChange := GutterChanged;
-  fGutterWidth := fGutter.Width;
   fWordWrapGlyph := TSynGlyph.Create(HINSTANCE, 'SynEditWrapped');
   fWordWrapGlyph.OnChange := WordWrapGlyphChange;
-  fTextOffset := fGutterWidth + 2;
   ControlStyle := ControlStyle + [csOpaque, csSetCaption];
   ControlStyle := ControlStyle + [csNeedsBorderPaint];
   Height := 150;
@@ -1312,6 +1301,8 @@ begin
   fAllFoldRanges := TSynFoldRanges.Create;
 //-- CodeFolding
   SynFontChanged(nil);
+  fTextOffset := fGutterWidth + 2;
+  GutterChanged(nil); // to caclulate fGutterWidth also updates fTextOffset
 end;
 
 procedure TCustomSynEdit.CreateParams(var Params: TCreateParams);
@@ -1410,7 +1401,6 @@ begin
   fGutter.Free;
   fWordWrapGlyph.Free;
   fTextDrawer.Free;
-  fInternalImage.Free;
   fFontDummy.Free;
   fOrigLines.Free;
 //++ CodeFolding
@@ -1942,8 +1932,6 @@ begin
     fActiveSelectionMode := vOldMode;
     InvalidateRect(fInvalidateRect, False);
     FillChar(fInvalidateRect, SizeOf(TRect), 0);
-    if fGutter.ShowLineNumbers and fGutter.AutoSize then
-      fGutter.AutoSizeDigitCount(Lines.Count);
     if not (eoScrollPastEof in Options) then
       TopLine := TopLine;
   end;
@@ -2208,56 +2196,41 @@ end;
 
 procedure TCustomSynEdit.DoOnGutterClick(Button: TMouseButton; X, Y: Integer);
 var
-  i     : Integer;
-  offs  : Integer;
-  line  : Integer;
-  allmrk: TSynEditMarks;
-  mark  : TSynEditMark;
-//++ CodeFolding
-  Index : integer;
+  I     : Integer;
+  Offs  : Integer;
+  Line  : Integer;
+  Allmrk: TSynEditMarks;
+  Mark  : TSynEditMark;
   RowColumn: TDisplayCoord;
+  Band: TSynGutterBand;
 begin
   RowColumn := PixelsToRowColumn(X, Y);
   Line := RowToLine(RowColumn.Row);
 
-  // Check if we clicked on a folding thing
-  if UseCodeFolding then begin
-    if AllFoldRanges.FoldStartAtLine(Line, Index) then
-    begin
-      // See if we actually clicked on the rectangle...
-      if PtInRect(GetFoldShapeRect(RowColumn.Row), Point(X, Y)) then begin
-        if AllFoldRanges.Ranges[Index].Collapsed then
-          Uncollapse(Index)
-        else
-          Collapse(Index);
-        Exit;
-      end;
-    end;
-  end;
-//-- CodeFolding
-
-  // If not, check gutter marks
-  if Assigned(fOnGutterClick) then
+  if Line <= Lines.Count then
   begin
-    line := DisplayToBufferPos(PixelsToRowColumn(X,Y)).Line;
-    if line <= Lines.Count then
+    Band := FGutter.BandAtX(X);
+    if Assigned(Band) then
+      Band.DoClick(Self, Button, X, Y, RowColumn.Row, Line);
+    if Assigned(fOnGutterClick) then
     begin
-      Marks.GetMarksForLine(line, allmrk);
-      offs := 0;
-      mark := nil;
-      for i := 1 to MAX_MARKS do
+      // Check gutter marks
+      Marks.GetMarksForLine(Line, Allmrk);
+      Offs := 0;
+      Mark := nil;
+      for I := 1 to MAX_MARKS do
       begin
-        if assigned(allmrk[i]) then
+        if assigned(Allmrk[I]) then
         begin
-          Inc(offs, BookMarkOptions.XOffset);
-          if X < offs then
+          Inc(Offs, BookMarkOptions.XOffset);
+          if X < Offs then
           begin
-            mark := allmrk[i];
+            Mark := Allmrk[I];
             break;
           end;
         end;
       end; //for
-      fOnGutterClick(Self, Button, X, Y, line, mark);
+      fOnGutterClick(Self, Button, X, Y, Line, Mark);
     end;
   end;
 end;
@@ -2307,253 +2280,76 @@ end;
 
 procedure TCustomSynEdit.PaintGutter(const AClip: TRect;
   const aFirstRow, aLastRow: Integer);
-
-  procedure DrawMark(aMark: TSynEditMark; var aGutterOff: Integer;
-    aMarkRow: Integer);
-  begin
-    if (not aMark.InternalImage) and Assigned(fBookMarkOpt.BookmarkImages) then
-    begin
-      if aMark.ImageIndex <= fBookMarkOpt.BookmarkImages.Count then
-      begin
-        if aMark.IsBookmark = BookMarkOptions.DrawBookmarksFirst then
-          aGutterOff := 0
-        else if aGutterOff = 0 then
-          aGutterOff := fBookMarkOpt.XOffset;
-        with fBookMarkOpt do
-          BookmarkImages.Draw(Canvas, LeftMargin + aGutterOff,
-            (aMarkRow - TopLine) * fTextHeight, aMark.ImageIndex);
-        Inc(aGutterOff, fBookMarkOpt.XOffset);
-      end;
-    end
-    else begin
-      if aMark.ImageIndex in [0..9] then
-      begin
-        if not Assigned(fInternalImage) then
-        begin
-          fInternalImage := TSynInternalImage.Create(HINSTANCE,
-            'SynEditInternalImages', 10);
-//++ DPI-Aware
-          fInternalImage.ChangeScale(FCurrentPPI, 96);
-//-- DPI-Aware
-        end;
-        if aGutterOff = 0 then
-        begin
-          fInternalImage.Draw(Canvas, aMark.ImageIndex,
-            fBookMarkOpt.LeftMargin + aGutterOff,
-            (aMarkRow - TopLine) * fTextHeight, fTextHeight);
-        end;
-        Inc(aGutterOff, fBookMarkOpt.XOffset);
-      end;
-    end;
-  end;
-
 var
-  cLine: Integer;
-  cMark: Integer;
-  rcLine: TRect;
-  aGutterOffs: PIntArray;
-  bHasOtherMarks: Boolean;
-  s: string;
-  vFirstLine: Integer;
-  vLastLine: Integer;
-  vMarkRow: Integer;
-  vGutterRow: Integer;
-  vLineTop: Integer;
-//++ CodeFolding
-  vLine: Integer;
-  cRow : Integer;
-  rcFold: TRect;
-  x: Integer;
-  FoldRange: TSynFoldRange;
-  Index : Integer;
-  PlusMinusMargin : integer;
-//-- CodeFolding
+  I, L, W: Integer;
+  rcBackGround: TRect;
+  Band: TSynGutterBand;
+  SaveIndex: Integer;
+  rcBand: TRect;
+  Attri: TSynHighlighterAttributes;
 begin
-  vFirstLine := RowToLine(aFirstRow);
-  vLastLine := RowToLine(aLastRow);
+  // First paint gutter background
+  W := 0;
+  for I := 0 to FGutter.Bands.Count - 1 do
+  begin
+    Band := FGutter.Bands[I];
+    if not Band.Visible then Continue;
+    if Band.Background = gbbGutter then
+      Inc(W, FGutter.Bands[I].RealWidth)
+    else
+      Break;
+  end;
+  rcBackGround := Rect(0, AClip.Top, W, AClip.Bottom);
 
   if fGutter.Gradient then
-  begin
     SynDrawGradient(Canvas, fGutter.GradientStartColor, fGutter.GradientEndColor,
-      fGutter.GradientSteps, Rect(0, AClip.Top, fGutterWidth, AClip.Bottom), True);
-    Canvas.Brush.Color := fGutter.Color;
-  end
+      fGutter.GradientSteps, rcBackGround, True)
   else
   begin
     Canvas.Brush.Color := fGutter.Color;
-    Canvas.FillRect(AClip);
+    Canvas.FillRect(rcBackGround);
   end;
 
-  if fGutter.ShowLineNumbers then
+  // Paint Bands with Editor Background
+  Canvas.Brush.Color := Color;
+  if Highlighter <> nil then
   begin
-    Canvas.Brush.Style := bsClear;
-
-    if fGutter.UseFontStyle then
-      Canvas.Font := fGutter.Font
-    else
-      Canvas.Font := Font;
-
-    for cRow := aFirstRow to aLastRow do
-    begin
-      cLine := RowToLine(cRow);
-      vLineTop := (cRow - TopLine) * fTextHeight;
-      if WordWrap and (cRow <> LineToRow(cLine)) then
-      begin
-        // paint wrapped line glyphs
-        fWordWrapGlyph.Draw(Canvas,
-          (fGutterWidth - fGutter.RightOffset - 2) - fWordWrapGlyph.Width,
-          vLineTop, fTextHeight);
-      end
-      else
-      begin
-        // next line rect
-        rcLine := Rect(0, vLineTop,
-          fGutterWidth - fGutter.RightMargin - fGutter.RightOffset,
-          vLineTop + fTextHeight);
-
-        S := Gutter.FormatLineNumber(cLine);
-        if Assigned(OnGutterGetText) then
-          OnGutterGetText(Self, cLine, S);
-
-        Canvas.TextRect(rcLine, S, [tfSingleLine, tfVerticalCenter, tfRight]);
-      end;
-    end;
-    // restore brush
-    Canvas.Brush.Style := bsSolid;
+    Attri := Highlighter.WhitespaceAttribute;
+    if (Attri <> nil) and (Attri.Background <> clNone) then
+      Canvas.Brush.Color := Attri.Background;
   end;
 
-//++ CodeFolding
-  // Draw the folding lines and squares
-  if UseCodeFolding then begin
-    PlusMinusMargin := MulDiv(2, FCurrentPPI, 96);
-    for cRow := aFirstRow to aLastRow do begin
-      vLine := RowToLine(cRow);
-      if (vLine > Lines.Count) and not (Lines.Count = 0) then
-        break;
-
-      rcFold := GetFoldShapeRect(cRow);
-
-      Canvas.Pen.Color := fCodeFolding.FolderBarLinesColor;
-
-      // Any fold ranges beginning on this line?
-      if AllFoldRanges.FoldStartAtLine(vLine, Index) then begin
-        FoldRange := AllFoldRanges.Ranges[Index];
-        Canvas.Brush.Color := fCodeFolding.FolderBarLinesColor;
-        Canvas.FrameRect(rcFold);
-
-        // Paint minus sign
-        Canvas.Pen.Color := fCodeFolding.FolderBarLinesColor;
-        Canvas.MoveTo(rcFold.Left + PlusMinusMargin, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
-        Canvas.LineTo(rcFold.Right - PlusMinusMargin, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
-
-        // Paint vertical line of plus sign
-        if FoldRange.Collapsed then begin
-          x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
-          Canvas.MoveTo(x, rcFold.Top + PlusMinusMargin);
-          Canvas.LineTo(x, rcFold.Bottom - PlusMinusMargin);
-        end
-        else
-        // Draw the bottom part of a line
-        begin
-          x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
-          Canvas.MoveTo(x, rcFold.Bottom);
-          Canvas.LineTo(x, (cRow - fTopLine + 1) * LineHeight);
-        end;
-      end
-      else begin
-        // Need to paint a line end?
-        if AllFoldRanges.FoldEndAtLine(vLine, Index) then begin
-          x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
-          Canvas.MoveTo(x,  (cRow - fTopLine) * LineHeight);
-          Canvas.LineTo(x, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
-          Canvas.LineTo(rcFold.Right, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
-        end;
-        // Need to paint a line?
-        if AllFoldRanges.FoldAroundLine(vLine, Index) then begin
-          x := rcFold.Left + ((rcFold.Right - rcFold.Left) div 2);
-          Canvas.MoveTo(x, (cRow - fTopLine) * LineHeight);
-          Canvas.LineTo(x, (cRow - fTopLine + 1) * LineHeight);
-        end;
-      end;
-    end;
-  end;
-//-- CodeFolding
-
-  // the gutter separator if visible
-  if (fGutter.BorderStyle <> gbsNone) and (AClip.Right >= fGutterWidth - 2) then
-    with Canvas do
-    begin
-      Pen.Color := fGutter.BorderColor;
-      Pen.Width := 1;
-      with AClip do
-      begin
-        if fGutter.BorderStyle = gbsMiddle then
-        begin
-          MoveTo(fGutterWidth - 2, Top);
-          LineTo(fGutterWidth - 2, Bottom);
-          Pen.Color := fGutter.Color;
-        end;
-        MoveTo(fGutterWidth - 1, Top);
-        LineTo(fGutterWidth - 1, Bottom);
-      end;
-    end;
-
-  // now the gutter marks
-  if BookMarkOptions.GlyphsVisible and (Marks.Count > 0)
-    and (vLastLine >= vFirstLine) then
+  L := 0;
+  for I := 0 to FGutter.Bands.Count - 1 do
   begin
-    aGutterOffs := AllocMem((aLastRow - aFirstRow + 1) * SizeOf(Integer));
+    Band := FGutter.Bands[I];
+    if not Band.Visible then Continue;
+    W := Band.RealWidth;
+    if Band.Background = gbbEditor then
+    begin
+      rcBand := Rect(L, AClip.Top, L + W, AClip.Bottom);
+      Canvas.FillRect(rcBand);
+    end;
+    Inc(L, W);
+  end;
+
+  // Now paint the bands
+  L := 0;
+  for I := 0 to FGutter.Bands.Count - 1 do
+  begin
+    Band := FGutter.Bands[I];
+    if not Band.Visible then Continue;
+    W := Band.RealWidth;
+    rcBand := Rect(L, AClip.Top, L + W, AClip.Bottom);
+    SaveIndex := SaveDC(Canvas.Handle);
     try
-      // Instead of making a two pass loop we look while drawing the bookmarks
-      // whether there is any other mark to be drawn
-      bHasOtherMarks := False;
-      for cMark := 0 to Marks.Count - 1 do with Marks[cMark] do
-//++ Codefolding
-        if Visible and (Line >= vFirstLine) and (Line <= vLastLine) and (Line <= FLines.Count)
-           and not (UseCodeFolding and AllFoldRanges.FoldHidesLine(Line, Index))
-//-- Codefolding
-        then
-        begin
-          if IsBookmark <> BookMarkOptions.DrawBookmarksFirst then
-            bHasOtherMarks := True
-          else begin
-            vMarkRow := LineToRow(Line);
-            if vMarkRow >= aFirstRow then
-              DrawMark(Marks[cMark], aGutterOffs[vMarkRow - aFirstRow], vMarkRow);
-          end
-        end;
-      if bHasOtherMarks then
-        for cMark := 0 to Marks.Count - 1 do with Marks[cMark] do
-        begin
-          if Visible and (IsBookmark <> BookMarkOptions.DrawBookmarksFirst)
-//++ Codefolding
-            and (Line >= vFirstLine) and (Line <= vLastLine) and (Line <= FLines.Count)
-            and not (UseCodeFolding and AllFoldRanges.FoldHidesLine(Line, Index))  then
-//-- Codefolding
-          begin
-            vMarkRow := LineToRow(Line);
-            if vMarkRow >= aFirstRow then
-              DrawMark(Marks[cMark], aGutterOffs[vMarkRow - aFirstRow], vMarkRow);
-          end;
-        end;
-      if Assigned(OnGutterPaint) then
-        for cLine := vFirstLine to vLastLine do
-        begin
-          vGutterRow := LineToRow(cLine);
-          OnGutterPaint(Self, cLine, aGutterOffs[vGutterRow - aFirstRow],
-            (vGutterRow - TopLine) * LineHeight);
-        end;
+      IntersectClipRect(Canvas.Handle,
+        rcBand.Left, rcBand.Top, rcBand.Right, rcBand.Bottom);
+      Band.PaintLines(Canvas, rcBand, aFirstRow, aLastRow);
     finally
-      FreeMem(aGutterOffs);
+      RestoreDC(Canvas.Handle, SaveIndex);
     end;
-  end
-  else if Assigned(OnGutterPaint) then
-  begin
-    for cLine := vFirstLine to vLastLine do
-    begin
-      vGutterRow := LineToRow(cLine);
-      OnGutterPaint(Self, cLine, 0, (vGutterRow - TopLine) * LineHeight);
-    end;
+    Inc(L, W);
   end;
 end;
 
@@ -4478,15 +4274,7 @@ end;
 
 procedure TCustomSynEdit.OnCodeFoldingChange(Sender: TObject);
 begin
-  if fUseCodeFolding then
-  // The fold shape is drawn in a square 2 * Gutter.RightMargin
-  //  to the right of RightOffset and 2 * Gutter.RightMagin to the left of
-  //  fGuttterWidth.  It is centered vertically.
-  //  Gutter.RightMargin is 2 at 96 DPI
-    Gutter.RightOffset := CodeFolding.ScaledGutterShapeSize(FCurrentPPI) + 2 * Gutter.RightMargin
-  else
-    Gutter.RightOffset := Gutter.RightMargin;
-  Invalidate;
+  GutterChanged(Sender);
 end;
 
 function TCustomSynEdit.GetCollapseMarkRect(Row, Line: Integer): TRect;
@@ -4520,22 +4308,6 @@ begin
   Result.Left := Max(Result.Left, fGutterWidth + fCharWidth);
 
   Result.Right := Result.Left + fCharWidth * 3 +  4 * (fCharWidth div 7);
-end;
-
-function TCustomSynEdit.GetFoldShapeRect(Row: Integer): TRect;
-var
-  GutterShapeSize: Integer;
-begin
-  // Form a square rect for the square the user can click on
-  // The fold shape is drawn in a square 4 pixels to the right of RightOffset
-  // 4 pixels from the fGuttterWidth.  It is  vertically centered within a line.
-  GutterShapeSize := CodeFolding.ScaledGutterShapeSize(FCurrentPPI);
-  Result.Left := fGutterWidth - GutterShapeSize - 2 * Gutter.RightMargin;
-  Result.Right := Result.Left + GutterShapeSize;
-  Result.Top := (Row - fTopLine) * LineHeight;
-  // make a square rect
-  Result.Top := Result.Top + ((LineHeight - (Result.Right - Result.Left)) div 2);
-  Result.Bottom := Result.Top + (Result.Right - Result.Left);
 end;
 //-- CodeFolding
 
@@ -5888,11 +5660,9 @@ procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; i
 begin
   {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
     fGutter.ChangeScale(M,D);
-    OnCodeFoldingChange(Self); // To recalculate Gutter.RightOffset
     fBookMarkOpt.ChangeScale(M, D);
     fWordWrapGlyph.ChangeScale(M, D);
-    if Assigned(fInternalImage) then fInternalImage.ChangeScale(M, D);
-   {$if CompilerVersion >= 31}end;{$endif}
+  {$if CompilerVersion >= 31}end;{$endif}
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
  end;
 //-- DPI-Aware
@@ -7313,35 +7083,11 @@ end;
 
 procedure TCustomSynEdit.GutterChanged(Sender: TObject);
 var
-  nW, nCW: Integer;
-  Bitmap: TBitmap;
+  nW: Integer;
 begin
   if ComponentState * [csLoading, csDestroying]  = [] then
   begin
-    if fGutter.ShowLineNumbers and fGutter.AutoSize then
-      fGutter.AutoSizeDigitCount(Lines.Count);
-    if fGutter.UseFontStyle then
-    begin
-      if HandleAllocated then
-      begin
-        Canvas.Font := fGutter.Font;
-        nCW := TheFontStock.CalcFontAdvance(Canvas.Handle, nil);
-        Canvas.Font := Font;
-      end
-      else
-      begin
-        BitMap := TBitmap.Create;
-        try
-          BitMap.Canvas.Font := fGutter.Font;
-          nCW := TheFontStock.CalcFontAdvance(Bitmap.Canvas.Handle, nil);
-        finally
-          Bitmap.Free;
-        end;
-      end;
-    end
-    else
-      nCW := fCharWidth;
-    nW := fGutter.RealGutterWidth(nCW);
+    nW := fGutter.RealGutterWidth;
     if nW = fGutterWidth then
       InvalidateGutter
     else
@@ -7637,27 +7383,24 @@ var
   ptCursor: TPoint;
   ptLineCol: TBufferCoord;
   iNewCursor: TCursor;
-//++ Code Folding
   ptRowCol: TDisplayCoord;
   Rect: TRect;
-//--  CodeFolding
+  Band: TSynGutterBand;
 begin
   GetCursorPos(ptCursor);
   ptCursor := ScreenToClient(ptCursor);
   ptRowCol := PixelsToRowColumn(ptCursor.X, ptCursor.Y);
   ptLineCol := DisplayToBufferPos(ptRowCol);
-  if (ptCursor.X < fGutterWidth) then begin
-    if UseCodeFolding and
-      fAllFoldRanges.FoldStartAtLine(ptLineCol.Line) then
-    begin
-      Rect := GetFoldShapeRect(ptRowCol.Row);
-      if PtInRect(Rect, ptCursor) then
-        SetCursor(Screen.Cursors[crHandPoint])
-      else
-        SetCursor(Screen.Cursors[fGutter.Cursor]);
-    end else
-      SetCursor(Screen.Cursors[fGutter.Cursor])
-  end else begin
+  if (ptCursor.X < fGutterWidth) then
+  begin
+    iNewCursor := Gutter.Cursor;
+    Band := FGutter.BandAtX(ptCursor.X);
+    if Assigned(Band) and Assigned(Band) then
+      Band.DoMouseCursor(Self, ptCursor.X, ptCursor.Y, ptRowCol.Row,
+        ptLineCol.Line, iNewCursor);
+  end
+  else
+  begin
     if (eoDragDropEditing in fOptions) and (not MouseCapture) and IsPointInSelection(ptLineCol) then
       iNewCursor := crArrow
     else if UseCodeFolding and CodeFolding.ShowHintMark and
@@ -7671,8 +7414,8 @@ begin
     if Assigned(OnMouseCursor) then
       OnMouseCursor(Self, ptLineCol, iNewCursor);
     fKbdHandler.ExecuteMouseCursor(Self, ptLineCol, iNewCursor);
-    SetCursor(Screen.Cursors[iNewCursor]);
   end;
+  SetCursor(Screen.Cursors[iNewCursor]);
 end;
 
 procedure TCustomSynEdit.BookMarkOptionsChanged(Sender: TObject);
@@ -9169,6 +8912,8 @@ var
   i: Integer;
   Plugin: TSynEditPlugin;
 begin
+  fGutter.AutoSizeDigitCount;
+
   // gutter marks
   for i := 0 to Marks.Count - 1 do
     if Marks[i].Line >= FirstLine + Count then
@@ -9191,6 +8936,7 @@ var
   i: Integer;
   Plugin: TSynEditPlugin;
 begin
+  fGutter.AutoSizeDigitCount;
   // gutter marks
   for i := 0 to Marks.Count - 1 do
     if Marks[i].Line >= FirstLine then

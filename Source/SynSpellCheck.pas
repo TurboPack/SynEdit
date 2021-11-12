@@ -795,7 +795,7 @@ var
       // Do not draw on gutter.
       // This happens when a word is underlined and part of it is "hidden" under
       // the gutter.
-      if TP.X <= Editor.Gutter.RealGutterWidth(Editor.CharWidth) then
+      if TP.X <= Editor.Gutter.RealGutterWidth then
         Exit;
       with ACanvas do
       begin
