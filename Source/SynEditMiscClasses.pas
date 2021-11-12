@@ -93,7 +93,8 @@ type
      OnPaintLines event handler.
      The width of the Line Numbers and Code Folding band is automatically
      calculated and not set at design time}
-  TSynGutterBandKind = (gbkCustom, gbkMarks, gbkLineNumbers, gbkFold, gbkMargin);
+  TSynGutterBandKind = (gbkCustom, gbkMarks, gbkLineNumbers, gbkFold, gbkMargin,
+    gbkTrackChanges);
   TSynGutterBandBackground = (gbbNone, gbbGutter, gbbEditor);
 
   TSynGutterBand = class(TCollectionItem)
