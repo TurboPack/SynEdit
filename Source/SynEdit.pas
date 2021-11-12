@@ -156,7 +156,7 @@ type
 
 const
   SYNEDIT_DEFAULT_OPTIONS = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey,
-    eoScrollPastEol, eoShowScrollHint, eoSmartTabs, eoTabsToSpaces,
+    eoScrollPastEol, eoShowScrollHint, eoTabIndent, eoTabsToSpaces,
     eoSmartTabDelete, eoGroupUndo];
 
 type
@@ -463,8 +463,6 @@ type
     function GetModified: Boolean;
     function GetOptions: TSynEditorOptions;
     function GetSelAvail: Boolean;
-    function GetSelTabBlock: Boolean;
-    function GetSelTabLine: Boolean;
     function GetSelText: string;
     function SynGetText: string;
     function GetWordAtCursor: string;
@@ -716,7 +714,6 @@ type
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
 
-    procedure InsertBlock(const BB, BE: TBufferCoord; ChangeStr: PWideChar; AddToUndoList: Boolean);
     procedure DoBlockIndent;
     procedure DoBlockUnindent;
 
@@ -841,8 +838,6 @@ type
     property SearchEngine: TSynEditSearchCustom read fSearchEngine write SetSearchEngine;
     property SelAvail: Boolean read GetSelAvail;
     property SelLength: Integer read GetSelLength write SetSelLength;
-    property SelTabBlock: Boolean read GetSelTabBlock;
-    property SelTabLine: Boolean read GetSelTabLine;
     property SelText: string read GetSelText write SetSelText;
     property StateFlags: TSynStateFlags read fStateFlags;
     property Text: string read SynGetText write SynSetText;
@@ -1467,16 +1462,6 @@ function TCustomSynEdit.GetSelAvail: Boolean;
 begin
   Result := (fBlockBegin.Char <> fBlockEnd.Char) or
     ((fBlockBegin.Line <> fBlockEnd.Line) and (fActiveSelectionMode <> smColumn));
-end;
-
-function TCustomSynEdit.GetSelTabBlock: Boolean;
-begin
-  Result := (fBlockBegin.Line <> fBlockEnd.Line) and (fActiveSelectionMode <> smColumn);
-end;
-
-function TCustomSynEdit.GetSelTabLine: Boolean;
-begin
-  Result := (BlockBegin.Char <= 1) and (BlockEnd.Char > length(Lines[CaretY - 1])) and SelAvail;
 end;
 
 function TCustomSynEdit.GetSelText: string;
@@ -2374,7 +2359,6 @@ var
   vMarkRow: Integer;
   vGutterRow: Integer;
   vLineTop: Integer;
-  TextSize: TSize;
 //++ CodeFolding
   vLine: Integer;
   cRow : Integer;
@@ -3704,39 +3688,23 @@ begin
 end;
 
 procedure TCustomSynEdit.SetCaretX(Value: Integer);
-var
-  vNewCaret: TBufferCoord;
 begin
-  vNewCaret.Char := Value;
-  vNewCaret.Line := CaretY;
-  SetCaretXY(vNewCaret);
+  SetCaretXY(BufferCoord(Value, fCaretY));
 end;
 
 procedure TCustomSynEdit.SetCaretY(Value: Integer);
-var
-  vNewCaret: TBufferCoord;
 begin
-  vNewCaret.Line := Value;
-  vNewCaret.Char := CaretX;
-  SetCaretXY(vNewCaret);
+  SetCaretXY(BufferCoord(fCaretX, Value));
 end;
 
 procedure TCustomSynEdit.InternalSetCaretX(Value: Integer);
-var
-  vNewCaret: TBufferCoord;
 begin
-  vNewCaret.Char := Value;
-  vNewCaret.Line := CaretY;
-  InternalSetCaretXY(vNewCaret);
+  InternalSetCaretXY(BufferCoord(Value, fCaretY));
 end;
 
 procedure TCustomSynEdit.InternalSetCaretY(Value: Integer);
-var
-  vNewCaret: TBufferCoord;
 begin
-  vNewCaret.Line := Value;
-  vNewCaret.Char := CaretX;
-  InternalSetCaretXY(vNewCaret);
+  InternalSetCaretXY(BufferCoord(fCaretX, Value));
 end;
 
 function TCustomSynEdit.GetCaretXY: TBufferCoord;
@@ -5361,20 +5329,6 @@ begin
   Result := not ReadOnly and ClipboardProvidesText;
 end;
 
-procedure TCustomSynEdit.InsertBlock(const BB, BE: TBufferCoord; ChangeStr: PWideChar;
-  AddToUndoList: Boolean);
-// used by BlockIndent and Redo
-Var
-  OldSelectinonMode : TSynSelectionMode;
-begin
-  SetCaretAndSelection(BB, BB, BE);
-  OldSelectinonMode := ActiveSelectionMode;
-  ActiveSelectionMode := smColumn;
-  SetSelTextPrimitiveEx(smColumn, PChar(ChangeStr), AddToUndoList);
-  StatusChanged([scSelection]);
-  ActiveSelectionMode := OldSelectinonMode;
-end;
-
 procedure TCustomSynEdit.Redo;
 begin
   if ReadOnly then
@@ -6408,6 +6362,7 @@ var
   WP: TBufferCoord;
   Caret: TBufferCoord;
   CaretNew: TBufferCoord;
+  CaretXNew: Integer;
   counter: Integer;
   vCaretRow: Integer;
   s: string;
@@ -6548,9 +6503,6 @@ begin
                     if SpaceCount2 = SpaceCount1 then
                       SpaceCount2 := 0;
                     CaretX := fCaretX - (SpaceCount1 - SpaceCount2);
-                    UpdateLastCaretX;
-                    fStateFlags := fStateFlags + [sfCaretChanged];
-                    StatusChanged([scCaretX]);
                   end;
                 end
                 else begin
@@ -6588,8 +6540,9 @@ begin
                     BackCounter := CaretY - 2;
                     while BackCounter >= 0 do
                     begin
-                      SpaceCount2 := LeftSpaces(Lines[BackCounter], True);
-                      if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
+                      Temp2 := Lines[BackCounter];
+                      SpaceCount2 := LeftSpaces(Temp2, True);
+                      if (Temp2.Length > 0) and (SpaceCount2 < SpaceCount1) then
                         break;
                       Dec(BackCounter);
                     end;
@@ -6598,7 +6551,7 @@ begin
                     Delete(Temp, 1, LeftSpaces(Temp));
                     Temp2 := GetLeftSpacing(SpaceCount2, True);
                     Temp := Temp2 + Temp;
-                    fCaretX := Temp2.Length + 1;
+                    CaretXNew := Temp2.Length + 1;
                   end
                   else begin
                     SpaceCount2 := SpaceCount1;
@@ -6629,13 +6582,10 @@ begin
                     else
                       Delete(Temp, SpaceCount2 - SpaceCount1 + 1, SpaceCount1);
                     SpaceCount2 := 0;
-                    fCaretX := fCaretX - (SpaceCount1 - SpaceCount2);
+                    CaretXNew := fCaretX - (SpaceCount1 - SpaceCount2);
                   end;
-                  UpdateLastCaretX;
-                  // Stores the previous "expanded" CaretX if the line contains tabs.
                   Lines[CaretY - 1] :=  Temp;
-                  fStateFlags := fStateFlags + [sfCaretChanged];
-                  StatusChanged([scCaretX]);
+                  CaretX := CaretXNew;
                 end
                 else begin
                   // delete char
@@ -8106,21 +8056,13 @@ var
   p: PWideChar;
   NewCaretX: integer;
   nPhysX, nDistanceToTab, nSpacesToNextTabStop : Integer;
-  OldSelTabLine, vIgnoreSmartTabs, TrimTrailingActive: Boolean;
+  vIgnoreSmartTabs, TrimTrailingActive: Boolean;
 begin
   // Provide Visual Studio like block indenting
-  OldSelTabLine := SelTabLine;
-  if (eoTabIndent in Options) and ((SelTabBlock) or (OldSelTabLine)) then
+  if (eoTabIndent in Options) and (FBlockBegin.Line <> fBlockEnd.Line) then
   begin
     DoBlockIndent;
-    if OldSelTabLine then
-    begin
-      if fBlockBegin.Char < fBlockEnd.Char then
-        FBlockBegin.Char := 1
-      else
-        fBlockEnd.Char := 1;
-    end;
-    exit;
+    Exit;
   end;
   i := 0;
   iLine := 0;
@@ -8233,94 +8175,56 @@ end;
 procedure TCustomSynEdit.DoShiftTabKey;
 // shift-tab key handling
 var
-  NewX: Integer;
-  Line: string;
-  LineLen: Integer;
-  DestX: Integer;
-
   MaxLen, iLine: Integer;
   PrevLine: string;
   p: PWideChar;
-  TrimTrailingActive: Boolean;
+  SpaceCount1, SpaceCount2: Integer;
+  TempS, TempS2: string;
 begin
-  // Provide Visual Studio like block indenting
-  if (eoTabIndent in Options) and ((SelTabBlock) or (SelTabLine)) then
-  begin
-    DoBlockUnIndent;
-    exit;
-  end;
-
-  NewX := CaretX;
-
-  if (NewX <> 1) and (eoSmartTabs in fOptions) then
+  if (eoSmartTabs in Options) and not SelAvail then
   begin
     iLine := CaretY - 1;
     if (iLine > 0) and (iLine < Lines.Count) then
     begin
+      TempS := Lines[CaretY - 1];
+      SpaceCount1 := LeftSpaces(TempS, True);
+      if SpaceCount1 = 0 then Exit;
+
       Dec(iLine);
-      MaxLen := CaretX - 1;
+      MaxLen := SpaceCount1;
+      SpaceCount2 := 0;
       repeat
-        PrevLine := Lines[iLine];
-        if (Length(PrevLine) >= MaxLen) then
+        PrevLine := TSynEditStringList(Lines).ExpandedStrings[iLine];
+        if (PrevLine.Length > 0) and (Length(PrevLine) >= MaxLen) then
         begin
           p := @PrevLine[MaxLen];
           // scan over whitespaces
           repeat
             if p^ <> #32 then break;
-            Dec(NewX);
+            Inc(SpaceCount2);
             Dec(p);
-          until NewX = 1;
+          until SpaceCount2 = SpaceCount1;
           // scan over non-whitespaces
-          if NewX <> 1 then
+          if SpaceCount2 < SpaceCount1 then
             repeat
               if p^ = #32 then break;
-              Dec(NewX);
+              Inc(SpaceCount2);
               Dec(p);
-            until NewX = 1;
+            until SpaceCount2 = SpaceCount1;
           break;
         end;
         Dec(iLine);
       until iLine < 0;
+      SpaceCount1 := LeftSpaces(TempS);
+      Delete(TempS, 1, SpaceCount1);
+      TempS2 := GetLeftSpacing(SpaceCount1 - SpaceCount2, True);
+      TempS := TempS2 + TempS;
+      Lines[CaretY - 1] :=  TempS;
+      CaretX := fCaretX + TempS2.Length - SpaceCount1;
     end;
-  end;
-
-  if NewX = CaretX then
-  begin
-    Line := LineText;
-    LineLen := Length(Line);
-
-    // find real un-tab position
-
-    DestX := ((CaretX - 2) div TabWidth) * TabWidth + 1;
-    if NewX > LineLen then
-      NewX := DestX
-    else if (NewX > DestX) and (Line[NewX - 1] = #9) then
-      dec(NewX)
-    else begin
-      while (NewX > DestX) and ((NewX - 1 > LineLen) or (Line[NewX - 1] = #32)) do
-        dec(NewX);
-    end;
-  end;
-
-  // perform un-tab
-  if (NewX <> CaretX) then
-  begin
-    BeginUndoBlock;
-    try
-      SetBlockBegin(BufferCoord(NewX, CaretY));
-      SetBlockEnd(CaretXY);
-
-      // Do not Trim
-      TrimTrailingActive := eoTrimTrailingSpaces in Options;
-      if TrimTrailingActive then Exclude(fOptions, eoTrimTrailingSpaces);
-      SetSelText('');
-      if TrimTrailingActive then Include(fOptions, eoTrimTrailingSpaces);
-
-      ForceCaretX(NewX);
-    finally
-      EndUndoBlock;
-    end;
-  end;
+  end
+  else
+    DoBlockUnIndent;
 end;
 
 procedure TCustomSynEdit.DoHomeKey(Selection: Boolean);
@@ -8496,104 +8400,67 @@ procedure TCustomSynEdit.DoBlockIndent;
 var
   OrgCaretPos: TBufferCoord;
   BB, BE: TBufferCoord;
-  Run, StrToInsert: PWideChar;
-  e, x, i, InsertStrLen: Integer;
+  Line: string;
+  EndLine, I: Integer;
   Spaces: string;
-  OrgSelectionMode: TSynSelectionMode;
-  InsertionPos: TBufferCoord;
+  InsertPos: Integer;
 begin
-  OrgSelectionMode := fActiveSelectionMode;
   OrgCaretPos := CaretXY;
 
-  StrToInsert := nil;
-  if SelAvail then
+  // keep current selection detail
+  BB := BlockBegin;
+  BE := BlockEnd;
+
+  // build text to insert
+  if (BE.Char = 1) then
+    EndLine := BE.Line - 1
+  else
+    EndLine := BE.Line;
+  if (eoTabsToSpaces in Options) then
+    Spaces := StringofChar(#32, FTabWidth)
+  else
+    Spaces := #9;
+
+  Lines.BeginUpdate;
+  BeginUndoBlock;
   try
-    // keep current selection detail
-    BB := BlockBegin;
-    BE := BlockEnd;
-
-    // build text to insert
-    if (BE.Char = 1) then
+    for I := BB.Line to EndLine do
     begin
-      e := BE.Line - 1;
-      x := 1;
-    end
-    else begin
-      e := BE.Line;
-      if eoTabsToSpaces in Options then
-        x := CaretX + FTabWidth
-      else x := CaretX + 1;
-    end;
-    if (eoTabsToSpaces in Options) then
-    begin
-      InsertStrLen := (FTabWidth + 2) * (e - BB.Line) + FTabWidth + 1;
-      //               chars per line * lines-1    + last line + null char
-      StrToInsert := WideStrAlloc(InsertStrLen);
-      Run := StrToInsert;
-      Spaces := StringofChar(#32, FTabWidth);
-    end
-    else begin
-      InsertStrLen:= 3 * (e - BB.Line) + 2;
-      //         #9#13#10 * lines-1 + (last line's #9 + null char)
-      StrToInsert := WideStrAlloc(InsertStrLen);
-      Run := StrToInsert;
-      Spaces := #9;
-    end;
-    for i := BB.Line to e-1 do
-    begin
-      StrCopy(Run, PWideChar(Spaces + #13#10));
-      Inc(Run, Length(spaces) + 2);
-    end;
-    StrCopy(Run, PWideChar(Spaces));
-
-    BeginUndoBlock;
-    try
-      InsertionPos.Line := BB.Line;
+      Line := Lines[I - 1];
       if fActiveSelectionMode = smColumn then
-        InsertionPos.Char := Min(BB.Char, BE.Char)
+        InsertPos := Min(BB.Char, BE.Char)
       else
-        InsertionPos.Char := 1;
-      InsertBlock(InsertionPos, InsertionPos, StrToInsert, True);
-    finally
-      EndUndoBlock;
+        InsertPos := 1;
+      if Line.Length >= InsertPos then
+      begin
+        Insert(Spaces, Line, InsertPos);
+        Lines[I - 1] := Line;
+      end;
     end;
 
-    //adjust the x position of orgcaretpos appropriately
-    OrgCaretPos.Char := X;
-  finally
+    if OrgCaretPos.Char > 1 then
+      Inc(OrgCaretPos.Char, Spaces.Length);
+    if BB.Char > 1 then
+      Inc(BB.Char, Spaces.Length);
     if BE.Char > 1 then
-      Inc(BE.Char, Length(Spaces));
-    StrDispose(StrToInsert);
-    SetCaretAndSelection(OrgCaretPos,
-      BufferCoord(BB.Char + Length(Spaces), BB.Line), BE);
-    ActiveSelectionMode := OrgSelectionMode;
+      Inc(BE.Char, Spaces.Length);
+    SetCaretAndSelection(OrgCaretPos, BB, BE);
+  finally
+    EndUndoBlock;
+    Lines.EndUpdate;
   end;
 end;
 
 procedure TCustomSynEdit.DoBlockUnindent;
-var
-  OrgCaretPos,
-  BB, BE: TBufferCoord;
-  Line, Run,
-  StrToDelete: PWideChar;
-  Len, x, StrToDeleteLen, i, TmpDelLen, FirstIndent, LastIndent, e: Integer;
-  TempString: string;
-  OrgSelectionMode: TSynSelectionMode;
-  SomethingToDelete: Boolean;
 
-  function GetDelLen: Integer;
+  function GetDelLen(Line: PChar): Integer;
   var
-    Run: PWideChar;
+    Run: PChar;
   begin
     Result := 0;
     Run := Line;
     //Take care of tab character
-    if Run[0] = #9 then
-    begin
-      Result := 1;
-      SomethingToDelete := True;
-      exit;
-    end;
+    if Run[0] = #9 then Exit(1);
     //Deal with compound tabwidths  Sometimes they have TabChars after a few
     //spaces, yet we need to delete the whole tab width even though the char
     //count might not be FTabWidth because of the TabChar
@@ -8601,108 +8468,63 @@ var
     begin
       Inc(Result);
       Inc(Run);
-      SomethingToDelete := True;
     end;
     if (Run[0] = #9) and (Result < FTabWidth) then
       Inc(Result);
   end;
 
+var
+  OrgCaretPos, BB, BE: TBufferCoord;
+  Line: string;
+  PLine: PChar;
+  EndLine, I, TmpDelLen, DelPos: Integer;
+
 begin
-  OrgSelectionMode := fActiveSelectionMode;
-  Len := 0;
-  LastIndent := 0;
-  if SelAvail then
-  begin
-    // store current selection detail
-    BB := BlockBegin;
-    BE := BlockEnd;
-    OrgCaretPos := CaretXY;
-    x := fCaretX;
+  BB := BlockBegin;
+  BE := BlockEnd;
+  OrgCaretPos := CaretXY;
 
-    // convert selection to complete lines
-    if BE.Char = 1 then
-      e := BE.Line - 1
-    else
-      e := BE.Line;
+  // convert selection to complete lines
+  if BE.Char = 1 then
+    EndLine := BE.Line - 1
+  else
+    EndLine := BE.Line;
 
-    // build string to delete
-    StrToDeleteLen := (FTabWidth + 2) * (e - BB.Line) + FTabWidth + 1;
-    //                chars per line * lines-1    + last line + null char
-    StrToDelete := WideStrAlloc(StrToDeleteLen);
-    StrToDelete[0] := #0;
-    SomethingToDelete := False;
-    for i := BB.Line to e-1 do
+  Lines.BeginUpdate;
+  BeginUndoBlock;
+  try
+    for I := BB.Line to EndLine do
     begin
-       Line := PWideChar(Lines[i - 1]);
-       //'Line' is 0-based, 'BB.x' is 1-based, so the '-1'
-       //And must not increment 'Line' pointer by more than its 'Length'
-       if fActiveSelectionMode = smColumn then
-         Inc(Line, MinIntValue([BB.Char - 1, BE.Char - 1, Length(Lines[i - 1])]));
-       //Instead of doing a StringofChar, we need to get *exactly* what was
-       //being deleted incase there is a TabChar
-       TmpDelLen := GetDelLen;
-       StrCat(StrToDelete, PWideChar(Copy(Line, 1, TmpDelLen)));
-       StrCat(StrToDelete, PWideChar(string(#13#10)));
-       if (fCaretY = i) and (x <> 1) then
-         x := x - TmpDelLen;
-    end;
-    Line := PWideChar(Lines[e - 1]);
-    if fActiveSelectionMode = smColumn then
-      Inc(Line, MinIntValue([BB.Char - 1, BE.Char - 1, Length(Lines[e - 1])]));
-    TmpDelLen := GetDelLen;
-    StrCat(StrToDelete, PWideChar(Copy(Line, 1, TmpDelLen)));
-    if (fCaretY = e) and (x <> 1) then
-      x := x - TmpDelLen;
-
-    FirstIndent := -1;
-    // Delete string
-    if SomethingToDelete then
-    begin
-      InternalCaretY := BB.Line;
-      if fActiveSelectionMode <> smColumn then
-        i := 1
-      else
-        i := Min(BB.Char, BE.Char);
-      repeat
-        Run := GetEOL(StrToDelete);
-        if Run <> StrToDelete then
+      Line := Lines[I - 1];
+      //Instead of doing a StringofChar, we need to get *exactly* what was
+      //being deleted incase there is a TabChar
+      PLine := PChar(Line);
+      if FActiveSelectionMode = smColumn then
+        Inc(PLine, MinIntValue([BB.Char - 1, BE.Char - 1, Line.Length]));
+      TmpDelLen := GetDelLen(PChar(PLine));
+      if TmpDelLen > 0 then
+      begin
+        if FActiveSelectionMode = smColumn then
+          DelPos := Min(BB.Char, BE.Char)
+        else
+          DelPos := 1;
+        Delete(Line, DelPos, TmpDelLen);
+        Lines[I - 1] := Line;
+        if FActiveSelectionMode <> smColumn then
         begin
-          Len := Run - StrToDelete;
-          if FirstIndent = -1 then
-            FirstIndent := Len;
-          if Len > 0 then
-          begin
-            TempString := Lines[CaretY - 1];
-            Delete(TempString, i, Len);
-            Lines[CaretY - 1] := TempString;
-          end;
+          if I = BB.Line then
+            BB.Char := Max(BB.Char - TmpDelLen, 1);
+          if I = BE.Line then
+            BE.Char := Max(BE.Char - TmpDelLen, 1);
+          if I = OrgCaretPos.Line then
+            OrgCaretPos.Char := Max(OrgCaretPos.Char - TmpDelLen, 1);
         end;
-        if Run^ = #13 then
-        begin
-          Inc(Run);
-          if Run^ = #10 then
-            Inc(Run);
-          Inc(fCaretY);
-        end;
-        StrToDelete := Run;
-      until Run^ = #0;
-      LastIndent := Len;
+      end;
     end;
-    // restore selection
-    if FirstIndent = -1 then
-      FirstIndent := 0;
-    //adjust the x position of orgcaretpos appropriately
-    if fActiveSelectionMode = smColumn then
-      SetCaretAndSelection(OrgCaretPos, BB, BE)
-    else
-    begin
-      OrgCaretPos.Char := X;
-      Dec(BB.Char, FirstIndent);
-      Dec(BE.Char, LastIndent);
-      SetCaretAndSelection(OrgCaretPos, BB, BE);
-    end;
-    ActiveSelectionMode := OrgSelectionMode;
-    StrDispose(StrToDelete);
+    SetCaretAndSelection(OrgCaretPos, BB, BE);
+  finally
+    EndUndoBlock;
+    Lines.EndUpdate;
   end;
 end;
 
