@@ -123,7 +123,7 @@ type
     procedure SetBackground(const Value: TSynGutterBandBackground);
     procedure SetVisible(const Value: Boolean);
     procedure SetWidth(const Value: Integer);
-    function SetKind: TSynGutterBandKind;
+    procedure SetKind(Kind: TSynGutterBandKind);
     procedure SetOnPaintLines(const Value: TGutterBandPaintEvent);
     function IsWidthStored: Boolean;
     function GetWidth: Integer;
@@ -132,6 +132,7 @@ type
     function GetLeftX: Integer;
     function FoldShapeRect(Row, Line: Integer): TRect;
     procedure SetOnMouseCursor(const Value: TGutterMouseCursorEvent);
+    function IsVisibleStored: Boolean;
   protected
     function GetDisplayName: string; override;
   public
@@ -148,8 +149,9 @@ type
     property Editor: TPersistent read GetEditor;
     property Gutter: TSynGutter read GetSynGutter;
   published
-    property Kind: TSynGutterBandKind read SetKind write FKind;
-    property Visible: Boolean read GetVisible write SetVisible default True;
+    property Kind: TSynGutterBandKind read FKind write SetKind;
+    property Visible: Boolean read GetVisible write SetVisible
+      stored IsVisibleStored;
     property Width: Integer read GetWidth write SetWidth stored IsWidthStored;
     property Background: TSynGutterBandBackground read FBackground
       write SetBackground default gbbGutter;
@@ -186,6 +188,7 @@ type
     fOnChange: TNotifyEvent;
     FCursor: TCursor;
     FVisible: Boolean;
+    FShowLineNumbers: Boolean;
     FUseFontStyle: Boolean;
     FAutoSize: Boolean;
     FAutoSizeDigitCount: Integer;
@@ -219,7 +222,6 @@ type
     function GetBandByKind(Kind: TSynGutterBandKind): TSynGutterBand;
     procedure CalcCharWidth;
     procedure Changed;
-    function GetShowLineNumbers: Boolean;
   protected
     function GetOwner: TPersistent; override;
   public
@@ -238,8 +240,6 @@ type
     // -- DPI-Aware
     property InternalImage: TSynInternalImage read GetInternalImage;
     // Band returns the first band of a given kind
-    property ShowLineNumbers: Boolean read GetShowLineNumbers
-      write SetShowLineNumbers;
     property Band[Kind: TSynGutterBandKind]: TSynGutterBand read
       GetBandByKind;
   published
@@ -252,6 +252,8 @@ type
     property Cursor: TCursor read FCursor write FCursor default crDefault;
     property DigitCount: Integer read FDigitCount write SetDigitCount default 4;
     property Font: TFont read FFont write SetFont;
+    property ShowLineNumbers: Boolean read FShowLineNumbers
+      write SetShowLineNumbers default False;
     property LeadingZeros: Boolean read FLeadingZeros write SetLeadingZeros
       default False;
     property UseFontStyle: Boolean read FUseFontStyle write SetUseFontStyle
@@ -835,12 +837,12 @@ begin
 end;
 
 procedure TSynGutter.SetShowLineNumbers(const Value: Boolean);
-var
-  LNBand: TSynGutterBand;
 begin
-  LNBand := Band[gbkLineNumbers];
-  if Assigned(LNBand) then
-    LNBand.Visible := Value;
+  if FShowLineNumbers <> Value then
+  begin
+    FShowLineNumbers := Value;
+    Changed;
+  end;
 end;
 
 procedure TSynGutter.SetUseFontStyle(Value: Boolean);
@@ -971,14 +973,6 @@ end;
 function TSynGutter.GetOwner: TPersistent;
 begin
   Result := FOwner;
-end;
-
-function TSynGutter.GetShowLineNumbers: Boolean;
-var
-  LNBand: TSynGutterBand;
-begin
-  LNBand := Band[gbkLineNumbers];
-  Result := Assigned(LNBand) and LNBand.Visible;
 end;
 
 { TSynBookMarkOpt }
@@ -1792,10 +1786,11 @@ end;
 
 function TSynGutterBand.GetVisible: Boolean;
 begin
-  if FKind = gbkFold then
-    Result := Assigned(Editor) and TCustomSynEdit(Editor).UseCodeFolding
-  else
-    Result := FVisible;
+  Result := FVisible;
+  case FKind of
+    gbkLineNumbers: Result := Assigned(Gutter) and Gutter.ShowLineNumbers;
+    gbkFold: Result := Assigned(Editor) and TCustomSynEdit(Editor).UseCodeFolding;
+  end;
 end;
 
 function TSynGutterBand.GetWidth: Integer;
@@ -1806,6 +1801,11 @@ begin
   else
     Result := FWidth;
   end;
+end;
+
+function TSynGutterBand.IsVisibleStored: Boolean;
+begin
+  Result := FVisible and not (FKind in [gbkLineNumbers, gbkFold]);
 end;
 
 function TSynGutterBand.IsWidthStored: Boolean;
@@ -2097,9 +2097,9 @@ begin
   Changed(False);
 end;
 
-function TSynGutterBand.SetKind: TSynGutterBandKind;
+procedure TSynGutterBand.SetKind(Kind: TSynGutterBandKind);
 begin
-  Result := FKind;
+  FKind := Kind;
   Changed(False);
 end;
 
