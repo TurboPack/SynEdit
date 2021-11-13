@@ -86,13 +86,13 @@ type
 
   TSynGutter = class;
 
-  {  When created TGutter contains four bands (Marks, Line Numbers,
-     Code Folding and Margin).  The order, width and other properties of the
-     bands can be set at design time through the Bands property of TSynGutter.
-     Custom bands can also be created.  They can be painted using
-     OnPaintLines event handler.
-     The width of the Line Numbers and Code Folding band is automatically
-     calculated and not set at design time}
+  { When created TGutter contains four bands (Marks, Line Numbers,
+    Code Folding and Margin).  The order, width and other properties of the
+    bands can be set at design time through the Bands property of TSynGutter.
+    Custom bands can also be created.  They can be painted using
+    OnPaintLines event handler.
+    The width of the Line Numbers and Code Folding band is automatically
+    calculated and not set at design time }
   TSynGutterBandKind = (gbkCustom, gbkMarks, gbkLineNumbers, gbkFold, gbkMargin,
     gbkTrackChanges);
   TSynGutterBandBackground = (gbbNone, gbbGutter, gbbEditor);
@@ -112,14 +112,14 @@ type
     function GetEditor: TPersistent;
     procedure DoPaintLines(Canvas: TCanvas; R: TRect;
       const FirstRow, LastRow: Integer);
-    procedure PaintMarks(Canvas: TCanvas; ClipR: TRect; const FirstRow,
-      LastRow: Integer);
-    procedure PaintLineNumbers(Canvas: TCanvas; ClipR: TRect; const FirstRow,
-      LastRow: Integer);
-    procedure PaintFoldShapes(Canvas: TCanvas; ClipR: TRect; const FirstRow,
-      LastRow: Integer);
-    procedure PaintMargin(Canvas: TCanvas; ClipR: TRect; const FirstRow,
-      LastRow: Integer);
+    procedure PaintMarks(Canvas: TCanvas; ClipR: TRect;
+      const FirstRow, LastRow: Integer);
+    procedure PaintLineNumbers(Canvas: TCanvas; ClipR: TRect;
+      const FirstRow, LastRow: Integer);
+    procedure PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
+      const FirstRow, LastRow: Integer);
+    procedure PaintMargin(Canvas: TCanvas; ClipR: TRect;
+      const FirstRow, LastRow: Integer);
     procedure SetBackground(const Value: TSynGutterBandBackground);
     procedure SetVisible(const Value: Boolean);
     procedure SetWidth(const Value: Integer);
@@ -139,8 +139,8 @@ type
     constructor Create(Collection: TCollection); override;
     procedure Assign(Source: TPersistent); override;
     function RealWidth: Integer;
-    procedure PaintLines(Canvas: TCanvas; R: TRect; const FirstRow,
-      LastRow: Integer);
+    procedure PaintLines(Canvas: TCanvas; R: TRect;
+      const FirstRow, LastRow: Integer);
     procedure DoClick(Sender: TObject; Button: TMouseButton;
       X, Y, Row, Line: Integer);
     procedure DoMouseCursor(Sender: TObject; X, Y, Row, Line: Integer;
@@ -164,18 +164,19 @@ type
 
   TSynBandsCollection = class(TOwnedCollection)
   private
-    function GetBands(Index: integer): TSynGutterBand;
+    function GetBands(Index: Integer): TSynGutterBand;
   protected
     procedure Update(Item: TCollectionItem); override;
   public
-    property Bands[Index: integer]: TSynGutterBand  read GetBands; default;
+    property Bands[Index: Integer]: TSynGutterBand read GetBands; default;
   end;
 
   TSynInternalImage = class;
 
   TSynGutter = class(TPersistent)
   private
-    [Weak] FOwner: TPersistent; // Synedit
+    [Weak]
+    FOwner: TPersistent; // Synedit
     FUpdateCount: Integer;
     FCurrentPPI: Integer;
     FFont: TFont;
@@ -185,7 +186,7 @@ type
     FDigitCount: Integer;
     FLeadingZeros: Boolean;
     FZeroStart: Boolean;
-    FOnChange: TNotifyEvent;
+    fOnChange: TNotifyEvent;
     FCursor: TCursor;
     FVisible: Boolean;
     FShowLineNumbers: Boolean;
@@ -225,6 +226,7 @@ type
   protected
     function GetOwner: TPersistent; override;
   public
+    AssignableBands: Boolean;
     constructor Create; overload;
     constructor Create(Owner: TPersistent); overload;
     destructor Destroy; override;
@@ -240,8 +242,7 @@ type
     // -- DPI-Aware
     property InternalImage: TSynInternalImage read GetInternalImage;
     // Band returns the first band of a given kind
-    property Band[Kind: TSynGutterBandKind]: TSynGutterBand read
-      GetBandByKind;
+    property Band[Kind: TSynGutterBandKind]: TSynGutterBand read GetBandByKind;
   published
     property AutoSize: Boolean read FAutoSize write SetAutoSize default True;
     property BorderStyle: TSynGutterBorderStyle read FBorderStyle
@@ -271,18 +272,18 @@ type
     property GradientSteps: Integer read FGradientSteps write SetGradientSteps
       default 48;
     property Bands: TSynBandsCollection read FBands write SetBands;
-    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnChange: TNotifyEvent read fOnChange write fOnChange;
   end;
 
   TSynBookMarkOpt = class(TPersistent)
   private
-    fBookmarkImages: TCustomImageList;
-    fDrawBookmarksFirst: Boolean;
-    fEnableKeys: Boolean;
-    fGlyphsVisible: Boolean;
-    fLeftMargin: Integer;
+    FBookmarkImages: TCustomImageList;
+    FDrawBookmarksFirst: Boolean;
+    FEnableKeys: Boolean;
+    FGlyphsVisible: Boolean;
+    FLeftMargin: Integer;
     FOwner: TComponent;
-    fXoffset: Integer;
+    FXoffset: Integer;
     fOnChange: TNotifyEvent;
     procedure SetBookmarkImages(const Value: TCustomImageList);
     procedure SetDrawBookmarksFirst(Value: Boolean);
@@ -296,16 +297,16 @@ type
     procedure ChangeScale(M, D: Integer); virtual;
     // -- DPI-Aware
   published
-    property BookmarkImages: TCustomImageList read fBookmarkImages
+    property BookmarkImages: TCustomImageList read FBookmarkImages
       write SetBookmarkImages;
-    property DrawBookmarksFirst: Boolean read fDrawBookmarksFirst
+    property DrawBookmarksFirst: Boolean read FDrawBookmarksFirst
       write SetDrawBookmarksFirst default True;
-    property EnableKeys: Boolean read fEnableKeys write fEnableKeys
+    property EnableKeys: Boolean read FEnableKeys write FEnableKeys
       default True;
-    property GlyphsVisible: Boolean read fGlyphsVisible write SetGlyphsVisible
+    property GlyphsVisible: Boolean read FGlyphsVisible write SetGlyphsVisible
       default True;
-    property LeftMargin: Integer read fLeftMargin write SetLeftMargin default 2;
-    property Xoffset: Integer read fXoffset write SetXOffset default 12;
+    property LeftMargin: Integer read FLeftMargin write SetLeftMargin default 2;
+    property Xoffset: Integer read FXoffset write SetXOffset default 12;
     property OnChange: TNotifyEvent read fOnChange write fOnChange;
   end;
 
@@ -377,11 +378,10 @@ type
 
   TSynInternalImage = class(TObject)
   private
-    fImages: TBitmap;
+    FImages: TBitmap;
     FWidth: Integer;
-    fHeight: Integer;
-    fCount: Integer;
-
+    FHeight: Integer;
+    FCount: Integer;
   public
     constructor Create(aModule: THandle; const Name: string; Count: Integer);
     destructor Destroy; override;
@@ -574,9 +574,9 @@ begin
     end
     else
     begin
-      BitMap := TBitmap.Create;
+      Bitmap := TBitmap.Create;
       try
-        BitMap.Canvas.Font := Font;
+        Bitmap.Canvas.Font := Font;
         FCharWidth := TheFontStock.CalcFontAdvance(Bitmap.Canvas.Handle, nil);
       finally
         Bitmap.Free;
@@ -589,8 +589,8 @@ end;
 
 procedure TSynGutter.Changed;
 begin
-  if (FUpdateCount = 0) and Assigned(FOnChange) then
-    FOnChange(Self);
+  if (FUpdateCount = 0) and Assigned(fOnChange) then
+    fOnChange(Self);
 end;
 
 procedure TSynGutter.ChangeScale(M, D: Integer);
@@ -598,7 +598,7 @@ begin
   FFont.Height := Round(FFont.Height * M / D);
   if Assigned(FInternalImage) then
     FInternalImage.ChangeScale(M, D);
-  FCurrentPPI := M;  // Vcl does the same
+  FCurrentPPI := M; // Vcl does the same
   Changed;
 end;
 
@@ -644,13 +644,14 @@ begin
   FBands := TSynBandsCollection.Create(Self, TSynGutterBand);
   Bands.BeginUpdate;
   try
-    AddBand(gbkMarks, 15, True);
+    AddBand(gbkMarks, 13, True);
     AddBand(gbkLineNumbers, 0, False);
     AddBand(gbkFold, 0, False);
-    AddBand(gbkMargin, 2, True);
+    AddBand(gbkMargin, 3, True);
   finally
     Bands.EndUpdate;
   end;
+  AssignableBands := True;
 end;
 
 constructor TSynGutter.Create(Owner: TPersistent);
@@ -697,7 +698,8 @@ begin
     FGradientStartColor := Src.FGradientStartColor;
     FGradientEndColor := Src.FGradientEndColor;
     FGradientSteps := Src.FGradientSteps;
-    FBands.Assign(Src.FBands);
+    if AssignableBands and Src.AssignableBands then
+      FBands.Assign(Src.FBands);
     AutoSizeDigitCount;
     Changed;
   end
@@ -741,9 +743,11 @@ begin
   for I := 0 to Bands.Count - 1 do
   begin
     Band := Bands[I];
-    if not Band.Visible then Continue;
+    if not Band.Visible then
+      Continue;
     Inc(L, Band.RealWidth);
-    if X < L then Exit(Band);
+    if X < L then
+      Exit(Band);
   end;
 end;
 
@@ -754,7 +758,7 @@ end;
 
 function TSynGutter.FormatLineNumber(Line: Integer): string;
 var
-  i: Integer;
+  I: Integer;
 begin
   if FZeroStart then
     Dec(Line)
@@ -762,11 +766,11 @@ begin
     Inc(Line, FLineNumberStart - 1);
   Result := Format('%*d', [FAutoSizeDigitCount, Line]);
   if FLeadingZeros then
-    for i := 1 to FAutoSizeDigitCount - 1 do
+    for I := 1 to FAutoSizeDigitCount - 1 do
     begin
-      if (Result[i] <> ' ') then
+      if (Result[I] <> ' ') then
         break;
-      Result[i] := '0';
+      Result[I] := '0';
     end;
 end;
 
@@ -949,8 +953,8 @@ var
 begin
   Result := nil;
   for I := 0 to Bands.Count - 1 do
-     if Bands[I].Kind = Kind then
-       Exit(Bands[I])
+    if Bands[I].Kind = Kind then
+      Exit(Bands[I])
 end;
 
 function TSynGutter.GetInternalImage: TSynInternalImage;
@@ -977,20 +981,20 @@ end;
 // ++ DPI-Aware
 procedure TSynBookMarkOpt.ChangeScale(M, D: Integer);
 begin
-  fLeftMargin := MulDiv(fLeftMargin, M, D);
-  fXoffset := MulDiv(fXoffset, M, D);
+  FLeftMargin := MulDiv(FLeftMargin, M, D);
+  FXoffset := MulDiv(FXoffset, M, D);
 end;
 // -- DPI-Aware
 
 constructor TSynBookMarkOpt.Create(AOwner: TComponent);
 begin
   inherited Create;
-  fDrawBookmarksFirst := True;
-  fEnableKeys := True;
-  fGlyphsVisible := True;
-  fLeftMargin := 2;
+  FDrawBookmarksFirst := True;
+  FEnableKeys := True;
+  FGlyphsVisible := True;
+  FLeftMargin := 2;
   FOwner := AOwner;
-  fXoffset := 12;
+  FXoffset := 12;
 end;
 
 procedure TSynBookMarkOpt.Assign(Source: TPersistent);
@@ -1000,12 +1004,12 @@ begin
   if (Source <> nil) and (Source is TSynBookMarkOpt) then
   begin
     Src := TSynBookMarkOpt(Source);
-    fBookmarkImages := Src.fBookmarkImages;
-    fDrawBookmarksFirst := Src.fDrawBookmarksFirst;
-    fEnableKeys := Src.fEnableKeys;
-    fGlyphsVisible := Src.fGlyphsVisible;
-    fLeftMargin := Src.fLeftMargin;
-    fXoffset := Src.fXoffset;
+    FBookmarkImages := Src.FBookmarkImages;
+    FDrawBookmarksFirst := Src.FDrawBookmarksFirst;
+    FEnableKeys := Src.FEnableKeys;
+    FGlyphsVisible := Src.FGlyphsVisible;
+    FLeftMargin := Src.FLeftMargin;
+    FXoffset := Src.FXoffset;
     if Assigned(fOnChange) then
       fOnChange(Self);
   end
@@ -1015,11 +1019,11 @@ end;
 
 procedure TSynBookMarkOpt.SetBookmarkImages(const Value: TCustomImageList);
 begin
-  if fBookmarkImages <> Value then
+  if FBookmarkImages <> Value then
   begin
-    fBookmarkImages := Value;
-    if Assigned(fBookmarkImages) then
-      fBookmarkImages.FreeNotification(FOwner);
+    FBookmarkImages := Value;
+    if Assigned(FBookmarkImages) then
+      FBookmarkImages.FreeNotification(FOwner);
     if Assigned(fOnChange) then
       fOnChange(Self);
   end;
@@ -1027,9 +1031,9 @@ end;
 
 procedure TSynBookMarkOpt.SetDrawBookmarksFirst(Value: Boolean);
 begin
-  if Value <> fDrawBookmarksFirst then
+  if Value <> FDrawBookmarksFirst then
   begin
-    fDrawBookmarksFirst := Value;
+    FDrawBookmarksFirst := Value;
     if Assigned(fOnChange) then
       fOnChange(Self);
   end;
@@ -1037,9 +1041,9 @@ end;
 
 procedure TSynBookMarkOpt.SetGlyphsVisible(Value: Boolean);
 begin
-  if fGlyphsVisible <> Value then
+  if FGlyphsVisible <> Value then
   begin
-    fGlyphsVisible := Value;
+    FGlyphsVisible := Value;
     if Assigned(fOnChange) then
       fOnChange(Self);
   end;
@@ -1047,9 +1051,9 @@ end;
 
 procedure TSynBookMarkOpt.SetLeftMargin(Value: Integer);
 begin
-  if fLeftMargin <> Value then
+  if FLeftMargin <> Value then
   begin
-    fLeftMargin := Value;
+    FLeftMargin := Value;
     if Assigned(fOnChange) then
       fOnChange(Self);
   end;
@@ -1057,9 +1061,9 @@ end;
 
 procedure TSynBookMarkOpt.SetXOffset(Value: Integer);
 begin
-  if fXoffset <> Value then
+  if FXoffset <> Value then
   begin
-    fXoffset := Value;
+    FXoffset := Value;
     if Assigned(fOnChange) then
       fOnChange(Self);
   end;
@@ -1235,30 +1239,30 @@ end;
 procedure TSynMethodChain.Fire;
 var
   AMethod: TMethod;
-  i: Integer;
+  I: Integer;
 begin
-  i := 0;
+  I := 0;
   with FNotifyProcs, AMethod do
-    while i < Count do
+    while I < Count do
       try
         repeat
-          Code := Items[i];
-          Inc(i);
-          Data := Items[i];
-          Inc(i);
+          Code := Items[I];
+          Inc(I);
+          Data := Items[I];
+          Inc(I);
 
           DoFire(AMethod)
-        until i >= Count;
+        until I >= Count;
       except
         on E: Exception do
           if not DoHandleException(E) then
-            i := MaxInt;
+            I := MaxInt;
       end;
 end;
 
 procedure TSynMethodChain.Remove(AEvent: TMethod);
 var
-  i: Integer;
+  I: Integer;
 begin
   if not Assigned(@AEvent) then
     raise ESynMethodChain.CreateFmt
@@ -1266,19 +1270,19 @@ begin
 
   with FNotifyProcs, AEvent do
   begin
-    i := Count - 1;
-    while i > 0 do
-      if Items[i] <> Data then
-        Dec(i, 2)
+    I := Count - 1;
+    while I > 0 do
+      if Items[I] <> Data then
+        Dec(I, 2)
       else
       begin
-        Dec(i);
-        if Items[i] = Code then
+        Dec(I);
+        if Items[I] = Code then
         begin
-          Delete(i);
-          Delete(i);
+          Delete(I);
+          Delete(I);
         end;
-        Dec(i);
+        Dec(I);
       end;
   end;
 end;
@@ -1322,24 +1326,24 @@ begin
     Exit;
 
   FWidth := MulDiv(FWidth, M, D);
-  ResizeBitmap(fImages, FWidth * fCount, MulDiv(fImages.Height, M, D));
-  fHeight := fImages.Height;
+  ResizeBitmap(FImages, FWidth * FCount, MulDiv(FImages.Height, M, D));
+  FHeight := FImages.Height;
 end;
 
 constructor TSynInternalImage.Create(aModule: THandle; const Name: string;
   Count: Integer);
 begin
   inherited Create;
-  fImages := TBitmap.Create;
-  fImages.LoadFromResourceName(aModule, Name);
-  FWidth := (fImages.Width + Count shr 1) div Count;
-  fHeight := fImages.Height;
-  fCount := Count;
+  FImages := TBitmap.Create;
+  FImages.LoadFromResourceName(aModule, Name);
+  FWidth := (FImages.Width + Count shr 1) div Count;
+  FHeight := FImages.Height;
+  FCount := Count;
 end;
 
 destructor TSynInternalImage.Destroy;
 begin
-  fImages.Free;
+  FImages.Free;
   inherited Destroy;
 end;
 
@@ -1348,21 +1352,21 @@ procedure TSynInternalImage.Draw(aCanvas: TCanvas;
 var
   rcSrc, rcDest: TRect;
 begin
-  if (Number >= 0) and (Number < fCount) then
+  if (Number >= 0) and (Number < FCount) then
   begin
-    if LineHeight >= fHeight then
+    if LineHeight >= FHeight then
     begin
-      rcSrc := Rect(Number * FWidth, 0, (Number + 1) * FWidth, fHeight);
-      Inc(Y, (LineHeight - fHeight) div 2);
-      rcDest := Rect(X, Y, X + FWidth, Y + fHeight);
+      rcSrc := Rect(Number * FWidth, 0, (Number + 1) * FWidth, FHeight);
+      Inc(Y, (LineHeight - FHeight) div 2);
+      rcDest := Rect(X, Y, X + FWidth, Y + FHeight);
     end
     else
     begin
       rcDest := Rect(X, Y, X + FWidth, Y + LineHeight);
-      Y := (fHeight - LineHeight) div 2;
+      Y := (FHeight - LineHeight) div 2;
       rcSrc := Rect(Number * FWidth, Y, (Number + 1) * FWidth, Y + LineHeight);
     end;
-    DrawTransparentBitmap(fImages, rcSrc, aCanvas, rcDest, 255);
+    DrawTransparentBitmap(FImages, rcSrc, aCanvas, rcDest, 255);
   end;
 end;
 
@@ -1652,8 +1656,8 @@ begin
   FBackground := gbbGutter;
 end;
 
-procedure TSynGutterBand.DoClick(Sender: TObject; Button: TMouseButton; X, Y,
-    Row, Line: Integer);
+procedure TSynGutterBand.DoClick(Sender: TObject; Button: TMouseButton;
+  X, Y, Row, Line: Integer);
 var
   SynEdit: TCustomSynEdit;
   Index: Integer;
@@ -1666,7 +1670,8 @@ begin
     begin
       rcFold := FoldShapeRect(Row, Line);
       // See if we actually clicked on the rectangle...
-      if not rcFold.IsEmpty and PtInRect(rcFold, Point(X, Y)) then begin
+      if not rcFold.IsEmpty and PtInRect(rcFold, Point(X, Y)) then
+      begin
         if SynEdit.AllFoldRanges.Ranges[Index].Collapsed then
           SynEdit.Uncollapse(Index)
         else
@@ -1679,8 +1684,8 @@ begin
     FOnClick(Sender, Button, X, Y, Row, Line);
 end;
 
-procedure TSynGutterBand.DoMouseCursor(Sender: TObject; X, Y, Row,
-  Line: Integer; var Cursor: TCursor);
+procedure TSynGutterBand.DoMouseCursor(Sender: TObject;
+  X, Y, Row, Line: Integer; var Cursor: TCursor);
 var
   SynEdit: TCustomSynEdit;
   Index: Integer;
@@ -1706,10 +1711,14 @@ procedure TSynGutterBand.DoPaintLines(Canvas: TCanvas; R: TRect;
 // Drawing of builtin bands
 begin
   case FKind of
-    gbkMarks:       PaintMarks(Canvas, R, FirstRow, LastRow);
-    gbkLineNumbers: PaintLineNumbers(Canvas, R, FirstRow, LastRow);
-    gbkFold:        PaintFoldShapes(Canvas, R, FirstRow, LastRow);
-    gbkMargin:      PaintMargin(Canvas, R, FirstRow, LastRow);
+    gbkMarks:
+      PaintMarks(Canvas, R, FirstRow, LastRow);
+    gbkLineNumbers:
+      PaintLineNumbers(Canvas, R, FirstRow, LastRow);
+    gbkFold:
+      PaintFoldShapes(Canvas, R, FirstRow, LastRow);
+    gbkMargin:
+      PaintMargin(Canvas, R, FirstRow, LastRow);
   end;
 end;
 
@@ -1723,19 +1732,21 @@ Var
   Margin: Integer;
 begin
   Result := TRect.Empty;
-  if not Visible or (FKind <> gbkFold) then Exit;
+  if not Visible or (FKind <> gbkFold) then
+    Exit;
   SynEdit := TCustomSynEdit(Editor);
-  if SynEdit.RowToLine(Row) <> Line then Exit;
+  if SynEdit.RowToLine(Row) <> Line then
+    Exit;
 
   if SynEdit.AllFoldRanges.FoldStartAtLine(Line, Index) then
   begin
     ShapeSize := SynEdit.CodeFolding.ScaledGutterShapeSize(Gutter.FCurrentPPI);
     L := LeftX;
-    if L < 0  then Exit;
+    if L < 0 then
+      Exit;
     Margin := MulDiv(MarginX, Gutter.FCurrentPPI, 96);
-    Result.TopLeft := Point(L + Margin,
-      (Row - SynEdit.TopLine) * SynEdit.LineHeight +
-      (SynEdit.LineHeight - ShapeSize) div 2);
+    Result.TopLeft := Point(L + Margin, (Row - SynEdit.TopLine) *
+      SynEdit.LineHeight + (SynEdit.LineHeight - ShapeSize) div 2);
     Result.BottomRight := Result.TopLeft;
     Result.BottomRight.Offset(ShapeSize, ShapeSize);
   end;
@@ -1766,7 +1777,8 @@ begin
     for I := 0 to Gutter.Bands.Count - 1 do
     begin
       Band := Gutter.Bands[I];
-      if not Band.Visible then Continue;
+      if not Band.Visible then
+        Continue;
       if Gutter.Bands[I] = Self then
         Exit(L);
       Inc(L, Band.RealWidth);
@@ -1785,16 +1797,18 @@ function TSynGutterBand.GetVisible: Boolean;
 begin
   Result := FVisible;
   case FKind of
-    gbkLineNumbers: Result := Assigned(Gutter) and Gutter.ShowLineNumbers;
-    gbkFold: Result := Assigned(Editor) and TCustomSynEdit(Editor).UseCodeFolding;
+    gbkLineNumbers:
+      Result := Assigned(Gutter) and Gutter.ShowLineNumbers;
+    gbkFold:
+      Result := Assigned(Editor) and TCustomSynEdit(Editor).UseCodeFolding;
   end;
 end;
 
 function TSynGutterBand.GetWidth: Integer;
 begin
   case FKind of
-    gbkLineNumbers,
-    gbkFold: Result := 0;
+    gbkLineNumbers, gbkFold:
+      Result := 0;
   else
     Result := FWidth;
   end;
@@ -1802,27 +1816,27 @@ end;
 
 function TSynGutterBand.IsVisibleStored: Boolean;
 begin
-  Result := FVisible and not (FKind in [gbkLineNumbers, gbkFold]);
+  Result := FVisible and not(FKind in [gbkLineNumbers, gbkFold]);
 end;
 
 function TSynGutterBand.IsWidthStored: Boolean;
 begin
-  Result := not (FKind in [gbkLineNumbers, gbkFold]);
+  Result := not(FKind in [gbkLineNumbers, gbkFold]);
 end;
 
-procedure TSynGutterBand.PaintFoldShapes(Canvas: TCanvas; ClipR: TRect; const
-    FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
+  const FirstRow, LastRow: Integer);
 const
   PlusMinusMargin = 2;
 var
   SynEdit: TCustomSynEdit;
   vLine: Integer;
-  cRow : Integer;
+  cRow: Integer;
   rcFold: TRect;
-  x: Integer;
+  X: Integer;
   FoldRange: TSynFoldRange;
-  Index : Integer;
-  Margin : Integer;
+  Index: Integer;
+  Margin: Integer;
   PMMargin: Integer;
   ShapeSize: Integer;
   PPI: Integer;
@@ -1832,28 +1846,31 @@ begin
   Assert(Assigned(Gutter));
   PPI := Gutter.FCurrentPPI;
 
- // Draw the folding lines and squares
-  if SynEdit.UseCodeFolding then begin
+  // Draw the folding lines and squares
+  if SynEdit.UseCodeFolding then
+  begin
     Margin := MulDiv(MarginX, PPI, 96);
     PMMargin := MulDiv(PlusMinusMargin, PPI, 96);
 
     ShapeSize := SynEdit.CodeFolding.ScaledGutterShapeSize(PPI);
 
-    for cRow := FirstRow to LastRow do begin
+    for cRow := FirstRow to LastRow do
+    begin
       vLine := SynEdit.RowToLine(cRow);
-      if (vLine > SynEdit.Lines.Count) {and not (SynEdit.Lines.Count = 0)} then
-        Break;
+      if (vLine > SynEdit.Lines.Count) { and not (SynEdit.Lines.Count = 0) }
+      then
+        break;
 
-      rcFold.TopLeft := Point(ClipR.Left + Margin,
-        (cRow - SynEdit.TopLine) * SynEdit.LineHeight +
-        (SynEdit.LineHeight - ShapeSize) div 2);
+      rcFold.TopLeft := Point(ClipR.Left + Margin, (cRow - SynEdit.TopLine) *
+        SynEdit.LineHeight + (SynEdit.LineHeight - ShapeSize) div 2);
       rcFold.BottomRight := rcFold.TopLeft;
       rcFold.BottomRight.Offset(ShapeSize, ShapeSize);
 
       Canvas.Pen.Color := SynEdit.CodeFolding.FolderBarLinesColor;
 
       // Any fold ranges beginning on this line?
-      if SynEdit.AllFoldRanges.FoldStartAtLine(vLine, Index) then begin
+      if SynEdit.AllFoldRanges.FoldStartAtLine(vLine, Index) then
+      begin
         FoldRange := SynEdit.AllFoldRanges.Ranges[Index];
         Canvas.Brush.Color := SynEdit.CodeFolding.FolderBarLinesColor;
         Canvas.FrameRect(rcFold);
@@ -1864,40 +1881,45 @@ begin
         Canvas.LineTo(rcFold.Right - PMMargin, rcFold.Top + ShapeSize div 2);
 
         // Paint vertical line of plus sign
-        if FoldRange.Collapsed then begin
-          x := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(x, rcFold.Top + PMMargin);
-          Canvas.LineTo(x, rcFold.Bottom - PMMargin);
+        if FoldRange.Collapsed then
+        begin
+          X := rcFold.Left + ShapeSize div 2;
+          Canvas.MoveTo(X, rcFold.Top + PMMargin);
+          Canvas.LineTo(X, rcFold.Bottom - PMMargin);
         end
         else
         // Draw the bottom part of a line
         begin
-          x := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(x, rcFold.Bottom);
-          Canvas.LineTo(x, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight);
+          X := rcFold.Left + ShapeSize div 2;
+          Canvas.MoveTo(X, rcFold.Bottom);
+          Canvas.LineTo(X, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight);
         end;
       end
-      else begin
+      else
+      begin
         // Need to paint a line end?
-        if SynEdit.AllFoldRanges.FoldEndAtLine(vLine, Index) then begin
-          x := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(x,  (cRow - SynEdit.TopLine) * SynEdit.LineHeight);
-          Canvas.LineTo(x, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
-          Canvas.LineTo(rcFold.Right, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
+        if SynEdit.AllFoldRanges.FoldEndAtLine(vLine, Index) then
+        begin
+          X := rcFold.Left + ShapeSize div 2;
+          Canvas.MoveTo(X, (cRow - SynEdit.TopLine) * SynEdit.LineHeight);
+          Canvas.LineTo(X, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
+          Canvas.LineTo(rcFold.Right,
+            rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
         end;
         // Need to paint a line?
-        if SynEdit.AllFoldRanges.FoldAroundLine(vLine, Index) then begin
-          x := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(x, (cRow - SynEdit.TopLine) * SynEdit.LineHeight);
-          Canvas.LineTo(x, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight);
+        if SynEdit.AllFoldRanges.FoldAroundLine(vLine, Index) then
+        begin
+          X := rcFold.Left + ShapeSize div 2;
+          Canvas.MoveTo(X, (cRow - SynEdit.TopLine) * SynEdit.LineHeight);
+          Canvas.LineTo(X, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight);
         end;
       end;
     end;
   end;
 end;
 
-procedure TSynGutterBand.PaintLineNumbers(Canvas: TCanvas; ClipR: TRect; const
-    FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintLineNumbers(Canvas: TCanvas; ClipR: TRect;
+  const FirstRow, LastRow: Integer);
 var
   SynEdit: TCustomSynEdit;
   Row, Line: Integer;
@@ -1924,12 +1946,11 @@ begin
     if SynEdit.WordWrap and (Row <> SynEdit.LineToRow(Line)) then
       // paint wrapped line glyphs
       SynEdit.WordWrapGlyph.Draw(Canvas,
-        ClipR.Right - SynEdit.WordWrapGlyph.Width - MulDiv(MarginX, PPI, 96),
-        LineTop, SynEdit.LineHeight)
+        ClipR.Right - SynEdit.WordWrapGlyph.Width, LineTop, SynEdit.LineHeight)
     else
     begin
-      LineRect := Rect(ClipR.Left + MulDiv(MarginX, PPI, 96), LineTop, ClipR.Right -
-        MulDiv(MarginX, PPI, 96), LineTop + SynEdit.LineHeight);
+      LineRect := Rect(ClipR.Left + MulDiv(MarginX, PPI, 96), LineTop,
+        ClipR.Right, LineTop + SynEdit.LineHeight);
 
       S := Gutter.FormatLineNumber(Line);
       if Assigned(SynEdit.OnGutterGetText) then
@@ -1940,8 +1961,8 @@ begin
   end;
 end;
 
-procedure TSynGutterBand.PaintLines(Canvas: TCanvas; R: TRect; const FirstRow,
-    LastRow: Integer);
+procedure TSynGutterBand.PaintLines(Canvas: TCanvas; R: TRect;
+  const FirstRow, LastRow: Integer);
 var
   DoDefault: Boolean;
 begin
@@ -1952,8 +1973,8 @@ begin
     DoPaintLines(Canvas, R, FirstRow, LastRow);
 end;
 
-procedure TSynGutterBand.PaintMargin(Canvas: TCanvas; ClipR: TRect; const
-    FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintMargin(Canvas: TCanvas; ClipR: TRect;
+  const FirstRow, LastRow: Integer);
 Var
   Offset: Integer;
 begin
@@ -1963,7 +1984,7 @@ begin
       Pen.Color := Gutter.BorderColor;
       Pen.Width := 1;
       if Gutter.BorderStyle = gbsMiddle then
-        OffSet := 2
+        Offset := 2
       else
         Offset := 1;
       MoveTo(ClipR.Right - Offset, ClipR.Top);
@@ -1971,8 +1992,8 @@ begin
     end;
 end;
 
-procedure TSynGutterBand.PaintMarks(Canvas: TCanvas; ClipR: TRect; const
-    FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintMarks(Canvas: TCanvas; ClipR: TRect;
+  const FirstRow, LastRow: Integer);
 var
   SynEdit: TCustomSynEdit;
 
@@ -1989,9 +2010,8 @@ var
         else if aGutterOff = 0 then
           aGutterOff := SynEdit.BookMarkOptions.Xoffset;
         SynEdit.BookMarkOptions.BookmarkImages.Draw(Canvas,
-           ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
-            (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight,
-           aMark.ImageIndex);
+          ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
+          (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight, aMark.ImageIndex);
         Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
       end;
     end
@@ -2016,9 +2036,9 @@ var
   vLastLine: Integer;
   cMark: Integer;
   vMarkRow: Integer;
-  aGutterOffs: TArray<integer>;
+  aGutterOffs: TArray<Integer>;
   bHasOtherMarks: Boolean;
-  Index : Integer;
+  Index: Integer;
 begin
   SynEdit := TCustomSynEdit(Editor);
   Assert(Assigned(SynEdit));
@@ -2026,42 +2046,47 @@ begin
   vFirstLine := SynEdit.RowToLine(FirstRow);
   vLastLine := SynEdit.RowToLine(LastRow);
 
-  if SynEdit.BookMarkOptions.GlyphsVisible and (SynEdit.Marks.Count > 0)
-    and (vLastLine >= vFirstLine) then
+  if SynEdit.BookMarkOptions.GlyphsVisible and (SynEdit.Marks.Count > 0) and
+    (vLastLine >= vFirstLine) then
   begin
     SetLength(aGutterOffs, LastRow - FirstRow + 1);
     // Instead of making a two pass loop we look while drawing the bookmarks
     // whether there is any other mark to be drawn
     bHasOtherMarks := False;
-    for cMark := 0 to SynEdit.Marks.Count - 1 do with SynEdit.Marks[cMark] do
-      if Visible and (Line >= vFirstLine) and (Line <= vLastLine) and
-        (Line <= SynEdit.Lines.Count) and not (SynEdit.UseCodeFolding and
-        SynEdit.AllFoldRanges.FoldHidesLine(Line, Index))
-      then
-      begin
-        if IsBookmark <> SynEdit.BookMarkOptions.DrawBookmarksFirst then
-          bHasOtherMarks := True
-        else begin
-          vMarkRow := SynEdit.LineToRow(Line);
-          if vMarkRow >= FirstRow then
-            DrawMark(SynEdit.Marks[cMark],  aGutterOffs[vMarkRow - FirstRow],
-              vMarkRow);
-        end
-      end;
-    if bHasOtherMarks then
-      for cMark := 0 to SynEdit.Marks.Count - 1 do with SynEdit.Marks[cMark] do
-      begin
-        if Visible and (IsBookmark <> SynEdit.BookMarkOptions.DrawBookmarksFirst)
-          and (Line >= vFirstLine) and (Line <= vLastLine) and
-          (Line <= SynEdit.Lines.Count) and not (SynEdit.UseCodeFolding and
-          SynEdit.AllFoldRanges.FoldHidesLine(Line, Index))  then
+    for cMark := 0 to SynEdit.Marks.Count - 1 do
+      with SynEdit.Marks[cMark] do
+        if Visible and (Line >= vFirstLine) and (Line <= vLastLine) and
+          (Line <= SynEdit.Lines.Count) and
+          not(SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
+          (Line, Index)) then
         begin
-          vMarkRow := SynEdit.LineToRow(Line);
-          if vMarkRow >= FirstRow then
-            DrawMark(SynEdit.Marks[cMark], aGutterOffs[vMarkRow - FirstRow],
-            vMarkRow);
+          if IsBookmark <> SynEdit.BookMarkOptions.DrawBookmarksFirst then
+            bHasOtherMarks := True
+          else
+          begin
+            vMarkRow := SynEdit.LineToRow(Line);
+            if vMarkRow >= FirstRow then
+              DrawMark(SynEdit.Marks[cMark], aGutterOffs[vMarkRow - FirstRow],
+                vMarkRow);
+          end
         end;
-      end;
+    if bHasOtherMarks then
+      for cMark := 0 to SynEdit.Marks.Count - 1 do
+        with SynEdit.Marks[cMark] do
+        begin
+          if Visible and
+            (IsBookmark <> SynEdit.BookMarkOptions.DrawBookmarksFirst) and
+            (Line >= vFirstLine) and (Line <= vLastLine) and
+            (Line <= SynEdit.Lines.Count) and
+            not(SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
+            (Line, Index)) then
+          begin
+            vMarkRow := SynEdit.LineToRow(Line);
+            if vMarkRow >= FirstRow then
+              DrawMark(SynEdit.Marks[cMark], aGutterOffs[vMarkRow - FirstRow],
+                vMarkRow);
+          end;
+        end;
   end
 end;
 
@@ -2073,14 +2098,14 @@ begin
   Assert(Assigned(Gutter));
   PPI := Gutter.FCurrentPPI;
   if Visible then
-     case FKind of
+    case FKind of
       // A margin of two pixels at the end
       gbkLineNumbers:
-        Result := Gutter.FAutoSizeDigitCount * Gutter.FCharWidth
-          + MulDiv(2 * MarginX, PPI, 96);
+        Result := Gutter.FAutoSizeDigitCount * Gutter.FCharWidth +
+          MulDiv( { 2 * } MarginX, PPI, 96);
       gbkFold:
         Result := TCustomSynEdit(Editor).CodeFolding.ScaledGutterShapeSize(PPI)
-          + MulDiv(2 * MarginX, PPI, 96);
+          + MulDiv( { 2 * } MarginX, PPI, 96);
     else
       Result := MulDiv(FWidth, PPI, 96);
     end
@@ -2125,7 +2150,7 @@ end;
 
 procedure TSynGutterBand.SetWidth(const Value: Integer);
 begin
-  if not (FKind in [gbkLineNumbers, gbkFold]) then
+  if not(FKind in [gbkLineNumbers, gbkFold]) then
   begin
     FWidth := Value;
     Changed(False);
@@ -2134,7 +2159,7 @@ end;
 
 { TSynBandsCollection }
 
-function TSynBandsCollection.GetBands(Index: integer): TSynGutterBand;
+function TSynBandsCollection.GetBands(Index: Integer): TSynGutterBand;
 begin
   Result := TSynGutterBand(Items[Index]);
 end;

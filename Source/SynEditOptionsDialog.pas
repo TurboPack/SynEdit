@@ -438,6 +438,7 @@ begin
   FBookmarks:= TSynBookMarkOpt.Create(Self);
   FKeystrokes:= TSynEditKeyStrokes.Create(Self);
   FSynGutter:= TSynGutter.Create;
+  FSynGutter.AssignableBands := False;
   FSelectedColor:= TSynSelectedColor.Create;
   FSelectedColor.Foreground:= clHighlightText;
   FSelectedColor.Background:= clHighlight;
