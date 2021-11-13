@@ -3,19 +3,14 @@ The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
 http://www.mozilla.org/MPL/
-
 Software distributed under the License is distributed on an "AS IS" basis,
 WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
 the specific language governing rights and limitations under the License.
-
 The Original Code is: frmMain.pas, released 2000-06-23.
-
 The Original Code is part of the SearchReplaceDemo project, written by
 Michael Hieke for the SynEdit component suite.
 All Rights Reserved.
-
 Contributors to the SynEdit project are listed in the Contributors.txt file.
-
 Alternatively, the contents of this file may be used under the terms of the
 GNU General Public License Version 2 or later (the "GPL"), in which case
 the provisions of the GPL are applicable instead of those above.
@@ -25,27 +20,19 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
 $Id: frmMain.pas,v 1.5.2.3 2009/09/29 00:13:16 maelh Exp $
-
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
-
 unit frmMain;
-
 {$I SynEdit.inc}
-
 interface
-
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, ToolWin, ImgList, ActnList, SynEdit, SynEditRegexSearch,
   SynEditMiscClasses, SynEditSearch, SynUnicode, System.Actions,
   System.ImageList;
-
 type
   TSearchReplaceDemoForm = class(TForm)
     ActionFileOpen: TAction;
@@ -84,18 +71,13 @@ type
     procedure DoSearchReplaceText(AReplace: boolean; ABackwards: boolean);
     procedure ShowSearchReplaceDialog(AReplace: boolean);
   end;
-
 var
   SearchReplaceDemoForm: TSearchReplaceDemoForm;
-
 implementation
-
 {$R *.DFM}
-
 uses
   dlgSearchText, dlgReplaceText, dlgConfirmReplace, plgSearchHighlighter,
   SynEditTypes, SynEditMiscProcs;
-
   // options - to be saved to the registry
 var
   gbSearchBackwards: Boolean;
@@ -105,17 +87,13 @@ var
   gbSearchTextAtCaret: Boolean;
   gbSearchWholeWords: Boolean;
   gbSearchRegex: Boolean;
-
   gsSearchText: string;
   gsSearchTextHistory: string;
   gsReplaceText: string;
   gsReplaceTextHistory: string;
-
 resourcestring
   STextNotFound = 'Text not found';
-
 { TSearchReplaceDemoForm }
-
 procedure TSearchReplaceDemoForm.FormCreate(Sender: TObject);
 begin
   with TSearchTextHightlighterSynEditPlugin.Create(SynEditor) do
@@ -123,7 +101,6 @@ begin
     Attribute.Background := $0078AAFF;
   end;
 end;
-
 procedure TSearchReplaceDemoForm.DoSearchReplaceText(AReplace: Boolean;
   ABackwards: Boolean);
 var
@@ -158,11 +135,9 @@ begin
       SynEditor.BlockBegin := SynEditor.BlockEnd;
     SynEditor.CaretXY := SynEditor.BlockBegin;
   end;
-
   if ConfirmReplaceDialog <> nil then
     ConfirmReplaceDialog.Free;
 end;
-
 procedure TSearchReplaceDemoForm.ShowSearchReplaceDialog(AReplace: Boolean);
 var
   dlg: TTextSearchDialog;
@@ -217,9 +192,7 @@ begin
     dlg.Free;
   end;
 end;
-
 { event handler }
-
 procedure TSearchReplaceDemoForm.ActionFileOpenExecute(Sender: TObject);
 begin
   if OpenDialogFile.Execute then begin
@@ -227,38 +200,31 @@ begin
     SynEditor.ReadOnly := ofReadOnly in OpenDialogFile.Options;
   end;
 end;
-
 procedure TSearchReplaceDemoForm.ActionSearchExecute(Sender: TObject);
 begin
   ShowSearchReplaceDialog(FALSE);
 end;
-
 procedure TSearchReplaceDemoForm.ActionSearchNextExecute(Sender: TObject);
 begin
   DoSearchReplaceText(FALSE, FALSE);
 end;
-
 procedure TSearchReplaceDemoForm.ActionSearchPrevExecute(Sender: TObject);
 begin
   DoSearchReplaceText(FALSE, TRUE);
 end;
-
 procedure TSearchReplaceDemoForm.ActionSearchReplaceExecute(Sender: TObject);
 begin
   ShowSearchReplaceDialog(TRUE);
 end;
-
 procedure TSearchReplaceDemoForm.actSearchUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := gsSearchText <> '';
 end;
-
 procedure TSearchReplaceDemoForm.ActionSearchReplaceUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := (gsSearchText <> '')
     and not SynEditor.ReadOnly;
 end;
-
 procedure TSearchReplaceDemoForm.SynEditorReplaceText(Sender: TObject; const
     ASearch, AReplace: string; Line, Column: Integer; var Action:
     TSynReplaceAction);
@@ -276,7 +242,6 @@ begin
     EditRect := ClientRect;
     EditRect.TopLeft := ClientToScreen(EditRect.TopLeft);
     EditRect.BottomRight := ClientToScreen(EditRect.BottomRight);
-
     if ConfirmReplaceDialog = nil then
       ConfirmReplaceDialog := TConfirmReplaceDialog.Create(Application);
     ConfirmReplaceDialog.PrepareShow(EditRect, APos.X, APos.Y,
@@ -289,5 +254,4 @@ begin
     end;
   end;
 end;
-
 end.

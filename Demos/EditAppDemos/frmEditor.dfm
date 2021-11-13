@@ -11,7 +11,6 @@ object EditorForm: TEditorForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnActivate = FormActivate
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
@@ -42,15 +41,28 @@ object EditorForm: TEditorForm
     Gutter.Font.Height = -11
     Gutter.Font.Name = 'Courier New'
     Gutter.Font.Style = []
+    Gutter.Bands = <
+      item
+        Kind = gbkMarks
+        Visible = True
+        Width = 15
+      end
+      item
+        Kind = gbkLineNumbers
+      end
+      item
+        Kind = gbkFold
+      end
+      item
+        Kind = gbkMargin
+        Visible = True
+        Width = 2
+      end>
     SearchEngine = SynEditSearch1
     OnChange = SynEditorChange
     OnReplaceText = SynEditorReplaceText
     OnStatusChange = SynEditorStatusChange
     RemovedKeystrokes = <
-      item
-        Command = ecDeleteLastChar
-        ShortCut = 8200
-      end
       item
         Command = ecLineBreak
         ShortCut = 8205

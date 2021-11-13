@@ -10,7 +10,6 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -33,12 +32,25 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
     Gutter.Font.Height = -11
     Gutter.Font.Name = 'Terminal'
     Gutter.Font.Style = []
+    Gutter.Bands = <
+      item
+        Kind = gbkMarks
+        Visible = True
+        Width = 15
+      end
+      item
+        Kind = gbkLineNumbers
+      end
+      item
+        Kind = gbkFold
+      end
+      item
+        Kind = gbkMargin
+        Visible = True
+        Width = 2
+      end>
     OnReplaceText = SynEditorReplaceText
     RemovedKeystrokes = <
-      item
-        Command = ecDeleteLastChar
-        ShortCut = 8200
-      end
       item
         Command = ecLineBreak
         ShortCut = 8205
