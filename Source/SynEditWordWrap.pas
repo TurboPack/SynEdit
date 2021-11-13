@@ -372,6 +372,7 @@ begin
   if fMinRowLength <= 0 then
     fMinRowLength := 1;
 
+  fLineCount := Editor.Lines.Count;
   WrapLines;
 end;
 

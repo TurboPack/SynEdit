@@ -185,7 +185,7 @@ type
     FDigitCount: Integer;
     FLeadingZeros: Boolean;
     FZeroStart: Boolean;
-    fOnChange: TNotifyEvent;
+    FOnChange: TNotifyEvent;
     FCursor: TCursor;
     FVisible: Boolean;
     FShowLineNumbers: Boolean;
@@ -271,7 +271,7 @@ type
     property GradientSteps: Integer read FGradientSteps write SetGradientSteps
       default 48;
     property Bands: TSynBandsCollection read FBands write SetBands;
-    property OnChange: TNotifyEvent read fOnChange write fOnChange;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
   TSynBookMarkOpt = class(TPersistent)
@@ -680,29 +680,25 @@ var
 begin
   if Assigned(Source) and (Source is TSynGutter) then
   begin
-    BeginUpdate;
-    try
-      Src := TSynGutter(Source);
-      FFont.Assign(Src.Font);
-      FUseFontStyle := Src.FUseFontStyle;
-      FColor := Src.FColor;
-      FVisible := Src.FVisible;
-      FLeadingZeros := Src.FLeadingZeros;
-      FZeroStart := Src.FZeroStart;
-      FDigitCount := Src.FDigitCount;
-      FAutoSize := Src.FAutoSize;
-      FAutoSizeDigitCount := Src.FAutoSizeDigitCount;
-      FLineNumberStart := Src.FLineNumberStart;
-      FBorderColor := Src.FBorderColor;
-      FBorderStyle := Src.FBorderStyle;
-      FGradient := Src.FGradient;
-      FGradientStartColor := Src.FGradientStartColor;
-      FGradientEndColor := Src.FGradientEndColor;
-      FGradientSteps := Src.FGradientSteps;
-      FBands.Assign(Src.FBands);
-    finally
-      EndUpdate;
-    end;
+    Src := TSynGutter(Source);
+    FFont.Assign(Src.Font);
+    FUseFontStyle := Src.FUseFontStyle;
+    FColor := Src.FColor;
+    FVisible := Src.FVisible;
+    FLeadingZeros := Src.FLeadingZeros;
+    FZeroStart := Src.FZeroStart;
+    FDigitCount := Src.FDigitCount;
+    FAutoSize := Src.FAutoSize;
+    FAutoSizeDigitCount := Src.FAutoSizeDigitCount;
+    FLineNumberStart := Src.FLineNumberStart;
+    FBorderColor := Src.FBorderColor;
+    FBorderStyle := Src.FBorderStyle;
+    FGradient := Src.FGradient;
+    FGradientStartColor := Src.FGradientStartColor;
+    FGradientEndColor := Src.FGradientEndColor;
+    FGradientSteps := Src.FGradientSteps;
+    FBands.Assign(Src.FBands);
+    Changed;
   end
   else
     inherited;
@@ -1638,10 +1634,10 @@ begin
   if Assigned(Source) and (Source is TSynGutterBand) then
   begin
     Src := TSynGutterBand(Source);
+    FKind := Src.FKind;
     FVisible := Src.FVisible;
     FBackground := Src.FBackground;
-    FWidth := Src.Width;
-    FOnPaintLines := Src.FOnPaintLines;
+    FWidth := Src.FWidth;
     Changed(False);
   end
   else
