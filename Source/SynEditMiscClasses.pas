@@ -698,6 +698,7 @@ begin
     FGradientEndColor := Src.FGradientEndColor;
     FGradientSteps := Src.FGradientSteps;
     FBands.Assign(Src.FBands);
+    AutoSizeDigitCount;
     Changed;
   end
   else
