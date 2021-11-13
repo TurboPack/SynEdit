@@ -172,7 +172,6 @@ type
     property OnDropFiles;
     property OnGutterClick;
     property OnGutterGetText;
-    property OnGutterPaint;
     property OnPaint;
     property OnPlaceBookmark;
     property OnProcessCommand;
