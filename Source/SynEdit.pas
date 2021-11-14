@@ -8778,15 +8778,13 @@ begin
   begin
     Line := Lines[XY.Line - 1];
     Len := Length(Line);
-    if (Len > 0) and
-       ((XY.Char >= 1) and (XY.Char <= Len)) and
-       IsIdentChar(Line[XY.Char]) then
+    if (Len > 0) and InRange(XY.Char, 1, Len + 1) then
     begin
        Start := XY.Char;
        while (Start > 1) and IsIdentChar(Line[Start - 1]) do
           Dec(Start);
 
-       Stop := XY.Char + 1;
+       Stop := XY.Char;
        while (Stop <= Len) and IsIdentChar(Line[Stop]) do
           Inc(Stop);
 
