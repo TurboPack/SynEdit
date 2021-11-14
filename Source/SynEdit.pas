@@ -335,6 +335,7 @@ type
     fScrollHintFormat: TScrollHintFormat;
     FScrollBars: TScrollStyle;
     fTextHeight: Integer;
+    fTextMargin: Integer;
     fTextOffset: Integer;
     fTopLine: Integer;
     fHighlighter: TSynCustomHighlighter;
@@ -839,6 +840,7 @@ type
     property WordAtCursor: string read GetWordAtCursor;
     property WordAtMouse: string read GetWordAtMouse;
     property GutterWidth: Integer read FGutterWidth;
+    property TextMargin: Integer read FTextMargin;
     property UndoRedo: ISynEditUndo read fUndoRedo;
   public
     property OnProcessCommand: TProcessCommandEvent
@@ -1103,7 +1105,7 @@ function TCustomSynEdit.PixelsToNearestRowColumn(aX, aY: Integer): TDisplayCoord
 var
   f: Single;
 begin
-  f := (aX - fGutterWidth - 2) / fCharWidth;
+  f := (aX - fGutterWidth - fTextMargin) / fCharWidth;
   // don't return a partially visible last line
   if aY >= fLinesInWindow * fTextHeight then
   begin
@@ -1117,7 +1119,7 @@ end;
 
 function TCustomSynEdit.PixelsToRowColumn(aX, aY: Integer): TDisplayCoord;
 begin
-  Result.Column := Max(1, LeftChar + ((aX - fGutterWidth - 2) div fCharWidth));
+  Result.Column := Max(1, LeftChar + ((aX - fGutterWidth - fTextMargin) div fCharWidth));
   Result.Row := Max(1, TopLine + (aY div fTextHeight));
 end;
 
@@ -1240,7 +1242,8 @@ begin
   fSelectedColor.OnChange := SelectedColorsChanged;
   fBookMarkOpt := TSynBookMarkOpt.Create(Self);
   fBookMarkOpt.OnChange := BookMarkOptionsChanged;
-// fRightEdge has to be set before FontChanged is called for the first time
+  fTextMargin := 3;
+  // fRightEdge has to be set before FontChanged is called for the first time
   fRightEdge := 80;
   fGutter := TSynGutter.Create(Self);
   fGutter.OnChange := GutterChanged;
@@ -1302,7 +1305,7 @@ begin
   fAllFoldRanges := TSynFoldRanges.Create;
 //-- CodeFolding
   SynFontChanged(nil);
-  fTextOffset := fGutterWidth + 2;
+  fTextOffset := fGutterWidth + fTextMargin;
   GutterChanged(nil); // to caclulate fGutterWidth also updates fTextOffset
 end;
 
@@ -2009,7 +2012,8 @@ begin
 
     MouseCapture := True;
     //if mousedown occurred in selected block begin drag operation
-    if bWasSel and (eoDragDropEditing in fOptions) and (X >= fGutterWidth + 2)
+    if bWasSel and (eoDragDropEditing in fOptions)
+      and (X >= fGutterWidth + fTextMargin)
       and ([ssAlt, ssLeft] * Shift = [ssLeft])
       and IsPointInSelection(DisplayToBufferPos(PixelsToRowColumn(X, Y))) then
     begin
@@ -2245,10 +2249,10 @@ begin
   rcClip := Canvas.ClipRect;
   // columns
   nC1 := LeftChar;
-  if (rcClip.Left > fGutterWidth + 2) then
-    Inc(nC1, (rcClip.Left - fGutterWidth - 2) div CharWidth);
+  if (rcClip.Left > fGutterWidth + fTextMargin) then
+    Inc(nC1, (rcClip.Left - fGutterWidth - fTextMargin) div CharWidth);
   nC2 := LeftChar +
-    (rcClip.Right - fGutterWidth - 2 + CharWidth - 1) div CharWidth;
+    (rcClip.Right - fGutterWidth - fTextMargin + CharWidth - 1) div CharWidth;
   // lines
   nL1 := Max(TopLine + rcClip.Top div fTextHeight, TopLine);
   nL2 := MinMax(TopLine + (rcClip.Bottom + fTextHeight - 1) div fTextHeight,
@@ -2955,7 +2959,7 @@ var
    // Step horizontal coord
           TabSteps := TabWidth;
           while TabSteps < LineIndent do begin
-            X := TabSteps * CharWidth + fTextOffset - 2;
+            X := TabSteps * CharWidth + fTextOffset;
             if TabSteps >= fLeftChar then begin
               // Move to top of vertical line
               Canvas.MoveTo(X, Y);
@@ -3042,7 +3046,7 @@ var
     // Initialize rcLine for drawing. Note that Top and Bottom are updated
     // inside the loop. Get only the starting point for this.
     rcLine := AClip;
-    rcLine.Left := fGutterWidth + 2;
+    rcLine.Left := fGutterWidth + FTextMargin;
     rcLine.Bottom := (aFirstRow - TopLine) * fTextHeight;
     // Make sure the token accumulator string doesn't get reassigned to often.
     if Assigned(fHighlighter) then
@@ -3285,11 +3289,11 @@ begin
   dc := Canvas.Handle;
   // If anything of the two pixel space before the text area is visible, then
   // fill it with the component background color.
-  if (AClip.Left < fGutterWidth + 2) then
+  if (AClip.Left < fGutterWidth + fTextMargin) then
   begin
     rcToken := AClip;
     rcToken.Left := Max(AClip.Left, fGutterWidth);
-    rcToken.Right := fGutterWidth + 2;
+    rcToken.Right := fGutterWidth + fTextMargin;
     // Paint whole left edge of the text with same color.
     // (value of WhiteAttribute can vary in e.g. MultiSyn)
     if Highlighter <> nil then
@@ -3728,10 +3732,10 @@ begin
   if fGutterWidth <> Value then
   begin
     fGutterWidth := Value;
-    fTextOffset := fGutterWidth + 2 - (LeftChar - 1) * fCharWidth;
+    fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
     if HandleAllocated then
     begin
-      fCharsInWindow := Max(ClientWidth - fGutterWidth - 2, 0) div fCharWidth;
+      fCharsInWindow := Max(ClientWidth - fGutterWidth - fTextMargin, 0) div fCharWidth;
       if WordWrap then
         fWordWrapPlugin.DisplayChanged;
       UpdateScrollBars;
@@ -3764,11 +3768,11 @@ begin
   begin
     iDelta := fLeftChar - Value;
     fLeftChar := Value;
-    fTextOffset := fGutterWidth + 2 - (LeftChar - 1) * fCharWidth;
+    fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
     if Abs(iDelta) < CharsInWindow then
     begin
       iTextArea := ClientRect;
-      Inc(iTextArea.Left, fGutterWidth + 2);
+      Inc(iTextArea.Left, fGutterWidth + fTextMargin);
       ScrollWindow(Handle, iDelta * CharWidth, 0, @iTextArea, @iTextArea);
     end
     else
@@ -5077,7 +5081,7 @@ var
 begin
   GetCursorPos(ptMouse);
   ptMouse := ScreenToClient(ptMouse);
-  if ptMouse.X >= fGutterWidth + 2 then
+  if ptMouse.X >= fGutterWidth + fTextMargin then
   begin
     if not (eoNoSelection in fOptions) then
       SetWordBlock(CaretXY);
@@ -5660,9 +5664,10 @@ end;
 procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif});
 begin
   {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
-    fGutter.ChangeScale(M,D);
-    fBookMarkOpt.ChangeScale(M, D);
-    fWordWrapGlyph.ChangeScale(M, D);
+  fTextMargin := MulDiv(fTextMargin, M, D);
+  fGutter.ChangeScale(M,D);
+  fBookMarkOpt.ChangeScale(M, D);
+  fWordWrapGlyph.ChangeScale(M, D);
   {$if CompilerVersion >= 31}end;{$endif}
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
  end;
@@ -7466,7 +7471,7 @@ procedure TCustomSynEdit.SizeOrFontChanged(bFont: boolean);
 begin
   if HandleAllocated and (fCharWidth <> 0) then
   begin
-    fCharsInWindow := Max(ClientWidth - fGutterWidth - 2, 0) div fCharWidth;
+    fCharsInWindow := Max(ClientWidth - fGutterWidth - fTextMargin, 0) div fCharWidth;
     fLinesInWindow := ClientHeight div fTextHeight;
     if WordWrap then
     begin
