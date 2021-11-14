@@ -7757,7 +7757,7 @@ var
   oldCaret, oldBlockBegin, oldBlockEnd: TBufferCoord;
 begin
   Assert((Cmd >= ecUpperCase) and (Cmd <= ecTitleCase));
-  if ReadOnly or (GetWordAtRowCol(CaretXY) = '') then Exit;
+  if ReadOnly then Exit;
 
   BeginUndoBlock;
   try
