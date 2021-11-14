@@ -110,8 +110,8 @@ type
     FOnMouseCursor: TGutterMouseCursorEvent;
     function GetSynGutter: TSynGutter;
     function GetEditor: TPersistent;
-    procedure DoPaintLines(Canvas: TCanvas; R: TRect;
-      const FirstRow, LastRow: Integer);
+    procedure DoPaintLines(Canvas: TCanvas; ClipR: TRect; const FirstRow,
+      LastRow: Integer);
     procedure PaintMarks(Canvas: TCanvas; ClipR: TRect;
       const FirstRow, LastRow: Integer);
     procedure PaintLineNumbers(Canvas: TCanvas; ClipR: TRect;
@@ -139,8 +139,8 @@ type
     constructor Create(Collection: TCollection); override;
     procedure Assign(Source: TPersistent); override;
     function RealWidth: Integer;
-    procedure PaintLines(Canvas: TCanvas; R: TRect;
-      const FirstRow, LastRow: Integer);
+    procedure PaintLines(Canvas: TCanvas; ClipR: TRect; const FirstRow, LastRow:
+        Integer);
     procedure DoClick(Sender: TObject; Button: TMouseButton;
       X, Y, Row, Line: Integer);
     procedure DoMouseCursor(Sender: TObject; X, Y, Row, Line: Integer;
@@ -1706,19 +1706,19 @@ begin
     FOnMouseCursor(Sender, X, Y, Row, Line, Cursor);
 end;
 
-procedure TSynGutterBand.DoPaintLines(Canvas: TCanvas; R: TRect;
+procedure TSynGutterBand.DoPaintLines(Canvas: TCanvas; ClipR: TRect;
   const FirstRow, LastRow: Integer);
 // Drawing of builtin bands
 begin
   case FKind of
     gbkMarks:
-      PaintMarks(Canvas, R, FirstRow, LastRow);
+      PaintMarks(Canvas, ClipR, FirstRow, LastRow);
     gbkLineNumbers:
-      PaintLineNumbers(Canvas, R, FirstRow, LastRow);
+      PaintLineNumbers(Canvas, ClipR, FirstRow, LastRow);
     gbkFold:
-      PaintFoldShapes(Canvas, R, FirstRow, LastRow);
+      PaintFoldShapes(Canvas, ClipR, FirstRow, LastRow);
     gbkMargin:
-      PaintMargin(Canvas, R, FirstRow, LastRow);
+      PaintMargin(Canvas, ClipR, FirstRow, LastRow);
   end;
 end;
 
@@ -1961,16 +1961,16 @@ begin
   end;
 end;
 
-procedure TSynGutterBand.PaintLines(Canvas: TCanvas; R: TRect;
+procedure TSynGutterBand.PaintLines(Canvas: TCanvas; ClipR: TRect;
   const FirstRow, LastRow: Integer);
 var
   DoDefault: Boolean;
 begin
   DoDefault := True;
   if Assigned(FOnPaintLines) then
-    FOnPaintLines(Canvas, R, FirstRow, LastRow, DoDefault);
+    FOnPaintLines(Canvas, ClipR, FirstRow, LastRow, DoDefault);
   if DoDefault then
-    DoPaintLines(Canvas, R, FirstRow, LastRow);
+    DoPaintLines(Canvas, ClipR, FirstRow, LastRow);
 end;
 
 procedure TSynGutterBand.PaintMargin(Canvas: TCanvas; ClipR: TRect;
@@ -1984,7 +1984,7 @@ begin
       Pen.Color := Gutter.BorderColor;
       Pen.Width := 1;
       if Gutter.BorderStyle = gbsMiddle then
-        Offset := 2
+        Offset := Max(2, (ClipR.Right - ClipR.Left) div 2)
       else
         Offset := 1;
       MoveTo(ClipR.Right - Offset, ClipR.Top);
