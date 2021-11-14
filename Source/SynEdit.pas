@@ -838,6 +838,7 @@ type
     property TopLine: Integer read fTopLine write SetTopLine;
     property WordAtCursor: string read GetWordAtCursor;
     property WordAtMouse: string read GetWordAtMouse;
+    property GutterWidth: Integer read FGutterWidth;
     property UndoRedo: ISynEditUndo read fUndoRedo;
   public
     property OnProcessCommand: TProcessCommandEvent
@@ -7474,7 +7475,7 @@ begin
     end;
     if bFont then
     begin
-      if Gutter.ShowLineNumbers then
+      if Gutter.ShowLineNumbers and not Gutter.UseFontStyle then
         GutterChanged(Self)
       else
         UpdateScrollbars;

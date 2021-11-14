@@ -2101,11 +2101,12 @@ begin
     case FKind of
       // A margin of two pixels at the end
       gbkLineNumbers:
-        Result := Gutter.FAutoSizeDigitCount * Gutter.FCharWidth +
-          MulDiv( { 2 * } MarginX, PPI, 96);
+        Result := Gutter.FAutoSizeDigitCount *
+          IfThen(Gutter.UseFontStyle, Gutter.FCharWidth, TCustomSynEdit(Editor).CharWidth) +
+          MulDiv(MarginX, PPI, 96);
       gbkFold:
         Result := TCustomSynEdit(Editor).CodeFolding.ScaledGutterShapeSize(PPI)
-          + MulDiv( { 2 * } MarginX, PPI, 96);
+          + MulDiv(MarginX, PPI, 96);
     else
       Result := MulDiv(FWidth, PPI, 96);
     end
