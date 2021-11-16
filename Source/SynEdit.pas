@@ -3342,7 +3342,6 @@ end;
 
 procedure TCustomSynEdit.PasteFromClipboard;
 var
-  StoredPaintLock: Integer;
   PasteMode: TSynSelectionMode;
   Mem: HGLOBAL;
   P: PByte;
@@ -3374,19 +3373,6 @@ begin
   end;
   // SetSelTextPrimitiveEx Encloses the undo actions in Begin/EndUndoBlock
   SetSelTextPrimitiveEx(PasteMode, GetClipboardText, True);
-
-  // ClientRect can be changed by UpdateScrollBars if eoHideShowScrollBars
-  // is enabled
-  if eoHideShowScrollBars in Options then
-  begin
-    StoredPaintLock := fPaintLock;
-    try
-      fPaintLock := 0;
-      UpdateScrollBars;
-    finally
-      fPaintLock := StoredPaintLock;
-    end;
-  end;
 
   EnsureCursorPosVisible;
   // Selection should have changed...
