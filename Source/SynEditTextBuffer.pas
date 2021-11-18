@@ -124,6 +124,7 @@ type
     procedure Put(Index: Integer; const S: string); override;
     procedure PutObject(Index: Integer; AObject: TObject); override;
     procedure SetCapacity(NewCapacity: Integer); override;
+    procedure SetTextStr(const Value: string); override;
     procedure SetUpdateState(Updating: Boolean); override;
     // Other protected methods
     procedure SetTabWidth(Value: Integer);
@@ -790,6 +791,11 @@ begin
     FileFormat := sffUnix
   else
     FileFormat := sffDos;
+end;
+
+procedure TSynEditStringList.SetTextStr(const Value: string);
+begin
+  SetTextAndFileFormat(Value);
 end;
 
 procedure TSynEditStringList.SetUpdateState(Updating: Boolean);
