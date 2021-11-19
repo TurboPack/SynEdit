@@ -374,7 +374,7 @@ type
   TSynSpellCheck = class(TComponent)
   private
     FAnsi2Ascii: array[128..255] of Char;  //*
-    FCacheArray: array[0..255] of array[0..1] of Cardinal;
+    FCacheArray: array[0..65535] of array[0..1] of Cardinal;
 //    FIdentChars: set of Char;
     FBusy, FModified, FOpenDictionary, FUseUserDictionary: Boolean;
     FHashAlgorithm: HashAlgorithms;
@@ -661,8 +661,21 @@ begin
 end;
 
 function SortFunc(Item1, Item2: Pointer): Integer;
+var
+  s1, s2: string;
 begin
- Result := CompareStr(TWordRec(Item1^).Word, TWordRec(Item2^).Word);
+  // this is intentional construction, AnsiCompareText isn't useable here
+  // this form of sort is used for indexing later
+  s1 := AnsiLowerCase(TWordRec(Item1^).Word);
+  s2 := AnsiLowerCase(TWordRec(Item2^).Word);
+
+ if s1 = s2 then
+  Result := 0
+ else
+ if s1 < s2 then
+  Result := -1
+ else
+  Result := 1;
 end;
 
 {$IFNDEF ONLY_HADIFF_ALGORITHM}
@@ -1211,7 +1224,7 @@ begin
     end;
 {$ENDIF}
     // Quickest way is insert one word than add and than sort whole list
-    FWordList.Insert(GetInsertPos(Word), AWordItem);
+    FWordList.Insert(GetInsertPos(AnsiLowerCase(Word)), AWordItem);
     CalculateCacheArray; // Calculate cache array to speed up searches
     FModified := True;
     if Assigned(FOnAddWord) then
@@ -1283,24 +1296,29 @@ end;
 
 procedure TSynSpellCheck.CalculateCacheArray;
 var
+  sOld, sNew: string;
   chOld, chNew: Char;  //*
   iI: Integer;
 begin
   if FWordList.Count = 0 then
     Exit;
 
-  chOld := TWordRec(FWordList.Items[0]^).Word[1];
+  sOld := AnsiLowerCase(TWordRec(FWordList.Items[0]^).Word);
+  chOld := sOld[1];
   chNew := chOld;
-  FCacheArray[Ord(chOld)][0] := 0; 
-  FCacheArray[Ord(chOld)][1] := 0; 
+  FCacheArray[Ord(chOld)][0] := 0;
+  FCacheArray[Ord(chOld)][1] := 0;
   for iI := 0 to FWordList.Count - 1 do
-    if chOld <> TWordRec(FWordList.Items[iI]^).Word[1] then
+  begin
+    sNew := AnsiLowerCase(TWordRec(FWordList.Items[iI]^).Word);
+    if chOld <> sNew[1] then
     begin
-      chNew := TWordRec(FWordList.Items[iI]^).Word[1];
+      chNew := sNew[1];
       FCacheArray[Ord(chOld)][1] := iI - 1; // Last occurence of previous letter
       FCacheArray[Ord(chNew)][0] := iI; // First occurence of new letter
       chOld := chNew;
     end;
+  end;
   // Last occurence of last letter
   FCacheArray[Ord(chNew)][1] := FWordList.Count - 1;
 end;
@@ -1340,8 +1358,8 @@ begin
   //////////////////////////////////////////////////////////////////////////////
   // Main Searching Routine
   //////////////////////////////////////////////////////////////////////////////
-  Result := (FindWord(WideLowerCase(Word)) > -1);
-  if not Result and (FSkipList.IndexOf(WideLowerCase(Word)) <> -1) then
+  Result := (FindWord(AnsiLowerCase(Word)) > -1);
+  if not Result and (FSkipList.IndexOf(AnsiLowerCase(Word)) <> -1) then
     Result := True;
 end;
 
@@ -1494,8 +1512,8 @@ begin
   Result := 0;
   if Trim(Word) = '' then
     Exit;
-  sLower := WideLowerCase(Word);
-  chFirst := Ansi2Ascii(sLower[1])[1];
+  sLower := AnsiLowerCase(Word);
+  chFirst := sLower[1];
   Similar.Clear;
   JHCMPInit(Length(Word), FMaxWordLength, Differences);
 
@@ -1507,9 +1525,7 @@ begin
       Continue;
     if JHCMPIsSimilar(sLower, sWord, MaxDiffCount, Differences) then
     begin
-      if WideUpperCase(Word) = Word then
-        sWord := WideUpperCase(sWord)
-      else if AnsiUpperCase(Word[1])[1] = Word[1] then
+      if AnsiUpperCase(Word[1])[1] = Word[1] then
         sWord[1] := AnsiUpperCase(sWord[1])[1];
       Similar.Add(sWord);
     end;
@@ -1526,9 +1542,7 @@ begin
           Continue;
         if JHCMPIsSimilar(sLower, sWord, MaxDiffCount, Differences) then
         begin
-          if WideUpperCase(Word) = Word then
-            sWord := WideUpperCase(sWord)
-          else if AnsiUpperCase(Word[1])[1] = Word[1] then
+          if AnsiUpperCase(Word[1])[1] = Word[1] then
             sWord[1] := AnsiUpperCase(sWord[1])[1];
           Similar.Add(sWord);
         end;
@@ -1628,12 +1642,9 @@ begin
       FModified := False;
     end;
   end;
-
   SortWordList; // Sort the whole word list
   CalculateCacheArray; // Calculate cache array to speed up searches
   FOpenDictionary := True;
-  if (sscoAutoSpellCheck in FOptions) and (Assigned(FEditor)) then
-    FEditor.Invalidate;
 end;
 
 function TSynSpellCheck.FindWord(sWord: String): Integer;
@@ -1964,7 +1975,6 @@ begin
     Screen.Cursor := crHourGlass;
   end;
   tslSuggestions := TstringList.Create;
-
   with TSynEditEx(FEditor) do
   begin
     if Trim(Lines.Text) = '' then
@@ -2394,4 +2404,3 @@ begin
 end;
 
 end.
-
