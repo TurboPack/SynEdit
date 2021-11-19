@@ -937,6 +937,7 @@ type
     // inherited properties
     property Align;
     property Anchors;
+    property DoubleBuffered;
     property Constraints;
     property Color;
     property ActiveLineColor;
@@ -947,6 +948,7 @@ type
     property Font;
     property Height;
     property Name;
+    property ParentDoubleBuffered;
     property ParentColor default False;
     property ParentFont default False;
     property ParentShowHint;
@@ -1328,9 +1330,6 @@ begin
     begin
       Style := Style and not WS_BORDER;
       ExStyle := ExStyle or WS_EX_CLIENTEDGE;
-      // avoid flicker while scrolling or resizing
-      if not (csDesigning in ComponentState) and CheckWin32Version(5, 1) then
-        ExStyle := ExStyle or WS_EX_COMPOSITED;
     end;
 
   end;
@@ -4084,6 +4083,7 @@ end;
 procedure TCustomSynEdit.SynSetText(const Value: string);
 begin
   Lines.Text := Value;
+  UpdateScrollBars;
 end;
 
 procedure TCustomSynEdit.SetTopLine(Value: Integer);
@@ -6755,6 +6755,7 @@ begin
   FillChar(fBookMarks, sizeof(fBookMarks), 0); // so fBookMarks should be cleared too
   fUndoRedo.Clear;
   Modified := False;
+  UpdateScrollBars;
 end;
 
 procedure TCustomSynEdit.ClearSelection;
