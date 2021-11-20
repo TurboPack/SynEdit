@@ -3374,8 +3374,6 @@ begin
   SetSelTextPrimitiveEx(PasteMode, GetClipboardText, True);
 
   EnsureCursorPosVisible;
-  // Selection should have changed...
-  StatusChanged([scSelection]);
   DoOnPaintTransient(ttAfter);
 end;
 
@@ -3390,8 +3388,6 @@ begin
   else
     LastPt.Line  := 1;
   SetCaretAndSelection(LastPt, BufferCoord(1, 1), LastPt);
-  // Selection should have changed...
-  StatusChanged([scSelection]);
 end;
 
 procedure TCustomSynEdit.SetBlockBegin(Value: TBufferCoord);
@@ -4885,6 +4881,9 @@ procedure TCustomSynEdit.ListDeleted(Sender: TObject; aIndex: Integer;
 Var
   vLastScan: Integer;
 begin
+  if WordWrap then
+    fWordWrapPlugin.LinesDeleted(aIndex, aCount);
+
   DoLinesDeleted(aIndex, aCount);
 
   vLastScan := aIndex;
@@ -4898,9 +4897,6 @@ begin
     InvalidateGutter;
   end;
 //-- CodeFolding
-
-  if WordWrap then
-    fWordWrapPlugin.LinesDeleted(aIndex, aCount);
 
   InvalidateLines(aIndex + 1, MaxInt);
   InvalidateGutterLines(aIndex + 1, MaxInt);
@@ -4916,6 +4912,9 @@ var
 //++ CodeFolding
   FoldIndex: Integer;
 begin
+  if WordWrap then
+    fWordWrapPlugin.LinesInserted(Index, aCount);
+
   DoLinesInserted(Index, aCount);
 
   vLastScan := Index;
@@ -4938,9 +4937,6 @@ begin
     ReScanForFoldRanges(Index, vLastScan-1);
   end;
 //-- CodeFolding
-
-  if WordWrap then
-    fWordWrapPlugin.LinesInserted(Index, aCount);
 
   InvalidateLines(Index + 1, MaxInt);
   InvalidateGutterLines(Index + 1, MaxInt);
@@ -5058,7 +5054,6 @@ begin
   vBlockEnd.Line := Value.Line;
   SetCaretAndSelection(vBlockEnd, vBlockBegin, vBlockEnd);
   InvalidateLine(Value.Line);
-  StatusChanged([scSelection]);
 end;
 
 procedure TCustomSynEdit.DblClick;

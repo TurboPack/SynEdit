@@ -48,8 +48,13 @@ uses
 type
   TSynEditRange = Pointer;
 
-  TSynEditStringFlag = (sfHasTabs, sfHasNoTabs, sfExpandedLengthUnknown);
+  TSynEditStringFlag = (sfHasTabs, sfHasNoTabs, sfExpandedLengthUnknown,
+    sfModified, sfSaved);
   TSynEditStringFlags = set of TSynEditStringFlag;
+
+  // Managed by Undo
+  TSynLineChangeFlag = sfModified..sfSaved;
+  TSynLineChangeFlags = set of TSynLineChangeFlag;
 
   PSynEditStringRec = ^TSynEditStringRec;
 
@@ -115,6 +120,8 @@ type
     procedure Grow;
     procedure InsertItem(Index: Integer; const S: string);
     procedure PutRange(Index: Integer; ARange: TSynEditRange);
+    function GetChangeFlags(Index: Integer): TSynLineChangeFlags;
+    procedure SetChangeFlags(Index: Integer; const Value: TSynLineChangeFlags);
   protected
     // TStrings overriden protected methods
     function Get(Index: Integer): string; override;
@@ -159,6 +166,8 @@ type
     property TabWidth: Integer read FTabWidth write SetTabWidth;
     property UTF8CheckLen: Integer read FUTF8CheckLen write FUTF8CheckLen;
     property DetectUTF8: Boolean read FDetectUTF8 write FDetectUTF8;
+    property ChangeFlags[Index: Integer]: TSynLineChangeFlags read GetChangeFlags
+      write SetChangeFlags;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnChanging: TNotifyEvent read FOnChanging write FOnChanging;
     property OnCleared: TNotifyEvent read FOnCleared write FOnCleared;
@@ -211,13 +220,20 @@ begin
 end;
 
 procedure TSynEditStringList.Clear;
+var
+  OldCount: Integer;
 begin
   if FCount <> 0 then
   begin
     BeginUpdate;
+    OldCount := FCount;
+    if Assigned(FOnBeforeDeleted) then
+      FOnBeforeDeleted(Self, 0, OldCount);
     Finalize(FList^[0], FCount);
     FCount := 0;
     SetCapacity(0);
+    if Assigned(FOnDeleted) then
+      FOnDeleted(Self, 0, OldCount);
     if Assigned(FOnCleared) then
       FOnCleared(Self);
     EndUpdate;
@@ -352,6 +368,14 @@ end;
 function TSynEditStringList.GetCapacity: Integer;
 begin
   Result := FCapacity;
+end;
+
+function TSynEditStringList.GetChangeFlags(Index: Integer): TSynLineChangeFlags;
+begin
+  if (Index >= 0) and (Index < FCount) then
+    Result :=  FList^[Index].FFlags * [sfModified, sfSaved]
+  else
+    Result := [];
 end;
 
 function TSynEditStringList.GetCount: Integer;
@@ -697,6 +721,14 @@ begin
     EListError.Create(SInvalidCapacity);
   ReallocMem(FList, NewCapacity * SynEditStringRecSize);
   FCapacity := NewCapacity;
+end;
+
+procedure TSynEditStringList.SetChangeFlags(Index: Integer;
+  const Value: TSynLineChangeFlags);
+begin
+  if (Index >= 0) and (Index < FCount) then
+    FList^[Index].FFlags :=  FList^[Index].FFlags - [sfModified, sfSaved]
+     + Value;
 end;
 
 procedure TSynEditStringList.SetEncoding(const Value: TEncoding);

@@ -97,7 +97,6 @@ type
   public
     constructor Create(aOwner: TCustomSynEdit);
     destructor Destroy; override;
-    property LineCount: integer read fLineCount;
     { ISynEditBufferPlugin }
     function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
@@ -129,11 +128,11 @@ var
 begin
   Assert(aPos.Char > 0);
   Assert(aPos.Line > 0);
-  if LineCount < aPos.Line then
+  if fLineCount < aPos.Line then
   begin
     // beyond EOF
     Result.Column := aPos.Char;
-    Result.Row := RowCount + (aPos.Line - LineCount);
+    Result.Row := RowCount + (aPos.Line - fLineCount);
     Exit;
   end;
   if aPos.Line = 1 then
@@ -158,10 +157,11 @@ end;
 
 constructor TSynWordWrapPlugin.Create(aOwner: TCustomSynEdit);
 begin
-  inherited Create; // just to work as reminder in case I revert it to a TComponent... 
+  inherited Create; // just to work as reminder in case I revert it to a TComponent...
   if aOwner = nil then
     raise Exception.Create( 'Owner of TSynWordWrapPlugin must be a TCustomSynEdit' );
   fEditor := aOwner;
+  fLineCount := fEditor.Lines.Count;
   Reset;
 end;
 
@@ -190,11 +190,11 @@ begin
   begin
     // beyond EOF
     Result.Char := aPos.Column;
-    Result.Line := aPos.Row - RowCount + LineCount;
+    Result.Line := aPos.Row - RowCount + fLineCount;
     Exit;
   end;
   //todo: use a binary search or something smarter
-  for cLine := LineCount - 2 downto 0 do
+  for cLine := fLineCount - 2 downto 0 do
     if aPos.Row > fLineOffsets[cLine] then
     begin
       Result.Line := cLine + 2;
@@ -266,7 +266,7 @@ begin
   end;
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
-  Assert(aIndex + aCount <= LineCount);
+  Assert(aIndex + aCount <= fLineCount);
 
   if aIndex = 0 then
     vStartRow := 0
@@ -281,8 +281,10 @@ begin
   MoveLines(aIndex + aCount, -aCount);
   Dec(fLineCount, aCount);
   // update offsets
-  for cLine := aIndex to LineCount - 1 do
+  for cLine := aIndex to fLineCount - 1 do
     Dec(fLineOffsets[cLine], Result);
+  if fLineCount = 0 then
+    SetEmpty;
 end;
 
 function TSynWordWrapPlugin.LinesInserted(aIndex: integer; aCount: integer): integer;
@@ -297,10 +299,10 @@ begin
   end;
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
-  Assert(aIndex <= LineCount);
+  Assert(aIndex <= fLineCount);
   // resize fLineOffsets
-  GrowLines(LineCount + aCount);
-  if aIndex < LineCount then // no need for MoveLines if inserting at LineCount (TSynEditStringList.Add)
+  GrowLines(fLineCount + aCount);
+  if aIndex < fLineCount then // no need for MoveLines if inserting at LineCount (TSynEditStringList.Add)
   begin
     Inc(fLineCount, aCount); // fLineCount must be updated before calling MoveLines()
     MoveLines(aIndex, aCount);
@@ -328,7 +330,7 @@ begin
     Exit;
   end;
   Assert(aIndex >= 0);
-  Assert(aIndex < LineCount);
+  Assert(aIndex < fLineCount);
   // Rewrap
   Result := 0;
   Inc(Result, ReWrapLine(aIndex));
@@ -340,8 +342,8 @@ var
 begin
   Assert(aMoveBy <> 0);
   Assert(aStart + aMoveBy >= 0);
-  Assert(aStart + aMoveBy < LineCount);
-  vMoveCount := LineCount - aStart;
+  Assert(aStart + aMoveBy < fLineCount);
+  vMoveCount := fLineCount - aStart;
   if aMoveBy > 0 then
     Dec(vMoveCount, aMoveBy);
   Move(fLineOffsets[aStart], fLineOffsets[aStart + aMoveBy],
@@ -372,7 +374,6 @@ begin
   if fMinRowLength <= 0 then
     fMinRowLength := 1;
 
-  fLineCount := Editor.Lines.Count;
   WrapLines;
 end;
 
@@ -462,11 +463,11 @@ begin
           // at the big picture... there are huge speedups to be made by
           // eliminating this loop
           p:=fLineOffsets;
-          for cLine := aIndex to LineCount - 1 do
+          for cLine := aIndex to fLineCount - 1 do
              Inc(p[cLine])
         end else begin
           p:=fLineOffsets;
-          for cLine := aIndex to LineCount - 1 do
+          for cLine := aIndex to fLineCount - 1 do
             Inc(p[cLine], Result);
         end;
         if vOldNextRow < RowCount - Result then
@@ -477,7 +478,7 @@ begin
         // ...if shrinking, update offsets after rowlengths
         if vOldNextRow < RowCount then
           MoveRows(vOldNextRow, Result);
-        for cLine := aIndex to LineCount - 1 do
+        for cLine := aIndex to fLineCount - 1 do
           Inc(fLineOffsets[cLine], Result);
       end;
     end;
@@ -501,10 +502,7 @@ var
   vLastVisibleChar: PWideChar;
 begin
   if (Editor.Lines.Count = 0) or (fMaxRowLength <= 0) then
-  begin
-    SetEmpty;
     Exit;
-  end;
 
   GrowLines(Editor.Lines.Count);
   GrowRows(Editor.Lines.Count);
@@ -560,8 +558,8 @@ end;
 
 function TSynWordWrapPlugin.RowCount: integer;
 begin
-  if LineCount > 0 then
-    Result := fLineOffsets[LineCount - 1]
+  if fLineCount > 0 then
+    Result := fLineOffsets[fLineCount - 1]
   else
     Result := 0;
 end;
@@ -575,8 +573,8 @@ end;
 
 procedure TSynWordWrapPlugin.TrimArrays;
 begin
-  ReallocMem(fLineOffsets, LineCount * SizeOf(TRowIndex));
-  fLineCapacity := LineCount;
+  ReallocMem(fLineOffsets, fLineCount * SizeOf(TRowIndex));
+  fLineCapacity := fLineCount;
   ReallocMem(fRowLengths, RowCount * SizeOf(TRowLength));
   fRowCapacity := RowCount;
 end;
