@@ -6274,7 +6274,7 @@ begin
                 begin
                   BeginUndoBlock;
                   try
-                    CaretXY := BufferCoord(Lines[CaretY - 1].Length + 1, CaretY - 1);
+                    CaretXY := BufferCoord(Lines[CaretY - 2].Length + 1, CaretY - 1);
                     Lines.Delete(CaretY);
 
                     LineText := LineText + Temp;
