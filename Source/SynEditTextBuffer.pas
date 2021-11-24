@@ -118,6 +118,9 @@ type
     function GetLengthOfLongestLine: Integer;
     function GetRange(Index: Integer): TSynEditRange;
     procedure Grow;
+    {$IF CompilerVersion <= 32} // for backward compatibility
+    function GrowCollection(OldCapacity, NewCount: Integer): Integer;
+    {$ENDIF}
     procedure InsertItem(Index: Integer; const S: string);
     procedure PutRange(Index: Integer; ARange: TSynEditRange);
     function GetChangeFlags(Index: Integer): TSynLineChangeFlags;
@@ -520,6 +523,24 @@ procedure TSynEditStringList.Grow;
 begin
   SetCapacity(GrowCollection(FCapacity, FCount + 1));
 end;
+
+{$IF CompilerVersion <= 32}
+function TSynEditStringList.GrowCollection(OldCapacity, NewCount: Integer): Integer;
+begin
+  Result := OldCapacity;
+  repeat
+    if Result > 64 then
+      Result := (Result * 3) div 2
+    else
+      if Result > 8 then
+        Result := Result + 16
+      else
+        Result := Result + 4;
+    if Result < 0 then
+      OutOfMemoryError;
+  until Result >= NewCount;
+end;
+{$ENDIF}
 
 procedure TSynEditStringList.Insert(Index: Integer; const S: string);
 begin

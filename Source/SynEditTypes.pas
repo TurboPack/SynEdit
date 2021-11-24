@@ -111,7 +111,7 @@ type
     function CurrentPPI: Integer;
     function FCurrentPPI: Integer;
   end;
-  {$IFEND}
+  {$ENDIF}
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
@@ -214,6 +214,9 @@ type
 
 implementation
 Uses
+{$IF CompilerVersion <= 32}
+  Vcl.Forms,
+{$ENDIF}
   SynUnicode;
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
@@ -362,7 +365,7 @@ function TControlHelper.FCurrentPPI: Integer;
 begin
   Result := Screen.PixelsPerInch;
 end;
-{$IFEND}
+{$ENDIF}
 
 
 

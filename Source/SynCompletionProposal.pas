@@ -197,7 +197,7 @@ type
     procedure WMEraseBackgrnd(var Message: TMessage); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetCurrentPPI: Integer; override;
+    function GetCurrentPPI: Integer; {$IF CompilerVersion > 32}override;{$ENDIF}
   public
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
