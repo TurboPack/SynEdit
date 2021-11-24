@@ -482,6 +482,23 @@ uses
   SynTextDrawer,
   SynEdit;
 
+{$IF CompilerVersion <= 32}
+procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
+var
+  buffer: TBitmap;
+begin
+  buffer := TBitmap.Create;
+  try
+    buffer.SetSize(NewWidth, NewHeight);
+    buffer.AlphaFormat := afDefined;
+    buffer.Canvas.StretchDraw(Rect(0, 0, NewWidth, NewHeight), Bitmap);
+    Bitmap.SetSize(NewWidth, NewHeight);
+    Bitmap.Canvas.Draw(0, 0, buffer);
+  finally
+    buffer.Free;
+  end;
+end;
+{$ELSE}
 // ++ DPI-Aware
 procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: Integer);
 var
@@ -509,6 +526,7 @@ begin
   end;
 end;
 // -- DPI-Aware
+{$ENDIF}
 
 { TSynSelectedColor }
 
