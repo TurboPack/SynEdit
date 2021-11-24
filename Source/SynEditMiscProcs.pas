@@ -131,6 +131,10 @@ function DeleteTypePrefixAndSynSuffix(s: string): string;
 // In Windows Vista or later use the Consolas font
 function DefaultFontName: string;
 
+{$IF CompilerVersion <= 32}
+function GrowCollection(OldCapacity, NewCount: Integer): Integer;
+{$ENDIF}
+
 implementation
 
 uses
@@ -871,5 +875,23 @@ begin
   else
     Result := 'Courier New';
 end;
+
+{$IF CompilerVersion <= 32}
+function GrowCollection(OldCapacity, NewCount: Integer): Integer;
+begin
+  Result := OldCapacity;
+  repeat
+    if Result > 64 then
+      Result := (Result * 3) div 2
+    else
+      if Result > 8 then
+        Result := Result + 16
+      else
+        Result := Result + 4;
+    if Result < 0 then
+      OutOfMemoryError;
+  until Result >= NewCount;
+end;
+{$ENDIF}
 
 end.
