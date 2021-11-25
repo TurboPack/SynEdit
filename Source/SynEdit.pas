@@ -6401,26 +6401,26 @@ begin
           if Command = ecDeleteWord then
           begin
             // in case of ident char, we delete word else char
-            wp := CaretXY;
+            WP := CaretXY;
             // as first we skip all white chars behind cursor
-            if (Len > wp.Char) and IsWhiteChar(LineText[wp.Char]) then
+            if (Len > WP.Char) and IsWhiteChar(LineText[WP.Char]) then
             begin
-              cx := StrScanForCharInCategory(LineText, wp.Char, IsNonWhiteChar);
+              cx := StrScanForCharInCategory(LineText, WP.Char, IsNonWhiteChar);
               // if not found, StrScanForCharInCategory() returns zero
-              wp.Char := Max(wp.Char, cx);
+              WP.Char := Max(WP.Char, cx);
             end;
             // in case of not ident char we move one char right
-            if (Len > wp.Char) and not IsIdentChar(LineText[wp.Char]) then
-              wp.Char := wp.Char + 1
+            if (Len > WP.Char) and not IsIdentChar(LineText[WP.Char]) then
+              WP.Char := WP.Char + 1
             // in case of ident char, we move to word end
             else
               WP := WordEndEx(WP);
             // now we skip whitespaces behind
-            if (Len > wp.Char) and IsWhiteChar(LineText[wp.Char]) then
+            if (Len > WP.Char) and IsWhiteChar(LineText[WP.Char]) then
             begin
-              cx := StrScanForCharInCategory(LineText, wp.Char, IsNonWhiteChar);
+              cx := StrScanForCharInCategory(LineText, WP.Char, IsNonWhiteChar);
               // if not found, StrScanForCharInCategory() returns 0
-              wp.Char := Max(wp.Char, cx);
+              WP.Char := Max(WP.Char, cx);
             end;
           end
           else begin
@@ -6442,11 +6442,11 @@ begin
           if Command = ecDeleteLastWord then
           begin
             // we must find word end first
-            wp := CaretXY;
+            WP := CaretXY;
             // in case scroll past EOL cursor can be behind the line end
-            wp.Char := Min(Length(LineText), wp.Char);
-            if IsWordBreakChar(LineText[wp.Char - 1]) then
-              wp.Char := StrRScanForCharInCategory(LineText, wp.Char - 1, IsIdentChar) + 1;
+            WP.Char := Min(Length(LineText), WP.Char);
+            if IsWordBreakChar(LineText[WP.Char - 1]) then
+              WP.Char := StrRScanForCharInCategory(LineText, WP.Char - 1, IsIdentChar) + 1;
             // now we move to word start
             WP := WordStartEx(WP);
           end
@@ -9908,4 +9908,5 @@ begin
 end;
 
 end.
+
 
