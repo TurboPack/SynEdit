@@ -708,6 +708,8 @@ type
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
+    // support procedure for ecDeletexxx commands
+    function IsNonWhiteChar(AChar: WideChar): Boolean; virtual;
 
     procedure DoBlockIndent;
     procedure DoBlockUnindent;
@@ -6397,7 +6399,30 @@ begin
         begin
           Len := Length(LineText);
           if Command = ecDeleteWord then
-            WP := WordEnd
+          begin
+            // in case of ident char, we delete word else char
+            wp := CaretXY;
+            // as first we skip all white chars behind cursor
+            if (Len > wp.Char) and IsWhiteChar(LineText[wp.Char]) then
+            begin
+              cx := StrScanForCharInCategory(LineText, wp.Char, IsNonWhiteChar);
+              // if not found, StrScanForCharInCategory() returns zero
+              wp.Char := Max(wp.Char, cx);
+            end;
+            // in case of not ident char we move one char right
+            if (Len > wp.Char) and not IsIdentChar(LineText[wp.Char]) then
+              wp.Char := wp.Char + 1
+            // in case of ident char, we move to word end
+            else
+              WP := WordEndEx(WP);
+            // now we skip whitespaces behind
+            if (Len > wp.Char) and IsWhiteChar(LineText[wp.Char]) then
+            begin
+              cx := StrScanForCharInCategory(LineText, wp.Char, IsNonWhiteChar);
+              // if not found, StrScanForCharInCategory() returns 0
+              wp.Char := Max(wp.Char, cx);
+            end;
+          end
           else begin
             WP.Char := Len + 1;
             WP.Line := CaretY;
@@ -6407,7 +6432,7 @@ begin
           begin
             DoOnPaintTransient(ttBefore);
             Temp := Lines[CaretY - 1];
-            Delete(Temp, CaretX, WP.Char - CaretX + 1);
+            Delete(Temp, CaretX, WP.Char - CaretX);
             Lines[CaretY - 1] := Temp;
             DoOnPaintTransient(ttAfter);
           end;
@@ -6415,7 +6440,16 @@ begin
       ecDeleteLastWord, ecDeleteBOL:
         if not ReadOnly then begin
           if Command = ecDeleteLastWord then
-            WP := WordStart
+          begin
+            // we must find word end first
+            wp := CaretXY;
+            // in case scroll past EOL cursor can be behind the line end
+            wp.Char := Min(Length(LineText), wp.Char);
+            if IsWordBreakChar(LineText[wp.Char - 1]) then
+              wp.Char := StrRScanForCharInCategory(LineText, wp.Char - 1, IsIdentChar) + 1;
+            // now we move to word start
+            WP := WordStartEx(WP);
+          end
           else begin
             WP.Char := 1;
             WP.Line := CaretY;
@@ -9041,6 +9075,11 @@ begin
   end;
 end;
 
+function TCustomSynEdit.IsNonWhiteChar(AChar: WideChar): Boolean;
+begin
+  Result := not IsWhiteChar(AChar);
+end;
+
 function TCustomSynEdit.IsWhiteChar(AChar: WideChar): Boolean;
 begin
   if Assigned(Highlighter) then
@@ -9869,3 +9908,4 @@ begin
 end;
 
 end.
+
