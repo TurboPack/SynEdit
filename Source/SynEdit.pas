@@ -6536,6 +6536,7 @@ begin
       // #127 is Ctrl + Backspace, #32 is space
         if not ReadOnly and (AChar >= #32) and (AChar <> #127) then
         begin
+          DoOnPaintTransient(ttBefore);
           if SelAvail then
             SetSelText(AChar)
           else
@@ -6565,11 +6566,11 @@ begin
               if fInserting then
               begin
                 Insert(AChar, Temp, CaretX);
+                Lines[CaretY - 1] := Temp;
                 if Len = 0 then
                   CaretX := Length(Temp) + 1
                 else
                   CaretX := CaretX + 1;
-                Lines[CaretY - 1] := Temp;
               end
               else begin
               // Processing of case character covers on LeadByte.
@@ -8714,11 +8715,11 @@ begin
   DoTransient:=(FPaintTransientLock=0);
   if Lock then
   begin
-    if (TransientType=ttBefore) then inc(FPaintTransientLock)
+    if (TransientType=ttBefore) then Inc(FPaintTransientLock)
     else
     begin
-      dec(FPaintTransientLock);
-      DoTransient:=(FPaintTransientLock=0);
+      Dec(FPaintTransientLock);
+      DoTransient:= FPaintTransientLock = 0;
     end;
   end;
 
