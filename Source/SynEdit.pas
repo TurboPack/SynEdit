@@ -690,7 +690,8 @@ type
       EvenIfVisible: Boolean = False);
     procedure FindMatchingBracket; virtual;
     function GetMatchingBracket: TBufferCoord; virtual;
-    function GetMatchingBracketEx(const APoint: TBufferCoord): TBufferCoord; virtual;
+    function GetMatchingBracketEx(const APoint: TBufferCoord;
+      Brackets: string = '()[]{}<>'): TBufferCoord; virtual;
     function ExecuteAction(Action: TBasicAction): Boolean; override;
     procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
@@ -8454,12 +8455,11 @@ begin
   Result := GetMatchingBracketEx(CaretXY);
 end;
 
-function TCustomSynEdit.GetMatchingBracketEx(const APoint: TBufferCoord): TBufferCoord;
-const
-  Brackets: array[0..7] of WideChar = ('(', ')', '[', ']', '{', '}', '<', '>');
+function TCustomSynEdit.GetMatchingBracketEx(const APoint: TBufferCoord;
+  Brackets: string): TBufferCoord;
 var
   Line: string;
-  i, PosX, PosY, Len: Integer;
+  Index, PosX, PosY, Len: Integer;
   Test, BracketInc, BracketDec: WideChar;
   NumBrackets: Integer;
   vDummy: string;
@@ -8477,94 +8477,92 @@ begin
   begin
     Test := Line[PosX];
     // is it one of the recognized brackets?
-    for i := Low(Brackets) to High(Brackets) do
-      if Test = Brackets[i] then
+    Index := Brackets.IndexOf(Test);  // zero based
+    if Index >= 0 then
+    begin
+      // this is the bracket, get the matching one and the direction
+      BracketInc := Brackets.Chars[Index];
+      BracketDec := Brackets.Chars[Index xor 1]; // 0 -> 1, 1 -> 0, ...
+      // search for the matching bracket (that is until NumBrackets = 0)
+      NumBrackets := 1;
+      if Odd(Index) then
       begin
-        // this is the bracket, get the matching one and the direction
-        BracketInc := Brackets[i];
-        BracketDec := Brackets[i xor 1]; // 0 -> 1, 1 -> 0, ...
-        // search for the matching bracket (that is until NumBrackets = 0)
-        NumBrackets := 1;
-        if Odd(i) then
-        begin
-          repeat
-            // search until start of line
-            while PosX > 1 do
+        repeat
+          // search until start of line
+          while PosX > 1 do
+          begin
+            Dec(PosX);
+            Test := Line[PosX];
+            p.Char := PosX;
+            p.Line := PosY;
+            if (Test = BracketInc) or (Test = BracketDec) then
             begin
-              Dec(PosX);
-              Test := Line[PosX];
-              p.Char := PosX;
-              p.Line := PosY;
-              if (Test = BracketInc) or (Test = BracketDec) then
+              if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
+                isCommentOrString := (attr = Highlighter.StringAttribute) or
+                  (attr = Highlighter.CommentAttribute)
+              else
+                isCommentOrString := False;
+              if (Test = BracketInc) and (not isCommentOrString) then
+                Inc(NumBrackets)
+              else if (Test = BracketDec) and (not isCommentOrString) then
               begin
-                if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
-                  isCommentOrString := (attr = Highlighter.StringAttribute) or
-                    (attr = Highlighter.CommentAttribute)
-                else
-                  isCommentOrString := False;
-                if (Test = BracketInc) and (not isCommentOrString) then
-                  Inc(NumBrackets)
-                else if (Test = BracketDec) and (not isCommentOrString) then
+                Dec(NumBrackets);
+                if NumBrackets = 0 then
                 begin
-                  Dec(NumBrackets);
-                  if NumBrackets = 0 then
-                  begin
-                    // matching bracket found, set caret and bail out
-                    Result := P;
-                    exit;
-                  end;
+                  // matching bracket found, set caret and bail out
+                  Result := P;
+                  exit;
                 end;
               end;
             end;
-            // get previous line if possible
-            if PosY = 1 then break;
-            Dec(PosY);
-            Line := Lines[PosY - 1];
-            PosX := Length(Line) + 1;
-          until False;
-        end
-        else begin
-          repeat
-            // search until end of line
-            Len := Length(Line);
-            while PosX < Len do
+          end;
+          // get previous line if possible
+          if PosY = 1 then break;
+          Dec(PosY);
+          Line := Lines[PosY - 1];
+          PosX := Length(Line) + 1;
+        until False;
+      end
+      else begin
+        repeat
+          // search until end of line
+          Len := Length(Line);
+          while PosX < Len do
+          begin
+            Inc(PosX);
+            Test := Line[PosX];
+            p.Char := PosX;
+            p.Line := PosY;
+            if (Test = BracketInc) or (Test = BracketDec) then
             begin
-              Inc(PosX);
-              Test := Line[PosX];
-              p.Char := PosX;
-              p.Line := PosY;
-              if (Test = BracketInc) or (Test = BracketDec) then
+              if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
+                isCommentOrString := (attr = Highlighter.StringAttribute) or
+                  (attr = Highlighter.CommentAttribute)
+              else
+                isCommentOrString := False;
+              if (Test = BracketInc) and (not isCommentOrString) then
+                Inc(NumBrackets)
+              else if (Test = BracketDec)and (not isCommentOrString) then
               begin
-                if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
-                  isCommentOrString := (attr = Highlighter.StringAttribute) or
-                    (attr = Highlighter.CommentAttribute)
-                else
-                  isCommentOrString := False;
-                if (Test = BracketInc) and (not isCommentOrString) then
-                  Inc(NumBrackets)
-                else if (Test = BracketDec)and (not isCommentOrString) then
+                Dec(NumBrackets);
+                if NumBrackets = 0 then
                 begin
-                  Dec(NumBrackets);
-                  if NumBrackets = 0 then
-                  begin
-                    // matching bracket found, set caret and bail out
-                    Result := P;
-                    exit;
-                  end;
+                  // matching bracket found, set caret and bail out
+                  Result := P;
+                  exit;
                 end;
               end;
             end;
-            // get next line if possible
-            if PosY = Lines.Count then
-              Break;
-            Inc(PosY);
-            Line := Lines[PosY - 1];
-            PosX := 0;
-          until False;
-        end;
-        // don't test the other brackets, we're done
-        break;
+          end;
+          // get next line if possible
+          if PosY = Lines.Count then
+            Break;
+          Inc(PosY);
+          Line := Lines[PosY - 1];
+          PosX := 0;
+        until False;
       end;
+    end;
   end;
 end;
 
