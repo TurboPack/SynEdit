@@ -6446,7 +6446,7 @@ begin
             WP := CaretXY;
             // in case scroll past EOL cursor can be behind the line end
             WP.Char := Min(Length(LineText), WP.Char);
-            if IsWordBreakChar(LineText[WP.Char - 1]) then
+            if (WP.Char > 1) and IsWordBreakChar(LineText[WP.Char - 1]) then
               WP.Char := StrRScanForCharInCategory(LineText, WP.Char - 1, IsIdentChar) + 1;
             // now we move to word start
             WP := WordStartEx(WP);
