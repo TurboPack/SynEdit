@@ -66,6 +66,7 @@ type
     FStartPos: Integer;
     FOldValue: string;
     FNewValue: string;
+    FChangeFlags: TSynLineChangeFlags;
     FCommandProcessed: TSynEditorCommand;
   public
     function GroupWith(Item:TSynLinePutUndoItem): Boolean;
@@ -680,6 +681,7 @@ begin
   Delete(Line, FStartPos, FNewValue.Length);
   Insert(FOldValue, Line, FStartPos);
   Editor.Lines[FIndex] := Line;
+  TSynEditStringList(Editor.Lines).ChangeFlags[FIndex] := FChangeFlags;
   case FCommandProcessed of
     ecChar:
       if (FOldValue.Length = 1) and (FNewValue.Length = 1) then
@@ -719,6 +721,9 @@ begin
   begin
     Item := TSynLinePutUndoItem.Create(Editor, aIndex, OldLine,
       FSynEditUndo.FCommandProcessed);
+    Item.FChangeFlags := TSynEditStringList(Editor.Lines).ChangeFlags[aIndex];
+    TSynEditStringList(Editor.Lines).ChangeFlags[aIndex] :=
+      Item.FChangeFlags + [sfModified];
     FSynEditUndo.AddUndoItem(Item);
   end;
 end;
