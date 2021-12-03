@@ -6154,7 +6154,11 @@ begin
         end;
       ecDown, ecSelDown:
         begin
-          MoveCaretVert(1, Command = ecSelDown);
+          { on the last line we will select last line too }
+          if CaretY = Lines.Count then
+            DoEndKey(Command = ecSelDown)
+          else
+            MoveCaretVert(1, Command = ecSelDown);
           Update;
         end;
       ecPageUp, ecSelPageUp, ecPageDown, ecSelPageDown:
@@ -6165,7 +6169,11 @@ begin
           if (Command in [ecPageUp, ecSelPageUp]) then
             counter := -counter;
           TopLine := TopLine + counter;
-          MoveCaretVert(counter, Command in [ecSelPageUp, ecSelPageDown]);
+          { on the last line we will select last line too }
+          if CaretY = Lines.Count then
+            DoEndKey(Command = ecSelPageDown)
+          else
+            MoveCaretVert(counter, Command in [ecSelPageUp, ecSelPageDown]);
           Update;
         end;
       ecPageTop, ecSelPageTop:
