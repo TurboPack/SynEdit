@@ -6149,7 +6149,11 @@ begin
 // vertical caret movement or selection
       ecUp, ecSelUp:
         begin
-          MoveCaretVert(-1, Command = ecSelUp);
+          { on the first line we select first line too }
+          if CaretY = 1 then
+            DoHomeKey(Command = ecSelUp)            
+          else
+            MoveCaretVert(-1, Command = ecSelUp);
           Update;
         end;
       ecDown, ecSelDown:
@@ -6169,8 +6173,12 @@ begin
           if (Command in [ecPageUp, ecSelPageUp]) then
             counter := -counter;
           TopLine := TopLine + counter;
+          { on the first line we will select first line too }
+          if (Command in [ecPageUp, ecSelPageUp]) and (CaretY = 1) then
+            DoHomeKey(Command = ecSelPageUp)
+          else
           { on the last line we will select last line too }
-          if CaretY = Lines.Count then
+          if (Command in [ecPageDown, ecSelPageDown]) and (CaretY = Lines.Count) then
             DoEndKey(Command = ecSelPageDown)
           else
             MoveCaretVert(counter, Command in [ecSelPageUp, ecSelPageDown]);
@@ -6516,7 +6524,8 @@ begin
               if fLines.Count = 0 then
                 fLines.Add('');
               SpaceCount2 := 0;
-              if eoAutoIndent in Options then
+              { Autoindent only in case we are not on the line begin }
+              if (eoAutoIndent in Options) and (CaretX > 1)  then
               begin
                 BackCounter := CaretY;
                 repeat
@@ -9915,5 +9924,3 @@ begin
 end;
 
 end.
-
-
