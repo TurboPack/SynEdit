@@ -3347,6 +3347,7 @@ var
   PasteMode: TSynSelectionMode;
   Mem: HGLOBAL;
   P: PByte;
+  ClipText, Spaces: string;
 begin
   if not CanPaste then
     exit;
@@ -3374,7 +3375,13 @@ begin
     end;
   end;
   // SetSelTextPrimitiveEx Encloses the undo actions in Begin/EndUndoBlock
-  SetSelTextPrimitiveEx(PasteMode, GetClipboardText, True);
+  ClipText := GetClipboardText;
+  if eoTabsToSpaces in Options then
+  begin
+    Spaces := StringOfChar(#32, TabWidth);
+    ClipText := StringReplace(ClipText, #9, Spaces, [rfReplaceAll]);
+  end;
+  SetSelTextPrimitiveEx(PasteMode, ClipText, True);
 
   EnsureCursorPosVisible;
   DoOnPaintTransient(ttAfter);
