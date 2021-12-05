@@ -49,11 +49,11 @@ type
   TSynEditRange = Pointer;
 
   TSynEditStringFlag = (sfHasTabs, sfHasNoTabs, sfExpandedLengthUnknown,
-    sfModified, sfSaved);
+    sfModified, sfSaved, sfAsSaved);
   TSynEditStringFlags = set of TSynEditStringFlag;
 
   // Managed by Undo
-  TSynLineChangeFlag = sfModified..sfSaved;
+  TSynLineChangeFlag = sfModified..sfAsSaved;
   TSynLineChangeFlags = set of TSynLineChangeFlag;
 
   PSynEditStringRec = ^TSynEditStringRec;
@@ -373,7 +373,7 @@ end;
 function TSynEditStringList.GetChangeFlags(Index: Integer): TSynLineChangeFlags;
 begin
   if (Index >= 0) and (Index < FCount) then
-    Result :=  FList^[Index].FFlags * [sfModified, sfSaved]
+    Result :=  FList^[Index].FFlags * [sfModified..sfAsSaved]
   else
     Result := [];
 end;
@@ -727,7 +727,7 @@ procedure TSynEditStringList.SetChangeFlags(Index: Integer;
   const Value: TSynLineChangeFlags);
 begin
   if (Index >= 0) and (Index < FCount) then
-    FList^[Index].FFlags :=  FList^[Index].FFlags - [sfModified, sfSaved]
+    FList^[Index].FFlags :=  FList^[Index].FFlags - [sfModified..sfAsSaved]
      + Value;
 end;
 
@@ -773,7 +773,7 @@ begin
     begin
       Size := Length(Value);
       Pmax := P + Length(Value);
-      while (P <= Pmax) do
+      while (P < Pmax) do
       begin
         Start := P;
         while (P < Pmax) and ((Word(P^) > 13) or
