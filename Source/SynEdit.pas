@@ -3859,9 +3859,12 @@ var
         end;
       smColumn:
         begin
-            // swap X if needed
+          // swap X if needed
           if BB.Char > BE.Char then
             SwapInt(Integer(BB.Char), Integer(BE.Char));
+          // swap Y if needed
+          if BB.Line > BE.Line then
+            SwapInt(Integer(BB.Line), Integer(BE.Line));
 
           for I := BB.Line - 1 to BE.Line - 1 do
           begin
@@ -3869,8 +3872,8 @@ var
             Delete(TempString, BB.Char, BE.Char - BB.Char);
             ProperSetLine(I, TempString);
           end;
-          // Lines never get deleted completely, so keep caret at end.
-          CaretXY := BufferCoord(BB.Char, fBlockEnd.Line);
+          // Lines never get deleted completely, so keep caret on the begin.
+          CaretXY := BB;
           // Column deletion never removes a line entirely, so no mark
           // updating is needed here.
         end;
