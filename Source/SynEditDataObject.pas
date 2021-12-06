@@ -182,7 +182,9 @@ begin
         Medium.hGlobal := MakeGlobal(FText)
       else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
         Medium.hGlobal := MakeGlobal(MemoryStream.Memory^, MemoryStream.Position)
-      else if FormatEtcIn.cfFormat = HTMLClipboardFormat then
+      else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) and
+        (HtmlStream.Size > 0)
+      then
         Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position)
       else
         Exit;
