@@ -172,23 +172,17 @@ end;
 
 function TSynEditDataObject.GetData (const formatetcIn: TFormatEtc; out medium: TStgMedium): HResult;
 begin
+  ZeroMemory (@Medium, sizeof (TStgMedium));
+  Result := QueryGetData(formatetcIn);
+  if Result = S_OK then
   try
-    Result := DV_E_FORMATETC;
-    ZeroMemory (@Medium, sizeof (TStgMedium));
-    if (FormatEtcIn.tymed and TYMED_HGLOBAL = TYMED_HGLOBAL) and
-      FFormatEtc.Contains(FormatEtcIn.cfFormat) then
-    begin
-      Medium.tymed := TYMED_HGLOBAL;
-      if FormatEtcIn.cfFormat = CF_UNICODETEXT then
-        Medium.hGlobal := MakeGlobal(FText)
-      else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
-        Medium.hGlobal := MakeGlobal(MemoryStream.Memory^, MemoryStream.Position)
-      else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) then
-        Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position)
-      else
-        Exit;
-      Result := S_OK
-    end
+    Medium.tymed := TYMED_HGLOBAL;
+    if FormatEtcIn.cfFormat = CF_UNICODETEXT then
+      Medium.hGlobal := MakeGlobal(FText)
+    else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
+      Medium.hGlobal := MakeGlobal(MemoryStream.Memory^, MemoryStream.Position)
+    else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) then
+      Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position);
   except
     Result := E_UNEXPECTED;
   end
@@ -218,15 +212,13 @@ begin
 end;
 
 function TSynEditDataObject.QueryGetData (const formatetc: TFormatEtc): HResult;
-Var
-  ClipFormat : TClipFormat;
 begin
-  for ClipFormat in FFormatEtc do
-    if (formatetc.cfFormat = ClipFormat)  and
-      (formatetc.tymed and TYMED_HGLOBAL = TYMED_HGLOBAL)
-    then
-      Exit(S_OK);
-  Exit(DV_E_FORMATETC);
+  if (formatetc.tymed and TYMED_HGLOBAL = TYMED_HGLOBAL) and
+    FFormatEtc.Contains(formatetc.cfFormat)
+  then
+    Result := S_OK
+  else
+    Result := DV_E_FORMATETC;
 end;
 
 function TSynEditDataObject.GetCanonicalFormatEtc (const formatetc: TFormatEtc; out formatetcOut: TFormatEtc): HResult;
