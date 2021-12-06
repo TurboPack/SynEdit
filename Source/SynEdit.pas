@@ -6133,6 +6133,7 @@ var
   counter: Integer;
   vCaretRow: Integer;
   s: string;
+  SaveLastCaretX: Integer;
 
 begin
   IncPaintLock;
@@ -6158,7 +6159,11 @@ begin
         begin
           { on the first line we select first line too }
           if CaretY = 1 then
-            DoHomeKey(Command = ecSelUp)            
+          begin
+            SaveLastCaretX := fLastCaretX;
+            DoHomeKey(Command = ecSelUp);
+            fLastCaretX := SaveLastCaretX;
+          end
           else
             MoveCaretVert(-1, Command = ecSelUp);
           Update;
@@ -6167,7 +6172,11 @@ begin
         begin
           { on the last line we will select last line too }
           if CaretY = Lines.Count then
-            DoEndKey(Command = ecSelDown)
+          begin
+            SaveLastCaretX := fLastCaretX;
+            DoEndKey(Command = ecSelDown);
+            fLastCaretX := SaveLastCaretX;
+          end
           else
             MoveCaretVert(1, Command = ecSelDown);
           Update;
@@ -6182,11 +6191,19 @@ begin
           TopLine := TopLine + counter;
           { on the first line we will select first line too }
           if (Command in [ecPageUp, ecSelPageUp]) and (CaretY = 1) then
-            DoHomeKey(Command = ecSelPageUp)
+          begin
+            SaveLastCaretX := fLastCaretX;
+            DoHomeKey(Command = ecSelPageUp);
+            fLastCaretX := SaveLastCaretX;
+          end
           else
           { on the last line we will select last line too }
           if (Command in [ecPageDown, ecSelPageDown]) and (CaretY = Lines.Count) then
-            DoEndKey(Command = ecSelPageDown)
+          begin
+            SaveLastCaretX := fLastCaretX;
+            DoEndKey(Command = ecSelPageDown);
+            fLastCaretX := SaveLastCaretX;
+          end
           else
             MoveCaretVert(counter, Command in [ecSelPageUp, ecSelPageDown]);
           Update;
