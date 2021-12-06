@@ -175,16 +175,15 @@ begin
   try
     Result := DV_E_FORMATETC;
     ZeroMemory (@Medium, sizeof (TStgMedium));
-    if FormatEtcIn.tymed and TYMED_HGLOBAL = TYMED_HGLOBAL then
+    if (FormatEtcIn.tymed and TYMED_HGLOBAL = TYMED_HGLOBAL) and
+      FFormatEtc.Contains(FormatEtcIn.cfFormat) then
     begin
       Medium.tymed := TYMED_HGLOBAL;
       if FormatEtcIn.cfFormat = CF_UNICODETEXT then
         Medium.hGlobal := MakeGlobal(FText)
       else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
         Medium.hGlobal := MakeGlobal(MemoryStream.Memory^, MemoryStream.Position)
-      else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) and
-        (HtmlStream.Size > 0)
-      then
+      else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) then
         Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position)
       else
         Exit;
