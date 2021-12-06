@@ -153,7 +153,9 @@ begin
   fText := (ASynEdit as TCustomSynEdit).SelText;
   MemoryStream.Write((ASynEdit as TCustomSynEdit).ActiveSelectionMode,
     SizeOf(TCustomSynEdit(ASynEdit).ActiveSelectionMode));
-  if Assigned(TCustomSynEdit(ASynEdit).Highlighter) then
+  if not (eoCopyPlainText in TCustomSynEdit(ASynEdit).Options) and
+    Assigned(TCustomSynEdit(ASynEdit).Highlighter)
+  then
   begin
     FFormatEtc.Add(HTMLClipboardFormat); // HTMLFormat
     StreamHtml(ASynEdit, HtmlStream);

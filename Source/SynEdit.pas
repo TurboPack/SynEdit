@@ -146,7 +146,8 @@ type
     eoTabIndent,               //When active <Tab> and <Shift><Tab> act as block indent, unindent when text is selected
     eoTabsToSpaces,            //Converts a tab character to a specified number of space characters
     eoTrimTrailingSpaces,      //Spaces at the end of lines will be trimmed and not saved
-    eoShowLigatures            //Shows font ligatures, by default it is disabled
+    eoShowLigatures,           //Shows font ligatures, by default it is disabled
+    eoCopyPlainText            //Do not include additional clipboard formats when you copy to Clipboard or drag text
     );
 
   TSynEditorOptions = set of TSynEditorOption;
