@@ -121,13 +121,13 @@ type
     property Width: Integer read FWidth write SetWidth default 4;
     property Visible: Boolean read FVisible write SetVisible default False;
     property SavedColor: TColor read FSavedColor write SetSavedColor
-      default clGreen;
+      default $0033AA33;
     property ModifiedColor: TColor read FModifiedColor write SetModifiedColor
-      default clYellow;
-    property SavedModifiedColor: TColor read FModifiedColor
+      default $0000DFFF;
+    property SavedModifiedColor: TColor read FSavedModifiedColor
       write SetSavedModifiedColor default clWebOrange;
     property OriginalColor: TColor read FOriginalColor write SetOriginalColor
-      default clBlue;
+      default $FF6633;
   end;
 
   TSynGutterBand = class(TCollectionItem)
@@ -2308,10 +2308,10 @@ begin
   inherited Create;
   FOwner := Gutter;
   FWidth := 4;
-  FSavedColor := clGreen;
-  FModifiedColor := clYellow;
+  FSavedColor := $33AA33;
+  FModifiedColor := $0000DFFF;
   FSavedModifiedColor :=  clWebOrange;
-  FOriginalColor := clBlue;
+  FOriginalColor := $00FF6633;
 end;
 
 function TSynTrackChanges.GetOwner: TPersistent;
