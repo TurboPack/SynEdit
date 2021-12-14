@@ -128,16 +128,11 @@ type
   TSynEditUndoList = class(TObjectStack<TSynUndoItem>)
   protected
     FOwner: TSynEditUndo;
-    FBlockChangeNumber: Integer;
-    FNextChangeNumber: Integer;
     FFullUndoImposible: Boolean;
     procedure EnsureMaxEntries;
-    function NextChangeNumber: Integer;
   public
     constructor Create(Owner: TSynEditUndo);
     procedure Push(const Value: TSynUndoItem);
-    property BlockChangeNumber: Integer read FBlockChangeNumber
-      write FBlockChangeNumber;
   end;
 
   TSynEditUndo = class(TInterfacedObject, ISynEditUndo)
@@ -146,6 +141,8 @@ type
     FGroupUndo: Boolean;
     FBlockCount: Integer;
     FLockCount: Integer;
+    FBlockChangeNumber: Integer;
+    FNextChangeNumber: Integer;
     FInitialChangeNumber: Integer;
     FMaxUndoActions: Integer;
     FBlockStartModified: Boolean;
@@ -177,6 +174,7 @@ type
     procedure BufferSaved(Lines: TStrings);
     procedure ClearTrackChanges(Lines: TStrings);
 
+    function NextChangeNumber: Integer;
     procedure AddGroupBreak;
     procedure AddUndoItem(Item: TSynUndoItem);
   public
@@ -189,7 +187,6 @@ type
 constructor TSynEditUndoList.Create(Owner: TSynEditUndo);
 begin
   inherited Create(True);
-  FNextChangeNumber := 1;
   FOwner := Owner;
 end;
 
@@ -214,18 +211,8 @@ begin
   end;
 end;
 
-function TSynEditUndoList.NextChangeNumber: Integer;
-begin
-  Result := FNextChangeNumber;
-  Inc(FNextChangeNumber);
-end;
-
 procedure TSynEditUndoList.Push(const Value: TSynUndoItem);
 begin
-  if FBlockChangeNumber <> 0 then
-    Value.ChangeNumber := FBlockChangeNumber
-  else
-    Value.ChangeNumber := NextChangeNumber;
   inherited Push(Value);
   EnsureMaxEntries;
 end;
@@ -238,6 +225,10 @@ var
 begin
   Assert(not FInsideUndoRedo);
   OldModified := GetModified;
+  if FBlockChangeNumber <> 0 then
+    Item.ChangeNumber := FBlockChangeNumber
+  else
+    Item.ChangeNumber := NextChangeNumber;
   FUndoList.Push(Item);
   FRedoList.Clear;
   // Do not sent unnecessary notifications
@@ -259,9 +250,10 @@ begin
   if FBlockCount = 1 then // it was 0
   begin
     FBlockStartModified := GetModified;
-    FUndoList.FBlockChangeNumber := FUndoList.NextChangeNumber;
+    FBlockChangeNumber := NextChangeNumber;
     // So that position is restored after Redo
     FBlockSelRestoreItem := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+    FBlockSelRestoreItem.ChangeNumber := FBlockChangeNumber;
     FUndoList.Push(FBlockSelRestoreItem);
   end;
 end;
@@ -375,6 +367,7 @@ begin
   inherited Create;
   FGroupUndo := True;
   FMaxUndoActions := 0;
+  FNextChangeNumber := 1;
   FUndoList := TSynEditUndoList.Create(Self);
   FRedoList := TSynEditUndoList.Create(Self);
   FPlugin := TSynUndoPlugin.Create(Self, Editor);
@@ -404,10 +397,11 @@ begin
       begin
         // So that position is restored after Redo
         Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+        Item.ChangeNumber := FBlockChangeNumber;
         FUndoList.Push(Item);
       end;
 
-      FUndoList.FBlockChangeNumber := 0;
+      FBlockChangeNumber := 0;
       AddGroupBreak;
       if FBlockStartModified xor GetModified and Assigned(FOnModifiedChanged) then
         FOnModifiedChanged(Self);
@@ -458,6 +452,12 @@ begin
   Inc(FLockCount);
 end;
 
+function TSynEditUndo.NextChangeNumber: Integer;
+begin
+  Result := FNextChangeNumber;
+  Inc(FNextChangeNumber);
+end;
+
 procedure TSynEditUndo.Redo(Editor: TControl);
 var
   Item, LastItem: TSynUndoItem;
@@ -466,54 +466,49 @@ var
   FKeepGoing: Boolean;
   LastItemHasGroupBreak: Boolean;
 begin
-  Assert((FBlockCount = 0) and (FRedoList.FBlockChangeNumber = 0) and
-   (FRedoList.FBlockChangeNumber = 0));
+  Assert((FBlockCount = 0) and (FBlockChangeNumber = 0));
 
   if FRedoList.Count > 0 then
   begin
     Item := FRedoList.Peek;
     OldModified := GetModified;
     OldChangeNumber := Item.ChangeNumber;
-    FUndoList.BlockChangeNumber := OldChangeNumber;//FUndoList.NextChangeNumber;
-    try
-      repeat
-        Item := FRedoList.Extract;
-        LastItemHasGroupBreak := Item.GroupBreak;
-        LastItem := Item;
-        FInsideUndoRedo := True;
-        try
-          Item.Redo(Editor as TCustomSynEdit);
-        finally
-          FInsideUndoRedo := False;
-        end;
-        // Move it to the UndoList
-        FUndoList.Push(Item);
 
-        if FRedoList.Count = 0 then
-          Break
-        else
-          Item := FRedoList.Peek;
+    repeat
+      Item := FRedoList.Extract;
+      LastItemHasGroupBreak := Item.GroupBreak;
+      LastItem := Item;
+      FInsideUndoRedo := True;
+      try
+        Item.Redo(Editor as TCustomSynEdit);
+      finally
+        FInsideUndoRedo := False;
+      end;
+      // Move it to the UndoList
+      FUndoList.Push(Item);
 
-        if Item.ChangeNumber = OldChangeNumber then
-          FKeepGoing := True
-        else
-          FKeepGoing :=
-            FGroupUndo and
-            { Last Item had a group break - Stop redoing }
-            not LastItemHasGroupBreak and
-            { Group together same undo actions }
-            (LastItem is TSynLinePutUndoItem) and
-            (Item is TSynLinePutUndoItem) and
-            TSynLinePutUndoItem(LastItem).GroupWith(TSynLinePutUndoItem(Item));
-      until not(FKeepGoing);
+      if FRedoList.Count = 0 then
+        Break
+      else
+        Item := FRedoList.Peek;
 
-      if not (Item is TSynCaretAndSelectionUndoItem) then
-        (Editor as TCustomSynEdit).CaretXY := Item.FCaret;  // removes selection
-    finally
-      if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
-        FOnModifiedChanged(Self);
-      FUndoList.BlockChangeNumber := 0;
-    end;
+      if Item.ChangeNumber = OldChangeNumber then
+        FKeepGoing := True
+      else
+        FKeepGoing :=
+          FGroupUndo and
+          { Last Item had a group break - Stop redoing }
+          not LastItemHasGroupBreak and
+          { Group together same undo actions }
+          (LastItem is TSynLinePutUndoItem) and
+          (Item is TSynLinePutUndoItem) and
+          TSynLinePutUndoItem(LastItem).GroupWith(TSynLinePutUndoItem(Item));
+    until not(FKeepGoing);
+
+    if not (Item is TSynCaretAndSelectionUndoItem) then
+      (Editor as TCustomSynEdit).CaretXY := Item.FCaret;  // removes selection
+    if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
+      FOnModifiedChanged(Self);
   end;
 end;
 
@@ -567,56 +562,49 @@ var
   OldModified: Boolean;
   FKeepGoing: Boolean;
 begin
-  Assert((FBlockCount = 0) and (FRedoList.FBlockChangeNumber = 0) and
-   (FRedoList.FBlockChangeNumber = 0));
+  Assert((FBlockCount = 0) and (FBlockChangeNumber = 0));
 
   if FUndoList.Count > 0 then
   begin
     Item := FUndoList.Peek;
     OldModified := GetModified;
     OldChangeNumber := Item.ChangeNumber;
-    FRedoList.BlockChangeNumber := Item.ChangeNumber;//FRedoList.NextChangeNumber;
 
-    try
-      repeat
-        Item := FUndoList.Extract;
-        LastItem := Item;
-        FInsideUndoRedo := True;
-        try
-          Item.Undo(Editor as TCustomSynEdit);
-        finally
-          FInsideUndoRedo := False;
-        end;
-        // Move it to the RedoList
-        FRedoList.Push(Item);
+    repeat
+      Item := FUndoList.Extract;
+      LastItem := Item;
+      FInsideUndoRedo := True;
+      try
+        Item.Undo(Editor as TCustomSynEdit);
+      finally
+        FInsideUndoRedo := False;
+      end;
+      // Move it to the RedoList
+      FRedoList.Push(Item);
 
-        if FUndoList.Count = 0 then
-          Break
-        else
-          Item := FUndoList.Peek;
+      if FUndoList.Count = 0 then
+        Break
+      else
+        Item := FUndoList.Peek;
 
-        if Item.ChangeNumber = OldChangeNumber then
-          FKeepGoing := True
-        else
-          FKeepGoing :=
-            FGroupUndo and
-            { Last Item had a group break - Stop redoing }
-            not Item.GroupBreak and
-            { Group together same undo actions }
-            (LastItem is TSynLinePutUndoItem) and
-            (Item is TSynLinePutUndoItem) and
-            TSynLinePutUndoItem(Item).GroupWith(TSynLinePutUndoItem(LastItem));
-      until not(FKeepGoing);
+      if Item.ChangeNumber = OldChangeNumber then
+        FKeepGoing := True
+      else
+        FKeepGoing :=
+          FGroupUndo and
+          { Last Item had a group break - Stop redoing }
+          not Item.GroupBreak and
+          { Group together same undo actions }
+          (LastItem is TSynLinePutUndoItem) and
+          (Item is TSynLinePutUndoItem) and
+          TSynLinePutUndoItem(Item).GroupWith(TSynLinePutUndoItem(LastItem));
+    until not(FKeepGoing);
 
-      if not (LastItem is TSynCaretAndSelectionUndoItem) then
-        (Editor as TCustomSynEdit).SetCaretAndSelection(LastItem.FCaret, LastItem.FCaret,
-          LastItem.FCaret);
-    finally
-      if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
-        FOnModifiedChanged(Self);
-
-      FRedoList.BlockChangeNumber := 0;
-    end;
+    if not (LastItem is TSynCaretAndSelectionUndoItem) then
+      (Editor as TCustomSynEdit).SetCaretAndSelection(LastItem.FCaret, LastItem.FCaret,
+        LastItem.FCaret);
+    if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
+      FOnModifiedChanged(Self);
   end;
 end;
 
