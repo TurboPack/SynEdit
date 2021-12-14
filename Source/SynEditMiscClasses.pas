@@ -106,21 +106,27 @@ type
     FSavedModifiedColor: TColor;
     FOriginalColor: TColor;
     FWidth: Integer;
+    procedure SetModifiedColor(const Value: TColor);
+    procedure SetOriginalColor(const Value: TColor);
+    procedure SetSavedColor(const Value: TColor);
+    procedure SetSavedModifiedColor(const Value: TColor);
+    procedure SetVisible(const Value: Boolean);
+    procedure SetWidth(const Value: Integer);
   protected
     function GetOwner: TPersistent; override;
   public
     constructor Create(Gutter: TSynGutter);
     procedure Assign(Source: TPersistent); Override;
   published
-    property Width: Integer read FWidth write FWidth default 4;
-    property Visible: Boolean read FVisible write FVisible default False;
-    property SavedColor: TColor read FSavedColor write FSavedColor
+    property Width: Integer read FWidth write SetWidth default 4;
+    property Visible: Boolean read FVisible write SetVisible default False;
+    property SavedColor: TColor read FSavedColor write SetSavedColor
       default clGreen;
-    property ModifiedColor: TColor read FModifiedColor write FModifiedColor
+    property ModifiedColor: TColor read FModifiedColor write SetModifiedColor
       default clYellow;
-    property SavedModifiedColor: TColor read FSavedModifiedColor
-      write FSavedModifiedColor default clWebOrange;
-    property OriginalColor: TColor read FOriginalColor write FOriginalColor
+    property SavedModifiedColor: TColor read FModifiedColor
+      write SetSavedModifiedColor default clWebOrange;
+    property OriginalColor: TColor read FOriginalColor write SetOriginalColor
       default clBlue;
   end;
 
@@ -754,6 +760,7 @@ begin
     FGradientSteps := Src.FGradientSteps;
     if AssignableBands and Src.AssignableBands then
       FBands.Assign(Src.FBands);
+    FTrackChanges.Assign(Src.FTrackChanges);
     AutoSizeDigitCount;
     Changed;
   end
@@ -2310,6 +2317,65 @@ end;
 function TSynTrackChanges.GetOwner: TPersistent;
 begin
   Result := FOwner;
+end;
+
+procedure TSynTrackChanges.SetModifiedColor(const Value: TColor);
+begin
+  if FModifiedColor <> Value then
+  begin
+    FModifiedColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetOriginalColor(const Value: TColor);
+begin
+  if FOriginalColor <> Value then
+  begin
+    FOriginalColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetSavedColor(const Value: TColor);
+begin
+  if FSavedColor <> Value then
+  begin
+    FSavedColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetSavedModifiedColor(const Value: TColor);
+begin
+  if FSavedModifiedColor <> Value then
+  begin
+    FSavedModifiedColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetVisible(const Value: Boolean);
+begin
+  if FVisible <> Value then
+  begin
+    FVisible := Value;
+    FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetWidth(const Value: Integer);
+begin
+  if FWidth <> Value then
+  begin
+    FWidth := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
 end;
 
 end.
