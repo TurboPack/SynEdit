@@ -80,6 +80,7 @@ type
   private
     FIndex: Integer;
     FLines: TArray<string>;
+    FChangeFlags: TArray<TSynLineChangeFlags>;
   public
     procedure Undo(Editor: TCustomSynEdit); override;
     procedure Redo(Editor: TCustomSynEdit); override;
@@ -90,11 +91,12 @@ type
   private
     FIndex: Integer;
     FLines: TArray<string>;
+    FChangeFlags: TArray<TSynLineChangeFlags>;
   public
     procedure Undo(Editor: TCustomSynEdit); override;
     procedure Redo(Editor: TCustomSynEdit); override;
     constructor Create(Editor: TCustomSynEdit; Index: Integer; DeletedLines:
-        TArray<string>);
+        TArray<string>; DeletedChangeFlags: TArray<TSynLineChangeFlags>);
   end;
 
   TSynCaretAndSelectionUndoItem = class(TSynUndoItem)
@@ -113,6 +115,7 @@ type
   private
     FSynEditUndo: TSynEditUndo;
     FDeletedLines: TArray<string>;
+    FDeletedChangeFlags: TArray<TSynLineChangeFlags>;
   protected
     procedure LinesInserted(FirstLine, Count: Integer); override;
     procedure LinesBeforeDeleted(FirstLine, Count: Integer); override;
@@ -171,6 +174,9 @@ type
     procedure Clear;
     procedure Undo(Editor: TControl);
     procedure Redo(Editor: TControl);
+    procedure BufferSaved(Lines: TStrings);
+    procedure ClearTrackChanges(Lines: TStrings);
+
     procedure AddGroupBreak;
     procedure AddUndoItem(Item: TSynUndoItem);
   public
@@ -260,10 +266,108 @@ begin
   end;
 end;
 
+procedure TSynEditUndo.BufferSaved(Lines: TStrings);
+
+  procedure PutItemSaved(Item: TSynLinePutUndoItem);
+  begin
+    if Item.FChangeFlags = [sfAsSaved] then
+      Item.FChangeFlags := [sfModified];
+  end;
+
+  procedure InsertedItemSaved(Item: TSynLinesInsertedUndoItem);
+  var
+    I: Integer;
+  begin
+    for I := 0 to Length(Item.FChangeFlags) - 1 do
+      Item.FChangeFlags[I] := [sfModified];
+  end;
+
+  procedure DeletedItemSaved(Item: TSynLinesDeletedUndoItem);
+  var
+    I: Integer;
+  begin
+    for I := 0 to Length(Item.FChangeFlags) - 1 do
+      Item.FChangeFlags[I] := [sfModified];
+  end;
+
+var
+  SynLines: TSynEditStringList;
+  Index: Integer;
+  Flags: TSynLineChangeFlags;
+  Item: TSynUndoItem;
+begin
+  SynLines := Lines as TSynEditStringList;
+  // First change the flags of TSynEditStringList
+  for Index := 0 to SynLines.Count - 1 do
+  begin
+    Flags := SynLines.ChangeFlags[Index];
+    if Flags = [sfSaved] then
+      // original line saved and then restored
+      SynLines.ChangeFlags[Index] := []
+    else if sfModified in Flags then
+      SynLines.ChangeFlags[Index] := Flags - [sfModified] + [sfSaved, sfAsSaved];
+  end;
+  // Then modify the Undo/Redo lists
+  for Item in FUndoList do
+    if Item is TSynLinePutUndoItem then
+      PutItemSaved(TSynLinePutUndoItem(Item))
+    else if Item is TSynLinesInsertedUndoItem then
+      InsertedItemSaved(TSynLinesInsertedUndoItem(Item))
+    else if Item is TSynLinesDeletedUndoItem then
+      DeletedItemSaved(TSynLinesDeletedUndoItem(Item));
+
+  for Item in FRedoList do
+    if Item is TSynLinePutUndoItem then
+      PutItemSaved(TSynLinePutUndoItem(Item))
+    else if Item is TSynLinesInsertedUndoItem then
+      InsertedItemSaved(TSynLinesInsertedUndoItem(Item))
+    else if Item is TSynLinesDeletedUndoItem then
+      DeletedItemSaved(TSynLinesDeletedUndoItem(Item));
+end;
+
 procedure TSynEditUndo.Clear;
 begin
   FUndoList.Clear;
   FRedoList.Clear;
+end;
+
+procedure TSynEditUndo.ClearTrackChanges(Lines: TStrings);
+  procedure InsertedItemClear(Item: TSynLinesInsertedUndoItem);
+  var
+    I: Integer;
+  begin
+    for I := 0 to Length(Item.FChangeFlags) - 1 do
+      Item.FChangeFlags[I] := [sfModified];
+  end;
+
+  procedure DeletedItemClear(Item: TSynLinesDeletedUndoItem);
+  var
+    I: Integer;
+  begin
+    for I := 0 to Length(Item.FChangeFlags) - 1 do
+      Item.FChangeFlags[I] := [sfModified];
+  end;
+var
+  SynLines: TSynEditStringList;
+  Index: Integer;
+  Item: TSynUndoItem;
+begin
+  SynLines := Lines as TSynEditStringList;
+  // First change the flags of TSynEditStringList
+  for Index := 0 to SynLines.Count - 1 do
+    SynLines.ChangeFlags[Index] := [];
+  // Then modify the Undo/Redo lists
+  for Item in FUndoList do
+    if Item is TSynLinesInsertedUndoItem then
+      InsertedItemClear(TSynLinesInsertedUndoItem(Item))
+    else if Item is TSynLinesDeletedUndoItem then
+      DeletedItemClear(TSynLinesDeletedUndoItem(Item));
+
+  for Item in FRedoList do
+    if Item is TSynLinesInsertedUndoItem then
+      InsertedItemClear(TSynLinesInsertedUndoItem(Item))
+    else if Item is TSynLinesDeletedUndoItem then
+      DeletedItemClear(TSynLinesDeletedUndoItem(Item));
 end;
 
 constructor TSynEditUndo.Create(Editor: TCustomSynEdit);
@@ -370,7 +474,7 @@ begin
     Item := FRedoList.Peek;
     OldModified := GetModified;
     OldChangeNumber := Item.ChangeNumber;
-    FUndoList.BlockChangeNumber := FUndoList.NextChangeNumber;
+    FUndoList.BlockChangeNumber := OldChangeNumber;//FUndoList.NextChangeNumber;
     try
       repeat
         Item := FRedoList.Extract;
@@ -471,7 +575,7 @@ begin
     Item := FUndoList.Peek;
     OldModified := GetModified;
     OldChangeNumber := Item.ChangeNumber;
-    FRedoList.BlockChangeNumber := FRedoList.NextChangeNumber;
+    FRedoList.BlockChangeNumber := Item.ChangeNumber;//FRedoList.NextChangeNumber;
 
     try
       repeat
@@ -552,23 +656,39 @@ end;
 
 { TSynLinesDeletedUndoItem }
 
-constructor TSynLinesDeletedUndoItem.Create(Editor: TCustomSynEdit;
-  Index: Integer; DeletedLines: TArray<string>);
+constructor TSynLinesDeletedUndoItem.Create(Editor: TCustomSynEdit; Index:
+    Integer; DeletedLines: TArray<string>; DeletedChangeFlags:
+    TArray<TSynLineChangeFlags>);
 begin
   inherited Create;
   FIndex := Index;
   FLines := DeletedLines;
+  FChangeFlags := DeletedChangeFlags;
 end;
 
 procedure TSynLinesDeletedUndoItem.Redo(Editor: TCustomSynEdit);
+var
+  I: Integer;
 begin
+  // Save change flags
+  SetLength(FChangeFlags, Length(FLines));
+  for I := 0 to Length(FLines) - 1 do
+    FChangeFlags[I] := TSynEditStringList(Editor.Lines).ChangeFlags[FIndex + I];
+
   TSynEditStringList(Editor.Lines).DeleteLines(FIndex, Length(FLines));
   FCaret := BufferCoord(1, FIndex + 1);
 end;
 
 procedure TSynLinesDeletedUndoItem.Undo(Editor: TCustomSynEdit);
+var
+  I: Integer;
 begin
   TSynEditStringList(Editor.Lines).InsertStrings(FIndex, FLines);
+
+  // Restore change flags
+  for I := 0 to Length(FLines) - 1 do
+    TSynEditStringList(Editor.Lines).ChangeFlags[FIndex + I] := FChangeFlags[I];
+
   FCaret := BufferCoord(1,
     Min(Editor.Lines.Count, FIndex + Length(FLines) + 1));
 end;
@@ -577,25 +697,43 @@ end;
 
 constructor TSynLinesInsertedUndoItem.Create(Editor: TCustomSynEdit; Index,
   Count: Integer);
-Var
+var
   I: Integer;
 begin
   inherited Create;
   FIndex := Index;
   SetLength(FLines, Count);
-  for I := 0 to Count -1 do
+  for I := 0 to Count - 1 do
+  begin
     FLines[I] := Editor.Lines[Index + I];
+    // Mark the lines modified
+    TSynEditStringList(Editor.Lines).ChangeFlags[Index + I] := [sfModified];
+  end;
 end;
 
 procedure TSynLinesInsertedUndoItem.Redo(Editor: TCustomSynEdit);
+var
+  I: Integer;
 begin
   TSynEditStringList(Editor.Lines).InsertStrings(FIndex, FLines);
+
+  // Restore change flags
+  for I := 0 to Length(FLines) - 1 do
+    TSynEditStringList(Editor.Lines).ChangeFlags[FIndex + I] := FChangeFlags[I];
+
   FCaret := BufferCoord(1,
     Min(Editor.Lines.Count, FIndex + Length(FLines) + 1));
 end;
 
 procedure TSynLinesInsertedUndoItem.Undo(Editor: TCustomSynEdit);
+var
+  I: Integer;
 begin
+  // Save change flags
+  SetLength(FChangeFlags, Length(FLines));
+  for I := 0 to Length(FLines) - 1 do
+    FChangeFlags[I] := TSynEditStringList(Editor.Lines).ChangeFlags[FIndex + I];
+
   TSynEditStringList(Editor.Lines).DeleteLines(FIndex, Length(FLines));
   FCaret := BufferCoord(1, FIndex + 1);
 end;
@@ -633,7 +771,7 @@ begin
     Dec(Len1);
     Dec(Len2);
     Inc(FStartPos);
-  end;  
+  end;
   // Compare from end
   while (Len1 > 0) and (Len2 > 0) and
     (OldLine[Len1 + FStartPos - 1] = Line[len2 + FStartPos - 1]) do
@@ -644,18 +782,33 @@ begin
 
   FOldValue := Copy(OldLine, FStartPos, Len1);
   FNewValue := Copy(Line, FStartPos, Len2);
+
+  FChangeFlags := TSynEditStringList(Editor.Lines).ChangeFlags[Index] -
+    [sfSaved];
+  TSynEditStringList(Editor.Lines).ChangeFlags[Index] :=
+    TSynEditStringList(Editor.Lines).ChangeFlags[Index] +
+      [sfModified] - [sfAsSaved];
 end;
 
 procedure TSynLinePutUndoItem.Redo(Editor: TCustomSynEdit);
 var
   Line: string;
   Char: Integer;
+  TempCF: TSynLineChangeFlags;
 begin
   Line := Editor.Lines[FIndex];
   // Delete New
   Delete(Line, FStartPos, FOldValue.Length);
   Insert(FNewValue, Line, FStartPos);
   Editor.Lines[FIndex] := Line;
+  // Swap change flags
+  TempCF := FChangeFlags;
+  FChangeFlags := TSynEditStringList(Editor.Lines).ChangeFlags[FIndex] -
+    [sfSaved];
+  TSynEditStringList(Editor.Lines).ChangeFlags[FIndex] :=
+    TSynEditStringList(Editor.Lines).ChangeFlags[FIndex]
+    - [sfModified, sfAsSaved] + TempCF;
+  // Guess Caret position
   case FCommandProcessed of
     ecChar:
       if (FOldValue.Length = 1) and (FNewValue.Length = 1) then
@@ -666,7 +819,7 @@ begin
     ecDeleteWord,
     ecDeleteEOL:  Char := FStartPos;
   else
-    Char := FStartPos + FNewValue.Length;      
+    Char := FStartPos + FNewValue.Length;
   end;
   FCaret := BufferCoord(Char, FIndex + 1);
 end;
@@ -675,13 +828,21 @@ procedure TSynLinePutUndoItem.Undo(Editor: TCustomSynEdit);
 var
   Line: string;
   Char: Integer;
+  TempCF: TSynLineChangeFlags;
 begin
   Line := Editor.Lines[FIndex];
   // Delete New
   Delete(Line, FStartPos, FNewValue.Length);
   Insert(FOldValue, Line, FStartPos);
   Editor.Lines[FIndex] := Line;
-  TSynEditStringList(Editor.Lines).ChangeFlags[FIndex] := FChangeFlags;
+  // Swap change flags
+  TempCF := FChangeFlags;
+  FChangeFlags := TSynEditStringList(Editor.Lines).ChangeFlags[FIndex] -
+    [sfSaved];
+  TSynEditStringList(Editor.Lines).ChangeFlags[FIndex] :=
+    TSynEditStringList(Editor.Lines).ChangeFlags[FIndex]
+    - [sfModified, sfAsSaved] + TempCF;
+  // Guess Caret position
   case FCommandProcessed of
     ecChar:
       if (FOldValue.Length = 1) and (FNewValue.Length = 1) then
@@ -692,7 +853,7 @@ begin
     ecDeleteWord,
     ecDeleteEOL:  Char := FStartPos;
   else
-    Char := FStartPos + FOldValue.Length;      
+    Char := FStartPos + FOldValue.Length;
   end;
   FCaret := BufferCoord(Char, FIndex + 1);
 end;
@@ -721,9 +882,6 @@ begin
   begin
     Item := TSynLinePutUndoItem.Create(Editor, aIndex, OldLine,
       FSynEditUndo.FCommandProcessed);
-    Item.FChangeFlags := TSynEditStringList(Editor.Lines).ChangeFlags[aIndex];
-    TSynEditStringList(Editor.Lines).ChangeFlags[aIndex] :=
-      Item.FChangeFlags + [sfModified];
     FSynEditUndo.AddUndoItem(Item);
   end;
 end;
@@ -736,9 +894,15 @@ begin
   then
     Exit;
 
+  // Save deleted lines and change flags
   SetLength(FDeletedLines, Count);
+  SetLength(FDeletedChangeFlags, Count);
   for I := 0 to Count -1 do
+  begin
     FDeletedLines[I] := Editor.Lines[FirstLine + I];
+    FDeletedChangeFlags[I] :=
+      TSynEditStringList(Editor.Lines).ChangeFlags[FirstLine + I];
+  end;
 end;
 
 procedure TSynUndoPlugin.LinesDeleted(FirstLine, Count: Integer);
@@ -752,7 +916,7 @@ begin
   if Count > 0 then
   begin
     Item := TSynLinesDeletedUndoItem.Create(Editor, FirstLine,
-      FDeletedLines);
+      FDeletedLines, FDeletedChangeFlags);
     FSynEditUndo.AddUndoItem(Item);
   end;
 end;

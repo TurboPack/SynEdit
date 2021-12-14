@@ -195,6 +195,10 @@ type
     {Note: Undo/Redo are not reentrant}
     procedure Undo(Editor: TControl);
     procedure Redo(Editor: TControl);
+    {TrackChanges stuff}
+    procedure BufferSaved(Lines: TStrings);
+    procedure ClearTrackChanges(Lines: TStrings);
+
     property CanRedo: Boolean read GetCanRedo;
     property CanUndo: Boolean read GetCanUndo;
     property GroupUndo: Boolean write SetGroupUndo;

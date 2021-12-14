@@ -97,6 +97,33 @@ type
     gbkTrackChanges);
   TSynGutterBandBackground = (gbbNone, gbbGutter, gbbEditor);
 
+  TSynTrackChanges = class(TPersistent)
+  private
+    FOwner: TSynGutter;
+    FVisible: Boolean;
+    FSavedColor: TColor;
+    FModifiedColor: TColor;
+    FSavedModifiedColor: TColor;
+    FOriginalColor: TColor;
+    FWidth: Integer;
+  protected
+    function GetOwner: TPersistent; override;
+  public
+    constructor Create(Gutter: TSynGutter);
+    procedure Assign(Source: TPersistent); Override;
+  published
+    property Width: Integer read FWidth write FWidth default 4;
+    property Visible: Boolean read FVisible write FVisible default False;
+    property SavedColor: TColor read FSavedColor write FSavedColor
+      default clGreen;
+    property ModifiedColor: TColor read FModifiedColor write FModifiedColor
+      default clYellow;
+    property SavedModifiedColor: TColor read FSavedModifiedColor
+      write FSavedModifiedColor default clWebOrange;
+    property OriginalColor: TColor read FOriginalColor write FOriginalColor
+      default clBlue;
+  end;
+
   TSynGutterBand = class(TCollectionItem)
   public const
     MarginX = 2;
@@ -119,6 +146,8 @@ type
     procedure PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
       const FirstRow, LastRow: Integer);
     procedure PaintMargin(Canvas: TCanvas; ClipR: TRect;
+      const FirstRow, LastRow: Integer);
+    procedure PaintTrackChanges(Canvas: TCanvas; ClipR: TRect;
       const FirstRow, LastRow: Integer);
     procedure SetBackground(const Value: TSynGutterBandBackground);
     procedure SetVisible(const Value: Boolean);
@@ -200,6 +229,7 @@ type
     FGradientEndColor: TColor;
     FGradientSteps: Integer;
     FInternalImage: TSynInternalImage;
+    FTrackChanges: TSynTrackChanges;
     FBands: TSynBandsCollection;
     procedure SetAutoSize(const Value: Boolean);
     procedure SetBorderColor(const Value: TColor);
@@ -271,6 +301,8 @@ type
       write SetGradientEndColor default clBtnFace;
     property GradientSteps: Integer read FGradientSteps write SetGradientSteps
       default 48;
+    property TrackChanges: TSynTrackChanges read FTrackChanges
+      write FTrackChanges;
     property Bands: TSynBandsCollection read FBands write SetBands;
     property OnChange: TNotifyEvent read fOnChange write fOnChange;
   end;
@@ -480,7 +512,7 @@ uses
   SynEditMiscProcs,
   SynEditCodeFolding,
   SynTextDrawer,
-  SynEdit;
+  SynEdit, SynEditTextBuffer;
 
 {$IF CompilerVersion <= 32}
 procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
@@ -659,12 +691,15 @@ begin
 
   AutoSizeDigitCount;
 
+  FTrackChanges := TSynTrackChanges.Create(Self);
+
   FBands := TSynBandsCollection.Create(Self, TSynGutterBand);
   Bands.BeginUpdate;
   try
     AddBand(gbkMarks, 13, True);
     AddBand(gbkLineNumbers, 0, False);
     AddBand(gbkFold, 0, False);
+    AddBand(gbkTrackChanges, 0, False);
     AddBand(gbkMargin, 3, True);
   finally
     Bands.EndUpdate;
@@ -682,6 +717,7 @@ destructor TSynGutter.Destroy;
 begin
   FOwner := nil;
   FFont.Free;
+  FTrackChanges.Free;
   FBands.Free;
   FInternalImage.Free;
   inherited Destroy;
@@ -1735,6 +1771,8 @@ begin
       PaintLineNumbers(Canvas, ClipR, FirstRow, LastRow);
     gbkFold:
       PaintFoldShapes(Canvas, ClipR, FirstRow, LastRow);
+    gbkTrackChanges:
+      PaintTrackChanges(Canvas, ClipR, FirstRow, LastRow);
     gbkMargin:
       PaintMargin(Canvas, ClipR, FirstRow, LastRow);
   end;
@@ -1819,13 +1857,15 @@ begin
       Result := Assigned(Gutter) and Gutter.ShowLineNumbers;
     gbkFold:
       Result := Assigned(Editor) and TCustomSynEdit(Editor).UseCodeFolding;
+    gbkTrackChanges:
+      Result := Assigned(Gutter) and Gutter.TrackChanges.Visible;
   end;
 end;
 
 function TSynGutterBand.GetWidth: Integer;
 begin
   case FKind of
-    gbkLineNumbers, gbkFold:
+    gbkLineNumbers, gbkFold, gbkTrackChanges:
       Result := 0;
   else
     Result := FWidth;
@@ -1834,12 +1874,12 @@ end;
 
 function TSynGutterBand.IsVisibleStored: Boolean;
 begin
-  Result := FVisible and not(FKind in [gbkLineNumbers, gbkFold]);
+  Result := FVisible and not(FKind in [gbkLineNumbers, gbkFold, gbkTrackChanges]);
 end;
 
 function TSynGutterBand.IsWidthStored: Boolean;
 begin
-  Result := not(FKind in [gbkLineNumbers, gbkFold]);
+  Result := not(FKind in [gbkLineNumbers, gbkFold, gbkTrackChanges]);
 end;
 
 procedure TSynGutterBand.PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
@@ -2108,6 +2148,49 @@ begin
   end
 end;
 
+procedure TSynGutterBand.PaintTrackChanges(Canvas: TCanvas; ClipR: TRect;
+  const FirstRow, LastRow: Integer);
+var
+  SynEdit: TCustomSynEdit;
+  Row, Line: Integer;
+  LineTop: Integer;
+  LineRect: TRect;
+  PPI: Integer;
+  Color: TColor;
+  Flags: TSynLineChangeFlags;
+begin
+  SynEdit := TCustomSynEdit(Editor);
+  Assert(Assigned(Gutter));
+  Assert(Assigned(SynEdit));
+  PPI := Gutter.FCurrentPPI;
+
+  for Row := FirstRow to LastRow do
+  begin
+    Line := SynEdit.RowToLine(Row);
+    if (Line < 1) or (Line > SynEdit.Lines.Count) then Continue;
+
+    LineTop := (Row - SynEdit.TopLine) * SynEdit.LineHeight;
+    Flags := TSynEditStringList(SynEdit.Lines).ChangeFlags[Line - 1];
+    Color := clNone;
+    if Flags = [sfModified] then
+      Color := Gutter.TrackChanges.ModifiedColor
+    else if Flags = [sfSaved, sfAsSaved] then
+      Color := Gutter.TrackChanges.SavedColor
+    else if Flags = [sfSaved] then
+      Color := Gutter.TrackChanges.OriginalColor
+    else if Flags = [sfSaved, sfModified] then
+      Color := Gutter.TrackChanges.SavedModifiedColor;
+
+    if Color <> clNone then
+    begin
+      LineRect := Rect(ClipR.Left + MulDiv(MarginX, PPI, 96), LineTop,
+        ClipR.Right, LineTop + SynEdit.LineHeight);
+      Canvas.Brush.Color := Color;
+      Canvas.FillRect(LineRect);
+    end;
+  end;
+end;
+
 function TSynGutterBand.RealWidth: Integer;
 var
   PPI: Integer;
@@ -2125,6 +2208,8 @@ begin
       gbkFold:
         Result := TCustomSynEdit(Editor).CodeFolding.ScaledGutterShapeSize(PPI)
           + MulDiv(MarginX, PPI, 96);
+      gbkTrackChanges:
+        Result := MulDiv(Gutter.TrackChanges.Width + MarginX, PPI, 96);
     else
       Result := MulDiv(FWidth, PPI, 96);
     end
@@ -2190,6 +2275,41 @@ begin
   Gutter := TSynGutter(GetOwner);
   if Assigned(Gutter) then
     Gutter.Changed;
+end;
+
+{ TTrackChanges }
+
+procedure TSynTrackChanges.Assign(Source: TPersistent);
+var
+  Src: TSynTrackChanges;
+begin
+  if Assigned(Source) and (Source is TSynTrackChanges) then
+  begin
+    Src := TSynTrackChanges(Source);
+    FWidth := Src.Width;
+    FSavedColor := Src.SavedColor;
+    FModifiedColor := Src.ModifiedColor;
+    FSavedModifiedColor :=  Src.SavedModifiedColor;
+    FOriginalColor := Src.OriginalColor;
+  end
+  else
+    inherited;
+end;
+
+constructor TSynTrackChanges.Create(Gutter: TSynGutter);
+begin
+  inherited Create;
+  FOwner := Gutter;
+  FWidth := 4;
+  FSavedColor := clGreen;
+  FModifiedColor := clYellow;
+  FSavedModifiedColor :=  clWebOrange;
+  FOriginalColor := clBlue;
+end;
+
+function TSynTrackChanges.GetOwner: TPersistent;
+begin
+  Result := FOwner;
 end;
 
 end.

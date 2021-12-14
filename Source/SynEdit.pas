@@ -681,6 +681,8 @@ type
     procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
     procedure ClearUndo;
+    procedure ClearTrackChanges;
+    procedure MarkSaved;
     procedure CopyToClipboard;
     procedure CutToClipboard;
     procedure DoCopyToClipboard(const SText: string);
@@ -6840,6 +6842,12 @@ begin
     SelText := '';
 end;
 
+procedure TCustomSynEdit.ClearTrackChanges;
+begin
+  fUndoRedo.ClearTrackChanges(Lines);
+  InvalidateGutter;
+end;
+
 function TCustomSynEdit.NextWordPosEx(const XY: TBufferCoord): TBufferCoord;
 var
   CX, CY, LineLen: Integer;
@@ -7049,6 +7057,12 @@ begin
   InvalidateGutter;
 end;
 
+procedure TCustomSynEdit.MarkSaved;
+begin
+  fUndoRedo.BufferSaved(Lines);
+  InvalidateGutter;
+end;
+
 function TCustomSynEdit.GetSelStart: integer;
 begin
   if GetSelAvail then
@@ -7143,6 +7157,7 @@ end;
 procedure TCustomSynEdit.ClearUndo;
 begin
   fUndoRedo.Clear;
+  ClearTrackChanges;
 end;
 
 procedure TCustomSynEdit.SetGutter(const Value: TSynGutter);
