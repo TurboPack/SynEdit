@@ -294,12 +294,13 @@ const
   SpaceString: string = ' ';
 {$ENDIF}
 var
-  Glyphs: array of WideChar;
-  CharPlaceInfo: TGCPResults;
   TextOutFlags: DWORD;
 {$IFDEF SYN_UNISCRIBE}
   GlyphBufferSize: Integer;
   saa: TScriptStringAnalysis;
+{$ELSE}
+  Glyphs: array of WideChar;
+  CharPlaceInfo: TGCPResults;
 {$ENDIF}
 begin
   TextOutFlags := 0;
@@ -309,59 +310,54 @@ begin
     TextOutFlags := TextOutFlags or ETO_CLIPPED;
 
 {$IFDEF SYN_UNISCRIBE}
-  if Usp10IsInstalled then
-  begin
-    // UniScribe requires that the string contains at least one character.
-    // If UniversalExtTextOut should be used to fill the background we can just
-    // pass a string made of a space.
-    if Count <= 0 then
-      if tooOpaque in Options then
-      begin
-        // Clipping is necessary, since depending on X, Y the space will be
-        // printed outside Rect and potentially fill more than we want.
-        TextOutFlags := TextOutFlags or ETO_CLIPPED;
-        Str := PWideChar(SpaceString);
-        Count := 1;
-      end
-      else
-      begin
-        Result := False;
-        Exit;
-      end;
-
-    // According to the MS Windows SDK (1.5 * Count + 16) is the recommended
-    // value for GlyphBufferSize (see documentation of cGlyphs parameter of
-    // ScriptStringAnalyse function)
-    GlyphBufferSize := (3 * Count) div 2 + 16;
-
-    Result := Succeeded(ScriptStringAnalyse(DC, Str, Count, GlyphBufferSize, -1,
-      SSAnalyseFlags, 0, nil, nil, Pointer(ETODist), nil, nil, @saa));
-    Result := Result and Succeeded(ScriptStringOut(saa, X, Y, TextOutFlags,
-      @Rect, 0, 0, False));
-    Result := Result and Succeeded(ScriptStringFree(@saa));
-  end
-  else
-{$ENDIF}
-  begin
-    if UseLigatures and (Str <> nil)  and (Str^ <>  WideNull) then
+  // UniScribe requires that the string contains at least one character.
+  // If UniversalExtTextOut should be used to fill the background we can just
+  // pass a string made of a space.
+  if Count <= 0 then
+    if tooOpaque in Options then
     begin
-      TextOutFlags := TextOutFlags or ETO_GLYPH_INDEX;
-      ZeroMemory(@CharPlaceInfo, SizeOf(CharPlaceInfo));
-      CharPlaceInfo.lStructSize := SizeOf(CharPlaceInfo);
-      SetLength(Glyphs, Length(Str));
-      CharPlaceInfo.lpGlyphs := @Glyphs[0];
-      CharPlaceInfo.nGlyphs := Length(Glyphs);
-      if GetCharacterPlacement(DC, PChar(str), Length(str), 0, CharPlaceInfo, GCP_LIGATE) <> 0 then
-        Result := ExtTextOutW(DC, X, Y, TextOutFlags, @Rect, Pointer(Glyphs), Length(Glyphs),
-          Pointer(ETODist))
-      else
-        Result := ExtTextOutW(DC, X, Y, TextOutFlags, @Rect, Str, Count,
-        Pointer(ETODist));
+      // Clipping is necessary, since depending on X, Y the space will be
+      // printed outside Rect and potentially fill more than we want.
+      TextOutFlags := TextOutFlags or ETO_CLIPPED;
+      Str := PWideChar(SpaceString);
+      Count := 1;
     end
     else
-    Result := ExtTextOutW(DC, X, Y, TextOutFlags, @Rect, Str, Count,
+    begin
+      Result := False;
+      Exit;
+    end;
+
+  // According to the MS Windows SDK (1.5 * Count + 16) is the recommended
+  // value for GlyphBufferSize (see documentation of cGlyphs parameter of
+  // ScriptStringAnalyse function)
+  GlyphBufferSize := (3 * Count) div 2 + 16;
+
+  Result := Succeeded(ScriptStringAnalyse(DC, Str, Count, GlyphBufferSize, -1,
+    SSAnalyseFlags, 0, nil, nil, Pointer(ETODist), nil, nil, @saa));
+  Result := Result and Succeeded(ScriptStringOut(saa, X, Y, TextOutFlags,
+    @Rect, 0, 0, False));
+  Result := Result and Succeeded(ScriptStringFree(@saa));
+{$ELSE}
+  if UseLigatures and (Str <> nil)  and (Str^ <>  WideNull) then
+  begin
+    TextOutFlags := TextOutFlags or ETO_GLYPH_INDEX;
+    ZeroMemory(@CharPlaceInfo, SizeOf(CharPlaceInfo));
+    CharPlaceInfo.lStructSize := SizeOf(CharPlaceInfo);
+    SetLength(Glyphs, Length(Str));
+    CharPlaceInfo.lpGlyphs := @Glyphs[0];
+    CharPlaceInfo.nGlyphs := Length(Glyphs);
+    if GetCharacterPlacement(DC, PChar(str), Length(str), 0, CharPlaceInfo, GCP_LIGATE) <> 0 then
+      Result := ExtTextOutW(DC, X, Y, TextOutFlags, @Rect, Pointer(Glyphs), Length(Glyphs),
+        Pointer(ETODist))
+    else
+      Result := ExtTextOutW(DC, X, Y, TextOutFlags, @Rect, Str, Count,
       Pointer(ETODist));
-  end;
+  end
+  else
+  Result := ExtTextOutW(DC, X, Y, TextOutFlags, @Rect, Str, Count,
+    Pointer(ETODist));
+{$ENDIF}
 end;
 
 { TheFontsInfoManager }

@@ -6,16 +6,15 @@
 {*  Content:    USP - Unicode Complex Script processor                        *}
 {*                                                                            *}
 {*  Delphi / FreePascal adaptation by Alexey Barkovoy (clootie@clootie.ru)    *}
-(*                                                                            *)
-{*  The original version from Alexey Barkovoy can be downloaded from:         *}
+{*                                                                            *}
+{*  Modified: 30-May-2005                                                     *}
+{*                                                                            *}
+{*  Latest version can be downloaded from:                                    *}
 {*     http://clootie.ru                                                      *}
-(*                                                                            *)
-(*  Dynamic linking logic (similar to what the JCL does) by Maël Hörz.        *)
-(*                                                                            *)
-(*  Latest version can be downloaded from http://mh-nexus.de/unisynedit.htm   *)
-(*  or checked out from the Unicode branch of SynEdit CVS.                    *) 
-(*                                                                            *)
+{*                                                                            *}
 {******************************************************************************}
+{                                                                              }
+{ Obtained through: Joint Endeavour of Delphi Innovators (Project JEDI)        }
 {                                                                              }
 { The contents of this file are used with permission, subject to the Mozilla   }
 { Public License Version 1.1 (the "License"); you may not use this file except }
@@ -40,22 +39,19 @@
 {                                                                              }
 {******************************************************************************}
 
-// $Id: SynUsp10.pas,v 1.1.2.2 2008/09/17 13:59:12 maelh Exp $
-
-// necessary for dynamic linking
-{$STACKFRAMES ON}
-{$WARNINGS OFF}
+{$IFDEF FPC}
+{$mode objfpc}
+{$ENDIF}
 
 unit SynUsp10;
 
 interface
 
-{$IFDEF CPUX86}
-
-uses
-  Windows;
+uses Windows;
 
 const
+  Usp10DLL = 'usp10.dll';
+
   ///// Uniscribe build number
   USPBUILD = 0400;
 
@@ -157,7 +153,7 @@ type
 
 function ScriptFreeCache(
     psc: PScriptCache //InOut  Cache handle
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -490,7 +486,7 @@ function ScriptItemize(
     const psState: PScriptState;     // In   Initial bidi algorithm state (optional)
     pItems: PScriptItem;             // Out  Array to receive itemization
     pcItems: PInteger                // Out  Count of items processed (optional)
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 {$EXTERNALSYM ScriptItemize}
 
 
@@ -609,7 +605,7 @@ function ScriptLayout(
     const pbLevel: PByte;         // In   Array of run embedding levels
     piVisualToLogical: PInteger;  // Out  List of run indices in visual order
     piLogicalToVisual: PInteger   // Out  List of visual run positions
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 {$EXTERNALSYM ScriptLayout}
 
 
@@ -732,7 +728,7 @@ function ScriptShape(
     pwLogClust: PWord;           // Out   Logical clusters
     psva: PScriptVisAttr;        // Out   Visual glyph attributes
     pcGlyphs: PInteger           // Out   Count of glyphs generated
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 {$EXTERNALSYM ScriptShape}
 
 
@@ -822,8 +818,8 @@ function ScriptShape(
 type
   PGOffset = ^TGOffset;
   tagGOFFSET = record
-    du:  Integer;
-    dv:  Integer;
+    du:  Longint;
+    dv:  Longint;
   end;
   GOFFSET = tagGOFFSET;
   {$EXTERNALSYM GOFFSET}
@@ -840,7 +836,7 @@ function ScriptPlace(
     piAdvance: PInteger;        // Out   Advance wdiths
     pGoffset: PGOffset;         // Out   x,y offset for combining glyph
     pABC: PABC                  // Out   Composite ABC for the whole run (Optional)
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 {$EXTERNALSYM ScriptPlace}
 
 
@@ -874,7 +870,7 @@ function ScriptTextOut(
     const piAdvance: PInteger;     // In     Advance widths from ScriptPlace
     const piJustify: PInteger;     // In     Justified advance widths (optional)
     const pGoffset: PGOffset       // In     x,y offset for combining glyph
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -950,7 +946,7 @@ function ScriptJustify(
     iDx: Integer;                 // In   Desired width change, either increase or descrease
     iMinKashida: Integer;         // In   Minimum length of continuous kashida glyph to generate
     piJustify: PInteger           // Out  Updated advance widths to pass to ScriptTextOut
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -989,7 +985,7 @@ type
   {$EXTERNALSYM SCRIPT_LOGATTR}
   TScriptLogAttr = SCRIPT_LOGATTR;
 
-  
+
 //
 //
 //p     fSoftBreak: It would be valid to break the line in front of this
@@ -1052,7 +1048,7 @@ function ScriptBreak(
     cChars: Integer;    // In   Length of unicode item
     const psa: PScriptAnalysis;       // In   Result of earlier ScriptItemize call
     psla: PScriptLogAttr     // Out  Logical character attributes
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 {$EXTERNALSYM ScriptBreak}
 
 
@@ -1086,7 +1082,7 @@ function ScriptCPtoX(
     const piAdvance: PInteger;  // In   Advance widths
     const psa: PScriptAnalysis; // In   Script analysis from item attributes
     piX: PInteger               // Out  Resulting X position
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1129,7 +1125,7 @@ function ScriptXtoCP(
     const psa:  PScriptAnalysis; // In   Script analysis from item attributes
     piCP: PInteger;              // Out  Resulting character position
     piTrailing: PInteger         // Out  Leading or trailing half flag
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1362,7 +1358,7 @@ function ScriptGetLogicalWidths(
     const pwLogClust: PWord;        // In   Logical clusters
     const psva: PScriptVisAttr;     // In   Visual glyph attributes
     piDx: PInteger                  // Out  Logical widths
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1398,7 +1394,7 @@ function ScriptApplyLogicalWidth(
     const psa:  PScriptAnalysis; // In     Script analysis from item attributes
     pABC: PABC;                  // InOut  Updated item ABC width (optional)
     piJustify: PInteger          // Out    Resulting glyph advance widths for ScriptTextOut
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1456,7 +1452,7 @@ function ScriptGetCMap(
     cChars: Integer;              // In    Number of characters
     dwFlags: DWORD;               // In    Flags such as SGCM_RTL
     pwOutGlyphs: PWord            // Out   Array of glyphs, one per input character
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1478,7 +1474,7 @@ function ScriptGetGlyphABCWidth(
     psc: PScriptCache;   // InOut Address of Cache handle
     wGlyph: Word;        // In    Glyph
     pABC: PABC           // Out   ABC width
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1532,7 +1528,7 @@ type
   end; *)
   {$EXTERNALSYM SCRIPT_PROPERTIES}
   TScriptProperties = SCRIPT_PROPERTIES;
-  
+
 //
 //p     langid: Language associated with this script. When a script is used for many languages,
 //          langid id represents a default language. For example, Western script is represented
@@ -1601,7 +1597,7 @@ type
 function ScriptGetProperties(
     out ppSp: PScriptProperties;   // Out  Receives pointer to table of pointers to properties indexed by script
     out piNumScripts: Integer      // Out  Receives number of scripts (valid values are 0 through NumScripts-1)
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1632,7 +1628,7 @@ function ScriptGetFontProperties(
     hdc: HDC;                    // In    Optional (see notes on caching)
     psc: PScriptCache;           // InOut Address of Cache handle
     sfp:  PScriptFontProperties  // Out   Receives properties for this font
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1647,8 +1643,8 @@ function ScriptGetFontProperties(
 function ScriptCacheGetHeight(
     hdc: HDC;            // In    Optional (see notes on caching)
     psc: PScriptCache;   // InOut Address of Cache handle
-    tmHeight: PInteger   // Out   Receives font height in pixels
- ): HRESULT; stdcall;
+    tmHeight: PLongint   // Out   Receives font height in pixels
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1768,7 +1764,7 @@ function ScriptStringAnalyse(
     const pbInClass: PByte;    //In  Legacy GetCharacterPlacement character classifications (deprecated)
 
     pssa:  PScriptStringAnalysis //Out Analysis of string
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1782,7 +1778,7 @@ function ScriptStringAnalyse(
 
 function ScriptStringFree(
     pssa: PScriptStringAnalysis  //InOut Address of pointer to analysis
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1799,7 +1795,7 @@ function ScriptStringFree(
 
 function ScriptString_pSize(
     ssa: TScriptStringAnalysis
- ): {const} PSize; stdcall;
+ ): {const} PSize; stdcall; external Usp10DLL;
 
 
 
@@ -1816,7 +1812,7 @@ function ScriptString_pSize(
 
 function ScriptString_pcOutChars(
     ssa: TScriptStringAnalysis
- ): {const} PInteger; stdcall;
+ ): {const} PInteger; stdcall; external Usp10DLL;
 
 
 
@@ -1836,7 +1832,7 @@ function ScriptString_pcOutChars(
 
 function ScriptString_pLogAttr(
     ssa: TScriptStringAnalysis
- ): {const} PScriptLogAttr; stdcall;
+ ): {const} PScriptLogAttr; stdcall; external Usp10DLL;
 
 
 
@@ -1860,7 +1856,7 @@ function ScriptString_pLogAttr(
 function ScriptStringGetOrder(
     ssa: TScriptStringAnalysis;
     puOrder: PLongWord
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1877,7 +1873,8 @@ function ScriptStringCPtoX(
     icp: Integer;                      //In  Caret character position
     fTrailing: BOOL;                   //In  Which edge of icp
     out pX: Integer                    //Out Corresponding x offset
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
+
 
 
 
@@ -1893,7 +1890,7 @@ function ScriptStringXtoCP(
     iX: Integer;                       // In
     piCh: PInteger;                    // Out
     piTrailing: PInteger               // Out
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1912,7 +1909,7 @@ function ScriptStringXtoCP(
 
 function ScriptStringGetLogicalWidths(
     ssa: TScriptStringAnalysis;
-    out piDx: Integer): HRESULT; stdcall;
+    out piDx: Integer): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1931,7 +1928,7 @@ function ScriptStringGetLogicalWidths(
 
 
 function ScriptStringValidate(
-    ssa: TScriptStringAnalysis): HRESULT; stdcall;
+    ssa: TScriptStringAnalysis): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1955,7 +1952,7 @@ function ScriptStringOut(
     iMinSel: Integer;                   //In  Logical selection. Set iMinSel>=iMaxSel for no selection
     iMaxSel: Integer;                   //In
     fDisabled: BOOL                     //In  If disabled, only the background is highlighted.
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -1973,7 +1970,7 @@ const
   SIC_COMPLEX     = 1;   // Treat complex script letters as complex
   SIC_ASCIIDIGIT  = 2;   // Treat digits U+0030 through U+0039 as complex
   SIC_NEUTRAL     = 4;   // Treat neutrals as complex
-  
+
 //
 //      SIC_COMPLEX: Should normally set. Causes complex script letters to
 //      be treated as complex.
@@ -1997,7 +1994,7 @@ function ScriptIsComplex(
     const pwcInChars: PWideChar;     //In  String to be tested
     cInChars: Integer;               //In  Length in characters
     dwFlags: DWORD                   //In  Flags (see above)
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -2028,7 +2025,7 @@ type
   SCRIPT_DIGITSUBSTITUTE = tag_SCRIPT_DIGITSUBSTITUTE;
   {$EXTERNALSYM SCRIPT_DIGITSUBSTITUTE}
   TScriptDigitSubstitute = tag_SCRIPT_DIGITSUBSTITUTE;
-  
+
 //
 //
 //p     NationalDigitLanguage: Standard digits for the selected locale as
@@ -2057,7 +2054,7 @@ type
 function ScriptRecordDigitSubstitution(
     Locale: LCID;                     // In   LOCALE_USER_DEFAULT or desired locale
     out psds: TScriptDigitSubstitute  // Out  Digit substitution settings
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -2147,7 +2144,7 @@ function ScriptApplyDigitSubstitution(
     const psds: PScriptDigitSubstitute;   // In   Digit substitution settings
     psc: PScriptControl;                  // Out  Script control structure
     pss: PScriptState                     // Out  Script state structure
- ): HRESULT; stdcall;
+ ): HRESULT; stdcall; external Usp10DLL;
 
 
 
@@ -2168,486 +2165,7 @@ function ScriptApplyDigitSubstitution(
 //p     returns: E_INVALIDARG if the DigitSubstitute field of the
 //          SCRIPT_DIGITSUBSTITUTE structure is unrecognised, else S_OK;
 
-var
-  Usp10IsInstalled: Boolean;
-
-{$ENDIF}
-
 implementation
 
-{$IFDEF CPUX86}
-
-uses
-  SysUtils;
-
-const
-  Usp10DLL = 'usp10.dll';
-
-var
-  Usp10DllModule: HMODULE = 0;
-
-function GetUsp10DllModule: HMODULE;
-begin
-  if Usp10DllModule = 0 then
-  begin
-    Usp10DllModule := SafeLoadLibrary(Usp10DLL);
-    if Usp10DllModule <= HINSTANCE_ERROR then
-      Usp10DllModule := 0;
-  end;
-  Result := Usp10DllModule;
-end;
-
-procedure GetProcedureAddress(var P: Pointer; const ModuleName, ProcName: string);
-begin
-  if not Assigned(P) then
-  begin
-    P := Pointer(GetProcAddress(Usp10DllModule, PAnsiChar(AnsiString(ProcName))));
-    if not Assigned(P) or (Usp10DllModule = 0) then
-      RaiseLastOSError;
-  end;
-end;
-
-var
-  _ScriptFreeCache: Pointer = nil;
-
-function ScriptFreeCache;
-begin
-  if _ScriptFreeCache = nil then
-    GetProcedureAddress(_ScriptFreeCache, Usp10DLL, 'ScriptFreeCache');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptFreeCache]
-  end;
-end;
-
-var
-  _ScriptItemize: Pointer = nil;
-
-function ScriptItemize;
-begin
-  if _ScriptItemize = nil then
-    GetProcedureAddress(_ScriptItemize, Usp10DLL, 'ScriptItemize');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptItemize]
-  end;
-end;
-
-var
-  _ScriptLayout: Pointer = nil;
-
-function ScriptLayout;
-begin
-  if _ScriptLayout = nil then
-    GetProcedureAddress(_ScriptLayout, Usp10DLL, 'ScriptLayout');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptLayout]
-  end;
-end;
-
-var
-  _ScriptShape: Pointer = nil;
-
-function ScriptShape;
-begin
-  if _ScriptShape = nil then
-    GetProcedureAddress(_ScriptShape, Usp10DLL, 'ScriptShape');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptShape]
-  end;
-end;
-
-var
-  _ScriptPlace: Pointer = nil;
-
-function ScriptPlace;
-begin
-  if _ScriptPlace = nil then
-    GetProcedureAddress(_ScriptPlace, Usp10DLL, 'ScriptPlace');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptPlace]
-  end;
-end;
-
-var
-  _ScriptTextOut: Pointer = nil;
-
-function ScriptTextOut;
-begin
-  if _ScriptTextOut = nil then
-    GetProcedureAddress(_ScriptTextOut, Usp10DLL, 'ScriptTextOut');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptTextOut]
-  end;
-end;
-
-var
-  _ScriptJustify: Pointer = nil;
-
-function ScriptJustify;
-begin
-  if _ScriptJustify = nil then
-    GetProcedureAddress(_ScriptJustify, Usp10DLL, 'ScriptJustify');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptJustify]
-  end;
-end;
-
-var
-  _ScriptBreak: Pointer = nil;
-
-function ScriptBreak;
-begin
-  if _ScriptBreak = nil then
-    GetProcedureAddress(_ScriptBreak, Usp10DLL, 'ScriptBreak');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptBreak]
-  end;
-end;
-
-var
-  _ScriptCPtoX: Pointer = nil;
-
-function ScriptCPtoX;
-begin
-  if _ScriptCPtoX = nil then
-    GetProcedureAddress(_ScriptCPtoX, Usp10DLL, 'ScriptCPtoX');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptCPtoX]
-  end;
-end;
-
-var
-  _ScriptXtoCP: Pointer = nil;
-
-function ScriptXtoCP;
-begin
-  if _ScriptXtoCP = nil then
-    GetProcedureAddress(_ScriptXtoCP, Usp10DLL, 'ScriptXtoCP');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptXtoCP]
-  end;
-end;
-
-var
-  _ScriptGetLogicalWidths: Pointer = nil;
-
-function ScriptGetLogicalWidths;
-begin
-  if _ScriptGetLogicalWidths = nil then
-    GetProcedureAddress(_ScriptGetLogicalWidths, Usp10DLL, 'ScriptGetLogicalWidths');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptGetLogicalWidths]
-  end;
-end;
-
-var
-  _ScriptApplyLogicalWidth: Pointer = nil;
-
-function ScriptApplyLogicalWidth;
-begin
-  if _ScriptApplyLogicalWidth = nil then
-    GetProcedureAddress(_ScriptApplyLogicalWidth, Usp10DLL, 'ScriptApplyLogicalWidth');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptApplyLogicalWidth]
-  end;
-end;
-
-var
-  _ScriptGetCMap: Pointer = nil;
-
-function ScriptGetCMap;
-begin
-  if _ScriptGetCMap = nil then
-    GetProcedureAddress(_ScriptGetCMap, Usp10DLL, 'ScriptGetCMap');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptGetCMap]
-  end;
-end;
-
-var
-  _ScriptGetGlyphABCWidth: Pointer = nil;
-
-function ScriptGetGlyphABCWidth;
-begin
-  if _ScriptGetGlyphABCWidth = nil then
-    GetProcedureAddress(_ScriptGetGlyphABCWidth, Usp10DLL, 'ScriptGetGlyphABCWidth');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptGetGlyphABCWidth]
-  end;
-end;
-
-var
-  _ScriptGetProperties: Pointer = nil;
-
-function ScriptGetProperties;
-begin
-  if _ScriptGetProperties = nil then
-    GetProcedureAddress(_ScriptGetProperties, Usp10DLL, 'ScriptGetProperties');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptGetProperties]
-  end;
-end;
-
-var
-  _ScriptGetFontProperties: Pointer = nil;
-
-function ScriptGetFontProperties;
-begin
-  if _ScriptGetFontProperties = nil then
-    GetProcedureAddress(_ScriptGetFontProperties, Usp10DLL, 'ScriptGetFontProperties');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptGetFontProperties]
-  end;
-end;
-
-var
-  _ScriptCacheGetHeight: Pointer = nil;
-
-function ScriptCacheGetHeight;
-begin
-  if _ScriptCacheGetHeight = nil then
-    GetProcedureAddress(_ScriptCacheGetHeight, Usp10DLL, 'ScriptCacheGetHeight');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptCacheGetHeight]
-  end;
-end;
-
-var
-  _ScriptStringAnalyse: Pointer = nil;
-
-function ScriptStringAnalyse;
-begin
-  if _ScriptStringAnalyse = nil then
-    GetProcedureAddress(_ScriptStringAnalyse, Usp10DLL, 'ScriptStringAnalyse');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringAnalyse]
-  end;
-end;
-
-var
-  _ScriptStringFree: Pointer = nil;
-
-function ScriptStringFree;
-begin
-  if _ScriptStringFree = nil then
-    GetProcedureAddress(_ScriptStringFree, Usp10DLL, 'ScriptStringFree');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringFree]
-  end;
-end;
-
-var
-  _ScriptString_pSize: Pointer = nil;
-
-function ScriptString_pSize;
-begin
-  if _ScriptString_pSize = nil then
-    GetProcedureAddress(_ScriptString_pSize, Usp10DLL, 'ScriptString_pSize');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptString_pSize]
-  end;
-end;
-
-var
-  _ScriptString_pcOutChars: Pointer = nil;
-
-function ScriptString_pcOutChars;
-begin
-  if _ScriptString_pcOutChars = nil then
-    GetProcedureAddress(_ScriptString_pcOutChars, Usp10DLL, 'ScriptString_pcOutChars');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptString_pcOutChars]
-  end;
-end;
-
-var
-  _ScriptString_pLogAttr: Pointer = nil;
-
-function ScriptString_pLogAttr;
-begin
-  if _ScriptString_pLogAttr = nil then
-    GetProcedureAddress(_ScriptString_pLogAttr, Usp10DLL, 'ScriptString_pLogAttr');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptString_pLogAttr]
-  end;
-end;
-
-var
-  _ScriptStringGetOrder: Pointer = nil;
-
-function ScriptStringGetOrder;
-begin
-  if _ScriptStringGetOrder = nil then
-    GetProcedureAddress(_ScriptStringGetOrder, Usp10DLL, 'ScriptStringGetOrder');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringGetOrder]
-  end;
-end;
-
-var
-  _ScriptStringCPtoX: Pointer = nil;
-
-function ScriptStringCPtoX;
-begin
-  if _ScriptStringCPtoX = nil then
-    GetProcedureAddress(_ScriptStringCPtoX, Usp10DLL, 'ScriptStringCPtoX');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringCPtoX]
-  end;
-end;
-
-var
-  _ScriptStringXtoCP: Pointer = nil;
-
-function ScriptStringXtoCP;
-begin
-  if _ScriptStringXtoCP = nil then
-    GetProcedureAddress(_ScriptStringXtoCP, Usp10DLL, 'ScriptStringXtoCP');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringXtoCP]
-  end;
-end;
-
-var
-  _ScriptStringGetLogicalWidths: Pointer = nil;
-
-function ScriptStringGetLogicalWidths;
-begin
-  if _ScriptStringGetLogicalWidths = nil then
-    GetProcedureAddress(_ScriptStringGetLogicalWidths, Usp10DLL, 'ScriptStringGetLogicalWidths');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringGetLogicalWidths]
-  end;
-end;
-
-var
-  _ScriptStringValidate: Pointer = nil;
-
-function ScriptStringValidate;
-begin
-  if _ScriptStringValidate = nil then
-    GetProcedureAddress(_ScriptStringValidate, Usp10DLL, 'ScriptStringValidate');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringValidate]
-  end;
-end;
-
-var
-  _ScriptStringOut: Pointer = nil;
-
-function ScriptStringOut;
-begin
-  if _ScriptStringOut = nil then
-    GetProcedureAddress(_ScriptStringOut, Usp10DLL, 'ScriptStringOut');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptStringOut]
-  end;
-end;
-
-var
-  _ScriptIsComplex: Pointer = nil;
-
-function ScriptIsComplex;
-begin
-  if _ScriptIsComplex = nil then
-    GetProcedureAddress(_ScriptIsComplex, Usp10DLL, 'ScriptIsComplex');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptIsComplex]
-  end;
-end;
-
-var
-  _ScriptRecordDigitSubstitution: Pointer = nil;
-
-function ScriptRecordDigitSubstitution;
-begin
-  if _ScriptRecordDigitSubstitution = nil then
-    GetProcedureAddress(_ScriptRecordDigitSubstitution, Usp10DLL, 'ScriptRecordDigitSubstitution');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptRecordDigitSubstitution]
-  end;
-end;
-
-var
-  _ScriptApplyDigitSubstitution: Pointer = nil;
-
-function ScriptApplyDigitSubstitution;
-begin
-  if _ScriptApplyDigitSubstitution = nil then
-    GetProcedureAddress(_ScriptApplyDigitSubstitution, Usp10DLL, 'ScriptApplyDigitSubstitution');
-  asm
-    MOV ESP, EBP
-    POP EBP
-    JMP [_ScriptApplyDigitSubstitution]
-  end;
-end;
-
-initialization
-  Usp10DllModule := GetUsp10DllModule;
-  Usp10IsInstalled := Usp10DllModule <> 0;
-
-finalization
-  if Usp10DllModule <> 0 then FreeLibrary(Usp10DllModule);
-
-{$ENDIF}
-
 end.
+
