@@ -175,7 +175,7 @@ end;
 procedure TSynWordWrapPlugin.DisplayChanged;
 begin
   // we are wrapping with right edge line or with window width
-	if (eoWrapWithRightEdge in Editor.Options) and (Editor.RightEdge <> fMaxRowLength) or   
+  if (eoWrapWithRightEdge in Editor.Options) and (Editor.RightEdge <> fMaxRowLength) or   
     not (eoWrapWithRightEdge in Editor.Options) and (Editor.CharsInWindow <> fMaxRowLength) then
     Reset;
 end;

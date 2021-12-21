@@ -4390,7 +4390,7 @@ begin
         if WordWrap and (eoWrapWithRightEdge in FOptions) then
           nMaxScroll := FRightEdge
         else
-	        nMaxScroll := Max(TSynEditStringList(Lines).LengthOfLongestLine, 1);
+          nMaxScroll := Max(TSynEditStringList(Lines).LengthOfLongestLine, 1);
         if nMaxScroll <= MAX_SCROLL then
         begin
           ScrollInfo.nMin := 1;
@@ -5785,7 +5785,7 @@ begin
   begin
     fRightEdge := Value;
     // when wrapping with right edge, we must rewrap when edge is changed
-		if WordWrap and (eoWrapWithRightEdge in FOptions) then
+    if WordWrap and (eoWrapWithRightEdge in fOptions) then
     begin
       fWordWrapPlugin.DisplayChanged;
       EnsureCursorPosVisible;
