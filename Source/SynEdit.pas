@@ -147,7 +147,8 @@ type
     eoTabsToSpaces,            //Converts a tab character to a specified number of space characters
     eoTrimTrailingSpaces,      //Spaces at the end of lines will be trimmed and not saved
     eoShowLigatures,           //Shows font ligatures, by default it is disabled
-    eoCopyPlainText            //Do not include additional clipboard formats when you copy to Clipboard or drag text
+    eoCopyPlainText,           //Do not include additional clipboard formats when you copy to Clipboard or drag text
+    eoWrapWithRightEdge        //WordWrap with RightEdge position instead CharsInWindows
     );
 
   TSynEditorOptions = set of TSynEditorOption;
@@ -3744,7 +3745,8 @@ var
   iDelta: Integer;
   iTextArea: TRect;
 begin
-  if WordWrap then
+	// when wrapping with right edge and right edge is behind the window width
+  if WordWrap and not ((eoWrapWithRightEdge in FOptions) and (FRightEdge > CharsInWindow)) then
     Value := 1;
 
   if eoScrollPastEol in Options then
@@ -4382,9 +4384,13 @@ begin
 
 //      if Visible then SendMessage(Handle, WM_SETREDRAW, 0, 0);
 
-      if (fScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssHorizontal]) and not WordWrap then
+      if (fScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssHorizontal]) and (not WordWrap or
+          WordWrap and (eoWrapWithRightEdge in FOptions) and (FRightEdge > CharsInWindow)) then
       begin
-        nMaxScroll := Max(TSynEditStringList(Lines).LengthOfLongestLine, 1);
+        if WordWrap and (eoWrapWithRightEdge in FOptions) then
+          nMaxScroll := FRightEdge
+        else
+	        nMaxScroll := Max(TSynEditStringList(Lines).LengthOfLongestLine, 1);
         if nMaxScroll <= MAX_SCROLL then
         begin
           ScrollInfo.nMin := 1;
@@ -5778,6 +5784,12 @@ begin
   if fRightEdge <> Value then
   begin
     fRightEdge := Value;
+    // when wrapping with right edge, we must rewrap when edge is changed
+		if WordWrap and (eoWrapWithRightEdge in FOptions) then
+    begin
+      fWordWrapPlugin.DisplayChanged;
+      EnsureCursorPosVisible;
+    end;
     Invalidate;
   end;
 end;
