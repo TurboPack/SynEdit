@@ -174,7 +174,9 @@ end;
 
 procedure TSynWordWrapPlugin.DisplayChanged;
 begin
-  if Editor.CharsInWindow <> fMaxRowLength then
+  // we are wrapping with right edge line or with window width
+  if (eoWrapWithRightEdge in Editor.Options) and (Editor.RightEdge <> fMaxRowLength) or   
+    not (eoWrapWithRightEdge in Editor.Options) and (Editor.CharsInWindow <> fMaxRowLength) then
     Reset;
 end;
 
@@ -368,8 +370,17 @@ procedure TSynWordWrapPlugin.Reset;
 begin
   Assert(Editor.CharsInWindow >= 0);
 
-  fMaxRowLength := Editor.CharsInWindow;
-  fMinRowLength := Editor.CharsInWindow - (Editor.CharsInWindow div 3);
+	// we are wrapping with right edge line or with window width
+  if (eoWrapWithRightEdge in Editor.Options) then
+  begin
+    fMaxRowLength := Editor.RightEdge;
+    fMinRowLength := Editor.RightEdge - (Editor.RightEdge div 3);
+  end
+  else
+  begin
+    fMaxRowLength := Editor.CharsInWindow;
+    fMinRowLength := Editor.CharsInWindow - (Editor.CharsInWindow div 3);
+  end;
 
   if fMinRowLength <= 0 then
     fMinRowLength := 1;
