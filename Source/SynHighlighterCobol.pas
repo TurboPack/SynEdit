@@ -29,7 +29,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterCobol.pas,v 1.5.2.7 2008/09/14 16:24:59 maelh Exp $
+$Id: SynHighlighterCobol.pas,v 1.5.2.6 2006/05/21 11:59:35 maelh Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -46,25 +46,32 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SynHighlighterHashEntries,  
+  SynHighlighterHashEntries,
   SynUnicode,
+  Windows,
   SysUtils,
-  Classes;
+  Classes,
+//++ CodeFolding
+  System.Generics.Collections,
+  System.RegularExpressions,
+  SynEditCodeFolding;
+//++ CodeFolding
 
 type
   TtkTokenKind = (
+    tkBracket,
+    tkKey,
+    tkIndicator,
     tkComment,
     tkIdentifier,
     tkAIdentifier,
     tkPreprocessor,
-    tkKey,
     tkBoolean,
     tkNull,
     tkNumber,
     tkSpace,
     tkString,
     tkSequence,
-    tkIndicator,
     tkTagArea,
     tkDebugLines,
     tkUnknown);
@@ -72,10 +79,14 @@ type
   TRangeState = (rsUnknown,
                  rsQuoteString, rsApostString,
                  rsPseudoText,
-                 rsQuoteStringMayBe, rsApostStringMayBe);
+                 rsQuoteStringMayBe, rsApostStringMayBe,
+                 rsComment, rsDebug);
 
 type
-  TSynCobolSyn = class(TSynCustomHighlighter)
+//  TSynCobolSyn = class(TSynCustomHighlighter)
+//++ CodeFolding
+  TSynCobolSyn = class(TSynCustomCodeFoldingHighlighter)
+//-- CodeFolding
   private
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
@@ -98,7 +109,12 @@ type
     fIndicatorAttri: TSynHighlighterAttributes;
     fTagAreaAttri: TSynHighlighterAttributes;
     fDebugLinesAttri: TSynHighlighterAttributes;
+    fBracketAttri: TSynHighlighterAttributes;
     fKeywords: TSynHashEntryList;
+//++ CodeFolding
+    RE_BlockBegin : TRegEx;
+    RE_BlockEnd : TRegEx;
+//-- CodeFolding
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
@@ -116,7 +132,9 @@ type
     procedure FirstCharsProc;
     procedure LastCharsProc;
     procedure CommentProc;
+    procedure InlineCommentProc;
     procedure DebugProc;
+    procedure BracketProc;
   protected
     function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
@@ -140,6 +158,10 @@ type
     function GetTokenKind: integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
+//++ CodeFolding
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+//-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
     property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri write fIdentifierAttri;
@@ -148,6 +170,7 @@ type
     property KeyAttri: TSynHighlighterAttributes read fKeyAttri write fKeyAttri;
     property NumberAttri: TSynHighlighterAttributes read fNumberAttri write fNumberAttri;
     property BooleanAttri: TSynHighlighterAttributes read fBooleanAttri write fBooleanAttri;
+    property BracketAttri: TSynHighlighterAttributes read fBracketAttri write fBracketAttri;
     property SpaceAttri: TSynHighlighterAttributes read fSpaceAttri write fSpaceAttri;
     property StringAttri: TSynHighlighterAttributes read fStringAttri write fStringAttri;
     property SequenceAttri: TSynHighlighterAttributes read fSequenceAttri write fSequenceAttri;
@@ -170,100 +193,202 @@ const
     'false, true';
 
   KeyWords: string =
-    'accept, access, acquire, add, address, advancing, after, all, allowing, ' +
-    'alphabet, alphabetic, alphabetic-lower, alphabetic-upper, alphanumeric, ' +
-    'alphanumeric-edited, also, alter, alternate, and, any, apply, are, ' +
-    'area, areas, area-value, arithmetic, ascending, assign, at, author, ' +
-    'auto, automatic, auto-skip, background-color, background-colour, ' +
-    'backward, b-and, beep, before, beginning, bell, b-exor, binary, bit, ' +
-    'bits, blank, b-less, blink, block, b-not, boolean, b-or, bottom, by, ' +
-    'call, cancel, cd, cf, ch, chain, chaining, changed, character, ' +
-    'characters, class, clock-units, close, cobol, code, code-set, col, ' +
-    'collating, color, column, comma, command-line, commit, commitment, ' +
-    'common, communication, comp, comp-0, comp-1, comp-2, comp-3, comp-4, ' +
-    'comp-5, comp-6, comp-7, comp-8, comp-9, computational, computational-0, ' +
-    'computational-1, computational-2, computational-3, computational-4, ' +
-    'computational-5, computational-6, computational-7, computational-8, ' +
-    'computational-9, computational-x, compute, comp-x, com-reg, ' +
-    'configuration, connect, console, contained, contains, content, ' +
-    'continue, control-area, controls, converting, corr, corresponding, ' +
-    'count, crt, crt-under, currency, current, cursor, cycle, data, date, ' +
-    'date-compiled, date-written, day, day-of-week, db, ' +
-    'db-access-control-key, dbcs, db-data-name, db-exception, ' +
-    'db-format-name, db-record-name, db-set-name, db-status, de, ' +
-    'debug-contents, debugging, debug-item, debug-line, debug-name, ' +
-    'debug-sub-1, debug-sub-2, debug-sub-3, decimal-point, declaratives, ' +
-    'default, delimited, delimiter, depending, descending, destination, ' +
-    'detail, disable, disconnect, disk, display, display-1, display-2, ' +
-    'display-3, display-4, display-5, display-6, display-7, display-8, ' +
-    'display-9, divide, division, down, drop, duplicate, duplicates, ' +
-    'dynamic, egcs, egi, else, emi, empty, empty-check, enable, end, ' +
-    'end-accept, end-add, end-call, end-compute, end-delete, end-disable, ' +
-    'end-divide, end-enable, end-evaluate, end-if, ending, end-multiply, ' +
-    'end-of-page, end-perform, end-read, end-receive, end-return, ' +
-    'end-rewrite, end-search, end-send, end-start, end-string, end-subtract, ' +
-    'end-transceive, end-unstring, end-write, enter, entry, environment, ' +
-    'eop, equal, equals, erase, error, escape, esi, evaluate, every, exact, ' +
-    'exceeds, exception, excess-3, exclusive, exec, execute, exhibit, exit, ' +
-    'extend, external, externally-described-key, fd, fetch, file, ' +
-    'file-control, file-id, filler, final, find, finish, first, fixed, ' +
-    'footing, for, foreground-color, foreground-colour, form, format, free, ' +
-    'from, full, function, generate, get, giving, global, go, goback, ' +
-    'greater, group, heading, highlight, id, identification, if, in, index, ' +
-    'index-1, index-2, index-3, index-4, index-5, index-6, index-7, index-8, ' +
-    'index-9, indexed, indic, indicate, indicator, indicators, initial, ' +
-    'initialize, initiate, input, input-output, inspect, installation, into, ' +
-    'invalid, i-o, i-o-control, is, japanese, just, justified, kanji, keep, ' +
-    'kept, key, keyboard, last, ld, leading, left, left-justify, length, ' +
-    'length-check, less, like, limit, limits, linage, linage-counter, line, ' +
-    'line-counter, lines, linkage, locally, lock, manual, member, memory, ' +
-    'merge, message, mode, modified, modify, modules, more-labels, move, ' +
-    'multiple, multiply, name, native, negative, next, no, no-echo, none, ' +
-    'normal, not, number, numeric, numeric-edited, object-computer, occurs, ' +
-    'of, off, omitted, on, only, open, optional, or, order, organization, ' +
-    'other, output, overflow, owner, packed-decimal, padding, page, ' +
-    'page-counter, palette, paragraph, password, perform, pf, ph, pic, ' +
-    'picture, plus, pointer, position, positive, present, previous, printer, ' +
-    'printer-1, printing, print-switch, prior, procedure, procedures, ' +
-    'proceed, process, processing, program, program-id, prompt, protected, ' +
-    'purge, queue, random, range, rd, read, realm, receive, reconnect, ' +
-    'record, recording, record-name, records, redefines, reel, reference, ' +
-    'references, relation, relative, release, remainder, removal, renames, ' +
-    'repeated, replacing, report, reporting, reports, required, rerun, ' +
-    'reserve, retaining, retrieval, return, return-code, reversed, ' +
-    'reverse-video, rewind, rewrite, rf, rh, right, right-justify, rollback, ' +
-    'rolling, rounded, run, same, screen, sd, search, section, secure, ' +
-    'security, segment, segment-limit, select, send, sentence, separate, ' +
-    'sequence, sequential, session-id, set, shared, shift-in, shift-out, ' +
-    'sign, size, sort, sort-control, sort-core-size, sort-file-size, ' +
-    'sort-merge, sort-message, sort-mode-size, sort-return, source, ' +
-    'source-computer, space-fill, special-names, standard, standard-1, ' +
-    'standard-2, standard-3, standard-4, start, starting, status, stop, ' +
-    'store, string, subfile, subprogram, sub-queue-1, sub-queue-2, ' +
-    'sub-queue-3, sub-schema, subtract, sum, suppress, switch, switch-1, ' +
-    'switch-2, switch-3, switch-4, switch-5, switch-6, switch-7, switch-8, ' +
-    'symbolic, sync, synchronized, table, tally, tallying, tape, tenant, ' +
-    'terminal, terminate, test, text, than, then, through, thru, time, ' +
-    'timeout, times, to, top, trailing, trailing-sign, transaction, ' +
-    'transceive, type, underline, unequal, unit, unlock, unstring, until, ' +
-    'up, update, upon, usage, usage-mode, user, using, valid, validate, ' +
-    'value, values, variable, varying, wait, when, when-compiled, with, ' +
-    'within, words, working-storage, write, write-only, zero-fill';
-
+	'3d, absent, abstract, accept, access, acquire, action, action-copy, ' +
+	'action-current-page, action-cut, action-delete, action-first-page, ' +
+	'action-hide-drag, action-last-page, action-next, action-next-page, ' +
+	'action-paste, action-previous, action-previous-page, action-undo, active-class, ' +
+	'actual, add, address, adjustable-columns, advancing, afp-5a, after, aligned, ' +
+	'alignment, all, allocate, allow, allowing, alphabet, alphabetic, ' +
+	'alphabetic-lower, alphabetic-upper, alphanumeric, alphanumeric-edited, also, ' +
+	'alter, alternate, and, any, apply, are, area, areas, area-value, arithmetic, ' +
+	'as, ascending, assembly-attributes, assembly-name, assign, at, attribute, ' +
+	'attributes, author, auto, auto-decimal, auto-hyphen-skip, automatic, ' +
+	'auto-minimize, auto-resize, auto-skip, auto-spin, autoterminate, ' +
+	'background-color, background-colour, background-high, background-low, ' +
+	'background-standard, backward, b-and, bar, based, beep, before, beginning, ' +
+	'bell, b-exor, binary, binary-double, binary-char, binary-long, binary-short, ' +
+	'bind, bit, bitmap, bitmap-end, bitmap-frame, bitmap-handle, bitmap-load, ' +
+	'bitmap-number, bitmap-start, bitmap-timer, bitmap-trailing, bitmap-width, bits, ' +
+	'blank, b-left, b-less, blink, blinking, blob, blob-file, blob-locator, block, ' +
+	'b-not, bold, boolean, b-or, bottom, box, boxed, b-right, browser, browsing, ' +
+	'bulk-addition, busy, buttons, b-xor, by, c01, c02, c03, c04, c05, c06, c07, ' +
+	'c08, c09, c10, c11, c12, calendar-font, call, called, cancel, cancel-button, ' +
+	'card-punch, card-reader, case, cassette, catch, cbl-ctr, ccol, cd, cell, ' +
+	'cell-color, cell-data, cell-font, cell-protection, cells, center, centered, ' +
+	'centered-headings, century-date, century-day, cf, class, class-attributes, ' +
+	'class-control, class-id, class-name, class-object, clear-selection, cline, ' +
+	'clines, clob, clob-file, clob-locator, clock-units, close, cobol, code, ' +
+	'code-set, coercion, col, collating, color, colors, colour, cols, column, ' +
+	'column-color, column-dividers, column-font, column-headings, column-protection, ' +
+	'columns, combo-box, comma, command-line, commit, commitment, common, ' +
+	'communication, comp, comp-0, comp-1, comp-2, comp-3, comp-4, comp-5, comp-6, ' +
+	'comp-7, comp-8, comp-9, comp-n, compression, computational, computational-0, ' +
+	'computational-1, computational-2, computational-3, computational-4, ' +
+	'computational-5, computational-6, computational-7, computational-8, ' +
+	'computational-9, computational-n, computational-x, compute, comp-x, com-reg, ' +
+	'condition-value, configuration, connect, console, constant, constrain, ' +
+	'constraints, constructor, contained, contains, content, continue, control-area, ' +
+	'controls, conversion, convert, converting, copy-selection, core-index, corr, ' +
+	'corresponding, count, create, creating, crt, crt-under, csize, csp, culture, ' +
+	'currency, current, current-date, cursor, cursor-col, cursor-color, ' +
+	'cursor-frame-width, cursor-row, cursor-x, cursor-y, custom-attribute, ' +
+	'custom-print-template, cycle, cyl-index, cyl-overflow, dashed, data, ' +
+	'database-key, database-key-long, data-columns, data-pointer, date, ' +
+	'date-and-time, date-compiled, date-entry, date-record, date-written, ' +
+	'davf-hhmmss, davf-hhmmsshh, davf-yymmdd, davf-yyyymmdd, davf-yyyymmddhhmmsshh, ' +
+	'day, day-and-time, day-of-week, db, db-access-control-key, dbclob, dbclob-file, ' +
+	'dbclob-locator, dbcs, db-data-name, db-exception, db-format-name, ' +
+	'db-record-name, db-set-name, db-status, dd, de, debug, debug-contents, ' +
+	'debugging, debug-item, debug-line, debug-name, debug-sub-1, debug-sub-2, ' +
+	'debug-sub-3, decimal, decimal-point, declaratives, default, default-button, ' +
+	'definition, delegate, delegate-id, delimited, delimiter, depending, descending, ' +
+	'descriptor, destination, destroy, detail, disable, disc, disconnect, ' +
+	'disjoining, disk, disp, display, display-1, display-2, display-3, display-4, ' +
+	'display-5, display-6, display-7, display-8, display-9, display-columns, ' +
+	'display-format, display-st, divide, divider-color, dividers, division, ' +
+	'dot-dash, dotted, double, down, drag-color, draw, drop, drop-down, drop-list, ' +
+	'duplicate, duplicates, dynamic, ebcdic, egcs, egi, echo, element, else, emi, ' +
+	'empty, empty-check, enable, enabled, encoding, encryption, end, end-accept, ' +
+	'end-add, end-call, end-compute, end-delete, end-disable, end-display, ' +
+	'end-divide, end-enable, end-evaluate, end-exec, end-chain, endif, end-if, ' +
+	'ending, end-invoke, end-modify, end-move, end-multiply, end-of-page, ' +
+	'end-perform, end-read, end-receive, end-return, end-rewrite, end-search, ' +
+	'end-send, end-set, end-start, end-string, end-subtract, end-transceive, ' +
+	'end-try, end-unstring, end-use, end-wait, end-write, end-xml, engraved, ' +
+	'ensure-visible, enter, entry, entry-field, entry-reason, enum, enum-id, ' +
+	'environment, environment-name, environment-value, eol, eop, eos, equal, equals, ' +
+	'error, escape, escape-button, esi, evaluate, event, event-action-fail, ' +
+	'event-pointer, event-type, every, exact, examine, exceeds, exception, ' +
+	'exception-object, exception-value, excess-3, exclusive, exec, execute, exhibit, ' +
+	'exit, exit-pushed, expand, expands, extend, extended, extended-search, ' +
+	'external, external-form, externally-described-key, f, factory, fd, fetch, ' +
+	'fh--fcd, fh--keydef, file, file-control, file-id, file-name, file-path, ' +
+	'file-pos, file-prefix, fill-color, fill-color2, filler, fill-percent, final, ' +
+	'finally, find, finish, finish-reason, first, fixed, flat, flat-buttons, float, ' +
+	'float-extended, floating, float-long, float-short, font, footing, for, ' +
+	'foreground-color, foreground-colour, forever, form, format, frame, framed, ' +
+	'free, from, full, full-height, function, function-id, function-pointer, ' +
+	'generate, get, giving, global, go, goback, go-back, goforward, go-forward, ' +
+	'gohome, go-home, gosearch, go-search, graphical, grdsrch-found, ' +
+	'grdsrch-not-found, grdsrch-wrapped, greater, grid, grid-searchall, ' +
+	'grid-searchcolumn, grid-searchforwards, grid-searchhidden, grid-searchignore, ' +
+	'grid-searchmatch, grid-searchmoves, grid-searchskip, grid-searchvisible, ' +
+	'grid-searchwrap, grip, group, group-usage, group-value, handle, has-childen, ' +
+	'heading, heading-color, heading-divider-color, heading-font, headings, heavy, ' +
+	'height, help-id, hidden-data, high, high-color, highlight, horizontal, ' +
+	'hot-track, hscroll, hscroll-pos, ch, chain, chaining, changed, char, character, ' +
+	'characters, chart, char-varying, check-box, checked, checking, icon, id, ' +
+	'identification, identified, if, ignore, ignoring, implements, in, include, ' +
+	'independent, index, index-1, index-2, index-3, index-4, index-5, index-6, ' +
+	'index-7, index-8, index-9, indexed, indic, indicate, indicator, indicators, ' +
+	'inheriting, inherits, initial, initialize, initialized, initiate, input, ' +
+	'input-output, inquire, insertion-index, insert-rows, inspect, installation, ' +
+	'instance, interface, interface-id, internal, into, intrinsic, invalid, invoke, ' +
+	'invoked, i-o, i-o-control, is, item, item-text, item-to-add, item-to-delete, ' +
+	'item-to-empty, item-value, japanese, jcllib, job, joining, just, justified, ' +
+	'kanji, keep, kept, key, keyboard, key-yy, label, label-offset, last, last-row, ' +
+	'layout-data, layout-manager, ld, leading, leading-shift, leave, left, ' +
+	'left-justify, leftline, left-text, length, length-check, less, like, lin, ' +
+	'linage, linage-counter, line, line-counter, lines, lines-at-root, link, ' +
+	'linkage, list-box, locale, locally, local-storage, lock, lock-holding, locking, ' +
+	'long-date, long-varbinary, long-varchar, low, low-color, lower, lowered, ' +
+	'lowlight, magnetic-tape, manual, mass-update, master-index, max-lines, ' +
+	'max-text, max-val, max-value, member, memory, menu, merge, message, messages, ' +
+	'metaclass, method, method-id, methods, min-val, min-value, mixed, modal, mode, ' +
+	'modeless, modified, modify, modless, module, modules, monitor-pointer, ' +
+	'more-labels, move, msg-begin-entry, multiline, multiple, multiply, multline, ' +
+	'mutex-pointer, name, named, namespace, namespace-prefix, national, ' +
+	'national-edited, native, navigate, negative, nested, new, newable, next, ' +
+	'next-item, nextpage, nchar, no, no-auto-default, no-autosel, no-box, ' +
+	'no-dividers, no-echo, no-f4, no-focus, no-group-tab, no-key-letter, nominal, ' +
+	'none, nonnumeric, normal, no-search, not, no-tab, note, notify, ' +
+	'notify-dblclick, notify-change, notify-selchange, no-updown, nstd-reels, null, ' +
+	'nulls, number, num-col-headings, num-columns, numeric, numeric-edited, ' +
+	'numeric-fill, num-rows, object, object-computer, object-id, object-reference, ' +
+	'object-storage, occurs, of, off, o-fill, ok-button, omitted, on, only, ' +
+	'oostackptr, open, operator, operator-id, optional, options, or, order, ' +
+	'organization, other, others, otherwise, output, overflow, overlapped, overline, ' +
+	'override, owner, packed-decimal, padding, page, page-counter, paged, ' +
+	'paged-at-end, paged-at-start, paged-empty, page-setup, page-size, palette, ' +
+	'panel-index, panel-style, panel-text, panel-widht, paragraph, parse, partial, ' +
+	'password, pend, perform, pf, ph, pic, picture, pixel, pixels, placement, ' +
+	'pl-sort-default, pl-sort-native, pl-sort-native-ignore-case, pl-sort-none, ' +
+	'plus, pointer, pop-up, pos, position, positioning, position-shift, positive, ' +
+	'prefixing, present, previous, print, print-control, printer, printer-1, ' +
+	'printing, print-no-prompt, print-preview, print-switch, prior, priority, ' +
+	'private, proc, procedure, procedure-pointer, procedures, proceed, process, ' +
+	'processing, profile, program, program-id, program-pointer, prompt, properties, ' +
+	'property, protected, prototype, public, purge, push-button, query-index, queue, ' +
+	'quote, quotes, radio-button, raise, raised, raising, random, range, rd, read, ' +
+	'readers, reading, read-only, realm, receive, reconnect, record, record-data, ' +
+	'recording, record-name, record-overflow, record-position, records, ' +
+	'record-to-add, record-to-delete, recover, recovery, recursive, redefine, ' +
+	'redefines, redefinition, reel, reference, references, refresh, region-color, ' +
+	'relation, relative, release, remainder, remarks, removal, renames, ' +
+	'reorg-criteria, repeated, replacing, report, reporting, reports, repository, ' +
+	'required, reread, rerun, reserve, reset, reset-grid, reset-list, reset-tabs, ' +
+	'resident, resizable, resource, restricted, result-set-locator, resume, ' +
+	'retaining, retrieval, retry, return, return-code, returning, return-unsigned, ' +
+	'reverse, reversed, reverse-video, rewind, rewrite, rf, rh, right, right-align, ' +
+	'right-justify, right-text, rimmed, rollback, rolling, rounded, row-color, ' +
+	'row-color-pattern, row-dividers, row-font, row-headings, rowid, row-protection, ' +
+	'run, s, s01, s02, s03, s04, s05, same, save-as, save-as-no-prompt, screen, ' +
+	'scroll, scroll-bar, sd, search, search-options, search-text, seconds, section, ' +
+	'secure, security, seek, segment, segment-limit, select, select-all, ' +
+	'selection-index, selection-text, selective, self, self-act, selfclass, ' +
+	'semaphore-pointer, send, sentence, separate, separation, separator, sequence, ' +
+	'sequential, session-id, set, shading, shadow, shared, sharing, shift-in, ' +
+	'shift-out, short-date, show-lines, show-none, show-sel-always, sign, signed, ' +
+	'signed-int, signed-long, signed-short, singleline, size, solid, sort, ' +
+	'sort-control, sort-core-size, sort-file-size, sort-merge, sort-message, ' +
+	'sort-mode-size, sort-option, sort-order, sort-return, sort-tape, sort-tapes, ' +
+	'sort-work, source, source-computer, sources, space-fill, special-names, ' +
+	'spinner, sql, square, standard, standard-1, standard-2, standard-3, standard-4, ' +
+	'start, starting, start-x, start-y, static, static-list, status, status-bar, ' +
+	'step, stop, stop-browser, store, string, strong, strong-name, style, subfile, ' +
+	'subprogram, sub-queue-1, sub-queue-2, sub-queue-3, sub-schema, subtract, ' +
+	'subwindow, suffixing, sum, super, suppress, switch, switch-1, switch-2, ' +
+	'switch-3, switch-4, switch-5, switch-6, switch-7, switch-8, symbol, symbolic, ' +
+	'sync, synchronized, sysin, sysipt, syslist, syslst, sysout, syspch, syspunch, ' +
+	'system, system-default, system-info, tab, table, tabs, tab-to-add, ' +
+	'tab-to-delete, tally, tallying, tape, tapes, tenant, terminal, terminal-info, ' +
+	'terminate, termination, termination-value, test, text, than, then, thread, ' +
+	'thread-local, thread-local-storage, thread-pointer, threads, through, thru, ' +
+	'thumb-position, tiled-headings, time, time-of-day, timeout, time-out, ' +
+	'time-record, times, timestamp, timestamp-offset, timestamp-offset-record, ' +
+	'timestamp-record, title, title-bar, title-position, to, tool-bar, top, totaled, ' +
+	'totaling, trace, track-area, track-limit, tracks, track-thumb, trailing, ' +
+	'trailing-shift, trailing-sign, transaction, transaction-status, transceive, ' +
+	'transform, transparent, transparent-color, tree-view, try, tvni-first-visible, ' +
+	'tvni-child, tvni-next, tvni-next-visible, tvni-parent, tvni-previous, ' +
+	'tvni-previous-visible, tvni-root, tvplace-first, tvplace-last, tvplace-sort, ' +
+	'type, typedef, u, ucs-4, unbounded, underline, underlined, unequal, unframed, ' +
+	'unit, units, universal, unlock, unsigned, unsigned-int, unsigned-long, ' +
+	'unsigned-short, unsorted, unstring, until, up, update, updaters, upon, upper, ' +
+	'upsi-0, upsi-1, upsi-2, upsi-3, upsi-4, upsi-5, upsi-6, upsi-7, usage, ' +
+	'usage-mode, use, user, user-default, use-return, use-tab, using, utf-16, utf-8, ' +
+	'v, valid, validate, validating, value, value-default, value-format, ' +
+	'value-multiple, value-picture, valuetype, valuetype-id, value-variable, ' +
+	'varbinary, variable, varying, version, vertical, very-heavy, virtual-width, ' +
+	'visible, vpadding, vscroll, vscroll-bar, vscrool-pos, vtop, wait, when, ' +
+	'when-compiled, wide, width, window, with, within, words, working-storage, wrap, ' +
+	'write, write-only, writers, write-verify, writing, xml, xml-code, ' +
+	'xml-declaration, xml-event, xml-ntext, xml-schema, xml-text, yyyyddd, yyyymmdd, ' +
+	'zero-fill';
   PreprocessorWords: string =
-    'basis, cbl, control, copy, delete, eject, insert, ready, reload, ' +
-    'replace, reset, service, skip1, skip2, skip3, title, trace, use';
+    'basis, cbl, control, copy, delete, eject, erase,  ready, reload, ' +
+    'replace, skip1, skip2, skip3';
 
   StringWords: string =
-    'high-value, high-values, low-value, low-values, null, nulls, quote, ' +
-    'quotes, space, spaces, zero, zeroes, zeros';
+    'file-limit, file-limits, high-value, high-values, limit, limits, low-value, low-values, ' +
+    'space, spaces, values, zero, zeroes, zeros';
 
   // Ambigious means that a simple string comparision is not enough
   AmbigiousWords: string =
-    'label';
+    '';
 
 const
-  StringChars: array[TRangeState] of WideChar = (#0, '"', '''', '=',  '"', '''');
+  StringChars: array[TRangeState] of WideChar = (#0, '"', '''', '=',  '"', '''', #0, #0);
 
 procedure TSynCobolSyn.DoAddKeyword(AKeyword: string; AKind: integer);
 var
@@ -372,13 +497,15 @@ begin
   begin
     fTokenID := tkIndicator;
     case fLine[Run] of
-      '*', '/', 'D', 'd': fIndicator := fLine[Run];
+      '*', '/': fRange := rsComment;                                            //JaFi
+      'D', 'd': fRange := rsDebug;                                              //JaFi
+//      '*', '/', 'D', 'd': fIndicator := fLine[Run];                           //JaFi
       '-': if fRange in [rsQuoteStringMayBe, rsApostStringMayBe] then
            begin
              I := Run + 1;
              while fLine[I] = ' ' do
                Inc(I);
-             if (AnsiStrLComp(PWideChar(@fLine[I]), PWideChar(StringofChar(StringChars[fRange], 2)), 2) <> 0)
+             if (AnsiStrLComp(PWideChar(@fLine[I]), PWideChar(StringOfChar(StringChars[fRange], 2)), 2) <> 0)
                or (I + 1 > fCodeEndPos) then
                  fRange := rsUnknown;
            end;
@@ -403,7 +530,7 @@ end;
 procedure TSynCobolSyn.CommentProc;
 begin
   fIndicator := #0;
-
+  fRange := rsUnknown;
   if IsLineEnd(Run) then
     NextProcedure
   else
@@ -411,14 +538,30 @@ begin
     fTokenID := tkComment;
     repeat
       Inc(Run);
-    until IsLineEnd(Run) or (Run > fCodeEndPos);
+    until IsLineEnd(Run); // or (Run > fCodeEndPos);
   end;
+end;
+
+procedure TSynCobolSyn.InlineCommentProc;
+begin
+  Inc(Run);
+  fTokenID := tkUnknown;
+  if fLine[Run] = '>' then
+  begin
+    fTokenID := tkComment;
+    repeat
+      Inc(Run);
+    until IsLineEnd(Run);
+  end
+  else
+  if not IsLineEnd(Run) then
+    UnknownProc;
 end;
 
 procedure TSynCobolSyn.DebugProc;
 begin
   fIndicator := #0;
-
+  fRange := rsUnknown;
   if IsLineEnd(Run) then
     NextProcedure
   else
@@ -519,7 +662,7 @@ begin
 
   Inc(Run);
   StringProc;
-  fTokenID := tkString;
+//  fTokenID := tkString;
 end;
 
 procedure TSynCobolSyn.StringProc;
@@ -534,7 +677,9 @@ begin
       if (Run = fCodeEndPos) and (fRange in [rsQuoteString, rsApostString]) then
         Inc(fRange, 3)
       else
+      begin
         fRange := rsUnknown;
+      end;
       Inc(Run);
       Break;
     end;
@@ -608,6 +753,9 @@ begin
   fBooleanAttri.Foreground := clGreen;
   AddAttribute(fBooleanAttri);
 
+  fBracketAttri := TSynHighLighterAttributes.Create(SYNS_AttrBrackets, SYNS_AttrBrackets);
+  AddAttribute(fBracketAttri);
+
   fSpaceAttri := TSynHighLighterAttributes.Create(SYNS_AttrSpace, SYNS_FriendlyAttrSpace);
   AddAttribute(fSpaceAttri);
 
@@ -645,7 +793,118 @@ begin
   EnumerateKeywords(Ord(tkPreprocessor), PreprocessorWords, IsIdentChar, DoAddKeyword);
   EnumerateKeywords(Ord(tkString), StringWords, IsIdentChar, DoAddKeyword);
   EnumerateKeywords(Ord(tkUnknown), AmbigiousWords, IsIdentChar, DoAddKeyword);
+
+  //++ CodeFolding
+  RE_BlockBegin := TRegEx.Create('\b^(IF |EVALUATE |EXEC |READ |WRITE |PERFORM |STRING |ACCEPT )\b', [roIgnoreCase]);
+  RE_BlockEnd := TRegEx.Create('(END\-IF|END\-EVALUATE|END\-EXEC|END\-READ|END\-WRITE|END\-PERFORM|END\-STRING|END\-ACCEPT)', [roIgnoreCase]);
+//-- CodeFolding
 end;
+
+//++ CodeFolding
+Const
+  FT_Standard = 1;  // begin end, class end, record end
+  FT_Comment = 11;
+  FT_CodeDeclaration = 16;
+  FT_CodeDeclarationWithBody = 17;
+  FT_Implementation = 18;
+  FT_Region: Integer = 99;
+
+procedure TSynCobolSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer);
+var
+  Line, Index: Integer;
+  iList: TList<Integer>;
+  OpenDivision, OpenSection: Boolean;
+  CurLine: String;
+  ok: Boolean;
+  IsLastDot: Boolean;
+
+  function BlockDelimiter(Line: Integer): Boolean;
+  var
+    Index: Integer;
+    mcb: TMatchCollection;
+    mce: TMatchCollection;
+    match: TMatch;
+  begin
+    Result := False;
+
+    mcb := RE_BlockBegin.Matches(CurLine);
+    if mcb.Count > 0 then
+    begin
+      // Char must have proper highlighting (ignore stuff inside comments...)
+      Index :=  mcb.Item[0].Index;
+      if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
+      begin
+        ok := False;
+        // And ignore lines with both opening and closing chars in them
+        for match in Re_BlockEnd.Matches(CurLine) do
+          if (match.Index > Index) then
+          begin
+            OK := True;
+            Break;
+          end;
+        // line ends with dot - it replaces END-XXX
+        if not OK and IsLastDot then
+          OK := True;
+
+        if not OK then begin
+          FoldRanges.StartFoldRange(Line + 1, FT_Standard);
+          Result := True;
+        end;
+      end;
+    end
+    else
+    begin
+      mce := RE_BlockEnd.Matches(CurLine);
+      if (mce.Count > 0) or IsLastDot then
+      begin
+        if mce.Count > 0 then
+          Index :=  mce.Item[0].Index;
+        if IsLastDot or (GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri) then
+        begin
+          FoldRanges.StopFoldRange(Line + 1, FT_Standard);
+          Result := True;
+        end;
+      end;
+    end;
+  end;
+
+begin
+  iList := TList<Integer>.Create;
+  OpenDivision := False;
+  OpenSection := False;
+
+  for Line := 0 to LinesToScan.Count - 1 do
+  begin
+    CurLine := Trim(LinesToScan[Line]);
+    IsLastDot := Copy(CurLine, Length(CurLine), 1) = '.';
+
+    // Divisions
+    if Pos(' DIVISION.', UpperCase(CurLine)) > 0 then
+    begin
+      FoldRanges.StopFoldRange(Line+1, FT_CodeDeclarationWithBody, 0);
+      FoldRanges.StartFoldRange(Line + 1, FT_CodeDeclarationWithBody, 0);
+    end
+    else
+    // Sections
+    if Pos(' SECTION.', UpperCase(CurLine)) > 0 then
+    begin
+      FoldRanges.StopFoldRange(Line, FT_CodeDeclarationWithBody, 1);
+      FoldRanges.StartFoldRange(Line +1, FT_CodeDeclarationWithBody, 1);
+    end
+    else
+    // Standard XXX ... END-XXX ranges
+    if not BlockDelimiter(Line) then
+      FoldRanges.NoFoldInfo(Line + 1);
+
+  end;
+  // finally we end all open ranges
+  FoldRanges.StopFoldRange(LinesToScan.Count, FT_CodeDeclarationWithBody, 1);
+  FoldRanges.StopFoldRange(LinesToScan.Count, FT_CodeDeclarationWithBody, 0);
+
+  iList.Free;
+end;
+//-- CodeFolding
 
 destructor TSynCobolSyn.Destroy;
 begin
@@ -675,8 +934,8 @@ end;
 
 procedure TSynCobolSyn.UnknownProc;
 begin
-  inc(Run);
   fTokenID := tkUnknown;
+  inc(Run);
 end;
 
 procedure TSynCobolSyn.Next;
@@ -686,9 +945,12 @@ begin
   if fTokenPos < fCodeStartPos then
     FirstCharsProc
   else
-    case fIndicator of
-      '*', '/': CommentProc;
-      'D', 'd': DebugProc;
+//    case fIndicator of
+//      '*', '/': CommentProc;
+//      'D', 'd': DebugProc;
+    case fRange of
+        rsComment: CommentProc;
+        rsDebug: DebugProc;
       else
         if fTokenPos > fCodeEndPos then
           LastCharsProc
@@ -717,7 +979,9 @@ begin
     #1..#9, #11, #12, #14..#32: SpaceProc;
     '.': PointProc;
     '0'..'9': NumberProc;
-    'A'..'Z', 'a'..'z': IdentProc;
+    '-', 'A'..'Z', 'a'..'z': IdentProc;
+    '(', ')': BracketProc;
+    '*': InlineCommentProc;  // comment *> to end of line
     else UnknownProc;
   end;
 end;
@@ -762,6 +1026,7 @@ begin
     tkTagArea: Result := fTagAreaAttri;
     tkDebugLines: Result := fDebugLinesAttri;
     tkUnknown: Result := fIdentifierAttri;
+    tkBracket: Result := fBracketAttri;
   else
     Result := nil;
   end;
@@ -818,9 +1083,9 @@ begin
             '004200     03  WSV-PRICES              PIC 9(4)V99 COMP-3 VALUE 0000.33. 		'#13#10 +
             '004300     03  WSV-Z-PRICES            PIC Z(5)9.99- VALUE -2.12. 		'#13#10 +
             '004400     03  WSV-STORE-DATE          PIC 9(4)V99E99 VALUE 0001.33E02.'#13#10 +
-            '004500* 1.11 Strings.'#13#10 +
-            '004600*    The following types of strings are supported:'#13#10 +
-            '004700*    1.11.1 Quoted strings.'#13#10 +
+            '004500* 1.11 String.'#13#10 +
+            '004600*    The following types of string are supported:'#13#10 +
+            '004700*    1.11.1 Quoted string.'#13#10 +
             '004800         MOVE "The name of field is ""PRODUCT""" TO WS-ERR-MESS.'#13#10 +
             '004900         MOVE ''The name of field is ''''PRODUCT'''''' TO WS-ERR-MESS.'#13#10 +
             '005000*    1.11.2 Pseudo-text.'#13#10 +
@@ -865,16 +1130,16 @@ end;
 function TSynCobolSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
   case AChar of
-    '-', '0'..'9', 'a'..'z', 'A'..'Z':
+    '-', '_', '0'..'9', 'a'..'z', 'A'..'Z':
       Result := True;
     else
-      Result := False;              
+      Result := False;
   end;
 end;
 
 procedure TSynCobolSyn.SetCodeStartPos(Value: Integer);
 begin
-  if Value < fCodeMediumPos then
+  if Value <= fCodeMediumPos then
     fCodeStartPos := Value
   else
     fCodeStartPos := fCodeMediumPos;
@@ -921,6 +1186,12 @@ end;
 class function TSynCobolSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCOBOL;
+end;
+
+procedure TSynCobolSyn.BracketProc;
+begin
+  inc(Run);
+  fTokenID := tkBracket;
 end;
 
 initialization
