@@ -485,6 +485,9 @@ var
   HitMetrics: TDwriteHitTestMetrics;
   X1, X2, Y1, Y2: Single;
   RT: ID2D1DCRenderTarget;
+  TextRect: TRect;
+  Bitmap, OldBitmap: HBITMAP;
+  CDC: HDC;
 begin
   PrintStatus(psNewPage, Num, FAbort);
   if not FAbort then
@@ -497,105 +500,131 @@ begin
     begin
       YPos := 0;
 
-      RT := TSynDWrite.RenderTarget;
       with FMargins do
-        RT.BindDC(FCanvas.Handle, Rect(PLeft, PTop, PRight, PBottom));
-      RT.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
-      RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-      RT.BeginDraw;
-      RT.Clear(D2D1ColorF(Color));
-      for i := FPages[Num - 1].FirstLine to  FPages[Num - 1].LastLine do
+        TextRect := Rect(PLeft, PTop, PRight, PBottom);
+
+      if FPrinting then
       begin
-        if FLineNumbers then WriteLineNumber(i + 1, Round(YPos) + FMargins.PTop);
+        CDC := CreateCompatibleDC(GetDC(0));
+        Bitmap := CreateCompatibleBitmap(FCanvas.Handle, TextRect.Width, TextRect.Height);
+        OldBitmap := SelectObject(CDC, Bitmap);
+      end
+      else
+        CDC := FCanvas.Handle;
 
-        LineText := FLines[I];
-
-        if LineText = '' then
-          Inc(YPos, FLineHeight)
+      try
+        RT := TSynDWrite.RenderTarget;
+        if FPrinting then
+          CheckOSError(RT.BindDC(CDC, Rect(0, 0, TextRect.Width, TextRect.Height)))
         else
+          CheckOSError(RT.BindDC(FCanvas.Handle, TextRect));
+
+        RT.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
+        RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        RT.BeginDraw;
+        RT.Clear(D2D1ColorF(Color));
+        for i := FPages[Num - 1].FirstLine to  FPages[Num - 1].LastLine do
         begin
-          if not fSelectedOnly or (fSelMode = smLine) then
-          begin
-            iSelStart := 1;
-            iSelLen := LineText.Length;
-          end
+          if FLineNumbers then WriteLineNumber(i + 1, Round(YPos) + FMargins.PTop);
+
+          LineText := FLines[I];
+
+          if LineText = '' then
+            Inc(YPos, FLineHeight)
           else
           begin
-            if (fSelMode = smColumn) or (i = fBlockBegin.Line -1) then
-              iSelStart := fBlockBegin.Char
-            else
-              iSelStart := 1;
-            if (fSelMode = smColumn) or (i = fBlockEnd.Line -1) then
-              iSelLen := fBlockEnd.Char  - iSelStart
-            else
-              iSelLen := MaxInt;
-          end;
-
-          TextLayout := GetTextLayout(i);
-
-          if FSynOK then
-          begin
-            FHighlighter.SetRange(FLines.Objects[i]);
-            FHighlighter.SetLine(LineText, i + 1);
-
-            while not FHighLighter.GetEol do
+            if not fSelectedOnly or (fSelMode = smLine) then
             begin
-              Token := FHighLighter.GetToken;
-              TokenPos := FHighLighter.GetTokenPos;
-              if TokenPos - iSelStart >= iSelLen then Break;
+              iSelStart := 1;
+              iSelLen := LineText.Length;
+            end
+            else
+            begin
+              if (fSelMode = smColumn) or (i = fBlockBegin.Line -1) then
+                iSelStart := fBlockBegin.Char
+              else
+                iSelStart := 1;
+              if (fSelMode = smColumn) or (i = fBlockEnd.Line -1) then
+                iSelLen := fBlockEnd.Char  - iSelStart
+              else
+                iSelLen := MaxInt;
+            end;
 
-              // Adjust for iSelStart
-              TokenPos := TokenPos - iSelStart + 2; // TokenPos is zero based
-              TokenEnd := TokenPos + Token.Length;
+            TextLayout := GetTextLayout(i);
 
-              Attr := FHighLighter.GetTokenAttribute;
-              if (TokenEnd > 1) and Assigned(Attr) then
+            if FSynOK then
+            begin
+              FHighlighter.SetRange(FLines.Objects[i]);
+              FHighlighter.SetLine(LineText, i + 1);
+
+              while not FHighLighter.GetEol do
               begin
-                TokenPos := Max(TokenPos, 1);
-                TextLayout.SetFontStyle(Attr.Style, TokenPos, TokenEnd - TokenPos);
-                if FColors then
+                Token := FHighLighter.GetToken;
+                TokenPos := FHighLighter.GetTokenPos;
+                if TokenPos - iSelStart >= iSelLen then Break;
+
+                // Adjust for iSelStart
+                TokenPos := TokenPos - iSelStart + 2; // TokenPos is zero based
+                TokenEnd := TokenPos + Token.Length;
+
+                Attr := FHighLighter.GetTokenAttribute;
+                if (TokenEnd > 1) and Assigned(Attr) then
                 begin
-                  AColor := Attr.Foreground;
-                  if AColor <> clNone then
-                    TextLayout.SetFontColor(AColor, TokenPos, TokenEnd - TokenPos);
-                  AColor := Attr.Background;
-                  if AColor <> clNone then
+                  TokenPos := Max(TokenPos, 1);
+                  TextLayout.SetFontStyle(Attr.Style, TokenPos, TokenEnd - TokenPos);
+                  if FColors then
                   begin
-                    TextLayout.IDW.HitTestTextPosition(TokenPos - 1, False, X1, Y1, HitMetrics);
-                    TextLayout.IDW.HitTestTextPosition(TokenEnd - 2, True, X2, Y2, HitMetrics);
-                    RT.FillRectangle(Rect(Round(X1), YPos + Round(Y1), Round(X2),
-                      YPos + Round(Y2) + FLineHeight), TSynDWrite.SolidBrush(AColor));
+                    AColor := Attr.Foreground;
+                    if AColor <> clNone then
+                      TextLayout.SetFontColor(AColor, TokenPos, TokenEnd - TokenPos);
+                    AColor := Attr.Background;
+                    if AColor <> clNone then
+                    begin
+                      TextLayout.IDW.HitTestTextPosition(TokenPos - 1, False, X1, Y1, HitMetrics);
+                      TextLayout.IDW.HitTestTextPosition(TokenEnd - 2, True, X2, Y2, HitMetrics);
+                      RT.FillRectangle(Rect(Round(X1), YPos + Round(Y1), Round(X2),
+                        YPos + Round(Y2) + FLineHeight), TSynDWrite.SolidBrush(AColor));
+                    end;
                   end;
                 end;
+                FHighLighter.Next;
               end;
-              FHighLighter.Next;
             end;
-          end;
-          TextLayout.IDW.GetLineMetrics(@LineMetrics, 1, ActualLineCount);
-          LayoutRowCount := ActualLineCount; // to avoid warnings
-          if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1)
-          then
-          begin
-            TextLayout.DrawClipped(RT, 0,
-              YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
-              Rect(0, YPos, FMaxWidth,
-              ((FMargins.PBottom - FMargins.PTop) div FLineHeight) * FLineHeight),
-              FFont.Color);
-            LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
-          end else if (I = FPages[Num - 1].LastLine) and
-            (FPages[Num - 1].LastRow < LayoutRowCount)
-          then
-            TextLayout.DrawClipped(RT, 0, YPos,
-              Rect(0, YPos, FMaxWidth, YPos + FPages[Num - 1].LastRow * FLineHeight),
-              FFont.Color)
-          else
-            TextLayout.Draw(RT, 0, YPos, FFont.Color);
+            TextLayout.IDW.GetLineMetrics(@LineMetrics, 1, ActualLineCount);
+            LayoutRowCount := ActualLineCount; // to avoid warnings
+            if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1)
+            then
+            begin
+              TextLayout.DrawClipped(RT, 0,
+                YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
+                Rect(0, YPos, FMaxWidth,
+                ((FMargins.PBottom - FMargins.PTop) div FLineHeight) * FLineHeight),
+                FFont.Color);
+              LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
+            end else if (I = FPages[Num - 1].LastLine) and
+              (FPages[Num - 1].LastRow < LayoutRowCount)
+            then
+              TextLayout.DrawClipped(RT, 0, YPos,
+                Rect(0, YPos, FMaxWidth, YPos + FPages[Num - 1].LastRow * FLineHeight),
+                FFont.Color)
+            else
+              TextLayout.Draw(RT, 0, YPos, FFont.Color);
 
-          Inc(YPos, LayoutRowCount * FLineHeight);
+            Inc(YPos, LayoutRowCount * FLineHeight);
+          end;
+          PrintLine(i + 1, Num);
         end;
-        PrintLine(i + 1, Num);
+        RT.EndDraw;
+      finally
+        if FPrinting then
+        begin
+          BitBlt(FCanvas.Handle, FMargins.PLeft, FMargins.PTop, TextRect.Width,
+            TextRect.Height, CDC, 0, 0, SRCCOPY);
+          SelectObject(CDC, OldBitmap);
+          DeleteObject(Bitmap);
+          ReleaseDC(0, CDC);
+        end;
       end;
-      RT.EndDraw;
     end;
     FFooter.Print(FCanvas, Num + FPageOffset);
   end;
@@ -731,8 +760,8 @@ begin
       iSelLen := MaxInt;
     S := Copy(Lines[Line], iSelStart, iSelLen);
   end;
-  Result.Create(FSynTextFormat, PChar(S), S.Length, FMaxWidth, MaxInt, Wrap,
-    GetDeviceCaps(FCanvas.Handle, LOGPIXELSY)/FPrinterInfo.YPixPrInch);
+  Result.Create(FSynTextFormat, PChar(S), S.Length, FMaxWidth, MaxInt, Wrap, 1);
+    //GetDeviceCaps(FCanvas.Handle, LOGPIXELSY)/FPrinterInfo.YPixPrInch);
 end;
 
 procedure TSynEditPrint.SetSynEdit(const Value: TCustomSynEdit);
