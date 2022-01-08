@@ -198,7 +198,7 @@ var
   HTMLExport: TSynExporterHTML;
   Ed: TSynEdit;
 begin
-  Ed := Editor as TSynEdit;
+  Ed := Editor as TCustomSynEdit;
   HTMLExport := TSynExporterHTML.Create(nil);
   try
     HTMLExport.CreateHTMLFragment := True;
