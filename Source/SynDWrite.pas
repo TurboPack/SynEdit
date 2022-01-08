@@ -558,6 +558,8 @@ constructor TSynTextLayout.Create(TextFormat: TSynTextFormat; Text: PChar;
 var
   TextLayout1: IDWriteTextLayout1;
 begin
+//  CheckOSError(TSynDWrite.DWriteFactory.CreateTextLayout(Text,
+//    Count, TextFormat.FIDW, LayoutWidth, LayoutHeight, FIDW));
   CheckOSError(TSynDWrite.DWriteFactory.CreateGdiCompatibleTextLayout(Text,
     Count, TextFormat.FIDW, LayoutWidth, LayoutHeight,
     PixelsPerDip, nil, TextFormat.UseGDINatural, FIDW));
@@ -566,10 +568,12 @@ begin
   then
     CheckOSError(TextLayout1.SetCharacterSpacing(TextFormat.CharExtra / 2,
       TextFormat.CharExtra / 2, 0, DWTextRange(1, Count)));
-  if WordWrap then
-    FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP)
+  if not WordWrap then
+    FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP)
+  else if TOSVersion.Check(6, 3) then  // 8.1 or higher
+    FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_EMERGENCY_BREAK)
   else
-    FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+    FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
 
   TextOptions :=
     D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT;
