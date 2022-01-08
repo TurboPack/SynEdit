@@ -488,6 +488,7 @@ var
   X1, X2, Y1, Y2: Single;
   TextRect: TRect;
   DevTextRect: TRect;
+  ClipRect: TRect;
   WicRT: ISynWICRenderTarget;
   RT: ID2D1RenderTarget;
 begin
@@ -503,6 +504,7 @@ begin
       with FMargins do
         TextRect := Rect(PLeft, PTop, PRight, PBottom);
 
+      ClipRect := FCanvas.ClipRect;
       DevTextRect := TextRect;
       if not FPrinting or (FCanvas is TMetafileCanvas) then
         LPToDP(FCanvas.Handle, DevTextRect, 2);
@@ -588,27 +590,30 @@ begin
               FHighLighter.Next;
             end;
           end;
+
           TextLayout.IDW.GetLineMetrics(@LineMetrics, 1, ActualLineCount);
           LayoutRowCount := ActualLineCount; // to avoid warnings
-          if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1)
-          then
-          begin
-            TextLayout.DrawClipped(RT, 0,
-              YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
-              Rect(0, YPos, FMaxWidth,
-              ((FMargins.PBottom - FMargins.PTop) div FLineHeight) * FLineHeight),
-              FFont.Color);
-            LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
-          end else if (I = FPages[Num - 1].LastLine) and
-            (FPages[Num - 1].LastRow < LayoutRowCount)
-          then
-            TextLayout.DrawClipped(RT, 0, YPos,
-              Rect(0, YPos, FMaxWidth, YPos + FPages[Num - 1].LastRow * FLineHeight),
-              FFont.Color)
-          else
-            TextLayout.Draw(RT, 0, YPos, FFont.Color);
+
+          if YPos + FMargins.PTop + LayoutRowCount * FLineHeight >= ClipRect.Top then
+            if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1) then
+            begin
+              TextLayout.DrawClipped(RT, 0,
+                YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
+                Rect(0, YPos, FMaxWidth,
+                ((FMargins.PBottom - FMargins.PTop) div FLineHeight) * FLineHeight),
+                FFont.Color);
+              LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
+            end else if (I = FPages[Num - 1].LastLine) and
+              (FPages[Num - 1].LastRow < LayoutRowCount)
+            then
+              TextLayout.DrawClipped(RT, 0, YPos,
+                Rect(0, YPos, FMaxWidth, YPos + FPages[Num - 1].LastRow * FLineHeight),
+                FFont.Color)
+            else
+              TextLayout.Draw(RT, 0, YPos, FFont.Color);
 
           Inc(YPos, LayoutRowCount * FLineHeight);
+          if YPos + FMargins.PTop > ClipRect.Bottom then Break;
         end;
         PrintLine(i + 1, Num);
       end;
