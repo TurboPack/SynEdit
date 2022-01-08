@@ -25,6 +25,7 @@ interface
 Uses
   Winapi.Windows,
   Winapi.Messages,
+  Winapi.Wincodec,
   Winapi.ActiveX,
   Winapi.D2D1,
   System.UITypes,
@@ -240,6 +241,28 @@ type
       FontColor: TColor);
   end;
 
+  ISynWicRenderTarget = interface
+    ['{1142A46F-9BF4-449C-9C4A-A22B19716202}']
+    function GetIDW: ID2D1RenderTarget;
+    function GetWicImage: TWICImage;
+    property IDW: ID2D1RenderTarget read GetIDW;
+    property WicImage: TWICImage read GetWicImage;
+  end;
+
+  TSynWicRenderTarget = class(TInterfacedObject, ISynWicRenderTarget)
+  private
+    FWicImage: TWICImage;
+    FIDW: ID2D1RenderTarget;
+    function GetIDW: ID2D1RenderTarget;
+    function GetWicImage: TWICImage;
+  public
+    constructor Create(const Width, Height: integer);
+    destructor Destroy; override;
+  end;
+
+  function SynWicRenderTarget(const Width, Height: integer): ISynWicRenderTarget;
+
+type
   TGraphemeEnumerator = record
   private
     FTextLayout: IDWriteTextLayout;
@@ -618,6 +641,59 @@ begin
     typNoLigatures: DWTypography := DWGetTypography(TypoFeaturesNoLigatures);
   end;
   FIDW.SetTypography(DWTypography, DWTextRange(Start, Count));
+end;
+
+{ TSynWICRenderTarget }
+
+constructor TSynWICRenderTarget.Create(const Width, Height: integer);
+var
+  BM: TBitmap;
+  RenderTargetProp: TD2D1RenderTargetProperties;
+begin
+  inherited Create;
+  FWicImage := TWicImage.Create;
+  FWicImage.InterpolationMode := wipmHighQualityCubic;
+  BM := TBitmap.Create(Width, Height);
+  try
+    BM.AlphaFormat := afDefined;
+    FWicImage.Assign(BM);
+  finally
+    BM.Free;
+  end;
+
+  RenderTargetProp :=
+    D2D1RenderTargetProperties(
+      {$IFDEF GPUSupport}
+      D2D1_RENDER_TARGET_TYPE_DEFAULT,
+      {$ELSE}
+      D2D1_RENDER_TARGET_TYPE_SOFTWARE, // much faster in my desktop with a slow GPU
+      {$ENDIF}
+      D2D1PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_UNKNOWN), // use image format
+      0, 0, D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
+
+  CheckOSError(TSynDWrite.D2DFactory.CreateWicBitmapRenderTarget(FWicImage.Handle,
+    RenderTargetProp,FIDW));
+end;
+
+destructor TSynWICRenderTarget.Destroy;
+begin
+  FWICImage.Free;
+  inherited;
+end;
+
+function TSynWicRenderTarget.GetIDW: ID2D1RenderTarget;
+begin
+  Result := FIDW;
+end;
+
+function TSynWicRenderTarget.GetWicImage: TWICImage;
+begin
+  Result := FWicImage;
+end;
+
+function SynWicRenderTarget(const Width, Height: integer): ISynWicRenderTarget;
+begin
+  Result := TSynWicRenderTarget.Create(Width, Height);
 end;
 
 initialization
