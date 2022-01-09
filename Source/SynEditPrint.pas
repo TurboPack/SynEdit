@@ -506,12 +506,12 @@ begin
 
       ClipRect := FCanvas.ClipRect;
       DevTextRect := TextRect;
-      if not FPrinting or (FCanvas is TMetafileCanvas) then
+      if not FPrinting then
         LPToDP(FCanvas.Handle, DevTextRect, 2);
 
       WicRT := SynWICRenderTarget(DevTextRect.Width, DevTextRect.Height);
       RT := WicRt.IDW;
-      if not FPrinting or (FCanvas is TMetafileCanvas) then
+      if not FPrinting then
         RT.SetTransform(
           TD2DMatrix3X2F.Scale(DevTextRect.Width / TextRect.Width,
             DevTextRect.Height /TextRect.Height, Point(0, 0)));
