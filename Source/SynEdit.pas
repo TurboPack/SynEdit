@@ -6176,7 +6176,8 @@ begin
       ecUp, ecSelUp:
         begin
           { on the first line we select first line too }
-          if CaretY = 1 then
+          if ((not Wordwrap and (CaretY = 1)) or
+              (WordWrap and (DisplayY = 1))) then
           begin
             SaveLastCaretX := fLastCaretX;
             DoHomeKey(Command = ecSelUp);
@@ -6189,7 +6190,8 @@ begin
       ecDown, ecSelDown:
         begin
           { on the last line we will select last line too }
-          if CaretY = Lines.Count then
+          if ((not Wordwrap and (CaretY = Lines.Count)) or
+              (WordWrap and (DisplayY = fWordWrapPlugin.RowCount))) then
           begin
             SaveLastCaretX := fLastCaretX;
             DoEndKey(Command = ecSelDown);
@@ -6208,7 +6210,9 @@ begin
             counter := -counter;
           TopLine := TopLine + counter;
           { on the first line we will select first line too }
-          if (Command in [ecPageUp, ecSelPageUp]) and (CaretY = 1) then
+          if (Command in [ecPageUp, ecSelPageUp]) and
+             ((not Wordwrap and (CaretY = 1)) or
+              (WordWrap and (DisplayY = 1))) then
           begin
             SaveLastCaretX := fLastCaretX;
             DoHomeKey(Command = ecSelPageUp);
@@ -6216,7 +6220,9 @@ begin
           end
           else
           { on the last line we will select last line too }
-          if (Command in [ecPageDown, ecSelPageDown]) and (CaretY = Lines.Count) then
+          if (Command in [ecPageDown, ecSelPageDown]) and
+             ((not Wordwrap and (CaretY = Lines.Count)) or
+              (WordWrap and (DisplayY = fWordWrapPlugin.RowCount))) then
           begin
             SaveLastCaretX := fLastCaretX;
             DoEndKey(Command = ecSelPageDown);
