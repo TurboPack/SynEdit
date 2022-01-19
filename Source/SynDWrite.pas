@@ -163,7 +163,7 @@ type
 
     function GetRecommendedRenderingMode(emSize: Single; pixelsPerDip: Single;
       measuringMode: TDWriteMeasuringMode;
-      var renderingParams: IDWriteRenderingParams;
+      const renderingParams: IDWriteRenderingParams;
       var renderingMode: TDWriteRenderingMode): HResult; stdcall;
 
     function GetGdiCompatibleMetrics(emSize: Single; pixelsPerDip: Single;
@@ -195,6 +195,7 @@ type
     class var SingletonDWriteFactory: IDWriteFactory;
     class var SingletonGDIInterop: IDWriteGdiInterop;
     class var FSolidBrushes: TDictionary<TColor, ID2D1SolidColorBrush>;
+    class var SingletonDottedStrokeStyle: ID2D1StrokeStyle;
   public
     class function D2DFactory(factoryType: TD2D1FactoryType=D2D1_FACTORY_TYPE_SINGLE_THREADED;
       factoryOptions: PD2D1FactoryOptions=nil): ID2D1Factory; static;
@@ -202,6 +203,8 @@ type
     class function DWriteFactory: IDWriteFactory;
     class function GDIInterop: IDWriteGdiInterop;
     class function SolidBrush(Color: TColor): ID2D1SolidColorBrush;
+    class function DottedStrokeStyle: ID2D1StrokeStyle;
+    class procedure ResetRenderTarget;
     class destructor Destroy;
   end;
 
@@ -226,6 +229,7 @@ type
   TSynTextLayout = record
   private
     FIDW: IDWriteTextLayout;
+    FCount: Integer;
   public
     TextOptions: D2D1_DRAW_TEXT_OPTIONS;
     property IDW: IDWriteTextLayout read FIDW;
@@ -233,9 +237,9 @@ type
         LayoutWidth, layoutHeight: Cardinal; WordWrap: Boolean = False;
         PixelsPerDip: Single = 1);
     procedure SetFontStyle(FontStyles: System.UITypes.TFontStyles; const Start,
-        Count: Cardinal);
-    procedure SetFontColor(Color: TColor; const Start, Count: Cardinal);
-    procedure SetTypography(Typography: TSynTypography; const Start, Count: Cardinal);
+        Count: Integer);
+    procedure SetFontColor(Color: TColor; const Start, Count: Integer);
+    procedure SetTypography(Typography: TSynTypography; const Start, Count: Integer);
     procedure Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor: TColor);
     procedure DrawClipped(RT: ID2D1RenderTarget; X, Y: Integer; ClipRect: TRect;
       FontColor: TColor);
@@ -298,7 +302,9 @@ var
 implementation
 
 Uses
-  Winapi.DxgiFormat;
+  Winapi.DxgiFormat,
+  System.Math,
+  Vcl.Forms;
 
 {$REGION 'Support functions'}
 function D2D1ColorF(const AColor: TColor): TD2D1ColorF; overload;
@@ -359,16 +365,34 @@ begin
   FSolidBrushes.Free;
 end;
 
+class function TSynDWrite.DottedStrokeStyle: ID2D1StrokeStyle;
+var
+  LocalStrokeStyle: ID2D1StrokeStyle;
+  Dashes: array of Single;
+begin
+  if SingletonDottedStrokeStyle = nil then
+  begin
+    Dashes := [0, 3];
+    CheckOSError(D2DFactory.CreateStrokeStyle(
+      D2D1StrokeStyleProperties(D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND,
+        D2D1_CAP_STYLE_ROUND, D2D1_LINE_JOIN_MITER, 10, D2D1_DASH_STYLE_CUSTOM, 0),
+        @Dashes[0], 2, LocalStrokeStyle));
+    if InterlockedCompareExchangePointer(Pointer(SingletonDottedStrokeStyle),
+      Pointer(LocalStrokeStyle), nil) = nil
+    then
+      SingletonDottedStrokeStyle._AddRef;
+  end;
+  Result := SingletonDottedStrokeStyle;
+end;
+
 class function TSynDWrite.DWriteFactory: IDWriteFactory;
 var
   LocalDWriteFactory: IUnknown;
 begin
   if SingletonDWriteFactory = nil then
   begin
-    if not Succeeded(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, IID_IDWriteFactory,
-      LocalDWriteFactory))
-    then
-      RaiseLastOSError;
+    CheckOSError(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, IID_IDWriteFactory,
+      LocalDWriteFactory));
     if InterlockedCompareExchangePointer(Pointer(SingletonDWriteFactory),
       Pointer(LocalDWriteFactory), nil) = nil
     then
@@ -383,9 +407,7 @@ var
 begin
   if SingletonGDIInterop = nil then
   begin
-    if not Succeeded(DWriteFactory.GetGdiInterop(LocalGDIInterop))
-    then
-      RaiseLastOSError;
+    CheckOSError(DWriteFactory.GetGdiInterop(LocalGDIInterop));
     if InterlockedCompareExchangePointer(Pointer(SingletonGDIInterop),
       Pointer(LocalGDIInterop), nil) = nil
     then
@@ -400,7 +422,7 @@ Var
 begin
   if SingletonRenderTarget = nil then
   begin
-    if not Succeeded(D2DFactory.CreateDCRenderTarget(
+    CheckOSError(D2DFactory.CreateDCRenderTarget(
       D2D1RenderTargetProperties(
         {$IFDEF GPUSupport}
         D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -409,15 +431,23 @@ begin
         {$ENDIF}
         D2D1PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
         0, 0, D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE),
-        RT))
-    then
-      RaiseLastOSError;
+        RT));
     if InterlockedCompareExchangePointer(Pointer(SingletonRenderTarget),
       Pointer(RT), nil) = nil
     then
+    begin
       SingletonRenderTarget._AddRef;
+      SingletonRenderTarget.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+      SingletonRenderTarget.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
+    end;
   end;
   Result := SingletonRenderTarget;
+end;
+
+class procedure TSynDWrite.ResetRenderTarget;
+begin
+  FSolidBrushes.Clear;
+  SingletonRenderTarget := nil;
 end;
 
 class function TSynDWrite.SolidBrush(Color: TColor): ID2D1SolidColorBrush;
@@ -440,16 +470,13 @@ end;
 
 constructor TGraphemeEnumerator.Create(const AValue: string);
 var
-  D2DLocale: array [0..84] of Char;
   TextFormat: IDWriteTextFormat;
 begin
   FString:= AValue;
   FStart := 0;
-  if LCIDToLocaleName(GetUserDefaultLCID, D2DLocale, 85, 0) = 0 then
-    RaiseLastOSError;
   CheckOSError(TSynDWrite.DWriteFactory.CreateTextFormat('Segoe UI', nil,
     DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
-    MulDiv(9, 96, 72), D2DLocale, TextFormat));
+    MulDiv(9, 96, 72), DefaultLocaleName, TextFormat));
   CheckOSError(TSynDWrite.DWriteFactory.CreateTextLayout(PChar(FString), FString.Length,
     TextFormat, MaxInt, MaxInt, FTextLayout));
 end;
@@ -504,17 +531,18 @@ var
   CodePoint: Cardinal;
   FontIndex: Word;
   GlyphMetrics: TDwriteGlyphMetrics;
-  Trimming: TDwriteTrimming;
+  //Trimming: TDwriteTrimming;
   Baseline: Single;
 begin
   FUseGDINatural := AFont.Quality = TFontQuality.fqClearTypeNatural;
   GetObject(AFont.Handle, SizeOf(TLogFont), @tagLOGFONT);
   CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(tagLOGFONT, DWFont));
   DWFont.CreateFontFace(FontFace);
+  //FontFace.GetMetrics(FontMetrics);
   FontFace.GetGdiCompatibleMetrics(-AFont.Height, 1, PDwriteMatrix(nil)^, FontMetrics);
   CodePoint := Ord('W');
   FontFace.GetGlyphIndices(CodePoint, 1, FontIndex);
-  FontFace.GetDesignGlyphMetrics(@FontIndex, 1, @GlyphMetrics);
+  //FontFace.GetDesignGlyphMetrics(@FontIndex, 1, @GlyphMetrics);
   IDWriteFontFace(FontFace).GetGdiCompatibleGlyphMetrics(
     -AFont.Height, 1, nil, UseGDINatural,
     @FontIndex, 1, @GlyphMetrics);
@@ -543,10 +571,10 @@ begin
     -AFont.Height, DefaultLocaleName, FIDW));
   FIDW.SetIncrementalTabStop(TabWidth * FCharWidth);
 
-  Trimming.granularity := DWRITE_TRIMMING_GRANULARITY_CHARACTER;
-  Trimming.delimiter := 0;
-  Trimming.delimiterCount := 0;
-  CheckOSError(FIDW.SetTrimming(Trimming, nil));
+//  Trimming.granularity := DWRITE_TRIMMING_GRANULARITY_CHARACTER;
+//  Trimming.delimiter := 0;
+//  Trimming.delimiterCount := 0;
+//  CheckOSError(FIDW.SetTrimming(Trimming, nil));
   FIDW.SetLineSpacing(DWRITE_LINE_SPACING_METHOD_UNIFORM, LineHeight, Baseline);
 end;
 
@@ -558,6 +586,7 @@ constructor TSynTextLayout.Create(TextFormat: TSynTextFormat; Text: PChar;
 var
   TextLayout1: IDWriteTextLayout1;
 begin
+  FCount := Count;
 //  CheckOSError(TSynDWrite.DWriteFactory.CreateTextLayout(Text,
 //    Count, TextFormat.FIDW, LayoutWidth, LayoutHeight, FIDW));
   CheckOSError(TSynDWrite.DWriteFactory.CreateGdiCompatibleTextLayout(Text,
@@ -595,18 +624,31 @@ begin
   RT.PopAxisAlignedClip;
 end;
 
-procedure TSynTextLayout.SetFontColor(Color: TColor; const Start,
-  Count: Cardinal);
+procedure TSynTextLayout.SetFontColor(Color: TColor; const Start, Count:
+    Integer);
+var
+  Range: TDwriteTextRange;
+  FirstChar, LastChar: Cardinal;
 begin
-  FIDW.SetDrawingEffect(TSynDWrite.SolidBrush(Color), DWTextRange(Start, Count));
+  LastChar := Min(FCount, Start + Count - 1);
+  FirstChar := Max(Start, 1);
+  if FirstChar > LastChar then Exit;
+  Range := DWTextRange(FirstChar, LastChar - FirstChar + 1);
+
+  FIDW.SetDrawingEffect(TSynDWrite.SolidBrush(Color), Range);
 end;
 
 procedure TSynTextLayout.SetFontStyle(FontStyles: System.UITypes.TFontStyles;
-  const Start, Count: Cardinal);
+    const Start, Count: Integer);
 var
   Range: TDwriteTextRange;
+  FirstChar, LastChar: Cardinal;
 begin
-  Range := DWTextRange(Start, Count);
+  LastChar := Min(FCount, Start + Count - 1);
+  FirstChar := Max(Start, 1);
+  if FirstChar > LastChar then Exit;
+  Range := DWTextRange(FirstChar, LastChar - FirstChar + 1);
+
   if fsBold in FontStyles then
     FIDW.SetFontWeight(DWRITE_FONT_WEIGHT_BOLD, Range);
   if fsItalic in FontStyles then
@@ -618,11 +660,9 @@ begin
 end;
 
 procedure TSynTextLayout.SetTypography(Typography: TSynTypography; const Start,
-  Count: Cardinal);
-var
-  DWTypography: IDWriteTypography;
+    Count: Integer);
 const
-  DefaultTypoFeatures: array[0..8] of integer =
+  DefaultTypoFeatures: array[0..7] of integer =
   (DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_LIGATURES,             // clig
    DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_ALTERNATES,            // calt
    DWRITE_FONT_FEATURE_TAG_GLYPH_COMPOSITION_DECOMPOSITION,  // ccmp
@@ -630,21 +670,28 @@ const
    DWRITE_FONT_FEATURE_TAG_STANDARD_LIGATURES,               // liga
    DWRITE_FONT_FEATURE_TAG_MARK_POSITIONING,                 // mark
    DWRITE_FONT_FEATURE_TAG_MARK_TO_MARK_POSITIONING,         // mkmk
-   DWRITE_FONT_FEATURE_TAG_REQUIRED_LIGATURES,               // rlig
-   DWRITE_FONT_FEATURE_TAG_STYLISTIC_ALTERNATES);            // salt
-  TypoFeaturesNoLigatures: array[0..3] of integer =
+   DWRITE_FONT_FEATURE_TAG_REQUIRED_LIGATURES);              // rlig
+  TypoFeaturesNoLigatures: array[0..2] of integer =
   (DWRITE_FONT_FEATURE_TAG_GLYPH_COMPOSITION_DECOMPOSITION,  // ccmp
    DWRITE_FONT_FEATURE_TAG_MARK_POSITIONING,                 // mark
-   DWRITE_FONT_FEATURE_TAG_MARK_TO_MARK_POSITIONING,         // mkmk
-   DWRITE_FONT_FEATURE_TAG_STYLISTIC_ALTERNATES);            // salt
+   DWRITE_FONT_FEATURE_TAG_MARK_TO_MARK_POSITIONING);        // salt
 
+var
+  DWTypography: IDWriteTypography;
+  Range: TDwriteTextRange;
+  FirstChar, LastChar: Cardinal;
 begin
+  LastChar := Min(FCount, Start + Count - 1);
+  FirstChar := Max(Start, 1);
+  if FirstChar > LastChar then Exit;
+  Range := DWTextRange(FirstChar, LastChar - FirstChar + 1);
+
   case Typography of
     typEmpty: DWTypography := DWGetTypography([]);
     typDefault: DWTypography := DWGetTypography(DefaultTypoFeatures);
     typNoLigatures: DWTypography := DWGetTypography(TypoFeaturesNoLigatures);
   end;
-  FIDW.SetTypography(DWTypography, DWTextRange(Start, Count));
+  FIDW.SetTypography(DWTypography, Range);
 end;
 
 { TSynWICRenderTarget }
