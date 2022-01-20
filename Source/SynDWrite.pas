@@ -194,8 +194,8 @@ type
     class var SingletonRenderTarget: ID2D1DCRenderTarget;
     class var SingletonDWriteFactory: IDWriteFactory;
     class var SingletonGDIInterop: IDWriteGdiInterop;
-    class var FSolidBrushes: TDictionary<TColor, ID2D1SolidColorBrush>;
     class var SingletonDottedStrokeStyle: ID2D1StrokeStyle;
+    class var FSolidBrushes: TDictionary<TColor, ID2D1SolidColorBrush>;
   public
     class function D2DFactory(factoryType: TD2D1FactoryType=D2D1_FACTORY_TYPE_SINGLE_THREADED;
       factoryOptions: PD2D1FactoryOptions=nil): ID2D1Factory; static;
@@ -292,6 +292,7 @@ function Graphemes(const AValue: string): TGraphemeEnumeratorHelper;
 
 // Support functions
 function D2D1ColorF(const AColor: TColor): TD2D1ColorF; overload;
+function D2D1ColorF(const AColor: TColor; Opacity: Single): TD2D1ColorF; overload;
 function DWTextRange(startPosition: Cardinal; length: Cardinal): TDwriteTextRange;
 function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: Cardinal): TDwriteFontFeature;
 function DWGetTypography(Features: array of Integer) : IDWriteTypography;
@@ -318,6 +319,12 @@ begin
   Result.g := ((RGB shr  8) and $FF) * CScale;
   Result.b := ((RGB shr 16) and $FF) * CScale;
   Result.a :=  1.0;
+end;
+
+function D2D1ColorF(const AColor: TColor; Opacity: Single): TD2D1ColorF; overload;
+begin
+  Result := D2D1ColorF(AColor);
+  Result.a := Opacity;
 end;
 
 function DWTextRange(startPosition: Cardinal; length: Cardinal): TDwriteTextRange;
@@ -368,15 +375,13 @@ end;
 class function TSynDWrite.DottedStrokeStyle: ID2D1StrokeStyle;
 var
   LocalStrokeStyle: ID2D1StrokeStyle;
-  Dashes: array of Single;
 begin
   if SingletonDottedStrokeStyle = nil then
   begin
-    Dashes := [0, 3];
     CheckOSError(D2DFactory.CreateStrokeStyle(
       D2D1StrokeStyleProperties(D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND,
-        D2D1_CAP_STYLE_ROUND, D2D1_LINE_JOIN_MITER, 10, D2D1_DASH_STYLE_CUSTOM, 0),
-        @Dashes[0], 2, LocalStrokeStyle));
+        D2D1_CAP_STYLE_ROUND, D2D1_LINE_JOIN_MITER, 10, D2D1_DASH_STYLE_DOT, 0),
+        nil, 0, LocalStrokeStyle));
     if InterlockedCompareExchangePointer(Pointer(SingletonDottedStrokeStyle),
       Pointer(LocalStrokeStyle), nil) = nil
     then

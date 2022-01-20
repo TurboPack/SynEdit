@@ -2287,6 +2287,7 @@ begin
       rcDraw := rcClip;
       rcDraw.Left := Max(rcDraw.Left, fGutterWidth);
       //var SW := TStopWatch.StartNew;
+      TSynDWrite.RenderTarget;
       PaintTextLinesDWrite(rcDraw, nL1, nL2);
       //PaintTextLines(rcDraw, nL1, nL2, nC1, nC2);
       //SW.Stop;
@@ -2487,8 +2488,8 @@ var
          ((BE = BufferCoord(BC.Char + Len, BC.Line)) and not fCaretAtEOL)));
     end
     else
-      Result := ((BB.Line < BE.Line) and
-        (InRange(Line, BB.Line + 1, BE.Line - 1)) or
+      Result := (BB.Line < BE.Line) and
+        ((InRange(Line, BB.Line + 1, BE.Line - 1)) or
         ((Line = BB.Line) and (BB.Char = 1)));
     Result := Result or
       ((fActiveSelectionMode = smLine) and InRange(Line, BB.Line, BE.Line));
@@ -2662,7 +2663,7 @@ var
         begin
           FRT.DrawLine(Point(X, Y), Point(X, Y + fTextHeight - 1),
             TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
-            MulDiv(1, FCurrentPPI, 96), TSynDWrite.DottedStrokeStyle);
+            1.5 * FCurrentPPI / 96, TSynDWrite.DottedStrokeStyle);
         end;
         Inc(TabSteps, TabWidth);
       end;
@@ -2699,7 +2700,7 @@ var
           begin
             FRT.DrawRectangle(HintRect,
               TSynDWrite.SolidBrush(fCodeFolding.CollapsedLineColor),
-              MulDiv(1, FCurrentPPI, 96));
+              FCurrentPPI/96);
             Layout.Create(FTextFormat, PChar(StringOfChar(SynSpaceGlyph, 3)), 3,
               HintRect.Width, HintRect.Height);
             Layout.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
@@ -2879,7 +2880,6 @@ begin
         Point(XLineOffset + REdgePos, AClip.Height),
         TSynDWrite.SolidBrush(fRightEdgeColor));
   end;
-
   if FRT.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
 end;
 
