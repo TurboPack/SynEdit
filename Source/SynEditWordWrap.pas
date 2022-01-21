@@ -410,7 +410,6 @@ var
 begin
   // ****** First parse the new string using an auxiliar array *****
   vLine := TSynEditStringList(Editor.Lines).ExpandedStrings[aIndex];
-  vLine := Editor.ExpandAtWideGlyphs(vLine);
   // Pre-allocate a buffer for rowlengths - at least one row
   vMaxNewRows := Max(((Length(vLine) - 1) div fMinRowLength) + 1, 1);
   vTempRowLengths := AllocMem(vMaxNewRows * SizeOf(TRowLength));
@@ -522,7 +521,6 @@ begin
   for cLine := 0 to Editor.Lines.Count - 1 do
   begin
     vLine := TSynEditStringList(Editor.Lines).ExpandedStrings[cLine];
-    vLine := Editor.ExpandAtWideGlyphs(vLine);
 
     vMaxNewRows := ((Length(vLine) - 1) div fMinRowLength) + 1;
     GrowRows(cRow + vMaxNewRows);

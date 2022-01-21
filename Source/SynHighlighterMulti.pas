@@ -215,7 +215,6 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function GetEol: Boolean; override;
-    function GetExpandedToken: string; override;
     function GetRange: Pointer; override;
     function GetToken: string; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
@@ -474,7 +473,7 @@ end;
 
 procedure TSynMultiSyn.Next;
 var
-  iToken, TmpLine, ExpandedTmpLine: string;
+  iToken, TmpLine: string;
   iHL: TSynCustomHighlighter;
 begin
   if DefaultHighlighter = nil then
@@ -515,17 +514,7 @@ begin
     else
       TmpLine := Copy(fLineStr, 1, Markers[fNextMarker].fStartPos - 1);
       
-    if fExpandedLine <> nil then
-    begin
-      if fMarkers.Count = 0 then
-        ExpandedTmpLine := fExpandedLineStr
-      else
-        ExpandedTmpLine := Copy(fExpandedLineStr, 1,
-          PosToExpandedPos(Markers[fNextMarker].fStartPos - 1));
-      iHL.SetLineExpandedAtWideGlyphs(TmpLine, ExpandedTmpLine, fLineNumber);
-    end
-    else
-      iHL.SetLine(TmpLine, fLineNumber);
+    iHL.SetLine(TmpLine, fLineNumber);
   end
   else if fMarker <> nil then
   begin
@@ -546,18 +535,7 @@ begin
     else
       TmpLine := Copy(fLineStr, Run + 1, MaxInt);
 
-    if fExpandedLine <> nil then
-    begin
-      if fNextMarker < fMarkers.Count then
-        ExpandedTmpLine := Copy(fExpandedLineStr, ExpandedRun + 1,
-          PosToExpandedPos(Markers[fNextMarker].fStartPos - Run - 1))
-      else
-        ExpandedTmpLine := Copy(fExpandedLineStr, ExpandedRun + 1, MaxInt);
-
-      iHL.SetLineExpandedAtWideGlyphs(TmpLine, ExpandedTmpLine, fLineNumber);
-    end
-    else
-      iHL.SetLine(TmpLine, fLineNumber);
+    iHL.SetLine(TmpLine, fLineNumber);
   end
   else
   begin
@@ -913,20 +891,10 @@ begin
 
   fMarker := nil;
   Run := 0;
-  ExpandedRun := 0;
   fOldRun := Run;
   fTokenPos := 0;
-  fExpandedTokenPos := 0;
   fNextMarker := 0;
   fLineNumber := LineNumber;
-end;
-
-function TSynMultiSyn.GetExpandedToken: string;
-begin
-  if (DefaultHighlighter = nil) and (fExpandedLine <> nil) then
-    Result := fExpandedLineStr
-  else
-    Result := inherited GetExpandedToken;
 end;
 
 { TSchemes }

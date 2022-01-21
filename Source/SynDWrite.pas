@@ -200,11 +200,11 @@ type
     class function D2DFactory(factoryType: TD2D1FactoryType=D2D1_FACTORY_TYPE_SINGLE_THREADED;
       factoryOptions: PD2D1FactoryOptions=nil): ID2D1Factory; static;
     class function RenderTarget: ID2D1DCRenderTarget; static;
-    class function DWriteFactory: IDWriteFactory;
-    class function GDIInterop: IDWriteGdiInterop;
-    class function SolidBrush(Color: TColor): ID2D1SolidColorBrush;
-    class function DottedStrokeStyle: ID2D1StrokeStyle;
-    class procedure ResetRenderTarget;
+    class function DWriteFactory: IDWriteFactory; static;
+    class function GDIInterop: IDWriteGdiInterop; static;
+    class function SolidBrush(Color: TColor): ID2D1SolidColorBrush; static;
+    class function DottedStrokeStyle: ID2D1StrokeStyle; static;
+    class procedure ResetRenderTarget; static;
     class destructor Destroy;
   end;
 
@@ -243,6 +243,7 @@ type
     procedure Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor: TColor);
     procedure DrawClipped(RT: ID2D1RenderTarget; X, Y: Integer; ClipRect: TRect;
       FontColor: TColor);
+    function TextMetrics: TDwriteTextMetrics;
   end;
 
   ISynWicRenderTarget = interface
@@ -380,7 +381,7 @@ begin
   begin
     CheckOSError(D2DFactory.CreateStrokeStyle(
       D2D1StrokeStyleProperties(D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND,
-        D2D1_CAP_STYLE_ROUND, D2D1_LINE_JOIN_MITER, 10, D2D1_DASH_STYLE_DOT, 0),
+        D2D1_CAP_STYLE_ROUND, D2D1_LINE_JOIN_MITER, 10, D2D1_DASH_STYLE_DOT, -0.5),
         nil, 0, LocalStrokeStyle));
     if InterlockedCompareExchangePointer(Pointer(SingletonDottedStrokeStyle),
       Pointer(LocalStrokeStyle), nil) = nil
@@ -495,7 +496,6 @@ function TGraphemeEnumerator.MoveNext: Boolean;
 var
   X, Y: Single;
   HTM: TDwriteHitTestMetrics;
-
 begin
   if FStart >= FString.Length then Exit(False);
   FTextLayout.HitTestTextPosition(FStart, True, X, Y, HTM);
@@ -627,6 +627,11 @@ begin
   RT.DrawTextLayout(D2D1PointF(X, Y), FIDW, TSynDWrite.SolidBrush(FontColor),
      TextOptions);
   RT.PopAxisAlignedClip;
+end;
+
+function TSynTextLayout.TextMetrics: TDwriteTextMetrics;
+begin
+  CheckOSError(FIDW.GetMetrics(Result));
 end;
 
 procedure TSynTextLayout.SetFontColor(Color: TColor; const Start, Count:

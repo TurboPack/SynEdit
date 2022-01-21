@@ -127,6 +127,7 @@ procedure SynDrawGradient(const ACanvas: TCanvas;
   const AHorizontal: Boolean);
 
 function DeleteTypePrefixAndSynSuffix(s: string): string;
+function CeilOfIntDiv(Dividend: Cardinal; Divisor: Word): Word;
 
 // In Windows Vista or later use the Consolas font
 function DefaultFontName: string;
@@ -866,6 +867,15 @@ begin
       ACanvas.FillRect(PaintRect);
     end;
   end;
+end;
+
+function CeilOfIntDiv(Dividend: Cardinal; Divisor: Word): Word;
+Var
+  Remainder: Word;
+begin
+  DivMod(Dividend,  Divisor, Result, Remainder);
+  if Remainder > 0 then
+    Inc(Result);
 end;
 
 function DefaultFontName: string;
