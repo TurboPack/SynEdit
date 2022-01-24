@@ -55,7 +55,6 @@ uses
   Winapi.Imm,
   System.Diagnostics,
   SynUnicode,
-  SynTextDrawer,
   SynEditTypes,
   SynEditKeyConst,
   SynEditMiscProcs,
@@ -369,7 +368,6 @@ type
 
     fGutter: TSynGutter;
     fTabWidth: Integer;
-    fTextDrawer: TheTextDrawer;
     fInvalidateRect: TRect;
     fStateFlags: TSynStateFlags;
     fOptions: TSynEditorOptions;
@@ -458,7 +456,6 @@ type
     function GetDisplayY: Integer;
     function GetDisplayXY: TDisplayCoord;
     function GetDisplayLineCount: Integer;
-    function GetFont: TFont;
     function GetHookedCommandHandlersCount: Integer;
     function GetLineText: string;
     function GetMaxUndo: Integer;
@@ -496,7 +493,6 @@ type
     procedure SetInternalDisplayXY(const aPos: TDisplayCoord);
     procedure SetActiveLineColor(Value: TColor);
     procedure SetExtraLineSpacing(const Value: Integer);
-    procedure SetFont(const Value: TFont);
     procedure SetGutter(const Value: TSynGutter);
     procedure SetGutterWidth(Value: Integer);
     procedure SetHideSelection(const Value: Boolean);
@@ -610,7 +606,6 @@ type
       aLastRow: Integer); virtual;
     procedure PaintTextLines(AClip: TRect; const aFirstRow, aLastRow:
         Integer); virtual;
-    procedure RecalcCharExtent;
     procedure InternalSetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXYEx(CallEnsureCursorPos: Boolean; Value: TBufferCoord); virtual;
@@ -658,7 +653,6 @@ type
     property InternalCaretX: Integer write InternalSetCaretX;
     property InternalCaretY: Integer write InternalSetCaretY;
     property InternalCaretXY: TBufferCoord write InternalSetCaretXY;
-    property FontQuality: TFontQuality read fFontQuality write SetFontQuality;
 //++ DPI-Aware
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif}); override;
 //-- DPI-Aware
@@ -827,7 +821,6 @@ type
     property CharWidth: Integer read fCharWidth;
     property Color;
     property Cursor default crIBeam;
-    property Font: TFont read GetFont write SetFont;
     property Highlighter: TSynCustomHighlighter
       read fHighlighter write SetHighlighter;
     property LeftChar: Integer read fLeftChar write SetLeftChar;
@@ -852,6 +845,8 @@ type
     property GutterWidth: Integer read FGutterWidth;
     property TextMargin: Integer read FTextMargin;
     property UndoRedo: ISynEditUndo read fUndoRedo;
+    property TextFormat: TSynTextFormat read FTextFormat;
+    property FontQuality: TFontQuality read fFontQuality write SetFontQuality;
   public
     property OnProcessCommand: TProcessCommandEvent
       read FOnProcessCommand write FOnProcessCommand;
@@ -866,7 +861,7 @@ type
     property BorderStyle: TSynBorderStyle read FBorderStyle write SetBorderStyle
       default bsSingle;
     property ExtraLineSpacing: Integer
-      read fExtraLineSpacing write SetExtraLineSpacing default 0;
+      read fExtraLineSpacing write SetExtraLineSpacing default 2;
     property Gutter: TSynGutter read fGutter write SetGutter;
     property HideSelection: Boolean read fHideSelection write SetHideSelection
       default False;
@@ -1094,32 +1089,60 @@ end;
 { TCustomSynEdit }
 
 function TCustomSynEdit.PixelsToNearestRowColumn(aX, aY: Integer): TDisplayCoord;
-// Result is in display coordinates
-var
-  f: Single;
+// Same as PixelsToRowColumn but don't return a partially visible last line
 begin
-  f := (aX - fGutterWidth - fTextMargin) / fCharWidth;
-  // don't return a partially visible last line
-  if aY >= fLinesInWindow * fTextHeight then
-  begin
-    aY := fLinesInWindow * fTextHeight - 1;
-    if aY < 0 then
-      aY := 0;
-  end;
-  Result.Column := Max(1, LeftChar + Round(f));
-  Result.Row := Max(1, TopLine + (aY div fTextHeight));
+  EnsureRange(aY, 0, fLinesInWindow * fTextHeight - 1);
+  Result := PixelsToRowColumn(aX, aY);
 end;
 
 function TCustomSynEdit.PixelsToRowColumn(aX, aY: Integer): TDisplayCoord;
+var
+  Layout: TSynTextLayout;
+  S: string;
+  HTM: TDwriteHitTestMetrics;
+  IsTrailing, IsInside: LongBool;
 begin
-  Result.Column := Max(1, LeftChar + ((aX - fGutterWidth - fTextMargin) div fCharWidth));
   Result.Row := Max(1, TopLine + (aY div fTextHeight));
+  S := Rows[Result.Row];
+  if S = '' then
+    Result.Column := Max(1, LeftChar + ((aX - fGutterWidth - fTextMargin) div fCharWidth))
+  else
+  begin
+    Layout.Create(FTextFormat, PChar(S), S.Length, MaxInt, fTextHeight);
+    Dec(aX, (fGutterWidth + fTextMargin) - (LeftChar - 1) * fCharWidth);
+    CheckOSError(Layout.IDW.HitTestPoint(aX,
+      aY - (Result.Row - 1) * FTextHeight, IsTrailing, IsInside, HTM));
+    Result.Column := Integer(HTM.textPosition) + IfThen(IsTrailing, HTM.length + 1, 1);
+    if (Result.Column = S.Length + 1) and (ax > HTM.left + HTM.width) then
+      Inc(Result.Column, Round((ax - HTM.left - HTM.width) / fCharWidth));
+  end;
 end;
 
 function TCustomSynEdit.RowColumnToPixels(const RowCol: TDisplayCoord): TPoint;
+var
+  Layout: TSynTextLayout;
+  S: string;
+  X, Y: single;
+  HTM: TDwriteHitTestMetrics;
 begin
-  Result.X := (RowCol.Column-1) * fCharWidth + fTextOffset;
   Result.Y := (RowCol.Row - fTopLine) * fTextHeight;
+
+  S := Rows[RowCol.Row];
+  if S = '' then
+    Result.X := (RowCol.Column - 1) * fCharWidth
+  else
+  begin
+    Layout.Create(FTextFormat, PChar(S), S.Length, MaxInt, fTextHeight);
+    if RowCol.Column > S.Length then
+      Result.X := Round(Layout.TextMetrics.widthIncludingTrailingWhitespace) +
+      (RowCol.Column - S.Length - 1) * fCharWidth
+    else
+    begin
+      CheckOSError(Layout.IDW.HitTestTextPosition(RowCol.Column - 1, False, X, Y, HTM));
+      Result.X := Round(X);
+    end;
+  end;
+  Inc(Result.X, fTextOffset);
 end;
 
 procedure TCustomSynEdit.ComputeCaret(X, Y: Integer);
@@ -1248,12 +1271,12 @@ begin
   Width := 200;
   Cursor := crIBeam;
   Color := clWindow;
+  fExtraLineSpacing := 2;
   fFontQuality := fqClearTypeNatural;
   fFontDummy.Name := DefaultFontName;
   fFontDummy.Size := 10;
   fFontDummy.CharSet := DEFAULT_CHARSET;
   fFontDummy.Quality := fFontQuality;
-  fTextDrawer := TheTextDrawer.Create([fsBold], fFontDummy);
   Font.Assign(fFontDummy);
   Font.OnChange := SynFontChanged;
   ParentFont := False;
@@ -1298,7 +1321,6 @@ begin
   fAllFoldRanges := TSynFoldRanges.Create;
 //-- CodeFolding
   SynFontChanged(nil);
-  fTextOffset := fGutterWidth + fTextMargin;
   GutterChanged(nil); // to caclulate fGutterWidth also updates fTextOffset
 end;
 
@@ -1394,7 +1416,6 @@ begin
   fOrigUndoRedo := nil;
   fGutter.Free;
   fWordWrapGlyph.Free;
-  fTextDrawer.Free;
   fFontDummy.Free;
   fOrigLines.Free;
 //++ CodeFolding
@@ -1425,14 +1446,22 @@ end;
 
 procedure TCustomSynEdit.SynFontChanged(Sender: TObject);
 begin
-  FTextFormat.Create(Font, fTabWidth, 0, 2);
-  RecalcCharExtent;
+  Font.OnChange := nil;  // avoid infinite recursion
+  Font.Quality := FontQuality;
+  // revert to default font if not monospaced or invalid
+  if not IsFontMonospacedAndValid(Font) then
+    Font.Name := DefaultFontName;
+  Font.OnChange := SynFontChanged;
+  // Create DirectWrite text format
+  FTextFormat.Create(Font, fTabWidth, 0, fExtraLineSpacing);
+  fTextHeight := FTextFormat.LineHeight;
+  fCharWidth := FTextFormat.CharWidth;
+  // We need to recalculate line widths
+  TSynEditStringList(fLines).FontChanged;
+  if fGutter.ShowLineNumbers then
+    GutterChanged(Self);
+  // Invalidate and handle the changes
   SizeOrFontChanged(True);
-end;
-
-function TCustomSynEdit.GetFont: TFont;
-begin
-  Result := inherited Font;
 end;
 
 function TCustomSynEdit.GetLineText: string;
@@ -2277,6 +2306,7 @@ var
   Band: TSynGutterBand;
   SaveIndex: Integer;
   rcBand: TRect;
+  EdBkgrColor: TColor;
   Attri: TSynHighlighterAttributes;
 begin
   // First paint gutter background
@@ -2290,7 +2320,7 @@ begin
     else
       Break;
   end;
-  rcBackGround := Rect(0, AClip.Top, W, AClip.Bottom);
+  rcBackGround := Rect(AClip.Left, AClip.Top, W, AClip.Bottom);
 
   if fGutter.Gradient then
     SynDrawGradient(Canvas, fGutter.GradientStartColor, fGutter.GradientEndColor,
@@ -2301,13 +2331,14 @@ begin
     Canvas.FillRect(rcBackGround);
   end;
 
-  // Paint Bands with Editor Background
-  Canvas.Brush.Color := Color;
+  // Set Brush to Editor Background
+  EdBkgrColor := Color;
   if Highlighter <> nil then
   begin
+    Highlighter.ResetRange;
     Attri := Highlighter.WhitespaceAttribute;
     if (Attri <> nil) and (Attri.Background <> clNone) then
-      Canvas.Brush.Color := Attri.Background;
+      EdBkgrColor := Attri.Background;
   end;
 
   L := 0;
@@ -2316,22 +2347,16 @@ begin
     Band := FGutter.Bands[I];
     if not Band.Visible then Continue;
     W := Band.RealWidth;
+    if (L > AClip.Right) or (L + W < AClip.Left) then Continue;
+
+    rcBand := Rect(L, AClip.Top, L + W, AClip.Bottom);
+    // Paint Bands with Editor Background
     if Band.Background = gbbEditor then
     begin
-      rcBand := Rect(L, AClip.Top, L + W, AClip.Bottom);
+      Canvas.Brush.Color := EdBkgrColor;
       Canvas.FillRect(rcBand);
     end;
-    Inc(L, W);
-  end;
-
-  // Now paint the bands
-  L := 0;
-  for I := 0 to FGutter.Bands.Count - 1 do
-  begin
-    Band := FGutter.Bands[I];
-    if not Band.Visible then Continue;
-    W := Band.RealWidth;
-    rcBand := Rect(L, AClip.Top, L + W, AClip.Bottom);
+    //And now paint the bands
     SaveIndex := SaveDC(Canvas.Handle);
     try
       IntersectClipRect(Canvas.Handle,
@@ -2391,7 +2416,8 @@ var
       Len := fWordWrapPlugin.RowLength[Row];
       Result := ((BB <= BC) and
         ((BE > BufferCoord(BC.Char + Len, BC.Line)) or
-         ((BE = BufferCoord(BC.Char + Len, BC.Line)) and not fCaretAtEOL)));
+         ((BufferCoord(BC.Char + Len, BC.Line) = BE) and
+          (BC.Char > 1) and not fCaretAtEOL)));
     end
     else
       Result := (BB.Line < BE.Line) and
@@ -2549,6 +2575,7 @@ var
     BMWidth: Integer;
     BitmapRT: ID2D1BitmapRenderTarget;
     BM: ID2D1Bitmap;
+    RectF: TD2D1RectF;
   begin
     BMWidth := Round(1.5 * FCurrentPPI / 96) + 2;
     var Size := D2D1SizeF(BMWidth, FTextHeight);
@@ -2563,6 +2590,8 @@ var
       BitmapRT.EndDraw;
       CheckOSError(BitmapRT.GetBitmap(BM));
 
+//    FRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+
     for Row := aFirstRow to aLastRow do begin
       Line := RowToLine(Row);
       if (Line > Lines.Count) then Break;
@@ -2570,7 +2599,7 @@ var
       // If line is blank get next nonblank line
       NonBlankLine := Line;
       while (NonBlankLine <= fLines.Count) and
-        (TrimLeft(fLines[NonBlankLine - 1]) = '')
+        (fLines[NonBlankLine - 1].TrimLeft = '')
       do
         Inc(NonBlankLine);
       LineIndent := LeftSpaces(fLines[NonBlankLine - 1], True);
@@ -2583,15 +2612,22 @@ var
         X := TabSteps * CharWidth + XLineOffset;
         if X >= 0 then
         begin
-          var R:TD2D1RectF := Rect(X-1, Y, X + BMWidth - 1, Y + fTextHeight);
-          FRT.DrawBitmap(BM, @R);
+          RectF := Rect(X-1, Y, X + BMWidth - 1, Y + fTextHeight);
+          FRT.DrawBitmap(BM, @RectF);
 //          FRT.DrawLine(Point(X, Y), Point(X, Y + fTextHeight),
 //            TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
 //            FCurrentPPI / 96, nil);
+//          FRT.DrawLine(Point(X, Y), Point(X, Y + fTextHeight),
+//            TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
+//            1 * FCurrentPPI / 96, TSynDWrite.DottedStrokeStyle);
+//          FRT.DrawLine(Point(X, Y), Point(X, Y + fTextHeight),
+//            TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
+//            1 * FCurrentPPI / 96, nil);
         end;
         Inc(TabSteps, TabWidth);
       end;
     end;
+//    FRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   end;
 
   procedure PaintFoldMarks;
@@ -3141,45 +3177,6 @@ begin
     fActiveLineColor:=Value;
     InvalidateLine(CaretY);
   end;
-end;
-
-procedure TCustomSynEdit.SetFont(const Value: TFont);
-var
-  DC: HDC;
-  Save: THandle;
-  Metrics: TTextMetric;
-  AveCW, MaxCW: Integer;
-begin
-  Value.Quality := FontQuality;
-  DC := GetDC(0);
-  Save := SelectObject(DC, Value.Handle);
-  GetTextMetrics(DC, Metrics);
-  SelectObject(DC, Save);
-  ReleaseDC(0, DC);
-  with Metrics do
-  begin
-    AveCW := tmAveCharWidth;
-    MaxCW := tmMaxCharWidth;
-  end;
-  case AveCW = MaxCW of
-    True: inherited Font := Value;
-    False:
-      begin
-        with fFontDummy do
-        begin
-          Color := Value.Color;
-          Pitch := fpFixed;
-          Size := Value.Size;
-          Style := Value.Style;
-          Name := Value.Name;
-          Quality := Value.Quality;
-        end;
-        inherited Font := fFontDummy;
-      end;
-  end;
-  TSynEditStringList(fLines).FontChanged;
-  if fGutter.ShowLineNumbers then
-    GutterChanged(Self);
 end;
 
 procedure TCustomSynEdit.SetGutterWidth(Value: Integer);
@@ -5124,6 +5121,7 @@ end;
 procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif});
 begin
   {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
+  fExtraLineSpacing := MulDiv(fExtraLineSpacing, M, D);
   fTextMargin := MulDiv(fTextMargin, M, D);
   fGutter.ChangeScale(M,D);
   fBookMarkOpt.ChangeScale(M, D);
@@ -6690,7 +6688,7 @@ begin
   if (Value <> fTabWidth) then begin
     fTabWidth := Value;
     TSynEditStringList(Lines).TabWidth := Value;
-    FTextFormat.Create(Font, fTabWidth, 0, 2);
+    FTextFormat.Create(Font, fTabWidth, 0, fExtraLineSpacing);
     Invalidate; // to redraw text containing tab chars
     if WordWrap then
     begin
@@ -7225,55 +7223,8 @@ begin
   end;
 end;
 
-procedure TCustomSynEdit.RecalcCharExtent;
-const
-  iFontStyles: array[0..3] of TFontStyles = ([], [fsItalic], [fsBold],
-    [fsItalic, fsBold]);
-var
-  iHasStyle: array[0..3] of Boolean;
-  cAttr: Integer;
-  cStyle: Integer;
-  iCurr: TFontStyles;
-begin
-  FillChar(iHasStyle, SizeOf(iHasStyle), 0);
-  if Assigned(fHighlighter) and (fHighlighter.AttrCount > 0) then begin
-    for cAttr := 0 to fHighlighter.AttrCount - 1 do
-    begin
-      iCurr := fHighlighter.Attribute[cAttr].Style * [fsItalic, fsBold];
-      for cStyle := 0 to 3 do
-        if iCurr = iFontStyles[cStyle] then
-        begin
-          iHasStyle[cStyle] := True;
-          break;
-        end;
-    end;
-  end
-  else begin
-    iCurr := Font.Style * [fsItalic, fsBold];
-    for cStyle := 0 to 3 do
-      if iCurr = iFontStyles[cStyle] then
-      begin
-        iHasStyle[cStyle] := True;
-        break;
-      end;
-  end;
-
-  fTextHeight := 0;
-  fCharWidth := 0;
-  fTextDrawer.BaseFont := Self.Font;
-  for cStyle := 0 to 3 do
-    if iHasStyle[cStyle] then
-    begin
-      fTextDrawer.BaseStyle := iFontStyles[cStyle];
-      fTextHeight := Max(fTextHeight, fTextDrawer.CharHeight);
-      fCharWidth := Max(fCharWidth, fTextDrawer.CharWidth);
-    end;
-  Inc(fTextHeight, fExtraLineSpacing);
-end;
-
 procedure TCustomSynEdit.HighlighterAttrChanged(Sender: TObject);
 begin
-  RecalcCharExtent;
   if Sender is TSynCustomHighlighter then
   begin
     IncPaintLock;
@@ -7529,9 +7480,9 @@ begin
         end;
         Dec(iLine);
       until iLine < 0;
+      TempS2 := GetLeftSpacing(SpaceCount1 - SpaceCount2, True);
       SpaceCount1 := LeftSpaces(TempS);
       Delete(TempS, 1, SpaceCount1);
-      TempS2 := GetLeftSpacing(SpaceCount1 - SpaceCount2, True);
       TempS := TempS2 + TempS;
       Lines[CaretY - 1] :=  TempS;
       CaretX := fCaretX + TempS2.Length - SpaceCount1;
@@ -8387,83 +8338,24 @@ end;
 function TCustomSynEdit.BufferToDisplayPos(const p: TBufferCoord): TDisplayCoord;
 // BufferToDisplayPos takes a position in the text and transforms it into
 // the row and column it appears to be on the screen
-var
-  s: string;
-  i, L: Integer;
-  x, CountOfAvgGlyphs: Integer;
 begin
   Result := TDisplayCoord(p);
-  if p.Line - 1 < Lines.Count then
-  begin
-    s := Lines[p.Line - 1];
-    l := Length(s);
-    x := 0;
-    for i := 1 to p.Char - 1 do begin
-      if (i <= l) and (s[i] = #9) then
-        inc(x, TabWidth - (x mod TabWidth))
-      else if i <= l then
-      begin
-        if Ord(S[i]) <= $00FF then
-          CountOfAvgGlyphs := 1
-        else
-          CountOfAvgGlyphs := CeilOfIntDiv(fTextDrawer.TextWidth(s[i]) , fCharWidth);
-        inc(x, CountOfAvgGlyphs);
-      end
-      else
-        inc(x);
-    end;
-    Result.Column := x + 1;
-  end;
   if WordWrap then
     Result := fWordWrapPlugin.BufferToDisplayPos(TBufferCoord(Result));
-//++ CodeFolding
   if UseCodeFolding then
     Result.Row := fAllFoldRanges.FoldLineToRow(Result.Row)
-//-- CodeFolding
 end;
 
 function TCustomSynEdit.DisplayToBufferPos(const p: TDisplayCoord): TBufferCoord;
 // DisplayToBufferPos takes a position on screen and transfrom it
 // into position of text
-var
-  s: string;
-  i, L: Integer;
-  x, CountOfAvgGlyphs: Integer;
 begin
   if WordWrap then
     Result := fWordWrapPlugin.DisplayToBufferPos(p)
   else
     Result := TBufferCoord(p);
-//++ CodeFolding
   if UseCodeFolding then
     Result.Line := fAllFoldRanges.FoldRowToLine(p.Row);
-//-- CodeFolding
-
-  if Result.Line <= lines.Count then
-  begin
-    s := Lines[Result.Line -1];
-    l := Length(s);
-    x := 0;
-    i := 0;
-
-    while x < Result.Char  do
-    begin
-      inc(i);
-      if (i <= l) and (s[i] = #9) then
-        inc(x, TabWidth - (x mod TabWidth))
-      else if i <= l then
-      begin
-        if Ord(s[i]) <= $00FF then
-          CountOfAvgGlyphs := 1
-        else
-          CountOfAvgGlyphs := CeilOfIntDiv(fTextDrawer.TextWidth(s[i]) , fCharWidth);
-        inc(x, CountOfAvgGlyphs);
-      end
-      else
-        inc(x);
-    end;
-    Result.Char := i;
-  end;
 end;
 
 procedure TCustomSynEdit.DoLinesBeforeDeleted(FirstLine, Count: Integer);

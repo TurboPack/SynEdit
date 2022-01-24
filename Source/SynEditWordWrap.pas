@@ -435,8 +435,6 @@ begin
       if vRowEnd > vRowBegin then
       begin
         vLastVisibleChar := vRowEnd - 1;
-        while (vLastVisibleChar^ = FillerChar) and (vLastVisibleChar > vRowBegin) do
-          dec(vLastVisibleChar);
         vRowEnd := vLastVisibleChar + 1;
       end;
 
@@ -545,8 +543,6 @@ begin
       if vRowEnd > vRowBegin then
       begin
         vLastVisibleChar := vRowEnd - 1;
-        while (vLastVisibleChar^ = FillerChar) and (vLastVisibleChar > vRowBegin) do
-          dec(vLastVisibleChar);
         vRowEnd := vLastVisibleChar + 1;
       end;
 

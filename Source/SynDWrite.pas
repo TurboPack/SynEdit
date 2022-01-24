@@ -530,7 +530,7 @@ var
   DWFontStyle: DWRITE_FONT_STYLE;
   DWFontWeight: DWRITE_FONT_WEIGHT;
   DWFont: IDWriteFont;
-  tagLOGFONT: TLogFont;
+  LogFont: TLogFont;
   FontMetrics: TDwriteFontMetrics;
   FontFace: WinApi.D2D1.IDWriteFontFace;
   CodePoint: Cardinal;
@@ -540,9 +540,9 @@ var
   Baseline: Single;
 begin
   FUseGDINatural := AFont.Quality = TFontQuality.fqClearTypeNatural;
-  GetObject(AFont.Handle, SizeOf(TLogFont), @tagLOGFONT);
-  CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(tagLOGFONT, DWFont));
-  DWFont.CreateFontFace(FontFace);
+  GetObject(AFont.Handle, SizeOf(TLogFont), @LogFont);
+  CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
+  CheckOSError(DWFont.CreateFontFace(FontFace));
   //FontFace.GetMetrics(FontMetrics);
   FontFace.GetGdiCompatibleMetrics(-AFont.Height, 1, PDwriteMatrix(nil)^, FontMetrics);
   CodePoint := Ord('W');

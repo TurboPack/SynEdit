@@ -52,13 +52,6 @@ const
   UTF32BOMBE: array[0..3] of Byte = ($00, $00, $FE, $FF);
 
 const
-  // constants describing range of the Unicode Private Use Area (Unicode 3.2)
-  PrivateUseLow = WideChar($E000);
-  PrivateUseHigh = WideChar($F8FF);
-  // filler char: helper for painting wide glyphs
-  FillerChar = PrivateUseLow;
-
-const
   WideNull = WideChar(#0);
   WideTabulator = WideChar(#9);
   WideSpace = WideChar(#32);
