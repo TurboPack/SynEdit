@@ -1446,7 +1446,7 @@ end;
 
 procedure TCustomSynEdit.SynFontChanged(Sender: TObject);
 begin
-  Font.OnChange := nil;  // avoid infinite recursion
+  Font.OnChange := nil;  // avoid recursion
   Font.Quality := FontQuality;
   // revert to default font if not monospaced or invalid
   if not IsFontMonospacedAndValid(Font) then
@@ -4433,26 +4433,19 @@ begin
   DoLinePut(Index, OldLine);
 
   vEndLine := Index +1;
-  if WordWrap then
-  begin
-    if fWordWrapPlugin.LinePut(Index, OldLine) <> 0 then
-      vEndLine := MaxInt;
-    InvalidateGutterLines(Index + 1, vEndLine);
-  end;
-//++ CodeFolding
+  if WordWrap and (fWordWrapPlugin.LinePut(Index, OldLine) <> 0) then
+    vEndLine := MaxInt;
   vLastScan := Index;
   if Assigned(fHighlighter) then
   begin
     vLastScan := ScanFrom(Index);
     vEndLine := Max(vEndLine, vLastScan + 1);
-//-- CodeFolding
     // If this editor is chained then the real owner of text buffer will probably
     // have already parsed the changes, so ScanFrom will return immediately.
     if fLines <> fOrigLines then
       vEndLine := MaxInt;
   end;
 
-//++ CodeFolding
   if fUseCodeFolding then begin
     if fAllFoldRanges.CollapsedFoldStartAtLine(Index + 1, FoldIndex) then
       // modification happens at collapsed fold
@@ -4461,13 +4454,10 @@ begin
     // Scan the same lines the highlighter has scanned
     ReScanForFoldRanges(Index, vLastScan);
   end;
-//-- CodeFolding
 
   InvalidateLines(Index + 1, vEndLine);
   InvalidateGutterLines(Index + 1, vEndLine);
-//++ Flicker Reduction
   Include(fStateFlags, sfScrollbarChanged);
-//-- Flicker Reduction
 end;
 
 procedure TCustomSynEdit.ScanRanges;

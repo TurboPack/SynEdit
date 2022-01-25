@@ -848,7 +848,7 @@ end;
 
 procedure TSynGutter.OnFontChange(Sender: TObject);
 begin
-  FFont.OnChange := nil;  // avoid infinite recursion
+  FFont.OnChange := nil;  // avoid recursion
   if Assigned(FOwner) then
     FFont.Quality := TCustomSynEdit(FOWner).FontQuality;
   // revert to default font if not monospaced or invalid
