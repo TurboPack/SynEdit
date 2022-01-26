@@ -269,32 +269,8 @@ begin
 end;
 
 procedure TSynEditPrint.SetLines(const Value: TStrings);
-var
-  i, j: Integer;
-  ConvertTabsProc: TConvertTabsProc;
-  TmpString: string;
 begin
-  ConvertTabsProc := GetBestConvertTabsProc(FTabWidth);
-  with FLines do
-  begin
-    BeginUpdate;
-    try
-      Clear;
-      for i := 0 to Value.Count - 1 do
-      begin
-        TmpString := ConvertTabsProc(Value[i], FTabWidth);
-        j := Pos(#9, TmpString);
-        While j > 0 do
-        begin
-          TmpString[j] := ' ';
-          j := Pos(#9, TmpString);
-        end;
-        Add(TmpString);
-      end;
-    finally
-      EndUpdate;
-    end;
-  end;
+  FLines.AddStrings(Value);
   FRangesOK := False;
   FPagesCounted := False;
 end;

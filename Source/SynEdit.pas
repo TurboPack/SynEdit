@@ -5746,7 +5746,7 @@ begin
               SetSelText('')
             else begin
               Temp := LineText;
-              TabBuffer := TSynEditStringList(Lines).ExpandedStrings[CaretY - 1];
+              TabBuffer := ConvertTabs(Lines[CaretY - 1], fTabWidth);
               Len := Length(Temp);
               Caret := CaretXY;
               if CaretX > Len + 1 then
@@ -7445,7 +7445,7 @@ begin
       MaxLen := SpaceCount1;
       SpaceCount2 := 0;
       repeat
-        PrevLine := TSynEditStringList(Lines).ExpandedStrings[iLine];
+        PrevLine := ConvertTabs(Lines[iLine], fTabWidth);
         if (PrevLine.Length > 0) and (Length(PrevLine) >= MaxLen) then
         begin
           p := @PrevLine[MaxLen];

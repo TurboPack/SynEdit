@@ -376,7 +376,7 @@ begin
   for var I := 1 to S.Length do
   begin
     if not (Word(Result[I]) in [9, 32]) and Editor.IsWordBreakChar(Result[I]) then
-      Result[I] := ' ';
+      Result[I] := '-';
     if (Result[I] = ' ') and (I > 1) and (Word(Result[I - 1]) in [9, 32]) then
       Result[I] := '-';
   end;

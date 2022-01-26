@@ -30,7 +30,6 @@
 
   Known Issues:
   ------------------------------------------------------------------------------- }
-// todo: Avoid calculating expanded string unncessarily (just calculate expandedLength instead).
 
 unit SynEditTextBuffer;
 
@@ -48,8 +47,7 @@ uses
 type
   TSynEditRange = Pointer;
 
-  TSynEditStringFlag = (sfHasTabs, sfHasNoTabs, sfTextWidthUnknown,
-    sfModified, sfSaved, sfAsSaved);
+  TSynEditStringFlag = (sfTextWidthUnknown, sfModified, sfSaved, sfAsSaved);
   TSynEditStringFlags = set of TSynEditStringFlag;
 
   // Managed by Undo
@@ -98,7 +96,6 @@ type
     FCount: Integer;
     FCapacity: Integer;
     FFileFormat: TSynEditFileFormat;
-    FConvertTabsProc: TConvertTabsProcEx;
     FIndexOfWidestLine: Integer;
     FTabWidth: Integer;
     FCharIndexesAreValid: Boolean;
@@ -112,8 +109,6 @@ type
     FOnInserted: TStringListChangeEvent;
     FOnPut: TStringListPutEvent;
     FOnInfoLoss: TSynInfoLossEvent;
-    function ExpandString(Index: Integer): string;
-    function GetExpandedString(Index: Integer): string;
     function GetTextWidth(Index: Integer): Integer;
     function GetMaxWidth: Integer;
     function GetRange(Index: Integer): TSynEditRange;
@@ -158,7 +153,6 @@ type
     procedure SetTextAndFileFormat(const Value: string);
 
     property FileFormat: TSynEditFileFormat read FFileFormat write FFileFormat;
-    property ExpandedStrings[Index: Integer]: string read GetExpandedString;
     property TextWidth[Index: Integer]: Integer read GetTextWidth;
     property MaxWidth: Integer read GetMaxWidth;
     property Ranges[Index: Integer]: TSynEditRange read GetRange write PutRange;
@@ -199,7 +193,7 @@ begin
   inherited Create;
   FFileFormat := sffDos;
   FIndexOfWidestLine := -1;
-  TabWidth := 8;
+  FTabWidth := 8;
   FUTF8CheckLen := -1;
   Options := Options - [soWriteBOM, soTrailingLineBreak];
   FDetectUTF8 := True;
@@ -290,31 +284,6 @@ begin
   end;
 end;
 
-function TSynEditStringList.ExpandString(Index: Integer): string;
-var
-  HasTabs: Boolean;
-begin
-  with FList^[Index] do
-    if Length(FString) = 0 then
-    begin
-      Result := '';
-      Exclude(FFlags, sfTextWidthUnknown);
-      Exclude(FFlags, sfHasTabs);
-      Include(FFlags, sfHasNoTabs);
-      FTextWidth := 0;
-    end
-    else
-    begin
-      Result := FConvertTabsProc(FString, FTabWidth, HasTabs);
-      Exclude(FFlags, sfHasTabs);
-      Exclude(FFlags, sfHasNoTabs);
-      if HasTabs then
-        Include(FFlags, sfHasTabs)
-      else
-        Include(FFlags, sfHasNoTabs);
-    end;
-end;
-
 function TSynEditStringList.Get(Index: Integer): string;
 begin
   if Cardinal(Index) < Cardinal(FCount) then
@@ -377,19 +346,6 @@ end;
 function TSynEditStringList.GetCount: Integer;
 begin
   Result := FCount;
-end;
-
-function TSynEditStringList.GetExpandedString(Index: Integer): string;
-begin
-  if (Index >= 0) and (Index < FCount) then
-  begin
-    if sfHasNoTabs in FList^[Index].FFlags then
-      Result := Get(Index)
-    else
-      Result := ExpandString(Index);
-  end
-  else
-    Result := '';
 end;
 
 function TSynEditStringList.GetTextWidth(Index: Integer): Integer;
@@ -688,8 +644,6 @@ begin
     with FList^[Index] do
     begin
       Include(FFlags, sfTextWidthUnknown);
-      Exclude(FFlags, sfHasTabs);
-      Exclude(FFlags, sfHasNoTabs);
       OldLine := FString;
       FString := S;
     end;
@@ -738,21 +692,11 @@ begin
 end;
 
 procedure TSynEditStringList.SetTabWidth(Value: Integer);
-var
-  I: Integer;
 begin
   if Value <> FTabWidth then
   begin
     FTabWidth := Value;
-    FConvertTabsProc := GetBestConvertTabsProcEx(FTabWidth);
-    FIndexOfWidestLine := -1;
-    for I := 0 to FCount - 1 do
-      with FList^[I] do
-      begin
-        FTextWidth := -1;
-        Exclude(FFlags, sfHasNoTabs);
-        Include(FFlags, sfTextWidthUnknown);
-      end;
+    FontChanged;
   end;
 end;
 
@@ -855,7 +799,6 @@ begin
     with FList^[I] do
     begin
       FTextWidth := -1;
-      Exclude(FFlags, sfHasNoTabs);
       Include(FFlags, sfTextWidthUnknown);
     end;
 end;
