@@ -622,8 +622,8 @@ begin
 
       GDIRT := RT as ID2D1GdiInteropRenderTarget;
       CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
-        StretchBlt(FCanvas.Handle, TextRect.Left, TextRect.Top, TextRect.Width, TextRect.Height,
-          SourceDC, 0, 0, DevTextRect.Width, DevTextRect.Height, SRCCOPY);
+      StretchBlt(FCanvas.Handle, TextRect.Left, TextRect.Top, TextRect.Width, TextRect.Height,
+        SourceDC, 0, 0, DevTextRect.Width, DevTextRect.Height, SRCCOPY);
       GDIRT.ReleaseDC(nil);
 
       RT.EndDraw;

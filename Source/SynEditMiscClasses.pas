@@ -1971,6 +1971,9 @@ var
   WordWrapGlyph: ID2D1Bitmap;
   RectF: TRectF;
   FontColor: TColor;
+  GDIRT: ID2D1GdiInteropRenderTarget;
+  SourceDC: HDC;
+  BF: TBlendFunction;
 begin
   SynEdit := TCustomSynEdit(Editor);
   Assert(Assigned(Gutter));
@@ -2033,8 +2036,19 @@ begin
         DWRITE_MEASURING_MODE_GDI_NATURAL);
     end;
   end;
-  if RT.IDW.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
-  Canvas.Draw(CLipR.Left, ClipR.Top, RT.WicImage);
+
+    GDIRT := RT.IDW as ID2D1GdiInteropRenderTarget;
+    CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
+    BF.BlendOp := AC_SRC_OVER;
+    BF.BlendFlags := 0;
+    BF.SourceConstantAlpha := 255;
+    BF.AlphaFormat := AC_SRC_ALPHA;
+    AlphaBlend(Canvas.Handle, ClipR.Left, ClipR.Top, ClipR.Width, ClipR.Height,
+      SourceDC, 0, 0, ClipR.Width, ClipR.Height, BF);
+    GDIRT.ReleaseDC(nil);
+
+  RT.IDW.EndDraw;
+//  Canvas.Draw(CLipR.Left, ClipR.Top, RT.WicImage);
   if not Gutter.UseFontStyle then
   begin
     TextFormat.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
