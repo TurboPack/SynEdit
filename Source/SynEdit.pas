@@ -821,6 +821,7 @@ type
     property CharWidth: Integer read fCharWidth;
     property Color;
     property Cursor default crIBeam;
+    property Font;
     property Highlighter: TSynCustomHighlighter
       read fHighlighter write SetHighlighter;
     property LeftChar: Integer read fLeftChar write SetLeftChar;
@@ -1765,29 +1766,25 @@ begin
         InvalidateRect(rcInval, False);
     end
     else begin
-      FirstLine := Max(FirstLine,1);
-      LastLine := Max(LastLine,1);
+      FirstLine := Max(FirstLine, 1);
+      LastLine := Max(LastLine, 1);
       { find the visible lines first }
       if (LastLine < FirstLine) then
         SwapInt(LastLine, FirstLine);
 
-      if LastLine >= Lines.Count then
+      if LastLine > Lines.Count then
         LastLine := MaxInt; // paint empty space beyond last line
 
-//++ CodeFolding
       if UseCodeFolding or WordWrap then
       begin
         FirstLine := LineToRow(FirstLine);
-        // Could avoid this conversion if (First = Last) and
-        // (Length < CharsInWindow) but the dependency isn't worth IMO.
-        if LastLine < Lines.Count then begin
+        if LastLine <= Lines.Count then begin
           if UseCodeFolding then
             LastLine := LineToRow(LastLine)
           else
             LastLine := LineToRow(LastLine + 1) - 1;
         end;
       end;
-//-- CodeFolding
 
       // TopLine is in display coordinates, so FirstLine and LastLine must be
       // converted previously.
@@ -2286,7 +2283,6 @@ begin
     begin
       rcDraw := rcClip;
       rcDraw.Left := Max(rcDraw.Left, fGutterWidth);
-      TSynDWrite.RenderTarget;
       PaintTextLines(rcDraw, nL1, nL2);
     end;
     PluginsAfterPaint(Canvas, rcClip, nL1, nL2);
@@ -9069,14 +9065,12 @@ end;
 
 function TCustomSynEdit.GetDisplayLineCount: Integer;
 begin
-//++ CodeFolding
   if fWordWrapPlugin = nil then begin
     if fUseCodeFolding then
       Result := LineToRow(Lines.Count)
      else
       Result := Lines.Count
   end else if Lines.Count = 0 then
-//++ CodeFolding
     Result := 0
   else begin
     Result := fWordWrapPlugin.RowCount;
@@ -9084,18 +9078,11 @@ begin
 end;
 
 function TCustomSynEdit.LineToRow(aLine: Integer): Integer;
-var
-  vBufferPos: TBufferCoord;
 begin
-//++ CodeFolding
   if not UseCodeFolding and not WordWrap then
-//-- CodeFolding
     Result := aLine
-  else begin
-    vBufferPos.Char := 1;
-    vBufferPos.Line := aLine;
-    Result := BufferToDisplayPos(vBufferPos).Row;
-  end;
+  else
+    Result := BufferToDisplayPos(BufferCoord(1, aLine)).Row;
 end;
 
 function TCustomSynEdit.RowToLine(aRow: Integer): Integer;

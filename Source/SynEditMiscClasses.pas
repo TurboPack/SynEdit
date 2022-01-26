@@ -1854,7 +1854,8 @@ end;
 
 function TSynGutterBand.IsVisibleStored: Boolean;
 begin
-  Result := FVisible and not(FKind in [gbkLineNumbers, gbkFold, gbkTrackChanges]);
+  Result := not FVisible and
+    not(FKind in [gbkLineNumbers, gbkFold, gbkTrackChanges]);
 end;
 
 function TSynGutterBand.IsWidthStored: Boolean;
@@ -1966,9 +1967,10 @@ var
   PPI: Integer;
   S: string;
   TextFormat: TSynTextFormat;
-  RT: ID2D1DCRenderTarget;
+  RT: ISynWicRenderTarget;
   WordWrapGlyph: ID2D1Bitmap;
   RectF: TRectF;
+  FontColor: TColor;
 begin
   SynEdit := TCustomSynEdit(Editor);
   Assert(Assigned(Gutter));
@@ -1976,21 +1978,25 @@ begin
   PPI := Gutter.FCurrentPPI;
 
   if Gutter.UseFontStyle then
-    TextFormat := Gutter.FTextFormat
+  begin
+    TextFormat := Gutter.FTextFormat;
+    FontColor := Gutter.Font.Color;
+  end
   else
+  begin
     TextFormat := SynEdit.TextFormat;
+    FontColor := SynEdit.Font.Color;
+  end;
   TextFormat.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
   TextFormat.IDW.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
-  RT := TSynDWrite.RenderTarget;
+  RT := SynWicRenderTarget(ClipR.Width, ClipR.Height);
   if SynEdit.WordWrap and SynEdit.WordWrapGlyph.Visible then
-    RT.CreateBitmapFromWicBitmap(SynEdit.WordWrapGlyph.WicBitmap, nil,
+    RT.IDW.CreateBitmapFromWicBitmap(SynEdit.WordWrapGlyph.WicBitmap, nil,
      WordWrapGlyph);
 
-
-  RT.BindDC(Canvas.Handle, ClipR);
-
-  RT.BeginDraw;
+  RT.IDW.BeginDraw;
+  RT.IDW.Clear(D2D1ColorF(0, 0, 0, 0));
   for Row := FirstRow to LastRow do
   begin
     Line := SynEdit.RowToLine(Row);
@@ -2013,8 +2019,7 @@ begin
         RectF := RectF.FitInto(LineRect);
         RectF.Offset(LineRect.Right - RectF.Right, 0);
       end;
-
-      RT.DrawBitmap(WordWrapGlyph, @RectF);
+      RT.IDW.DrawBitmap(WordWrapGlyph, @RectF);
     end
     else
     begin
@@ -2022,13 +2027,19 @@ begin
       S := Gutter.FormatLineNumber(Line);
       if Assigned(SynEdit.OnGutterGetText) then
         SynEdit.OnGutterGetText(Self, Line, S);
-      RT.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
-        TSynDWrite.SolidBrush(Gutter.Font.Color),
+      RT.IDW.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
+        TSynDWrite.SolidBrush(FontColor),
         D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
         DWRITE_MEASURING_MODE_GDI_NATURAL);
     end;
   end;
-  if RT.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
+  if RT.IDW.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
+  Canvas.Draw(CLipR.Left, ClipR.Top, RT.WicImage);
+  if not Gutter.UseFontStyle then
+  begin
+    TextFormat.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+    TextFormat.IDW.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+  end;
 end;
 
 procedure TSynGutterBand.PaintLines(Canvas: TCanvas; ClipR: TRect;
