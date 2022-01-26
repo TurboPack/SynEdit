@@ -491,6 +491,8 @@ var
   ClipRect: TRect;
   WicRT: ISynWICRenderTarget;
   RT: ID2D1RenderTarget;
+  GDIRT: ID2D1GdiInteropRenderTarget;
+  SourceDC: HDC;
 begin
   PrintStatus(psNewPage, Num, FAbort);
   if not FAbort then
@@ -617,9 +619,14 @@ begin
         end;
         PrintLine(i + 1, Num);
       end;
-      RT.EndDraw;
 
-      FCanvas.StretchDraw(TextRect, WicRT.WicImage);
+      GDIRT := RT as ID2D1GdiInteropRenderTarget;
+      CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
+        StretchBlt(FCanvas.Handle, TextRect.Left, TextRect.Top, TextRect.Width, TextRect.Height,
+          SourceDC, 0, 0, DevTextRect.Width, DevTextRect.Height, SRCCOPY);
+      GDIRT.ReleaseDC(nil);
+
+      RT.EndDraw;
     end;
     FFooter.Print(FCanvas, Num + FPageOffset);
   end;

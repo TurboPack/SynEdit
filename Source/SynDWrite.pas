@@ -175,6 +175,15 @@ type
       isSideways: BOOL = False): HResult; stdcall;  end;
 {$ENDREGION}
 
+{$REGION 'ID2D1GdiInteropRenderTarget Redeclaration'}
+  ID2D1GdiInteropRenderTarget = interface(IUnknown)
+    [SID_ID2D1GdiInteropRenderTarget]
+    function GetDC(mode: D2D1_DC_INITIALIZE_MODE; out hdc: HDC): HResult; stdcall;
+
+    function ReleaseDC(update: PRect): HResult; stdcall;
+  end;
+{$ENDREGION}
+
 {$REGION 'DWrite_1.h DWrite_2.h DWrite_3.h'}
   IDWriteTextLayout1 = interface(IDWriteTextLayout)
     ['{9064D822-80A7-465C-A986-DF65F78B8FEB}']

@@ -434,7 +434,6 @@ begin
           Result := PRec^.FTextWidth;
           FIndexOfWidestLine := I;
         end;
-        Inc(PRec);
       end;
     end;
   end;
