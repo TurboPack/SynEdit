@@ -103,12 +103,13 @@ unit SynEditCodeFolding;
 interface
 
 uses
-  Graphics,
-  Types,
-  Classes,
-  SysUtils,
+  System.Types,
+  System.UITypes,
+  System.Classes,
+  System.SysUtils,
   System.Generics.Defaults,
   System.Generics.Collections,
+  Vcl.Graphics,
   SynEditHighlighter;
 
 type
@@ -258,7 +259,7 @@ type
     property FolderBarLinesColor: TColor read fFolderBarLinesColor
       write SetFolderBarLinesColor default clGrayText;
     property IndentGuidesColor: TColor read fIndentGuidesColor
-      write SetIndentGuidesColor default clGray;
+      write SetIndentGuidesColor default TColors.Lightgray;
     property IndentGuides: Boolean read fIndentGuides write SetIndentGuides
       default True;
     property ShowCollapsedLine: Boolean read fShowCollapsedLine

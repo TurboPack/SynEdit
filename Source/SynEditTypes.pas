@@ -136,6 +136,7 @@ type
     procedure DisplayChanged;
     // pretty clear, heh?
     procedure Reset;
+    property RowLength[RowIndex: integer]: integer read GetRowLength;
   end;
 
 { ************************* For Undo Redo ********************************}

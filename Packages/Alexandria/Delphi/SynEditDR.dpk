@@ -41,6 +41,7 @@ contains
   SynAutoCorrectEditor in '..\..\..\Source\SynAutoCorrectEditor.pas' {frmAutoCorrectEditor},
   SynCompletionProposal in '..\..\..\Source\SynCompletionProposal.pas',
   SynDBEdit in '..\..\..\Source\SynDBEdit.pas',
+  SynDWrite in '..\..\..\Source\SynDWrite.pas',
   SynEdit in '..\..\..\Source\SynEdit.pas',
   SynEditAutoComplete in '..\..\..\Source\SynEditAutoComplete.pas',
   SynEditCodeFolding in '..\..\..\Source\SynEditCodeFolding.pas',
@@ -137,10 +138,8 @@ contains
   SynHighlighterXML in '..\..\..\Source\SynHighlighterXML.pas',
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
-  SynTextDrawer in '..\..\..\Source\SynTextDrawer.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
   SynURIOpener in '..\..\..\Source\SynURIOpener.pas',
-  SynEditUndo in '..\..\..\Source\SynEditUndo.pas',
-  SynUsp10 in '..\..\..\Source\SynUsp10.pas';
+  SynEditUndo in '..\..\..\Source\SynEditUndo.pas';
 
 end.

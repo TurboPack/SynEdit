@@ -63,22 +63,9 @@ procedure SwapInt(var l, r: Integer);
 
 procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
 
-// Converting tabs to spaces: To use the function several times it's better
-// to use a function pointer that is set to the fastest conversion function.
-type
-  TConvertTabsProc = function(const Line: string; TabWidth: Integer): string;
-
-function GetBestConvertTabsProc(TabWidth: Integer): TConvertTabsProc;
-// This is the slowest conversion function which can handle TabWidth <> 2^n.
-function ConvertTabs(const Line: string; TabWidth: Integer): string;
-
-type
-  TConvertTabsProcEx = function(const Line: string; TabWidth: Integer;
-    var HasTabs: Boolean): string;
-
-function GetBestConvertTabsProcEx(TabWidth: Integer): TConvertTabsProcEx;
-// This is the slowest conversion function which can handle TabWidth <> 2^n.
-function ConvertTabsEx(const Line: string; TabWidth: Integer;
+// Expand tabs to spaces
+function ExpandTabs(const Line: string; TabWidth: Integer): string;
+function ExpandTabsEx(const Line: string; TabWidth: Integer;
   var HasTabs: Boolean): string;
 
 function GetExpandedLength(const aStr: string; aTabWidth: Integer): Integer;
@@ -127,9 +114,12 @@ procedure SynDrawGradient(const ACanvas: TCanvas;
   const AHorizontal: Boolean);
 
 function DeleteTypePrefixAndSynSuffix(s: string): string;
+function CeilOfIntDiv(Dividend: Cardinal; Divisor: Word): Word;
 
 // In Windows Vista or later use the Consolas font
 function DefaultFontName: string;
+
+function IsFontMonospacedAndValid(Font: TFont): Boolean;
 
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
@@ -139,7 +129,10 @@ implementation
 
 uses
   System.SysUtils,
-  SynHighlighterMulti;
+  SynHighlighterMulti,
+  Winapi.D2D1,
+  Vcl.Forms,
+  SynDWrite;
 
 function MinMax(x, mi, ma: Integer): Integer;
 begin
@@ -180,112 +173,7 @@ begin
     Result := False;
 end;
 
-function ConvertTabs1Ex(const Line: string; TabWidth: Integer;
-  var HasTabs: Boolean): string;
-var
-  pDest: PWideChar;
-  nBeforeTab: Integer;
-begin
-  Result := Line; // increment reference count only
-  if GetHasTabs(Pointer(Line), nBeforeTab) then
-  begin
-    HasTabs := True;
-    pDest := @Result[nBeforeTab + 1]; // this will make a copy of Line
-    // We have at least one tab in the string, and the tab width is 1.
-    // pDest points to the first tab char. We overwrite all tabs with spaces.
-    repeat
-      if (pDest^ = #9) then
-        pDest^ := ' ';
-      Inc(pDest);
-    until (pDest^ = #0);
-  end
-  else
-    HasTabs := False;
-end;
-
-function ConvertTabs1(const Line: string; TabWidth: Integer): string;
-var
-  HasTabs: Boolean;
-begin
-  Result := ConvertTabs1Ex(Line, TabWidth, HasTabs);
-end;
-
-function ConvertTabs2nEx(const Line: string; TabWidth: Integer;
-  var HasTabs: Boolean): string;
-var
-  i, DestLen, TabCount, TabMask: Integer;
-  pSrc, pDest: PWideChar;
-begin
-  Result := Line; // increment reference count only
-  if GetHasTabs(Pointer(Line), DestLen) then
-  begin
-    HasTabs := True;
-    pSrc := @Line[1 + DestLen];
-    // We have at least one tab in the string, and the tab width equals 2^n.
-    // pSrc points to the first tab char in Line. We get the number of tabs
-    // and the length of the expanded string now.
-    TabCount := 0;
-    TabMask := (TabWidth - 1) xor $7FFFFFFF;
-    repeat
-      if pSrc^ = #9 then
-      begin
-        DestLen := (DestLen + TabWidth) and TabMask;
-        Inc(TabCount);
-      end
-      else
-        Inc(DestLen);
-      Inc(pSrc);
-    until (pSrc^ = #0);
-    // Set the length of the expanded string.
-    SetLength(Result, DestLen);
-    DestLen := 0;
-    pSrc := PWideChar(Line);
-    pDest := PWideChar(Result);
-    // We use another TabMask here to get the difference to 2^n.
-    TabMask := TabWidth - 1;
-    repeat
-      if pSrc^ = #9 then
-      begin
-        i := TabWidth - (DestLen and TabMask);
-        Inc(DestLen, i);
-        // This is used for both drawing and other stuff and is meant to be #9 and not #32
-        repeat
-          pDest^ := #9;
-          Inc(pDest);
-          Dec(i);
-        until (i = 0);
-        Dec(TabCount);
-        if TabCount = 0 then
-        begin
-          repeat
-            Inc(pSrc);
-            pDest^ := pSrc^;
-            Inc(pDest);
-          until (pSrc^ = #0);
-          exit;
-        end;
-      end
-      else
-      begin
-        pDest^ := pSrc^;
-        Inc(pDest);
-        Inc(DestLen);
-      end;
-      Inc(pSrc);
-    until (pSrc^ = #0);
-  end
-  else
-    HasTabs := False;
-end;
-
-function ConvertTabs2n(const Line: string; TabWidth: Integer): string;
-var
-  HasTabs: Boolean;
-begin
-  Result := ConvertTabs2nEx(Line, TabWidth, HasTabs);
-end;
-
-function ConvertTabsEx(const Line: string; TabWidth: Integer;
+function ExpandTabsEx(const Line: string; TabWidth: Integer;
   var HasTabs: Boolean): string;
 var
   i, DestLen, TabCount: Integer;
@@ -321,7 +209,7 @@ begin
         i := TabWidth - (DestLen mod TabWidth);
         Inc(DestLen, i);
         repeat
-          pDest^ := #9;
+          pDest^ := ' ';
           Inc(pDest);
           Dec(i);
         until (i = 0);
@@ -349,44 +237,11 @@ begin
     HasTabs := False;
 end;
 
-function ConvertTabs(const Line: string; TabWidth: Integer): string;
+function ExpandTabs(const Line: string; TabWidth: Integer): string;
 var
   HasTabs: Boolean;
 begin
-  Result := ConvertTabsEx(Line, TabWidth, HasTabs);
-end;
-
-function IsPowerOfTwo(TabWidth: Integer): Boolean;
-var
-  nW: Integer;
-begin
-  nW := 2;
-  repeat
-    if (nW >= TabWidth) then
-      break;
-    Inc(nW, nW);
-  until (nW >= $10000); // we don't want 64 kByte spaces...
-  Result := (nW = TabWidth);
-end;
-
-function GetBestConvertTabsProc(TabWidth: Integer): TConvertTabsProc;
-begin
-  if (TabWidth < 2) then
-    Result := TConvertTabsProc(@ConvertTabs1)
-  else if IsPowerOfTwo(TabWidth) then
-    Result := TConvertTabsProc(@ConvertTabs2n)
-  else
-    Result := TConvertTabsProc(@ConvertTabs);
-end;
-
-function GetBestConvertTabsProcEx(TabWidth: Integer): TConvertTabsProcEx;
-begin
-  if (TabWidth < 2) then
-    Result := ConvertTabs1Ex
-  else if IsPowerOfTwo(TabWidth) then
-    Result := ConvertTabs2nEx
-  else
-    Result := ConvertTabsEx;
+  Result := ExpandTabsEx(Line, TabWidth, HasTabs);
 end;
 
 function GetExpandedLength(const aStr: string; aTabWidth: Integer): Integer;
@@ -868,12 +723,60 @@ begin
   end;
 end;
 
+function CeilOfIntDiv(Dividend: Cardinal; Divisor: Word): Word;
+Var
+  Remainder: Word;
+begin
+  DivMod(Dividend,  Divisor, Result, Remainder);
+  if Remainder > 0 then
+    Inc(Result);
+end;
+
 function DefaultFontName: string;
 begin
   if CheckWin32Version(6) then
     Result := 'Consolas'
   else
     Result := 'Courier New';
+end;
+
+function EnumFontsProc(EnumLogFontExDV: PEnumLogFontExDV;
+  EnumTextMetric: PEnumTextMetric;
+  FontType: DWORD; LParam: LPARAM): Integer; stdcall;
+begin;
+  PBoolean(LPARAM)^ :=
+    (EnumLogFontExDV.elfEnumLogfontEx.elfLogFont.lfPitchAndFamily and FIXED_PITCH) = FIXED_PITCH;
+  Result := 0;
+end;
+
+function IsFontMonospacedAndValid(Font: TFont): Boolean;
+var
+  DC: HDC;
+  LogFont: TLogFont;
+  DWFont: IDWriteFont;
+  IsMonoSpaced: Boolean;
+begin
+  Result := Screen.Fonts.IndexOf(Font.Name) >= 0;
+  if not Result then Exit;
+
+  // Is it fixed pitch?
+  DC := GetDC(0);
+  IsMonospaced := False;
+  FillChar(LogFont, SizeOf(LogFont), 0);
+  LogFont.lfCharSet := DEFAULT_CHARSET;
+  StrPLCopy(LogFont.lfFaceName, Font.Name, Length(LogFont.lfFaceName) - 1);
+  EnumFontFamiliesEx(DC, LogFont, @EnumFontsProc, LPARAM(@IsMonospaced), 0);
+  ReleaseDC(0, DC);
+  Result := IsMonospaced;
+  if not Result then Exit;
+
+  // Can it be used by DirectWrite?
+  try
+    Assert(GetObject(Font.Handle, SizeOf(TLogFont), @LogFont) <> 0);
+    CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
+  except
+    Result := False;
+  end;
 end;
 
 {$IF CompilerVersion <= 32}
