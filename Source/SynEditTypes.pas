@@ -41,6 +41,7 @@ unit SynEditTypes;
 interface
 
 uses
+  Winapi.Windows,
   System.Types,
   System.Math,
   Vcl.Controls,
@@ -118,6 +119,14 @@ function BufferCoord(AChar, ALine: Integer): TBufferCoord;
 function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
 
 type
+{ ************************* For ScrollBars ********************************}
+
+  ISynEditScrollBars = interface
+    function GetVertScrollInfo: TScrollInfo;
+    function GetHorzScrollInfo: TScrollInfo;
+    function UpdateScrollBars: Boolean;
+  end;
+
 { ************************* For Word Wrap ********************************}
 
   // aIndex parameters of Line notifications are 0-based.

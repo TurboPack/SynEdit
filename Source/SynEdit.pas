@@ -337,6 +337,7 @@ type
     fScrollHintColor: TColor;
     fScrollHintFormat: TScrollHintFormat;
     FScrollBars: TScrollStyle;
+    FSynEditScrollBars: ISynEditScrollBars;
     FTextAreaWidth: Integer;
     fTextHeight: Integer;
     fTextMargin: Integer;
@@ -1060,6 +1061,7 @@ uses
   Winapi.ShellAPI,
   Vcl.Consts,
   Vcl.Clipbrd,
+  SynEditScrollBars,
   SynEditUndo,
   SynEditWordWrap,
   SynEditStrConst,
@@ -1350,6 +1352,9 @@ begin
 
   fScrollHintColor := clInfoBk;
   fScrollHintFormat := shfTopLineOnly;
+
+  FSynEditScrollBars := CreateSynEditScrollBars(Self);
+
 //++ CodeFolding
   fCodeFolding := TSynCodeFolding.Create;
   fCodeFolding.OnChange := OnCodeFoldingChange;
@@ -3864,119 +3869,13 @@ begin
 end;
 
 procedure TCustomSynEdit.UpdateScrollBars;
-var
-  nMaxScroll: Integer;
-  ScrollInfo: TScrollInfo;
-  iRightChar: Integer;
 begin
   if not HandleAllocated or (PaintLock <> 0) then
     Include(fStateFlags, sfScrollbarChanged)
   else begin
     Exclude(fStateFlags, sfScrollbarChanged);
-    if fScrollBars <> ssNone then
-    begin
-      ScrollInfo.cbSize := SizeOf(ScrollInfo);
-      ScrollInfo.fMask := SIF_ALL;
-      if not(eoHideShowScrollbars in Options) then
-      begin
-        ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
-      end;
-
-      if (fScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssHorizontal]) and (not WordWrap or
-          WordWrap and (eoWrapWithRightEdge in FOptions) and (FRightEdge > fCharsInWindow)) then
-      begin
-        if WordWrap and (eoWrapWithRightEdge in FOptions) then
-          nMaxScroll := FRightEdge
-        else
-          nMaxScroll := Max(CeilOfIntDiv(TSynEditStringList(Lines).MaxWidth, FCharWidth), 1);
-        if nMaxScroll <= MAX_SCROLL then
-        begin
-          ScrollInfo.nMin := 1;
-          ScrollInfo.nMax := nMaxScroll;
-          ScrollInfo.nPage := fCharsInWindow;
-          ScrollInfo.nPos := LeftChar;
-        end
-        else begin
-          ScrollInfo.nMin := 0;
-          ScrollInfo.nMax := MAX_SCROLL;
-          ScrollInfo.nPage := MulDiv(MAX_SCROLL, fCharsInWindow, nMaxScroll);
-          ScrollInfo.nPos := MulDiv(MAX_SCROLL, LeftChar, nMaxScroll);
-        end;
-
-        ShowScrollBar(Handle, SB_HORZ, not(eoHideShowScrollbars in Options) or
-          (ScrollInfo.nMin = 0) or (ScrollInfo.nMax > fCharsInWindow));
-        SetScrollInfo(Handle, SB_HORZ, ScrollInfo, True);
-
-        //Now for the arrows
-        if (eoDisableScrollArrows in Options) or (nMaxScroll <= fCharsInWindow) then
-        begin
-          iRightChar := LeftChar + fCharsInWindow -1;
-          if (LeftChar <= 1) and (iRightChar >= nMaxScroll) then
-          begin
-            EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_BOTH);
-          end
-          else begin
-            EnableScrollBar(Handle, SB_HORZ, ESB_ENABLE_BOTH);
-            if (LeftChar <= 1) then
-              EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_LEFT)
-            else if iRightChar >= nMaxScroll then
-              EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_RIGHT)
-          end;
-        end
-        else
-          EnableScrollBar(Handle, SB_HORZ, ESB_ENABLE_BOTH);
-      end
-      else
-        ShowScrollBar(Handle, SB_HORZ, False);
-
-      if fScrollBars in [ssBoth, ssVertical] then
-      begin
-        nMaxScroll := DisplayLineCount;
-        if (eoScrollPastEof in Options) then
-          Inc(nMaxScroll, LinesInWindow - 1);
-        if nMaxScroll <= MAX_SCROLL then
-        begin
-          ScrollInfo.nMin := 1;
-          ScrollInfo.nMax := Max(1, nMaxScroll);
-          ScrollInfo.nPage := LinesInWindow;
-          ScrollInfo.nPos := TopLine;
-        end
-        else begin
-          ScrollInfo.nMin := 0;
-          ScrollInfo.nMax := MAX_SCROLL;
-          ScrollInfo.nPage := MulDiv(MAX_SCROLL, LinesInWindow, nMaxScroll);
-          ScrollInfo.nPos := MulDiv(MAX_SCROLL, TopLine, nMaxScroll);
-        end;
-
-        ShowScrollBar(Handle, SB_VERT, not(eoHideShowScrollbars in Options) or
-          (ScrollInfo.nMin = 0) or (ScrollInfo.nMax > LinesInWindow));
-        SetScrollInfo(Handle, SB_VERT, ScrollInfo, True);
-
-        if (eoDisableScrollArrows in Options) or (nMaxScroll <= LinesInWindow) then
-        begin
-          if (TopLine <= 1) and (nMaxScroll <= LinesInWindow) then
-          begin
-            EnableScrollBar(Handle, SB_VERT, ESB_DISABLE_BOTH);
-          end
-          else begin
-            EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
-            if (TopLine <= 1) then
-              EnableScrollBar(Handle, SB_VERT, ESB_DISABLE_UP)
-            else if ((DisplayLineCount - TopLine - LinesInWindow + 1) = 0) then
-              EnableScrollBar(Handle, SB_VERT, ESB_DISABLE_DOWN);
-          end;
-        end
-        else
-          EnableScrollBar(Handle, SB_VERT, ESB_ENABLE_BOTH);
-
-        Update;
-      end
-      else
-        ShowScrollBar(Handle, SB_VERT, False);
-
-    end {endif fScrollBars <> ssNone}
-    else
-      ShowScrollBar(Handle, SB_BOTH, False);
+    if FSynEditScrollBars.UpdateScrollBars then
+      Update;
   end;
 end;
 
@@ -4105,7 +4004,7 @@ end;
 
 procedure TCustomSynEdit.WMHScroll(var Msg: TWMScroll);
 var
-  iMaxWidth: integer;
+  ScrollInfo: TScrollInfo;
 begin
   Msg.Result := 0;
   case Msg.ScrollCode of
@@ -4128,11 +4027,8 @@ begin
     SB_THUMBTRACK:
     begin
       FIsScrolling := True;
-      iMaxWidth := Max(CeilOfIntDiv(TSynEditStringList(Lines).MaxWidth, FCharWidth), 1);
-      if iMaxWidth > MAX_SCROLL then
-        LeftChar := MulDiv(iMaxWidth, Msg.Pos, MAX_SCROLL)
-      else
-        LeftChar := Msg.Pos;
+      ScrollInfo := FSynEditScrollBars.GetHorzScrollInfo;
+      LeftChar := CeilOfIntDiv(ScrollInfo.nTrackPos, FCharWidth);
     end;
     SB_ENDSCROLL: FIsScrolling := False;
   end;
@@ -4285,12 +4181,8 @@ begin
     SB_THUMBTRACK:
       begin
         FIsScrolling := True;
-        if DisplayLineCount > MAX_SCROLL then
-          TopLine := MulDiv(LinesInWindow + DisplayLineCount - 1, Msg.Pos,
-            MAX_SCROLL)
-        else
-          TopLine := Msg.Pos;
-
+        ScrollInfo := FSynEditScrollBars.GetVertScrollInfo;
+        TopLine := ScrollInfo.nTrackPos;
         if eoShowScrollHint in fOptions then
         begin
           ScrollHint := GetScrollHint;
@@ -4307,12 +4199,6 @@ begin
           if eoScrollHintFollows in fOptions then
           begin
             ButtonH := GetSystemMetrics(SM_CYVSCROLL);
-
-            FillChar(ScrollInfo, SizeOf(ScrollInfo), 0);
-            ScrollInfo.cbSize := SizeOf(ScrollInfo);
-            ScrollInfo.fMask := SIF_ALL;
-            GetScrollInfo(Handle, SB_VERT, ScrollInfo);
-
             pt := ClientToScreen(Point(ClientWidth - rc.Right - 4,
               ((rc.Bottom - rc.Top) shr 1) +                                    //half the size of the hint window
               Round((ScrollInfo.nTrackPos / ScrollInfo.nMax) *                  //The percentage of the page that has been scrolled
