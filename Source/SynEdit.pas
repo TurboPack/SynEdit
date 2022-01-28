@@ -3232,6 +3232,7 @@ begin
     fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
     if HandleAllocated then
     begin
+      CalcTextAreaWidth;
       fCharsInWindow := Max(ClientWidth - fGutterWidth - fTextMargin, 0) div fCharWidth;
       if WordWrap then
         fWordWrapPlugin.DisplayChanged;
@@ -3264,7 +3265,7 @@ begin
     iDelta := fLeftChar - Value;
     fLeftChar := Value;
     fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
-    if Abs(iDelta) < fCharsInWindow then
+    if Abs(iDelta) * FCharWidth < ClientWidth - GutterWidth - TextMargin then
     begin
       iTextArea := ClientRect;
       Inc(iTextArea.Left, fGutterWidth + fTextMargin);
@@ -5491,10 +5492,14 @@ begin
     // Make sure X is visible
     WidthToCursor := TextWidth(Copy(Rows[vCaretRow], 1, VisibleX - 1));
 
-    if WidthToCursor < FLeftChar * FCharWidth then
-      LeftChar := WidthToCursor div fCharWidth
-    else if WidthToCursor >= FTextAreaWidth + LeftChar * FCharWidth then
+    if WidthToCursor < (FLeftChar - 1) * FCharWidth then
+      LeftChar := (WidthToCursor - (FLeftChar - 1) * FCharWidth) div fCharWidth +  1
+    else if WidthToCursor >= FTextAreaWidth + (LeftChar - 1) * FCharWidth then
       LeftChar := (WidthToCursor - FTextAreaWidth) div FCharWidth + 1
+    else if WidthToCursor >=  ClientWidth - FTextOffset - TextMargin then
+      // can happen with eoWrapWithRightEdge
+      LeftChar := (WidthToCursor - ClientWidth + FTextOffset + TextMargin)
+        div FCharWidth + 2
     else
       LeftChar := LeftChar;
 
