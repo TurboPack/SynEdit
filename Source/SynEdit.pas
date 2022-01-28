@@ -337,6 +337,7 @@ type
     fScrollHintColor: TColor;
     fScrollHintFormat: TScrollHintFormat;
     FScrollBars: TScrollStyle;
+    FTextAreaWidth: Integer;
     fTextHeight: Integer;
     fTextMargin: Integer;
     fTextOffset: Integer;
@@ -608,7 +609,7 @@ type
         Integer); virtual;
     procedure InternalSetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXY(const Value: TBufferCoord); virtual;
-    procedure SetCaretXYEx(CallEnsureCursorPos: Boolean; Value: TBufferCoord); virtual;
+    procedure SetCaretXYEx(EnsureVisible: Boolean; Value: TBufferCoord); virtual;
     procedure SetFontQuality(AValue: TFontQuality);
     procedure SetName(const Value: TComponentName); override;
     procedure SetReadOnly(Value: boolean); virtual;
@@ -625,6 +626,7 @@ type
     procedure UpdateMouseCursor; virtual;
   protected
     fGutterWidth: Integer;
+    procedure CalcTextAreaWidth;
     procedure HideCaret;
     procedure ShowCaret;
     procedure DoOnClearBookmark(var Mark: TSynEditMark); virtual;
@@ -703,6 +705,7 @@ type
     function GetWordAtRowCol(XY: TBufferCoord): string;
     procedure GotoBookMark(BookMark: Integer); virtual;
     procedure GotoLineAndCenter(ALine: Integer); virtual;
+    function RowColumnInView(RowCol: TDisplayCoord): Boolean;
     function TextWidth(const S: string): Integer;
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
@@ -841,6 +844,7 @@ type
     property StateFlags: TSynStateFlags read fStateFlags;
     property Text: string read SynGetText write SynSetText;
     property TopLine: Integer read fTopLine write SetTopLine;
+    property TextAreaWidth: Integer read FTextAreaWidth;
     property WordAtCursor: string read GetWordAtCursor;
     property WordAtMouse: string read GetWordAtMouse;
     property GutterWidth: Integer read FGutterWidth;
@@ -1092,7 +1096,7 @@ end;
 function TCustomSynEdit.PixelsToNearestRowColumn(aX, aY: Integer): TDisplayCoord;
 // Same as PixelsToRowColumn but don't return a partially visible last line
 begin
-  EnsureRange(aY, 0, fLinesInWindow * fTextHeight - 1);
+  aY := MinMax(aY, 0, fLinesInWindow * fTextHeight - 1);
   Result := PixelsToRowColumn(aX, aY);
 end;
 
@@ -1103,7 +1107,7 @@ var
   IsTrailing, IsInside: LongBool;
 begin
   if S = '' then
-    Result := ax div fCharWidth
+    Result := Max(ax div fCharWidth, 1)
   else
   begin
     Layout.Create(FTextFormat, PChar(S), S.Length, MaxInt, fTextHeight);
@@ -2191,7 +2195,7 @@ begin
     IncPaintLock;
     try
       if MouseCapture and (fClickCount = 2) and (ActiveSelectionMode = smNormal) then
-        // Line selection
+        // Word selection
         DoMouseSelectWordRange(vCaret)
       else if MouseCapture and (fClickCount = 3) and (ActiveSelectionMode = smNormal) then
         // Line selection
@@ -3100,7 +3104,7 @@ begin
   FLastPosX := RowColumnToPixels(DisplayXY).X - fTextOffset;
 end;
 
-procedure TCustomSynEdit.SetCaretXYEx(CallEnsureCursorPos: Boolean; Value: TBufferCoord);
+procedure TCustomSynEdit.SetCaretXYEx(EnsureVisible: Boolean; Value: TBufferCoord);
 var
   nMaxX: Integer;
   vTriggerPaint: boolean;
@@ -3167,7 +3171,7 @@ begin
       // calls could raise an exception, and we don't want FLastPosX to be
       // left in an undefined state if that happens.
       UpdateLastPosX;
-      if CallEnsureCursorPos then
+      if EnsureVisible then
         EnsureCursorPosVisible;
       Include(fStateFlags, sfCaretChanged);
 //++ Flicker Reduction
@@ -3191,13 +3195,23 @@ begin
     DoOnPaintTransient(ttAfter);
 end;
 
-function TCustomSynEdit.CaretInView: Boolean;
-var
-  vCaretRowCol: TDisplayCoord;
+function TCustomSynEdit.RowColumnInView(RowCol: TDisplayCoord): Boolean;
 begin
-  vCaretRowCol := DisplayXY;
-  Result := InRange(vCaretRowCol.Column, LeftChar, LeftChar + fCharsInWindow)
-    and InRange(vCaretRowCol.Row, TopLine, TopLine + LinesInWindow);
+  Result := InRange(RowCol.Row, TopLine, TopLine + LinesInWindow) and
+    InRange(RowColumnToPixels(RowCol).X, FGutterWidth + TextMargin, ClientWidth);
+end;
+
+procedure TCustomSynEdit.CalcTextAreaWidth;
+begin
+  if (eoWrapWithRightEdge in FOptions) and (fRightEdge > 0) then
+    FTextAreaWidth := fRightEdge * FCharWidth - TextMargin
+  else
+    FTextAreaWidth := Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0);
+end;
+
+function TCustomSynEdit.CaretInView: Boolean;
+begin
+  Result := RowColumnInView(DisplayXY);
 end;
 
 procedure TCustomSynEdit.SetActiveLineColor(Value: TColor);
@@ -3234,19 +3248,16 @@ var
   iTextArea: TRect;
 begin
 	// when wrapping with right edge and right edge is behind the window width
-  if WordWrap and not ((eoWrapWithRightEdge in FOptions) and (FRightEdge > fCharsInWindow)) then
+  if WordWrap and not ((eoWrapWithRightEdge in FOptions) and
+    (FRightEdge > fCharsInWindow))
+  then
     Value := 1;
 
   if eoScrollPastEol in Options then
       MaxVal := MaxInt - fCharsInWindow
   else
-  begin
-    MaxVal := CeilOfIntDiv(TSynEditStringList(Lines).MaxWidth, FCharWidth);
-    if MaxVal > fCharsInWindow then
-      MaxVal := MaxVal - fCharsInWindow + 1
-    else
-      MaxVal := 1;
-  end;
+    MaxVal := Max(CeilOfIntDiv(Max(TSynEditStringList(Lines).MaxWidth -
+              TextAreaWidth, 0),  FCharWidth), 1);
   Value := MinMax(Value, 1, MaxVal);
   if Value <> fLeftChar then
   begin
@@ -3660,8 +3671,6 @@ var
 begin
   Pt := ScreenToClient(MousePt);
   vNewPos := PixelsToNearestRowColumn(Pt.X, Pt.Y);
-  vNewPos.Column := MinMax(vNewPos.Column, LeftChar, LeftChar + fCharsInWindow - 1);
-  vNewPos.Row := MinMax(vNewPos.Row, TopLine, TopLine + LinesInWindow - 1);
   InternalCaretXY := DisplayToBufferPos(vNewPos);
   ComputeScroll(Pt.X, Pt.Y);
 end;
@@ -5260,6 +5269,7 @@ begin
     // when wrapping with right edge, we must rewrap when edge is changed
     if WordWrap and (eoWrapWithRightEdge in fOptions) then
     begin
+      CalcTextAreaWidth;
       fWordWrapPlugin.DisplayChanged;
       EnsureCursorPosVisible;
     end;
@@ -5465,6 +5475,8 @@ end;
 procedure TCustomSynEdit.EnsureCursorPosVisibleEx(ForceToMiddle: Boolean;
   EvenIfVisible: Boolean = False);
 var
+  RowCol: TDisplayCoord;
+  WidthToCursor: Integer;
   TmpMiddle: Integer;
   VisibleX: Integer;
   vCaretRow: Integer;
@@ -5472,17 +5484,21 @@ begin
   HandleNeeded;
   IncPaintLock;
   try
+    RowCol := DisplayXY;
+    vCaretRow := RowCol.Row;
+    VisibleX := RowCol.Column;
+
     // Make sure X is visible
-    VisibleX := DisplayX;
-    if VisibleX < LeftChar then
-      LeftChar := VisibleX
-    else if VisibleX >= fCharsInWindow + LeftChar then
-      LeftChar := VisibleX - fCharsInWindow + 1
+    WidthToCursor := TextWidth(Copy(Rows[vCaretRow], 1, VisibleX - 1));
+
+    if WidthToCursor < FLeftChar * FCharWidth then
+      LeftChar := WidthToCursor div fCharWidth
+    else if WidthToCursor >= FTextAreaWidth + LeftChar * FCharWidth then
+      LeftChar := (WidthToCursor - FTextAreaWidth) div FCharWidth + 1
     else
       LeftChar := LeftChar;
 
     // Make sure Y is visible
-    vCaretRow := DisplayY;
     if ForceToMiddle then
     begin
       if vCaretRow < (TopLine - 1) then
@@ -7000,6 +7016,7 @@ begin
     bSetDrag := (eoDropFiles in fOptions) <> (eoDropFiles in Value);
     bInvalidate := (eoShowSpecialChars in fOptions) <> (eoShowSpecialChars in Value);
     bUpdateScroll := (Options * ScrollOptions) <> (Value * ScrollOptions);
+    CalcTextAreaWidth;  // in case eoWrapWithRightEdge changed
 
     FUndoRedo.GroupUndo := eoGroupUndo in Options;
 
@@ -7041,7 +7058,10 @@ begin
       Invalidate;
     end
     else
+    begin
+      CalcTextAreaWidth;
       UpdateScrollbars;
+    end;
     if not (eoScrollPastEol in Options) then
       LeftChar := LeftChar;
     if not (eoScrollPastEof in Options) then
@@ -7127,7 +7147,7 @@ begin
       fCaretAtEOL := True;
       UpdateLastPosX;
     end
-    else if vCaretRowCol.Column > fCharsInWindow +1 then
+    else if vCaretRowCol.Column > fCharsInWindow + 1 then
     begin
       Inc(vCaretRowCol.Row);
       vCaretRowCol.Column := 1;
@@ -9049,13 +9069,12 @@ var
 begin
   if WordWrap <> Value then
   begin
+    CalcTextAreaWidth;
     Invalidate; // better Invalidate before changing LeftChar and TopLine
     vShowCaret := CaretInView;
     vOldTopLine := RowToLine(TopLine);
-//++ CodeFolding
      // !!Mutually exclusive with CodeFolding to reduce complexity
     if Value and not UseCodeFolding then
-//-- CodeFolding
     begin
       fWordWrapPlugin := TSynWordWrapPlugin.Create(Self);
       LeftChar := 1;
@@ -9093,17 +9112,11 @@ begin
 end;
 
 function TCustomSynEdit.RowToLine(aRow: Integer): Integer;
-var
-  vDisplayPos: TDisplayCoord;
 begin
-//++ CodeFolding
   if not UseCodeFolding and not WordWrap then
-//-- CodeFolding
     Result := aRow
   else begin
-    vDisplayPos.Column := 1;
-    vDisplayPos.Row := aRow;
-    Result := DisplayToBufferPos(vDisplayPos).Line;
+    Result := DisplayToBufferPos(DisplayCoord(1, aRow)).Line;
   end;
 end;
 

@@ -58,7 +58,7 @@ type
     fLineCount: integer;
 
     fEditor: TCustomSynEdit;
-    fMaxRowLength: Integer;
+    fMaxRowWidth: Integer;
     procedure SetEmpty;
     function PrepareLine(const S: string): string;
   protected
@@ -152,9 +152,7 @@ end;
 
 procedure TSynWordWrapPlugin.DisplayChanged;
 begin
-  // we are wrapping with right edge line or with window width
-  if (eoWrapWithRightEdge in Editor.Options) and (Editor.RightEdge <> fMaxRowLength) or
-    not (eoWrapWithRightEdge in Editor.Options) and (Editor.CharsInWindow <> fMaxRowLength) then
+  if Editor.TextAreaWidth <> fMaxRowWidth then
     Reset;
 end;
 
@@ -179,7 +177,7 @@ begin
     begin
       Result.Line := cLine + 2;
       if aPos.Row = fLineOffsets[cLine + 1] then //last row of line
-        Result.Char := Min(aPos.Column, fMaxRowLength + 1)
+        Result.Char := aPos.Column
       else
         Result.Char := Min(aPos.Column, fRowLengths[aPos.Row - 1] + 1);
       for cRow := fLineOffsets[cLine] to aPos.Row - 2 do
@@ -189,7 +187,7 @@ begin
   // first line
   Result.Line := 1;
   if aPos.Row = fLineOffsets[0] then //last row of line
-    Result.Char := Min(aPos.Column, fMaxRowLength + 1)
+    Result.Char := aPos.Column
   else
     Result.Char := Min(aPos.Column, fRowLengths[aPos.Row - 1] + 1);
   for cRow := 0 to aPos.Row - 2 do
@@ -211,7 +209,7 @@ var
   vEndRow: integer;
   cLine: integer;
 begin
-  if fMaxRowLength = 0 then Exit(0);
+  if fMaxRowWidth < Editor.CharWidth then Exit(0);
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
   Assert(aIndex + aCount <= fLineCount);
@@ -242,7 +240,7 @@ var
   cLine: integer;
   TempArray: TArray<Integer>;
 begin
-  if fMaxRowLength = 0 then Exit(0);
+  if fMaxRowWidth < Editor.CharWidth then Exit(0);
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
   Assert(aIndex <= fLineCount);
@@ -273,7 +271,7 @@ function TSynWordWrapPlugin.LinePut(aIndex: integer; const OldLine: string): int
 var
   cLine: integer;
 begin
-  if fMaxRowLength = 0 then Exit(0);
+  if fMaxRowWidth < Editor.CharWidth then Exit(0);
   Assert(aIndex >= 0);
   Assert(aIndex < fLineCount);
   // Rewrap
@@ -287,12 +285,7 @@ end;
 procedure TSynWordWrapPlugin.Reset;
 begin
   Assert(Editor.CharsInWindow >= 0);
-
-	// we are wrapping with right edge line or with window width
-  if (eoWrapWithRightEdge in Editor.Options) then
-    fMaxRowLength := Editor.RightEdge
-  else
-    fMaxRowLength := Editor.CharsInWindow;
+  fMaxRowWidth := Editor.TextAreaWidth;
 
   WrapLines;
 end;
@@ -329,7 +322,7 @@ begin
   fRowLengths.Clear;
   fRowLengths.Capacity := Editor.Lines.Count;
 
-  if (Editor.Lines.Count = 0) or (fMaxRowLength <= 0) then
+  if (Editor.Lines.Count = 0) or (fMaxRowWidth < Editor.CharWidth) then
     Exit;
 
   cRow := 0;
@@ -392,7 +385,7 @@ var
   I: Integer;
 begin
   SLine := PrepareLine(Editor.Lines[Index]);
-  if SLine.Length < fMaxRowLength div 2 then
+  if SLine.Length * Editor.CharWidth < fMaxRowWidth div 2 then
   begin
     // Optimization.  Assume line will fit!
     NRows := 1;
@@ -405,7 +398,7 @@ begin
     // Editor.TextMargin is subtracted from Layout width to allow space for
     // cursor, text overhangs etc.
     Layout.Create(Editor.TextFormat, PChar(SLine), SLine.Length,
-      fMaxRowLength * Editor.CharWidth - Editor.TextMargin,  MaxInt, True);
+      fMaxRowWidth,  MaxInt, True);
     Layout.IDW.GetLineMetrics(@LineMetrics[0], Length(LineMetrics), NRows);
     if Integer(NRows) > Length(LineMetrics) then
     begin
