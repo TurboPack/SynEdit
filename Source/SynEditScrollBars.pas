@@ -43,11 +43,14 @@ implementation
 
 uses
   Winapi.Windows,
+  Winapi.Messages,
+  System.Types,
   System.Math,
   Vcl.Forms,
   SynEdit,
   SynEditTextBuffer,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynEditStrConst;
 
 type
   TSynScrollBarState = record
@@ -78,6 +81,8 @@ type
     function GetVertScrollInfo: TScrollInfo;
     function GetHorzScrollInfo: TScrollInfo;
     function UpdateScrollBars: Boolean;
+    procedure WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    procedure WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
   end;
 
 { TSynEditScrollBars }
@@ -128,8 +133,13 @@ begin
     BarKind := SB_HORZ
   else
     BarKind := SB_VERT;
-  Btn1Enabled := (AState.nPos > AState.nMin);
-  Btn2Enabled := ((AState.nPos + AState.nPage - AState.nMin) < AState.nMax);
+  Btn1Enabled := True;
+  Btn2Enabled := True;
+  if (eoDisableScrollArrows in FOwner.Options) then
+  begin
+    Btn1Enabled := (AState.nPos > AState.nMin);
+    Btn2Enabled := ((AState.nPos + AState.nPage - AState.nMin) < AState.nMax);
+  end;
   if not Btn1Enabled and not Btn2Enabled then
     EnableScrollBar(FOwner.Handle, BarKind, ESB_DISABLE_BOTH)
   else
@@ -151,11 +161,9 @@ var
   BarWSCode: Integer;
   ScrollbarVisible: Boolean;
   HideEnabled: Boolean;
-  DisableArrows: Boolean;
 begin
   WindowStyle := GetWindowLong(FOwner.Handle, GWL_STYLE);
   HideEnabled := (eoHideShowScrollbars in FOwner.Options);
-  DisableArrows := (eoDisableScrollArrows in FOwner.Options);
   if AState.Kind = sbHorizontal then
   begin
     BarKind := SB_HORZ;
@@ -188,13 +196,13 @@ begin
         ShowScrollBar(FOwner.Handle, BarKind, True);
 
     // Avoid flicker when using HideEnabled option
-    if DisableArrows and AutoVis and HideEnabled then
+    if HideEnabled and AutoVis then
       ApplyButtonState(AState);
 
     SetScrollInfo(FOwner.Handle, BarKind, ScrollInfo, True);
 
     // With not HideEnabled option enabling must happen after SetScrollInfo
-    if DisableArrows and AutoVis and not HideEnabled then
+    if not HideEnabled and AutoVis then
       ApplyButtonState(AState);
   end
   else
@@ -203,8 +211,8 @@ end;
 
 procedure TSynEditScrollBars.UpdateScrollBarsState;
 var
-  nMaxScroll: Integer;
-  nMaxPage: Integer;
+  MaxScroll: Integer;
+  PageSize: Integer;
 begin
   // Do Horz First
   FNewHorzSBState.Active :=
@@ -216,18 +224,19 @@ begin
   begin
     if FOwner.WordWrap and (eoWrapWithRightEdge in FOwner.Options) then
     begin
-      // This may have to be adjusted.
-      nMaxPage := FOwner.TextAreaWidth;
       FNewHorzSBState.nMin := 0;
-      FNewHorzSBState.nMax := FOwner.WrapAreaWidth + FOwner.CharWidth;;
-      FNewHorzSBState.nPage := nMaxPage;
+      FNewHorzSBState.nMax := FOwner.WrapAreaWidth + FOwner.CharWidth;
+      FNewHorzSBState.nPage := Max(1, FOwner.TextAreaWidth - FOwner.CharWidth);
       FNewHorzSBState.nPos := ((FOwner.LeftChar -1) * FOwner.CharWidth);
     end
     else
     begin
+      // Make sure our values are multiples of CharWidth.
+      MaxScroll := CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth) * FOwner.CharWidth + FOwner.CharWidth;
+      PageSize := Max(1, CeilOfIntDiv(FOwner.TextAreaWidth, FOwner.CharWidth) * FOwner.CharWidth - FOwner.CharWidth);
       FNewHorzSBState.nMin := 0;
-      FNewHorzSBState.nMax := TSynEditStringList(FOwner.Lines).MaxWidth + FOwner.CharWidth;
-      FNewHorzSBState.nPage := FOwner.TextAreaWidth;
+      FNewHorzSBState.nMax := MaxScroll;
+      FNewHorzSBState.nPage := PageSize;
       FNewHorzSBState.nPos := ((FOwner.LeftChar - 1) * FOwner.CharWidth);
     end;
   end;
@@ -236,11 +245,11 @@ begin
   FNewVertSBState.Active := FOwner.ScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssVertical];
   if FNewVertSBState.Active then
   begin
-    nMaxScroll := FOwner.DisplayLineCount;
+    MaxScroll := FOwner.DisplayLineCount;
     if (eoScrollPastEof in FOwner.Options) then
-      Inc(nMaxScroll, FOwner.LinesInWindow - 1);
+      Inc(MaxScroll, FOwner.LinesInWindow - 1);
     FNewVertSBState.nMin := 1;
-    FNewVertSBState.nMax := Max(1, nMaxScroll);
+    FNewVertSBState.nMax := Max(1, MaxScroll);
     FNewVertSBState.nPage := FOwner.LinesInWindow;
     FNewVertSBState.nPos := FOwner.TopLine;
   end;
@@ -268,6 +277,120 @@ begin
     FPrevVertSBState := FNewVertSBState;
     Result := True;
   end;
+end;
+
+procedure TSynEditScrollBars.WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+var
+  ScrollInfo: TScrollInfo;
+begin
+  AMsg.Result := 0;
+  case AMsg.ScrollCode of
+      // Scrolls to start / end of the line
+    SB_LEFT: FOwner.LeftChar := 1;
+    SB_RIGHT:
+      // Simply set LeftChar property to MaxWidth/FCharWidth
+      // it would do the range checking and constrain the value if necessary
+      FOwner.LeftChar := CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth);
+      // Scrolls one char left / right
+    SB_LINERIGHT: FOwner.LeftChar := FOwner.LeftChar + 1;
+    SB_LINELEFT: FOwner.LeftChar := FOwner.LeftChar - 1;
+      // Scrolls one page of chars left / right
+    SB_PAGERIGHT: FOwner.LeftChar := FOwner.LeftChar
+      + (FOwner.CharsInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+    SB_PAGELEFT: FOwner.LeftChar := FOwner.LeftChar
+      - (FOwner.CharsInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+      // Scrolls to the current scroll bar position
+    SB_THUMBPOSITION,
+    SB_THUMBTRACK:
+    begin
+      AIsScrolling := True;
+      ScrollInfo := GetHorzScrollInfo;
+      FOwner.LeftChar := CeilOfIntDiv(ScrollInfo.nTrackPos, FOwner.CharWidth);
+    end;
+    SB_ENDSCROLL: AIsScrolling := False;
+  end;
+  if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self, sbHorizontal);
+end;
+
+var
+  ScrollHintWnd: THintWindow;
+
+function GetScrollHint: THintWindow;
+begin
+  if ScrollHintWnd = nil then
+    ScrollHintWnd := HintWindowClass.Create(Application);
+  Result := ScrollHintWnd;
+end;
+
+procedure TSynEditScrollBars.WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+var
+  s: string;
+  rc: TRect;
+  pt: TPoint;
+  ScrollHint: THintWindow;
+  ButtonH: Integer;
+  ScrollInfo: TScrollInfo;
+begin
+  AMsg.Result := 0;
+  case AMsg.ScrollCode of
+      // Scrolls to start / end of the text
+    SB_TOP: FOwner.TopLine := 1;
+    SB_BOTTOM: FOwner.TopLine := FOwner.DisplayLineCount;
+      // Scrolls one line up / down
+    SB_LINEDOWN: FOwner.TopLine := FOwner.TopLine + 1;
+    SB_LINEUP: FOwner.TopLine := FOwner.TopLine - 1;
+      // Scrolls one page of lines up / down
+    SB_PAGEDOWN: FOwner.TopLine := FOwner.TopLine
+      + (FOwner.LinesInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+    SB_PAGEUP: FOwner.TopLine := FOwner.TopLine
+      - (FOwner.LinesInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+      // Scrolls to the current scroll bar position
+    SB_THUMBPOSITION,
+    SB_THUMBTRACK:
+      begin
+        AIsScrolling := True;
+        ScrollInfo := GetVertScrollInfo;
+        FOwner.TopLine := ScrollInfo.nTrackPos;
+        if eoShowScrollHint in FOwner.Options then
+        begin
+          ScrollHint := GetScrollHint;
+          ScrollHint.Color := FOwner.ScrollHintColor;
+          case FOwner.ScrollHintFormat of
+            shfTopLineOnly:
+              s := Format(SYNS_ScrollInfoFmtTop, [FOwner.RowToLine(FOwner.TopLine)]);
+            else
+              s := Format(SYNS_ScrollInfoFmt, [FOwner.RowToLine(FOwner.TopLine),
+                FOwner.RowToLine(FOwner.TopLine + Min(FOwner.LinesInWindow, FOwner.DisplayLineCount - FOwner.TopLine))]);
+          end;
+
+          rc := ScrollHint.CalcHintRect(200, s, nil);
+          if eoScrollHintFollows in FOwner.Options then
+          begin
+            ButtonH := GetSystemMetrics(SM_CYVSCROLL);
+            pt := FOwner.ClientToScreen(Point(FOwner.ClientWidth - rc.Right - 4,
+              ((rc.Bottom - rc.Top) shr 1) +                                    //half the size of the hint window
+              Round((ScrollInfo.nTrackPos / ScrollInfo.nMax) *                  //The percentage of the page that has been scrolled
+                    (FOwner.ClientHeight - (ButtonH * 2)))                             //The height minus the arrow buttons
+                   + ButtonH));                                                 //The height of the top button
+          end
+          else
+            pt := FOwner.ClientToScreen(Point(FOwner.ClientWidth - rc.Right - 4, 10));
+
+          OffsetRect(rc, pt.x, pt.y);
+          ScrollHint.ActivateHint(rc, s);
+          ScrollHint.Update;
+        end;
+      end;
+      // Ends scrolling
+    SB_ENDSCROLL:
+      begin
+        AIsScrolling := False;
+        if eoShowScrollHint in FOwner.Options then
+          ShowWindow(GetScrollHint.Handle, SW_HIDE);
+      end;
+  end;
+  FOwner.Update;  // mjf: Needed?
+  if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self,sbVertical);
 end;
 
 { TSynScrollBarState }

@@ -42,6 +42,7 @@ interface
 
 uses
   Winapi.Windows,
+  Winapi.Messages,
   System.Types,
   System.Math,
   Vcl.Controls,
@@ -122,9 +123,9 @@ type
 { ************************* For ScrollBars ********************************}
 
   ISynEditScrollBars = interface
-    function GetVertScrollInfo: TScrollInfo;
-    function GetHorzScrollInfo: TScrollInfo;
     function UpdateScrollBars: Boolean;
+    procedure WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    procedure WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
   end;
 
 { ************************* For Word Wrap ********************************}

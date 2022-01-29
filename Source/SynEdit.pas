@@ -4011,36 +4011,8 @@ begin
 end;
 
 procedure TCustomSynEdit.WMHScroll(var Msg: TWMScroll);
-var
-  ScrollInfo: TScrollInfo;
 begin
-  Msg.Result := 0;
-  case Msg.ScrollCode of
-      // Scrolls to start / end of the line
-    SB_LEFT: LeftChar := 1;
-    SB_RIGHT:
-      // Simply set LeftChar property to MaxWidth/FCharWidth
-      // it would do the range checking and constrain the value if necessary
-      LeftChar := CeilOfIntDiv(TSynEditStringList(Lines).MaxWidth, FCharWidth);
-      // Scrolls one char left / right
-    SB_LINERIGHT: LeftChar := LeftChar + 1;
-    SB_LINELEFT: LeftChar := LeftChar - 1;
-      // Scrolls one page of chars left / right
-    SB_PAGERIGHT: LeftChar := LeftChar
-      + (fCharsInWindow - Ord(eoScrollByOneLess in fOptions));
-    SB_PAGELEFT: LeftChar := LeftChar
-      - (fCharsInWindow - Ord(eoScrollByOneLess in fOptions));
-      // Scrolls to the current scroll bar position
-    SB_THUMBPOSITION,
-    SB_THUMBTRACK:
-    begin
-      FIsScrolling := True;
-      ScrollInfo := FSynEditScrollBars.GetHorzScrollInfo;
-      LeftChar := CeilOfIntDiv(ScrollInfo.nTrackPos, FCharWidth);
-    end;
-    SB_ENDSCROLL: FIsScrolling := False;
-  end;
-  if Assigned(OnScroll) then OnScroll(Self,sbHorizontal);
+  FSynEditScrollBars.WMHScroll(Msg, FIsScrolling);
 end;
 
 procedure TCustomSynEdit.WMImeChar(var Msg: TMessage);
@@ -4152,85 +4124,9 @@ begin
   Undo;
 end;
 
-var
-  ScrollHintWnd: THintWindow;
-
-function GetScrollHint: THintWindow;
-begin
-  if ScrollHintWnd = nil then
-    ScrollHintWnd := HintWindowClass.Create(Application);
-  Result := ScrollHintWnd;
-end;
-
 procedure TCustomSynEdit.WMVScroll(var Msg: TWMScroll);
-var
-  s: string;
-  rc: TRect;
-  pt: TPoint;
-  ScrollHint: THintWindow;
-  ButtonH: Integer;
-  ScrollInfo: TScrollInfo;
 begin
-  Msg.Result := 0;
-  case Msg.ScrollCode of
-      // Scrolls to start / end of the text
-    SB_TOP: TopLine := 1;
-    SB_BOTTOM: TopLine := DisplayLineCount;
-      // Scrolls one line up / down
-    SB_LINEDOWN: TopLine := TopLine + 1;
-    SB_LINEUP: TopLine := TopLine - 1;
-      // Scrolls one page of lines up / down
-    SB_PAGEDOWN: TopLine := TopLine
-      + (fLinesInWindow - Ord(eoScrollByOneLess in fOptions));
-    SB_PAGEUP: TopLine := TopLine
-      - (fLinesInWindow - Ord(eoScrollByOneLess in fOptions));
-      // Scrolls to the current scroll bar position
-    SB_THUMBPOSITION,
-    SB_THUMBTRACK:
-      begin
-        FIsScrolling := True;
-        ScrollInfo := FSynEditScrollBars.GetVertScrollInfo;
-        TopLine := ScrollInfo.nTrackPos;
-        if eoShowScrollHint in fOptions then
-        begin
-          ScrollHint := GetScrollHint;
-          ScrollHint.Color := fScrollHintColor;
-          case FScrollHintFormat of
-            shfTopLineOnly:
-              s := Format(SYNS_ScrollInfoFmtTop, [RowToLine(TopLine)]);
-            else
-              s := Format(SYNS_ScrollInfoFmt, [RowToLine(TopLine),
-                RowToLine(TopLine + Min(LinesInWindow, DisplayLineCount-TopLine))]);
-          end;
-
-          rc := ScrollHint.CalcHintRect(200, s, nil);
-          if eoScrollHintFollows in fOptions then
-          begin
-            ButtonH := GetSystemMetrics(SM_CYVSCROLL);
-            pt := ClientToScreen(Point(ClientWidth - rc.Right - 4,
-              ((rc.Bottom - rc.Top) shr 1) +                                    //half the size of the hint window
-              Round((ScrollInfo.nTrackPos / ScrollInfo.nMax) *                  //The percentage of the page that has been scrolled
-                    (ClientHeight - (ButtonH * 2)))                             //The height minus the arrow buttons
-                   + ButtonH));                                                 //The height of the top button
-          end
-          else
-            pt := ClientToScreen(Point(ClientWidth - rc.Right - 4, 10));
-
-          OffsetRect(rc, pt.x, pt.y);
-          ScrollHint.ActivateHint(rc, s);
-          ScrollHint.Update;
-        end;
-      end;
-      // Ends scrolling
-    SB_ENDSCROLL:
-      begin
-        FIsScrolling := False;
-      if eoShowScrollHint in fOptions then
-        ShowWindow(GetScrollHint.Handle, SW_HIDE);
-  end;
-  end;
-  Update;
-  if Assigned(OnScroll) then OnScroll(Self,sbVertical);
+  FSynEditScrollBars.WMVScroll(Msg, FIsScrolling);
 end;
 
 function TCustomSynEdit.ScanFrom(Index: Integer): Integer;
