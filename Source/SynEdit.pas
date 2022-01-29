@@ -7401,62 +7401,30 @@ begin
 end;
 
 procedure TCustomSynEdit.DoHomeKey(Selection: Boolean);
-
-  function LastCharInRow: Integer;
-  var
-    vPos: TDisplayCoord;
-  begin
-    if fLines.Count = 0 then
-      Result := 1
-    else
-    begin
-      vPos := DisplayXY;
-      vPos.Column := Min(fCharsInWindow, fWordWrapPlugin.GetRowLength(vPos.Row) + 1);
-      Result := DisplayToBufferPos(vPos).Char;
-    end;
-  end;
-
 var
-  newX: Integer;
-  first_nonblank: Integer;
-  s: string;
-  vNewPos: TDisplayCoord;
-  vMaxX: Integer;
+  FirstNonblank: Integer;
+  S: string;
+  NewPos: TDisplayCoord;
+  MaxX: Integer;
 begin
   // home key enhancement
-  if (eoEnhanceHomeKey in fOptions) and (LineToRow(CaretY) = DisplayY) then
+  NewPos := DisplayXY;
+  if eoEnhanceHomeKey in fOptions then
   begin
-    s := fLines[CaretXY.Line - 1];
-
-    first_nonblank := 1;
-    if WordWrap then
-      vMaxX := LastCharInRow() -1
+    S := Rows[NewPos.Row];
+    FirstNonblank := 1;
+    MaxX := Length(S);
+    while (FirstNonblank <= MaxX) and IsWhiteChar(S[FirstNonblank]) do
+      Inc(FirstNonblank);
+    if NewPos.Column > FirstNonblank then
+      NewPos.Column := FirstNonblank
     else
-      vMaxX := Length(s);
-    while (first_nonblank <= vMaxX) and
-      CharInSet(s[first_nonblank], [#32, #9])
-    do
-      inc(first_nonblank);
-    dec(first_nonblank);
-
-    newX := CaretXY.Char - 1;
-
-    if (newX > first_nonblank) or (newX = 0) then
-      newX := first_nonblank + 1
-    else
-      newX := 1;
+      NewPos.Column := 1;
   end
   else
-    newX := 1;
+    NewPos.Column := 1;
 
-  if WordWrap then
-  begin
-    vNewPos.Row := DisplayY;
-    vNewPos.Column := BufferToDisplayPos(BufferCoord(newX, CaretY)).Column;
-    MoveCaretAndSelection(CaretXY, DisplayToBufferPos(vNewPos), Selection);
-  end
-  else
-    MoveCaretAndSelection(CaretXY, BufferCoord(newX, CaretY), Selection);
+  MoveCaretAndSelection(CaretXY, DisplayToBufferPos(NewPos), Selection);
 end;
 
 procedure TCustomSynEdit.DoEndKey(Selection: Boolean);
@@ -8453,13 +8421,10 @@ function TCustomSynEdit.IsWhiteChar(AChar: WideChar): Boolean;
 begin
   if Assigned(Highlighter) then
     Result := Highlighter.IsWhiteChar(AChar)
+  else if AChar.IsWhiteSpace then
+    Result := True
   else
-    case AChar of
-    #0..#32:
-      Result := True;
-    else
-      Result := not (IsIdentChar(AChar) or IsWordBreakChar(AChar))
-    end
+    Result := not (IsIdentChar(AChar) or IsWordBreakChar(AChar));
 end;
 
 function TCustomSynEdit.IsWordBreakChar(AChar: WideChar): Boolean;
