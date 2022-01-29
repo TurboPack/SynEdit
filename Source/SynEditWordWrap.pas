@@ -152,7 +152,7 @@ end;
 
 procedure TSynWordWrapPlugin.DisplayChanged;
 begin
-  if Editor.TextAreaWidth <> fMaxRowWidth then
+  if Editor.WrapAreaWidth <> fMaxRowWidth then
     Reset;
 end;
 
@@ -285,7 +285,7 @@ end;
 procedure TSynWordWrapPlugin.Reset;
 begin
   Assert(Editor.CharsInWindow >= 0);
-  fMaxRowWidth := Editor.TextAreaWidth;
+  fMaxRowWidth := Editor.WrapAreaWidth;
 
   WrapLines;
 end;

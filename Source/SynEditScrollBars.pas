@@ -210,24 +210,26 @@ begin
   FNewHorzSBState.Active :=
     (FOwner.ScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssHorizontal]) and
     (not FOwner.WordWrap or
-     (FOwner.WordWrap and (eoWrapWithRightEdge in FOwner.Options) and (FOwner.RightEdge > FOwner.CharsInWindow)));
+     (FOwner.WordWrap and (eoWrapWithRightEdge in FOwner.Options) and
+     (FOwner.WrapAreaWidth > FOwner.TextAreaWidth)));
   if FNewHorzSBState.Active then
   begin
     if FOwner.WordWrap and (eoWrapWithRightEdge in FOwner.Options) then
     begin
       // This may have to be adjusted.
-      nMaxPage := Min(
-        FOwner.TextAreaWidth,
-        Max(FOwner.ClientWidth - FOwner.GutterWidth - 2 * FOwner.TextMargin, 0));
+      nMaxPage := FOwner.TextAreaWidth;
+//      nMaxPage := Min(
+//        FOwner.TextAreaWidth,
+//        Max(FOwner.ClientWidth - FOwner.GutterWidth - 2 * FOwner.TextMargin, 0));
       FNewHorzSBState.nMin := 0;
-      FNewHorzSBState.nMax := FOwner.TextAreaWidth;
+      FNewHorzSBState.nMax := FOwner.WrapAreaWidth + FOwner.CharWidth;;
       FNewHorzSBState.nPage := nMaxPage;
       FNewHorzSBState.nPos := ((FOwner.LeftChar -1) * FOwner.CharWidth);
     end
     else
     begin
       FNewHorzSBState.nMin := 0;
-      FNewHorzSBState.nMax := TSynEditStringList(FOwner.Lines).MaxWidth + FOwner.CharWidth;  // Fudge factor maybe should be just CaretWidth?
+      FNewHorzSBState.nMax := TSynEditStringList(FOwner.Lines).MaxWidth + FOwner.CharWidth;
       FNewHorzSBState.nPage := FOwner.TextAreaWidth;
       FNewHorzSBState.nPos := ((FOwner.LeftChar - 1) * FOwner.CharWidth);
     end;

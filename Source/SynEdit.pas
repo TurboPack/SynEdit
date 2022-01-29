@@ -339,6 +339,7 @@ type
     FScrollBars: TScrollStyle;
     FSynEditScrollBars: ISynEditScrollBars;
     FTextAreaWidth: Integer;
+    FWrapAreaWidth: Integer;
     fTextHeight: Integer;
     fTextMargin: Integer;
     fTextOffset: Integer;
@@ -846,6 +847,7 @@ type
     property Text: string read SynGetText write SynSetText;
     property TopLine: Integer read fTopLine write SetTopLine;
     property TextAreaWidth: Integer read FTextAreaWidth;
+    property WrapAreaWidth: Integer read FWrapAreaWidth;
     property WordAtCursor: string read GetWordAtCursor;
     property WordAtMouse: string read GetWordAtMouse;
     property GutterWidth: Integer read FGutterWidth;
@@ -3208,10 +3210,17 @@ end;
 
 procedure TCustomSynEdit.CalcTextAreaWidth;
 begin
-  if (eoWrapWithRightEdge in FOptions) and (fRightEdge > 0) then
-    FTextAreaWidth := fRightEdge * FCharWidth - TextMargin
+  if WordWrap and (eoWrapWithRightEdge in FOptions) and (fRightEdge > 0) then
+  begin
+    FWrapAreaWidth := Max(fRightEdge * CharWidth - TextMargin, 0);
+    FTextAreaWidth := Min(FWrapAreaWidth,
+       Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0));
+  end
   else
+  begin
     FTextAreaWidth := Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0);
+    FWrapAreaWidth := FTextAreaWidth;
+  end;
 end;
 
 function TCustomSynEdit.CaretInView: Boolean;
@@ -3255,7 +3264,7 @@ var
 begin
 	// when wrapping with right edge and right edge is behind the window width
   if WordWrap and not ((eoWrapWithRightEdge in FOptions) and
-    (FRightEdge > fCharsInWindow))
+    (FWrapAreaWidth > FTextAreaWidth))
   then
     Value := 1;
 
@@ -5363,7 +5372,7 @@ procedure TCustomSynEdit.EnsureCursorPosVisibleEx(ForceToMiddle: Boolean;
   EvenIfVisible: Boolean = False);
 var
   RowCol: TDisplayCoord;
-  WidthToCursor: Integer;
+  WidthToX: Integer;
   TmpMiddle: Integer;
   VisibleX: Integer;
   vCaretRow: Integer;
@@ -5376,16 +5385,11 @@ begin
     VisibleX := RowCol.Column;
 
     // Make sure X is visible
-    WidthToCursor := TextWidth(Copy(Rows[vCaretRow], 1, VisibleX - 1));
-
-    if WidthToCursor < (FLeftChar - 1) * FCharWidth then
-      LeftChar := (WidthToCursor - (FLeftChar - 1) * FCharWidth) div fCharWidth +  1
-    else if WidthToCursor >= FTextAreaWidth + (LeftChar - 1) * FCharWidth then
-      LeftChar := (WidthToCursor - FTextAreaWidth) div FCharWidth + 1
-    else if WidthToCursor >=  ClientWidth - FTextOffset - TextMargin then
-      // can happen with eoWrapWithRightEdge
-      LeftChar := (WidthToCursor - ClientWidth + FTextOffset + TextMargin)
-        div FCharWidth + 2
+    WidthToX := TextWidth(Copy(Rows[vCaretRow], 1, VisibleX - 1));
+    if WidthToX < (FLeftChar - 1) * FCharWidth then
+      LeftChar := (WidthToX - (FLeftChar - 1) * FCharWidth) div fCharWidth +  1
+    else if WidthToX >= FTextAreaWidth + (LeftChar - 1) * FCharWidth then
+      LeftChar := CeilOfIntDiv(WidthToX - FTextAreaWidth,  FCharWidth) + 2
     else
       LeftChar := LeftChar;
 
@@ -6933,6 +6937,7 @@ begin
   begin
     fCharsInWindow := Max(ClientWidth - fGutterWidth - fTextMargin, 0) div fCharWidth;
     fLinesInWindow := ClientHeight div fTextHeight;
+    CalcTextAreaWidth;
     if WordWrap then
     begin
       fWordWrapPlugin.DisplayChanged;
@@ -6949,10 +6954,7 @@ begin
       Invalidate;
     end
     else
-    begin
-      CalcTextAreaWidth;
       UpdateScrollbars;
-    end;
     if not (eoScrollPastEol in Options) then
       LeftChar := LeftChar;
     if not (eoScrollPastEof in Options) then
