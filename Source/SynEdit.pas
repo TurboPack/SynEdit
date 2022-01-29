@@ -339,7 +339,6 @@ type
     FScrollBars: TScrollStyle;
     FSynEditScrollBars: ISynEditScrollBars;
     FTextAreaWidth: Integer;
-    FWrapAreaWidth: Integer;
     fTextHeight: Integer;
     fTextMargin: Integer;
     fTextOffset: Integer;
@@ -546,6 +545,7 @@ type
     procedure SetUseCodeFolding(const Value: Boolean);
     procedure OnCodeFoldingChange(Sender: TObject);
     function GetCollapseMarkRect(Row: Integer; Line: Integer = -1): TRect;
+    function GetWrapAreaWidth: Integer;
 //-- CodeFolding
   protected
     FIgnoreNextChar: Boolean;
@@ -847,7 +847,7 @@ type
     property Text: string read SynGetText write SynSetText;
     property TopLine: Integer read fTopLine write SetTopLine;
     property TextAreaWidth: Integer read FTextAreaWidth;
-    property WrapAreaWidth: Integer read FWrapAreaWidth;
+    property WrapAreaWidth: Integer read GetWrapAreaWidth;
     property WordAtCursor: string read GetWordAtCursor;
     property WordAtMouse: string read GetWordAtMouse;
     property GutterWidth: Integer read FGutterWidth;
@@ -1400,30 +1400,32 @@ begin
   begin
     if sfScrollbarChanged in fStateFlags then
       UpdateScrollbars;
+    //TODO
     // Locks the caret inside the visible area
-    if WordWrap and ([scCaretX,scCaretY] * fStatusChanges <> []) then
-    begin
-      vAuxPos := DisplayXY;
-      // This may happen in the last row of a line or in rows which length is
-      // greater than fCharsInWindow (Tabs and Spaces are allowed beyond
-      // fCharsInWindow while wrapping the lines)
-      if (vAuxPos.Column > fCharsInWindow + 1) and (fCharsInWindow > 0) then
-      begin
-        if fCaretAtEOL then
-          fCaretAtEOL := False
-        else
-        begin
-          if scCaretY in fStatusChanges then
-          begin
-            vAuxPos.Column := fCharsInWindow + 1;
-            fCaretX := DisplayToBufferPos(vAuxPos).Char;
-            Include(fStatusChanges,scCaretX);
-            UpdateLastPosX;
-          end;
-        end;
-        Include(fStateFlags, sfCaretChanged);
-      end;
-    end;
+//    if WordWrap and ([scCaretX,scCaretY] * fStatusChanges <> []) then
+//    begin
+//      vAuxPos := DisplayXY;
+//      // This may happen in the last row of a line or in rows which length is
+//      // greater than fCharsInWindow (Tabs and Spaces are allowed beyond
+//      // fCharsInWindow while wrapping the lines)
+//      if (vAuxPos.Column > fCharsInWindow + 1) and (fCharsInWindow > 0) then
+//      begin
+//        Assert(False);
+//        if fCaretAtEOL then
+//          fCaretAtEOL := False
+//        else
+//        begin
+//          if scCaretY in fStatusChanges then
+//          begin
+//            vAuxPos.Column := fCharsInWindow + 1;
+//            fCaretX := DisplayToBufferPos(vAuxPos).Char;
+//            Include(fStatusChanges,scCaretX);
+//            UpdateLastPosX;
+//          end;
+//        end;
+//        Include(fStateFlags, sfCaretChanged);
+//      end;
+//    end;
     if sfCaretChanged in fStateFlags then
       UpdateCaret;
     if fStatusChanges <> [] then
@@ -3205,22 +3207,17 @@ end;
 function TCustomSynEdit.RowColumnInView(RowCol: TDisplayCoord): Boolean;
 begin
   Result := InRange(RowCol.Row, TopLine, TopLine + LinesInWindow) and
-    InRange(RowColumnToPixels(RowCol).X, FGutterWidth + TextMargin, ClientWidth);
+    InRange(RowColumnToPixels(RowCol).X, FGutterWidth + TextMargin,
+      ClientWidth - TextMargin -FCharWidth);
 end;
 
 procedure TCustomSynEdit.CalcTextAreaWidth;
 begin
   if WordWrap and (eoWrapWithRightEdge in FOptions) and (fRightEdge > 0) then
-  begin
-    FWrapAreaWidth := Max(fRightEdge * CharWidth - TextMargin, 0);
-    FTextAreaWidth := Min(FWrapAreaWidth,
-       Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0));
-  end
+    FTextAreaWidth := Min(WrapAreaWidth,
+       Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0))
   else
-  begin
     FTextAreaWidth := Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0);
-    FWrapAreaWidth := FTextAreaWidth;
-  end;
 end;
 
 function TCustomSynEdit.CaretInView: Boolean;
@@ -3264,15 +3261,17 @@ var
 begin
 	// when wrapping with right edge and right edge is behind the window width
   if WordWrap and not ((eoWrapWithRightEdge in FOptions) and
-    (FWrapAreaWidth > FTextAreaWidth))
+    (WrapAreaWidth > FTextAreaWidth))
   then
     Value := 1;
 
   if eoScrollPastEol in Options then
       MaxVal := MaxInt - fCharsInWindow
   else
+    // + 2 because we want to allow for an extra space at the end
+    // and LeftChar 1 would mean that the char appears right at the edge
     MaxVal := Max(CeilOfIntDiv(Max(TSynEditStringList(Lines).MaxWidth -
-              TextAreaWidth, 0),  FCharWidth), 1);
+              TextAreaWidth, 0),  FCharWidth)  + 2, 1);
   Value := MinMax(Value, 1, MaxVal);
   if Value <> fLeftChar then
   begin
@@ -5387,9 +5386,9 @@ begin
     // Make sure X is visible
     WidthToX := TextWidth(Copy(Rows[vCaretRow], 1, VisibleX - 1));
     if WidthToX < (FLeftChar - 1) * FCharWidth then
-      LeftChar := (WidthToX - (FLeftChar - 1) * FCharWidth) div fCharWidth +  1
+      LeftChar := Max(WidthToX div fCharWidth, 1)
     else if WidthToX >= FTextAreaWidth + (LeftChar - 1) * FCharWidth then
-      LeftChar := CeilOfIntDiv(WidthToX - FTextAreaWidth,  FCharWidth) + 2
+      LeftChar := CeilofIntDiv(WidthToX - FTextAreaWidth, FCharWidth) + 2
     else
       LeftChar := LeftChar;
 
@@ -5555,9 +5554,9 @@ begin
       ecRight, ecSelRight:
         MoveCaretHorz(1, Command = ecSelRight);
       ecPageLeft, ecSelPageLeft:
-        MoveCaretHorz(-fCharsInWindow, Command = ecSelPageLeft);
+        MoveCaretHorz(-(FTextAreaWidth div FCharWidth), Command = ecSelPageLeft);
       ecPageRight, ecSelPageRight:
-        MoveCaretHorz(fCharsInWindow, Command = ecSelPageRight);
+        MoveCaretHorz(FTextAreaWidth div FCharWidth, Command = ecSelPageRight);
       ecLineStart, ecSelLineStart:
         begin
           DoHomeKey(Command = ecSelLineStart);
@@ -6010,8 +6009,9 @@ begin
                 Lines[CaretY - 1] := Temp;
                 CaretX := CaretX + 1;
               end;
-              if CaretX >= LeftChar + fCharsInWindow then
-                LeftChar := LeftChar + Min(25, fCharsInWindow - 1);
+              // TODO: consider dropping
+              if not CaretInView then
+                LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
             finally
               if bChangeScroll then Exclude(fOptions, eoScrollPastEol);
             end;
@@ -6160,8 +6160,9 @@ begin
               Insert(s, Temp, CaretX);
               CaretX := (CaretX + Len);
               Lines[CaretY - 1] := Temp;
-              if CaretX >= LeftChar + fCharsInWindow then
-                LeftChar := LeftChar + min(25, fCharsInWindow - 1);
+              // TODO: consider dropping
+              if not CaretInView then
+                LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
             finally
               if bChangeScroll then Exclude(fOptions, eoScrollPastEol);
             end;
@@ -7030,23 +7031,24 @@ begin
   end;
   // set caret and block begin / end
   MoveCaretAndSelection(fBlockBegin, ptDst, SelectionCommand);
+  // TODO: Decide what to do with this
   // if caret is beyond fCharsInWindow move to next row (this means there are
   // spaces/tabs at the end of the row)
-  if WordWrap and (DX > 0) and (CaretX < Length(LineText)) then
-  begin
-    vCaretRowCol := DisplayXY;
-    if (vCaretRowCol.Column = 1) and (LineToRow(CaretY) <> vCaretRowCol.Row) then
-    begin
-      fCaretAtEOL := True;
-      UpdateLastPosX;
-    end
-    else if vCaretRowCol.Column > fCharsInWindow + 1 then
-    begin
-      Inc(vCaretRowCol.Row);
-      vCaretRowCol.Column := 1;
-      InternalCaretXY := DisplayToBufferPos(vCaretRowCol);
-    end;
-  end;
+//  if WordWrap and (DX > 0) and (CaretX < Length(LineText)) then
+//  begin
+//    vCaretRowCol := DisplayXY;
+//    if (vCaretRowCol.Column = 1) and (LineToRow(CaretY) <> vCaretRowCol.Row) then
+//    begin
+//      fCaretAtEOL := True;
+//      UpdateLastPosX;
+//    end
+//    else if vCaretRowCol.Column > fCharsInWindow + 1 then
+//    begin
+//      Inc(vCaretRowCol.Row);
+//      vCaretRowCol.Column := 1;
+//      InternalCaretXY := DisplayToBufferPos(vCaretRowCol);
+//    end;
+//  end;
 end;
 
 procedure TCustomSynEdit.MoveCaretVert(DY: Integer; SelectionCommand: Boolean);
@@ -7527,7 +7529,7 @@ begin
       vNewCaret.Column := BufferToDisplayPos(BufferCoord(vNewX, CaretY)).Column
     else
       vNewCaret.Column := fWordWrapPlugin.GetRowLength(vNewCaret.Row) + 1;
-    vNewCaret.Column := Min(fCharsInWindow + 1, vNewCaret.Column);
+    //TODO vNewCaret.Column := Min(fCharsInWindow + 1, vNewCaret.Column);
     MoveCaretAndSelection(CaretXY, DisplayToBufferPos(vNewCaret), Selection);
     // Updates fCaretAtEOL flag.
     SetInternalDisplayXY(vNewCaret);
@@ -8955,6 +8957,14 @@ begin
   Result := fWordWrapPlugin <> nil;
 end;
 
+function TCustomSynEdit.GetWrapAreaWidth: Integer;
+begin
+  if (eoWrapWithRightEdge in FOptions) and (fRightEdge > 0) then
+    Result := Max(fRightEdge * CharWidth - TextMargin, 0)
+  else
+    Result := Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0);;
+end;
+
 procedure TCustomSynEdit.SetWordWrap(const Value: Boolean);
 var
   vOldTopLine: Integer;
@@ -8962,7 +8972,6 @@ var
 begin
   if WordWrap <> Value then
   begin
-    CalcTextAreaWidth;
     Invalidate; // better Invalidate before changing LeftChar and TopLine
     vShowCaret := CaretInView;
     vOldTopLine := RowToLine(TopLine);
@@ -8974,6 +8983,7 @@ begin
     end
     else
       fWordWrapPlugin := nil;
+    CalcTextAreaWidth;
     TopLine := LineToRow(vOldTopLine);
     UpdateScrollBars;
 

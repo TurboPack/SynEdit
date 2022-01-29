@@ -218,9 +218,6 @@ begin
     begin
       // This may have to be adjusted.
       nMaxPage := FOwner.TextAreaWidth;
-//      nMaxPage := Min(
-//        FOwner.TextAreaWidth,
-//        Max(FOwner.ClientWidth - FOwner.GutterWidth - 2 * FOwner.TextMargin, 0));
       FNewHorzSBState.nMin := 0;
       FNewHorzSBState.nMax := FOwner.WrapAreaWidth + FOwner.CharWidth;;
       FNewHorzSBState.nPage := nMaxPage;
