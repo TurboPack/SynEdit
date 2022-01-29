@@ -7402,7 +7402,7 @@ end;
 
 procedure TCustomSynEdit.DoHomeKey(Selection: Boolean);
 var
-  FirstNonblank: Integer;
+  FirstNonBlank: Integer;
   S: string;
   NewPos: TDisplayCoord;
   MaxX: Integer;
@@ -7412,12 +7412,12 @@ begin
   if eoEnhanceHomeKey in fOptions then
   begin
     S := Rows[NewPos.Row];
-    FirstNonblank := 1;
+    FirstNonBlank := 1;
     MaxX := Length(S);
-    while (FirstNonblank <= MaxX) and IsWhiteChar(S[FirstNonblank]) do
-      Inc(FirstNonblank);
-    if NewPos.Column > FirstNonblank then
-      NewPos.Column := FirstNonblank
+    while (FirstNonBlank <= MaxX) and IsWhiteChar(S[FirstNonBlank]) do
+      Inc(FirstNonBlank);
+    if NewPos.Column > FirstNonBlank then
+      NewPos.Column := FirstNonBlank
     else
       NewPos.Column := 1;
   end
@@ -7428,83 +7428,30 @@ begin
 end;
 
 procedure TCustomSynEdit.DoEndKey(Selection: Boolean);
-
-  function CaretInLastRow: Boolean;
-  var
-    vLastRow: Integer;
-  begin
-    if not WordWrap then
-      Result := True
-    else
-    begin
-      vLastRow := LineToRow(CaretY + 1) - 1;
-      // This check allows good behaviour with empty rows (this can be useful in a diff app ;-)
-      while (vLastRow > 1)
-        and (fWordWrapPlugin.GetRowLength(vLastRow) = 0)
-        and (RowToLine(vLastRow) = CaretY) do
-      begin
-        Dec(vLastRow);
-      end;
-      Result := DisplayY = vLastRow;
-    end;
-  end;
-
-  function FirstCharInRow: Integer;
-  var
-    vPos: TDisplayCoord;
-  begin
-    vPos.Row := DisplayY;
-    vPos.Column := 1;
-    Result := DisplayToBufferPos(vPos).Char;
-  end;
-
 var
-  vText: string;
-  vLastNonBlank: Integer;
-  vNewX: Integer;
-  vNewCaret: TDisplayCoord;
-  vMinX: Integer;
-  vEnhance: Boolean;
+  S: string;
+  LastNonBlank: Integer;
+  NewPos: TDisplayCoord;
 begin
-  if (eoEnhanceEndKey in fOptions) and CaretInLastRow then
+  NewPos := DisplayXY;
+  if eoEnhanceEndKey in fOptions then
   begin
-    vEnhance := True;
-    vText := LineText;
-    vLastNonBlank := Length(vText);
-    if WordWrap then
-      vMinX := FirstCharInRow() - 1
-    else
-      vMinX := 0;
-    while (vLastNonBlank > vMinX) and CharInSet(vText[vLastNonBlank], [#32, #9]) do
-      Dec(vLastNonBlank);
+    S := Rows[NewPos.Row];
+    LastNonBlank := Length(S);
+    while (LastNonBlank > 0) and IsWhiteChar(S[LastNonBlank]) do
+      Dec(LastNonBlank);
 
-    vNewX := CaretX - 1;
-    if vNewX = vLastNonBlank then
-      vNewX := Length(LineText) + 1
+    if NewPos.Column = LastNonBlank + 1 then
+      NewPos.Column := Length(S) + 1
     else
-      vNewX := vLastNonBlank + 1;
+      NewPos.Column := LastNonBlank + 1;
   end
   else
-  begin
-    vNewX := Length(LineText) + 1;
-    vEnhance := False;
-  end;
+    NewPos.Column := Length(S) + 1;
+  MoveCaretAndSelection(CaretXY, DisplayToBufferPos(NewPos), Selection);
 
   if WordWrap then
-  begin
-    vNewCaret.Row := DisplayY;
-    if vEnhance then
-      vNewCaret.Column := BufferToDisplayPos(BufferCoord(vNewX, CaretY)).Column
-    else
-      vNewCaret.Column := fWordWrapPlugin.GetRowLength(vNewCaret.Row) + 1;
-    //TODO vNewCaret.Column := Min(fCharsInWindow + 1, vNewCaret.Column);
-    MoveCaretAndSelection(CaretXY, DisplayToBufferPos(vNewCaret), Selection);
-    // Updates fCaretAtEOL flag.
-    SetInternalDisplayXY(vNewCaret);
-  end
-  else
-    MoveCaretAndSelection(CaretXY,
-      BufferCoord(vNewX, CaretY), Selection);
+    SetInternalDisplayXY(NewPos); // Updates fCaretAtEOL flag
 end;
 
 procedure TCustomSynEdit.CreateWnd;
