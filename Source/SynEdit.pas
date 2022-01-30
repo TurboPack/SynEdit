@@ -2185,7 +2185,7 @@ begin
     LeftChar := LeftChar + fScrollDeltaX;
     X := LeftChar;
     if fScrollDeltaX > 0 then  // scrolling right?
-      Inc(X, fCharsInWindow);
+      Inc(X, FTextAreaWidth div FCharWidth);
     C.Column := X;
   end;
   if fScrollDeltaY <> 0 then
@@ -3274,12 +3274,17 @@ begin
 
   if eoScrollPastEol in Options then
       MaxVal := MaxInt - fCharsInWindow
+  else if WordWrap and (eoWrapWithRightEdge in FOptions) and
+    (WrapAreaWidth > FTextAreaWidth)
+  then
+    MaxVal := CeilOfIntDiv(WrapAreaWidth - FTextAreaWidth, FCharWidth) + 2
   else
     // + 2 because we want to allow for an extra space at the end
     // and LeftChar 1 would mean that the char appears right at the edge
     MaxVal := Max(CeilOfIntDiv(Max(TSynEditStringList(Lines).MaxWidth -
-              TextAreaWidth, 0),  FCharWidth)  + 2, 1);
+              TextAreaWidth, 0), FCharWidth) + 2, 1);
   Value := MinMax(Value, 1, MaxVal);
+
   if Value <> fLeftChar then
   begin
     iDelta := fLeftChar - Value;
@@ -3893,8 +3898,6 @@ end;
 
 function TCustomSynEdit.DoMouseWheel(Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint): Boolean;
-const
-  WHEEL_DIVISOR = 120; // Mouse Wheel standard
 var
   iWheelClicks: Integer;
   iLinesToScroll: Integer;
@@ -3907,8 +3910,8 @@ begin
   else
     iLinesToScroll := 3;
   Inc(fMouseWheelAccumulator, WheelDelta);
-  iWheelClicks := fMouseWheelAccumulator div WHEEL_DIVISOR;
-  fMouseWheelAccumulator := fMouseWheelAccumulator mod WHEEL_DIVISOR;
+  iWheelClicks := fMouseWheelAccumulator div WHEEL_DELTA;
+  fMouseWheelAccumulator := fMouseWheelAccumulator mod WHEEL_DELTA;
   TopLine := TopLine - iWheelClicks * iLinesToScroll;
   Update;
   if Assigned(OnScroll) then OnScroll(Self,sbVertical);
@@ -7029,7 +7032,7 @@ end;
 procedure TCustomSynEdit.SetCaretAndSelection(const ptCaret, ptBefore,
   ptAfter: TBufferCoord);
 { Sets the caret and the selection in one step
-  The caret may be different that BlockBegin/End }
+  The caret may be different than BlockBegin/End }
 var
   vOldMode: TSynSelectionMode;
 begin
@@ -8854,7 +8857,7 @@ end;
 procedure TCustomSynEdit.SetInternalDisplayXY(const aPos: TDisplayCoord);
 begin
   IncPaintLock;
-  InternalCaretXY := DisplayToBufferPos(aPos);
+  SetCaretXYEx(False, DisplayToBufferPos(aPos));
 
   // fCaretEOL is set if we are at the end of wrapped row
   fCaretAtEOL := WordWrap and (aPos.Row <= fWordWrapPlugin.RowCount) and

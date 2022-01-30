@@ -1,4 +1,4 @@
-{ -------------------------------------------------------------------------------
+{ ------------------------------------------------------------------------------
   The contents of this file are subject to the Mozilla Public License
   Version 1.1 (the "License"); you may not use this file except in compliance
   with the License. You may obtain a copy of the License at
@@ -20,9 +20,7 @@
   replace them with the notice and other provisions required by the GPL.
   If you do not delete the provisions above, a recipient may use your version
   of this file under either the MPL or the GPL.
-
-  Known Issues:
-  ------------------------------------------------------------------------------- }
+  ---------------------------------------------------------------------------- }
 
 unit SynEditScrollBars;
 
@@ -116,7 +114,7 @@ end;
 
 function TSynEditScrollBars.GetHorzPageInChars: Integer;
 begin
-  Result := CeilOfIntDiv(FOwner.TextAreaWidth, FOwner.CharWidth);
+  Result := FOwner.TextAreaWidth div FOwner.CharWidth;
 end;
 
 function TSynEditScrollBars.GetHorzScrollInfo: TScrollInfo;
@@ -234,21 +232,21 @@ begin
   begin
     if FOwner.WordWrap and (eoWrapWithRightEdge in FOwner.Options) then
     begin
-      FNewHorzSBState.nMin := 0;
-      FNewHorzSBState.nMax := FOwner.WrapAreaWidth + FOwner.CharWidth;
-      FNewHorzSBState.nPage := Max(1, FOwner.TextAreaWidth - FOwner.CharWidth);
-      FNewHorzSBState.nPos := ((FOwner.LeftChar -1) * FOwner.CharWidth);
+      MaxScroll := (FOwner.WrapAreaWidth div FOwner.CharWidth + 1) * FOwner.CharWidth;
+      PageSize := (FOwner.TextAreaWidth div FOwner.CharWidth) * FOwner.CharWidth;
     end
     else
     begin
       // Make sure our values are multiples of CharWidth.
-      MaxScroll := CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth) * FOwner.CharWidth + FOwner.CharWidth;
-      PageSize := Max(1, GetHorzPageInChars * FOwner.CharWidth - FOwner.CharWidth);
-      FNewHorzSBState.nMin := 0;
-      FNewHorzSBState.nMax := MaxScroll;
-      FNewHorzSBState.nPage := PageSize;
-      FNewHorzSBState.nPos := ((FOwner.LeftChar - 1) * FOwner.CharWidth);
+      MaxScroll :=
+        (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
+        FOwner.CharWidth)  + 1) * FOwner.CharWidth;
+      PageSize := GetHorzPageInChars * FOwner.CharWidth;
     end;
+    FNewHorzSBState.nMin := 0;
+    FNewHorzSBState.nMax := MaxScroll - 1;  // Windows assumes size = nMax - nMin + 1
+    FNewHorzSBState.nPage := Max(FOwner.CharWidth, PageSize);
+    FNewHorzSBState.nPos := (FOwner.LeftChar - 1) * FOwner.CharWidth;
   end;
 
   // Now do Vert
@@ -315,7 +313,8 @@ begin
     begin
       AIsScrolling := True;
       ScrollInfo := GetHorzScrollInfo;
-      FOwner.LeftChar := CeilOfIntDiv(ScrollInfo.nTrackPos, FOwner.CharWidth);
+      FOwner.LeftChar := ScrollInfo.nTrackPos div FOwner.CharWidth + 1; // +1 because 0 corresponds to LeftChar = 1
+      OutputDebugString(PChar(ScrollInfo.nTrackPos.ToString));
     end;
     SB_ENDSCROLL: AIsScrolling := False;
   end;
@@ -380,7 +379,7 @@ begin
             pt := FOwner.ClientToScreen(Point(FOwner.ClientWidth - rc.Right - 4,
               ((rc.Bottom - rc.Top) shr 1) +                                    //half the size of the hint window
               Round((ScrollInfo.nTrackPos / ScrollInfo.nMax) *                  //The percentage of the page that has been scrolled
-                    (FOwner.ClientHeight - (ButtonH * 2)))                             //The height minus the arrow buttons
+                    (FOwner.ClientHeight - (ButtonH * 2)))                      //The height minus the arrow buttons
                    + ButtonH));                                                 //The height of the top button
           end
           else
