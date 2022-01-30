@@ -7336,9 +7336,9 @@ var
   NewPos: TDisplayCoord;
 begin
   NewPos := DisplayXY;
+  S := Rows[NewPos.Row];
   if eoEnhanceEndKey in fOptions then
   begin
-    S := Rows[NewPos.Row];
     LastNonBlank := Length(S);
     while (LastNonBlank > 0) and IsWhiteChar(S[LastNonBlank]) do
       Dec(LastNonBlank);

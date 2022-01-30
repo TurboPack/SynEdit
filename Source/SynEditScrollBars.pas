@@ -71,6 +71,7 @@ type
     FPrevVertSBState: TSynScrollBarState;  // Last applied vertical scrollbar state
     FNewHorzSBState: TSynScrollBarState;   // New Horizontal ScrollBar state
     FNewVertSBState: TSynScrollBarState;   // New Vertical ScrollBar state
+    function GetHorzPageInChars: Integer;
     function GetRealScrollInfo(AKind: TScrollBarKind): TScrollInfo;
     procedure SetScrollBarFromState(const AState: TSynScrollBarState);
     procedure ApplyButtonState(const AState: TSynScrollBarState);
@@ -111,6 +112,11 @@ begin
     GetScrollInfo(FOwner.Handle, SB_HORZ, Result)
   else
     GetScrollInfo(FOwner.Handle, SB_VERT, Result);
+end;
+
+function TSynEditScrollBars.GetHorzPageInChars: Integer;
+begin
+  Result := CeilOfIntDiv(FOwner.TextAreaWidth, FOwner.CharWidth);
 end;
 
 function TSynEditScrollBars.GetHorzScrollInfo: TScrollInfo;
@@ -175,13 +181,13 @@ begin
     BarWSCode := WS_VSCROLL;
   end;
   ScrollbarVisible := (WindowStyle and BarWSCode <> 0);
+  FillChar(ScrollInfo, SizeOf(ScrollInfo), 0);
+  ScrollInfo.cbSize := SizeOf(ScrollInfo);
+  ScrollInfo.fMask := SIF_ALL;
   if AState.Active then
   begin
-    FillChar(ScrollInfo, SizeOf(ScrollInfo), 0);
-    ScrollInfo.cbSize := SizeOf(ScrollInfo);
-    if HideEnabled then
-      ScrollInfo.fMask := SIF_ALL
-    else
+
+    if not HideEnabled then
       ScrollInfo.fMask := SIF_ALL or SIF_DISABLENOSCROLL;
 
     ScrollInfo.nMin := AState.nMin;
@@ -206,7 +212,11 @@ begin
       ApplyButtonState(AState);
   end
   else
+  begin
+    // Clear the scroll info before hiding
+    SetScrollInfo(FOwner.Handle, BarKind, ScrollInfo, True);
     ShowScrollBar(FOwner.Handle, BarKind, False);
+  end;
 end;
 
 procedure TSynEditScrollBars.UpdateScrollBarsState;
@@ -233,7 +243,7 @@ begin
     begin
       // Make sure our values are multiples of CharWidth.
       MaxScroll := CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth) * FOwner.CharWidth + FOwner.CharWidth;
-      PageSize := Max(1, CeilOfIntDiv(FOwner.TextAreaWidth, FOwner.CharWidth) * FOwner.CharWidth - FOwner.CharWidth);
+      PageSize := Max(1, GetHorzPageInChars * FOwner.CharWidth - FOwner.CharWidth);
       FNewHorzSBState.nMin := 0;
       FNewHorzSBState.nMax := MaxScroll;
       FNewHorzSBState.nPage := PageSize;
@@ -296,9 +306,9 @@ begin
     SB_LINELEFT: FOwner.LeftChar := FOwner.LeftChar - 1;
       // Scrolls one page of chars left / right
     SB_PAGERIGHT: FOwner.LeftChar := FOwner.LeftChar
-      + (FOwner.CharsInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+      + (GetHorzPageInChars - Ord(eoScrollByOneLess in FOwner.Options));
     SB_PAGELEFT: FOwner.LeftChar := FOwner.LeftChar
-      - (FOwner.CharsInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+      - (GetHorzPageInChars - Ord(eoScrollByOneLess in FOwner.Options));
       // Scrolls to the current scroll bar position
     SB_THUMBPOSITION,
     SB_THUMBTRACK:
