@@ -475,7 +475,7 @@ type
     function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
     procedure LinesChanging(Sender: TObject);
     procedure MoveCaretAndSelection(const ptBefore, ptAfter: TBufferCoord;
-      SelectionCommand: Boolean);
+        SelectionCmd: Boolean);
     procedure MoveCaretHorz(DX: Integer; SelectionCommand: Boolean);
     procedure MoveCaretVert(DY: Integer; SelectionCommand: Boolean);
     procedure PluginsAfterPaint(ACanvas: TCanvas; const AClip: TRect;
@@ -1462,13 +1462,12 @@ begin
   fWordWrapGlyph.Free;
   fFontDummy.Free;
   fOrigLines.Free;
-//++ CodeFolding
   fCodeFolding.Free;
   fAllFoldRanges.Free;
-//-- CodeFolding
 end;
 
 function TCustomSynEdit.GetBlockBegin: TBufferCoord;
+{ Normalizes BlockBegin/End }
 begin
   if (fBlockEnd.Line < fBlockBegin.Line)
     or ((fBlockEnd.Line = fBlockBegin.Line) and (fBlockEnd.Char < fBlockBegin.Char))
@@ -1479,6 +1478,7 @@ begin
 end;
 
 function TCustomSynEdit.GetBlockEnd: TBufferCoord;
+{ Normalizes BlockBegin/End }
 begin
   if (fBlockEnd.Line < fBlockBegin.Line)
     or ((fBlockEnd.Line = fBlockBegin.Line) and (fBlockEnd.Char < fBlockBegin.Char))
@@ -1492,18 +1492,22 @@ procedure TCustomSynEdit.SynFontChanged(Sender: TObject);
 begin
   Font.OnChange := nil;  // avoid recursion
   Font.Quality := FontQuality;
+
   // revert to default font if not monospaced or invalid
   if not IsFontMonospacedAndValid(Font) then
     Font.Name := DefaultFontName;
   Font.OnChange := SynFontChanged;
+
   // Create DirectWrite text format
   FTextFormat.Create(Font, fTabWidth, 0, fExtraLineSpacing);
   fTextHeight := FTextFormat.LineHeight;
   fCharWidth := FTextFormat.CharWidth;
+
   // We need to recalculate line widths
   TSynEditStringList(fLines).FontChanged;
   if fGutter.ShowLineNumbers then
     GutterChanged(Self);
+
   // Invalidate and handle the changes
   SizeOrFontChanged(True);
 end;
@@ -1974,7 +1978,7 @@ var
 begin
   DoLinesChanged;
 
-//++ CodeFolding
+  // CodeFolding
   if (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
   begin
     if Assigned(fHighlighter) and (fHighlighter is TSynCustomCodeFoldingHighlighter) then
@@ -1983,7 +1987,6 @@ begin
     InvalidateGutter;
     Include(fStateFlags, sfScrollbarChanged);
   end;
-//-- CodeFolding
 
   Exclude(fStateFlags, sfLinesChanging);
   if HandleAllocated then
@@ -2225,12 +2228,11 @@ end;
 procedure TCustomSynEdit.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 Var
-//++ Code Folding
+  // CodeFolding
   ptLineCol: TBufferCoord;
   ptRowCol: TDisplayCoord;
   Index: Integer;
   Rect: TRect;
-//-- Code Folding
 begin
   inherited MouseUp(Button, Shift, X, Y);
   fKbdHandler.ExecuteMouseUp(Self, Button, Shift, X, Y);
@@ -2246,7 +2248,7 @@ begin
   end;
   Exclude(fStateFlags, sfPossibleGutterClick);
   Exclude(fStateFlags, sfGutterDragging);
-//++ Code Folding
+  // CodeFolding
   ptRowCol := PixelsToRowColumn(X, Y);
   ptLineCol := DisplayToBufferPos(ptRowCol);
 
@@ -2311,6 +2313,7 @@ begin
   nL1 := Max(TopLine + rcClip.Top div fTextHeight, TopLine);
   nL2 := MinMax(TopLine + (rcClip.Bottom + fTextHeight - 1) div fTextHeight,
     1, DisplayLineCount);
+
   // Now paint everything while the caret is hidden.
   HideCaret;
   try
@@ -2321,6 +2324,7 @@ begin
       rcDraw.Right := fGutterWidth;
       PaintGutter(rcDraw, nL1, nL2);
     end;
+
     // Then paint the text area if it was (partly) invalidated.
     if (rcClip.Right > fGutterWidth) then
     begin
@@ -2329,6 +2333,7 @@ begin
       PaintTextLines(rcDraw, nL1, nL2);
     end;
     PluginsAfterPaint(Canvas, rcClip, nL1, nL2);
+
     // If there is a custom paint handler call it.
     DoOnPaint;
     DoOnPaintTransient(ttAfter);
@@ -2389,12 +2394,14 @@ begin
     if (L > AClip.Right) or (L + W < AClip.Left) then Continue;
 
     rcBand := Rect(L, AClip.Top, L + W, AClip.Bottom);
+
     // Paint Bands with Editor Background
     if Band.Background = gbbEditor then
     begin
       Canvas.Brush.Color := EdBkgrColor;
       Canvas.FillRect(rcBand);
     end;
+
     //And now paint the bands
     SaveIndex := SaveDC(Canvas.Handle);
     try
@@ -3085,8 +3092,8 @@ begin
 end;
 
 procedure TCustomSynEdit.SetCaretXY(const Value: TBufferCoord);
-//there are two setCaretXY methods.  One Internal, one External.  The published
-//property CaretXY (re)sets the block as well
+{ There are two setCaretXY methods.  One Internal, one External.
+  Property CaretXY (re)sets the block as well }
 begin
   IncPaintLock;
   try
@@ -3103,6 +3110,7 @@ begin
 end;
 
 procedure TCustomSynEdit.InternalSetCaretXY(const Value: TBufferCoord);
+{ Unlike SetCaretXY it does not affect BlockBegin/End }
 begin
   SetCaretXYEx(True, Value);
 end;
@@ -6990,19 +6998,23 @@ begin
     fCaretAtEOL := (vEOLTestPos.Column = 1) and (vEOLTestPos.Row <> ptDst.Row);
   end;
   DecPaintLock;
+
   // Restore FLastPosX after moving caret, since UpdateLastPosX, called by
   // SetCaretXYEx, changes them. This is the one case where we don't want that.
   FLastPosX := SaveLastPosX;
 end;
 
 procedure TCustomSynEdit.MoveCaretAndSelection(const ptBefore, ptAfter: TBufferCoord;
-  SelectionCommand: Boolean);
+  SelectionCmd: Boolean);
+{ Moves the cursor to ptAfter (new cursor)
+  If SelectionCmd is True sets selection from the old curser to the new cursor
+  If SelectionCmd is False it clears the selection }
 begin
   if (eoGroupUndo in FOptions) and fUndoRedo.CanUndo then
     fUndoRedo.AddGroupBreak;
 
   IncPaintLock;
-  if SelectionCommand then
+  if SelectionCmd then
   begin
     if not SelAvail then
       SetBlockBegin(ptBefore);
@@ -7016,6 +7028,8 @@ end;
 
 procedure TCustomSynEdit.SetCaretAndSelection(const ptCaret, ptBefore,
   ptAfter: TBufferCoord);
+{ Sets the caret and the selection in one step
+  The caret may be different that BlockBegin/End }
 var
   vOldMode: TSynSelectionMode;
 begin
@@ -8841,9 +8855,12 @@ procedure TCustomSynEdit.SetInternalDisplayXY(const aPos: TDisplayCoord);
 begin
   IncPaintLock;
   InternalCaretXY := DisplayToBufferPos(aPos);
+
+  // fCaretEOL is set if we are at the end of wrapped row
   fCaretAtEOL := WordWrap and (aPos.Row <= fWordWrapPlugin.RowCount) and
     (aPos.Column > fWordWrapPlugin.GetRowLength(aPos.Row)) and
     (DisplayY <> aPos.Row);
+
   EnsureCursorPosVisible;
   DecPaintLock;
   UpdateLastPosX;
