@@ -3270,20 +3270,22 @@ begin
   if WordWrap and not ((eoWrapWithRightEdge in FOptions) and
     (WrapAreaWidth > FTextAreaWidth))
   then
-    Value := 1;
-
-  if eoScrollPastEol in Options then
-      MaxVal := MaxInt - fCharsInWindow
-  else if WordWrap and (eoWrapWithRightEdge in FOptions) and
-    (WrapAreaWidth > FTextAreaWidth)
-  then
-    MaxVal := CeilOfIntDiv(WrapAreaWidth - FTextAreaWidth, FCharWidth) + 2
+    Value := 1
   else
-    // + 2 because we want to allow for an extra space at the end
-    // and LeftChar 1 would mean that the char appears right at the edge
-    MaxVal := Max(CeilOfIntDiv(Max(TSynEditStringList(Lines).MaxWidth -
-              TextAreaWidth, 0), FCharWidth) + 2, 1);
-  Value := MinMax(Value, 1, MaxVal);
+  begin
+    if eoScrollPastEol in Options then
+        MaxVal := MaxInt
+    else if WordWrap and (eoWrapWithRightEdge in FOptions) and
+      (WrapAreaWidth > FTextAreaWidth - FCharWidth)
+    then
+      MaxVal := CeilOfIntDiv(WrapAreaWidth - FTextAreaWidth, FCharWidth) + 2
+    else
+      // + 2 because we want to allow for an extra space at the end
+      // and LeftChar 1 would mean that the char appears right at the edge
+      MaxVal := Max(CeilOfIntDiv(Max(TSynEditStringList(Lines).MaxWidth -
+                TextAreaWidth, 0), FCharWidth) + 2, 1);
+    Value := MinMax(Value, 1, MaxVal);
+  end;
 
   if Value <> fLeftChar then
   begin
