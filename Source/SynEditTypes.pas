@@ -126,6 +126,8 @@ type
     function UpdateScrollBars: Boolean;
     procedure WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
     procedure WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
+      MousePos: TPoint);
   end;
 
 { ************************* For Word Wrap ********************************}
