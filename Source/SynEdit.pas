@@ -70,9 +70,6 @@ uses
   SynEditCodeFolding;
 
 const
-   // maximum scroll range
-  MAX_SCROLL = 32767;
-
   // Max number of book/gutter marks returned from GetEditMarksForLine - that
   // really should be enough.
   MAX_MARKS = 16;
@@ -1110,7 +1107,7 @@ var
   IsTrailing, IsInside: LongBool;
 begin
   if S = '' then
-    Result := Max(ax div fCharWidth, 1)
+    Result := Max((ax div fCharWidth) + 1, 1)
   else
   begin
     Layout.Create(FTextFormat, PChar(S), S.Length, MaxInt, fTextHeight);
@@ -1128,10 +1125,7 @@ var
 begin
   Result.Row := Max(1, TopLine + (aY div fTextHeight));
   S := Rows[Result.Row];
-  if S = '' then
-    Result.Column := Max(1, (aX - fTextOffset) div fCharWidth)
-  else
-    Result.Column := PixelsToColumn(S, ax - fTextOffset);
+  Result.Column := PixelsToColumn(S, ax - fTextOffset);
 end;
 
 function TCustomSynEdit.RowColumnToPixels(const RowCol: TDisplayCoord): TPoint;
@@ -6857,7 +6851,7 @@ end;
 procedure TCustomSynEdit.MoveCaretHorz(DX: Integer; SelectionCommand: Boolean);
 var
   ptO, ptDst: TBufferCoord;
-  s: string;
+  SLine: string;
   nLineLen: Integer;
   bChangeY: Boolean;
   vCaretRowCol: TDisplayCoord;
@@ -6907,8 +6901,8 @@ begin
   end;
   ptO := CaretXY;
   ptDst := ptO;
-  s := LineText;
-  nLineLen := Length(s);
+  SLine := LineText;
+  nLineLen := SLine.Length;
   // only moving or selecting one char can change the line
   bChangeY := not (eoScrollPastEol in fOptions);
   if bChangeY and (DX = -1) and (ptO.Char = 1) and (ptO.Line > 1) then
@@ -6935,7 +6929,7 @@ begin
   // TODO: Decide what to do with this
   // if caret is beyond fCharsInWindow move to next row (this means there are
   // spaces/tabs at the end of the row)
-//  if WordWrap and (DX > 0) and (CaretX < Length(LineText)) then
+//  if WordWrap and (DX > 0) and (CaretX < SLine.Length) then
 //  begin
 //    vCaretRowCol := DisplayXY;
 //    if (vCaretRowCol.Column = 1) and (LineToRow(CaretY) <> vCaretRowCol.Row) then
@@ -6967,10 +6961,8 @@ begin
     if RowToLine(ptDst.Row) > Lines.Count then
       ptDst.Row := Max(1, DisplayLineCount);
   end
-  else begin
-    if ptDst.Row < 1 then
-      ptDst.Row := 1;
-  end;
+  else
+    ptDst.Row := Max(ptDst.Row, 1);
 
   if (ptO.Row <> ptDst.Row) then
   begin
@@ -6985,6 +6977,7 @@ begin
   MoveCaretAndSelection(fBlockBegin, vDstLineChar, SelectionCommand);
   if WordWrap then
   begin
+    // Todo
     vEOLTestPos := BufferToDisplayPos(vDstLineChar);
     fCaretAtEOL := (vEOLTestPos.Column = 1) and (vEOLTestPos.Row <> ptDst.Row);
   end;
