@@ -3861,7 +3861,7 @@ begin
     // The last space of a wrapped line may be out of view
     vCaretDisplay := DisplayXY;
     if WordWrap and not (eoWrapWithRightEdge in FOptions) and
-      not RowColumnInView(vCaretDisplay)
+      fCaretAtEOL and not RowColumnInView(vCaretDisplay)
     then
       Dec(vCaretDisplay.Column);
     vCaretPix := RowColumnToPixels(vCaretDisplay);
