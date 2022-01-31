@@ -294,6 +294,7 @@ type
     procedure WMGetText(var Msg: TWMGetText); message WM_GETTEXT;
     procedure WMGetTextLength(var Msg: TWMGetTextLength); message WM_GETTEXTLENGTH;
     procedure WMHScroll(var Msg: TWMScroll); message WM_HSCROLL;
+    procedure WMMouseHWheel(var Message: TWMMouseWheel); message WM_MOUSEHWHEEL;
     procedure WMPaste(var Message: TMessage); message WM_PASTE;
     procedure WMSetText(var Msg: TWMSetText); message WM_SETTEXT;
     procedure WMImeChar(var Msg: TMessage); message WM_IME_CHAR;
@@ -4073,6 +4074,22 @@ begin
   Winapi.Windows.DestroyCaret;
   if FHideSelection and SelAvail then
     InvalidateSelection;
+end;
+
+procedure TCustomSynEdit.WMMouseHWheel(var Message: TWMMouseWheel);
+Var
+  Shift: TShiftState;
+  WheelDelta: SmallInt;
+  MousePos: TSmallPoint;
+begin
+  Shift := KeysToShiftState(Message.Keys);
+  Include(Shift, System.Classes.ssHorizontal);
+  WheelDelta := - Message.WheelDelta; // HWheel directions are reversed from Wheel
+  MousePos := Message.Pos;
+  // Choosing not to call inherited DoMouseWheel as this would most likely
+  // cause issues with handlers that don't support ssHorizontal
+  FSynEditScrollBars.DoMouseWheel(Shift, WheelDelta, MousePos);
+  Message.Result := 1;
 end;
 
 procedure TCustomSynEdit.WMPaste(var Message: TMessage);
