@@ -42,13 +42,15 @@ implementation
 uses
   Winapi.Windows,
   Winapi.Messages,
+  System.Classes,
   System.Types,
   System.Math,
   Vcl.Forms,
   SynEdit,
   SynEditTextBuffer,
   SynEditMiscProcs,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditKeyConst;
 
 type
   TSynScrollBarState = record
@@ -65,23 +67,25 @@ type
   TSynEditScrollBars = class(TInterfacedObject, ISynEditScrollBars)
   private
     FOwner: TCustomSynEdit;
+    FMouseWheelVertAccumulator: Integer;
+    FMouseWheelHorzAccumulator: Integer;
     FPrevHorzSBState: TSynScrollBarState;  // Last applied horizontal scrollbar state
     FPrevVertSBState: TSynScrollBarState;  // Last applied vertical scrollbar state
     FNewHorzSBState: TSynScrollBarState;   // New Horizontal ScrollBar state
     FNewVertSBState: TSynScrollBarState;   // New Vertical ScrollBar state
     function GetHorzPageInChars: Integer;
-    function GetRealScrollInfo(AKind: TScrollBarKind): TScrollInfo;
+    function GetBarScrollInfo(AKind: TScrollBarKind): TScrollInfo;
     procedure SetScrollBarFromState(const AState: TSynScrollBarState);
     procedure ApplyButtonState(const AState: TSynScrollBarState);
     procedure UpdateScrollBarsState;
   public
     constructor Create(AOwner: TCustomSynEdit);
     destructor Destroy; override;
-    function GetVertScrollInfo: TScrollInfo;
-    function GetHorzScrollInfo: TScrollInfo;
     function UpdateScrollBars: Boolean;
     procedure WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
     procedure WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
+      MousePos: TPoint);
   end;
 
 { TSynEditScrollBars }
@@ -101,7 +105,7 @@ begin
   inherited;
 end;
 
-function TSynEditScrollBars.GetRealScrollInfo(AKind: TScrollBarKind): TScrollInfo;
+function TSynEditScrollBars.GetBarScrollInfo(AKind: TScrollBarKind): TScrollInfo;
 begin
   FillChar(Result, SizeOf(Result), 0);
   Result.cbSize := SizeOf(Result);
@@ -115,16 +119,6 @@ end;
 function TSynEditScrollBars.GetHorzPageInChars: Integer;
 begin
   Result := FOwner.TextAreaWidth div FOwner.CharWidth;
-end;
-
-function TSynEditScrollBars.GetHorzScrollInfo: TScrollInfo;
-begin
-  Result := GetRealScrollInfo(sbHorizontal);
-end;
-
-function TSynEditScrollBars.GetVertScrollInfo: TScrollInfo;
-begin
-  Result := GetRealScrollInfo(sbVertical);
 end;
 
 procedure TSynEditScrollBars.ApplyButtonState(const AState: TSynScrollBarState);
@@ -312,7 +306,7 @@ begin
     SB_THUMBTRACK:
     begin
       AIsScrolling := True;
-      ScrollInfo := GetHorzScrollInfo;
+      ScrollInfo := GetBarScrollInfo(sbHorizontal);
       FOwner.LeftChar := ScrollInfo.nTrackPos div FOwner.CharWidth + 1; // +1 because 0 corresponds to LeftChar = 1
       OutputDebugString(PChar(ScrollInfo.nTrackPos.ToString));
     end;
@@ -358,7 +352,7 @@ begin
     SB_THUMBTRACK:
       begin
         AIsScrolling := True;
-        ScrollInfo := GetVertScrollInfo;
+        ScrollInfo := GetBarScrollInfo(sbVertical);
         FOwner.TopLine := ScrollInfo.nTrackPos;
         if eoShowScrollHint in FOwner.Options then
         begin
@@ -400,6 +394,43 @@ begin
   end;
   FOwner.Update;  // mjf: Needed?
   if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self,sbVertical);
+end;
+
+procedure TSynEditScrollBars.DoMouseWheel(Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint);
+var
+  WheelClicks: Integer;
+  LinesToScroll: Integer;
+  CharsToScroll: Integer;
+begin
+  if not (ssShift in Shift) then
+  begin
+    // Vertical wheel scrolling
+    if GetKeyState(SYNEDIT_CONTROL) < 0 then
+      LinesToScroll := FOwner.LinesInWindow shr Ord(eoHalfPageScroll in FOwner.Options)
+    else
+      LinesToScroll := 3;
+    Inc(FMouseWheelVertAccumulator, WheelDelta);
+    WheelClicks := FMouseWheelVertAccumulator div WHEEL_DELTA;
+    FMouseWheelVertAccumulator := FMouseWheelVertAccumulator mod WHEEL_DELTA;
+    FOwner.TopLine := FOwner.TopLine - WheelClicks * LinesToScroll;
+    FOwner.Update;  // mjf: needed?
+    if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self, sbVertical);
+  end
+  else
+  begin
+    // Horizontal wheel scrolling
+    if GetKeyState(SYNEDIT_CONTROL) < 0 then
+      CharsToScroll := GetHorzPageInChars shr Ord(eoHalfPageScroll in FOwner.Options)
+    else
+      CharsToScroll := 3;
+    Inc(FMouseWheelHorzAccumulator, WheelDelta);
+    WheelClicks := FMouseWheelHorzAccumulator div WHEEL_DELTA;
+    FMouseWheelHorzAccumulator := FMouseWheelHorzAccumulator mod WHEEL_DELTA;
+    FOwner.LeftChar := FOwner.LeftChar - WheelClicks * CharsToScroll;
+    FOwner.Update;  // mjf: needed?
+    if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self, sbHorizontal);
+  end;
 end;
 
 { TSynScrollBarState }

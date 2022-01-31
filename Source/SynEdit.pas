@@ -353,7 +353,6 @@ type
     fBookMarkOpt: TSynBookMarkOpt;
     fBorderStyle: TSynBorderStyle;
     fHideSelection: Boolean;
-    fMouseWheelAccumulator: Integer;
     fOverwriteCaret: TSynEditCaretType;
     fInsertCaret: TSynEditCaretType;
     fCaretOffset: TPoint;
@@ -3900,23 +3899,10 @@ end;
 
 function TCustomSynEdit.DoMouseWheel(Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint): Boolean;
-var
-  iWheelClicks: Integer;
-  iLinesToScroll: Integer;
 begin
   Result := inherited DoMouseWheel(Shift, WheelDelta, MousePos);
-  if Result then
-    Exit;
-  if GetKeyState(SYNEDIT_CONTROL) < 0 then
-    iLinesToScroll := LinesInWindow shr Ord(eoHalfPageScroll in fOptions)
-  else
-    iLinesToScroll := 3;
-  Inc(fMouseWheelAccumulator, WheelDelta);
-  iWheelClicks := fMouseWheelAccumulator div WHEEL_DELTA;
-  fMouseWheelAccumulator := fMouseWheelAccumulator mod WHEEL_DELTA;
-  TopLine := TopLine - iWheelClicks * iLinesToScroll;
-  Update;
-  if Assigned(OnScroll) then OnScroll(Self,sbVertical);
+  if not Result then
+    FSynEditScrollBars.DoMouseWheel(Shift, WheelDelta, MousePos);
   Result := True;
 end;
 
