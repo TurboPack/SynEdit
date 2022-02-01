@@ -111,15 +111,11 @@ begin
 end;
 
 procedure TSynEditKeystrokeEditorForm.FormShow(Sender: TObject);
-Var i : Integer;
 begin
   if FExtended then
     GetEditorCommandExtended(AddEditorCommand)
   else GetEditorCommandValues(AddEditorCommand);
 
-  //Now add the values for quick access
-  for i := 0 to cmbCommand.Items.Count - 1 do
-    cmbCommand.Items.Objects[i] := TObject(IndexToEditorCommand(i));
   if FExtended then
     cmbCommand.Sorted := True;
 end;
@@ -133,8 +129,12 @@ function TSynEditKeystrokeEditorForm.GetCommand: TSynEditorCommand;
 begin
   if cmbCommand.ItemIndex <> -1 then
   begin
-    Result := TSynEditorCommand(Integer(cmbCommand.Items.Objects[cmbCommand.ItemIndex]));
-  end else
+    if FExtended then
+      Result := ConvertExtendedToCommand(cmbCommand.Text)
+    else
+      Result := ConvertCodeStringToCommand(cmbCommand.Text);
+  end
+  else
     Result := ecNone;
 end;
 

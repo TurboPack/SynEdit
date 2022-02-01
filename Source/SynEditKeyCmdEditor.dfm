@@ -11,7 +11,6 @@ object SynEditKeystrokeEditorForm: TSynEditKeystrokeEditorForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = True
   Position = poScreenCenter
   OnCreate = FormCreate
   OnShow = FormShow

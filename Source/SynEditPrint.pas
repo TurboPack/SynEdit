@@ -270,6 +270,7 @@ end;
 
 procedure TSynEditPrint.SetLines(const Value: TStrings);
 begin
+  FLines.Clear;
   FLines.AddStrings(Value);
   FRangesOK := False;
   FPagesCounted := False;
