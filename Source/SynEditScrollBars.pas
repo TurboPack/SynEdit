@@ -235,6 +235,10 @@ begin
       MaxScroll :=
         (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
         FOwner.CharWidth)  + 1) * FOwner.CharWidth;
+      if (eoScrollPastEol in FOwner.Options) then
+        MaxScroll := Max(MaxScroll,
+          (FOwner.LeftChar - 1 + FOwner.TextAreaWidth div FOwner.CharWidth)
+          * FOwner.CharWidth);
       PageSize := GetHorzPageInChars * FOwner.CharWidth;
     end;
     FNewHorzSBState.nMin := 0;

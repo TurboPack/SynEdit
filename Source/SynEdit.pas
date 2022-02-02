@@ -467,6 +467,7 @@ type
     function GetWordAtMouse: string;
     function GetWordWrap: Boolean;
     procedure GutterChanged(Sender: TObject);
+    procedure InsertCharAtCursor(const AChar: string);
     function LeftSpaces(const Line: string; ExpandTabs: Boolean = False): Integer;
     function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
     procedure LinesChanging(Sender: TObject);
@@ -490,6 +491,7 @@ type
     procedure SetCaretY(Value: Integer);
     procedure InternalSetCaretX(Value: Integer);
     procedure InternalSetCaretY(Value: Integer);
+    procedure SetCaretInRow(Value:TBufferCoord; Row: Integer);
     procedure SetDisplayXY(const aPos: TDisplayCoord);
     procedure SetActiveLineColor(Value: TColor);
     procedure SetExtraLineSpacing(const Value: Integer);
@@ -629,6 +631,8 @@ type
     procedure CalcTextAreaWidth;
     procedure HideCaret;
     procedure ShowCaret;
+    procedure DoBlockIndent;
+    procedure DoBlockUnindent;
     procedure DoOnClearBookmark(var Mark: TSynEditMark); virtual;
     procedure DoOnCommandProcessed(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
@@ -647,6 +651,8 @@ type
     function GetSelEnd: integer;
     function GetSelStart: integer;
     function GetSelLength: integer;
+    procedure Notification(AComponent: TComponent;
+      Operation: TOperation); override;
     procedure SetSelEnd(const Value: integer);
     procedure SetSelStart(const Value: integer);
     procedure SetSelLength(const Value: integer);
@@ -685,6 +691,7 @@ type
     procedure DoCopyToClipboard(const SText: string);
     procedure EndUndoBlock;
     procedure EndUpdate;
+    procedure EnsureCaretInView;
     procedure EnsureCursorPosVisible;
     procedure EnsureCursorPosVisibleEx(ForceToMiddle: Boolean;
       EvenIfVisible: Boolean = False);
@@ -705,17 +712,11 @@ type
     function GetWordAtRowCol(XY: TBufferCoord): string;
     procedure GotoBookMark(BookMark: Integer); virtual;
     procedure GotoLineAndCenter(ALine: Integer); virtual;
-    function RowColumnInView(RowCol: TDisplayCoord): Boolean;
-    function TextWidth(const S: string): Integer;
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
     // support procedure for ecDeletexxx commands
     function IsNonWhiteChar(AChar: WideChar): Boolean; virtual;
-
-    procedure DoBlockIndent;
-    procedure DoBlockUnindent;
-
     procedure InvalidateGutter;
     procedure InvalidateGutterLine(aLine: integer);
     procedure InvalidateGutterLines(FirstLine, LastLine: integer);
@@ -729,9 +730,8 @@ type
     function DisplayToBufferPos(const p: TDisplayCoord): TBufferCoord;
     function LineToRow(aLine: Integer): Integer;
     function RowToLine(aRow: Integer): Integer;
-    procedure Notification(AComponent: TComponent;
-      Operation: TOperation); override;
     procedure PasteFromClipboard;
+    function TextWidth(const S: string): Integer;
 
     function NextWordPos: TBufferCoord; virtual;
     function NextWordPosEx(const XY: TBufferCoord): TBufferCoord; virtual;
@@ -748,6 +748,7 @@ type
     procedure Redo;
     procedure RegisterCommandHandler(const AHandlerProc: THookedCommandEvent;
       AHandlerData: pointer);
+    function RowColumnInView(RowCol: TDisplayCoord): Boolean;
     function RowColumnToPixels(const RowCol: TDisplayCoord): TPoint;
     function RowColToCharIndex(RowCol: TBufferCoord): Integer;
     function SearchReplace(const ASearch, AReplace: string;
@@ -1170,8 +1171,12 @@ begin
 
   Layout.Create(FTextFormat, PChar(S), S.Length, MaxInt, fTextHeight);
   CheckOSError(Layout.IDW.HitTestTextPosition(Index - 1, False, X, Y, HTM));
-  Result := IfThen(Trailing and (HTM.length > 1),
-    HTM.textPosition + HTM.length + 1, HTM.textPosition + 1);
+
+  if Index = Integer(HTM.textPosition) + 1 then
+    Result := Index
+  else
+    Result := IfThen(Trailing and (HTM.length > 1),
+      HTM.textPosition + HTM.length + 1, HTM.textPosition + 1);
 end;
 
 function TCustomSynEdit.ValidTextPos(BC: TBufferCoord;
@@ -1390,8 +1395,6 @@ begin
 end;
 
 procedure TCustomSynEdit.DecPaintLock;
-var
-  vAuxPos: TDisplayCoord;
 begin
   Assert(fPaintLock > 0);
   Dec(fPaintLock);
@@ -1399,32 +1402,6 @@ begin
   begin
     if sfScrollbarChanged in fStateFlags then
       UpdateScrollbars;
-    //TODO
-    // Locks the caret inside the visible area
-//    if WordWrap and ([scCaretX,scCaretY] * fStatusChanges <> []) then
-//    begin
-//      vAuxPos := DisplayXY;
-//      // This may happen in the last row of a line or in rows which length is
-//      // greater than fCharsInWindow (Tabs and Spaces are allowed beyond
-//      // fCharsInWindow while wrapping the lines)
-//      if (vAuxPos.Column > fCharsInWindow + 1) and (fCharsInWindow > 0) then
-//      begin
-//        Assert(False);
-//        if fCaretAtEOL then
-//          fCaretAtEOL := False
-//        else
-//        begin
-//          if scCaretY in fStatusChanges then
-//          begin
-//            vAuxPos.Column := fCharsInWindow + 1;
-//            fCaretX := DisplayToBufferPos(vAuxPos).Char;
-//            Include(fStatusChanges,scCaretX);
-//            UpdateLastPosX;
-//          end;
-//        end;
-//        Include(fStateFlags, sfCaretChanged);
-//      end;
-//    end;
     if sfCaretChanged in fStateFlags then
       UpdateCaret;
     if fStatusChanges <> [] then
@@ -3078,7 +3055,7 @@ begin
     if Result.Column = 1 then
     begin
       Dec(Result.Row);
-      Result.Column := fWordWrapPlugin.GetRowLength(Result.Row) +1;
+      Result.Column := fWordWrapPlugin.GetRowLength(Result.Row) + 1;
     end
     else begin
       // Work-around situations where fCaretAtEOL should have been updated because of
@@ -3856,12 +3833,14 @@ begin
   else
   begin
     Exclude(fStateFlags, sfCaretChanged);
+
     // The last space of a wrapped line may be out of view
     vCaretDisplay := DisplayXY;
     if WordWrap and not (eoWrapWithRightEdge in FOptions) and
       fCaretAtEOL and not RowColumnInView(vCaretDisplay)
     then
       Dec(vCaretDisplay.Column);
+
     vCaretPix := RowColumnToPixels(vCaretDisplay);
     CX := vCaretPix.X + FCaretOffset.X;
     CY := vCaretPix.Y + FCaretOffset.Y;
@@ -5249,6 +5228,76 @@ begin
   end;
 end;
 
+procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
+{ AChar can be a multi-codepoint character }
+
+  function DeleteGrapheme(var S: string; Index: Integer): Boolean;
+  var
+    After: string;
+    GraphemeEnd: Integer;
+  begin
+    After := Copy(S, Index);
+    if After.Length = 0 then Exit(False);
+
+    GraphemeEnd := ValidTextPos(After, 2, True);
+    Delete(After, 1, GraphemeEnd - 1);
+
+    S := Copy(S, 1, Index - 1) + After;
+    Result := True;
+  end;
+
+var
+  SLine, Grapheme: string;
+  SpaceBuffer: string;
+  Len, CaretXNew: Integer;
+  OldRow: Integer;
+begin
+  if ReadOnly or ((AChar.Length = 1)
+  and ((AChar[1] < #32) or (AChar[1] = #127))) // #127 is Ctrl+Backspace
+  then
+    Exit;
+
+  DoOnPaintTransient(ttBefore);
+  if SelAvail then
+    SetSelText(AChar)
+  else
+  begin
+    OldRow := BufferToDisplayPos(BufferCoord(Max(CaretX - 1, 1), CaretY)).Row;
+    SLine := LineText;
+    Len := SLine.Length;
+    if Len < CaretX then
+    begin
+      if (Len > 0) then
+        SpaceBuffer := StringofChar(#32, CaretX - Len - Ord(fInserting))
+      else
+        SpaceBuffer := GetLeftSpacing(CaretX - Len - Ord(fInserting), True);
+
+      SLine := SLine + SpaceBuffer;
+    end;
+
+    CaretXNew := IfThen(Len = 0, Length(SLine) + 1, CaretX);
+    if fInserting then
+    begin
+      Insert(AChar, SLine, CaretXNew);
+      Lines[CaretY - 1] := SLine;
+    end
+    else begin
+      // Deal with multi-codepoint graphemes like emojis
+      // Delete as many graphemes as in AChar
+      for Grapheme in Graphemes(AChar) do
+        if not DeleteGrapheme(SLine, CaretXNew) then Break;
+
+      Insert(AChar, SLine, CaretXNew);
+      Lines[CaretY - 1] := SLine;
+    end;
+    SetCaretInRow(BufferCoord(CaretXNew + AChar.Length, CaretY), OldRow);
+
+    if not CaretInView then
+      LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
+  end;
+  DoOnPaintTransient(ttAfter);
+end;
+
 procedure TCustomSynEdit.SetInsertCaret(const Value: TSynEditCaretType);
 begin
   if FInsertCaret <> Value then
@@ -5267,6 +5316,33 @@ begin
   end;
 end;
 
+procedure TCustomSynEdit.EnsureCaretInView;
+{ Ensure cursor is visible by moving it to the edge of the text area if needed }
+var
+  DC, OldDC: TDisplayCoord;
+  MinX, MaxX: Integer;
+  P: TPoint;
+begin
+  if CaretInView then Exit;
+
+  DC := DisplayXY;
+  OldDC := DC;
+
+  P := RowColumnToPixels(DC);
+  MinX := FGutterWidth + TextMargin;
+  MaxX := ClientWidth  - TextMargin - CharWidth;
+  if not InRange(P.X, MinX, MaxX) then
+  begin
+    P.X := MinMax(P.X, MinX, MaxX);
+    DC := PixelsToRowColumn(P.X, P.Y);
+  end;
+
+  if (DC <> OldDC) or
+    not InRange(TopLine, DC.Row - (LinesInWindow - 1), DC.Row)
+  then
+    DisplayXY := DC;
+end;
+
 procedure TCustomSynEdit.EnsureCursorPosVisible;
 begin
   EnsureCursorPosVisibleEx(False);
@@ -5274,22 +5350,24 @@ end;
 
 procedure TCustomSynEdit.EnsureCursorPosVisibleEx(ForceToMiddle: Boolean;
   EvenIfVisible: Boolean = False);
+{ Ensure cursor is visible by changing LeftChar and TopLine }
 var
-  RowCol: TDisplayCoord;
+  DC: TDisplayCoord;
   WidthToX: Integer;
   TmpMiddle: Integer;
-  VisibleX: Integer;
-  vCaretRow: Integer;
+  SRow: String;
 begin
   HandleNeeded;
   IncPaintLock;
   try
-    RowCol := DisplayXY;
-    vCaretRow := RowCol.Row;
-    VisibleX := RowCol.Column;
+    DC := DisplayXY;
+    SRow := Rows[DC.Row];
 
     // Make sure X is visible
-    WidthToX := TextWidth(Copy(Rows[vCaretRow], 1, VisibleX - 1));
+    if (eoScrollPastEol in FOptions) and (DC.Column > SRow.Length) then
+      WidthToX := TextWidth(SRow) + (DC.Column - SRow.Length) * FCharWidth
+    else
+      WidthToX := TextWidth(Copy(SRow, 1, DC.Column - 1));
     if WidthToX < (FLeftChar - 1) * FCharWidth then
       LeftChar := Max(WidthToX div fCharWidth, 1)
     else if WidthToX >= FTextAreaWidth + (LeftChar - 1) * FCharWidth then
@@ -5300,34 +5378,28 @@ begin
     // Make sure Y is visible
     if ForceToMiddle then
     begin
-      if vCaretRow < (TopLine - 1) then
+      if DC.Row < (TopLine - 1) then
       begin
         TmpMiddle := LinesInWindow div 2;
-        if vCaretRow - TmpMiddle < 0 then
+        if DC.Row - TmpMiddle < 0 then
           TopLine := 1
         else
-          TopLine := vCaretRow - TmpMiddle + 1;
+          TopLine := DC.Row - TmpMiddle + 1;
       end
-      else if vCaretRow > (TopLine + (LinesInWindow - 2)) then
+      else if DC.Row > (TopLine + (LinesInWindow - 2)) then
       begin
         TmpMiddle := LinesInWindow div 2;
-        TopLine := vCaretRow - (LinesInWindow - 1) + TmpMiddle;
+        TopLine := DC.Row - (LinesInWindow - 1) + TmpMiddle;
       end
      { Forces to middle even if visible in viewport }
       else if EvenIfVisible then
       begin
         TmpMiddle := fLinesInWindow div 2;
-        TopLine := vCaretRow - TmpMiddle + 1;
+        TopLine := DC.Row - TmpMiddle + 1;
       end;
     end
-    else begin
-      if vCaretRow < TopLine then
-        TopLine := vCaretRow
-      else if vCaretRow > TopLine + Max(1, LinesInWindow) - 1 then
-        TopLine := vCaretRow - (LinesInWindow - 1)
-      else
-        TopLine := TopLine;
-    end;
+    else
+      TopLine := MinMax(TopLine, DC.Row - (LinesInWindow - 1), DC.Row);
   finally
     DecPaintLock;
   end;
@@ -5437,8 +5509,6 @@ var
   SpaceCount1: Integer;
   SpaceCount2: Integer;
   BackCounter: Integer;
-  StartOfBlock: TBufferCoord;
-  bChangeScroll: Boolean;
   moveBkm: Boolean;
   WP: TBufferCoord;
   Caret: TBufferCoord;
@@ -5446,7 +5516,6 @@ var
   CaretXNew: Integer;
   counter: Integer;
   vCaretRow: Integer;
-  s: string;
   SaveLastPosX: Integer;
 
 begin
@@ -5633,10 +5702,9 @@ begin
                 begin
                   BeginUndoBlock;
                   try
+                    Lines[CaretY - 2] := Lines[CaretY - 2] + Temp;
+                    Lines.Delete(CaretY - 1);
                     CaretXY := BufferCoord(Lines[CaretY - 2].Length + 1, CaretY - 1);
-                    Lines.Delete(CaretY);
-
-                    LineText := LineText + Temp;
                   finally
                     EndUndoBlock;
                   end;
@@ -5680,8 +5748,10 @@ begin
                   if (CaretXNew > 1) and Temp[CaretXNew].IsLowSurrogate then
                     Dec(CaretXNew);
                   Delete(Temp, CaretXNew, CaretX - CaretXNew);
-                  CaretX := CaretXNew;
+                  CaretNew := BufferCoord(CaretXNew, CaretY);
+                  vCaretRow := BufferToDisplayPos(CaretNew).Row;
                   Lines[CaretY - 1] := Temp;
+                  SetCaretInRow(CaretNew, vCaretRow); // to deal with FCaretEOL
                 end;
               end;
             end;
@@ -5705,9 +5775,11 @@ begin
             if CaretX <= Len then
             begin
               // delete char
+              vCaretRow := DisplayY;
               CaretXNew := ValidTextPos(BufferCoord(CaretX + 1, CaretY), True).Char;
               Delete(Temp, CaretX, CaretXNew - CaretX);
               Lines[CaretY - 1] := Temp;
+              SetCaretInRow(CaretXY, vCaretRow); // to deal with FCaretEOL
             end
             else begin
               // join line with the line after
@@ -5866,60 +5938,7 @@ begin
       ecMatchBracket:
         FindMatchingBracket;
       ecChar:
-      // #127 is Ctrl + Backspace, #32 is space
-        if not ReadOnly and (AChar >= #32) and (AChar <> #127) then
-        begin
-          DoOnPaintTransient(ttBefore);
-          if SelAvail then
-            SetSelText(AChar)
-          else
-          begin
-            Temp := LineText;
-            Len := Length(Temp);
-            if Len < CaretX then
-            begin
-              if (Len > 0) then
-                SpaceBuffer := StringofChar(#32, CaretX - Len - Ord(fInserting))
-              else
-                SpaceBuffer := GetLeftSpacing(CaretX - Len - Ord(fInserting), True);
-
-              Temp := Temp + SpaceBuffer;
-            end;
-            // Added the check for whether or not we're in insert mode.
-            // If we are, we append one less space than we would in overwrite mode.
-            // This is because in overwrite mode we have to put in a final space
-            // character which will be overwritten with the typed character.  If we put the
-            // extra space in in insert mode, it would be left at the end of the line and
-            // cause problems unless eoTrimTrailingSpaces is set.
-            bChangeScroll := not (eoScrollPastEol in fOptions);
-            try
-              if bChangeScroll then Include(fOptions, eoScrollPastEol);
-              StartOfBlock := CaretXY;
-
-              if fInserting then
-              begin
-                Insert(AChar, Temp, CaretX);
-                Lines[CaretY - 1] := Temp;
-                if Len = 0 then
-                  CaretX := Length(Temp) + 1
-                else
-                  CaretX := CaretX + 1;
-              end
-              else begin
-              // Processing of case character covers on LeadByte.
-                Temp[CaretX] := AChar;
-                Lines[CaretY - 1] := Temp;
-                CaretX := CaretX + 1;
-              end;
-              // TODO: consider dropping
-              if not CaretInView then
-                LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
-            finally
-              if bChangeScroll then Exclude(fOptions, eoScrollPastEol);
-            end;
-          end;
-          DoOnPaintTransient(ttAfter);
-        end;
+        InsertCharAtCursor(AChar);
       ecUpperCase,
       ecLowerCase,
       ecToggleCase,
@@ -5997,17 +6016,13 @@ begin
       ecScrollLeft:
         begin
           LeftChar := LeftChar - 1;
-          // todo: The following code was commented out because it is not MBCS or hard-tab safe.
-          //if CaretX > LeftChar + fCharsInWindow then
-          //  InternalCaretX := LeftChar + fCharsInWindow;
+          EnsureCaretInView;
           Update;
         end;
       ecScrollRight:
         begin
           LeftChar := LeftChar + 1;
-          // todo: The following code was commented out because it is not MBCS or hard-tab safe.
-          //if CaretX < LeftChar then
-          //  InternalCaretX := LeftChar;
+          EnsureCaretInView;
           Update;
         end;
       ecInsertMode:
@@ -6038,38 +6053,7 @@ begin
             fOnContextHelp (self,WordAtCursor);
         end;
       ecImeStr:
-        if not ReadOnly then
-        begin
-          S := PWideChar(Data);
-          if SelAvail then
-          begin
-            SetSelText(s);
-            InvalidateGutterLines(-1, -1);
-          end
-          else
-          begin
-            Temp := LineText;
-            Len := Length(Temp);
-            if Len < CaretX then
-              Temp := Temp + StringofChar(#32, CaretX - Len - 1);
-            bChangeScroll := not (eoScrollPastEol in fOptions);
-            try
-              if bChangeScroll then Include(fOptions, eoScrollPastEol);
-              StartOfBlock := CaretXY;
-              Len := Length(s);
-              if not fInserting then
-                Delete(Temp, CaretX, Len);
-              Insert(s, Temp, CaretX);
-              CaretX := (CaretX + Len);
-              Lines[CaretY - 1] := Temp;
-              // TODO: consider dropping
-              if not CaretInView then
-                LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
-            finally
-              if bChangeScroll then Exclude(fOptions, eoScrollPastEol);
-            end;
-          end;
-        end;
+        InsertCharAtCursor(PWideChar(Data));
       ecCopyLineUp, ecCopyLineDown, ecMoveLineUp, ecMoveLineDown:
         ExecCmdCopyOrMoveLine(Command);
 //++ CodeFolding
@@ -6875,7 +6859,7 @@ begin
   SRow := Rows[Dst.Row];
   RowLen := SRow.Length;
   // only moving or selecting one char can change the line
-  ChangeY := not (eoScrollPastEol in fOptions);
+  ChangeY := WordWrap or not (eoScrollPastEol in fOptions);
   if ChangeY and (DX = -1) and (Dst.Column = 1) and (Dst.Row > 1) then
   begin
     // end of previous line
@@ -6996,6 +6980,26 @@ begin
     ActiveSelectionMode := vOldMode;
     DecPaintLock;
   end;
+end;
+
+procedure TCustomSynEdit.SetCaretInRow(Value: TBufferCoord; Row: Integer);
+{ Set the caret taking care of fCaretEOL }
+var
+  DC: TDisplayCoord;
+begin
+  if WordWrap then
+  begin
+    DC := BufferToDisplayPos(Value);
+    if DC = DisplayCoord(1, Row + 1) then
+    begin
+      DC := DisplayCoord(fWordWrapPlugin.RowLength[Row] + 1, Row);
+      DisplayXY := DC;
+    end
+    else
+      CaretXY := Value;
+  end
+  else
+    CaretXY := Value;
 end;
 
 procedure TCustomSynEdit.HighlighterAttrChanged(Sender: TObject);

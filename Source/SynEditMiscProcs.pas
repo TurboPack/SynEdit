@@ -58,6 +58,7 @@ type
   PIntArray = ^TIntArray;
   TIntArray = array [0 .. MaxIntArraySize - 1] of Integer;
 
+{ Similar to System.Math.EnsureRange but ma can be less than mi }
 function MinMax(x, mi, ma: Integer): Integer;
 procedure SwapInt(var l, r: Integer);
 
