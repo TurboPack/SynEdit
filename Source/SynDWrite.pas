@@ -204,14 +204,15 @@ type
     class var SingletonDWriteFactory: IDWriteFactory;
     class var SingletonGDIInterop: IDWriteGdiInterop;
     class var SingletonDottedStrokeStyle: ID2D1StrokeStyle;
-    class var FSolidBrushes: TDictionary<TColor, ID2D1SolidColorBrush>;
+    class var FSolidBrushes: TDictionary<TD2D1ColorF, ID2D1SolidColorBrush>;
   public
     class function D2DFactory(factoryType: TD2D1FactoryType=D2D1_FACTORY_TYPE_SINGLE_THREADED;
       factoryOptions: PD2D1FactoryOptions=nil): ID2D1Factory; static;
     class function RenderTarget: ID2D1DCRenderTarget; static;
     class function DWriteFactory: IDWriteFactory; static;
     class function GDIInterop: IDWriteGdiInterop; static;
-    class function SolidBrush(Color: TColor): ID2D1SolidColorBrush; static;
+    class function SolidBrush(Color: TColor): ID2D1SolidColorBrush; overload; static;
+    class function SolidBrush(Color: TD2D1ColorF): ID2D1SolidColorBrush; overload; static;
     class function DottedStrokeStyle: ID2D1StrokeStyle; static;
     class procedure ResetRenderTarget; static;
     class destructor Destroy;
@@ -309,6 +310,7 @@ function DWGetTypography(Features: array of Integer) : IDWriteTypography;
 
 var
   DefaultLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
+  clNoneF: TD2D1ColorF;
 
 implementation
 
@@ -324,10 +326,10 @@ var
 const
   CScale = 1 / 255;
 begin
-  RGB := TColorRec.ColorToRGB(AColor);
-  Result.r :=   RGB         and $FF  * CScale;
-  Result.g := ((RGB shr  8) and $FF) * CScale;
-  Result.b := ((RGB shr 16) and $FF) * CScale;
+  RGB := ColorToRGB(AColor);
+  Result.r := TColors(RGB).R * CScale;
+  Result.g := TColors(RGB).G * CScale;
+  Result.b := TColors(RGB).B * CScale;
   Result.a :=  1.0;
 end;
 
@@ -465,18 +467,20 @@ begin
   SingletonRenderTarget := nil;
 end;
 
-class function TSynDWrite.SolidBrush(Color: TColor): ID2D1SolidColorBrush;
-var
-  RGB: TColor;
+class function TSynDWrite.SolidBrush(Color: TD2D1ColorF): ID2D1SolidColorBrush;
 begin
   if FSolidBrushes = nil then
-    FSolidBrushes := TDictionary<TColor, ID2D1SolidColorBrush>.Create;
-  RGB := ColorToRGB(Color);
-  if FSolidBrushes.ContainsKey(RGB) then
-    Exit(FSolidBrushes[RGB]);
+    FSolidBrushes := TDictionary<TD2D1ColorF, ID2D1SolidColorBrush>.Create;
+  if FSolidBrushes.ContainsKey(Color) then
+    Exit(FSolidBrushes[Color]);
 
-  CheckOSError(RenderTarget.CreateSolidColorBrush(D2D1ColorF(RGB), nil, Result));
-  FSolidBrushes.Add(RGB, Result);
+  CheckOSError(RenderTarget.CreateSolidColorBrush(Color, nil, Result));
+  FSolidBrushes.Add(Color, Result);
+end;
+
+class function TSynDWrite.SolidBrush(Color: TColor): ID2D1SolidColorBrush;
+begin
+  Result := SolidBrush(D2D1ColorF(Color));
 end;
 {$ENDREGION}
 
@@ -769,4 +773,5 @@ end;
 initialization
   if LCIDToLocaleName(GetUserDefaultLCID, DefaultLocaleName, LOCALE_NAME_MAX_LENGTH, 0) = 0 then
     RaiseLastOSError;
+  clNoneF := D2D1ColorF(0, 0, 0, 0);
 end.

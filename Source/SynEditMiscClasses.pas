@@ -62,18 +62,24 @@ uses
 type
   TSynSelectedColor = class(TPersistent)
   private
-    fBG: TColor;
-    fFG: TColor;
-    fOnChange: TNotifyEvent;
+    FBG: TColor;
+    FFG: TColor;
+    FOnChange: TNotifyEvent;
+    FAlpha: Single;
+    FPaintFullLine: Boolean;
     procedure SetBG(Value: TColor);
     procedure SetFG(Value: TColor);
+    procedure SetAlpha(Value: Single);
+    procedure SetPaintFullLine(const Value: Boolean);
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
-    property OnChange: TNotifyEvent read fOnChange write fOnChange;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
     property Background: TColor read fBG write SetBG default clHighLight;
-    property Foreground: TColor read fFG write SetFG default clHighLightText;
+    property Foreground: TColor read FFG write SetFG default clHighLightText;
+    property Alpha: Single read FAlpha write SetAlpha;
+    property PaintFullLine: Boolean read FPaintFullLine write SetPaintFullLine;
   end;
 
   TSynIdentGuidesStyle = (igsSolid, igsDotted);
@@ -90,7 +96,7 @@ type
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
-    property OnChange: TNotifyEvent read fOnChange write fOnChange;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
     property Visible: Boolean read FVisible write SetVisible default True;
     property Style: TSynIdentGuidesStyle read FStyle write SetStyle
@@ -598,7 +604,8 @@ constructor TSynSelectedColor.Create;
 begin
   inherited Create;
   fBG := clHighLight;
-  fFG := clHighLightText;
+  FFG := clHighLightText;
+  Alpha := 0.4;
 end;
 
 procedure TSynSelectedColor.Assign(Source: TPersistent);
@@ -609,12 +616,23 @@ begin
   begin
     Src := TSynSelectedColor(Source);
     fBG := Src.fBG;
-    fFG := Src.fFG;
+    FFG := Src.FFG;
     if Assigned(FOnChange) then
       FOnChange(Self);
   end
   else
     inherited Assign(Source);
+end;
+
+procedure TSynSelectedColor.SetAlpha(Value: Single);
+begin
+  Value := EnsureRange(Value, 0, 1);
+  if (FAlpha <> Value) then
+  begin
+    FAlpha := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
 end;
 
 procedure TSynSelectedColor.SetBG(Value: TColor);
@@ -629,9 +647,19 @@ end;
 
 procedure TSynSelectedColor.SetFG(Value: TColor);
 begin
-  if (fFG <> Value) then
+  if (FFG <> Value) then
   begin
-    fFG := Value;
+    FFG := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
+end;
+
+procedure TSynSelectedColor.SetPaintFullLine(const Value: Boolean);
+begin
+  if (FPaintFullLine <> Value) then
+  begin
+     FPaintFullLine := Value;
     if Assigned(FOnChange) then
       FOnChange(Self);
   end;

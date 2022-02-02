@@ -2162,14 +2162,14 @@ end;
 procedure TCustomSynEdit.ScrollTimerHandler(Sender: TObject);
 var
   iMousePos: TPoint;
-  C: TDisplayCoord;
+  DC: TDisplayCoord;
+  BC: TBufferCoord;
   X, Y: Integer;
-  vCaret: TBufferCoord;
 begin
   GetCursorPos( iMousePos );
   iMousePos := ScreenToClient( iMousePos );
-  C := PixelsToRowColumn( iMousePos.X, iMousePos.Y );
-  C.Row := MinMax(C.Row, 1, DisplayLineCount);
+  DC := PixelsToRowColumn( iMousePos.X, iMousePos.Y );
+  DC.Row := MinMax(DC.Row, 1, DisplayLineCount);
 
   if fScrollDeltaX <> 0 then
   begin
@@ -2177,38 +2177,34 @@ begin
     X := LeftChar;
     if fScrollDeltaX > 0 then  // scrolling right?
       Inc(X, FTextAreaWidth div FCharWidth);
-    C.Column := X;
+    DC.Column := X;
   end;
   if fScrollDeltaY <> 0 then
   begin
     if GetKeyState(SYNEDIT_SHIFT) < 0 then
-      TopLine := TopLine + fScrollDeltaY * LinesInWindow
+      Y := TopLine + fScrollDeltaY * LinesInWindow
     else
-      TopLine := TopLine + fScrollDeltaY;
-    Y := TopLine;
+      Y := TopLine + fScrollDeltaY;
     if fScrollDeltaY > 0 then  // scrolling down?
       Inc(Y, LinesInWindow - 1);
-    C.Row := MinMax(Y, 1, DisplayLineCount);
+    DC.Row := MinMax(Y, 1, DisplayLineCount);
   end;
 
-  vCaret := DisplayToBufferPos(C);
-  if ((CaretX <> vCaret.Char) or (CaretY <> vCaret.Line)) then
+  BC := DisplayToBufferPos(DC);
+  if CaretXY <> BC then
   begin
     // changes to line / column in one go
     IncPaintLock;
     try
       if MouseCapture and (fClickCount = 2) and (ActiveSelectionMode = smNormal) then
         // Word selection
-        DoMouseSelectWordRange(vCaret)
+        DoMouseSelectWordRange(BC)
       else if MouseCapture and (fClickCount = 3) and (ActiveSelectionMode = smNormal) then
         // Line selection
-        DoMouseSelectLineRange(vCaret)
-      else begin
-        InternalCaretXY := vCaret;
+        DoMouseSelectLineRange(BC)
+      else
         // if MouseCapture is True we're changing selection. otherwise we're dragging
-        if MouseCapture then
-          SetBlockEnd(CaretXY);
-      end;
+        MoveDisplayPosAndSelection(DC, MouseCapture)
     finally
       DecPaintLock;
     end;
@@ -2464,7 +2460,8 @@ var
       ((fActiveSelectionMode = smLine) and InRange(Line, BB.Line, BE.Line));
   end;
 
-  procedure FullRowColors(const Row, Line: Integer; var FullRowFG, FullRowBG: TColor);
+  procedure FullRowColors(const Row, Line: Integer;
+    var FullRowFG, FullRowBG: TColor; var BGAlpha: TD2D1ColorF);
   { clNone indicates normal processing of text foreground/background color }
   var
     IsLineSpecial: Boolean;
@@ -2473,6 +2470,15 @@ var
   begin
     IsLineSpecial := DoOnSpecialLineColors(Line, FG, BG);
     IsFullySelected := IsRowFullySelected(Row, Line);
+
+    if IsFullySelected and not SameValue(fSelectedColor.Alpha, 1) then
+    begin
+      BGAlpha := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha);
+      IsFullySelected := False;
+    end
+    else
+      BGAlpha := clNoneF;
+
     if IsFullySelected and IsLineSpecial then
     begin
       // Invert the colors as in Delphi
@@ -2721,6 +2727,7 @@ var
   SelFirst, SelLast: Integer;
   SelBG, SelFG: TColor;
   RangeCount: Cardinal;
+  BGAlpha: TD2D1ColorF;
   HMArr: array of TDwriteHitTestMetrics;
 begin
   XLineOffset := - (FLeftChar - 1) * FCharWidth;
@@ -2773,7 +2780,7 @@ begin
       Layout.SetTypography(typNoLigatures, 1, SRow.Length);
 
     // Special colors, full line selection and ActiveLineColor
-    FullRowColors(Row, Line, FullRowFG, FullRowBG);
+    FullRowColors(Row, Line, FullRowFG, FullRowBG, BGAlpha);
     AColor := FullRowBG;
     if (AColor = clNone) and (WhitespaceColor <> BGColor) then
       AColor := WhiteSpaceColor; // Whitespace color may differ per line
@@ -2821,6 +2828,7 @@ begin
     end;
 
     // Paint selection if Line is partially selected - deals with bidi text
+    RangeCount := 0;
     if PartialSelection(Row, Line, SelFirst, SelLast, SelBG, SelFG) then
     begin
       Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast -SelFirst + 1,
@@ -2828,12 +2836,17 @@ begin
       SetLength(HMArr, RangeCount);
       Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast- SelFirst + 1,
         XLineOffset, YRowOffset(Row), HMArr[0], RangeCount, RangeCount);
-      for I := 0 to RangeCount -1  do
+      if SameValue(fSelectedColor.Alpha, 1)  then
       begin
-        Layout.SetFontColor(SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
-        FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
-          IfThen(SelLast = MaxInt, LinesRect.Right, Round(HMArr[I].left + HMArr[I].width)),
-          YRowOffset(Row + 1)), TSynDWrite.SolidBrush(SelBG));
+        for I := 0 to RangeCount -1  do
+        begin
+          Layout.SetFontColor(SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
+          FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
+            IfThen(SelLast = MaxInt, LinesRect.Right,
+            Round(HMArr[I].left + HMArr[I].width)), YRowOffset(Row + 1)),
+            TSynDWrite.SolidBrush(SelBG));
+        end;
+        RangeCount := 0;
       end;
     end;
 
@@ -2866,6 +2879,18 @@ begin
       DrawIndentGuides;
     if UseCodeFolding then
       PaintFoldMarks;
+
+    // Alpha blend selection
+    if TAlphaColorF(BGAlpha) <> TAlphaColorF(clNoneF) then
+      // Full Row
+      FRT.FillRectangle(Rect(0, YRowOffset(Row), LinesRect.Right,
+        YRowOffset(Row + 1)), TSynDWrite.SolidBrush(BGAlpha));
+      // Partial selection
+    for I := 0 to Integer(RangeCount) - 1 do
+      FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
+        IfThen(SelLast = MaxInt, LinesRect.Right,
+        Round(HMArr[I].left + HMArr[I].width)), YRowOffset(Row + 1)),
+        TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha)));
   end;
 
   // Draw right edge
@@ -2877,6 +2902,7 @@ begin
         Point(XLineOffset + REdgePos, AClip.Height),
         TSynDWrite.SolidBrush(fRightEdgeColor));
   end;
+
   if FRT.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
 end;
 
@@ -8035,7 +8061,7 @@ begin
   begin
     Line := Lines[XY.Line - 1];
     Len := Length(Line);
-    Start := XY.Char;
+    Start := Min(XY.Char, Len);
     if (Len > 0) and InRange(XY.Char, 1, Len + 1) and IsIdentChar(Line[Start]) then
     begin
        while (Start > 1) and IsIdentChar(Line[Start - 1]) do
