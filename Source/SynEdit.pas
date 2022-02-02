@@ -5262,6 +5262,7 @@ begin
     SetSelText(AChar)
   else
   begin
+    // This is to set fCaretXY correctly
     OldRow := BufferToDisplayPos(BufferCoord(Max(CaretX - 1, 1), CaretY)).Row;
     SLine := LineText;
     Len := SLine.Length;
