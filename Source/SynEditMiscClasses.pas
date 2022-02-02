@@ -70,10 +70,33 @@ type
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
+    property OnChange: TNotifyEvent read fOnChange write fOnChange;
   published
     property Background: TColor read fBG write SetBG default clHighLight;
     property Foreground: TColor read fFG write SetFG default clHighLightText;
+  end;
+
+  TSynIdentGuidesStyle = (igsSolid, igsDotted);
+
+  TSynIndentGuides = class(TPersistent)
+  private
+    FColor: TColor;
+    FVisible: Boolean;
+    FStyle: TSynIdentGuidesStyle;
+    FOnChange: TNotifyEvent;
+    procedure SetColor(const Value: TColor);
+    procedure SetVisible(const Value: Boolean);
+    procedure SetStyle(const Value: TSynIdentGuidesStyle);
+  public
+    constructor Create;
+    procedure Assign(Source: TPersistent); override;
     property OnChange: TNotifyEvent read fOnChange write fOnChange;
+  published
+    property Visible: Boolean read FVisible write SetVisible default True;
+    property Style: TSynIdentGuidesStyle read FStyle write SetStyle
+      default igsSolid;
+    property Color: TColor read FColor write SetColor
+      default clMedGray;
   end;
 
   TSynGutterBorderStyle = (gbsNone, gbsMiddle, gbsRight);
@@ -2406,6 +2429,54 @@ begin
     if FVisible then
       FOwner.Changed;
   end;
+end;
+
+{ TSynIndentGuides }
+
+procedure TSynIndentGuides.Assign(Source: TPersistent);
+var
+  Src: TSynIndentGuides;
+begin
+  if (Source <> nil) and (Source is TSynIndentGuides) then
+  begin
+    Src := TSynIndentGuides(Source);
+    FVisible := Src.FVisible;
+    FStyle := Src.FStyle;
+    FColor := Src.FColor;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end
+  else
+    inherited Assign(Source);
+end;
+
+constructor TSynIndentGuides.Create;
+begin
+  inherited Create;
+  FVisible := True;
+  FStyle := igsSolid;
+  FColor := clMedGray;
+end;
+
+procedure TSynIndentGuides.SetColor(const Value: TColor);
+begin
+  FColor := Value;
+  if Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+procedure TSynIndentGuides.SetStyle(const Value: TSynIdentGuidesStyle);
+begin
+  FStyle := Value;
+  if Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+procedure TSynIndentGuides.SetVisible(const Value: Boolean);
+begin
+  FVisible := Value;
+  if Assigned(FOnChange) then
+    FOnChange(Self);
 end;
 
 end.

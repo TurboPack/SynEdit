@@ -342,6 +342,7 @@ type
     fTopLine: Integer;
     fHighlighter: TSynCustomHighlighter;
     fSelectedColor: TSynSelectedColor;
+    FIndentGuides: TSynIndentGuides;
     fActiveLineColor: TColor;
     fUndoRedo: ISynEditUndo;
     fBookMarks: array[0..9] of TSynEditMark; // these are just references, fMarkList is the owner
@@ -467,6 +468,9 @@ type
     function GetWordAtMouse: string;
     function GetWordWrap: Boolean;
     procedure GutterChanged(Sender: TObject);
+    procedure IndentGuidesChanged(Sender: TObject);
+    procedure InternalSetCaretX(Value: Integer);
+    procedure InternalSetCaretY(Value: Integer);
     procedure InsertCharAtCursor(const AChar: string);
     function LeftSpaces(const Line: string; ExpandTabs: Boolean = False): Integer;
     function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
@@ -489,8 +493,6 @@ type
     procedure SetBorderStyle(Value: TSynBorderStyle);
     procedure SetCaretX(Value: Integer);
     procedure SetCaretY(Value: Integer);
-    procedure InternalSetCaretX(Value: Integer);
-    procedure InternalSetCaretY(Value: Integer);
     procedure SetCaretInRow(Value:TBufferCoord; Row: Integer);
     procedure SetDisplayXY(const aPos: TDisplayCoord);
     procedure SetActiveLineColor(Value: TColor);
@@ -499,6 +501,7 @@ type
     procedure SetGutterWidth(Value: Integer);
     procedure SetHideSelection(const Value: Boolean);
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
+    procedure SetIndentGuides(const Value: TSynIndentGuides);
     procedure SetInsertCaret(const Value: TSynEditCaretType);
     procedure SetInsertMode(const Value: Boolean);
     procedure SetKeystrokes(const Value: TSynEditKeyStrokes);
@@ -513,6 +516,7 @@ type
     procedure SetRightEdgeColor(Value: TColor);
     procedure SetScrollBars(const Value: TScrollStyle);
     procedure SetSearchEngine(Value: TSynEditSearchCustom);
+    procedure SetSelectedColor(const Value: TSynSelectedColor);
     procedure SetSelectionMode(const Value: TSynSelectionMode);
     procedure SetActiveSelectionMode(const Value: TSynSelectionMode);
     procedure SetTabWidth(Value: Integer);
@@ -873,6 +877,8 @@ type
     property Gutter: TSynGutter read fGutter write SetGutter;
     property HideSelection: Boolean read fHideSelection write SetHideSelection
       default False;
+    property IndentGuides: TSynIndentGuides
+      read FIndentGuides write SetIndentGuides;
     property InsertCaret: TSynEditCaretType read FInsertCaret
       write SetInsertCaret default ctVerticalLine;
     property InsertMode: boolean read fInserting write SetInsertMode
@@ -895,7 +901,7 @@ type
     property ScrollBars: TScrollStyle
       read FScrollBars write SetScrollBars default ssBoth;
     property SelectedColor: TSynSelectedColor
-      read FSelectedColor write FSelectedColor;
+      read FSelectedColor write SetSelectedColor;
     property SelectionMode: TSynSelectionMode
       read FSelectionMode write SetSelectionMode default smNormal;
     property ActiveSelectionMode: TSynSelectionMode read fActiveSelectionMode
@@ -1003,6 +1009,7 @@ type
     property Gutter;
     property HideSelection;
     property Highlighter;
+    property IndentGuides;
     property ImeMode;
     property ImeName;
     property InsertCaret;
@@ -1299,6 +1306,8 @@ begin
   fActiveLineColor := clNone;
   fSelectedColor := TSynSelectedColor.Create;
   fSelectedColor.OnChange := SelectedColorsChanged;
+  FIndentGuides := TSynIndentGuides.Create;
+  FIndentGuides.OnChange := IndentGuidesChanged;
   fBookMarkOpt := TSynBookMarkOpt.Create(Self);
   fBookMarkOpt.OnChange := BookMarkOptionsChanged;
   fTextMargin := 3;
@@ -1432,6 +1441,7 @@ begin
   fKbdHandler.Free;
   fFocusList.Free;
   fSelectedColor.Free;
+  FIndentGuides.Free;
   fUndoRedo := nil;
   fOrigUndoRedo := nil;
   fGutter.Free;
@@ -1704,6 +1714,11 @@ begin
   if sfCaretVisible in fStateFlags then
     if Winapi.Windows.HideCaret(Handle) then
       Exclude(fStateFlags, sfCaretVisible);
+end;
+
+procedure TCustomSynEdit.IndentGuidesChanged(Sender: TObject);
+begin
+  InvalidateLines(-1, -1);
 end;
 
 procedure TCustomSynEdit.IncPaintLock;
@@ -2600,21 +2615,26 @@ var
     BitmapRT: ID2D1BitmapRenderTarget;
     BM: ID2D1Bitmap;
     RectF: TD2D1RectF;
+    StrokeStyle: ID2D1StrokeStyle;
+    BMSize: TD2D1SizeF;
   begin
-    BMWidth := Round(1.5 * FCurrentPPI / 96) + 2;
-    var Size := D2D1SizeF(BMWidth, FTextHeight);
-    CheckOSError(FRT.CreateCompatibleRenderTarget(@Size, nil, nil,
+    BMWidth := Round(FCurrentPPI / 96) + 2;
+    BMSize := D2D1SizeF(BMWidth, FTextHeight);
+    if FIndentGuides.Style = igsDotted then
+      StrokeStyle := TSynDWrite.DottedStrokeStyle
+    else
+      StrokeStyle := nil;
+    CheckOSError(FRT.CreateCompatibleRenderTarget(@BMSize, nil, nil,
       D2D1_COMPATIBLE_RENDER_TARGET_OPTIONS_GDI_COMPATIBLE,
       BitmapRT));
-      BitmapRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+      BitmapRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
       BitmapRT.BeginDraw;
       BitmapRT.DrawLine(Point(1, 0), Point(1, fTextHeight),
-        TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
-        1.5 * FCurrentPPI / 96, TSynDWrite.DottedStrokeStyle);
+        TSynDWrite.SolidBrush(FIndentGuides.Color),
+        Round(FCurrentPPI / 96), StrokeStyle);
       BitmapRT.EndDraw;
       CheckOSError(BitmapRT.GetBitmap(BM));
 
-//    FRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
     for Row := aFirstRow to aLastRow do begin
       Line := RowToLine(Row);
       if (Line > Lines.Count) then Break;
@@ -2635,22 +2655,12 @@ var
         X := TabSteps * CharWidth + XLineOffset;
         if X >= 0 then
         begin
-          RectF := Rect(X-1, Y, X + BMWidth - 1, Y + fTextHeight);
+          RectF := Rect(X - 1, Y, X + BMWidth - 1, Y + fTextHeight);
           FRT.DrawBitmap(BM, @RectF);
-//          FRT.DrawLine(Point(X, Y), Point(X, Y + fTextHeight),
-//            TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
-//            FCurrentPPI / 96, nil);
-//          FRT.DrawLine(Point(X, Y), Point(X, Y + fTextHeight),
-//            TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
-//            1 * FCurrentPPI / 96, TSynDWrite.DottedStrokeStyle);
-//          FRT.DrawLine(Point(X, Y), Point(X, Y + fTextHeight),
-//            TSynDWrite.SolidBrush(fCodeFolding.IndentGuidesColor),
-//            1 * FCurrentPPI / 96, nil);
         end;
         Inc(TabSteps, TabWidth);
       end;
     end;
-//    FRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   end;
 
   procedure PaintFoldMarks;
@@ -2852,7 +2862,7 @@ begin
     end;
 
     //Draw indentation guides and code folding marks (PaintFoldAttributes)
-    if CodeFolding.IndentGuides and not WordWrap then
+    if FIndentGuides.Visible and not WordWrap then
       DrawIndentGuides;
     if UseCodeFolding then
       PaintFoldMarks;
@@ -5299,6 +5309,11 @@ begin
   DoOnPaintTransient(ttAfter);
 end;
 
+procedure TCustomSynEdit.SetIndentGuides(const Value: TSynIndentGuides);
+begin
+  FIndentGuides.Assign(Value);
+end;
+
 procedure TCustomSynEdit.SetInsertCaret(const Value: TSynEditCaretType);
 begin
   if FInsertCaret <> Value then
@@ -6256,6 +6271,11 @@ begin
   end;
   Result.Char := CX;
   Result.Line := CY;
+end;
+
+procedure TCustomSynEdit.SetSelectedColor(const Value: TSynSelectedColor);
+begin
+  FSelectedColor.Assign(Value);
 end;
 
 procedure TCustomSynEdit.SetSelectionMode(const Value: TSynSelectionMode);

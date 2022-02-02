@@ -230,18 +230,14 @@ type
   TSynCodeFolding = class(TPersistent)
     { Class to store and expose to the designer Code Folding properties }
   private
-    fIndentGuides: Boolean;
     fCollapsedLineColor: TColor;
     fFolderBarLinesColor: TColor;
-    fIndentGuidesColor: TColor;
     fShowCollapsedLine: Boolean;
     fShowHintMark : Boolean;
     fGutterShapeSize :  Integer;
     fOnChange : TSynCodeFoldingChangeEvent;
-    procedure SetIndentGuides(const Value: Boolean);
     procedure SetCollapsedLineColor(const Value: TColor);
     procedure SetFolderBarLinesColor(const Value: TColor);
-    procedure SetIndentGuidesColor(const Value: TColor);
     procedure SetShowCollapsedLine(const Value: Boolean);
     procedure SetShowHintMark(const Value: Boolean);
     procedure SetGutterShapeSize(const Value: Integer);
@@ -258,10 +254,6 @@ type
       write SetCollapsedLineColor default clGrayText;
     property FolderBarLinesColor: TColor read fFolderBarLinesColor
       write SetFolderBarLinesColor default clGrayText;
-    property IndentGuidesColor: TColor read fIndentGuidesColor
-      write SetIndentGuidesColor default TColors.Lightgray;
-    property IndentGuides: Boolean read fIndentGuides write SetIndentGuides
-      default True;
     property ShowCollapsedLine: Boolean read fShowCollapsedLine
       write SetShowCollapsedLine default False;
     property ShowHintMark: Boolean read fShowHintMark
@@ -916,10 +908,8 @@ procedure TSynCodeFolding.Assign(Source: TPersistent);
 begin
  if Source is TSynCodeFolding then
  begin
-   fIndentGuides := TSynCodeFolding(Source).fIndentGuides;
    fCollapsedLineColor := TSynCodeFolding(Source).fCollapsedLineColor;
    fFolderBarLinesColor := TSynCodeFolding(Source).fFolderBarLinesColor;
-   fIndentGuidesColor := TSynCodeFolding(Source).fIndentGuidesColor;
    fShowCollapsedLine := TSynCodeFolding(Source).fShowCollapsedLine;
    fShowHintMark := TSynCodeFolding(Source).fShowHintMark;
    fGutterShapeSize := TSynCodeFolding(Source).fGutterShapeSize;
@@ -930,10 +920,8 @@ end;
 
 constructor TSynCodeFolding.Create;
 begin
-  fIndentGuides := True;
   fCollapsedLineColor := clGrayText;
   fFolderBarLinesColor := clGrayText;
-  fIndentGuidesColor := clGray;
   fShowCollapsedLine := False;
   fShowHintMark := True;
   fGutterShapeSize := 11;
@@ -1057,22 +1045,6 @@ begin
   NewValue := Value;
   if fGutterShapeSize <> NewValue then begin
     fGutterShapeSize := NewValue;
-    if Assigned(fOnChange) then fOnChange(Self);
-  end;
-end;
-
-procedure TSynCodeFolding.SetIndentGuides(const Value: Boolean);
-begin
-  if fIndentGuides <> Value then begin
-    fIndentGuides := Value;
-    if Assigned(fOnChange) then fOnChange(Self);
-  end;
-end;
-
-procedure TSynCodeFolding.SetIndentGuidesColor(const Value: TColor);
-begin
-  if fIndentGuidesColor <> Value then begin
-    fIndentGuidesColor := Value;
     if Assigned(fOnChange) then fOnChange(Self);
   end;
 end;

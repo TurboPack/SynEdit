@@ -281,6 +281,7 @@ type
     FMaxScrollWidth: Integer;
     FRightEdge: Integer;
     FSelectedColor: TSynSelectedColor;
+    FIndentGuides: TSynIndentGuides;
     FRightEdgeColor: TColor;
     FFont: TFont;
     FBookmarks: TSynBookMarkOpt;
@@ -301,23 +302,24 @@ type
     procedure Assign(Source : TPersistent); override;
     procedure AssignTo(Dest : TPersistent); override;
   published
-    property Options : TSynEditorOptions read FOptions write SetOptions;
-    property BookMarkOptions : TSynBookMarkOpt read FBookmarks write SetBookMarks;
-    property Color : TColor read FColor write FColor;
-    property Font : TFont read FFont write SetFont;
-    property ExtraLineSpacing : Integer read FExtraLineSpacing write FExtraLineSpacing;
-    property Gutter : TSynGutter read FSynGutter write SetSynGutter;
-    property RightEdge : Integer read FRightEdge write FRightEdge;
-    property RightEdgeColor : TColor read FRightEdgeColor write FRightEdgeColor;
-    property WantTabs : Boolean read FWantTabs write FWantTabs;
-    property InsertCaret : TSynEditCaretType read FInsertCaret write FInsertCaret;
-    property OverwriteCaret : TSynEditCaretType read FOverwriteCaret write FOverwriteCaret;
-    property HideSelection : Boolean read FHideSelection write FHideSelection;
-    property MaxScrollWidth : Integer read FMaxScrollWidth write FMaxScrollWidth;
-    property MaxUndo : Integer read FMaxUndo write FMaxUndo;
-    property SelectedColor : TSynSelectedColor read FSelectedColor write FSelectedColor;
-    property TabWidth : Integer read FTabWidth write FTabWidth;
-    property Keystrokes : TSynEditKeyStrokes read FKeystrokes write SetKeystrokes;
+    property Options: TSynEditorOptions read FOptions write SetOptions;
+    property BookMarkOptions: TSynBookMarkOpt read FBookmarks write SetBookMarks;
+    property Color: TColor read FColor write FColor;
+    property Font: TFont read FFont write SetFont;
+    property ExtraLineSpacing: Integer read FExtraLineSpacing write FExtraLineSpacing;
+    property Gutter: TSynGutter read FSynGutter write SetSynGutter;
+    property RightEdge: Integer read FRightEdge write FRightEdge;
+    property RightEdgeColor: TColor read FRightEdgeColor write FRightEdgeColor;
+    property WantTabs: Boolean read FWantTabs write FWantTabs;
+    property InsertCaret: TSynEditCaretType read FInsertCaret write FInsertCaret;
+    property OverwriteCaret: TSynEditCaretType read FOverwriteCaret write FOverwriteCaret;
+    property HideSelection: Boolean read FHideSelection write FHideSelection;
+    property MaxScrollWidth: Integer read FMaxScrollWidth write FMaxScrollWidth;
+    property MaxUndo: Integer read FMaxUndo write FMaxUndo;
+    property SelectedColor: TSynSelectedColor read FSelectedColor;
+    property IndentGuides: TSynIndentGuides read FIndentGuides;
+    property TabWidth: Integer read FTabWidth write FTabWidth;
+    property Keystrokes: TSynEditKeyStrokes read FKeystrokes write SetKeystrokes;
   end;
 
 implementation
@@ -391,7 +393,7 @@ begin
     Self.Gutter.Assign(TCustomSynEdit(Source).Gutter);
     Self.Keystrokes.Assign(TCustomSynEdit(Source).Keystrokes);
     Self.SelectedColor.Assign(TCustomSynEdit(Source).SelectedColor);
-
+    Self.IndentGuides.Assign(TCustomSynEdit(Source).IndentGuides);
     Self.Color := TCustomSynEdit(Source).Color;
     Self.Options := TCustomSynEdit(Source).Options;
     Self.ExtraLineSpacing := TCustomSynEdit(Source).ExtraLineSpacing;
@@ -416,7 +418,7 @@ begin
     TCustomSynEdit(Dest).Gutter.Assign(Self.Gutter);
     TCustomSynEdit(Dest).Keystrokes.Assign(Self.Keystrokes);
     TCustomSynEdit(Dest).SelectedColor.Assign(Self.SelectedColor);
-
+    TCustomSynEdit(Dest).IndentGuides.Assign(Self.IndentGuides);
     TCustomSynEdit(Dest).Color := Self.Color;
     TCustomSynEdit(Dest).Options := Self.Options;
     TCustomSynEdit(Dest).ExtraLineSpacing := Self.ExtraLineSpacing;
@@ -439,9 +441,8 @@ begin
   FKeystrokes:= TSynEditKeyStrokes.Create(Self);
   FSynGutter:= TSynGutter.Create;
   FSynGutter.AssignableBands := False;
-  FSelectedColor:= TSynSelectedColor.Create;
-  FSelectedColor.Foreground:= clHighlightText;
-  FSelectedColor.Background:= clHighlight;
+  FSelectedColor := TSynSelectedColor.Create;
+  FIndentGuides := TSynIndentGuides.Create;
   FFont:= TFont.Create;
   FFont.Name:= DefaultFontName;
   FFont.Size:= 8;
@@ -467,6 +468,7 @@ begin
   FKeyStrokes.Free;
   FSynGutter.Free;
   FSelectedColor.Free;
+  FIndentGuides.Free;
   FFont.Free;
   inherited;
 end;
