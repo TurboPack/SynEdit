@@ -5276,7 +5276,7 @@ begin
       SLine := SLine + SpaceBuffer;
     end;
 
-    CaretXNew := IfThen(Len = 0, Length(SLine) + 1, CaretX);
+    CaretXNew := IfThen(Len = 0, Length(SLine) + Ord(fInserting), CaretX);
     if fInserting then
     begin
       Insert(AChar, SLine, CaretXNew);
