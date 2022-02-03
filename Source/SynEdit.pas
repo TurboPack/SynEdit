@@ -5619,8 +5619,7 @@ begin
       ecUp, ecSelUp:
         begin
           { on the first line we select first line too }
-          if ((not Wordwrap and (CaretY = 1)) or
-              (WordWrap and (DisplayY = 1))) then
+          if DisplayY = 1 then
           begin
             SaveLastPosX := FLastPosX;
             DoHomeKey(Command = ecSelUp);
@@ -5653,9 +5652,7 @@ begin
             counter := -counter;
           TopLine := TopLine + counter;
           { on the first line we will select first line too }
-          if (Command in [ecPageUp, ecSelPageUp]) and
-             ((not Wordwrap and (CaretY = 1)) or
-              (WordWrap and (DisplayY = 1))) then
+          if (Command in [ecPageUp, ecSelPageUp]) and (DisplayY = 1) then
           begin
             SaveLastPosX := FLastPosX;
             DoHomeKey(Command = ecSelPageUp);
