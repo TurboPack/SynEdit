@@ -1208,7 +1208,7 @@ end;
 procedure TCustomSynEdit.ComputeScroll(X, Y: Integer);
 { X,Y are pixel coordinates }
 var
-  iScrollBounds: TRect; // relative to the client area 
+  iScrollBounds: TRect; // relative to the client area
   ScrollAreaSize : integer;
 const
   ScrollAreaDefaultSize = 4;
@@ -2443,21 +2443,21 @@ var
       (fActiveSelectionMode <> smColumn);
     if not Result  then Exit;
 
-    if WordWrap then
+    if fActiveSelectionMode = smLine then
+      Result := InRange(Line, BB.Line, BE.Line)
+    else if WordWrap then
     begin
       BC := DisplayToBufferPos(DisplayCoord(1, Row));
       Len := fWordWrapPlugin.RowLength[Row];
       Result := ((BB <= BC) and
         ((BE > BufferCoord(BC.Char + Len, BC.Line)) or
          ((BufferCoord(BC.Char + Len, BC.Line) = BE) and
-          (BC.Char > 1) and not fCaretAtEOL)));
+         (RowtoLine(Row + 1) = Line) and not fCaretAtEOL)));
     end
     else
       Result := (BB.Line < BE.Line) and
         ((InRange(Line, BB.Line + 1, BE.Line - 1)) or
         ((Line = BB.Line) and (BB.Char = 1)));
-    Result := Result or
-      ((fActiveSelectionMode = smLine) and InRange(Line, BB.Line, BE.Line));
   end;
 
   procedure FullRowColors(const Row, Line: Integer;
@@ -2471,13 +2471,17 @@ var
     IsLineSpecial := DoOnSpecialLineColors(Line, FG, BG);
     IsFullySelected := IsRowFullySelected(Row, Line);
 
-    if IsFullySelected and not SameValue(fSelectedColor.Alpha, 1) then
+    BGAlpha := clNoneF;
+    if IsFullySelected then
     begin
-      BGAlpha := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha);
-      IsFullySelected := False;
-    end
-    else
-      BGAlpha := clNoneF;
+      if not fSelectedColor.FillWholeLines then
+        IsFullySelected := False
+      else if not SameValue(fSelectedColor.Alpha, 1) then
+      begin
+        BGAlpha := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha);
+        IsFullySelected := False;
+      end
+    end;
 
     if IsFullySelected and IsLineSpecial then
     begin
@@ -2516,15 +2520,17 @@ var
     BC, BB, BE: TBufferCoord;
     Len: Integer;
     FG, BG: TColor;
+    IsFullySelected: Boolean;
   begin
     BB := BlockBegin;
     BE := BlockEnd;
     First := 0;
     Last := 0;
+    IsFullySelected := IsRowFullySelected(Row, Line);
     Result :=
       (BB <> BE) and  (not HideSelection or Self.Focused) and
       (fActiveSelectionMode <> smLine) and
-      not IsRowFullySelected(Row, Line);
+      not (IsFullySelected and fSelectedColor.FillWholeLines);
     if not Result then Exit;
 
     if WordWrap then
@@ -2538,16 +2544,19 @@ var
       Len := Lines[Line-1].Length;
     end;
 
-    if fActiveSelectionMode = smColumn then
+    if IsFullySelected and not fSelectedColor.FillWholeLines then
+      Result := True
+    else if fActiveSelectionMode = smColumn then
       Result := (BB.Char <> BE.Char) and
         InRange(Line, BB.Line, BE.Line) and (BE >= BC) and
         (BB <= BufferCoord(BC.Char + Len, BC.Line))
     else
-    begin
       Result :=
-        (((Line = BB.Line) and InRange(BB.Char, BC.Char, BC.Char + Len))
-        or ((Line = BE.Line) and InRange(BE.Char, BC.Char + 1, BC.Char + Len)));
-    end;
+        ((Line = BB.Line) and
+         ((InRange(BB.Char, BC.Char, BC.Char + Len)) and
+         not (WordWrap and (BB.Char = BC.Char + Len) and
+         (RowtoLine(Row + 1) = Line) and not fCaretAtEOL))) or
+        ((Line = BE.Line) and InRange(BE.Char, BC.Char + 1, BC.Char + Len));
     if not Result then Exit;
 
     if fActiveSelectionMode = smColumn then
@@ -2565,9 +2574,15 @@ var
     else
     begin
       First := 1;
-      Last := BE.Char - BC.Char;
+      if IsFullySelected then
+        Last := MaxInt
+      else
+        Last := BE.Char - BC.Char;
     end;
-    if DoOnSpecialLineColors(Line, FG, BG) then
+
+    if DoOnSpecialLineColors(Line, FG, BG) and
+      SameValue(fSelectedColor.Alpha, 1)
+    then
     begin
       // Invert special colors as in Delphi
       SelBG := FG;
@@ -2842,9 +2857,10 @@ begin
         begin
           Layout.SetFontColor(SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
           FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
-            IfThen(SelLast = MaxInt, LinesRect.Right,
-            Round(HMArr[I].left + HMArr[I].width)), YRowOffset(Row + 1)),
-            TSynDWrite.SolidBrush(SelBG));
+            IfThen((SelLast = MaxInt) and (I + 1 = Integer(RangeCount)) and
+            fSelectedColor.FillWholeLines,
+            LinesRect.Right, Round(HMArr[I].left + HMArr[I].width)),
+            YRowOffset(Row + 1)), TSynDWrite.SolidBrush(SelBG));
         end;
         RangeCount := 0;
       end;
@@ -2888,9 +2904,23 @@ begin
       // Partial selection
     for I := 0 to Integer(RangeCount) - 1 do
       FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
-        IfThen(SelLast = MaxInt, LinesRect.Right,
-        Round(HMArr[I].left + HMArr[I].width)), YRowOffset(Row + 1)),
-        TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha)));
+        IfThen((SelLast = MaxInt) and (I + 1 = Integer(RangeCount)) and
+        fSelectedColor.FillWholeLines,
+        LinesRect.Right, Round(HMArr[I].left + HMArr[I].width)),
+        YRowOffset(Row + 1)),
+        TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background,
+        fSelectedColor.Alpha)));
+    // Fully selected empty rows
+    if (SLine.Length = 0) and IsRowFullySelected(Row, Line) and
+      not FSelectedColor.FillWholeLines then
+    begin
+      if SameValue(FSelectedColor.Alpha, 1) then
+        BGAlpha := D2D1ColorF(fSelectedColor.Background)
+      else
+        BGAlpha := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha);
+      FRT.FillRectangle(Rect(0, YRowOffset(Row), fCharWidth,
+        YRowOffset(Row + 1)), TSynDWrite.SolidBrush(BGAlpha));
+    end
   end;
 
   // Draw right edge
@@ -6987,7 +7017,7 @@ end;
 
 procedure TCustomSynEdit.MoveDisplayPosAndSelection(const NewPos: TDisplayCoord;
   SelectionCmd: Boolean);
-{ Similar to MoveCaretAndSelection, but with display coordinates.  It is 
+{ Similar to MoveCaretAndSelection, but with display coordinates.  It is
   preferable to MoveCaretAndSelection since it correctly sets fCaretEOL }
 var
   BC: TBufferCoord;

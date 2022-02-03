@@ -66,20 +66,20 @@ type
     FFG: TColor;
     FOnChange: TNotifyEvent;
     FAlpha: Single;
-    FPaintFullLine: Boolean;
+    FFillWholeLines: Boolean;
     procedure SetBG(Value: TColor);
     procedure SetFG(Value: TColor);
     procedure SetAlpha(Value: Single);
-    procedure SetPaintFullLine(const Value: Boolean);
+    procedure SetFillWholeLines(const Value: Boolean);
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
-    property Background: TColor read fBG write SetBG default clHighLight;
+    property Background: TColor read FBG write SetBG default clHighLight;
     property Foreground: TColor read FFG write SetFG default clHighLightText;
     property Alpha: Single read FAlpha write SetAlpha;
-    property PaintFullLine: Boolean read FPaintFullLine write SetPaintFullLine
+    property FillWholeLines: Boolean read FFillWholeLines write SetFillWholeLines
       default True;
   end;
 
@@ -604,9 +604,9 @@ end;
 constructor TSynSelectedColor.Create;
 begin
   inherited Create;
-  fBG := clHighLight;
+  FBG := clHighLight;
   FFG := clHighLightText;
-  FPaintFullLine := True;
+  FFillWholeLines := True;
   Alpha := 0.4;
 end;
 
@@ -617,7 +617,7 @@ begin
   if (Source <> nil) and (Source is TSynSelectedColor) then
   begin
     Src := TSynSelectedColor(Source);
-    fBG := Src.fBG;
+    FBG := Src.FBG;
     FFG := Src.FFG;
     if Assigned(FOnChange) then
       FOnChange(Self);
@@ -639,9 +639,9 @@ end;
 
 procedure TSynSelectedColor.SetBG(Value: TColor);
 begin
-  if (fBG <> Value) then
+  if (FBG <> Value) then
   begin
-    fBG := Value;
+    FBG := Value;
     if Assigned(FOnChange) then
       FOnChange(Self);
   end;
@@ -657,11 +657,11 @@ begin
   end;
 end;
 
-procedure TSynSelectedColor.SetPaintFullLine(const Value: Boolean);
+procedure TSynSelectedColor.SetFillWholeLines(const Value: Boolean);
 begin
-  if (FPaintFullLine <> Value) then
+  if (FFillWholeLines <> Value) then
   begin
-     FPaintFullLine := Value;
+     FFillWholeLines := Value;
     if Assigned(FOnChange) then
       FOnChange(Self);
   end;
