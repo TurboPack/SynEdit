@@ -79,7 +79,8 @@ type
     property Background: TColor read fBG write SetBG default clHighLight;
     property Foreground: TColor read FFG write SetFG default clHighLightText;
     property Alpha: Single read FAlpha write SetAlpha;
-    property PaintFullLine: Boolean read FPaintFullLine write SetPaintFullLine;
+    property PaintFullLine: Boolean read FPaintFullLine write SetPaintFullLine
+      default True;
   end;
 
   TSynIdentGuidesStyle = (igsSolid, igsDotted);
@@ -605,6 +606,7 @@ begin
   inherited Create;
   fBG := clHighLight;
   FFG := clHighLightText;
+  FPaintFullLine := True;
   Alpha := 0.4;
 end;
 
@@ -775,6 +777,7 @@ begin
     FDigitCount := Src.FDigitCount;
     FAutoSize := Src.FAutoSize;
     FAutoSizeDigitCount := Src.FAutoSizeDigitCount;
+    FShowLineNumbers := Src.FShowLineNumbers;
     FLineNumberStart := Src.FLineNumberStart;
     FBorderColor := Src.FBorderColor;
     FBorderStyle := Src.FBorderStyle;
