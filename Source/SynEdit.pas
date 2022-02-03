@@ -2462,13 +2462,13 @@ var
 
   procedure FullRowColors(const Row, Line: Integer;
     var FullRowFG, FullRowBG: TColor; var BGAlpha: TD2D1ColorF);
-  { clNone indicates normal processing of text foreground/background color }
+  { Return clNone to do normal processing of text foreground/background color }
   var
     IsLineSpecial: Boolean;
     IsFullySelected: Boolean;
-    FG, BG: TColor;
+    SpecialFG, SpecialBG: TColor;
   begin
-    IsLineSpecial := DoOnSpecialLineColors(Line, FG, BG);
+    IsLineSpecial := DoOnSpecialLineColors(Line, SpecialFG, SpecialBG);
     IsFullySelected := IsRowFullySelected(Row, Line);
 
     BGAlpha := clNoneF;
@@ -2486,16 +2486,16 @@ var
     if IsFullySelected and IsLineSpecial then
     begin
       // Invert the colors as in Delphi
-      FullRowFG := BG;
-      FullRowBG := FG;
+      FullRowFG := SpecialBG;
+      FullRowBG := SpecialFG;
     end
     else if IsLineSpecial then
     begin
-      FullRowBG := BG;
+      FullRowBG := SpecialBG;
       if eoSpecialLineDefaultFg in FOptions then
         FullRowFG := clNone
       else
-        FullRowFG := FG;
+        FullRowFG := SpecialFG;
     end
     else if IsFullySelected then
     begin
@@ -2725,6 +2725,22 @@ var
     end;
   end;
 
+  function SelEndX(Left, Width: Single; SelLast, I, RangeCount: Integer): Integer;
+  // Helper that returns the position of the end of partial selection
+  begin
+    if (SelLast = MaxInt) and (I + 1 = Integer(RangeCount)) then
+    begin
+      if fSelectedColor.FillWholeLines then
+        SelEndX := LinesRect.Right
+      else if eoShowSpecialChars in fOptions then
+        SelEndX := Round(Left + Width)
+      else
+        SelEndX := Round(Left + Width) + fCharWidth;
+    end
+    else
+      SelEndX := Round(Left + Width);
+  end;
+
 var
   Line, Row, CharOffset, I: Integer;
   LayoutWidth: Integer;
@@ -2843,6 +2859,9 @@ begin
     end;
 
     // Paint selection if Line is partially selected - deals with bidi text
+    // The foreground needs to be set before we render the layout
+    // The background needs to be painted before we render the layout if we
+    // are not blending the selection otherwise after
     RangeCount := 0;
     if PartialSelection(Row, Line, SelFirst, SelLast, SelBG, SelFG) then
     begin
@@ -2857,9 +2876,7 @@ begin
         begin
           Layout.SetFontColor(SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
           FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
-            IfThen((SelLast = MaxInt) and (I + 1 = Integer(RangeCount)) and
-            fSelectedColor.FillWholeLines,
-            LinesRect.Right, Round(HMArr[I].left + HMArr[I].width)),
+            SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
             YRowOffset(Row + 1)), TSynDWrite.SolidBrush(SelBG));
         end;
         RangeCount := 0;
@@ -2901,26 +2918,13 @@ begin
       // Full Row
       FRT.FillRectangle(Rect(0, YRowOffset(Row), LinesRect.Right,
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(BGAlpha));
-      // Partial selection
+      // Alpha bldended partial selection
     for I := 0 to Integer(RangeCount) - 1 do
       FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
-        IfThen((SelLast = MaxInt) and (I + 1 = Integer(RangeCount)) and
-        fSelectedColor.FillWholeLines,
-        LinesRect.Right, Round(HMArr[I].left + HMArr[I].width)),
+        SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
         YRowOffset(Row + 1)),
         TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background,
         fSelectedColor.Alpha)));
-    // Fully selected empty rows
-    if (SLine.Length = 0) and IsRowFullySelected(Row, Line) and
-      not FSelectedColor.FillWholeLines then
-    begin
-      if SameValue(FSelectedColor.Alpha, 1) then
-        BGAlpha := D2D1ColorF(fSelectedColor.Background)
-      else
-        BGAlpha := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha);
-      FRT.FillRectangle(Rect(0, YRowOffset(Row), fCharWidth,
-        YRowOffset(Row + 1)), TSynDWrite.SolidBrush(BGAlpha));
-    end
   end;
 
   // Draw right edge
