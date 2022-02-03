@@ -2920,7 +2920,7 @@ begin
       // Full Row
       FRT.FillRectangle(Rect(0, YRowOffset(Row), LinesRect.Right,
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(BGAlpha));
-      // Alpha bldended partial selection
+    // partial selection
     for I := 0 to Integer(RangeCount) - 1 do
       FRT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
         SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
