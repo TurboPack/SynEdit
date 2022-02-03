@@ -8097,17 +8097,17 @@ begin
   begin
     Line := Lines[XY.Line - 1];
     Len := Length(Line);
-    Start := Min(XY.Char, Len);
-    if (Len > 0) and InRange(XY.Char, 1, Len + 1) and IsIdentChar(Line[Start]) then
+    if (Len > 0) and InRange(XY.Char, 1, Len + 1) then
     begin
-       while (Start > 1) and IsIdentChar(Line[Start - 1]) do
-          Dec(Start);
+      Start := XY.Char;
+      while (Start > 1) and IsIdentChar(Line[Start - 1]) do
+        Dec(Start);
 
-       Stop := XY.Char;
-       while (Stop <= Len) and IsIdentChar(Line[Stop]) do
-          Inc(Stop);
+      Stop := XY.Char;
+      while (Stop <= Len) and IsIdentChar(Line[Stop]) do
+        Inc(Stop);
 
-       Result := Copy(Line, Start, Stop - Start);
+      Result := Copy(Line, Start, Stop - Start);
     end;
   end;
 end;
