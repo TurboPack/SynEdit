@@ -2900,7 +2900,9 @@ begin
       for I := 1 to SRow.Length do
         if SRow[I] = #9 then
         begin
-          if InRange(I, SelFirst, SelLast) then
+          if InRange(I, SelFirst, SelLast) and
+            SameValue(fSelectedColor.Alpha, 1)
+          then
             DrawTab(Layout, Row, I, SelFG)
           else
             DrawTab(Layout, Row, I, TabColor);
