@@ -43,7 +43,6 @@ contains
   SynDBEdit in '..\..\..\Source\SynDBEdit.pas',
   SynDWrite in '..\..\..\Source\SynDWrite.pas',
   SynEdit in '..\..\..\Source\SynEdit.pas',
-  SynEditAutoComplete in '..\..\..\Source\SynEditAutoComplete.pas',
   SynEditCodeFolding in '..\..\..\Source\SynEditCodeFolding.pas',
   SynEditDataObject in '..\..\..\Source\SynEditDataObject.pas',
   SynEditDragDrop in '..\..\..\Source\SynEditDragDrop.pas',
@@ -68,10 +67,12 @@ contains
   SynEditPrintTypes in '..\..\..\Source\SynEditPrintTypes.pas',
   SynEditPythonBehaviour in '..\..\..\Source\SynEditPythonBehaviour.pas',
   SynEditRegexSearch in '..\..\..\Source\SynEditRegexSearch.pas',
+  SynEditScrollBars in '..\..\..\Source\SynEditScrollBars.pas',
   SynEditSearch in '..\..\..\Source\SynEditSearch.pas',
   SynEditStrConst in '..\..\..\Source\SynEditStrConst.pas',
   SynEditTextBuffer in '..\..\..\Source\SynEditTextBuffer.pas',
   SynEditTypes in '..\..\..\Source\SynEditTypes.pas',
+  SynEditUndo in '..\..\..\Source\SynEditUndo.pas',
   SynEditWordWrap in '..\..\..\Source\SynEditWordWrap.pas',
   SynExportHTML in '..\..\..\Source\SynExportHTML.pas',
   SynExportRTF in '..\..\..\Source\SynExportRTF.pas',
@@ -111,6 +112,7 @@ contains
   SynHighlighterJSON in '..\..\..\Source\SynHighlighterJSON.pas',
   SynHighlighterKix in '..\..\..\Source\SynHighlighterKix.pas',
   SynHighlighterLDraw in '..\..\..\Source\SynHighlighterLDraw.pas',
+  SynHighlighterLLVM in '..\..\..\Source\SynHighlighterLLVM.pas',
   SynHighlighterM3 in '..\..\..\Source\SynHighlighterM3.pas',
   SynHighlighterModelica in '..\..\..\Source\SynHighlighterModelica.pas',
   SynHighlighterMsg in '..\..\..\Source\SynHighlighterMsg.pas',
@@ -135,11 +137,11 @@ contains
   SynHighlighterVB in '..\..\..\Source\SynHighlighterVB.pas',
   SynHighlighterVBScript in '..\..\..\Source\SynHighlighterVBScript.pas',
   SynHighlighterVrml97 in '..\..\..\Source\SynHighlighterVrml97.pas',
+  SynHighlighterWebIDL in '..\..\..\Source\SynHighlighterWebIDL.pas',
   SynHighlighterXML in '..\..\..\Source\SynHighlighterXML.pas',
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
-  SynURIOpener in '..\..\..\Source\SynURIOpener.pas',
-  SynEditUndo in '..\..\..\Source\SynEditUndo.pas';
+  SynURIOpener in '..\..\..\Source\SynURIOpener.pas';
 
 end.
