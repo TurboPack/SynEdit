@@ -3320,7 +3320,7 @@ begin
   else
   begin
     if eoScrollPastEol in Options then
-        MaxVal := MaxInt
+      MaxVal := MaxInt
     else if WordWrap and (eoWrapWithRightEdge in FOptions) and
       (WrapAreaWidth > FTextAreaWidth - FCharWidth)
     then
