@@ -179,7 +179,7 @@ begin
     Dlg.Keystrokes := TSynEditKeystrokes(GetOrdValue);
     if Dlg.ShowModal = mrOk then
     begin
-      { SetOrdValue will operate on all selected propertiy values }
+      { SetOrdValue will operate on all selected property values }
       SetOrdValue(NativeInt(Dlg.Keystrokes));
       Modified;
     end;

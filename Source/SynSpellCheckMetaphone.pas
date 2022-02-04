@@ -27,9 +27,9 @@ type
     mrNone); // Rule always applies
 
   TRule = record
-    sFrom, sTo: UnicodeString;
+    sFrom, sTo: string;
     RuleType: TRuleType;
-    Args: UnicodeString;
+    Args: string;
   end;
 
 const
@@ -135,9 +135,9 @@ const
   Vowels = 'AEIOU';
 
 var
-  OutStr: TUnicodeStringList;
+  OutStr: TStringList;
 
-procedure ApplyRules(ScanStr: UnicodeString; RuleBase: array of TRule);
+procedure ApplyRules(ScanStr: string; RuleBase: array of TRule);
 
   function RuleApplicable(Rule: TRule; CharIndex: integer): Boolean;
   var
@@ -217,7 +217,7 @@ var
   iI: Integer;
 
   t: integer;
-  SkipRule: UnicodeString;
+  SkipRule: string;
   SkipFlag: boolean;
 begin
   t := Low(RuleBase);
@@ -239,7 +239,7 @@ begin
   end;
 end;
 
-function FindRel(xx: Integer): UnicodeString;
+function FindRel(xx: Integer): string;
 var
   iI: Integer;
 begin
@@ -250,13 +250,13 @@ end;
 
 function MetaPhone(a: PWideChar; lg: integer): PWideChar; stdcall;
 var
-  sResult: UnicodeString;
+  sResult: string;
 
-  InStr, TempStr: UnicodeString;
+  InStr, TempStr: string;
   x, y, SmallestIndex, SmallestValue: integer; //for selection sort
   FirstFlag: boolean;
 begin
-  OutStr := TUnicodeStringList.Create;
+  OutStr := TStringList.Create;
   try
     TempStr := WideUpperCase(a);
     InStr := '';

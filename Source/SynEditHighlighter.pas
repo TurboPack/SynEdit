@@ -128,10 +128,6 @@ type
     fCasedLineStr: string;
     fCaseSensitive: Boolean;
     fDefaultFilter: string;
-    fExpandedLine: PWideChar;
-    fExpandedLineLen: Integer;
-    fExpandedLineStr: string;
-    fExpandedTokenPos: Integer;
     fLine: PWideChar;
     fLineLen: Integer;
     fLineStr: string;
@@ -141,7 +137,6 @@ type
     fTokenPos: Integer;
     fUpdateChange: Boolean;
     Run: Integer;
-    ExpandedRun: Integer;
     fOldRun: Integer;
     procedure Loaded; override;
     procedure AddAttribute(Attri: TSynHighlighterAttributes);
@@ -176,8 +171,6 @@ type
     procedure BeginUpdate;
     procedure EndUpdate;
     function GetEol: Boolean; virtual; abstract;
-    function GetExpandedToken: string; virtual;
-    function GetExpandedTokenPos: Integer; virtual;
     function GetKeyWords(TokenKind: Integer): string; virtual;
     function GetRange: Pointer; virtual;
     function GetToken: string; virtual;
@@ -187,9 +180,6 @@ type
     function IsKeyword(const AKeyword: string): Boolean; virtual;
     procedure Next; virtual;
     procedure NextToEol;
-    function PosToExpandedPos(Pos: Integer): Integer;
-    procedure SetLineExpandedAtWideGlyphs(const Line, ExpandedLine: string;
-      LineNumber: Integer); virtual;
     procedure SetLine(const Value: string; LineNumber: Integer); virtual;
     procedure SetRange(Value: Pointer); virtual;
     procedure ResetRange; virtual;
@@ -950,35 +940,11 @@ begin
   Result := fDefaultFilter;
 end;
 
-function TSynCustomHighlighter.GetExpandedTokenPos: Integer;
-begin
-  if fExpandedLine = nil then
-    Result := fTokenPos
-  else
-    Result := fExpandedTokenPos;
-end;
-
 function TSynCustomHighlighter.GetExportName: string;
 begin
   if FExportName = '' then
     FExportName := SynEditMiscProcs.DeleteTypePrefixAndSynSuffix(ClassName);
   Result := FExportName;
-end;
-
-function TSynCustomHighlighter.GetExpandedToken: string;
-var
-  Len: Integer;
-begin
-  if fExpandedLine = nil then
-  begin
-    Result := GetToken;
-    Exit;
-  end;
-
-  Len := ExpandedRun - fExpandedTokenPos;
-  SetLength(Result, Len);
-  if Len > 0 then
-    StrLCopy(@Result[1], fExpandedLine + fExpandedTokenPos, Len);
 end;
 
 class function TSynCustomHighlighter.GetFriendlyLanguageName: string;
@@ -1153,17 +1119,9 @@ var
 begin
   if fOldRun = Run then Exit;
 
-  fExpandedTokenPos := ExpandedRun;
-  if fExpandedLine = nil then Exit;
-
   Delta := Run - fOldRun;
   while Delta > 0 do
-  begin
-    while fExpandedLine[ExpandedRun] = FillerChar do
-      inc(ExpandedRun);
-    inc(ExpandedRun);
     dec(Delta);
-  end;
   fOldRun := Run;
 end;
 
@@ -1204,21 +1162,8 @@ begin
   end;
 end;
 
-procedure TSynCustomHighlighter.SetLineExpandedAtWideGlyphs(const Line,
-  ExpandedLine: string; LineNumber: Integer);
-begin
-  fExpandedLineStr := ExpandedLine;
-  fExpandedLine := PWideChar(fExpandedLineStr);
-  fExpandedLineLen := Length(fExpandedLineStr);
-  DoSetLine(Line, LineNumber);
-  Next;
-end;
-
 procedure TSynCustomHighlighter.SetLine(const Value: string; LineNumber: Integer);
 begin
-  fExpandedLineStr := '';
-  fExpandedLine := nil;
-  fExpandedLineLen := 0;
   DoSetLine(Value, LineNumber);
   Next;
 end;
@@ -1250,7 +1195,6 @@ begin
   fLineLen := Length(fLineStr);
 
   Run := 0;
-  ExpandedRun := 0;
   fOldRun := Run;
   fLineNumber := LineNumber;
 end;
@@ -1287,28 +1231,6 @@ procedure TSynCustomHighlighter.Loaded;
 begin
   inherited;
   DefHighlightChange(nil);
-end;
-
-// Pos and Result are 1-based (i.e. positions in a string not a PWideChar)
-function TSynCustomHighlighter.PosToExpandedPos(Pos: Integer): Integer;
-var
-  i: Integer;
-begin
-  if fExpandedLine = nil then
-  begin
-    Result := Pos;
-    Exit;
-  end;
-
-  Result := 0;
-  i := 0;
-  while i < Pos do
-  begin
-    while fExpandedLine[Result] = FillerChar do
-      inc(Result);
-    inc(Result);
-    inc(i);
-  end;
 end;
 
 initialization

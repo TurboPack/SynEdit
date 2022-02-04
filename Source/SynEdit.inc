@@ -30,7 +30,4 @@
 // properly store Range State information
 {.$DEFINE SYN_HEREDOC}
 
-// Turn this off if you don't need complex script support, since it is slower
-{.$DEFINE SYN_UNISCRIBE}
 
-// $Id: SynEdit.inc,v 1.16.2.19 2009/06/14 13:41:44 maelh Exp $
