@@ -92,7 +92,7 @@
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
         <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\release\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
-        <TLIB_PageSize>64</TLIB_PageSize>
+        <TLIB_PageSize>128</TLIB_PageSize>
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
         <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
@@ -218,9 +218,6 @@
         <DelphiCompile Include="..\..\..\Source\SynEdit.pas">
             <BuildOrder>110</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditAutoComplete.pas">
-            <BuildOrder>110</BuildOrder>
-        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditCodeFolding.pas">
             <BuildOrder>111</BuildOrder>
         </DelphiCompile>
@@ -312,6 +309,9 @@
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditTypes.pas">
             <BuildOrder>115</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditUndo.pas">
+            <BuildOrder>118</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditWildcardSearch.pas">
             <BuildOrder>115</BuildOrder>
@@ -517,20 +517,11 @@
         <DelphiCompile Include="..\..\..\Source\SynMacroRecorder.pas">
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynTextDrawer.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynUnicode.pas">
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynURIOpener.pas">
             <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynUsp10.pas">
-            <BuildOrder>117</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditUndo.pas">
-            <BuildOrder>118</BuildOrder>
         </DelphiCompile>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
