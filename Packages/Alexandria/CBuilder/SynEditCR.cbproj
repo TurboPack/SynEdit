@@ -215,6 +215,9 @@
         <DelphiCompile Include="..\..\..\Source\SynDBEdit.pas">
             <BuildOrder>110</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynDWrite.pas">
+            <BuildOrder>114</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEdit.pas">
             <BuildOrder>110</BuildOrder>
         </DelphiCompile>
@@ -298,6 +301,9 @@
         <DelphiCompile Include="..\..\..\Source\SynEditRegexSearch.pas">
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditScrollBars.pas">
+            <BuildOrder>115</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditSearch.pas">
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
@@ -311,7 +317,7 @@
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditUndo.pas">
-            <BuildOrder>118</BuildOrder>
+            <BuildOrder>115</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditWildcardSearch.pas">
             <BuildOrder>115</BuildOrder>
@@ -509,7 +515,7 @@
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynHighlighterWebIDL.pas">
-            <BuildOrder>116</BuildOrder>
+            <BuildOrder>115</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynHighlighterXML.pas">
             <BuildOrder>116</BuildOrder>
