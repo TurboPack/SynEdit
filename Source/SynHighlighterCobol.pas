@@ -812,9 +812,8 @@ Const
 procedure TSynCobolSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer);
 var
-  Line, Index: Integer;
+  Line: Integer;
   iList: TList<Integer>;
-  OpenDivision, OpenSection: Boolean;
   CurLine: String;
   ok: Boolean;
   IsLastDot: Boolean;
@@ -858,6 +857,7 @@ var
       mce := RE_BlockEnd.Matches(CurLine);
       if (mce.Count > 0) or IsLastDot then
       begin
+        Index := 0;
         if mce.Count > 0 then
           Index :=  mce.Item[0].Index;
         if IsLastDot or (GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri) then
@@ -871,8 +871,6 @@ var
 
 begin
   iList := TList<Integer>.Create;
-  OpenDivision := False;
-  OpenSection := False;
 
   for Line := 0 to LinesToScan.Count - 1 do
   begin
