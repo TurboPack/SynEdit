@@ -367,7 +367,6 @@ type
 
     fGutter: TSynGutter;
     fTabWidth: Integer;
-    fInvalidateRect: TRect;
     fStateFlags: TSynStateFlags;
     fOptions: TSynEditorOptions;
     fStatusChanges: TSynStatusChanges;
@@ -1748,20 +1747,13 @@ begin
     if (FirstLine = -1) and (LastLine = -1) then
     begin
       rcInval := Rect(0, 0, fGutterWidth, ClientHeight);
-      if sfLinesChanging in fStateFlags then
-//++ Flicker Reduction
-          UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
-//-- Flicker Reduction
-      else
-        InvalidateRect(rcInval, False);
+      InvalidateRect(rcInval, False);
     end
     else begin
       { find the visible lines first }
       if (LastLine < FirstLine) then
         SwapInt(LastLine, FirstLine);
-//++ CodeFolding
       if UseCodeFolding or WordWrap then
-//-- CodeFolding
       begin
         FirstLine := LineToRow(FirstLine);
         if LastLine <= Lines.Count then
@@ -1776,12 +1768,7 @@ begin
       begin
         rcInval := Rect(0, fTextHeight * (FirstLine - TopLine),
           fGutterWidth, fTextHeight * (LastLine - TopLine + 1));
-        if sfLinesChanging in fStateFlags then
-//++ Flicker Reduction
-          UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
-//-- Flicker Reduction
-        else
-          InvalidateRect(rcInval, False);
+        InvalidateRect(rcInval, False);
       end;
     end;
 end;
@@ -1796,12 +1783,7 @@ begin
     begin
       rcInval := ClientRect;
       Inc(rcInval.Left, fGutterWidth);
-      if sfLinesChanging in fStateFlags then
-//++ Flicker Reduction
-        UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
-//-- Flicker Reduction
-      else
-        InvalidateRect(rcInval, False);
+      InvalidateRect(rcInval, False);
     end
     else begin
       FirstLine := Max(FirstLine, 1);
@@ -1834,12 +1816,7 @@ begin
       begin
         rcInval := Rect(fGutterWidth, fTextHeight * (FirstLine - TopLine),
           ClientWidth, fTextHeight * (LastLine - TopLine + 1));
-        if sfLinesChanging in fStateFlags then
-//++ Flicker Reduction
-          UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
-//++ Flicker Reduction
-        else
-          InvalidateRect(rcInval, False);
+        InvalidateRect(rcInval, False);
       end;
     end;
 end;
@@ -1969,7 +1946,6 @@ var
 begin
   DoLinesChanged;
 
-  // CodeFolding
   if (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
   begin
     if Assigned(fHighlighter) and (fHighlighter is TSynCustomCodeFoldingHighlighter) then
@@ -1988,8 +1964,6 @@ begin
     vOldMode := fActiveSelectionMode;
     //SetBlockBegin(CaretXY);
     fActiveSelectionMode := vOldMode;
-    InvalidateRect(fInvalidateRect, False);
-    FillChar(fInvalidateRect, SizeOf(TRect), 0);
     if not (eoScrollPastEof in Options) then
       TopLine := TopLine;
   end;
@@ -4225,7 +4199,6 @@ begin
 
   ClearUndo;
   // invalidate the *whole* client area
-  FillChar(fInvalidateRect, SizeOf(TRect), 0);
   Invalidate;
   // set caret and selected block to start of text
   CaretXY := BufferCoord(1, 1);
@@ -7694,12 +7667,7 @@ begin
     // invalidate text area of this line
     rcInval := Rect(fGutterWidth, fTextHeight * (Line - TopLine), ClientWidth, 0);
     rcInval.Bottom := rcInval.Top + fTextHeight;
-    if sfLinesChanging in fStateFlags then
-//++ Flicker Reduction
-      UnionRect(fInvalidateRect, rcInval, fInvalidateRect)
-//-- Flicker Reduction
-    else
-      InvalidateRect(rcInval, False);
+    InvalidateRect(rcInval, False);
   end;
 end;
 
