@@ -96,7 +96,7 @@ type
     FCount: Integer;
     FCapacity: Integer;
     FFileFormat: TSynEditFileFormat;
-    FIndexOfWidestLine: Integer;
+    FMaxWidth: Integer;
     FTabWidth: Integer;
     FCharIndexesAreValid: Boolean;
     FDetectUTF8: Boolean;
@@ -176,6 +176,8 @@ type
   ESynEditStringList = class(Exception);
 
 implementation
+uses
+  System.Math;
 
 resourcestring
   SListIndexOutOfBounds = 'Invalid stringlist index %d';
@@ -192,7 +194,7 @@ constructor TSynEditStringList.Create;
 begin
   inherited Create;
   FFileFormat := sffDos;
-  FIndexOfWidestLine := -1;
+  FMaxWidth := -1;
   FTabWidth := 8;
   FUTF8CheckLen := -1;
   Options := Options - [soWriteBOM, soTrailingLineBreak];
@@ -230,7 +232,7 @@ begin
       FOnCleared(Self);
     EndUpdate;
   end;
-  FIndexOfWidestLine := -1;
+  FMaxWidth := -1;
 end;
 
 procedure TSynEditStringList.Delete(Index: Integer);
@@ -247,7 +249,7 @@ begin
     System.Move(FList^[Index + 1], FList^[Index],
       (FCount - Index) * SynEditStringRecSize);
   end;
-  FIndexOfWidestLine := -1;
+  FMaxWidth := -1;
   if Assigned(FOnDeleted) then
     FOnDeleted(Self, Index, 1);
   EndUpdate;
@@ -370,28 +372,24 @@ var
   I: Integer;
   PRec: PSynEditStringRec;
 begin
-  Result := 0;
-  if (FIndexOfWidestLine >= 0) and (FIndexOfWidestLine < FCount) then
-    Result := FList^[FIndexOfWidestLine].FTextWidth
+  if FMaxWidth > 0 then
+    Result := FMaxWidth
+  else if FCount = 0 then
+    Result := 0
   else
   begin
-    if FCount > 0 then
+    for I := 0 to FCount - 1 do
     begin
-      for I := 0 to FCount - 1 do
+      PRec := @FList^[I];
+      if sfTextWidthUnknown in PRec^.FFlags then
       begin
-        PRec := @FList^[I];
-        if sfTextWidthUnknown in PRec^.FFlags then
-        begin
-          PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
-          Exclude(PRec^.FFlags, sfTextWidthUnknown);
-        end;
-        if PRec^.FTextWidth > Result then
-        begin
-          Result := PRec^.FTextWidth;
-          FIndexOfWidestLine := I;
-        end;
+        PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
+        Exclude(PRec^.FFlags, sfTextWidthUnknown);
       end;
+      if PRec^.FTextWidth > FMaxWidth then
+        FMaxWidth := PRec^.FTextWidth;
     end;
+    Result := Max(FMaxWidth, 0);
   end;
 end;
 
@@ -492,7 +490,7 @@ begin
     System.Move(FList^[Index], FList^[Index + 1],
       (FCount - Index) * SynEditStringRecSize);
   end;
-  FIndexOfWidestLine := -1;
+  FMaxWidth := -1;
   with FList^[Index] do
   begin
     Pointer(FString) := nil;
@@ -538,7 +536,7 @@ begin
           FFlags := [sfTextWidthUnknown];
         end;
       Inc(FCount, LineCount);
-      FIndexOfWidestLine := -1;
+      FMaxWidth := -1;
       if Assigned(OnInserted) then
         OnInserted(Self, Index, LineCount);
     finally
@@ -631,6 +629,7 @@ end;
 procedure TSynEditStringList.Put(Index: Integer; const S: string);
 var
   OldLine: string;
+  OldWidth: Integer;
 begin
   BeginUpdate;
   try
@@ -640,12 +639,20 @@ begin
     if Cardinal(Index) >= Cardinal(FCount) then
       ListIndexOutOfBounds(Index);
 
-    FIndexOfWidestLine := -1;
     with FList^[Index] do
     begin
-      Include(FFlags, sfTextWidthUnknown);
       OldLine := FString;
       FString := S;
+
+      // Optimization:  We calculate text width here, thus
+      // in most cases avoiding to recalc FMaxWidth the hard way
+      OldWidth := FTextWidth;
+      FTextWidth := FTextWidthFunc(FString);
+      Exclude(FFlags, sfTextWidthUnknown);
+      if (FMaxWidth = OldWidth) and (OldWidth > FTextWidth) then
+        FMaxWidth := -1
+      else if FTextWidth >= FMaxWidth then
+        FMaxWidth := FTextWidth
     end;
     if Assigned(FOnPut) then
       FOnPut(Self, Index, OldLine);
@@ -794,7 +801,7 @@ procedure TSynEditStringList.FontChanged;
 var
   I: Integer;
 begin
-  FIndexOfWidestLine := -1;
+  FMaxWidth := -1;
   for I := 0 to FCount - 1 do
     with FList^[I] do
     begin
