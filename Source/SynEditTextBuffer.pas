@@ -644,15 +644,20 @@ begin
       OldLine := FString;
       FString := S;
 
-      // Optimization:  We calculate text width here, thus
-      // in most cases avoiding to recalc FMaxWidth the hard way
-      OldWidth := FTextWidth;
-      FTextWidth := FTextWidthFunc(FString);
-      Exclude(FFlags, sfTextWidthUnknown);
-      if (FMaxWidth = OldWidth) and (OldWidth > FTextWidth) then
-        FMaxWidth := -1
-      else if FTextWidth >= FMaxWidth then
-        FMaxWidth := FTextWidth
+      if FMaxWidth >= 0 then
+      begin
+        // Optimization:  We calculate text width here, thus
+        // in most cases avoiding to recalc FMaxWidth the hard way
+        OldWidth := FTextWidth;
+        FTextWidth := FTextWidthFunc(FString);
+        Exclude(FFlags, sfTextWidthUnknown);
+        if (FMaxWidth = OldWidth) and (OldWidth > FTextWidth) then
+          FMaxWidth := -1
+        else if FTextWidth > FMaxWidth then
+          FMaxWidth := FTextWidth
+      end
+      else
+        Include(FFlags, sfTextWidthUnknown);
     end;
     if Assigned(FOnPut) then
       FOnPut(Self, Index, OldLine);
