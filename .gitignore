@@ -22,7 +22,8 @@
 *.#00
 *.pch
 *.Patch
-/__history
+__history/
+__recovery/
 
 # IDE Files	  #
 ###################

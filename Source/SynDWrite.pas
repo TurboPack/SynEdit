@@ -34,6 +34,14 @@ Uses
   System.Generics.Collections,
   Vcl.Graphics;
 
+{$IF CompilerVersion <= 32}
+// some constants missing from old Delphi D2D1 unit
+const
+  DWRITE_WORD_WRAPPING_EMERGENCY_BREAK = 2;
+  D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT = $00000004;
+  WICBitmapInterpolationModeHighQualityCubic = $00000004;
+{$ENDIF}
+
 type
 {$REGION 'IDWriteFactory Redeclaration'}
   // Redeclaring the inteface to fix the declaration of CreateGdiCompatibleTextLayout
@@ -351,9 +359,11 @@ begin
 end;
 
 function DWGetTypography(Features: array of Integer) : IDWriteTypography;
+var
+  Feature: Integer;
 begin
   CheckOSError(TSynDWrite.DWriteFactory.CreateTypography(Result));
-  for var Feature in Features do
+  for Feature in Features do
     CheckOSError(Result.AddFontFeature(DWFontFeature(Feature, 1)));
 end;
 {$ENDREGION}

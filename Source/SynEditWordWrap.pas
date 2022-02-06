@@ -363,9 +363,11 @@ function TSynWordWrapPlugin.PrepareLine(const S: string): string;
   - DWrite ignores white space at the end of the line and this is a trick
     around this.
 }
+var
+  I: Integer;
 begin
   Result := S;
-  for var I := 1 to S.Length do
+  for I := 1 to S.Length do
   begin
     if not (Word(Result[I]) in [9, 32]) and Editor.IsWordBreakChar(Result[I]) then
       Result[I] := '-';
