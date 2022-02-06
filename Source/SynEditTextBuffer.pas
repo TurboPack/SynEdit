@@ -177,7 +177,8 @@ type
 
 implementation
 uses
-  System.Math;
+  System.Math,
+  System.Threading;
 
 resourcestring
   SListIndexOutOfBounds = 'Invalid stringlist index %d';
@@ -368,9 +369,6 @@ begin
 end;
 
 function TSynEditStringList.GetMaxWidth: Integer;
-var
-  I: Integer;
-  PRec: PSynEditStringRec;
 begin
   if FMaxWidth > 0 then
     Result := FMaxWidth
@@ -378,17 +376,23 @@ begin
     Result := 0
   else
   begin
-    for I := 0 to FCount - 1 do
-    begin
-      PRec := @FList^[I];
-      if sfTextWidthUnknown in PRec^.FFlags then
+      TParallel.&For(0, FCount - 1, procedure(I:Integer)
+      var
+        LMaxW: Integer;
+        PRec: PSynEditStringRec;
       begin
-        PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
-        Exclude(PRec^.FFlags, sfTextWidthUnknown);
-      end;
-      if PRec^.FTextWidth > FMaxWidth then
-        FMaxWidth := PRec^.FTextWidth;
-    end;
+        PRec := @FList^[I];
+        if sfTextWidthUnknown in PRec^.FFlags then
+        begin
+          PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
+          Exclude(PRec^.FFlags, sfTextWidthUnknown);
+        end;
+        repeat
+          LMaxW := FMaxWidth;
+          if PRec^.FTextWidth <= LMaxW then
+            break;
+        until AtomicCmpExchange(FMaxWidth, PRec^.FTextWidth, LMaxW) = LMaxW;
+      end);
     Result := Max(FMaxWidth, 0);
   end;
 end;
