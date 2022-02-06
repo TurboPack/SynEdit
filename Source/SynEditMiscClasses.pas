@@ -385,7 +385,7 @@ type
   private
     FVisible: Boolean;
     FInternalGlyph, FGlyph: TBitmap;
-    FWICImage: TWICImage;
+    FWICBitmap: IWICBitmap;
     FScaledBitmap: IWICBitmap;
     FScaledW, FScaledH: Cardinal;
     FOnChange: TNotifyEvent;
@@ -400,6 +400,7 @@ type
     destructor Destroy; override;
     procedure Assign(aSource: TPersistent); override;
     procedure ChangeScale(M, D: Integer); virtual;
+    class function WicBitmapFromBitmap(Bitmap: TBitmap):IWICBitmap; static;
   published
     property Glyph: TBitmap read FGlyph write SetGlyph;
     property WicBitmap: IWICBitmap read GetWicBitmap;
@@ -553,7 +554,7 @@ uses
   SynEdit,
   SynEditTextBuffer;
 
-{$IF CompilerVersion <= 32}
+{$IF CompilerVersion <= 34}
 procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
 var
   buffer: TBitmap;
@@ -561,7 +562,6 @@ begin
   buffer := TBitmap.Create;
   try
     buffer.SetSize(NewWidth, NewHeight);
-    buffer.AlphaFormat := afDefined;
     buffer.Canvas.StretchDraw(Rect(0, 0, NewWidth, NewHeight), Bitmap);
     Bitmap.SetSize(NewWidth, NewHeight);
     Bitmap.Canvas.Draw(0, 0, buffer);
@@ -581,7 +581,7 @@ begin
   Source := TWICImage.Create;
   try
     Source.Assign(Bitmap);
-    Factory := TWICImage.ImagingFactory;
+    Factory := TSynDWrite.ImagingFactory;
     Factory.CreateBitmapScaler(Scaler);
     try
       Scaler.Initialize(Source.Handle, NewWidth, NewHeight,
@@ -1186,10 +1186,9 @@ begin
     FInternalGlyph.LoadFromResourceName(aModule, aName);
     FInternalGlyph.AlphaFormat := afDefined;
   end;
-  FWICImage := TWICImage.Create;
-  FWICImage.Assign(FInternalGlyph);
-  FWICImage.Handle.GetSize(FScaledW, FScaledH);
-  FScaledBitmap := FWICImage.Handle;
+  FWICBitmap := WicBitmapFromBitmap(FInternalGlyph);
+  FWICBitmap.GetSize(FScaledW, FScaledH);
+  FScaledBitmap := FWICBitmap;
 
   FVisible := True;
   FGlyph := TBitmap.Create;
@@ -1200,9 +1199,9 @@ var
   Factory: IWICImagingFactory;
   Scaler: IWICBitmapScaler;
 begin
-  Factory := FWICImage.ImagingFactory;
+  Factory := TSynDWrite.ImagingFactory;
   Factory.CreateBitmapScaler(Scaler);
-  Scaler.Initialize(FWICImage.Handle, FScaledW, FScaledH,
+  Scaler.Initialize(FWICBitmap, FScaledW, FScaledH,
     WICBitmapInterpolationModeHighQualityCubic);
   FScaledBitmap := IWICBitmap(Scaler);
 end;
@@ -1212,7 +1211,6 @@ begin
   if Assigned(FInternalGlyph) then
     FreeAndNil(FInternalGlyph);
 
-  FWICImage.Free;
   FGlyph.Free;
   inherited Destroy;
 end;
@@ -1238,14 +1236,11 @@ begin
     FVisible := vSrc.FVisible;
     FGlyph.Assign(vSrc.FGlyph);
     if FGlyph.Empty then
-      FWICImage.Assign(FInternalGlyph)
+      FWICBitmap := WicBitmapFromBitmap(FInternalGlyph)
     else
-    begin
-      FGlyph.AlphaFormat := afDefined;
-      FWICImage.Assign(FGlyph);
-    end;
-    FWICImage.Handle.GetSize(FScaledW, FScaledH);
-    FScaledBitmap := FWICImage.Handle;
+      FWICBitmap := WicBitmapFromBitmap(FGlyph);
+    FWICBitmap.GetSize(FScaledW, FScaledH);
+    FScaledBitmap := FWICBitmap;
   end
   else
     inherited;
@@ -1254,16 +1249,13 @@ end;
 
 procedure TSynGlyph.SetGlyph(Value: TBitmap);
 begin
-  FGlyph.Assign(Value);
+FGlyph.Assign(Value);
   if FGlyph.Empty then
-    FWICImage.Assign(FInternalGlyph)
+    FWICBitmap := WicBitmapFromBitmap(FInternalGlyph)
   else
-  begin
-    FGlyph.AlphaFormat := afDefined;
-    FWICImage.Assign(FGlyph);
-  end;
-  FWICImage.Handle.GetSize(FScaledW, FScaledH);
-  FScaledBitmap := FWICImage.Handle;
+    FWICBitmap := WicBitmapFromBitmap(FGlyph);
+  FWICBitmap.GetSize(FScaledW, FScaledH);
+  FScaledBitmap := FWICBitmap;
   Changed;
 end;
 
@@ -1280,6 +1272,33 @@ begin
     FVisible := Value;
     Changed;
   end;
+end;
+
+class function TSynGlyph.WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
+var
+  BitmapInfo: TBitmapInfo;
+  Buffer: array of byte;
+  hBMP: HBITMAP;
+begin
+  Bitmap.AlphaFormat := afDefined;
+  Bitmap.PixelFormat := pf32bit;
+
+  SetLength(Buffer, Bitmap.Width * 4 * Bitmap.Height);
+
+  FillChar(BitmapInfo, sizeof(BitmapInfo), 0);
+  BitmapInfo.bmiHeader.biSize := SizeOf(BitmapInfo);
+  BitmapInfo.bmiHeader.biWidth := Bitmap.Width;
+  BitmapInfo.bmiHeader.biHeight := -Bitmap.Height;
+  BitmapInfo.bmiHeader.biPlanes := 1;
+  BitmapInfo.bmiHeader.biBitCount := 32;
+  // Forces evaluation of Bitmap.Handle before Bitmap.Canvas.Handle
+  hBMP := Bitmap.Handle;
+  GetDIBits(Bitmap.Canvas.Handle,  hBMP, 0, Bitmap.Height, @Buffer[0],
+    BitmapInfo, DIB_RGB_COLORS);
+
+  TSynDWrite.ImagingFactory.CreateBitmapFromMemory(Bitmap.Width, Bitmap.Height,
+    GUID_WICPixelFormat32bppPBGRA, Bitmap.Width * 4, Length(Buffer), @Buffer[0],
+    Result);
 end;
 
 { TSynMethodChain }

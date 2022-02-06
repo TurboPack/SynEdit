@@ -206,7 +206,7 @@ type
 {$ENDREGION}
 
   TSynDWrite = class
-  strict private
+  private
     class var SingletonD2DFactory: ID2D1Factory;
     class var SingletonRenderTarget: ID2D1DCRenderTarget;
     class var SingletonDWriteFactory: IDWriteFactory;
@@ -225,7 +225,6 @@ type
     class function SolidBrush(Color: TD2D1ColorF): ID2D1SolidColorBrush; overload; static;
     class function DottedStrokeStyle: ID2D1StrokeStyle; static;
     class procedure ResetRenderTarget; static;
-    class destructor Destroy;
   end;
 
   TSynTextFormat = record
@@ -385,11 +384,6 @@ begin
       LD2DFactory._AddRef;
   end;
   Result := SingletonD2DFactory;
-end;
-
-class destructor TSynDWrite.Destroy;
-begin
-  FSolidBrushes.Free;
 end;
 
 class function TSynDWrite.DottedStrokeStyle: ID2D1StrokeStyle;
@@ -779,4 +773,7 @@ initialization
   if LCIDToLocaleName(GetUserDefaultLCID, DefaultLocaleName, LOCALE_NAME_MAX_LENGTH, 0) = 0 then
     RaiseLastOSError;
   clNoneF := D2D1ColorF(0, 0, 0, 0);
+finalization
+  // Delphi 10.1 does not support class destructors
+  TSynDWrite.FSolidBrushes.Free;
 end.
