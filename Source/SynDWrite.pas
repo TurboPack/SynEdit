@@ -204,6 +204,7 @@ type
     class var SingletonDWriteFactory: IDWriteFactory;
     class var SingletonGDIInterop: IDWriteGdiInterop;
     class var SingletonDottedStrokeStyle: ID2D1StrokeStyle;
+    class var SingletonImagingFactory: IWICImagingFactory;
     class var FSolidBrushes: TDictionary<TD2D1ColorF, ID2D1SolidColorBrush>;
   public
     class function D2DFactory(factoryType: TD2D1FactoryType=D2D1_FACTORY_TYPE_SINGLE_THREADED;
@@ -211,6 +212,7 @@ type
     class function RenderTarget: ID2D1DCRenderTarget; static;
     class function DWriteFactory: IDWriteFactory; static;
     class function GDIInterop: IDWriteGdiInterop; static;
+    class function ImagingFactory: IWICImagingFactory; static;
     class function SolidBrush(Color: TColor): ID2D1SolidColorBrush; overload; static;
     class function SolidBrush(Color: TD2D1ColorF): ID2D1SolidColorBrush; overload; static;
     class function DottedStrokeStyle: ID2D1StrokeStyle; static;
@@ -259,20 +261,16 @@ type
   ISynWicRenderTarget = interface
     ['{1142A46F-9BF4-449C-9C4A-A22B19716202}']
     function GetIDW: ID2D1RenderTarget;
-    function GetWicImage: TWICImage;
     property IDW: ID2D1RenderTarget read GetIDW;
-    property WicImage: TWICImage read GetWicImage;
   end;
 
   TSynWicRenderTarget = class(TInterfacedObject, ISynWicRenderTarget)
   private
-    FWicImage: TWICImage;
+    FWicBitmap: IWICBitmap;
     FIDW: ID2D1RenderTarget;
     function GetIDW: ID2D1RenderTarget;
-    function GetWicImage: TWICImage;
   public
     constructor Create(const Width, Height: integer);
-    destructor Destroy; override;
   end;
 
   function SynWicRenderTarget(const Width, Height: integer): ISynWicRenderTarget;
@@ -431,6 +429,22 @@ begin
       SingletonGDIInterop._AddRef;
   end;
   Result := SingletonGDIInterop;
+end;
+
+class function TSynDWrite.ImagingFactory: IWICImagingFactory;
+var
+  ImgFactory: IWICImagingFactory;
+begin
+  if SingletonImagingFactory = nil then
+  begin
+    CheckOSError(CoCreateInstance(CLSID_WICImagingFactory, nil,
+     CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IUnknown, ImgFactory));
+    if InterlockedCompareExchangePointer(Pointer(SingletonImagingFactory),
+      Pointer(ImgFactory), nil) = nil
+    then
+      SingletonImagingFactory._AddRef;
+  end;
+  Result := SingletonImagingFactory;
 end;
 
 class function TSynDWrite.RenderTarget: ID2D1DCRenderTarget;
@@ -721,19 +735,11 @@ end;
 
 constructor TSynWICRenderTarget.Create(const Width, Height: integer);
 var
-  BM: TBitmap;
   RenderTargetProp: TD2D1RenderTargetProperties;
 begin
   inherited Create;
-  FWicImage := TWicImage.Create;
-  FWicImage.InterpolationMode := wipmHighQualityCubic;
-  BM := TBitmap.Create(Width, Height);
-  try
-    BM.AlphaFormat := afDefined;
-    FWicImage.Assign(BM);
-  finally
-    BM.Free;
-  end;
+  CheckOSError(TSynDWrite.ImagingFactory.CreateBitmap(Width, Height,
+    @GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnDemand, FWicBitmap));
 
   RenderTargetProp :=
     D2D1RenderTargetProperties(
@@ -745,24 +751,13 @@ begin
       D2D1PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_UNKNOWN), // use image format
       0, 0, D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
 
-  CheckOSError(TSynDWrite.D2DFactory.CreateWicBitmapRenderTarget(FWicImage.Handle,
+  CheckOSError(TSynDWrite.D2DFactory.CreateWicBitmapRenderTarget(FWicBitmap,
     RenderTargetProp,FIDW));
-end;
-
-destructor TSynWICRenderTarget.Destroy;
-begin
-  FWICImage.Free;
-  inherited;
 end;
 
 function TSynWicRenderTarget.GetIDW: ID2D1RenderTarget;
 begin
   Result := FIDW;
-end;
-
-function TSynWicRenderTarget.GetWicImage: TWICImage;
-begin
-  Result := FWicImage;
 end;
 
 function SynWicRenderTarget(const Width, Height: integer): ISynWicRenderTarget;
