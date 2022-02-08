@@ -393,14 +393,12 @@ type
     procedure Changed;
     procedure SetVisible(Value: Boolean);
     function GetSize: TSize;
-    procedure CreateScaledBitmap;
     function GetWicBitmap: IWICBitmap;
   public
     constructor Create(aModule: THandle; const aName: string);
     destructor Destroy; override;
     procedure Assign(aSource: TPersistent); override;
     procedure ChangeScale(M, D: Integer); virtual;
-    class function WicBitmapFromBitmap(Bitmap: TBitmap):IWICBitmap; static;
   published
     property Glyph: TBitmap read FGlyph write SetGlyph;
     property WicBitmap: IWICBitmap read GetWicBitmap;
@@ -446,8 +444,8 @@ type
     property ExceptionHandler;
     property Sender: TObject read FSender write FSender;
   end;
-
   { TSynInternalImage }
+
 
   TSynInternalImage = class(TObject)
   private
@@ -1173,7 +1171,7 @@ procedure TSynGlyph.ChangeScale(M, D: Integer);
 begin
   FScaledW := MulDiv(FScaledW, M, D);
   FSCaledH := MulDiv(FScaledH, M, D);
-  CreateScaledBitmap;
+  FScaledBitmap := ScaledWicBitmap(FWICBitmap, FScaledW, FScaledH);
 end;
 
 constructor TSynGlyph.Create(aModule: THandle; const aName: string);
@@ -1192,18 +1190,6 @@ begin
 
   FVisible := True;
   FGlyph := TBitmap.Create;
-end;
-
-procedure TSynGlyph.CreateScaledBitmap;
-var
-  Factory: IWICImagingFactory;
-  Scaler: IWICBitmapScaler;
-begin
-  Factory := TSynDWrite.ImagingFactory;
-  Factory.CreateBitmapScaler(Scaler);
-  Scaler.Initialize(FWICBitmap, FScaledW, FScaledH,
-    WICBitmapInterpolationModeHighQualityCubic);
-  FScaledBitmap := IWICBitmap(Scaler);
 end;
 
 destructor TSynGlyph.Destroy;
@@ -1272,33 +1258,6 @@ begin
     FVisible := Value;
     Changed;
   end;
-end;
-
-class function TSynGlyph.WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
-var
-  BitmapInfo: TBitmapInfo;
-  Buffer: array of byte;
-  hBMP: HBITMAP;
-begin
-  Bitmap.AlphaFormat := afDefined;
-  Bitmap.PixelFormat := pf32bit;
-
-  SetLength(Buffer, Bitmap.Width * 4 * Bitmap.Height);
-
-  FillChar(BitmapInfo, sizeof(BitmapInfo), 0);
-  BitmapInfo.bmiHeader.biSize := SizeOf(BitmapInfo);
-  BitmapInfo.bmiHeader.biWidth := Bitmap.Width;
-  BitmapInfo.bmiHeader.biHeight := -Bitmap.Height;
-  BitmapInfo.bmiHeader.biPlanes := 1;
-  BitmapInfo.bmiHeader.biBitCount := 32;
-  // Forces evaluation of Bitmap.Handle before Bitmap.Canvas.Handle
-  hBMP := Bitmap.Handle;
-  GetDIBits(Bitmap.Canvas.Handle,  hBMP, 0, Bitmap.Height, @Buffer[0],
-    BitmapInfo, DIB_RGB_COLORS);
-
-  TSynDWrite.ImagingFactory.CreateBitmapFromMemory(Bitmap.Width, Bitmap.Height,
-    GUID_WICPixelFormat32bppPBGRA, Bitmap.Width * 4, Length(Buffer), @Buffer[0],
-    Result);
 end;
 
 { TSynMethodChain }
@@ -2110,18 +2069,18 @@ begin
     end;
   end;
 
-    GDIRT := RT.IDW as ID2D1GdiInteropRenderTarget;
-    CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
-    BF.BlendOp := AC_SRC_OVER;
-    BF.BlendFlags := 0;
-    BF.SourceConstantAlpha := 255;
-    BF.AlphaFormat := AC_SRC_ALPHA;
-    AlphaBlend(Canvas.Handle, ClipR.Left, ClipR.Top, ClipR.Width, ClipR.Height,
-      SourceDC, 0, 0, ClipR.Width, ClipR.Height, BF);
-    GDIRT.ReleaseDC(nil);
+  GDIRT := RT.IDW as ID2D1GdiInteropRenderTarget;
+  CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
+  BF.BlendOp := AC_SRC_OVER;
+  BF.BlendFlags := 0;
+  BF.SourceConstantAlpha := 255;
+  BF.AlphaFormat := AC_SRC_ALPHA;
+  AlphaBlend(Canvas.Handle, ClipR.Left, ClipR.Top, ClipR.Width, ClipR.Height,
+    SourceDC, 0, 0, ClipR.Width, ClipR.Height, BF);
+  GDIRT.ReleaseDC(nil);
 
   RT.IDW.EndDraw;
-//  Canvas.Draw(CLipR.Left, ClipR.Top, RT.WicImage);
+
   if not Gutter.UseFontStyle then
   begin
     TextFormat.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);

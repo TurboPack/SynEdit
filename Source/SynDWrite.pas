@@ -312,6 +312,9 @@ function D2D1ColorF(const AColor: TColor; Opacity: Single): TD2D1ColorF; overloa
 function DWTextRange(startPosition: Cardinal; length: Cardinal): TDwriteTextRange;
 function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: Cardinal): TDwriteFontFeature;
 function DWGetTypography(Features: array of Integer) : IDWriteTypography;
+function WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
+function ScaledWicBitmap(Source: IWICBitmap;
+  const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
 
 var
   DefaultLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
@@ -364,6 +367,25 @@ begin
   CheckOSError(TSynDWrite.DWriteFactory.CreateTypography(Result));
   for Feature in Features do
     CheckOSError(Result.AddFontFeature(DWFontFeature(Feature, 1)));
+end;
+
+function WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
+begin
+  Assert(Bitmap.PixelFormat = pf32bit);
+  Bitmap.AlphaFormat := afDefined;
+  CheckOSError(TSynDWrite.ImagingFactory.CreateBitmapFromHBITMAP(Bitmap.Handle,
+    0, WICBitmapUsePremultipliedAlpha, Result));
+end;
+
+function ScaledWicBitmap(Source: IWICBitmap;
+  const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
+var
+  Scaler: IWICBitmapScaler;
+begin
+  TSynDWrite.ImagingFactory.CreateBitmapScaler(Scaler);
+  Scaler.Initialize(Source, ScaledWidth, ScaledHeight,
+    WICBitmapInterpolationModeHighQualityCubic);
+  Result := IWICBitmap(Scaler);
 end;
 {$ENDREGION}
 

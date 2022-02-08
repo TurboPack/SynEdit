@@ -723,6 +723,7 @@ type
     procedure InvalidateGutter;
     procedure InvalidateGutterLine(aLine: integer);
     procedure InvalidateGutterLines(FirstLine, LastLine: integer);
+    procedure InvalidateGutterBand(Kind: TSynGutterBandKind);
     procedure InvalidateLine(Line: integer);
     procedure InvalidateLines(FirstLine, LastLine: integer);
     procedure InvalidateSelection;
@@ -1728,6 +1729,19 @@ end;
 procedure TCustomSynEdit.InvalidateGutter;
 begin
   InvalidateGutterLines(-1, -1);
+end;
+
+procedure TCustomSynEdit.InvalidateGutterBand(Kind: TSynGutterBandKind);
+var
+  Band: TSynGutterBand;
+  Left: Integer;
+begin
+   if not Gutter.Visible then Exit;
+   Band := Gutter.Band[Kind];
+   if not Assigned(Band) or not Band.Visible then Exit;
+
+   Left := Band.LeftX;
+   InvalidateRect(Rect(Left, 0, Left + Band.RealWidth, ClientHeight) ,False)
 end;
 
 procedure TCustomSynEdit.InvalidateGutterLine(aLine: Integer);
@@ -4233,7 +4247,7 @@ begin
     AllFoldRanges.LinesDeleted(aIndex, aCount);
     // Scan the same lines the highlighter has scanned
     ReScanForFoldRanges(aIndex, vLastScan);
-    InvalidateGutter;
+    InvalidateGutterBand(gbkFold);
   end;
 //-- CodeFolding
 
@@ -8863,11 +8877,11 @@ begin
   begin
     InvalidateLine(CaretY);
     Include(fStateFlags, sfCaretChanged);
+    UpdateLastPosX;
   end;
 
   EnsureCursorPosVisible;
   DecPaintLock;
-  UpdateLastPosX;
 end;
 
 procedure TCustomSynEdit.SetWantReturns(Value: Boolean);
