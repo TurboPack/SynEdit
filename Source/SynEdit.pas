@@ -4261,17 +4261,29 @@ end;
 procedure TCustomSynEdit.ListInserted(Sender: TObject; Index: Integer;
   aCount: Integer);
 var
-  vLastScan: Integer;
-//++ CodeFolding
+  I, vLastScan: Integer;
   FoldIndex: Integer;
 begin
   if WordWrap then
-    fWordWrapPlugin.LinesInserted(Index, aCount);
+    fWordWrapPlugin.LinesInserted(Index, aCount)
+  else
+  begin
+    // #157 Activate WordWrap when you have super long lines
+    for I := Index to Index + aCount - 1 do
+      if Lines[I].Length > 10000 then   // Magic number
+      begin
+        TThread.ForceQueue(nil, procedure
+        begin
+          UseCodeFolding := False;
+          WordWrap := True;
+        end);
+        Break;
+      end;
+  end;
 
   DoLinesInserted(Index, aCount);
 
   vLastScan := Index;
-//-- CodeFolding
   if Assigned(fHighlighter) and (Lines.Count > 0) then
   begin
     repeat
