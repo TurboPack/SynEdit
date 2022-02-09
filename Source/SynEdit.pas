@@ -4277,6 +4277,9 @@ begin
         TThread.ForceQueue(nil, procedure
         begin
           UseCodeFolding := False;
+          Include(fOptions, eoWrapWithRightEdge);
+          if fRightEdge = 0 then
+            fRightEdge := 80;
           WordWrap := True;
         end);
         Break;
