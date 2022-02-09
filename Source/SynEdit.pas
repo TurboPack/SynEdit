@@ -4267,9 +4267,10 @@ var
 begin
   if WordWrap then
     fWordWrapPlugin.LinesInserted(Index, aCount)
+{$if CompilerVersion >= 32}
   else
   begin
-    // #157 Activate WordWrap when you have super long lines
+    // Activate WordWrap when you have super long lines (#157)
     for I := Index to Index + aCount - 1 do
       if Lines[I].Length > 10000 then   // Magic number
       begin
@@ -4280,7 +4281,8 @@ begin
         end);
         Break;
       end;
-  end;
+  end
+{$endif};
 
   DoLinesInserted(Index, aCount);
 
