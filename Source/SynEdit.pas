@@ -185,12 +185,10 @@ type
   TMouseCursorEvent = procedure(Sender: TObject; const aLineCharPos: TBufferCoord;
     var aCursor: TCursor) of object;
 
-//++ CodeFolding
+  // CodeFolding
   TScanForFoldRangesEvent = procedure(Sender: TObject;
     FoldRanges: TSynFoldRanges; LinesToScan: TStrings;
     FromLine : Integer; ToLine : Integer) of object;
-//-- CodeFolding
-
 
   TCustomSynEdit = class;
 
@@ -2284,6 +2282,8 @@ var
 begin
   // Get the invalidated rect. Compute the invalid area in lines / columns.
   rcClip := Canvas.ClipRect;
+  if rcClip.IsEmpty then Exit;
+
   // lines
   nL1 := Max(TopLine + rcClip.Top div fTextHeight, TopLine);
   nL2 := MinMax(TopLine + (rcClip.Bottom + fTextHeight - 1) div fTextHeight,
@@ -2369,6 +2369,7 @@ begin
     if (L > AClip.Right) or (L + W < AClip.Left) then Continue;
 
     rcBand := Rect(L, AClip.Top, L + W, AClip.Bottom);
+    if rcBand.IsEmpty then Continue;
 
     // Paint Bands with Editor Background
     if Band.Background = gbbEditor then
