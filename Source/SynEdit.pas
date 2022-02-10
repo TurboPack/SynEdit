@@ -2619,58 +2619,77 @@ var
   end;
 
   procedure DrawIndentGuides;
+  { Only used when WordWrap is False, so rows correspond to full lines }
   var
-    TabSteps, LineIndent, NonBlankLine, X, Y, Row, Line: Integer;
-    BMWidth: Integer;
-    BitmapRT: ID2D1BitmapRenderTarget;
-    BM: ID2D1Bitmap;
-    RectF: TD2D1RectF;
+    TabSteps, NonBlankLine, X, Row, Line: Integer;
     StrokeStyle: ID2D1StrokeStyle;
-    BMSize: TD2D1SizeF;
+    LinesIndents: TArray<Integer>;
+    MaxIndent: Integer;
+    SLine: string;
   begin
-    BMWidth := Round(FCurrentPPI / 96) + 2;
-    BMSize := D2D1SizeF(BMWidth, FTextHeight);
+    SetLength(LinesIndents, aLastRow - aFirstRow + 1);
+    // Calculate LinesIndents for every line
+    MaxIndent := 0;
+    for Row := aLastRow downto aFirstRow do begin
+      Line := RowToLine(Row);  // for code folding
+      SLine := fLines[Line - 1];
+
+      LinesIndents[Row - aFirstRow] := LeftSpaces(SLine, True);
+      if SLine.TrimLeft = '' then // "blank" line
+      begin
+        if Row = aLastRow then
+        begin
+          // Get next nonblank line
+          NonBlankLine := Line;
+          while (NonBlankLine <= fLines.Count) and
+            (fLines[NonBlankLine - 1].TrimLeft = '')
+          do
+            Inc(NonBlankLine);
+          LinesIndents[Row - aFirstRow] := IfThen(NonBlankLine <= Lines.Count,
+            LeftSpaces(fLines[NonBlankLine - 1], True), 0);
+        end
+        else
+          LinesIndents[Row - aFirstRow] := LinesIndents[Row - aFirstRow + 1];
+      end;
+      MaxIndent := Max(MaxIndent, LinesIndents[Row - aFirstRow]);
+    end;
+
     if FIndentGuides.Style = igsDotted then
       StrokeStyle := TSynDWrite.DottedStrokeStyle
     else
       StrokeStyle := nil;
-    CheckOSError(FRT.CreateCompatibleRenderTarget(@BMSize, nil, nil,
-      D2D1_COMPATIBLE_RENDER_TARGET_OPTIONS_GDI_COMPATIBLE,
-      BitmapRT));
-      BitmapRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
-      BitmapRT.BeginDraw;
-      BitmapRT.DrawLine(Point(1, 0), Point(1, fTextHeight),
-        TSynDWrite.SolidBrush(FIndentGuides.Color),
-        Round(FCurrentPPI / 96), StrokeStyle);
-      BitmapRT.EndDraw;
-      CheckOSError(BitmapRT.GetBitmap(BM));
 
-    for Row := aFirstRow to aLastRow do begin
-      Line := RowToLine(Row);
-      if (Line > Lines.Count) then Break;
-
-      // If line is blank get next nonblank line
-      NonBlankLine := Line;
-      while (NonBlankLine <= fLines.Count) and
-        (fLines[NonBlankLine - 1].TrimLeft = '')
-      do
-        Inc(NonBlankLine);
-      LineIndent := LeftSpaces(fLines[NonBlankLine - 1], True);
-
-      // Step horizontally
-      Y := YRowOffset(Row);
-      TabSteps := TabWidth;
-      while TabSteps < LineIndent do
+    FRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+    // Draw the lines of each tab step
+    TabSteps := TabWidth;
+    while TabSteps < MaxIndent do
+    begin
+      X := TabSteps * CharWidth + XLineOffset;
+      if X >= 0 then
       begin
-        X := TabSteps * CharWidth + XLineOffset;
-        if X >= 0 then
-        begin
-          RectF := Rect(X - 1, Y, X + BMWidth - 1, Y + fTextHeight);
-          FRT.DrawBitmap(BM, @RectF);
-        end;
-        Inc(TabSteps, TabWidth);
+        Row := aFirstRow;
+        repeat
+          if LinesIndents[Row - aFirstRow] > TabSteps then
+          begin
+            // we have the top line of an indendation guide
+            var YTop := YRowOffset(Row);
+            var YBottom := YTop + fTextHeight;
+            while (Row < aLastRow) and (LinesIndents[Row - aFirstRow + 1] > TabSteps) do
+            begin
+              Inc(Row);
+              Inc(YBottom, fTextHeight);
+            end;
+            // Draw Line
+            FRT.DrawLine(Point(X, YTop), Point(X, YBottom),
+              TSynDWrite.SolidBrush(FIndentGuides.Color),
+              Round(FCurrentPPI / 96), StrokeStyle);
+          end;
+          Inc(Row);
+        until (Row > aLastRow);
       end;
+      Inc(TabSteps, TabWidth);
     end;
+    FRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   end;
 
   procedure PaintFoldMarks;
