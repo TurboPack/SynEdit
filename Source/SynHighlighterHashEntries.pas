@@ -149,7 +149,8 @@ begin
       AKeywordProc(Keyword, AKind);
       Keyword := '';
       // pEnd points to a char not in Identifiers, restart after that
-      pStart := pEnd + 1;
+      if pEnd^ <> #0 then
+        pStart := pEnd + 1;
     until (pStart^ = #0) or (pEnd^ = #0);
   end;
 end;
