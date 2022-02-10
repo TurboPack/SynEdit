@@ -1161,7 +1161,7 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
     Versions: TStringList;
     i: Integer;
   begin
-    with TBetterRegistry.Create do
+    with TBetterRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
     begin
       try
         RootKey := HKEY_LOCAL_MACHINE;
@@ -1192,6 +1192,7 @@ begin
   LoadKeyVersions('\SOFTWARE\Borland\Delphi', '');
   LoadKeyVersions('\SOFTWARE\Borland\BDS', BDSVersionPrefix);
   LoadKeyVersions('\SOFTWARE\CodeGear\BDS', BDSVersionPrefix);
+  LoadKeyVersions('\SOFTWARE\Embarcadero\BDS', BDSVersionPrefix);
 end;
 
 function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;

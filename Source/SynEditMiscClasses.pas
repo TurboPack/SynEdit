@@ -45,6 +45,8 @@ uses
   System.Win.Registry,
   Winapi.Windows,
   Winapi.Messages,
+  Winapi.D2D1,
+  Winapi.Wincodec,
   Vcl.Consts,
   Vcl.Graphics,
   Vcl.Controls,
@@ -52,6 +54,7 @@ uses
   Vcl.StdCtrls,
   Vcl.Menus,
   Vcl.ImgList,
+  SynDWrite,
   SynEditTypes,
   SynEditKeyConst,
   SynUnicode;
@@ -59,18 +62,48 @@ uses
 type
   TSynSelectedColor = class(TPersistent)
   private
-    fBG: TColor;
-    fFG: TColor;
-    fOnChange: TNotifyEvent;
+    FBG: TColor;
+    FFG: TColor;
+    FOnChange: TNotifyEvent;
+    FAlpha: Single;
+    FFillWholeLines: Boolean;
     procedure SetBG(Value: TColor);
     procedure SetFG(Value: TColor);
+    procedure SetAlpha(Value: Single);
+    procedure SetFillWholeLines(const Value: Boolean);
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
-    property Background: TColor read fBG write SetBG default clHighLight;
-    property Foreground: TColor read fFG write SetFG default clHighLightText;
-    property OnChange: TNotifyEvent read fOnChange write fOnChange;
+    property Background: TColor read FBG write SetBG default clHighLight;
+    property Foreground: TColor read FFG write SetFG default clHighLightText;
+    property Alpha: Single read FAlpha write SetAlpha;
+    property FillWholeLines: Boolean read FFillWholeLines write SetFillWholeLines
+      default True;
+  end;
+
+  TSynIdentGuidesStyle = (igsSolid, igsDotted);
+
+  TSynIndentGuides = class(TPersistent)
+  private
+    FColor: TColor;
+    FVisible: Boolean;
+    FStyle: TSynIdentGuidesStyle;
+    FOnChange: TNotifyEvent;
+    procedure SetColor(const Value: TColor);
+    procedure SetVisible(const Value: Boolean);
+    procedure SetStyle(const Value: TSynIdentGuidesStyle);
+  public
+    constructor Create;
+    procedure Assign(Source: TPersistent); override;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+  published
+    property Visible: Boolean read FVisible write SetVisible default True;
+    property Style: TSynIdentGuidesStyle read FStyle write SetStyle
+      default igsSolid;
+    property Color: TColor read FColor write SetColor
+      default clMedGray;
   end;
 
   TSynGutterBorderStyle = (gbsNone, gbsMiddle, gbsRight);
@@ -97,6 +130,39 @@ type
     gbkTrackChanges);
   TSynGutterBandBackground = (gbbNone, gbbGutter, gbbEditor);
 
+  TSynTrackChanges = class(TPersistent)
+  private
+    FOwner: TSynGutter;
+    FVisible: Boolean;
+    FSavedColor: TColor;
+    FModifiedColor: TColor;
+    FSavedModifiedColor: TColor;
+    FOriginalColor: TColor;
+    FWidth: Integer;
+    procedure SetModifiedColor(const Value: TColor);
+    procedure SetOriginalColor(const Value: TColor);
+    procedure SetSavedColor(const Value: TColor);
+    procedure SetSavedModifiedColor(const Value: TColor);
+    procedure SetVisible(const Value: Boolean);
+    procedure SetWidth(const Value: Integer);
+  protected
+    function GetOwner: TPersistent; override;
+  public
+    constructor Create(Gutter: TSynGutter);
+    procedure Assign(Source: TPersistent); Override;
+  published
+    property Width: Integer read FWidth write SetWidth default 4;
+    property Visible: Boolean read FVisible write SetVisible default False;
+    property SavedColor: TColor read FSavedColor write SetSavedColor
+      default $0033AA33;
+    property ModifiedColor: TColor read FModifiedColor write SetModifiedColor
+      default $0000DFFF;
+    property SavedModifiedColor: TColor read FSavedModifiedColor
+      write SetSavedModifiedColor default clWebOrange;
+    property OriginalColor: TColor read FOriginalColor write SetOriginalColor
+      default $FF6633;
+  end;
+
   TSynGutterBand = class(TCollectionItem)
   public const
     MarginX = 2;
@@ -119,6 +185,8 @@ type
     procedure PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
       const FirstRow, LastRow: Integer);
     procedure PaintMargin(Canvas: TCanvas; ClipR: TRect;
+      const FirstRow, LastRow: Integer);
+    procedure PaintTrackChanges(Canvas: TCanvas; ClipR: TRect;
       const FirstRow, LastRow: Integer);
     procedure SetBackground(const Value: TSynGutterBandBackground);
     procedure SetVisible(const Value: Boolean);
@@ -186,7 +254,7 @@ type
     FDigitCount: Integer;
     FLeadingZeros: Boolean;
     FZeroStart: Boolean;
-    fOnChange: TNotifyEvent;
+    FOnChange: TNotifyEvent;
     FCursor: TCursor;
     FVisible: Boolean;
     FShowLineNumbers: Boolean;
@@ -200,7 +268,9 @@ type
     FGradientEndColor: TColor;
     FGradientSteps: Integer;
     FInternalImage: TSynInternalImage;
+    FTrackChanges: TSynTrackChanges;
     FBands: TSynBandsCollection;
+    FTextFormat: TSynTextFormat;
     procedure SetAutoSize(const Value: Boolean);
     procedure SetBorderColor(const Value: TColor);
     procedure SetColor(const Value: TColor);
@@ -221,7 +291,6 @@ type
     procedure SetBands(const Value: TSynBandsCollection);
     function GetInternalImage: TSynInternalImage;
     function GetBandByKind(Kind: TSynGutterBandKind): TSynGutterBand;
-    procedure CalcCharWidth;
     procedure Changed;
   protected
     function GetOwner: TPersistent; override;
@@ -271,8 +340,10 @@ type
       write SetGradientEndColor default clBtnFace;
     property GradientSteps: Integer read FGradientSteps write SetGradientSteps
       default 48;
+    property TrackChanges: TSynTrackChanges read FTrackChanges
+      write FTrackChanges;
     property Bands: TSynBandsCollection read FBands write SetBands;
-    property OnChange: TNotifyEvent read fOnChange write fOnChange;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
   TSynBookMarkOpt = class(TPersistent)
@@ -284,7 +355,7 @@ type
     FLeftMargin: Integer;
     FOwner: TComponent;
     FXoffset: Integer;
-    fOnChange: TNotifyEvent;
+    FOnChange: TNotifyEvent;
     procedure SetBookmarkImages(const Value: TCustomImageList);
     procedure SetDrawBookmarksFirst(Value: Boolean);
     procedure SetGlyphsVisible(Value: Boolean);
@@ -307,33 +378,33 @@ type
       default True;
     property LeftMargin: Integer read FLeftMargin write SetLeftMargin default 2;
     property Xoffset: Integer read FXoffset write SetXOffset default 12;
-    property OnChange: TNotifyEvent read fOnChange write fOnChange;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
   TSynGlyph = class(TPersistent)
   private
     FVisible: Boolean;
     FInternalGlyph, FGlyph: TBitmap;
-    fOnChange: TNotifyEvent;
+    FWICBitmap: IWICBitmap;
+    FScaledBitmap: IWICBitmap;
+    FScaledW, FScaledH: Cardinal;
+    FOnChange: TNotifyEvent;
     procedure SetGlyph(Value: TBitmap);
-    procedure GlyphChange(Sender: TObject);
+    procedure Changed;
     procedure SetVisible(Value: Boolean);
-    function GetWidth: Integer;
-    function GetHeight: Integer;
+    function GetSize: TSize;
+    function GetWicBitmap: IWICBitmap;
   public
     constructor Create(aModule: THandle; const aName: string);
     destructor Destroy; override;
     procedure Assign(aSource: TPersistent); override;
-    procedure Draw(aCanvas: TCanvas; aX, aY, aLineHeight: Integer);
-    property Width: Integer read GetWidth;
-    property Height: Integer read GetHeight;
-    // ++ DPI-Aware
     procedure ChangeScale(M, D: Integer); virtual;
-    // -- DPI-Aware
   published
     property Glyph: TBitmap read FGlyph write SetGlyph;
+    property WicBitmap: IWICBitmap read GetWicBitmap;
     property Visible: Boolean read FVisible write SetVisible default True;
-    property OnChange: TNotifyEvent read fOnChange write fOnChange;
+    property Size: TSize read GetSize;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
   { TSynMethodChain }
@@ -373,8 +444,8 @@ type
     property ExceptionHandler;
     property Sender: TObject read FSender write FSender;
   end;
-
   { TSynInternalImage }
+
 
   TSynInternalImage = class(TObject)
   private
@@ -475,14 +546,13 @@ implementation
 
 uses
   System.Rtti,
-  Winapi.Wincodec,
   Vcl.GraphUtil,
   SynEditMiscProcs,
   SynEditCodeFolding,
-  SynTextDrawer,
-  SynEdit;
+  SynEdit,
+  SynEditTextBuffer;
 
-{$IF CompilerVersion <= 32}
+{$IF CompilerVersion <= 34}
 procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
 var
   buffer: TBitmap;
@@ -490,7 +560,6 @@ begin
   buffer := TBitmap.Create;
   try
     buffer.SetSize(NewWidth, NewHeight);
-    buffer.AlphaFormat := afDefined;
     buffer.Canvas.StretchDraw(Rect(0, 0, NewWidth, NewHeight), Bitmap);
     Bitmap.SetSize(NewWidth, NewHeight);
     Bitmap.Canvas.Draw(0, 0, buffer);
@@ -510,7 +579,7 @@ begin
   Source := TWICImage.Create;
   try
     Source.Assign(Bitmap);
-    Factory := TWICImage.ImagingFactory;
+    Factory := TSynDWrite.ImagingFactory;
     Factory.CreateBitmapScaler(Scaler);
     try
       Scaler.Initialize(Source.Handle, NewWidth, NewHeight,
@@ -533,8 +602,10 @@ end;
 constructor TSynSelectedColor.Create;
 begin
   inherited Create;
-  fBG := clHighLight;
-  fFG := clHighLightText;
+  FBG := clHighLight;
+  FFG := clHighLightText;
+  FFillWholeLines := True;
+  Alpha := 0.4;
 end;
 
 procedure TSynSelectedColor.Assign(Source: TPersistent);
@@ -544,71 +615,62 @@ begin
   if (Source <> nil) and (Source is TSynSelectedColor) then
   begin
     Src := TSynSelectedColor(Source);
-    fBG := Src.fBG;
-    fFG := Src.fFG;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    FBG := Src.FBG;
+    FFG := Src.FFG;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end
   else
     inherited Assign(Source);
 end;
 
+procedure TSynSelectedColor.SetAlpha(Value: Single);
+begin
+  Value := EnsureRange(Value, 0, 1);
+  if (FAlpha <> Value) then
+  begin
+    FAlpha := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
+end;
+
 procedure TSynSelectedColor.SetBG(Value: TColor);
 begin
-  if (fBG <> Value) then
+  if (FBG <> Value) then
   begin
-    fBG := Value;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    FBG := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
 end;
 
 procedure TSynSelectedColor.SetFG(Value: TColor);
 begin
-  if (fFG <> Value) then
+  if (FFG <> Value) then
   begin
-    fFG := Value;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    FFG := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
+end;
+
+procedure TSynSelectedColor.SetFillWholeLines(const Value: Boolean);
+begin
+  if (FFillWholeLines <> Value) then
+  begin
+     FFillWholeLines := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
 end;
 
 { TSynGutter }
 
-procedure TSynGutter.CalcCharWidth;
-var
-  Bitmap: TBitmap;
-  Editor: TCustomSynEdit;
-begin
-  Editor := TCustomSynEdit(FOwner);
-
-  if UseFontStyle or not Assigned(Editor) then
-  begin
-    if Assigned(Editor) and Editor.HandleAllocated then
-    begin
-      Editor.Canvas.Font := Font;
-      FCharWidth := TheFontStock.CalcFontAdvance(Editor.Canvas.Handle, nil);
-      Editor.Canvas.Font := Font;
-    end
-    else
-    begin
-      Bitmap := TBitmap.Create;
-      try
-        Bitmap.Canvas.Font := Font;
-        FCharWidth := TheFontStock.CalcFontAdvance(Bitmap.Canvas.Handle, nil);
-      finally
-        Bitmap.Free;
-      end;
-    end;
-  end
-  else
-    FCharWidth := Editor.CharWidth;
-end;
-
 procedure TSynGutter.Changed;
 begin
-  if (FUpdateCount = 0) and Assigned(fOnChange) then
-    fOnChange(Self);
+  if (FUpdateCount = 0) and Assigned(FOnChange) then
+    FOnChange(Self);
 end;
 
 procedure TSynGutter.ChangeScale(M, D: Integer);
@@ -640,8 +702,8 @@ begin
   FFont.Size := 8;
   FFont.Style := [];
   FUseFontStyle := True;
-  CalcCharWidth;
   FFont.OnChange := OnFontChange;
+  OnFontChange(Self);
 
   FColor := clBtnFace;
   FVisible := True;
@@ -659,12 +721,15 @@ begin
 
   AutoSizeDigitCount;
 
+  FTrackChanges := TSynTrackChanges.Create(Self);
+
   FBands := TSynBandsCollection.Create(Self, TSynGutterBand);
   Bands.BeginUpdate;
   try
     AddBand(gbkMarks, 13, True);
     AddBand(gbkLineNumbers, 0, False);
     AddBand(gbkFold, 0, False);
+    AddBand(gbkTrackChanges, 0, False);
     AddBand(gbkMargin, 3, True);
   finally
     Bands.EndUpdate;
@@ -674,14 +739,15 @@ end;
 
 constructor TSynGutter.Create(Owner: TPersistent);
 begin
-  Create;
   FOwner := Owner;
+  Create;
 end;
 
 destructor TSynGutter.Destroy;
 begin
   FOwner := nil;
   FFont.Free;
+  FTrackChanges.Free;
   FBands.Free;
   FInternalImage.Free;
   inherited Destroy;
@@ -709,6 +775,7 @@ begin
     FDigitCount := Src.FDigitCount;
     FAutoSize := Src.FAutoSize;
     FAutoSizeDigitCount := Src.FAutoSizeDigitCount;
+    FShowLineNumbers := Src.FShowLineNumbers;
     FLineNumberStart := Src.FLineNumberStart;
     FBorderColor := Src.FBorderColor;
     FBorderStyle := Src.FBorderStyle;
@@ -718,6 +785,7 @@ begin
     FGradientSteps := Src.FGradientSteps;
     if AssignableBands and Src.AssignableBands then
       FBands.Assign(Src.FBands);
+    FTrackChanges.Assign(Src.FTrackChanges);
     AutoSizeDigitCount;
     Changed;
   end
@@ -825,12 +893,22 @@ end;
 
 procedure TSynGutter.SetFont(Value: TFont);
 begin
+  if Screen.Fonts.IndexOf(Font.Name) < 0 then
+    Font.Name := DefaultFontName;
   FFont.Assign(Value);
 end;
 
 procedure TSynGutter.OnFontChange(Sender: TObject);
 begin
-  CalcCharWidth;
+  FFont.OnChange := nil;  // avoid recursion
+  if Assigned(FOwner) then
+    FFont.Quality := TCustomSynEdit(FOWner).FontQuality;
+  // revert to default font if not monospaced or invalid
+  if not IsFontMonospacedAndValid(FFont) then
+    Font.Name := DefaultFontName;
+  Font.OnChange := OnFontChange;
+  FTextFormat.Create(FFont, 1, 0, 0);
+  FCharWidth := FTextFormat.CharWidth;
   Changed;
 end;
 
@@ -1028,8 +1106,8 @@ begin
     FGlyphsVisible := Src.FGlyphsVisible;
     FLeftMargin := Src.FLeftMargin;
     FXoffset := Src.FXoffset;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end
   else
     inherited Assign(Source);
@@ -1042,8 +1120,8 @@ begin
     FBookmarkImages := Value;
     if Assigned(FBookmarkImages) then
       FBookmarkImages.FreeNotification(FOwner);
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
 end;
 
@@ -1052,8 +1130,8 @@ begin
   if Value <> FDrawBookmarksFirst then
   begin
     FDrawBookmarksFirst := Value;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
 end;
 
@@ -1062,8 +1140,8 @@ begin
   if FGlyphsVisible <> Value then
   begin
     FGlyphsVisible := Value;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
 end;
 
@@ -1072,8 +1150,8 @@ begin
   if FLeftMargin <> Value then
   begin
     FLeftMargin := Value;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
 end;
 
@@ -1082,23 +1160,19 @@ begin
   if FXoffset <> Value then
   begin
     FXoffset := Value;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    if Assigned(FOnChange) then
+      FOnChange(Self);
   end;
 end;
 
 { TSynGlyph }
 
-// ++ DPI-Aware
 procedure TSynGlyph.ChangeScale(M, D: Integer);
 begin
-  ResizeBitmap(FInternalGlyph, MulDiv(FInternalGlyph.Width, M, D),
-    MulDiv(FInternalGlyph.Height, M, D));
-  if not FGlyph.Empty then
-    ResizeBitmap(FGlyph, MulDiv(FGlyph.Width, M, D),
-      MulDiv(FGlyph.Height, M, D));
+  FScaledW := MulDiv(FScaledW, M, D);
+  FSCaledH := MulDiv(FScaledH, M, D);
+  FScaledBitmap := ScaledWicBitmap(FWICBitmap, FScaledW, FScaledH);
 end;
-// -- DPI-Aware
 
 constructor TSynGlyph.Create(aModule: THandle; const aName: string);
 begin
@@ -1108,11 +1182,14 @@ begin
   begin
     FInternalGlyph := TBitmap.Create;
     FInternalGlyph.LoadFromResourceName(aModule, aName);
+    FInternalGlyph.AlphaFormat := afDefined;
   end;
+  FWICBitmap := WicBitmapFromBitmap(FInternalGlyph);
+  FWICBitmap.GetSize(FScaledW, FScaledH);
+  FScaledBitmap := FWICBitmap;
 
   FVisible := True;
   FGlyph := TBitmap.Create;
-  FGlyph.OnChange := GlyphChange;
 end;
 
 destructor TSynGlyph.Destroy;
@@ -1121,8 +1198,17 @@ begin
     FreeAndNil(FInternalGlyph);
 
   FGlyph.Free;
-
   inherited Destroy;
+end;
+
+function TSynGlyph.GetSize: TSize;
+begin
+  Result.Create(FScaledW, FScaledH);
+end;
+
+function TSynGlyph.GetWicBitmap: IWICBitmap;
+begin
+  Result := FScaledBitmap;
 end;
 
 procedure TSynGlyph.Assign(aSource: TPersistent);
@@ -1132,54 +1218,37 @@ begin
   if Assigned(aSource) and (aSource is TSynGlyph) then
   begin
     vSrc := TSynGlyph(aSource);
-    FInternalGlyph := vSrc.FInternalGlyph;
+    FInternalGlyph.Assign(vSrc.FInternalGlyph);
     FVisible := vSrc.FVisible;
-    FGlyph := vSrc.FGlyph;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    FGlyph.Assign(vSrc.FGlyph);
+    if FGlyph.Empty then
+      FWICBitmap := WicBitmapFromBitmap(FInternalGlyph)
+    else
+      FWICBitmap := WicBitmapFromBitmap(FGlyph);
+    FWICBitmap.GetSize(FScaledW, FScaledH);
+    FScaledBitmap := FWICBitmap;
   end
   else
     inherited;
-end;
-
-procedure TSynGlyph.Draw(aCanvas: TCanvas; aX, aY, aLineHeight: Integer);
-var
-  rcSrc, rcDest: TRect;
-  vGlyph: TBitmap;
-begin
-  if not FGlyph.Empty then
-    vGlyph := FGlyph
-  else if Assigned(FInternalGlyph) then
-    vGlyph := FInternalGlyph
-  else
-    Exit;
-
-  if aLineHeight >= vGlyph.Height then
-  begin
-    rcSrc := Rect(0, 0, vGlyph.Width, vGlyph.Height);
-    Inc(aY, (aLineHeight - vGlyph.Height) div 2);
-    rcDest := Rect(aX, aY, aX + vGlyph.Width, aY + vGlyph.Height);
-  end
-  else
-  begin
-    // TODO: Skip drawing?
-    rcDest := Rect(aX, aY, aX + vGlyph.Width, aY + aLineHeight);
-    aY := (vGlyph.Height - aLineHeight) div 2;
-    rcSrc := Rect(0, aY, vGlyph.Width, aY + aLineHeight);
-  end;
-
-  DrawTransparentBitmap(vGlyph, rcSrc, aCanvas, rcDest, 255);
+  Changed;
 end;
 
 procedure TSynGlyph.SetGlyph(Value: TBitmap);
 begin
-  FGlyph.Assign(Value);
+FGlyph.Assign(Value);
+  if FGlyph.Empty then
+    FWICBitmap := WicBitmapFromBitmap(FInternalGlyph)
+  else
+    FWICBitmap := WicBitmapFromBitmap(FGlyph);
+  FWICBitmap.GetSize(FScaledW, FScaledH);
+  FScaledBitmap := FWICBitmap;
+  Changed;
 end;
 
-procedure TSynGlyph.GlyphChange(Sender: TObject);
+procedure TSynGlyph.Changed;
 begin
-  if Assigned(fOnChange) then
-    fOnChange(Self);
+  if Assigned(FOnChange) then
+    FOnChange(Self);
 end;
 
 procedure TSynGlyph.SetVisible(Value: Boolean);
@@ -1187,29 +1256,8 @@ begin
   if FVisible <> Value then
   begin
     FVisible := Value;
-    if Assigned(fOnChange) then
-      fOnChange(Self);
+    Changed;
   end;
-end;
-
-function TSynGlyph.GetWidth: Integer;
-begin
-  if not FGlyph.Empty then
-    Result := FGlyph.Width
-  else if Assigned(FInternalGlyph) then
-    Result := FInternalGlyph.Width
-  else
-    Result := 0;
-end;
-
-function TSynGlyph.GetHeight: Integer;
-begin
-  if not FGlyph.Empty then
-    Result := FGlyph.Height
-  else if Assigned(FInternalGlyph) then
-    Result := FInternalGlyph.Height
-  else
-    Result := 0;
 end;
 
 { TSynMethodChain }
@@ -1735,6 +1783,8 @@ begin
       PaintLineNumbers(Canvas, ClipR, FirstRow, LastRow);
     gbkFold:
       PaintFoldShapes(Canvas, ClipR, FirstRow, LastRow);
+    gbkTrackChanges:
+      PaintTrackChanges(Canvas, ClipR, FirstRow, LastRow);
     gbkMargin:
       PaintMargin(Canvas, ClipR, FirstRow, LastRow);
   end;
@@ -1819,13 +1869,15 @@ begin
       Result := Assigned(Gutter) and Gutter.ShowLineNumbers;
     gbkFold:
       Result := Assigned(Editor) and TCustomSynEdit(Editor).UseCodeFolding;
+    gbkTrackChanges:
+      Result := Assigned(Gutter) and Gutter.TrackChanges.Visible;
   end;
 end;
 
 function TSynGutterBand.GetWidth: Integer;
 begin
   case FKind of
-    gbkLineNumbers, gbkFold:
+    gbkLineNumbers, gbkFold, gbkTrackChanges:
       Result := 0;
   else
     Result := FWidth;
@@ -1834,12 +1886,13 @@ end;
 
 function TSynGutterBand.IsVisibleStored: Boolean;
 begin
-  Result := FVisible and not(FKind in [gbkLineNumbers, gbkFold]);
+  Result := not FVisible and
+    not(FKind in [gbkLineNumbers, gbkFold, gbkTrackChanges]);
 end;
 
 function TSynGutterBand.IsWidthStored: Boolean;
 begin
-  Result := not(FKind in [gbkLineNumbers, gbkFold]);
+  Result := not(FKind in [gbkLineNumbers, gbkFold, gbkTrackChanges]);
 end;
 
 procedure TSynGutterBand.PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
@@ -1945,6 +1998,14 @@ var
   LineRect: TRect;
   PPI: Integer;
   S: string;
+  TextFormat: TSynTextFormat;
+  RT: ISynWicRenderTarget;
+  WordWrapGlyph: ID2D1Bitmap;
+  RectF: TRectF;
+  FontColor: TColor;
+  GDIRT: ID2D1GdiInteropRenderTarget;
+  SourceDC: HDC;
+  BF: TBlendFunction;
 begin
   SynEdit := TCustomSynEdit(Editor);
   Assert(Assigned(Gutter));
@@ -1952,30 +2013,78 @@ begin
   PPI := Gutter.FCurrentPPI;
 
   if Gutter.UseFontStyle then
-    Canvas.Font := Gutter.Font
+  begin
+    TextFormat := Gutter.FTextFormat;
+    FontColor := Gutter.Font.Color;
+  end
   else
-    Canvas.Font := SynEdit.Font;
+  begin
+    TextFormat := SynEdit.TextFormat;
+    FontColor := SynEdit.Font.Color;
+  end;
+  TextFormat.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
+  TextFormat.IDW.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
-  Canvas.Brush.Style := bsClear;
+  RT := SynWicRenderTarget(ClipR.Width, ClipR.Height);
+  if SynEdit.WordWrap and SynEdit.WordWrapGlyph.Visible then
+    RT.IDW.CreateBitmapFromWicBitmap(SynEdit.WordWrapGlyph.WicBitmap, nil,
+     WordWrapGlyph);
+
+  RT.IDW.BeginDraw;
+  RT.IDW.Clear(D2D1ColorF(0, 0, 0, 0));
   for Row := FirstRow to LastRow do
   begin
     Line := SynEdit.RowToLine(Row);
     LineTop := (Row - SynEdit.TopLine) * SynEdit.LineHeight;
-    if SynEdit.WordWrap and (Row <> SynEdit.LineToRow(Line)) then
+    LineRect := Rect(MulDiv(MarginX, PPI, 96), LineTop - ClipR.Top,
+      ClipR.Width, LineTop - ClipR.Top + SynEdit.LineHeight);
+
+    if SynEdit.WordWrap and SynEdit.WordWrapGlyph.Visible and
+      (Row <> SynEdit.LineToRow(Line))
+    then
+    begin
       // paint wrapped line glyphs
-      SynEdit.WordWrapGlyph.Draw(Canvas,
-        ClipR.Right - SynEdit.WordWrapGlyph.Width, LineTop, SynEdit.LineHeight)
+      RectF := LineRect;
+      RectF := Rect(0, 0, 0, 0);
+      RectF.Size := SynEdit.WordWrapGlyph.Size;
+      RectF.Offset(LineRect.Left + LineRect.Width - RectF.Width,
+        LineRect.Top + (LineRect.Height - RectF.Height) / 2);
+      if not LineRect.Contains(RectF.Round) then
+      begin
+        RectF := RectF.FitInto(LineRect);
+        RectF.Offset(LineRect.Right - RectF.Right, 0);
+      end;
+      RT.IDW.DrawBitmap(WordWrapGlyph, @RectF);
+    end
     else
     begin
-      LineRect := Rect(ClipR.Left + MulDiv(MarginX, PPI, 96), LineTop,
-        ClipR.Right, LineTop + SynEdit.LineHeight);
-
+      // paint line numbers
       S := Gutter.FormatLineNumber(Line);
       if Assigned(SynEdit.OnGutterGetText) then
         SynEdit.OnGutterGetText(Self, Line, S);
-
-      Canvas.TextRect(LineRect, S, [tfSingleLine, tfVerticalCenter, tfRight]);
+      RT.IDW.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
+        TSynDWrite.SolidBrush(FontColor),
+        D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+        DWRITE_MEASURING_MODE_GDI_NATURAL);
     end;
+  end;
+
+  GDIRT := RT.IDW as ID2D1GdiInteropRenderTarget;
+  CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
+  BF.BlendOp := AC_SRC_OVER;
+  BF.BlendFlags := 0;
+  BF.SourceConstantAlpha := 255;
+  BF.AlphaFormat := AC_SRC_ALPHA;
+  AlphaBlend(Canvas.Handle, ClipR.Left, ClipR.Top, ClipR.Width, ClipR.Height,
+    SourceDC, 0, 0, ClipR.Width, ClipR.Height, BF);
+  GDIRT.ReleaseDC(nil);
+
+  RT.IDW.EndDraw;
+
+  if not Gutter.UseFontStyle then
+  begin
+    TextFormat.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+    TextFormat.IDW.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
   end;
 end;
 
@@ -2108,6 +2217,49 @@ begin
   end
 end;
 
+procedure TSynGutterBand.PaintTrackChanges(Canvas: TCanvas; ClipR: TRect;
+  const FirstRow, LastRow: Integer);
+var
+  SynEdit: TCustomSynEdit;
+  Row, Line: Integer;
+  LineTop: Integer;
+  LineRect: TRect;
+  PPI: Integer;
+  Color: TColor;
+  Flags: TSynLineChangeFlags;
+begin
+  SynEdit := TCustomSynEdit(Editor);
+  Assert(Assigned(Gutter));
+  Assert(Assigned(SynEdit));
+  PPI := Gutter.FCurrentPPI;
+
+  for Row := FirstRow to LastRow do
+  begin
+    Line := SynEdit.RowToLine(Row);
+    if (Line < 1) or (Line > SynEdit.Lines.Count) then Continue;
+
+    LineTop := (Row - SynEdit.TopLine) * SynEdit.LineHeight;
+    Flags := TSynEditStringList(SynEdit.Lines).ChangeFlags[Line - 1];
+    Color := clNone;
+    if Flags = [sfModified] then
+      Color := Gutter.TrackChanges.ModifiedColor
+    else if Flags = [sfSaved, sfAsSaved] then
+      Color := Gutter.TrackChanges.SavedColor
+    else if Flags = [sfSaved] then
+      Color := Gutter.TrackChanges.OriginalColor
+    else if Flags = [sfSaved, sfModified] then
+      Color := Gutter.TrackChanges.SavedModifiedColor;
+
+    if Color <> clNone then
+    begin
+      LineRect := Rect(ClipR.Left + MulDiv(MarginX, PPI, 96), LineTop,
+        ClipR.Right, LineTop + SynEdit.LineHeight);
+      Canvas.Brush.Color := Color;
+      Canvas.FillRect(LineRect);
+    end;
+  end;
+end;
+
 function TSynGutterBand.RealWidth: Integer;
 var
   PPI: Integer;
@@ -2125,6 +2277,8 @@ begin
       gbkFold:
         Result := TCustomSynEdit(Editor).CodeFolding.ScaledGutterShapeSize(PPI)
           + MulDiv(MarginX, PPI, 96);
+      gbkTrackChanges:
+        Result := MulDiv(Gutter.TrackChanges.Width + MarginX, PPI, 96);
     else
       Result := MulDiv(FWidth, PPI, 96);
     end
@@ -2190,6 +2344,148 @@ begin
   Gutter := TSynGutter(GetOwner);
   if Assigned(Gutter) then
     Gutter.Changed;
+end;
+
+{ TTrackChanges }
+
+procedure TSynTrackChanges.Assign(Source: TPersistent);
+var
+  Src: TSynTrackChanges;
+begin
+  if Assigned(Source) and (Source is TSynTrackChanges) then
+  begin
+    Src := TSynTrackChanges(Source);
+    FWidth := Src.Width;
+    FSavedColor := Src.SavedColor;
+    FModifiedColor := Src.ModifiedColor;
+    FSavedModifiedColor :=  Src.SavedModifiedColor;
+    FOriginalColor := Src.OriginalColor;
+  end
+  else
+    inherited;
+end;
+
+constructor TSynTrackChanges.Create(Gutter: TSynGutter);
+begin
+  inherited Create;
+  FOwner := Gutter;
+  FWidth := 4;
+  FSavedColor := $33AA33;
+  FModifiedColor := $0000DFFF;
+  FSavedModifiedColor :=  clWebOrange;
+  FOriginalColor := $00FF6633;
+end;
+
+function TSynTrackChanges.GetOwner: TPersistent;
+begin
+  Result := FOwner;
+end;
+
+procedure TSynTrackChanges.SetModifiedColor(const Value: TColor);
+begin
+  if FModifiedColor <> Value then
+  begin
+    FModifiedColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetOriginalColor(const Value: TColor);
+begin
+  if FOriginalColor <> Value then
+  begin
+    FOriginalColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetSavedColor(const Value: TColor);
+begin
+  if FSavedColor <> Value then
+  begin
+    FSavedColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetSavedModifiedColor(const Value: TColor);
+begin
+  if FSavedModifiedColor <> Value then
+  begin
+    FSavedModifiedColor := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetVisible(const Value: Boolean);
+begin
+  if FVisible <> Value then
+  begin
+    FVisible := Value;
+    FOwner.Changed;
+  end;
+end;
+
+procedure TSynTrackChanges.SetWidth(const Value: Integer);
+begin
+  if FWidth <> Value then
+  begin
+    FWidth := Value;
+    if FVisible then
+      FOwner.Changed;
+  end;
+end;
+
+{ TSynIndentGuides }
+
+procedure TSynIndentGuides.Assign(Source: TPersistent);
+var
+  Src: TSynIndentGuides;
+begin
+  if (Source <> nil) and (Source is TSynIndentGuides) then
+  begin
+    Src := TSynIndentGuides(Source);
+    FVisible := Src.FVisible;
+    FStyle := Src.FStyle;
+    FColor := Src.FColor;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end
+  else
+    inherited Assign(Source);
+end;
+
+constructor TSynIndentGuides.Create;
+begin
+  inherited Create;
+  FVisible := True;
+  FStyle := igsSolid;
+  FColor := clMedGray;
+end;
+
+procedure TSynIndentGuides.SetColor(const Value: TColor);
+begin
+  FColor := Value;
+  if Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+procedure TSynIndentGuides.SetStyle(const Value: TSynIdentGuidesStyle);
+begin
+  FStyle := Value;
+  if Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+procedure TSynIndentGuides.SetVisible(const Value: Boolean);
+begin
+  FVisible := Value;
+  if Assigned(FOnChange) then
+    FOnChange(Self);
 end;
 
 end.

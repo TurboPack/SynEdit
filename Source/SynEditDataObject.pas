@@ -196,9 +196,9 @@ end;
 procedure TSynEditDataObject.StreamHTML(Editor: TObject; Stream: TStream);
 var
   HTMLExport: TSynExporterHTML;
-  Ed: TSynEdit;
+  Ed: TCustomSynEdit;
 begin
-  Ed := Editor as TSynEdit;
+  Ed := Editor as TCustomSynEdit;
   HTMLExport := TSynExporterHTML.Create(nil);
   try
     HTMLExport.CreateHTMLFragment := True;

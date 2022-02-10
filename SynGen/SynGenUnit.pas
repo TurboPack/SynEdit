@@ -547,13 +547,13 @@ end;
 
 procedure TFrmMain.BtnStartClick(Sender: TObject);
 var
-  LexFileLines: TUnicodeStringList;
+  LexFileLines: TStringList;
 begin
   ClearAll;
 
   Screen.Cursor := crHourGlass;
 
-  LexFileLines := TUnicodeStringList.Create;
+  LexFileLines := TStringList.Create;
   try
     LexFileLines.LoadFromFile(OpenDialog.FileName);
     LexFileContents := LexFileLines.Text;

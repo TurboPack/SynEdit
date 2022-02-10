@@ -41,6 +41,8 @@ unit SynEditTypes;
 interface
 
 uses
+  Winapi.Windows,
+  Winapi.Messages,
   System.Types,
   System.Math,
   Vcl.Controls,
@@ -118,6 +120,16 @@ function BufferCoord(AChar, ALine: Integer): TBufferCoord;
 function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
 
 type
+{ ************************* For ScrollBars ********************************}
+
+  ISynEditScrollBars = interface
+    function UpdateScrollBars: Boolean;
+    procedure WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    procedure WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
+      MousePos: TPoint);
+  end;
+
 { ************************* For Word Wrap ********************************}
 
   // aIndex parameters of Line notifications are 0-based.
@@ -136,6 +148,7 @@ type
     procedure DisplayChanged;
     // pretty clear, heh?
     procedure Reset;
+    property RowLength[RowIndex: integer]: integer read GetRowLength;
   end;
 
 { ************************* For Undo Redo ********************************}
@@ -195,6 +208,10 @@ type
     {Note: Undo/Redo are not reentrant}
     procedure Undo(Editor: TControl);
     procedure Redo(Editor: TControl);
+    {TrackChanges stuff}
+    procedure BufferSaved(Lines: TStrings);
+    procedure ClearTrackChanges(Lines: TStrings);
+
     property CanRedo: Boolean read GetCanRedo;
     property CanUndo: Boolean read GetCanUndo;
     property GroupUndo: Boolean write SetGroupUndo;
