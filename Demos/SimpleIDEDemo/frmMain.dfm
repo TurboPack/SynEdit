@@ -98,6 +98,7 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
     Gutter.Font.Height = -11
     Gutter.Font.Name = 'Courier New'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
     Gutter.Bands = <
       item
         Kind = gbkMarks
@@ -106,7 +107,7 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
       item
         Kind = gbkCustom
         Width = 13
-        OnPaintLines = PaintDebugImages
+        OnPaintLines = SynEditorTSynGutterBands1PaintLines
         OnCLick = ClickDebugBand
         OnMouseCursor = SynEditorTSynGutterBands1MouseCursor
       end
@@ -115,7 +116,6 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
       end
       item
         Kind = gbkFold
-        Visible = False
       end
       item
         Kind = gbkMargin
@@ -124,6 +124,7 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
     Highlighter = SynPasSyn
     Options = [eoAutoIndent, eoKeepCaretX, eoScrollByOneLess, eoSmartTabs, eoTabsToSpaces, eoTrimTrailingSpaces]
     ReadOnly = True
+    SelectedColor.Alpha = 0.400000005960464500
     OnSpecialLineColors = SynEditorSpecialLineColors
   end
   object Statusbar: TStatusBar

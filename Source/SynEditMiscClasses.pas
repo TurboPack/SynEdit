@@ -108,7 +108,7 @@ type
 
   TSynGutterBorderStyle = (gbsNone, gbsMiddle, gbsRight);
 
-  TGutterBandPaintEvent = procedure(Canvas: TCanvas; ClipR: TRect;
+  TGutterBandPaintEvent = procedure(RT: ID2D1RenderTarget; ClipR: TRect;
     const FirstRow, LastRow: Integer; var DoDefaultPainting: Boolean) of object;
 
   TGutterBandClickEvent = procedure(Sender: TObject; Button: TMouseButton;
@@ -176,17 +176,17 @@ type
     FOnMouseCursor: TGutterMouseCursorEvent;
     function GetSynGutter: TSynGutter;
     function GetEditor: TPersistent;
-    procedure DoPaintLines(Canvas: TCanvas; ClipR: TRect; const FirstRow,
+    procedure DoPaintLines(RT: ID2D1RenderTarget; ClipR: TRect; const FirstRow,
       LastRow: Integer);
-    procedure PaintMarks(Canvas: TCanvas; ClipR: TRect;
+    procedure PaintMarks(RT: ID2D1RenderTarget; ClipR: TRect;
       const FirstRow, LastRow: Integer);
-    procedure PaintLineNumbers(Canvas: TCanvas; ClipR: TRect;
+    procedure PaintLineNumbers(RT: ID2D1RenderTarget; ClipR: TRect;
       const FirstRow, LastRow: Integer);
-    procedure PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
+    procedure PaintFoldShapes(RT: ID2D1RenderTarget; ClipR: TRect;
       const FirstRow, LastRow: Integer);
-    procedure PaintMargin(Canvas: TCanvas; ClipR: TRect;
+    procedure PaintMargin(RT: ID2D1RenderTarget; ClipR: TRect;
       const FirstRow, LastRow: Integer);
-    procedure PaintTrackChanges(Canvas: TCanvas; ClipR: TRect;
+    procedure PaintTrackChanges(RT: ID2D1RenderTarget; ClipR: TRect;
       const FirstRow, LastRow: Integer);
     procedure SetBackground(const Value: TSynGutterBandBackground);
     procedure SetVisible(const Value: Boolean);
@@ -207,7 +207,7 @@ type
     constructor Create(Collection: TCollection); override;
     procedure Assign(Source: TPersistent); override;
     function RealWidth: Integer;
-    procedure PaintLines(Canvas: TCanvas; ClipR: TRect; const FirstRow, LastRow:
+    procedure PaintLines(RT: ID2D1RenderTarget; ClipR: TRect; const FirstRow, LastRow:
         Integer);
     procedure DoClick(Sender: TObject; Button: TMouseButton;
       X, Y, Row, Line: Integer);
@@ -449,14 +449,14 @@ type
 
   TSynInternalImage = class(TObject)
   private
-    FImages: TBitmap;
+    FImages: IWicBitmap;
+    FScaledImages: IWicBitmap;
     FWidth: Integer;
     FHeight: Integer;
     FCount: Integer;
   public
     constructor Create(aModule: THandle; const Name: string; Count: Integer);
-    destructor Destroy; override;
-    procedure Draw(aCanvas: TCanvas; Number, X, Y, LineHeight: Integer);
+    procedure Draw(RT: ID2D1RenderTarget; Number, X, Y, LineHeight: Integer);
     // ++ DPI-Aware
     procedure ChangeScale(M, D: Integer); virtual;
     // -- DPI-Aware
@@ -1392,31 +1392,34 @@ begin
     Exit;
 
   FWidth := MulDiv(FWidth, M, D);
-  ResizeBitmap(FImages, FWidth * FCount, MulDiv(FImages.Height, M, D));
-  FHeight := FImages.Height;
+  FHeight := MulDiv(FHeight, M, D);
+  FScaledImages := ScaledWicBitmap(FImages, FCount * FWidth, FHeight);
 end;
 
 constructor TSynInternalImage.Create(aModule: THandle; const Name: string;
   Count: Integer);
+var
+ BM: TBitmap;
 begin
   inherited Create;
-  FImages := TBitmap.Create;
-  FImages.LoadFromResourceName(aModule, Name);
-  FWidth := (FImages.Width + Count shr 1) div Count;
-  FHeight := FImages.Height;
-  FCount := Count;
+  BM := TBitmap.Create;
+  try
+    BM.LoadFromResourceName(aModule, Name);
+    FWidth := (BM.Width + Count shr 1) div Count;
+    FHeight := BM.Height;
+    FCount := Count;
+    FImages := WicBitmapFromBitmap(BM);
+    FScaledImages := FImages;
+  finally
+    BM.Free;
+  end;
 end;
 
-destructor TSynInternalImage.Destroy;
-begin
-  FImages.Free;
-  inherited Destroy;
-end;
-
-procedure TSynInternalImage.Draw(aCanvas: TCanvas;
+procedure TSynInternalImage.Draw(RT: ID2D1RenderTarget;
   Number, X, Y, LineHeight: Integer);
 var
-  rcSrc, rcDest: TRect;
+  rcSrc, rcDest: TRectF;
+  BM: ID2D1Bitmap;
 begin
   if (Number >= 0) and (Number < FCount) then
   begin
@@ -1432,7 +1435,8 @@ begin
       Y := (FHeight - LineHeight) div 2;
       rcSrc := Rect(Number * FWidth, Y, (Number + 1) * FWidth, Y + LineHeight);
     end;
-    DrawTransparentBitmap(FImages, rcSrc, aCanvas, rcDest, 255);
+    CheckOSError(RT.CreateBitmapFromWicBitmap(FScaledImages, nil, BM));
+    RT.DrawBitmap(BM, @rcDest, 1, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, @rcSrc);
   end;
 end;
 
@@ -1772,21 +1776,21 @@ begin
     FOnMouseCursor(Sender, X, Y, Row, Line, Cursor);
 end;
 
-procedure TSynGutterBand.DoPaintLines(Canvas: TCanvas; ClipR: TRect;
-  const FirstRow, LastRow: Integer);
+procedure TSynGutterBand.DoPaintLines(RT: ID2D1RenderTarget; ClipR: TRect;
+    const FirstRow, LastRow: Integer);
 // Drawing of builtin bands
 begin
   case FKind of
     gbkMarks:
-      PaintMarks(Canvas, ClipR, FirstRow, LastRow);
+      PaintMarks(RT, ClipR, FirstRow, LastRow);
     gbkLineNumbers:
-      PaintLineNumbers(Canvas, ClipR, FirstRow, LastRow);
+      PaintLineNumbers(RT, ClipR, FirstRow, LastRow);
     gbkFold:
-      PaintFoldShapes(Canvas, ClipR, FirstRow, LastRow);
+      PaintFoldShapes(RT, ClipR, FirstRow, LastRow);
     gbkTrackChanges:
-      PaintTrackChanges(Canvas, ClipR, FirstRow, LastRow);
+      PaintTrackChanges(RT, ClipR, FirstRow, LastRow);
     gbkMargin:
-      PaintMargin(Canvas, ClipR, FirstRow, LastRow);
+      PaintMargin(RT, ClipR, FirstRow, LastRow);
   end;
 end;
 
@@ -1895,22 +1899,21 @@ begin
   Result := not(FKind in [gbkLineNumbers, gbkFold, gbkTrackChanges]);
 end;
 
-procedure TSynGutterBand.PaintFoldShapes(Canvas: TCanvas; ClipR: TRect;
-  const FirstRow, LastRow: Integer);
-const
-  PlusMinusMargin = 2;
+procedure TSynGutterBand.PaintFoldShapes(RT: ID2D1RenderTarget; ClipR: TRect;
+    const FirstRow, LastRow: Integer);
 var
   SynEdit: TCustomSynEdit;
   vLine: Integer;
   cRow: Integer;
   rcFold: TRect;
-  X: Integer;
+  X, Y: Integer;
   FoldRange: TSynFoldRange;
   Index: Integer;
   Margin: Integer;
   PMMargin: Integer;
   ShapeSize: Integer;
   PPI: Integer;
+  Brush: ID2D1Brush;
 begin
   SynEdit := TCustomSynEdit(Editor);
   Assert(Assigned(SynEdit));
@@ -1921,10 +1924,12 @@ begin
   if SynEdit.UseCodeFolding then
   begin
     Margin := MulDiv(MarginX, PPI, 96);
-    PMMargin := MulDiv(PlusMinusMargin, PPI, 96);
-
+    PMMargin := Margin div 2;
     ShapeSize := SynEdit.CodeFolding.ScaledGutterShapeSize(PPI);
 
+    Brush := TSynDWrite.SolidBrush(SynEdit.CodeFolding.FolderBarLinesColor);
+
+    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
     for cRow := FirstRow to LastRow do
     begin
       vLine := SynEdit.RowToLine(cRow);
@@ -1935,35 +1940,37 @@ begin
       rcFold.TopLeft := Point(ClipR.Left + Margin, (cRow - SynEdit.TopLine) *
         SynEdit.LineHeight + (SynEdit.LineHeight - ShapeSize) div 2);
       rcFold.BottomRight := rcFold.TopLeft;
-      rcFold.BottomRight.Offset(ShapeSize, ShapeSize);
-
-      Canvas.Pen.Color := SynEdit.CodeFolding.FolderBarLinesColor;
+      // Direct2D includes both the first and the last point in the rectangle!
+      rcFold.BottomRight.Offset(ShapeSize - 1, ShapeSize - 1);
 
       // Any fold ranges beginning on this line?
       if SynEdit.AllFoldRanges.FoldStartAtLine(vLine, Index) then
       begin
         FoldRange := SynEdit.AllFoldRanges.Ranges[Index];
-        Canvas.Brush.Color := SynEdit.CodeFolding.FolderBarLinesColor;
-        Canvas.FrameRect(rcFold);
+        // Paint the square
+        RT.DrawRectangle(rcFold, Brush);
 
         // Paint minus sign
-        Canvas.Pen.Color := SynEdit.CodeFolding.FolderBarLinesColor;
-        Canvas.MoveTo(rcFold.Left + PMMargin, rcFold.Top + ShapeSize div 2);
-        Canvas.LineTo(rcFold.Right - PMMargin, rcFold.Top + ShapeSize div 2);
+        Y := rcFold.Top + ShapeSize div 2;
+        // DrawLine paints the last pixel as well in Direct2D
+        RT.DrawLine(
+          Point(rcFold.Left + PMMargin, Y),
+          Point(rcFold.Right - PMMargin - 1, Y), Brush);
 
         // Paint vertical line of plus sign
         if FoldRange.Collapsed then
         begin
           X := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(X, rcFold.Top + PMMargin);
-          Canvas.LineTo(X, rcFold.Bottom - PMMargin);
+          RT.DrawLine(
+            Point(X, rcFold.Top  + PMMargin),
+            Point(X, rcFold.Bottom - PMMargin - 1), Brush);
         end
         else
         // Draw the bottom part of a line
         begin
           X := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(X, rcFold.Bottom);
-          Canvas.LineTo(X, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight);
+          RT.DrawLine(D2D1PointF(X, rcFold.Bottom),
+            D2D1PointF(X, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight), Brush);
         end;
       end
       else
@@ -1972,25 +1979,33 @@ begin
         if SynEdit.AllFoldRanges.FoldEndAtLine(vLine, Index) then
         begin
           X := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(X, (cRow - SynEdit.TopLine) * SynEdit.LineHeight);
-          Canvas.LineTo(X, rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
-          Canvas.LineTo(rcFold.Right,
-            rcFold.Top + ((rcFold.Bottom - rcFold.Top) div 2));
+          Y := rcFold.Top + (rcFold.Bottom - rcFold.Top) div 2;
+          RT.DrawLine(
+            D2D1PointF(X, (cRow - SynEdit.TopLine) * SynEdit.LineHeight),
+            D2D1PointF(X, Y),
+            Brush);
+          RT.DrawLine(
+            D2D1PointF(X, Y),
+            D2D1PointF(rcFold.Right, Y),
+            Brush);
         end;
         // Need to paint a line?
         if SynEdit.AllFoldRanges.FoldAroundLine(vLine, Index) then
         begin
           X := rcFold.Left + ShapeSize div 2;
-          Canvas.MoveTo(X, (cRow - SynEdit.TopLine) * SynEdit.LineHeight);
-          Canvas.LineTo(X, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight);
+          RT.DrawLine(
+            D2D1PointF(X, (cRow - SynEdit.TopLine) * SynEdit.LineHeight),
+            D2D1PointF(X, (cRow - SynEdit.TopLine + 1) * SynEdit.LineHeight),
+            Brush);
         end;
       end;
     end;
+    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   end;
 end;
 
-procedure TSynGutterBand.PaintLineNumbers(Canvas: TCanvas; ClipR: TRect;
-  const FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintLineNumbers(RT: ID2D1RenderTarget; ClipR: TRect;
+    const FirstRow, LastRow: Integer);
 var
   SynEdit: TCustomSynEdit;
   Row, Line: Integer;
@@ -1999,13 +2014,9 @@ var
   PPI: Integer;
   S: string;
   TextFormat: TSynTextFormat;
-  RT: ISynWicRenderTarget;
   WordWrapGlyph: ID2D1Bitmap;
   RectF: TRectF;
   FontColor: TColor;
-  GDIRT: ID2D1GdiInteropRenderTarget;
-  SourceDC: HDC;
-  BF: TBlendFunction;
 begin
   SynEdit := TCustomSynEdit(Editor);
   Assert(Assigned(Gutter));
@@ -2025,19 +2036,16 @@ begin
   TextFormat.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
   TextFormat.IDW.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
-  RT := SynWicRenderTarget(ClipR.Width, ClipR.Height);
   if SynEdit.WordWrap and SynEdit.WordWrapGlyph.Visible then
-    RT.IDW.CreateBitmapFromWicBitmap(SynEdit.WordWrapGlyph.WicBitmap, nil,
+    RT.CreateBitmapFromWicBitmap(SynEdit.WordWrapGlyph.WicBitmap, nil,
      WordWrapGlyph);
 
-  RT.IDW.BeginDraw;
-  RT.IDW.Clear(D2D1ColorF(0, 0, 0, 0));
   for Row := FirstRow to LastRow do
   begin
     Line := SynEdit.RowToLine(Row);
     LineTop := (Row - SynEdit.TopLine) * SynEdit.LineHeight;
-    LineRect := Rect(MulDiv(MarginX, PPI, 96), LineTop - ClipR.Top,
-      ClipR.Width, LineTop - ClipR.Top + SynEdit.LineHeight);
+    LineRect := Rect(ClipR.Left + MulDiv(MarginX, PPI, 96), LineTop,
+      ClipR.Right, LineTop + SynEdit.LineHeight);
 
     if SynEdit.WordWrap and SynEdit.WordWrapGlyph.Visible and
       (Row <> SynEdit.LineToRow(Line))
@@ -2054,7 +2062,7 @@ begin
         RectF := RectF.FitInto(LineRect);
         RectF.Offset(LineRect.Right - RectF.Right, 0);
       end;
-      RT.IDW.DrawBitmap(WordWrapGlyph, @RectF);
+      RT.DrawBitmap(WordWrapGlyph, @RectF);
     end
     else
     begin
@@ -2062,24 +2070,13 @@ begin
       S := Gutter.FormatLineNumber(Line);
       if Assigned(SynEdit.OnGutterGetText) then
         SynEdit.OnGutterGetText(Self, Line, S);
-      RT.IDW.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
+      RT.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
         TSynDWrite.SolidBrush(FontColor),
         D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
         DWRITE_MEASURING_MODE_GDI_NATURAL);
     end;
   end;
 
-  GDIRT := RT.IDW as ID2D1GdiInteropRenderTarget;
-  CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
-  BF.BlendOp := AC_SRC_OVER;
-  BF.BlendFlags := 0;
-  BF.SourceConstantAlpha := 255;
-  BF.AlphaFormat := AC_SRC_ALPHA;
-  AlphaBlend(Canvas.Handle, ClipR.Left, ClipR.Top, ClipR.Width, ClipR.Height,
-    SourceDC, 0, 0, ClipR.Width, ClipR.Height, BF);
-  GDIRT.ReleaseDC(nil);
-
-  RT.IDW.EndDraw;
 
   if not Gutter.UseFontStyle then
   begin
@@ -2088,39 +2085,38 @@ begin
   end;
 end;
 
-procedure TSynGutterBand.PaintLines(Canvas: TCanvas; ClipR: TRect;
-  const FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintLines(RT: ID2D1RenderTarget; ClipR: TRect; const
+    FirstRow, LastRow: Integer);
 var
   DoDefault: Boolean;
 begin
   DoDefault := True;
   if Assigned(FOnPaintLines) then
-    FOnPaintLines(Canvas, ClipR, FirstRow, LastRow, DoDefault);
+    FOnPaintLines(RT, ClipR, FirstRow, LastRow, DoDefault);
   if DoDefault then
-    DoPaintLines(Canvas, ClipR, FirstRow, LastRow);
+    DoPaintLines(RT, ClipR, FirstRow, LastRow);
 end;
 
-procedure TSynGutterBand.PaintMargin(Canvas: TCanvas; ClipR: TRect;
-  const FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintMargin(RT: ID2D1RenderTarget; ClipR: TRect; const
+    FirstRow, LastRow: Integer);
 Var
   Offset: Integer;
 begin
   if (Gutter.BorderStyle <> gbsNone) then
-    with Canvas do
-    begin
-      Pen.Color := Gutter.BorderColor;
-      Pen.Width := 1;
+    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
       if Gutter.BorderStyle = gbsMiddle then
         Offset := Max(2, (ClipR.Right - ClipR.Left) div 2)
       else
         Offset := 1;
-      MoveTo(ClipR.Right - Offset, ClipR.Top);
-      LineTo(ClipR.Right - Offset, ClipR.Bottom);
-    end;
+      RT.DrawLine(
+        Point(ClipR.Right - Offset, ClipR.Top),
+        Point(ClipR.Right - Offset, ClipR.Bottom),
+        TSynDWrite.SolidBrush(Gutter.BorderColor));
+    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 end;
 
-procedure TSynGutterBand.PaintMarks(Canvas: TCanvas; ClipR: TRect;
-  const FirstRow, LastRow: Integer);
+procedure TSynGutterBand.PaintMarks(RT: ID2D1RenderTarget; ClipR: TRect; const
+    FirstRow, LastRow: Integer);
 var
   SynEdit: TCustomSynEdit;
 
@@ -2136,7 +2132,7 @@ var
           aGutterOff := 0
         else if aGutterOff = 0 then
           aGutterOff := SynEdit.BookMarkOptions.Xoffset;
-        SynEdit.BookMarkOptions.BookmarkImages.Draw(Canvas,
+        ImageListDraw(RT, SynEdit.BookMarkOptions.BookmarkImages,
           ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
           (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight, aMark.ImageIndex);
         Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
@@ -2148,7 +2144,7 @@ var
       begin
         if aGutterOff = 0 then
         begin
-          Gutter.InternalImage.Draw(Canvas, aMark.ImageIndex,
+          Gutter.InternalImage.Draw(RT, aMark.ImageIndex,
             ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
             (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight,
             SynEdit.LineHeight);
@@ -2217,7 +2213,7 @@ begin
   end
 end;
 
-procedure TSynGutterBand.PaintTrackChanges(Canvas: TCanvas; ClipR: TRect;
+procedure TSynGutterBand.PaintTrackChanges(RT: ID2D1RenderTarget; ClipR: TRect;
   const FirstRow, LastRow: Integer);
 var
   SynEdit: TCustomSynEdit;
@@ -2254,8 +2250,7 @@ begin
     begin
       LineRect := Rect(ClipR.Left + MulDiv(MarginX, PPI, 96), LineTop,
         ClipR.Right, LineTop + SynEdit.LineHeight);
-      Canvas.Brush.Color := Color;
-      Canvas.FillRect(LineRect);
+      RT.FillRectangle(LineRect, TSynDWrite.SolidBrush(Color));
     end;
   end;
 end;

@@ -28,11 +28,13 @@ Uses
   Winapi.Wincodec,
   Winapi.ActiveX,
   Winapi.D2D1,
+  System.Types,
   System.UITypes,
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  Vcl.Graphics;
+  Vcl.Graphics,
+  Vcl.ImgList;
 
 {$IF CompilerVersion <= 32}
 // some constants missing from old Delphi D2D1 unit
@@ -214,6 +216,8 @@ type
     class var SingletonDottedStrokeStyle: ID2D1StrokeStyle;
     class var SingletonImagingFactory: IWICImagingFactory;
     class var FSolidBrushes: TDictionary<TD2D1ColorF, ID2D1SolidColorBrush>;
+    class var FGradientGutterBrush: ID2D1LinearGradientBrush;
+    class var FGradientBrushStartColor, FGradientBrushEndColor: TColor;
   public
     class function D2DFactory(factoryType: TD2D1FactoryType=D2D1_FACTORY_TYPE_SINGLE_THREADED;
       factoryOptions: PD2D1FactoryOptions=nil): ID2D1Factory; static;
@@ -224,6 +228,7 @@ type
     class function SolidBrush(Color: TColor): ID2D1SolidColorBrush; overload; static;
     class function SolidBrush(Color: TD2D1ColorF): ID2D1SolidColorBrush; overload; static;
     class function DottedStrokeStyle: ID2D1StrokeStyle; static;
+    class function GradientGutterBrush(StartColor, EndColor: TColor): ID2D1LinearGradientBrush;
     class procedure ResetRenderTarget; static;
   end;
 
@@ -315,6 +320,8 @@ function DWGetTypography(Features: array of Integer) : IDWriteTypography;
 function WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
 function ScaledWicBitmap(Source: IWICBitmap;
   const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
+procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList; X, Y,
+    Index: Integer);
 
 var
   DefaultLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
@@ -323,6 +330,7 @@ var
 implementation
 
 Uses
+  Winapi.CommCtrl,
   Winapi.DxgiFormat,
   System.Math,
   Vcl.Forms;
@@ -386,6 +394,30 @@ begin
   Scaler.Initialize(Source, ScaledWidth, ScaledHeight,
     WICBitmapInterpolationModeHighQualityCubic);
   Result := IWICBitmap(Scaler);
+end;
+
+procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList;
+  X, Y, Index: Integer);
+var
+  Icon: HIcon;
+  WicBitmap: IWicBitmap;
+  Bitmap: ID2D1Bitmap;
+  R: TRectF;
+  BMProps: TD2D1BitmapProperties;
+begin
+  Icon := ImageList_GetIcon(IL.Handle, Index, ILD_NORMAL);
+  try
+    CheckOSError(TSynDWrite.ImagingFactory.CreateBitmapFromHICON(Icon, WicBitmap));
+    BMProps.dpiX := 1;
+    BMProps.dpiY := 1;
+    BMProps.pixelFormat.format := DXGI_FORMAT_B8G8R8A8_UNORM;
+    BMProps.pixelFormat.alphaMode :=  D2D1_ALPHA_MODE_PREMULTIPLIED;
+    CheckOSError(RT.CreateBitmapFromWicBitmap(WicBitmap, @BMProps, Bitmap));
+    R := Rect(X, Y, X + IL.Width, Y + IL.Height);
+    RT.DrawBitmap(Bitmap, @R);
+  finally
+    DestroyIcon(Icon);
+  end;
 end;
 {$ENDREGION}
 
@@ -457,6 +489,39 @@ begin
   Result := SingletonGDIInterop;
 end;
 
+class function TSynDWrite.GradientGutterBrush(StartColor, EndColor: TColor):
+    ID2D1LinearGradientBrush;
+var
+  BrushProperties: TD2D1BrushProperties;
+  Stops: array [0..1] of TD2D1GradientStop;
+  GradientStopCollection: ID2D1GradientStopCollection;
+begin
+  if (FGradientGutterBrush = nil) or (StartColor <> FGradientBrushStartColor) or
+    (EndColor <> FGradientBrushEndColor) then
+  begin
+    // store colors
+    FGradientBrushStartColor := StartColor;
+    FGradientBrushEndColor := EndColor;
+
+    BrushProperties.opacity := 1;
+    BrushProperties.transform := TD2DMatrix3X2F.Identity;
+
+    Stops[0].position := 0;
+    Stops[1].position := 1;
+    Stops[0].color := D2D1ColorF(StartColor);
+    Stops[1].color := D2D1ColorF(EndColor);
+    CheckOSError(RenderTarget.CreateGradientStopCollection(
+    @Stops[0], 2, D2D1_GAMMA_2_2, D2D1_EXTEND_MODE_CLAMP,
+    GradientStopCollection));
+
+    CheckOSError(RenderTarget.CreateLinearGradientBrush(
+      D2D1LinearGradientBrushProperties(Point(0, 0), Point(1, 0)),
+      @BrushProperties, GradientStopCollection,
+      FGradientGutterBrush));
+  end;
+  Result := FGradientGutterBrush;
+end;
+
 class function TSynDWrite.ImagingFactory: IWICImagingFactory;
 var
   ImgFactory: IWICImagingFactory;
@@ -504,6 +569,7 @@ end;
 class procedure TSynDWrite.ResetRenderTarget;
 begin
   FSolidBrushes.Clear;
+  FGradientGutterBrush := nil;
   SingletonRenderTarget := nil;
 end;
 
