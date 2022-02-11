@@ -58,13 +58,13 @@ unit SynHighlighterCSS;
 interface
 
 uses
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  SysUtils,
-  Classes;
+  SynEditHighlighter;
 
 type
   TtkTokenKind = (tkComment, tkAtRule, tkProperty, tkSelector, tkSelectorAttrib,
@@ -94,9 +94,8 @@ type
     fUndefPropertyAttri: TSynHighlighterAttributes;
     fImportantPropertyAttri: TSynHighlighterAttributes;
     fAtRuleAttri: TSynHighlighterAttributes;
-    fKeywords: TSynHashEntryList;
+    FKeywords: TDictionary<String, TtkTokenKind>;
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
-    function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AtRuleProc;
     procedure SelectorProc;
@@ -180,6 +179,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -499,56 +499,25 @@ const
 
 { TSynCssSyn }
 
-{$Q-}
-function TSynCssSyn.HashKey(Str: PWideChar): Integer;
-begin
-  Result := 0;
-  while CharInSet(Str^, ['a'..'z', 'A'..'Z', '_', '-']) do
-  begin
-    if Str^ <> '-' then
-    case Str^ of
-      '_': Inc(Result, 27);
-      '-': Inc(Result, 28);
-      else Inc(Result, Ord(SysUtils.AnsiUpperCase(Str^)[1]) - 64);
-    end;
-    Inc(Str);
-  end;
-  while CharInSet(Str^, ['0'..'9']) do
-  begin
-    Inc(Result, Ord(Str^) - Ord('0'));
-    Inc(Str);
-  end;
-  fStringLen := Str - fToIdent;
-end;
-{$Q+}
-
 function TSynCssSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkUndefProperty;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
+    Result := tkUndefProperty;
 end;
 
 procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
-var
-  HashValue: Integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
 
 constructor TSynCssSyn.Create(AOwner: TComponent);
@@ -557,7 +526,8 @@ begin
 
   fCaseSensitive := False;
 
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-insensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   AddAttribute(fCommentAttri);
 

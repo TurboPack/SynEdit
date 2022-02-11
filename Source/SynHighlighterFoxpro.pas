@@ -126,6 +126,7 @@ type
     procedure XOrSymbolProc;
     procedure UnknownProc;
   protected
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
@@ -1003,7 +1004,50 @@ begin
   Result := fDefaultFilter <> SYNS_FilterFoxpro;
 end;
 
-class function TSynFoxproSyn.GetLanguageName: string;                    
+function TSynFoxproSyn.GetSampleSource: string;
+begin
+  Result :=
+    '* Some sample Foxpro code to test highlighting' + #13#10 +
+    'CLEAR ALL' + #13#10 +
+    'SET CONFIRM  ON' + #13#10 +
+    '' + #13#10 +
+    'PROCEDURE ErrTrap' + #13#10 +
+    'LPARAMETERS nLine, cProg, cMessage, cMessage1' + #13#10 +
+    'OnError = ON("Error")' + #13#10 +
+    'ON ERROR' + #13#10 +
+    'IF NOT FILE ( [ERRORS.DBF] )' + #13#10 +
+    '  CREATE TABLE ERRORS (  ;' + #13#10 +
+    '  Date   Date,     ;' + #13#10 +
+    '  Time   Char(5),   ;' + #13#10 +
+    '  LineNum Integer,   ;' + #13#10 +
+    '  ProgName Char(30),   ;' + #13#10 +
+    '  Msg   Char(240),  ;' + #13#10 +
+    '  CodeLine Char(240)   )' + #13#10 +
+    'ENDIF' + #13#10 +
+    'IF NOT USED ( [Errors] )' + #13#10 +
+    '  USE ERRORS IN 0' + #13#10 +
+    'ENDIF' + #13#10 +
+    'SELECT Errors' + #13#10 +
+    'INSERT INTO Errors VALUES ( ;' + #13#10 +
+    ' DATE(), LEFT(TIME(),5), nLine, cProg, cMessage, cMessage1 )' + #13#10 +
+    'USE IN Errors' + #13#10 +
+    'cStr = [Error at line ] + TRANSFORM(nLine) + [ of ] + cprog + [:] + CHR(13)  ;' + #13#10 +
+    '   + cMessage + CHR(13) + [Code that caused the error:] + CHR(13) + cMessage1' + #13#10 +
+    'IF MESSAGEBOX( cStr, 292, [Continue] ) <> 6' + #13#10 +
+    '  SET SYSMENU TO DEFAULT' + #13#10 +
+    '  IF TYPE ( [_Screen.Title1] ) <> [U]' + #13#10 +
+    '   _Screen.RemoveObject ( [Title2] )' + #13#10 +
+    '   _Screen.RemoveObject ( [Title1] )' + #13#10 +
+    '  ENDIF' + #13#10 +
+    '  CLOSE ALL' + #13#10 +
+    '  RELEASE ALL' + #13#10 +
+    '  CANCEL' + #13#10 +
+    ' ELSE' + #13#10 +
+    '  ON ERROR &OnError' + #13#10 +
+    'ENDIF';
+end;
+
+class function TSynFoxproSyn.GetLanguageName: string;
 begin
   Result := SYNS_LangFoxpro;
 end;
