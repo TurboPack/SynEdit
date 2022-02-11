@@ -281,6 +281,7 @@ type
 
   TCustomSynEdit = class(TCustomControl)
   private
+    procedure CMHintShow(var Message: TCMHintShow); message CM_HINTSHOW;
     procedure WMCancelMode(var Message: TMessage); message WM_CANCELMODE;
     procedure WMCaptureChanged(var Msg: TMessage); message WM_CAPTURECHANGED;
     procedure WMClear(var Msg: TMessage); message WM_CLEAR;
@@ -404,6 +405,7 @@ type
     fOnContextHelp: TContextHelpEvent;
     fOnPaintTransient: TPaintTransient;
     fOnScroll: TScrollEvent;
+    fOnShowHint: TShowHintEvent;
     fOnGutterGetText: TGutterGetTextEvent;
     fOnStatusChange: TStatusChangeEvent;
     fOnTripleClick: TNotifyEvent;
@@ -937,6 +939,7 @@ type
       read fOnStatusChange write fOnStatusChange;
     property OnPaintTransient: TPaintTransient
       read fOnPaintTransient write fOnPaintTransient;
+    property OnShowHint: TShowHintEvent read fOnShowHint write fOnShowHint;
     property OnScroll: TScrollEvent read fOnScroll write fOnScroll;
     property OnTripleClick: TNotifyEvent
       read fOnTripleClick write fOnTripleClick;
@@ -1047,6 +1050,7 @@ type
     property OnProcessCommand;
     property OnProcessUserCommand;
     property OnReplaceText;
+    property OnShowHint;
     property OnScroll;
     property OnSpecialLineColors;
     property OnStatusChange;
@@ -6489,6 +6493,28 @@ procedure TCustomSynEdit.ClearUndo;
 begin
   fUndoRedo.Clear;
   ClearTrackChanges;
+end;
+
+procedure TCustomSynEdit.CMHintShow(var Message: TCMHintShow);
+var
+  CanShow: Boolean;
+  HintStr: string;
+begin
+  if Assigned(fOnShowHint) then
+  begin
+    HintStr := Message.HintInfo.HintStr;
+    CanShow := HintStr <> '';
+    fOnShowHint(HintStr, CanShow, Message.HintInfo^);
+    if CanShow then
+    begin
+      Message.Result := 0;
+      Message.HintInfo.HintStr := HintStr;
+    end
+    else
+      Message.Result := 1;
+  end
+  else
+    inherited;;
 end;
 
 procedure TCustomSynEdit.SetGutter(const Value: TSynGutter);
