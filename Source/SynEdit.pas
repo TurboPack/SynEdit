@@ -152,9 +152,10 @@ type
   TSynEditorOptions = set of TSynEditorOption;
 
 const
-  SYNEDIT_DEFAULT_OPTIONS = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey,
-    eoScrollPastEol, eoShowScrollHint, eoTabIndent, eoTabsToSpaces,
-    eoSmartTabDelete, eoGroupUndo, eoShowLigatures];
+  SYNEDIT_DEFAULT_OPTIONS = [eoAutoIndent, eoDragDropEditing, eoKeepCaretX,
+    eoEnhanceHomeKey, eoEnhanceEndKey, eoHideShowScrollbars,
+    eoDisableScrollArrows, eoShowScrollHint, eoTabIndent, eoTabsToSpaces,
+    eoSmartTabDelete, eoGroupUndo, eoDropFiles, eoShowLigatures];
 
 type
   TCreateParamsW = record
@@ -2627,88 +2628,70 @@ var
   procedure DrawIndentGuides;
   { Only used when WordWrap is False, so rows correspond to full lines }
 
-  function StrIsBlank(S: string): Boolean;
-  var
-    I: Integer;
-  begin
-    for I := 1 to S.Length do
-      if not (Word(S[I]) in [9, 32]) then Exit(False);
-    Result := True;
-  end;
-
-  var
-    TabSteps, NonBlankLine, X, YTop, YBottom, Row, Line: Integer;
-    StrokeStyle: ID2D1StrokeStyle;
-    LinesIndents: TArray<Integer>;
-    MaxIndent: Integer;
-    SLine: string;
-  begin
-    SetLength(LinesIndents, aLastRow - aFirstRow + 1);
-
-    // Calculate LinesIndents for every line
-    MaxIndent := 0;
-    for Row := aLastRow downto aFirstRow do begin
-      Line := RowToLine(Row);  // for code folding
-      SLine := fLines[Line - 1];
-
-      if StrIsBlank(SLine) then
-      begin
-        if Row = aLastRow then
-        begin
-          // Get next nonblank line
-          NonBlankLine := Line;
-          while (NonBlankLine <= fLines.Count) and
-           StrIsBlank(fLines[NonBlankLine - 1])
-          do
-            Inc(NonBlankLine);
-          LinesIndents[Row - aFirstRow] := IfThen(NonBlankLine <= Lines.Count,
-            LeftSpaces(fLines[NonBlankLine - 1], True), 0);
-        end
-        else
-          LinesIndents[Row - aFirstRow] := LinesIndents[Row - aFirstRow + 1];
-      end
-      else
-        LinesIndents[Row - aFirstRow] := LeftSpaces(SLine, True);
-
-      MaxIndent := Max(MaxIndent, LinesIndents[Row - aFirstRow]);
+    function StrIsBlank(S: string): Boolean;
+    var
+      I: Integer;
+    begin
+      for I := 1 to S.Length do
+        if not (Word(S[I]) in [9, 32]) then Exit(False);
+      Result := True;
     end;
+
+  var
+    TabSteps, LineIndent, NonBlankLine, X, Y, Row, Line: Integer;
+    BMWidth: Integer;
+    BitmapRT: ID2D1BitmapRenderTarget;
+    BM: ID2D1Bitmap;
+    RectF: TD2D1RectF;
+    StrokeStyle: ID2D1StrokeStyle;
+    BMSize: TD2D1SizeF;
+  begin
+    BMWidth := Round(FCurrentPPI / 96) + 2;
+    BMSize := D2D1SizeF(BMWidth, FTextHeight);
 
     if FIndentGuides.Style = igsDotted then
       StrokeStyle := TSynDWrite.DottedStrokeStyle
     else
       StrokeStyle := nil;
 
-    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
-    // Draw the lines of each tab step
-    TabSteps := TabWidth;
-    while TabSteps < MaxIndent do
-    begin
-      X := TabSteps * CharWidth + FTextOffset;
-      if X >= 0 then
+    CheckOSError(RT.CreateCompatibleRenderTarget(@BMSize, nil, nil,
+      D2D1_COMPATIBLE_RENDER_TARGET_OPTIONS_GDI_COMPATIBLE,
+      BitmapRT));
+      BitmapRT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+      BitmapRT.BeginDraw;
+      BitmapRT.DrawLine(Point(1, 0), Point(1, fTextHeight),
+        TSynDWrite.SolidBrush(FIndentGuides.Color),
+        Round(FCurrentPPI / 96), StrokeStyle);
+      BitmapRT.EndDraw;
+      CheckOSError(BitmapRT.GetBitmap(BM));
+
+
+    for Row := aFirstRow to aLastRow do begin
+      Line := RowToLine(Row);
+      if (Line > Lines.Count) then Break;
+
+      // If line is blank get next nonblank line
+      NonBlankLine := Line;
+      while (NonBlankLine <= fLines.Count) and
+        StrIsBlank(fLines[NonBlankLine - 1])
+      do
+        Inc(NonBlankLine);
+      LineIndent := LeftSpaces(fLines[NonBlankLine - 1], True);
+
+      // Step horizontally
+      Y := YRowOffset(Row);
+      TabSteps := TabWidth;
+      while TabSteps < LineIndent do
       begin
-        Row := aFirstRow;
-        repeat
-          if LinesIndents[Row - aFirstRow] > TabSteps then
-          begin
-            // we have the top line of an indendation guide
-            YTop := YRowOffset(Row);
-            YBottom := YTop + fTextHeight;
-            while (Row < aLastRow) and (LinesIndents[Row - aFirstRow + 1] > TabSteps) do
-            begin
-              Inc(Row);
-              Inc(YBottom, fTextHeight);
-            end;
-            // Draw Line
-            RT.DrawLine(Point(X, YTop), Point(X, YBottom),
-              TSynDWrite.SolidBrush(FIndentGuides.Color),
-              Round(FCurrentPPI / 96), StrokeStyle);
-          end;
-          Inc(Row);
-        until (Row > aLastRow);
+        X := TabSteps * CharWidth + fTextOffset;
+        if X >= 0 then
+        begin
+          RectF := Rect(X - 1, Y, X + BMWidth - 1, Y + fTextHeight);
+          RT.DrawBitmap(BM, @RectF);
+        end;
+        Inc(TabSteps, TabWidth);
       end;
-      Inc(TabSteps, TabWidth);
     end;
-    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   end;
 
   procedure PaintFoldMarks;
@@ -4258,7 +4241,6 @@ end;
 
 procedure TCustomSynEdit.ListDeleted(Sender: TObject; aIndex: Integer;
   aCount: Integer);
-//++ CodeFolding
 Var
   vLastScan: Integer;
 begin
@@ -4277,7 +4259,6 @@ begin
     ReScanForFoldRanges(aIndex, vLastScan);
     InvalidateGutterBand(gbkFold);
   end;
-//-- CodeFolding
 
   InvalidateLines(aIndex + 1, MaxInt);
   InvalidateGutterLines(aIndex + 1, MaxInt);
@@ -4289,30 +4270,11 @@ end;
 procedure TCustomSynEdit.ListInserted(Sender: TObject; Index: Integer;
   aCount: Integer);
 var
-  I, vLastScan: Integer;
+  vLastScan: Integer;
   FoldIndex: Integer;
 begin
   if WordWrap then
-    fWordWrapPlugin.LinesInserted(Index, aCount)
-{$if CompilerVersion >= 32}
-  else
-  begin
-    // Activate WordWrap when you have super long lines (#157)
-    for I := Index to Index + aCount - 1 do
-      if Lines[I].Length > 10000 then   // Magic number
-      begin
-        TThread.ForceQueue(nil, procedure
-        begin
-          UseCodeFolding := False;
-          Include(fOptions, eoWrapWithRightEdge);
-          if fRightEdge = 0 then
-            fRightEdge := 80;
-          WordWrap := True;
-        end);
-        Break;
-      end;
-  end
-{$endif};
+    fWordWrapPlugin.LinesInserted(Index, aCount);
 
   DoLinesInserted(Index, aCount);
 
@@ -4325,7 +4287,6 @@ begin
     until vLastScan >= Index + aCount;
   end;
 
-//++ CodeFolding
   if UseCodeFolding then begin
     if fAllFoldRanges.CollapsedFoldStartAtLine(Index, FoldIndex) then
       // insertion starts at collapsed fold
@@ -4334,13 +4295,11 @@ begin
     // Scan the same lines the highlighter has scanned
     ReScanForFoldRanges(Index, vLastScan-1);
   end;
-//-- CodeFolding
 
   InvalidateLines(Index + 1, MaxInt);
   InvalidateGutterLines(Index + 1, MaxInt);
-//++ Flicker Reduction
+  // Flicker Reduction
   Include(fStateFlags, sfScrollbarChanged);
-//-- Flicker Reduction
 end;
 
 procedure TCustomSynEdit.ListPut(Sender: TObject; Index: Integer;
@@ -4492,7 +4451,6 @@ begin
   end;
 end;
 
-//++ CodeFolding
 procedure TCustomSynEdit.Collapse(FoldRangeIndex: Integer; Invalidate:Boolean);
 begin
   AllFoldRanges.Ranges.List[FoldRangeIndex].Collapsed := True;
@@ -5223,10 +5181,8 @@ begin
 end;
 
 procedure TCustomSynEdit.SetHighlighter(const Value: TSynCustomHighlighter);
-//++ CodeFolding
 Var
   OldUseCodeFolding : Boolean;
-//-- CodeFolding
 begin
   if Value <> fHighlighter then
   begin
@@ -5244,14 +5200,12 @@ begin
     if not(csDestroying in ComponentState) then
       HighlighterAttrChanged(fHighlighter);
 
-//++ CodeFolding
     //  Disable Code Folding if not supported by highlighter
     OldUseCodeFolding := fUseCodeFolding;
     UseCodeFolding := False;
     UseCodeFolding := OldUseCodeFolding;
     if fHighlighter is TSynCustomCodeFoldingHighlighter then
       TSynCustomCodeFoldingHighlighter(fHighlighter).InitFoldRanges(fAllFoldRanges);
-//-- CodeFolding
   end;
 end;
 
@@ -5731,14 +5685,12 @@ begin
           MoveCaretAndSelection(CaretNew, Command = ecSelEditorBottom);
           Update;
         end;
-// goto special line / column position
       ecGotoXY, ecSelGotoXY:
         if Assigned(Data) then
         begin
           MoveCaretAndSelection(TBufferCoord(Data^), Command = ecSelGotoXY);
           Update;
         end;
-// word selection
       ecWordLeft, ecSelWordLeft:
         begin
           CaretNew := PrevWordPos;
@@ -6163,7 +6115,6 @@ begin
         InsertCharAtCursor(PWideChar(Data));
       ecCopyLineUp, ecCopyLineDown, ecMoveLineUp, ecMoveLineDown:
         ExecCmdCopyOrMoveLine(Command);
-//++ CodeFolding
       ecFoldAll: begin CollapseAll; end;
       ecUnfoldAll: begin UncollapseAll; end;
       ecFoldNearest: begin CollapseNearest; end;
@@ -6176,7 +6127,6 @@ begin
       ecUnfoldLevel3: begin UncollapseLevel(3); end;
       ecFoldRegions: begin CollapseFoldType(FoldRegionType) end;
       ecUnfoldRegions: begin UnCollapseFoldType(FoldRegionType) end;
-//-- CodeFolding
     end;
   finally
     DecPaintLock;
@@ -7960,21 +7910,13 @@ procedure TCustomSynEdit.RegisterCommandHandler(
 begin
   if not Assigned(AHandlerProc) then
   begin
-{$IFDEF SYN_DEVELOPMENT_CHECKS}
-    raise Exception.Create('Event handler is NIL in RegisterCommandHandler');
-{$ENDIF}
     exit;
   end;
   if not Assigned(fHookedCommandHandlers) then
     fHookedCommandHandlers := TObjectList.Create;
   if FindHookedCmdEvent(AHandlerProc) = -1 then
     fHookedCommandHandlers.Add(THookedCommandHandlerEntry.Create(
-      AHandlerProc, AHandlerData))
-  else
-{$IFDEF SYN_DEVELOPMENT_CHECKS}
-    raise Exception.CreateFmt('Event handler (%p, %p) already registered',
-      [TMethod(AHandlerProc).Data, TMethod(AHandlerProc).Code]);
-{$ENDIF}
+      AHandlerProc, AHandlerData));
 end;
 
 procedure TCustomSynEdit.UnregisterCommandHandler(AHandlerProc:
@@ -7983,20 +7925,10 @@ var
   i: Integer;
 begin
   if not Assigned(AHandlerProc) then
-  begin
-{$IFDEF SYN_DEVELOPMENT_CHECKS}
-    raise Exception.Create('Event handler is NIL in UnregisterCommandHandler');
-{$ENDIF}
     exit;
-  end;
   i := FindHookedCmdEvent(AHandlerProc);
   if i > -1 then
-    fHookedCommandHandlers.Delete(i)
-  else
-{$IFDEF SYN_DEVELOPMENT_CHECKS}
-    raise Exception.CreateFmt('Event handler (%p, %p) is not registered',
-      [TMethod(AHandlerProc).Data, TMethod(AHandlerProc).Code]);
-{$ENDIF}
+    fHookedCommandHandlers.Delete(i);
 end;
 
 procedure TCustomSynEdit.NotifyHookedCommandHandlers(AfterProcessing: Boolean;
