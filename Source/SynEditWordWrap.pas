@@ -88,6 +88,7 @@ uses
   Winapi.D2D1,
   System.RTLConsts,
   System.Math,
+  System.Threading,
   SynUnicode,
   SynEditMiscProcs,
   SynDWrite;
@@ -314,7 +315,7 @@ procedure TSynWordWrapPlugin.WrapLines;
 var
   cRow: Integer;
   cLine: Integer;
-  RowLengths: TArray<Integer>;
+  RowLengths: TArray<TArray<Integer>>;
 begin
   fLineOffsets.Clear;
   fLineOffsets.Capacity := Editor.Lines.Count;
@@ -324,12 +325,17 @@ begin
   if (Editor.Lines.Count = 0) or (fMaxRowWidth < Editor.CharWidth) then
     Exit;
 
+  SetLength(RowLengths, Editor.Lines.Count);
+  TParallel.&For(0, Editor.Lines.Count - 1, procedure(I: Integer)
+  begin
+    WrapLine(I, RowLengths[I]);
+  end);
+
   cRow := 0;
   for cLine := 0 to Editor.Lines.Count - 1 do
   begin
-    WrapLine(cLine, RowLengths);
-    fRowLengths.AddRange(RowLengths);
-    Inc(cRow, Length(RowLengths));
+    fRowLengths.AddRange(RowLengths[cLine]);
+    Inc(cRow, Length(RowLengths[cLine]));
     fLineOffsets.Add(cRow);
   end;
 end;
