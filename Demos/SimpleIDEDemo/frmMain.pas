@@ -27,7 +27,9 @@ Known Issues:
 -------------------------------------------------------------------------------}
 unit frmMain;
 {$I SynEdit.inc}
+
 interface
+
 uses
   Winapi.Windows,
   Winapi.Messages,
@@ -52,7 +54,7 @@ uses
   SynHighlighterPas,
   SynEditTypes,
   SynEditCodeFolding,
-  uSimpleIDEDebugger;
+  uSimpleIDEDebugger, System.Types, Winapi.D2D1;
 type
   TSimpleIDEMainForm = class(TForm)
     ActionClearAllBreakpoints: TAction;
@@ -108,12 +110,12 @@ type
     procedure ActionToggleBreakpointUpdate(Sender: TObject);
     procedure ActionClearAllBreakpointsExecute(Sender: TObject);
     procedure ActionClearAllBreakpointsUpdate(Sender: TObject);
-    procedure PaintDebugImages(Canvas: TCanvas; ClipR: TRect;
-        const FirstRow, LastRow: Integer; var DoDefaultPainting: Boolean);
     procedure ClickDebugBand(Sender: TObject; Button: TMouseButton;
         X, Y, Row, Line: Integer);
     procedure SynEditorTSynGutterBands1MouseCursor(Sender: TObject; X, Y, Row,
         Line: Integer; var Cursor: TCursor);
+    procedure SynEditorTSynGutterBands1PaintLines(RT: ID2D1RenderTarget; ClipR:
+        TRect; const FirstRow, LastRow: Integer; var DoDefaultPainting: Boolean);
   private
     FCurrentLine: integer;
     FDebugger: TSampleDebugger;
@@ -124,10 +126,17 @@ type
     procedure DebuggerYield(Sender: TObject);
     procedure SetCurrentLine(ALine: integer);
   end;
+
 var
   SimpleIDEMainForm: TSimpleIDEMainForm;
+
 implementation
+
+uses
+  SynDWrite;
+
 {$R *.DFM}
+
 { TGutterMarkDrawPlugin }
 type
   TDebugSupportPlugin = class(TSynEditPlugin)
@@ -138,23 +147,28 @@ type
   public
     constructor Create(AForm: TSimpleIDEMainForm);
   end;
+
 constructor TDebugSupportPlugin.Create(AForm: TSimpleIDEMainForm);
 begin
   inherited Create(AForm.SynEditor);
   FHandlers := [phLinesInserted, phLinesDeleted];
   fForm := AForm;
 end;
+
 procedure TDebugSupportPlugin.LinesInserted(FirstLine, Count: integer);
 begin
 // Note: You will need this event if you want to track the changes to
 //       breakpoints in "Real World" apps, where the editor is not read-only
 end;
+
 procedure TDebugSupportPlugin.LinesDeleted(FirstLine, Count: integer);
 begin
 // Note: You will need this event if you want to track the changes to
 //       breakpoints in "Real World" apps, where the editor is not read-only
 end;
+
 { TSimpleIDEMainForm }
+
 procedure TSimpleIDEMainForm.FormCreate(Sender: TObject);
 var
   Settings: TStringList;
@@ -178,6 +192,7 @@ begin
   end;
   SynEditor.Text := SampleSource;
 end;
+
 procedure TSimpleIDEMainForm.FormDestroy(Sender: TObject);
 begin
   FDebugger.Free;
@@ -190,6 +205,7 @@ begin
     CanClose := FALSE;
   end;
 end;
+
 procedure TSimpleIDEMainForm.SynEditorSpecialLineColors(Sender: TObject;
   Line: Integer; var Special: Boolean; var FG, BG: TColor);
 var
@@ -211,6 +227,7 @@ begin
     end;
   end;
 end;
+
 procedure TSimpleIDEMainForm.DebuggerBreakpointChange(Sender: TObject;
   ALine: integer);
 begin
@@ -222,6 +239,7 @@ begin
   else
     SynEditor.Invalidate;
 end;
+
 procedure TSimpleIDEMainForm.DebuggerCurrentLineChange(Sender: TObject);
 begin
   if (FDebugger <> nil) and not FDebugger.IsRunning then
@@ -229,6 +247,7 @@ begin
   else
     SetCurrentLine(-1);
 end;
+
 procedure TSimpleIDEMainForm.DebuggerStateChange(Sender: TObject; OldState,
   NewState: TDebuggerState);
 var
@@ -242,6 +261,7 @@ begin
   end;
   Statusbar.SimpleText := ' ' + s;
 end;
+
 procedure TSimpleIDEMainForm.DebuggerYield(Sender: TObject);
 begin
   UpdateActions;
@@ -260,67 +280,95 @@ begin
     SynEditor.InvalidateLine(FCurrentLine);
   end;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugRunExecute(Sender: TObject);
 begin
   FDebugger.Run;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugRunUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := (FDebugger <> nil) and FDebugger.CanRun;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugStepExecute(Sender: TObject);
 begin
   FDebugger.Step;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugStepUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := (FDebugger <> nil) and FDebugger.CanStep;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugGotoCursorExecute(Sender: TObject);
 begin
   FDebugger.GotoCursor(SynEditor.CaretY);
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugGotoCursorUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := (FDebugger <> nil)
     and FDebugger.CanGotoCursor(SynEditor.CaretY);
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugPauseExecute(Sender: TObject);
 begin
   FDebugger.Pause;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugPauseUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := (FDebugger <> nil) and FDebugger.CanPause;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugStopExecute(Sender: TObject);
 begin
   FDebugger.Stop;
 end;
+
 procedure TSimpleIDEMainForm.ActionDebugStopUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := (FDebugger <> nil) and FDebugger.CanStop;
 end;
+
 procedure TSimpleIDEMainForm.ActionToggleBreakpointExecute(Sender: TObject);
 begin
   FDebugger.ToggleBreakpoint(SynEditor.CaretY);
 end;
+
 procedure TSimpleIDEMainForm.ActionToggleBreakpointUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := FDebugger <> nil;
 end;
+
 procedure TSimpleIDEMainForm.ActionClearAllBreakpointsExecute(
   Sender: TObject);
 begin
   FDebugger.ClearAllBreakpoints;
 end;
+
 procedure TSimpleIDEMainForm.ActionClearAllBreakpointsUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := (FDebugger <> nil)
     and FDebugger.HasBreakpoints;
 end;
-procedure TSimpleIDEMainForm.PaintDebugImages(Canvas:
-    TCanvas; ClipR: TRect; const FirstRow, LastRow: Integer; var
+
+procedure TSimpleIDEMainForm.ClickDebugBand(Sender: TObject;
+    Button: TMouseButton; X, Y, Row, Line: Integer);
+begin
+  if FDebugger <> nil then
+    FDebugger.ToggleBreakpoint(Line);
+end;
+
+procedure TSimpleIDEMainForm.SynEditorTSynGutterBands1MouseCursor(Sender:
+    TObject; X, Y, Row, Line: Integer; var Cursor: TCursor);
+begin
+  Cursor := crHandPoint;
+end;
+
+procedure TSimpleIDEMainForm.SynEditorTSynGutterBands1PaintLines(RT:
+    ID2D1RenderTarget; ClipR: TRect; const FirstRow, LastRow: Integer; var
     DoDefaultPainting: Boolean);
 var
   LH, Y: integer;
@@ -356,22 +404,9 @@ begin
           ImgIndex := -1;
       end;
       if ImgIndex >= 0 then
-        vilGutterGlyphs.Draw(Canvas, ClipR.Left, Y, ImgIndex);
+        ImageListDraw(RT, vilGutterGlyphs, ClipR.Left, Y, ImgIndex);
     end;
   end;
-end;
-
-procedure TSimpleIDEMainForm.ClickDebugBand(Sender: TObject;
-    Button: TMouseButton; X, Y, Row, Line: Integer);
-begin
-  if FDebugger <> nil then
-    FDebugger.ToggleBreakpoint(Line);
-end;
-
-procedure TSimpleIDEMainForm.SynEditorTSynGutterBands1MouseCursor(Sender:
-    TObject; X, Y, Row, Line: Integer; var Cursor: TCursor);
-begin
-  Cursor := crHandPoint;
 end;
 
 end.

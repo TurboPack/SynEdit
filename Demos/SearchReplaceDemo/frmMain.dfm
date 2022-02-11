@@ -2,8 +2,8 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
   Left = 100
   Top = 122
   Caption = 'Search and replace demo'
-  ClientHeight = 345
-  ClientWidth = 554
+  ClientHeight = 343
+  ClientWidth = 550
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,8 +16,8 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
   object SynEditor: TSynEdit
     Left = 0
     Top = 26
-    Width = 554
-    Height = 300
+    Width = 550
+    Height = 298
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -30,12 +30,12 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
-    Gutter.Font.Name = 'Terminal'
+    Gutter.Font.Name = 'Consolas'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
     Gutter.Bands = <
       item
         Kind = gbkMarks
-        Visible = True
         Width = 15
       end
       item
@@ -46,9 +46,10 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
       end
       item
         Kind = gbkMargin
-        Visible = True
         Width = 2
       end>
+    Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
+    SelectedColor.Alpha = 0.400000005960464500
     OnReplaceText = SynEditorReplaceText
     RemovedKeystrokes = <
       item
@@ -64,7 +65,7 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
   object ToolBarMain: TToolBar
     Left = 0
     Top = 0
-    Width = 554
+    Width = 550
     Height = 26
     AutoSize = True
     BorderWidth = 1
@@ -114,8 +115,8 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
   end
   object Statusbar: TStatusBar
     Left = 0
-    Top = 326
-    Width = 554
+    Top = 324
+    Width = 550
     Height = 19
     Panels = <>
     SimplePanel = True

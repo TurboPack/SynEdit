@@ -4,7 +4,7 @@ object EditorForm: TEditorForm
   ActiveControl = SynEditor
   Caption = 'Editor'
   ClientHeight = 287
-  ClientWidth = 454
+  ClientWidth = 448
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,7 +22,7 @@ object EditorForm: TEditorForm
   object SynEditor: TSynEdit
     Left = 0
     Top = 0
-    Width = 454
+    Width = 448
     Height = 287
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
@@ -41,10 +41,10 @@ object EditorForm: TEditorForm
     Gutter.Font.Height = -11
     Gutter.Font.Name = 'Courier New'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
     Gutter.Bands = <
       item
         Kind = gbkMarks
-        Visible = True
         Width = 15
       end
       item
@@ -55,10 +55,11 @@ object EditorForm: TEditorForm
       end
       item
         Kind = gbkMargin
-        Visible = True
         Width = 2
       end>
+    Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
     SearchEngine = SynEditSearch1
+    SelectedColor.Alpha = 0.400000005960464500
     OnChange = SynEditorChange
     OnReplaceText = SynEditorReplaceText
     OnStatusChange = SynEditorStatusChange
