@@ -2669,7 +2669,6 @@ var
     for Row := aFirstRow to aLastRow do begin
       Line := RowToLine(Row);
       if (Line > Lines.Count) then Break;
-
       // If line is blank get next nonblank line
       NonBlankLine := Line;
       while (NonBlankLine <= fLines.Count) and
@@ -2677,7 +2676,6 @@ var
       do
         Inc(NonBlankLine);
       LineIndent := LeftSpaces(fLines[NonBlankLine - 1], True);
-
       // Step horizontally
       Y := YRowOffset(Row);
       TabSteps := TabWidth;
