@@ -2066,6 +2066,7 @@ Var
   Offset: Integer;
 begin
   if (Gutter.BorderStyle <> gbsNone) then
+  begin
     RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
       if Gutter.BorderStyle = gbsMiddle then
         Offset := Max(2, (ClipR.Right - ClipR.Left) div 2)
@@ -2076,6 +2077,7 @@ begin
         Point(ClipR.Right - Offset, ClipR.Bottom),
         TSynDWrite.SolidBrush(Gutter.BorderColor));
     RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+  end;
 end;
 
 procedure TSynGutterBand.PaintMarks(RT: ID2D1RenderTarget; ClipR: TRect; const
