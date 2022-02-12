@@ -46,14 +46,13 @@ unit SynHighlighterM3;
 interface
 
 uses
-  Graphics,
-  Registry,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  SysUtils,
-  Classes;
+  SynEditHighlighter;
 
 type
   TtkTokenKind = (tkComment, tkIdentifier, tkKey, tkNull, tkNumber, tkPragma,
@@ -81,9 +80,8 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     fSyntaxErrorAttri: TSynHighlighterAttributes;
-    fKeywords: TSynHashEntryList;
+    FKeywords: TDictionary<String, TtkTokenKind>;
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
-    function HashKey(Str: PWideChar): integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymAsciiCharProc;
     procedure SymCommentHelpProc;
@@ -101,14 +99,11 @@ type
     procedure SymSymbolProc;
     procedure SymUnknownProc;
   protected
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
-{$IFDEF SYN_DEVELOPMENT_CHECKS}
-  public
-    property _Keywords: TSynHashEntryList read fKeywords;
-{$ENDIF}
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -147,6 +142,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -164,60 +160,24 @@ const
     'REFANY,ROUND,SUBARRAY,TEXT,TRUE,TRUNC,TYPECODE,VAL';
 
 procedure TSynM3Syn.DoAddKeyword(AKeyword: string; AKind: integer);
-var
-  HashValue: integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
-end;
-
-function TSynM3Syn.HashKey(Str: PWideChar): Integer;
-
-  function GetOrd: Integer;
-  begin
-    case Str^ of
-      'a'..'z': Result := 1 + Ord(Str^) - Ord('a');
-      'A'..'Z': Result := 1 + Ord(Str^) - Ord('A');
-      '0'..'9': Result := 28 + Ord(Str^) - Ord('0');
-      '_': Result := 27;
-      else Result := 0;
-    end
-  end;
-
-begin
-  Result := 0;
-  while IsIdentChar(Str^) do
-  begin
-{$IFOPT Q-}
-    Result := 7 * Result + GetOrd;
-{$ELSE}
-    Result := (7 * Result + GetOrd) and $FFFFFF;
-{$ENDIF}
-    Inc(Str);
-  end;
-  Result := Result and $FF; // 255
-  fStringLen := Str - fToIdent;
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
 
 function TSynM3Syn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkIdentifier;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
+    Result := tkIdentifier;
 end;
 
 constructor TSynM3Syn.Create(AOwner: TComponent);
@@ -226,7 +186,9 @@ begin
 
   fCaseSensitive := True;
 
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-sensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create;
+
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style:= [fsItalic];
   AddAttribute(fCommentAttri);
@@ -646,6 +608,17 @@ end;
 class function TSynM3Syn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangModula3;
+end;
+
+function TSynM3Syn.GetSampleSource: string;
+begin
+  Result :=
+    'MODULE Main;' + #13#10 +
+    '(* An insightful comment! *)' + #13#10 +
+    'IMPORT IO;' + #13#10 +
+    'BEGIN' + #13#10 +
+    '  IO.Put("Hello World\n")' + #13#10 +
+    'END Main.';
 end;
 
 initialization

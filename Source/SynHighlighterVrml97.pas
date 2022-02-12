@@ -73,17 +73,13 @@ unit SynHighlighterVrml97;
 interface
 
 uses
-  Windows,
-  Messages,
-  Registry,
-  Controls,
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  SysUtils,
-  Classes;
+  SynEditHighlighter;
 
 type
   TtkTokenKind = (
@@ -153,10 +149,8 @@ type
     fVrmlWorldInfoAttri :TSynHighlighterAttributes;
     fX3DDocTypeAttri :TSynHighlighterAttributes;
     fX3DHeaderAttri :TSynHighlighterAttributes;
-
-    fKeywords: TSynHashEntryList;
+    FKeywords: TDictionary<String, TtkTokenKind>;
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
-    function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AndSymbolProc;
     procedure CommentProc;
@@ -236,6 +230,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -416,60 +411,24 @@ const
 
 
 procedure TSynVrml97Syn.DoAddKeyword(AKeyword: string; AKind: integer);
-var
-  HashValue: integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
-end;
-
-function TSynVrml97Syn.HashKey(Str: PWideChar): Integer;
-
-  function GetOrd: Integer;
-  begin
-    case Str^ of
-      'a'..'z': Result := 1 + Ord(Str^) - Ord('a');
-      'A'..'Z': Result := 27 + Ord(Str^) - Ord('A');
-      '0'..'9': Result := 54 + Ord(Str^) - Ord('0');
-      '_': Result := 53;
-      else Result := 0;
-    end
-  end;
-
-begin
-  Result := 0;
-  while IsIdentChar(Str^) do
-  begin
-{$IFOPT Q-}
-    Result := 7 * Result + GetOrd;
-{$ELSE}
-    Result := (7 * Result + GetOrd) and $FFFFFF;
-{$ENDIF}
-    Inc(Str);
-  end;
-  Result := Result and $FF; // 255
-  fStringLen := Str - fToIdent;
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
 
 function TSynVrml97Syn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkIdentifier;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
+    Result := tkIdentifier;
 end;
 
 constructor TSynVrml97Syn.Create(AOwner :TComponent);
@@ -478,7 +437,8 @@ begin
 
   fCaseSensitive := True;
 
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-sensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create;
   isDoctype := False;
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];

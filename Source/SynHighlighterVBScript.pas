@@ -51,14 +51,13 @@ unit SynHighlighterVBScript;
 interface
 
 uses
-  Graphics,
-  System.Win.Registry,
-  SynEditHighlighter,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
-  SynHighlighterHashEntries,
-  SysUtils,
-  SynUnicode,
-  Classes,
+  SynEditHighlighter,
 //++ CodeFolding
   System.RegularExpressions,
   SynEditCodeFolding;
@@ -90,13 +89,12 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fFunctionAttri: TSynHighlighterAttributes;
     fCOnstAttri: TSynHighlighterAttributes;
-    fKeywords: TSynHashEntryList;
+    FKeywords: TDictionary<String, TtkTokenKind>;
 //++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
 //-- CodeFolding
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
-    function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure ApostropheProc;
     procedure CRProc;
@@ -157,6 +155,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -206,56 +205,24 @@ const
 	'typename, ubound, ucase, unescape, vartype, weekday, weekdayname, window,' +
 	'write, writeline, year';
 
-
-{$Q-}
-function TSynVBScriptSyn.HashKey(Str: PWideChar): Cardinal;
-begin
-  Result := 0;
-  while CharInSet(Str^, ['a'..'z', 'A'..'Z', '_', '-']) do
-  begin
-    if Str^ <> '-' then
-    case Str^ of
-      '_': Inc(Result, 27);
-      '-': Inc(Result, 28);
-      else Inc(Result, Ord(UpperCase(Str^)[1]) - 64);
-    end;
-    Inc(Str);
-  end;
-  while CharInSet(Str^, ['0'..'9']) do
-  begin
-    Inc(Result, Ord(Str^) - Ord('0'));
-    Inc(Str);
-  end;
-  fStringLen := Str - fToIdent;
-end;
-{$Q+}
-
 procedure TSynVBScriptSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
-var
-  HashValue: Integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
 
 function TSynVBScriptSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
     Result := tkIdentifier;
 end;
 
@@ -264,7 +231,8 @@ begin
   inherited Create(AOwner);
 
   fCaseSensitive := False;
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-insensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];

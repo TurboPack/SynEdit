@@ -51,13 +51,13 @@ unit SynHighlighterFoxpro;
 interface
 
 uses
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  SysUtils,
-  Classes,
 //++ CodeFolding
   System.RegularExpressions,
   SynEditCodeFolding;
@@ -84,13 +84,12 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    fKeywords: TSynHashEntryList;
+    FKeywords: TDictionary<String, TtkTokenKind>;
 //++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
 //-- CodeFolding
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
-    function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AndSymbolProc;
     procedure AsciiCharProc;
@@ -126,6 +125,7 @@ type
     procedure XOrSymbolProc;
     procedure UnknownProc;
   protected
+    function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetLanguageName: string; override;
@@ -165,6 +165,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -269,57 +270,19 @@ const
     'wrk, wrows, wtitle, wvisible, xcmdfile, xl5, xls, year, zap, zoom, zorder, ' +
     'zorderset';
 
-{$Q-}
-function TSynFoxProSyn.HashKey(Str: PWideChar): Cardinal;
-
-  function GetOrd: Cardinal;
-  begin
-    case Str^ of
-      'a'..'z': Result := 1 + Ord(Str^) - Ord('a');
-      'A'..'Z': Result := 1 + Ord(Str^) - Ord('A');
-      '0'..'9': Result := 28 + Ord(Str^) - Ord('0');
-      '-': Result := 27;
-      else Result := 0;
-    end
-  end;
-
-begin
-  Result := 0;
-
-  while IsIdentChar(Str^) do
-  begin
-{$IFOPT Q-}
-    Result := 7 * Result + GetOrd;
-{$ELSE}
-    Result := (7 * Result + GetOrd) and $FFFFFF;
-{$ENDIF}
-    Inc(Str);
-  end;
-
-  Result := Result and $FF; // 255
-  fStringLen := Str - fToIdent;
-end;
-{$Q+}
-
 function TSynFoxProSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkIdentifier;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
+    Result := tkIdentifier;
 end;
 
 constructor TSynFoxproSyn.Create(AOwner: TComponent);
@@ -327,7 +290,8 @@ begin
   inherited Create(AOwner);
 
   fCaseSensitive := False;
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-insensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   AddAttribute(fCommentAttri);
@@ -610,11 +574,9 @@ begin
 end;
 
 procedure TSynFoxproSyn.DoAddKeyword(AKeyword: string; AKind: integer);
-var
-  HashValue: integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
 
 procedure TSynFoxproSyn.ColonProc;
@@ -1003,7 +965,50 @@ begin
   Result := fDefaultFilter <> SYNS_FilterFoxpro;
 end;
 
-class function TSynFoxproSyn.GetLanguageName: string;                    
+function TSynFoxproSyn.GetSampleSource: string;
+begin
+  Result :=
+    '* Some sample Foxpro code to test highlighting' + #13#10 +
+    'CLEAR ALL' + #13#10 +
+    'SET CONFIRM  ON' + #13#10 +
+    '' + #13#10 +
+    'PROCEDURE ErrTrap' + #13#10 +
+    'LPARAMETERS nLine, cProg, cMessage, cMessage1' + #13#10 +
+    'OnError = ON("Error")' + #13#10 +
+    'ON ERROR' + #13#10 +
+    'IF NOT FILE ( [ERRORS.DBF] )' + #13#10 +
+    '  CREATE TABLE ERRORS (  ;' + #13#10 +
+    '  Date   Date,     ;' + #13#10 +
+    '  Time   Char(5),   ;' + #13#10 +
+    '  LineNum Integer,   ;' + #13#10 +
+    '  ProgName Char(30),   ;' + #13#10 +
+    '  Msg   Char(240),  ;' + #13#10 +
+    '  CodeLine Char(240)   )' + #13#10 +
+    'ENDIF' + #13#10 +
+    'IF NOT USED ( [Errors] )' + #13#10 +
+    '  USE ERRORS IN 0' + #13#10 +
+    'ENDIF' + #13#10 +
+    'SELECT Errors' + #13#10 +
+    'INSERT INTO Errors VALUES ( ;' + #13#10 +
+    ' DATE(), LEFT(TIME(),5), nLine, cProg, cMessage, cMessage1 )' + #13#10 +
+    'USE IN Errors' + #13#10 +
+    'cStr = [Error at line ] + TRANSFORM(nLine) + [ of ] + cprog + [:] + CHR(13)  ;' + #13#10 +
+    '   + cMessage + CHR(13) + [Code that caused the error:] + CHR(13) + cMessage1' + #13#10 +
+    'IF MESSAGEBOX( cStr, 292, [Continue] ) <> 6' + #13#10 +
+    '  SET SYSMENU TO DEFAULT' + #13#10 +
+    '  IF TYPE ( [_Screen.Title1] ) <> [U]' + #13#10 +
+    '   _Screen.RemoveObject ( [Title2] )' + #13#10 +
+    '   _Screen.RemoveObject ( [Title1] )' + #13#10 +
+    '  ENDIF' + #13#10 +
+    '  CLOSE ALL' + #13#10 +
+    '  RELEASE ALL' + #13#10 +
+    '  CANCEL' + #13#10 +
+    ' ELSE' + #13#10 +
+    '  ON ERROR &OnError' + #13#10 +
+    'ENDIF';
+end;
+
+class function TSynFoxproSyn.GetLanguageName: string;
 begin
   Result := SYNS_LangFoxpro;
 end;

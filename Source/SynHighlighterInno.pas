@@ -50,13 +50,13 @@ unit SynHighlighterInno;
 interface
 
 uses
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  SysUtils,
-  Classes;
+  SynEditHighlighter;
 
 type
   TtkTokenKind = (tkComment, tkConstant, tkIdentifier, tkKey, tkKeyOrParameter,
@@ -77,8 +77,7 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    fKeywords: TSynHashEntryList;
-    function HashKey(Str: PWideChar): Integer;
+    FKeywords: TDictionary<String, TtkTokenKind>;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymbolProc;
     procedure CRProc;
@@ -95,6 +94,7 @@ type
     procedure UnknownProc;
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
   protected
+    function GetSampleSource: string; override;
     function IsCurrentToken(const Token: string): Boolean; override;
     function IsFilterStored: Boolean; override;
   public
@@ -137,6 +137,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -193,52 +194,19 @@ const
 
   KeyOrParameter: string = 'string';
 
-function TSynInnoSyn.HashKey(Str: PWideChar): Integer;
-
-  function GetOrd: Integer;
-  begin
-     case Str^ of
-       '_': Result := 1;
-       'a'..'z': Result := 2 + Ord(Str^) - Ord('a');
-       'A'..'Z': Result := 2 + Ord(Str^) - Ord('A');
-       else Result := 0;
-     end;
-  end;
-
-begin
-  Result := 0;
-  while IsIdentChar(Str^) do
-  begin
-{$IFOPT Q-}
-    Result := 7 * Result + GetOrd;
-{$ELSE}
-    Result := (7 * Result + GetOrd) and $FFFFFF;
-{$ENDIF}
-    inc(Str);
-  end;
-  Result := Result and $1FF; // 511
-  fStringLen := Str - fToIdent;
-end;
-
 function TSynInnoSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkIdentifier;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
+    Result := tkIdentifier;
 end;
 
 function TSynInnoSyn.IsCurrentToken(const Token: string): Boolean;
@@ -252,7 +220,7 @@ begin
     Result := True;
     for i := 1 to fStringLen do
     begin
-      if SysUtils.AnsiLowerCase(Temp^)[1] <> SysUtils.AnsiLowerCase(Token[i])[1] then
+      if AnsiLowerCase(Temp^)[1] <> AnsiLowerCase(Token[i])[1] then
       begin
         Result := False;
         break;
@@ -269,7 +237,8 @@ begin
   inherited Create(AOwner);
   fCaseSensitive := False;
 
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-insensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
@@ -587,11 +556,33 @@ begin
 end;
 
 procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: integer);
-var
-  HashValue: Integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
+end;
+
+function TSynInnoSyn.GetSampleSource: string;
+begin
+  Result :=
+    '; -- Example.iss --' + #13#10 +
+    '[Setup]' + #13#10 +
+    'AppName=My Program' + #13#10 +
+    'AppVersion=1.5' + #13#10 +
+    'WizardStyle=modern' + #13#10 +
+    'DefaultDirName={autopf}\My Program' + #13#10 +
+    'DefaultGroupName=My Program' + #13#10 +
+    'UninstallDisplayIcon={app}\MyProg.exe' + #13#10 +
+    'Compression=lzma2' + #13#10 +
+    'SolidCompression=yes' + #13#10 +
+    'OutputDir=userdocs:Inno Setup Examples Output' + #13#10 +
+    '' + #13#10 +
+    '[Files]' + #13#10 +
+    'Source: "MyProg.exe"; DestDir: "{app}"' + #13#10 +
+    'Source: "MyProg.chm"; DestDir: "{app}"' + #13#10 +
+    'Source: "Readme.txt"; DestDir: "{app}"; Flags: isreadme' + #13#10 +
+    '' + #13#10 +
+    '[Icons]' + #13#10 +
+    'Name: "{group}\My Program"; Filename: "{app}\MyProg.exe"';
 end;
 
 class function TSynInnoSyn.GetFriendlyLanguageName: string;

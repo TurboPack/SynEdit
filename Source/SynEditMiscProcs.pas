@@ -104,6 +104,18 @@ function EnumHighlighterAttris(Highlighter: TSynCustomHighlighter;
   SkipDuplicates: Boolean; HighlighterAttriProc: THighlighterAttriProc;
   Params: array of Pointer): Boolean;
 
+type
+  // Procedural type for adding keyword entries when enumerating keyword
+  // lists using the EnumerateKeywords procedure below.
+  TEnumerateKeywordEvent = procedure(AKeyword: string; AKind: integer)
+    of object;
+
+  //  This procedure will call AKeywordProc for all keywords in KeywordList. A
+  //  keyword is considered any number of successive chars that are contained in
+  //  Identifiers, with chars not contained in Identifiers before and after them.
+  procedure EnumerateKeywords(AKind: integer; KeywordList: string;
+    IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
+
 {$IFDEF SYN_HEREDOC}
 // Calculates Frame Check Sequence (FCS) 16-bit Checksum (as defined in RFC 1171)
 function CalcFCS(const ABuf; ABufSize: Cardinal): Word;
@@ -607,6 +619,36 @@ begin
   finally
     HighlighterList.Free
   end
+end;
+
+procedure EnumerateKeywords(AKind: integer; KeywordList: string;
+  IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
+var
+  pStart, pEnd: PWideChar;
+  Keyword: string;
+begin
+  if Assigned(AKeywordProc) and (KeywordList <> '') then
+  begin
+    pEnd := PWideChar(KeywordList);
+    pStart := pEnd;
+    repeat
+      // skip over chars that are not in Identifiers
+      while (pStart^ <> #0) and not IsIdentChar(pStart^) do
+        Inc(pStart);
+      if pStart^ = #0 then break;
+      // find the last char that is in Identifiers
+      pEnd := pStart + 1;
+      while (pEnd^ <> #0) and IsIdentChar(pEnd^) do
+        Inc(pEnd);
+      // call the AKeywordProc with the keyword
+      SetString(Keyword, pStart, pEnd - pStart);
+      AKeywordProc(Keyword, AKind);
+      Keyword := '';
+      // pEnd points to a char not in Identifiers, restart after that
+      if pEnd^ <> #0 then
+        pStart := pEnd + 1;
+    until (pStart^ = #0) or (pEnd^ = #0);
+  end;
 end;
 
 {$IFDEF SYN_HEREDOC}

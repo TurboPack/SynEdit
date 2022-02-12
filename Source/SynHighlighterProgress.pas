@@ -52,13 +52,13 @@ unit SynHighlighterProgress;
 interface
 
 uses
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  SysUtils,
-  Classes;
+  SynEditHighlighter;
 
 type
   {Enumerates the different tokens in Progress.}
@@ -100,9 +100,8 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fDataTypeAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    fHashList: TSynHashEntryList;
+    FKeywords: TDictionary<String, TtkTokenKind>;
     procedure DoAddKeyword(AKeyword: string; AKind: Integer);
-    function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AsciiCharProc;
     procedure CommentRangeProc;
@@ -127,10 +126,6 @@ type
   public
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
-{$IFDEF DEBUG}
-  public
-    property Keywords: TSynHashEntryList read fHashList;
-{$ENDIF}
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -474,64 +469,28 @@ const
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
-
-function TSynProgressSyn.HashKey(Str: PWideChar): Integer;
-
-  function GetOrd: Integer;
-  begin
-    case Str^ of
-      'a'..'z': Result := 1 + Ord(Str^) - Ord('a');
-      'A'..'Z': Result := 1 + Ord(Str^) - Ord('A');
-      '0'..'9': Result := 27 + Ord(Str^) - Ord('0');
-      '_': Result := 37;
-      '-': Result := 38;
-      else Result := 0;
-    end;
-  end;
-
-begin                       
-  Result := 0;
-  while IsIdentChar(Str^) do
-  begin
-{$IFOPT Q-}
-    Result := 3 * Result + GetOrd;
-{$ELSE}
-    Result := (3 * Result + GetOrd) and $FFFFFF;
-{$ENDIF}
-    inc(Str);
-  end;
-  Result := Result and $3FF;
-  fStringLen := Str - fToIdent;
-end;
 
 function TSynProgressSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fHashList[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkIdentifier;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
+    Result := tkIdentifier;
 end;
 
 procedure TSynProgressSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
-var
-  HashValue: Integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fHashList[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
 
 constructor TSynProgressSyn.Create(AOwner: TComponent);
@@ -540,7 +499,8 @@ begin
 
   fCaseSensitive := False;
 
-  fHashList := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-insensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Foreground := clRed;
@@ -601,7 +561,7 @@ end;
 
 destructor TSynProgressSyn.Destroy;
 begin
-  fHashList.Free;
+  FKeywords.Free;
   inherited Destroy;
 end;
 

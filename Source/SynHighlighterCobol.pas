@@ -43,19 +43,15 @@ unit SynHighlighterCobol;
 interface
 
 uses
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  Windows,
-  SysUtils,
-  Classes,
-//++ CodeFolding
-  System.Generics.Collections,
   System.RegularExpressions,
   SynEditCodeFolding;
-//++ CodeFolding
 
 type
   TtkTokenKind = (
@@ -110,13 +106,12 @@ type
     fTagAreaAttri: TSynHighlighterAttributes;
     fDebugLinesAttri: TSynHighlighterAttributes;
     fBracketAttri: TSynHighlighterAttributes;
-    fKeywords: TSynHashEntryList;
+    FKeywords: TDictionary<String, TtkTokenKind>;
 //++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
 //-- CodeFolding
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
-    function HashKey(Str: PWideChar): Integer;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure IdentProc;
     procedure UnknownProc;
@@ -186,6 +181,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -391,85 +387,48 @@ const
   StringChars: array[TRangeState] of WideChar = (#0, '"', '''', '=',  '"', '''', #0, #0);
 
 procedure TSynCobolSyn.DoAddKeyword(AKeyword: string; AKind: integer);
-var
-  HashValue: integer;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
-end;
-
-function TSynCobolSyn.HashKey(Str: PWideChar): Integer;
-var
-  fRun: Integer;
-
-  function GetOrd: Integer;
-  begin
-    case Str^ of
-      'a'..'z': Result := 1 + Ord(Str^) - Ord('a');
-      'A'..'Z': Result := 1 + Ord(Str^) - Ord('A');
-      '0'..'9': Result := 28 + Ord(Str^) - Ord('0');
-      '-': Result := 27;
-      else Result := 0;
-    end
-  end;
-
-begin
-  fRun := Run;
-  Result := 0;
-
-  while IsIdentChar(Str^) and (fRun <= fCodeEndPos) do
-  begin
-{$IFOPT Q-}
-    Result := 7 * Result + GetOrd;
-{$ELSE}
-    Result := (7 * Result + GetOrd) and $FFFFFF;
-{$ENDIF}
-    Inc(Str);
-    inc(fRun);
-  end;
-  
-  Result := Result and $FF; // 255
-  fStringLen := Str - fToIdent;
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
 
 function TSynCobolSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
   I: Integer;
+  LRun: Integer;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
+  LRun := Run;
+  while IsIdentChar(MayBe^) and (LRun <= fCodeEndPos) do
   begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-
-        if Result = tkUnknown then // handling of "ambigious" words 
-        begin
-          if IsCurrentToken('label') then
-          begin
-            I := Run + Length('label');
-            while fLine[I] = ' ' do
-              Inc(I);
-            if (AnsiStrLComp(PWideChar(@fLine[I]), 'record', Length('record')) = 0)
-              and (I + Length('record') - 1 <= fCodeEndPos) then
-                Result := tkKey
-              else
-                Result := tkPreprocessor;
-          end
-          else
-            Result := tkIdentifier;
-        end;
-        
-        exit;
-      end;
-    Entry := Entry.Next;
+    Inc(MayBe);
+    inc(LRun);
   end;
-  Result := tkIdentifier;
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+  begin
+    Result := FKeywords[S];
+    if Result = tkUnknown then // handling of "ambigious" words
+    begin
+      if IsCurrentToken('label') then
+      begin
+        I := Run + Length('label');
+        while fLine[I] = ' ' do
+          Inc(I);
+        if (AnsiStrLComp(PWideChar(@fLine[I]), 'record', Length('record')) = 0)
+          and (I + Length('record') - 1 <= fCodeEndPos) then
+            Result := tkKey
+          else
+            Result := tkPreprocessor;
+      end
+      else
+        Result := tkIdentifier;
+    end;
+  end
+  else
+    Result := tkIdentifier;
 end;
 
 procedure TSynCobolSyn.SpaceProc;
@@ -722,7 +681,8 @@ begin
 
   fCaseSensitive := False;
 
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-insensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighLighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];

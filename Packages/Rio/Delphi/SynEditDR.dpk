@@ -99,7 +99,6 @@ contains
   SynHighlighterGalaxy in '..\..\..\Source\SynHighlighterGalaxy.pas',
   SynHighlighterGeneral in '..\..\..\Source\SynHighlighterGeneral.pas',
   SynHighlighterGWS in '..\..\..\Source\SynHighlighterGWS.pas',
-  SynHighlighterHashEntries in '..\..\..\Source\SynHighlighterHashEntries.pas',
   SynHighlighterHaskell in '..\..\..\Source\SynHighlighterHaskell.pas',
   SynHighlighterHC11 in '..\..\..\Source\SynHighlighterHC11.pas',
   SynHighlighterHP48 in '..\..\..\Source\SynHighlighterHP48.pas',

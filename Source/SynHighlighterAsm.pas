@@ -52,13 +52,13 @@ unit SynHighlighterAsm;
 interface
 
 uses
-  Graphics,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Defaults,
+  System.Generics.Collections,
+  Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter,
-  SynHighlighterHashEntries,
-  SynUnicode,
-  SysUtils,
-  Classes;
+  SynEditHighlighter;
 
 type
   TtkTokenKind = (tkComment, tkIdentifier, tkKey, tkNull, tkNumber, tkSpace,
@@ -75,8 +75,7 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    fKeywords: TSynHashEntryList;
-    function HashKey(Str: PWideChar): Cardinal;
+    FKeywords: TDictionary<String, TtkTokenKind>;
     procedure CommentProc;
     procedure CRProc;
     procedure GreaterProc;
@@ -128,6 +127,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -165,46 +165,24 @@ const
     'wait,wbinvd,xadd,xchg,xlat,xlatb,xor';
 
 procedure TSynAsmSyn.DoAddKeyword(AKeyword: string; AKind: integer);
-var
-  HashValue: Cardinal;
 begin
-  HashValue := HashKey(PWideChar(AKeyword));
-  fKeywords[HashValue] := TSynHashEntry.Create(AKeyword, AKind);
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
-
-{$Q-}
-function TSynAsmSyn.HashKey(Str: PWideChar): Cardinal;
-begin
-  Result := 0;
-  while IsIdentChar(Str^) do
-  begin
-    Result := Result * 197 + Ord(Str^) * 14;
-    inc(Str);
-  end;
-  Result := Result mod 4561;
-  fStringLen := Str - fToIdent;
-end;
-{$Q+}
 
 function TSynAsmSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Entry: TSynHashEntry;
+  S: String;
 begin
   fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkIdentifier;
+  while IsIdentChar(MayBe^) do
+    Inc(Maybe);
+  fStringLen := Maybe - fToIdent;
+  SetString(S, fToIdent, fStringLen);
+  if FKeywords.ContainsKey(S) then
+    Result := FKeywords[S]
+  else
+    Result := tkIdentifier;
 end;
 
 constructor TSynAsmSyn.Create(AOwner: TComponent);
@@ -213,7 +191,8 @@ begin
 
   fCaseSensitive := False;
 
-  fKeywords := TSynHashEntryList.Create;
+  // Create the keywords dictionary case-insensitive
+  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri       := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
