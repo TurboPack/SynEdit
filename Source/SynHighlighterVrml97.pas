@@ -422,12 +422,7 @@ var
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
-  begin
-    // Special case for sqlStandard which allows hyphen as an identifier.
-    if (MayBe^ = '-') and ((MayBe + 1)^ = '-') then
-      Break;
     Inc(Maybe);
-  end;
   fStringLen := Maybe - fToIdent;
   SetString(S, fToIdent, fStringLen);
   if FKeywords.ContainsKey(S) then

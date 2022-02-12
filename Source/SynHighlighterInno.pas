@@ -200,12 +200,7 @@ var
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
-  begin
-    // Special case for sqlStandard which allows hyphen as an identifier.
-    if (MayBe^ = '-') and ((MayBe + 1)^ = '-') then
-      Break;
     Inc(Maybe);
-  end;
   fStringLen := Maybe - fToIdent;
   SetString(S, fToIdent, fStringLen);
   if FKeywords.ContainsKey(S) then
@@ -213,27 +208,6 @@ begin
   else
     Result := tkIdentifier;
 end;
-(*
-var
-  Entry: TSynHashEntry;
-begin
-  fToIdent := MayBe;
-  Entry := fKeywords[HashKey(MayBe)];
-  while Assigned(Entry) do
-  begin
-    if Entry.KeywordLen > fStringLen then
-      break
-    else if Entry.KeywordLen = fStringLen then
-      if IsCurrentToken(Entry.Keyword) then
-      begin
-        Result := TtkTokenKind(Entry.Kind);
-        exit;
-      end;
-    Entry := Entry.Next;
-  end;
-  Result := tkIdentifier;
-end;
-*)
 
 function TSynInnoSyn.IsCurrentToken(const Token: string): Boolean;
   var
