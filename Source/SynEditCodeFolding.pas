@@ -904,37 +904,6 @@ begin
   Inc(ToLine, Count);
 end;
 
-procedure TSynCodeFolding.Assign(Source: TPersistent);
-begin
- if Source is TSynCodeFolding then
- begin
-   fCollapsedLineColor := TSynCodeFolding(Source).fCollapsedLineColor;
-   fFolderBarLinesColor := TSynCodeFolding(Source).fFolderBarLinesColor;
-   fShowCollapsedLine := TSynCodeFolding(Source).fShowCollapsedLine;
-   fShowHintMark := TSynCodeFolding(Source).fShowHintMark;
-   fGutterShapeSize := TSynCodeFolding(Source).fGutterShapeSize;
- end
- else
-   inherited Assign(Source);
-end;
-
-constructor TSynCodeFolding.Create;
-begin
-  fCollapsedLineColor := clGrayText;
-  fFolderBarLinesColor := clGrayText;
-  fShowCollapsedLine := False;
-  fShowHintMark := True;
-  fGutterShapeSize := 11;
-end;
-
-function TSynCodeFolding.ScaledGutterShapeSize(PPI: Integer): Integer;
-{ Always returns an odd number }
-begin
-  Result := MulDiv(fGutterShapeSize, PPI, 96);
-  if not Odd(Result) then
-    Dec(Result);
-end;
-
 { TSynFoldRanges.TLineFoldInfo }
 
 constructor TSynFoldRanges.TLineFoldInfo.Create(ALine: Integer;
@@ -1021,6 +990,38 @@ begin
 end;
 
 { TSynCodeFolding }
+
+procedure TSynCodeFolding.Assign(Source: TPersistent);
+begin
+ if Source is TSynCodeFolding then
+ begin
+   fCollapsedLineColor := TSynCodeFolding(Source).fCollapsedLineColor;
+   fFolderBarLinesColor := TSynCodeFolding(Source).fFolderBarLinesColor;
+   fShowCollapsedLine := TSynCodeFolding(Source).fShowCollapsedLine;
+   fShowHintMark := TSynCodeFolding(Source).fShowHintMark;
+   fGutterShapeSize := TSynCodeFolding(Source).fGutterShapeSize;
+   if Assigned(fOnChange) then fOnChange(Self);
+ end
+ else
+   inherited Assign(Source);
+end;
+
+constructor TSynCodeFolding.Create;
+begin
+  fCollapsedLineColor := clGrayText;
+  fFolderBarLinesColor := clGrayText;
+  fShowCollapsedLine := False;
+  fShowHintMark := True;
+  fGutterShapeSize := 11;
+end;
+
+function TSynCodeFolding.ScaledGutterShapeSize(PPI: Integer): Integer;
+{ Always returns an odd number }
+begin
+  Result := MulDiv(fGutterShapeSize, PPI, 96);
+  if not Odd(Result) then
+    Dec(Result);
+end;
 
 procedure TSynCodeFolding.SetCollapsedLineColor(const Value: TColor);
 begin
