@@ -49,8 +49,8 @@ steps:
 
 2. Start RAD Studio.
 
-3. Add the source subdirectory (e.g., d:\SynEdit\source) to the IDE's library path. For CBuilder, add the hpp subdirectory
+3. Add the **Source** and the **Source\Highlighters** subdirectories to the IDE's library path. For CBuilder, add the hpp subdirectory
 (e.g., d:\SynEdit\source\hpp\Win32\Release) to the IDE's system include path.
 
-4. Open & install the designtime package specific to the IDE being used. The IDE should notify you the components have been
+4. Open & install the design-time package specific to the IDE being used. The IDE should notify you the components have been
 installed.
