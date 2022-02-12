@@ -40,8 +40,7 @@ uses
   SynEditMiscClasses,
   SynUnicode,
   SysUtils,
-  Classes,
-  SynEditHighlighterOptions;
+  Classes;
 
 type
   TBetterRegistry = SynEditMiscClasses.TBetterRegistry;
@@ -118,7 +117,6 @@ type
     FAdditionalWordBreakChars: TSysCharSet;
     FAdditionalIdentChars: TSysCharSet;
     FExportName: string;
-    FOptions: TSynEditHighlighterOptions;
     function GetExportName: string;
     procedure SetEnabled(const Value: Boolean);
     procedure SetAdditionalIdentChars(const Value: TSysCharSet);
@@ -162,8 +160,8 @@ type
     function GetLanguageNameProp: string;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; virtual;
-    class function GetFriendlyLanguageName: string; virtual;
-    class function GetLanguageName: string; virtual;
+    class function GetFriendlyLanguageName: string; virtual; abstract;
+    class function GetLanguageName: string; virtual; abstract;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -223,7 +221,6 @@ type
     property DefaultFilter: string read GetDefaultFilter write SetDefaultFilter
       stored IsFilterStored;
     property Enabled: Boolean read fEnabled write SetEnabled default True;
-    property Options: TSynEditHighlighterOptions read FOptions write FOptions; // <-- Codehunter patch
   end;
 
   TSynCustomHighlighterClass = class of TSynCustomHighlighter;
@@ -731,7 +728,6 @@ begin
   fAttrChangeHooks := TSynNotifyEventChain.CreateEx(Self);
   fDefaultFilter := '';
   fEnabled := True;
-  FOptions:= TSynEditHighlighterOptions.Create; // <-- Codehunter patch
 end;
 
 destructor TSynCustomHighlighter.Destroy;
@@ -740,7 +736,6 @@ begin
   FreeHighlighterAttributes;
   fAttributes.Free;
   fAttrChangeHooks.Free;
-  FOptions.Free; // <-- Codehunter patch
 end;
 
 procedure TSynCustomHighlighter.BeginUpdate;
@@ -945,22 +940,6 @@ begin
   if FExportName = '' then
     FExportName := SynEditMiscProcs.DeleteTypePrefixAndSynSuffix(ClassName);
   Result := FExportName;
-end;
-
-class function TSynCustomHighlighter.GetFriendlyLanguageName: string;
-begin
-{$IFDEF SYN_DEVELOPMENT_CHECKS}
-  raise Exception.CreateFmt('%s.GetFriendlyLanguageName not implemented', [ClassName]);
-{$ENDIF}
-  Result := SYNS_FriendlyLangUnknown;
-end;
-
-class function TSynCustomHighlighter.GetLanguageName: string;
-begin
-{$IFDEF SYN_DEVELOPMENT_CHECKS}
-  raise Exception.CreateFmt('%s.GetLanguageName not implemented', [ClassName]);
-{$ENDIF}
-  Result := SYNS_LangUnknown;
 end;
 
 function TSynCustomHighlighter.GetFriendlyLanguageNameProp: string;
