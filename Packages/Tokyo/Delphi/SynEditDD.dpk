@@ -38,6 +38,6 @@ requires
 contains
   SynEditReg in '..\..\..\Source\SynEditReg.pas',
   SynEditPropertyReg in '..\..\..\Source\SynEditPropertyReg.pas',
-  SynHighlighterManager in '..\..\..\Source\SynHighlighterManager.pas';
+  SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas';
 
 end.
