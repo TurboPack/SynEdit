@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterMulti.pas,v 1.34.2.11 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Multiple-highlighter syntax highlighter for SynEdit)
@@ -51,6 +44,7 @@ interface
 
 uses
   Windows,
+  Registry,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
@@ -646,14 +640,14 @@ end;
 function TSynMultiSyn.LoadFromRegistry(RootKey: HKEY;
   Key: string): Boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
   i: Integer;
 begin
   if DefaultHighlighter <> nil then
     Result := DefaultHighlighter.LoadFromRegistry(RootKey, Key + '\DefaultHighlighter')
   else
     Result := False;
-  r := TBetterRegistry.Create;
+  r := TRegistry.Create;
   try
     r.RootKey := RootKey;
     for i := 0 to Schemes.Count-1 do
@@ -675,14 +669,14 @@ end;
 
 function TSynMultiSyn.SaveToRegistry(RootKey: HKEY; Key: string): Boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
   i: integer;
 begin
   if DefaultHighlighter <> nil then
     Result := DefaultHighlighter.SaveToRegistry(RootKey, Key + '\DefaultHighlighter')
   else
     Result := False;
-  r := TBetterRegistry.Create;
+  r := TRegistry.Create;
   try
     r.RootKey := RootKey;
     for i := 0 to Schemes.Count-1 do

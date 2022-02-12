@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterTclTk.pas,v 1.18.2.12 2008/09/14 16:25:03 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a TCL/Tk highlighter for SynEdit)
@@ -51,6 +44,7 @@ interface
 
 uses
   Windows,
+  Registry,
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
@@ -723,9 +717,9 @@ end;
 
 function TSynTclTkSyn.LoadFromRegistry(RootKey: HKEY; Key: string): Boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
 begin
-  r := TBetterRegistry.Create;
+  r := TRegistry.Create;
   try
     r.RootKey := RootKey;
     if r.OpenKeyReadOnly(Key) then
@@ -740,11 +734,11 @@ begin
   end;
 end;
 
-function TSynTclTkSyn.SaveToRegistry(RootKey: HKEY; Key: string): boolean;     
+function TSynTclTkSyn.SaveToRegistry(RootKey: HKEY; Key: string): boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
 begin
-  r:= TBetterRegistry.Create;
+  r:= TRegistry.Create;
   try
     r.RootKey := RootKey;
     if r.OpenKey(Key,true) then

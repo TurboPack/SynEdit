@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterGalaxy.pas,v 1.12.2.8 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Galaxy highlighter for SynEdit)
@@ -124,6 +117,7 @@ type
 implementation
 
 uses
+  Registry,
   SynEditStrConst;
 
 function TSynGalaxySyn.IsIdentChar(AChar: WideChar): Boolean;
@@ -394,9 +388,9 @@ end;
 
 function TSynGalaxySyn.LoadFromRegistry(RootKey: HKEY; Key: string): boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
 begin
-  r:= TBetterRegistry.Create;
+  r:= TRegistry.Create;
   try
     r.RootKey := RootKey;
     if r.OpenKeyReadOnly(Key) then
@@ -413,9 +407,9 @@ end;
 
 function TSynGalaxySyn.SaveToRegistry(RootKey: HKEY; Key: string): boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
 begin
-  r:= TBetterRegistry.Create;
+  r:= TRegistry.Create;
   try
     r.RootKey := RootKey;
     if r.OpenKey(Key,true) then

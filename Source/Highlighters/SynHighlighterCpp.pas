@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterCpp.pas,v 1.22.2.7 2006/05/21 11:59:35 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a C++ syntax highlighter for SynEdit)
@@ -57,9 +50,7 @@ uses
   SysUtils,
   SynUnicode,
   Classes,
-//++ CodeFolding
   SynEditCodeFolding;
-//++ CodeFolding
 
 type
   TtkTokenKind = (tkBracket, tkKey, tkSymbol, tkAsm, tkComment, tkDirective, tkIdentifier, tkNull,
@@ -204,6 +195,7 @@ implementation
 
 uses
   Windows,
+  Registry,
   SynEditStrConst;
 
 const
@@ -1490,7 +1482,7 @@ end;
 procedure TSynCppSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
-  with TBetterRegistry.Create do
+  with TRegistry.Create do
   begin
     try
       RootKey := HKEY_LOCAL_MACHINE;

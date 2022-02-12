@@ -28,13 +28,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-You may retrieve the latest version of SynEdit from the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-You may retrieve the latest version of this file from
-http://www.ashleybrown.co.uk/synedit/
-
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Haskell syntax highlighter for SynEdit)
@@ -182,6 +175,7 @@ implementation
 
 uses
   Windows,
+  Registry,
   SynEditStrConst;
 
 const
@@ -900,7 +894,7 @@ end;
 procedure TSynHaskellSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
-  with TBetterRegistry.Create do
+  with TRegistry.Create do
   begin
     try
       RootKey := HKEY_LOCAL_MACHINE;

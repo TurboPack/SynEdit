@@ -40,7 +40,6 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
-  System.Win.Registry,
   Winapi.Windows,
   Winapi.Messages,
   Winapi.D2D1,
@@ -530,10 +529,6 @@ type
     property Results[Index: Integer]: Integer read GetResult;
     property Lengths[Index: Integer]: Integer read GetLength;
     property Options: TSynSearchOptions write SetOptions;
-  end;
-
-  TBetterRegistry = class(TRegistry)
-    function OpenKeyReadOnly(const Key: string): Boolean;
   end;
 
   // ++ DPI-Aware
@@ -1658,36 +1653,6 @@ begin
   SetCaretPos(BorderWidth + 1 + Canvas.TextWidth(Text), BorderWidth + 1);
   ShowCaret(Handle);
 end;
-
-{ TBetterRegistry }
-
-function TBetterRegistry.OpenKeyReadOnly(const Key: string): Boolean;
-
-  function IsRelative(const Value: string): Boolean;
-  begin
-    Result := not((Value <> '') and (Value[1] = '\'));
-  end;
-
-var
-  TempKey: HKey;
-  S: string;
-  Relative: Boolean;
-begin
-  S := Key;
-  Relative := IsRelative(S);
-
-  if not Relative then
-    Delete(S, 1, 1);
-  TempKey := 0;
-  Result := RegOpenKeyEx(GetBaseKey(Relative), PChar(S), 0, KEY_READ, TempKey)
-    = ERROR_SUCCESS;
-  if Result then
-  begin
-    if (CurrentKey <> 0) and Relative then
-      S := CurrentPath + '\' + S;
-    ChangeKey(TempKey, S);
-  end;
-end; { TBetterRegistry.OpenKeyReadOnly }
 
 { TSynEditSearchCustom }
 

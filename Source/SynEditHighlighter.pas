@@ -26,18 +26,15 @@ unit SynEditHighlighter;
 interface
 
 uses
-  Graphics,
-  Windows,
-  Registry,
-  IniFiles,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  System.Win.Registry,
+  System.IniFiles,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditMiscClasses,
-  SynUnicode,
-  SysUtils,
-  Classes;
-
-type
-  TBetterRegistry = SynEditMiscClasses.TBetterRegistry;
+  SynUnicode;
 
 type
   TSynHighlighterAttributes = class(TPersistent)
@@ -67,8 +64,8 @@ type
     procedure InternalSaveDefaultValues;
     function LoadFromBorlandRegistry(RootKey: HKEY; AttrKey, AttrName: string;
       OldStyle: Boolean): Boolean; virtual;
-    function LoadFromRegistry(Reg: TBetterRegistry): Boolean;
-    function SaveToRegistry(Reg: TBetterRegistry): Boolean;
+    function LoadFromRegistry(Reg: TRegistry): Boolean;
+    function SaveToRegistry(Reg: TRegistry): Boolean;
     function LoadFromFile(Ini: TCustomIniFile): Boolean;
     function SaveToFile(Ini: TCustomIniFile): Boolean;
   public
@@ -446,7 +443,7 @@ const
     bgDefault: string;
     fgIndex16: string;
     bgIndex16: string;
-    reg: TBetterRegistry;
+    reg: TRegistry;
 
     function Get(var Name: string): string;
     var
@@ -461,7 +458,7 @@ const
   begin { LoadOldStyle }
     Result := False;
     try
-      reg := TBetterRegistry.Create;
+      reg := TRegistry.Create;
       reg.RootKey := RootKey;
       try
         with reg do
@@ -514,7 +511,7 @@ const
     fontUnderline: string;
     fgDefault: string;
     bgDefault: string;
-    reg: TBetterRegistry;
+    reg: TRegistry;
 
     function IsTrue(Value: string): Boolean;
     begin
@@ -524,7 +521,7 @@ const
   begin
     Result := False;
     try
-      reg := TBetterRegistry.Create;
+      reg := TRegistry.Create;
       reg.RootKey := RootKey;
       try
         with reg do
@@ -626,7 +623,7 @@ begin
   end;
 end;
 
-function TSynHighlighterAttributes.LoadFromRegistry(Reg: TBetterRegistry): Boolean;
+function TSynHighlighterAttributes.LoadFromRegistry(Reg: TRegistry): Boolean;
 var
   Key: string;
 begin
@@ -646,7 +643,7 @@ begin
     Result := False;
 end;
 
-function TSynHighlighterAttributes.SaveToRegistry(Reg: TBetterRegistry): Boolean;
+function TSynHighlighterAttributes.SaveToRegistry(Reg: TRegistry): Boolean;
 var
   Key: string;
 begin
@@ -815,10 +812,10 @@ end;
 function TSynCustomHighlighter.LoadFromRegistry(RootKey: HKEY;
   Key: string): Boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
   i: Integer;
 begin
-  r := TBetterRegistry.Create;
+  r := TRegistry.Create;
   try
     r.RootKey := RootKey;
     if r.OpenKeyReadOnly(Key) then
@@ -837,10 +834,10 @@ end;
 function TSynCustomHighlighter.SaveToRegistry(RootKey: HKEY;
   Key: string): Boolean;
 var
-  r: TBetterRegistry;
+  r: TRegistry;
   i: Integer;
 begin
-  r := TBetterRegistry.Create;
+  r := TRegistry.Create;
   try
     r.RootKey := RootKey;
     if r.OpenKey(Key,True) then
@@ -1147,7 +1144,7 @@ procedure TSynCustomHighlighter.DoSetLine(const Value: string; LineNumber: Integ
   begin
     // segregated here so case-insensitive highlighters don't have to pay the overhead
     // of the exception frame for the release of the temporary string
-    dest := SysUtils.AnsiLowerCase(value);
+    dest := System.SysUtils.AnsiLowerCase(value);
   end;
 
 begin

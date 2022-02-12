@@ -28,13 +28,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterPas.pas,v 1.27.2.10 2009/02/23 15:43:50 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Pascal/Delphi syntax highlighter for SynEdit)
@@ -56,16 +49,15 @@ interface
 
 uses
   Windows,
+  Registry,
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
   SysUtils,
   Classes,
-//++ CodeFolding
   System.RegularExpressions,
   SynEditCodeFolding;
-//++ CodeFolding
 
 type
   TtkTokenKind = (tkSymbol, tkKey, tkAsm, tkComment, tkIdentifier, tkNull, tkNumber,
@@ -1161,7 +1153,7 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
     Versions: TStringList;
     i: Integer;
   begin
-    with TBetterRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
+    with TRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
     begin
       try
         RootKey := HKEY_LOCAL_MACHINE;

@@ -25,12 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynAutoCorrect.pas,v 1.13.2.7 2008/09/14 16:24:57 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 -------------------------------------------------------------------------------}
 
 {*******************************************************}
@@ -323,7 +317,7 @@ begin
     with Reg do
     begin
       RootKey := ARoot;
-      TBetterRegistry(Reg).OpenKeyReadOnly(AKey);
+      TRegistry(Reg).OpenKeyReadOnly(AKey);
       FItems.Clear;
       for i := 0 to Pred(ReadInteger('', 'Count', 0)) do
       begin

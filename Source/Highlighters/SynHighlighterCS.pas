@@ -29,14 +29,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterCS.pas,v 1.8.2.7 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of SynEdit from the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-You may retrieve the latest version of this file from
-http://www.ashleybrown.co.uk/synedit/
-
 Known Issues:
   - strings on multiple lines are not supported 
 -------------------------------------------------------------------------------}
@@ -63,9 +55,7 @@ uses
   SynUnicode,
   SysUtils,
   Classes,
-//++ CodeFolding
   SynEditCodeFolding;
-//++ CodeFolding
 
 type
   TtkTokenKind = (tkSymbol, tkKey, tkAsm, tkComment, tkDirective, tkIdentifier, tkNull,
@@ -90,10 +80,7 @@ type
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
-//  TSynCSSyn = class(TSynCustomHighlighter)
-//++ CodeFolding
   TSynCSSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
@@ -242,10 +229,8 @@ type
     function UseUserSettings(settingIndex: integer): boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
-//-- CodeFolding
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -272,6 +257,7 @@ implementation
 
 uses
   Windows,
+  Registry,
   SynEditStrConst;
 
  const
@@ -1878,7 +1864,7 @@ end;
 procedure TSynCSSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
-  with TBetterRegistry.Create do
+  with TRegistry.Create do
   begin
     try
       RootKey := HKEY_LOCAL_MACHINE;
