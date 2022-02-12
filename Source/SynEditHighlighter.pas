@@ -1161,7 +1161,6 @@ end;
 
 procedure TSynCustomHighlighter.SetSampleSource(Value: string);
 begin
-  // TODO: sure this should be empty?
 end;
 
 procedure TSynCustomHighlighter.UnhookAttrChangeEvent(ANotifyEvent: TNotifyEvent);
