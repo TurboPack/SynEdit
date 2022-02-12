@@ -145,10 +145,6 @@ type
     procedure SetAttributesOnChange(AEvent: TNotifyEvent);
     procedure SetDefaultFilter(Value: string); virtual;
     procedure SetSampleSource(Value: string); virtual;
-  protected
-    function GetCapabilitiesProp: TSynHighlighterCapabilities;
-    function GetFriendlyLanguageNameProp: string;
-    function GetLanguageNameProp: string;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; virtual;
     class function GetFriendlyLanguageName: string; virtual; abstract;
@@ -185,15 +181,15 @@ type
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
-    property FriendlyLanguageName: string read GetFriendlyLanguageNameProp;
-    property LanguageName: string read GetLanguageNameProp;
+    property FriendlyLanguageName: string read GetFriendlyLanguageName;
+    property LanguageName: string read GetLanguageName;
   public
     property AdditionalIdentChars: TSysCharSet read FAdditionalIdentChars write SetAdditionalIdentChars;
     property AdditionalWordBreakChars: TSysCharSet read FAdditionalWordBreakChars write SetAdditionalWordBreakChars;
     property AttrCount: Integer read GetAttribCount;
     property Attribute[Index: Integer]: TSynHighlighterAttributes
       read GetAttribute;
-    property Capabilities: TSynHighlighterCapabilities read GetCapabilitiesProp;
+    property Capabilities: TSynHighlighterCapabilities read GetCapabilities;
     property SampleSource: string read GetSampleSource write SetSampleSource;
     property CommentAttribute: TSynHighlighterAttributes
       index SYN_ATTR_COMMENT read GetDefaultAttribute;
@@ -916,11 +912,6 @@ begin
   Result := [hcRegistry]; //registry save/load supported by default
 end;
 
-function TSynCustomHighlighter.GetCapabilitiesProp: TSynHighlighterCapabilities;
-begin
-  Result := GetCapabilities;
-end;
-
 function TSynCustomHighlighter.GetDefaultFilter: string;
 begin
   Result := fDefaultFilter;
@@ -931,16 +922,6 @@ begin
   if FExportName = '' then
     FExportName := SynEditMiscProcs.DeleteTypePrefixAndSynSuffix(ClassName);
   Result := FExportName;
-end;
-
-function TSynCustomHighlighter.GetFriendlyLanguageNameProp: string;
-begin
-  Result := GetFriendlyLanguageName;
-end;
-
-function TSynCustomHighlighter.GetLanguageNameProp: string;
-begin
-  Result := GetLanguageName;
 end;
 
 function TSynCustomHighlighter.GetRange: Pointer;
