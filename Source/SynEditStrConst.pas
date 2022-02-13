@@ -220,6 +220,7 @@ const
   SYNS_LangGalaxy               =  'Galaxy';
   SYNS_LangGeneral              =  'General';
   SYNS_LangPascal               =  'ObjectPascal';
+  SYNS_LangDWScript             =  'DWScriptPascal';
   SYNS_LangX86Asm               =  'x86Assembly';
   SYNS_LangPython               =  'Python';
   SYNS_LangTclTk                =  'TclTk';
@@ -515,6 +516,7 @@ resourcestring
   SYNS_FriendlyLangGalaxy               =  'Galaxy';
   SYNS_FriendlyLangGeneral              =  'General';
   SYNS_FriendlyLangPascal               =  'Object Pascal';
+  SYNS_FriendlyLangDWScript             =  'DWScript Pascal';
   SYNS_FriendlyLangX86Asm               =  'x86 Assembly';
   SYNS_FriendlyLangPython               =  'Python';
   SYNS_FriendlyLangTclTk                =  'Tcl/Tk';

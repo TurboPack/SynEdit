@@ -64,7 +64,7 @@ type
 
   TRangeState = (rsANil, rsAnsi, rsAnsiAsm, rsAsm, rsBor, rsBorAsm, rsProperty,
     rsExports, rsDirective, rsDirectiveAsm, rsHereDocSingle, rsHereDocDouble,
-    rsType, rsUnknown);
+    rsType, rsUnit, rsUnknown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
   TIdentFuncTableFunc = function : TtkTokenKind of object;
@@ -84,6 +84,7 @@ type
     fCommentClose : Char;
     fIdentFuncTable: array[0..388] of TIdentFuncTableFunc;
     fKeyWords : TAnsiStringList;
+    FKeywordsUnitScoped: TAnsiStringList;
     FKeywordsPropertyScoped: TAnsiStringList;
     FKeywordsTypeScoped: TAnsiStringList;
     fTokenID: TtkTokenKind;
@@ -108,6 +109,8 @@ type
     function KeyWordFunc: TtkTokenKind;
     function FuncAsm: TtkTokenKind;
     function FuncEnd: TtkTokenKind;
+    function FuncUnitScoped: TtkTokenKind;
+    function FuncUnit: TtkTokenKind;
     function FuncPropertyScoped: TtkTokenKind;
     function FuncProperty: TtkTokenKind;
     function FuncTypeScoped: TtkTokenKind;
@@ -224,7 +227,10 @@ const
       'step', 'strict', 'then', 'to', 'try', 'type', 'unit', 'until', 'uses',
       'var', 'virtual', 'while', 'xor'
   );
-  cKeyWordsPropertyScoped: array [0..4] of string = (
+  cKeywordsUnitScoped: array [0..0] of string = (
+      'namespace'
+  );
+  cKeywordsPropertyScoped: array [0..4] of string = (
       'default', 'index', 'read', 'stored', 'write'
   );
   cKeywordsTypeScoped: array [0..1] of string = (
@@ -294,6 +300,7 @@ begin
   SetAttributesOnChange(DefHighlightChange);
 
   FKeywords := TAnsiStringList.Create;
+  FKeywordsUnitScoped := TAnsiStringList.Create;
   FKeywordsPropertyScoped := TAnsiStringList.Create;
   FKeywordsTypeScoped := TAnsiStringList.Create;
 
@@ -315,10 +322,12 @@ destructor TSynDWSSyn.Destroy;
 begin
   inherited;
   FKeywords.Free;
+  FKeywordsUnitScoped.Free;
   FKeywordsPropertyScoped.Free;
   FKeywordsTypeScoped.Free;
 end;
 
+{$Q-}
 function TSynDWSSyn.HashKey(Str: PWideChar): Cardinal;
 var
    c : Word;
@@ -335,6 +344,7 @@ begin
    fStringLen := Str - fToIdent;
    Result := Result mod Cardinal(Length(fIdentFuncTable));
 end;
+{$Q+}
 
 function TSynDWSSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
@@ -350,42 +360,45 @@ end;
 
 procedure TSynDWSSyn.InitIdent;
 
-   procedure SetIdentFunc(h : Integer; const func : TIdentFuncTableFunc);
-   begin
-      fIdentFuncTable[h]:=func;
-   end;
+  procedure SetIdentFunc(h : Integer; const func : TIdentFuncTableFunc);
+  begin
+    fIdentFuncTable[h]:=func;
+  end;
 
 var
   i : Integer;
 begin
   for i := Low(cKeywords) to High(cKeywords) do
   begin
-      SetIdentFunc(HashKey(@cKeyWords[i][1]), KeyWordFunc);
-      fKeyWords.Add(cKeyWords[i]);
+    SetIdentFunc(HashKey(@cKeyWords[i][1]), KeyWordFunc);
+    fKeyWords.Add(cKeyWords[i]);
    end;
-
+  for i := 0 to High(cKeywordsUnitScoped) do
+  begin
+    SetIdentFunc(HashKey(@cKeywordsUnitScoped[i][1]), FuncUnitScoped);
+    FKeywordsUnitScoped.Add(cKeywordsUnitScoped[i]);
+  end;
   for i := 0 to High(cKeywordsPropertyScoped) do
   begin
     SetIdentFunc(HashKey(@cKeywordsPropertyScoped[i][1]), FuncPropertyScoped);
     FKeywordsPropertyScoped.Add(cKeywordsPropertyScoped[i]);
   end;
-
   for i := 0 to High(cKeywordsTypeScoped) do
   begin
     SetIdentFunc(HashKey(@cKeywordsTypeScoped[i][1]), FuncTypeScoped);
     FKeywordsTypeScoped.Add(cKeywordsTypeScoped[i]);
-   end;
+  end;
+  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[i] = nil then
+      fIdentFuncTable[i] := AltFunc;
 
-   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-      if @fIdentFuncTable[i] = nil then
-         fIdentFuncTable[i] := AltFunc;
-
-   SetIdentFunc(HashKey('asm'), FuncAsm);
-   SetIdentFunc(HashKey('end'), FuncEnd);
-   SetIdentFunc(HashKey('property'), FuncProperty);
+  SetIdentFunc(HashKey('asm'), FuncAsm);
+  SetIdentFunc(HashKey('end'), FuncEnd);
+  SetIdentFunc(HashKey('property'), FuncProperty);
+  SetIdentFunc(HashKey('unit'), FuncUnit);
   SetIdentFunc(HashKey('type'), FuncType);
 
-   fKeyWords.Sorted:=True;
+  fKeyWords.Sorted:=True;
 end;
 
 function TSynDWSSyn.AltFunc: TtkTokenKind;
@@ -461,12 +474,34 @@ begin
     Result := KeywordFunc;
 end;
 
+function TSynDWSSyn.FuncUnitScoped: TtkTokenKind;
+var
+   buf: String;
+begin
+  SetString(buf, FToIdent, FStringLen);
+  if (FRange = rsUnit) and (FKeywordsUnitScoped.IndexOf(buf) >= 0) then
+    Result := tkKey
+  else
+    Result := KeywordFunc;
+end;
+
 function TSynDWSSyn.FuncProperty: TtkTokenKind;
 begin
   if IsCurrentToken('property') then
-begin
+  begin
     Result := tkKey;
     FRange := rsProperty;
+  end
+  else
+    Result := KeywordFunc;
+end;
+
+function TSynDWSSyn.FuncUnit: TtkTokenKind;
+begin
+  if IsCurrentToken('unit') then
+  begin
+    Result := tkKey;
+    FRange := rsUnit;
   end
   else
     Result := KeywordFunc;
@@ -1256,7 +1291,7 @@ end;
 
 class function TSynDWSSyn.GetLanguageName: string;
 begin
-  Result := SYNS_LangPascal;
+  Result := SYNS_LangDWScript;
 end;
 
 class function TSynDWSSyn.GetCapabilities: TSynHighlighterCapabilities;
@@ -1306,7 +1341,7 @@ end;
 
 class function TSynDWSSyn.GetFriendlyLanguageName: string;
 begin
-  Result := SYNS_FriendlyLangPascal;
+  Result := SYNS_FriendlyLangDWScript;
 end;
 
 initialization
