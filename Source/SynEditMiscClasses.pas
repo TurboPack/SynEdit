@@ -2032,14 +2032,13 @@ begin
       // paint line numbers
       S := Gutter.FormatLineNumber(Line);
       if Assigned(SynEdit.OnGutterGetText) then
-        SynEdit.OnGutterGetText(Self, Line, S);
+        SynEdit.OnGutterGetText(SynEdit, Line, S);
       RT.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
         TSynDWrite.SolidBrush(FontColor),
         D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
         DWRITE_MEASURING_MODE_GDI_NATURAL);
     end;
   end;
-
 
   if not Gutter.UseFontStyle then
   begin
