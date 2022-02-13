@@ -738,7 +738,7 @@ type
     procedure PasteFromClipboard;
     function TextWidth(const S: string): Integer;
     // for use in PaintTransient
-    procedure DrawText(S: string; P: TPoint; ClipR: TRect; FontStyle: TFontStyles;
+    procedure PaintText(S: string; P: TPoint; ClipR: TRect; FontStyle: TFontStyles;
         FontColor: TColor; BkgColor: TColor = clNone);
 
     function NextWordPos: TBufferCoord; virtual;
@@ -7309,7 +7309,7 @@ begin
   EnsureCursorPosVisible;
 end;
 
-procedure TCustomSynEdit.DrawText(S: string; P: TPoint; ClipR: TRect;
+procedure TCustomSynEdit.PaintText(S: string; P: TPoint; ClipR: TRect;
   FontStyle: TFontStyles; FontColor: TColor; BkgColor: TColor = clNone);
 { Support routine that can be used in plugins, handlers of AfterPaint etc.
   P is relative to ClipRect }
