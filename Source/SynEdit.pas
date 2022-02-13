@@ -737,6 +737,9 @@ type
     function RowToLine(aRow: Integer): Integer;
     procedure PasteFromClipboard;
     function TextWidth(const S: string): Integer;
+    // for use in PaintTransient
+    procedure DrawText(S: string; P: TPoint; ClipR: TRect; FontStyle: TFontStyles;
+        FontColor: TColor; BkgColor: TColor = clNone);
 
     function NextWordPos: TBufferCoord; virtual;
     function NextWordPosEx(const XY: TBufferCoord): TBufferCoord; virtual;
@@ -2322,7 +2325,6 @@ begin
 
     // If there was a problem rectreate the RenderTarget
     if RT.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
-
 
     PluginsAfterPaint(Canvas, rcClip, nL1, nL2);
 
@@ -7305,6 +7307,26 @@ begin
   ForceCaretX(NewCaretX);
 
   EnsureCursorPosVisible;
+end;
+
+procedure TCustomSynEdit.DrawText(S: string; P: TPoint; ClipR: TRect;
+  FontStyle: TFontStyles; FontColor: TColor; BkgColor: TColor = clNone);
+{ Support routine that can be used in plugins, handlers of AfterPaint etc.
+  P is relative to ClipRect }
+var
+  RT: ID2D1DCRenderTarget;
+  Layout: TSynTextLayout;
+begin
+  Layout.Create(FTextFormat, PChar(S), S.Length, MaxInt, fTextHeight);
+  Layout.SetFontStyle(FontStyle, 1, S.Length);
+  RT := TSynDWrite.RenderTarget;
+  RT.SetTransform(TD2DMatrix3X2F.Identity);
+  RT.BindDC(Canvas.Handle, ClipR);
+  RT.BeginDraw;
+  if BkgColor <> clNone then
+    RT.Clear(D2D1ColorF(BkgColor));
+  Layout.Draw(RT, P.X, P.Y, FontColor);
+  if RT.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
 end;
 
 procedure TCustomSynEdit.DoShiftTabKey;
