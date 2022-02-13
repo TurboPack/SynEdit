@@ -2646,7 +2646,7 @@ var
     BMWidth: Integer;
     BitmapRT: ID2D1BitmapRenderTarget;
     BM: ID2D1Bitmap;
-    RectF: TD2D1RectF;
+    RectF: TRectF;
     StrokeStyle: ID2D1StrokeStyle;
     BMSize: TD2D1SizeF;
   begin
@@ -2689,6 +2689,11 @@ var
         if X >= 0 then
         begin
           RectF := Rect(X - 1, Y, X + BMWidth - 1, Y + fTextHeight);
+          // avoid having two consequtive dots
+          if (FIndentGuides.Style = igsDotted) and Odd(fTextHeight) and
+            not Odd(Row)
+          then
+            RectF.Offset(0, 1);
           RT.DrawBitmap(BM, @RectF);
         end;
         Inc(TabSteps, TabWidth);
