@@ -264,9 +264,9 @@ type
         Count: Integer);
     procedure SetFontColor(Color: TColor; const Start, Count: Integer);
     procedure SetTypography(Typography: TSynTypography; const Start, Count: Integer);
-    procedure Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor: TColor);
+    procedure Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor: TColor; Alpha: Single = 1);
     procedure DrawClipped(RT: ID2D1RenderTarget; X, Y: Integer; ClipRect: TRect;
-      FontColor: TColor);
+      FontColor: TColor; Alpha: Single = 1);
     function TextMetrics: TDwriteTextMetrics;
   end;
 
@@ -732,19 +732,18 @@ begin
     D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT;
 end;
 
-procedure TSynTextLayout.Draw(RT: ID2D1RenderTarget; X, Y: Integer;
-  FontColor: TColor);
+procedure TSynTextLayout.Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor:
+    TColor; Alpha: Single = 1);
 begin
-  RT.DrawTextLayout(D2D1PointF(X, Y), FIDW, TSynDWrite.SolidBrush(FontColor),
-     TextOptions);
+  RT.DrawTextLayout(D2D1PointF(X, Y), FIDW,
+    TSynDWrite.SolidBrush(D2D1ColorF(FontColor, Alpha)), TextOptions);
 end;
 
 procedure TSynTextLayout.DrawClipped(RT: ID2D1RenderTarget; X, Y: Integer;
-  ClipRect: TRect; FontColor: TColor);
+    ClipRect: TRect; FontColor: TColor; Alpha: Single = 1);
 begin
   RT.PushAxisAlignedClip(ClipRect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-  RT.DrawTextLayout(D2D1PointF(X, Y), FIDW, TSynDWrite.SolidBrush(FontColor),
-     TextOptions);
+  Draw(RT, X, Y, FontColor, Alpha);
   RT.PopAxisAlignedClip;
 end;
 
