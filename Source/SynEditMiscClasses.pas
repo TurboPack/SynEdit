@@ -531,10 +531,6 @@ type
     property Options: TSynSearchOptions write SetOptions;
   end;
 
-  // ++ DPI-Aware
-procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: Integer);
-// -- DPI-Aware
-
 implementation
 
 uses
@@ -544,51 +540,6 @@ uses
   SynEditCodeFolding,
   SynEdit,
   SynEditTextBuffer;
-
-{$IF CompilerVersion <= 34}
-procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: integer);
-var
-  buffer: TBitmap;
-begin
-  buffer := TBitmap.Create;
-  try
-    buffer.SetSize(NewWidth, NewHeight);
-    buffer.Canvas.StretchDraw(Rect(0, 0, NewWidth, NewHeight), Bitmap);
-    Bitmap.SetSize(NewWidth, NewHeight);
-    Bitmap.Canvas.Draw(0, 0, buffer);
-  finally
-    buffer.Free;
-  end;
-end;
-{$ELSE}
-// ++ DPI-Aware
-procedure ResizeBitmap(Bitmap: TBitmap; const NewWidth, NewHeight: Integer);
-var
-  Factory: IWICImagingFactory;
-  Scaler: IWICBitmapScaler;
-  Source: TWICImage;
-begin
-  Bitmap.AlphaFormat := afDefined;
-  Source := TWICImage.Create;
-  try
-    Source.Assign(Bitmap);
-    Factory := TSynDWrite.ImagingFactory;
-    Factory.CreateBitmapScaler(Scaler);
-    try
-      Scaler.Initialize(Source.Handle, NewWidth, NewHeight,
-        WICBitmapInterpolationModeHighQualityCubic);
-      Source.Handle := IWICBitmap(Scaler);
-    finally
-      Scaler := nil;
-      Factory := nil;
-    end;
-    Bitmap.Assign(Source);
-  finally
-    Source.Free;
-  end;
-end;
-// -- DPI-Aware
-{$ENDIF}
 
 { TSynSelectedColor }
 
