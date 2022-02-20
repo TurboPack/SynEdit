@@ -934,9 +934,7 @@ var
   Len: Integer;
 begin
   Len := Run - fTokenPos;
-  SetLength(Result, Len);
-  if Len > 0 then
-    StrLCopy(@Result[1], fCasedLine + fTokenPos, Len);
+  SetString(Result, fCasedLine + fTokenPos, Len);
 end;
 
 function TSynCustomHighlighter.GetTokenPos: Integer;
@@ -1065,14 +1063,8 @@ begin
 end;
 
 procedure TSynCustomHighlighter.Next;
-var
-  Delta: Integer;
 begin
   if fOldRun = Run then Exit;
-
-  Delta := Run - fOldRun;
-  while Delta > 0 do
-    dec(Delta);
   fOldRun := Run;
 end;
 

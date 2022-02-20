@@ -2866,14 +2866,14 @@ var
     if (SelLast = MaxInt) and (I + 1 = Integer(RangeCount)) then
     begin
       if fSelectedColor.FillWholeLines then
-        SelEndX := LinesRect.Right
+        Result := LinesRect.Right
       else if eoShowSpecialChars in fOptions then
-        SelEndX := Round(Left + Width)
+        Result := Round(Left + Width)
       else
-        SelEndX := Round(Left + Width) + fCharWidth;
+        Result := Round(Left + Width) + fCharWidth;
     end
     else
-      SelEndX := Round(Left + Width);
+      Result := Round(Left + Width);
   end;
 
 var
@@ -2956,7 +2956,7 @@ begin
       while not FHighLighter.GetEol do
       begin
         TokenPos := FHighLighter.GetTokenPos - CharOffset + 2; //TokenPos is zero based
-        if TokenPos > SRow.Length then Break;  // for WordWrap
+        if TokenPos > LastChar then Break;
         Token := FHighLighter.GetToken;
         if TokenPos + Token.Length <= 1 then
         begin
@@ -2964,8 +2964,6 @@ begin
           Continue;  //for WordWrap
         end;
         Attr := FHighLighter.GetTokenAttribute;
-
-        if TokenPos > LastChar then Break;
 
         if (Token <> '') and Assigned(Attr) and
          (TokenPos + Token.Length - 1 >= FirstChar) then
