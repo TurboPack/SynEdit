@@ -382,7 +382,6 @@ type
     fClickCountTimer: TStopWatch;
     fClickCount: Integer;
     FPaintTransientLock: Integer;
-    FIsScrolling: Boolean;
     FAdditionalWordBreakChars: TSysCharSet;
     FAdditionalIdentChars: TSysCharSet;
     FTextFormat: TSynTextFormat;
@@ -550,6 +549,7 @@ type
     procedure OnCodeFoldingChange(Sender: TObject);
     function GetCollapseMarkRect(Row: Integer; Line: Integer = -1): TRect;
     function GetWrapAreaWidth: Integer;
+    function GetIsScrolling: Boolean;
 //-- CodeFolding
   protected
     FIgnoreNextChar: Boolean;
@@ -891,7 +891,7 @@ type
       write SetInsertCaret default ctVerticalLine;
     property InsertMode: boolean read fInserting write SetInsertMode
       default true;
-    property IsScrolling : Boolean read FIsScrolling;
+    property IsScrolling : Boolean read GetIsScrolling;
     property Keystrokes: TSynEditKeyStrokes
       read FKeystrokes write SetKeystrokes stored False;
     property MaxUndo: Integer read GetMaxUndo write SetMaxUndo default 0;
@@ -4183,7 +4183,7 @@ end;
 
 procedure TCustomSynEdit.WMHScroll(var Msg: TWMScroll);
 begin
-  FSynEditScrollBars.WMHScroll(Msg, FIsScrolling);
+  FSynEditScrollBars.WMHScroll(Msg);
 end;
 
 procedure TCustomSynEdit.WMImeChar(var Msg: TMessage);
@@ -4313,7 +4313,7 @@ end;
 
 procedure TCustomSynEdit.WMVScroll(var Msg: TWMScroll);
 begin
-  FSynEditScrollBars.WMVScroll(Msg, FIsScrolling);
+  FSynEditScrollBars.WMVScroll(Msg);
 end;
 
 function TCustomSynEdit.ScanFrom(Index: Integer): Integer;
@@ -8142,6 +8142,11 @@ begin
     Result := fHookedCommandHandlers.Count
   else
     Result := 0;
+end;
+
+function TCustomSynEdit.GetIsScrolling: Boolean;
+begin
+  Result := FSynEditScrollBars.IsScrolling;
 end;
 
 procedure TCustomSynEdit.RegisterCommandHandler(

@@ -67,12 +67,14 @@ type
   TSynEditScrollBars = class(TInterfacedObject, ISynEditScrollBars)
   private
     FOwner: TCustomSynEdit;
+    FIsScrolling: Boolean;
     FMouseWheelVertAccumulator: Integer;
     FMouseWheelHorzAccumulator: Integer;
     FPrevHorzSBState: TSynScrollBarState;  // Last applied horizontal scrollbar state
     FPrevVertSBState: TSynScrollBarState;  // Last applied vertical scrollbar state
     FNewHorzSBState: TSynScrollBarState;   // New Horizontal ScrollBar state
     FNewVertSBState: TSynScrollBarState;   // New Vertical ScrollBar state
+    function GetIsScrolling: Boolean;
     function GetHorzPageInChars: Integer;
     function GetBarScrollInfo(AKind: TScrollBarKind): TScrollInfo;
     procedure SetScrollBarFromState(const AState: TSynScrollBarState);
@@ -82,8 +84,8 @@ type
     constructor Create(AOwner: TCustomSynEdit);
     destructor Destroy; override;
     function UpdateScrollBars: Boolean;
-    procedure WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
-    procedure WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    procedure WMHScroll(var AMsg: TWMScroll);
+    procedure WMVScroll(var AMsg: TWMScroll);
     procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPoint);
   end;
@@ -119,6 +121,11 @@ end;
 function TSynEditScrollBars.GetHorzPageInChars: Integer;
 begin
   Result := FOwner.TextAreaWidth div FOwner.CharWidth;
+end;
+
+function TSynEditScrollBars.GetIsScrolling: Boolean;
+begin
+  Result := FIsScrolling;
 end;
 
 procedure TSynEditScrollBars.ApplyButtonState(const AState: TSynScrollBarState);
@@ -264,6 +271,8 @@ end;
 function TSynEditScrollBars.UpdateScrollBars: Boolean;
 begin
   // Update the scrollbars from the new state info but only if changed.
+  if FOwner.IsScrolling then Exit(False);
+
   Result := False;
   if FOwner.ScrollBars = TScrollStyle.ssNone then
   begin
@@ -285,7 +294,7 @@ begin
   end;
 end;
 
-procedure TSynEditScrollBars.WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+procedure TSynEditScrollBars.WMHScroll(var AMsg: TWMScroll);
 var
   ScrollInfo: TScrollInfo;
 begin
@@ -309,12 +318,17 @@ begin
     SB_THUMBPOSITION,
     SB_THUMBTRACK:
     begin
-      AIsScrolling := True;
+      FIsScrolling := True;
       ScrollInfo := GetBarScrollInfo(sbHorizontal);
       FOwner.LeftChar := ScrollInfo.nTrackPos div FOwner.CharWidth + 1; // +1 because 0 corresponds to LeftChar = 1
-      OutputDebugString(PChar(ScrollInfo.nTrackPos.ToString));
     end;
-    SB_ENDSCROLL: AIsScrolling := False;
+    SB_ENDSCROLL:
+    begin
+      FIsScrolling := False;
+      RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE);
+      UpdateScrollBars;
+      SetScrollPos(FOwner.Handle, SB_HORZ, FNewHorzSBState.nPos, True);
+    end;
   end;
   if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self, sbHorizontal);
 end;
@@ -329,7 +343,7 @@ begin
   Result := ScrollHintWnd;
 end;
 
-procedure TSynEditScrollBars.WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+procedure TSynEditScrollBars.WMVScroll(var AMsg: TWMScroll);
 var
   s: string;
   rc: TRect;
@@ -355,7 +369,7 @@ begin
     SB_THUMBPOSITION,
     SB_THUMBTRACK:
       begin
-        AIsScrolling := True;
+        FIsScrolling := True;
         ScrollInfo := GetBarScrollInfo(sbVertical);
         FOwner.TopLine := ScrollInfo.nTrackPos;
         if eoShowScrollHint in FOwner.Options then
@@ -391,9 +405,11 @@ begin
       // Ends scrolling
     SB_ENDSCROLL:
       begin
-        AIsScrolling := False;
+        FIsScrolling := False;
         if eoShowScrollHint in FOwner.Options then
           ShowWindow(GetScrollHint.Handle, SW_HIDE);
+        RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE);
+        UpdateScrollBars;
       end;
   end;
   FOwner.Update;  // mjf: Needed?

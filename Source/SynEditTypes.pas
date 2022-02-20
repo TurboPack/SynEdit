@@ -124,10 +124,12 @@ type
 
   ISynEditScrollBars = interface
     function UpdateScrollBars: Boolean;
-    procedure WMHScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
-    procedure WMVScroll(var AMsg: TWMScroll; var AIsScrolling: Boolean);
+    function GetIsScrolling: Boolean;
+    procedure WMHScroll(var AMsg: TWMScroll);
+    procedure WMVScroll(var AMsg: TWMScroll);
     procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPoint);
+    property IsScrolling: Boolean read GetIsScrolling;
   end;
 
 { ************************* For Word Wrap ********************************}
