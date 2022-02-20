@@ -1143,7 +1143,7 @@ begin
       while (P < PEnd) and (W < aX) do
       begin
         case P^ of
-           #9: Inc(W, fTabWidth * fCharWidth - W mod fTabWidth * fCharWidth);
+           #9: Inc(W, fTabWidth * fCharWidth - W mod (fTabWidth * fCharWidth));
            #32..#126: Inc(W, FCharWidth);
          else
            break;
@@ -1216,7 +1216,7 @@ begin
     while P < PCol do
     begin
       case P^ of
-         #9: Inc(Result, fTabWidth * fCharWidth - Result mod fTabWidth * fCharWidth);
+         #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126: Inc(Result, FCharWidth);
        else
          break;
@@ -3437,6 +3437,8 @@ var
   iDelta: Integer;
   iTextArea: TRect;
 begin
+  if Value = FLeftChar then Exit;
+
 	// when wrapping with right edge and right edge is behind the window width
   if WordWrap and not ((eoWrapWithRightEdge in FOptions) and
     (WrapAreaWidth > FTextAreaWidth))
@@ -5631,7 +5633,7 @@ begin
     while P < PEnd do
     begin
       case P^ of
-         #9: Inc(Result, fTabWidth * fCharWidth - Result mod fTabWidth * fCharWidth);
+         #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126: Inc(Result, FCharWidth);
        else
          break;
