@@ -2509,7 +2509,6 @@ procedure TCustomSynEdit.PaintTextLines(RT: ID2D1RenderTarget; AClip: TRect;
   const aFirstRow, aLastRow: Integer);
 var
   LinesRect: TRect;
-  XRowOffset: Integer;
 
   function WhitespaceColor(Bkground: Boolean = True;
     ResetHighlighter: Boolean = False): TColor;
@@ -2856,8 +2855,6 @@ var
     LastChar := Min(PixelsToColumn(S, ClientWidth - fTextOffset), S.Length);
     while (LastChar < S.Length) and not (Word(S[LastChar + 1]) in [9, 32..126]) do
       Inc(LastChar);
-
-    XRowOffset := ColumnToPixels(S, FirstChar);
   end;
 
   function SelEndX(Left, Width: Single; SelLast, I, RangeCount: Integer): Integer;
