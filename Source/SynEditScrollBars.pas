@@ -326,8 +326,8 @@ begin
     begin
       FIsScrolling := False;
       RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE);
+      ValidateRect(FOwner.Handle, FOwner.ClientRect);
       UpdateScrollBars;
-      SetScrollPos(FOwner.Handle, SB_HORZ, FNewHorzSBState.nPos, True);
     end;
   end;
   if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self, sbHorizontal);
@@ -409,6 +409,7 @@ begin
         if eoShowScrollHint in FOwner.Options then
           ShowWindow(GetScrollHint.Handle, SW_HIDE);
         RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE);
+        ValidateRect(FOwner.Handle, FOwner.ClientRect);
         UpdateScrollBars;
       end;
   end;
