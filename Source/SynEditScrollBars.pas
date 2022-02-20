@@ -251,7 +251,7 @@ begin
   FNewVertSBState.Active := FOwner.ScrollBars in [TScrollStyle.ssBoth, TScrollStyle.ssVertical];
   if FNewVertSBState.Active then
   begin
-    MaxScroll := FOwner.DisplayLineCount;
+    MaxScroll := FOwner.DisplayRowCount;
     if (eoScrollPastEof in FOwner.Options) then
       Inc(MaxScroll, FOwner.LinesInWindow - 1);
     FNewVertSBState.nMin := 1;
@@ -342,7 +342,7 @@ begin
   case AMsg.ScrollCode of
       // Scrolls to start / end of the text
     SB_TOP: FOwner.TopLine := 1;
-    SB_BOTTOM: FOwner.TopLine := FOwner.DisplayLineCount;
+    SB_BOTTOM: FOwner.TopLine := FOwner.DisplayRowCount;
       // Scrolls one line up / down
     SB_LINEDOWN: FOwner.TopLine := FOwner.TopLine + 1;
     SB_LINEUP: FOwner.TopLine := FOwner.TopLine - 1;
@@ -367,7 +367,7 @@ begin
               s := Format(SYNS_ScrollInfoFmtTop, [FOwner.RowToLine(FOwner.TopLine)]);
             else
               s := Format(SYNS_ScrollInfoFmt, [FOwner.RowToLine(FOwner.TopLine),
-                FOwner.RowToLine(FOwner.TopLine + Min(FOwner.LinesInWindow, FOwner.DisplayLineCount - FOwner.TopLine))]);
+                FOwner.RowToLine(FOwner.TopLine + Min(FOwner.LinesInWindow, FOwner.DisplayRowCount - FOwner.TopLine))]);
           end;
 
           rc := ScrollHint.CalcHintRect(200, s, nil);
