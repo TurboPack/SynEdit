@@ -78,6 +78,7 @@ type
     function GetHorzPageInChars: Integer;
     function GetBarScrollInfo(AKind: TScrollBarKind): TScrollInfo;
     procedure SetScrollBarFromState(const AState: TSynScrollBarState);
+    procedure SetScrollBarPos(AKind: TScrollBarKind; APos: Integer; ARefresh: Boolean);
     procedure ApplyButtonState(const AState: TSynScrollBarState);
     procedure UpdateScrollBarsState;
   public
@@ -157,6 +158,23 @@ begin
   end;
 end;
 
+procedure TSynEditScrollBars.SetScrollBarPos(AKind: TScrollBarKind;
+  APos: Integer; ARefresh: Boolean);
+var
+  BarKind: Integer;
+  ScrollInfo: TScrollInfo;
+begin
+  if AKind = sbHorizontal then
+    BarKind := SB_HORZ
+  else
+    BarKind := SB_VERT;
+  FillChar(ScrollInfo, SizeOf(ScrollInfo), 0);
+  ScrollInfo.cbSize := SizeOf(ScrollInfo);
+  ScrollInfo.fMask := SIF_POS;
+  ScrollInfo.nPos := APos;
+  SetScrollInfo(FOwner.Handle, BarKind, ScrollInfo, ARefresh);
+end;
+
 procedure TSynEditScrollBars.SetScrollBarFromState(const AState: TSynScrollBarState);
 var
   WindowStyle: NativeInt;
@@ -187,7 +205,7 @@ begin
   begin
 
     if not HideEnabled then
-      ScrollInfo.fMask := SIF_ALL or SIF_DISABLENOSCROLL;
+      ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
 
     ScrollInfo.nMin := AState.nMin;
     ScrollInfo.nMax := AState.nMax;
@@ -221,7 +239,6 @@ end;
 procedure TSynEditScrollBars.UpdateScrollBarsState;
 var
   MaxScroll: Integer;
-  PageSize: Integer;
 begin
   // Do Horz First
   FNewHorzSBState.Active :=
@@ -233,25 +250,20 @@ begin
   begin
     if FOwner.WordWrap and (eoWrapWithRightEdge in FOwner.Options) then
     begin
-      MaxScroll := (FOwner.WrapAreaWidth div FOwner.CharWidth + 1) * FOwner.CharWidth;
-      PageSize := (FOwner.TextAreaWidth div FOwner.CharWidth) * FOwner.CharWidth;
+      MaxScroll := (FOwner.WrapAreaWidth div FOwner.CharWidth + 1);
     end
     else
     begin
-      // Make sure our values are multiples of CharWidth.
-      MaxScroll :=
-        (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
-        FOwner.CharWidth)  + 1) * FOwner.CharWidth;
+      MaxScroll := (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
+        FOwner.CharWidth) + 1);
       if (eoScrollPastEol in FOwner.Options) then
-        MaxScroll := Max(MaxScroll,
-          (FOwner.LeftChar - 1 + FOwner.TextAreaWidth div FOwner.CharWidth)
-          * FOwner.CharWidth);
-      PageSize := GetHorzPageInChars * FOwner.CharWidth;
+        MaxScroll := Max(MaxScroll + 1,
+          FOwner.LeftChar - 1 + GetHorzPageInChars);  // PastEOL adds 1 to MaxScroll.
     end;
-    FNewHorzSBState.nMin := 0;
-    FNewHorzSBState.nMax := MaxScroll - 1;  // Windows assumes size = nMax - nMin + 1
-    FNewHorzSBState.nPage := Max(FOwner.CharWidth, PageSize);
-    FNewHorzSBState.nPos := (FOwner.LeftChar - 1) * FOwner.CharWidth;
+    FNewHorzSBState.nMin := 1;
+    FNewHorzSBState.nMax := MaxScroll;
+    FNewHorzSBState.nPage := Max(1, GetHorzPageInChars);
+    FNewHorzSBState.nPos := FOwner.LeftChar;
   end;
 
   // Now do Vert
@@ -320,8 +332,8 @@ begin
     begin
       FIsScrolling := True;
       ScrollInfo := GetBarScrollInfo(sbHorizontal);
-      FOwner.LeftChar := ScrollInfo.nTrackPos div FOwner.CharWidth + 1; // +1 because 0 corresponds to LeftChar = 1
-      SetScrollPos(FOwner.Handle, SB_HORZ, ScrollInfo.nTrackPos, False);
+      FOwner.LeftChar := ScrollInfo.nTrackPos;
+      SetScrollBarPos(sbHorizontal, ScrollInfo.nTrackPos, False);
     end;
     SB_ENDSCROLL:
     begin
@@ -399,8 +411,8 @@ begin
           OffsetRect(rc, pt.x, pt.y);
           ScrollHint.ActivateHint(rc, s);
           ScrollHint.Update;
-          SetScrollPos(FOwner.Handle, SB_VERT, ScrollInfo.nTrackPos, False);
         end;
+        SetScrollBarPos(sbVertical, ScrollInfo.nTrackPos, False);
       end;
       // Ends scrolling
     SB_ENDSCROLL:
