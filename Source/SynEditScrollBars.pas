@@ -271,7 +271,7 @@ end;
 function TSynEditScrollBars.UpdateScrollBars: Boolean;
 begin
   // Update the scrollbars from the new state info but only if changed.
-  if FOwner.IsScrolling then Exit(False);
+  if FIsScrolling then Exit(False);
 
   Result := False;
   if FOwner.ScrollBars = TScrollStyle.ssNone then
