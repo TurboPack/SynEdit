@@ -321,12 +321,11 @@ begin
       FIsScrolling := True;
       ScrollInfo := GetBarScrollInfo(sbHorizontal);
       FOwner.LeftChar := ScrollInfo.nTrackPos div FOwner.CharWidth + 1; // +1 because 0 corresponds to LeftChar = 1
+      SetScrollPos(FOwner.Handle, SB_HORZ, ScrollInfo.nTrackPos, False);
     end;
     SB_ENDSCROLL:
     begin
       FIsScrolling := False;
-      RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE);
-      ValidateRect(FOwner.Handle, FOwner.ClientRect);
       UpdateScrollBars;
     end;
   end;
@@ -400,6 +399,7 @@ begin
           OffsetRect(rc, pt.x, pt.y);
           ScrollHint.ActivateHint(rc, s);
           ScrollHint.Update;
+          SetScrollPos(FOwner.Handle, SB_VERT, ScrollInfo.nTrackPos, False);
         end;
       end;
       // Ends scrolling
@@ -408,8 +408,6 @@ begin
         FIsScrolling := False;
         if eoShowScrollHint in FOwner.Options then
           ShowWindow(GetScrollHint.Handle, SW_HIDE);
-        RedrawWindow(FOwner.Handle, nil, 0, RDW_FRAME or RDW_INVALIDATE);
-        ValidateRect(FOwner.Handle, FOwner.ClientRect);
         UpdateScrollBars;
       end;
   end;
