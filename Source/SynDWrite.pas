@@ -132,6 +132,7 @@ type
       baselineOriginX: Single; baselineOriginY: Single;
       out glyphRunAnalysis: IDWriteGlyphRunAnalysis): HResult; stdcall;
   end;
+  {$EXTERNALSYM IDWriteFactory}
 {$ENDREGION}
 
 {$REGION 'IDWriteFontFace Redeclaration'}
@@ -183,6 +184,7 @@ type
       transform: PDwriteMatrix; useGdiNatural: BOOL; glyphIndices: PWord;
       glyphCount: Cardinal; fontFaceMetrics: PDwriteGlyphMetrics;
       isSideways: BOOL = False): HResult; stdcall;  end;
+{$EXTERNALSYM IDWriteFontFace}
 {$ENDREGION}
 
 {$REGION 'ID2D1GdiInteropRenderTarget Redeclaration'}
@@ -192,6 +194,7 @@ type
 
     function ReleaseDC(update: PRect): HResult; stdcall;
   end;
+{$EXTERNALSYM ID2D1GdiInteropRenderTarget}
 {$ENDREGION}
 
 {$REGION 'DWrite_1.h DWrite_2.h DWrite_3.h'}
