@@ -1283,18 +1283,34 @@ function TCustomSynEdit.ValidTextPos(const S: String; Index: Integer;
 var
   Layout: TSynTextLayout;
   X, Y: single;
+  P, PStart, PEnd: PChar;
   HTM: TDwriteHitTestMetrics;
 begin
-  if not InRange(Index, 2, S.Length) then
+  if not InRange(Index, 2, S.Length) or (Word(S[Index]) in [9, 32..126]) then
     Exit(Index);
 
-  Layout.Create(FTextFormat, PChar(S), S.Length, MaxInt, fTextHeight);
-  CheckOSError(Layout.IDW.HitTestTextPosition(Index - 1, False, X, Y, HTM));
+  PStart := PChar(S);
+  PEnd := PStart + S.Length - 1;
+  P := PStart + Index - 1;
 
-  if Index = Integer(HTM.textPosition) + 1 then
+  // Include at least one more character before
+  Dec(P);
+  while (P > PStart) and not (Word(P^) in [9, 32..126]) do
+    Dec(P);
+  PStart := P;
+  P := PChar(S) + Index - 1;
+  // Add characters after
+  while (P < PEnd) and not (Word((P + 1)^) in [9, 32..126]) do
+    Inc(P);
+
+  Layout.Create(FTextFormat, PStart, P - PStart + 1, MaxInt, fTextHeight);
+  CheckOSError(Layout.IDW.HitTestTextPosition(PChar(S) + Index - PStart - 1,
+    False, X, Y, HTM));
+
+  if Index + PChar(S) - PStart = Integer(HTM.textPosition) + 1 then
     Result := Index
   else
-    Result := IfThen(Trailing and (HTM.length > 1),
+    Result := PStart - PChar(S) +  IfThen(Trailing and (HTM.length > 1),
       HTM.textPosition + HTM.length + 1, HTM.textPosition + 1);
 end;
 
@@ -2864,7 +2880,7 @@ var
       Exit;
     end;
     FirstChar := PixelsToColumn(PChar(S), S.Length,
-      (FLeftChar - 1) * FCharWidth, True);
+      (FLeftChar - 1) * FCharWidth + 1, True);
     if FirstChar > S.Length then
     begin
       // nothing to display
