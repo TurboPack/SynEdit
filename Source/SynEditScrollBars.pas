@@ -256,7 +256,7 @@ begin
     begin
       MaxScroll := (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
         FOwner.CharWidth) + 1);
-      if (eoScrollPastEol in FOwner.Options) then
+      if (eoScrollPastEol in FOwner.Options) or (FOwner.LeftChar > 1) then
         MaxScroll := Max(MaxScroll + 1,
           FOwner.LeftChar - 1 + GetHorzPageInChars);  // PastEOL adds 1 to MaxScroll.
     end;
@@ -423,7 +423,6 @@ begin
         UpdateScrollBars;
       end;
   end;
-  FOwner.Update;  // mjf: Needed?
   if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self,sbVertical);
 end;
 
@@ -447,7 +446,6 @@ begin
     WheelClicks := FMouseWheelVertAccumulator div WHEEL_DELTA;
     FMouseWheelVertAccumulator := FMouseWheelVertAccumulator mod WHEEL_DELTA;
     FOwner.TopLine := FOwner.TopLine - WheelClicks * LinesToScroll;
-    FOwner.Update;  // mjf: needed?
     if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self, sbVertical);
   end
   else
@@ -459,7 +457,6 @@ begin
     WheelClicks := FMouseWheelHorzAccumulator div WHEEL_DELTA;
     FMouseWheelHorzAccumulator := FMouseWheelHorzAccumulator mod WHEEL_DELTA;
     FOwner.LeftChar := FOwner.LeftChar - WheelClicks * CharsToScroll;
-    FOwner.Update;  // mjf: needed?
     if Assigned(FOwner.OnScroll) then FOwner.OnScroll(Self, sbHorizontal);
   end;
 end;
