@@ -753,7 +753,8 @@ type
     function PrevWordPos: TBufferCoord; virtual;
     function PrevWordPosEx(const XY: TBufferCoord): TBufferCoord; virtual;
 
-    function PixelsToColumn(const S: string; aX: Integer): Integer;
+    function PixelsToColumn(P: PChar; Len: Integer; aX: Integer; CharBefore:
+        Boolean = False): Integer;
     function PixelsToRowColumn(aX, aY: Integer): TDisplayCoord;
     function PixelsToNearestRowColumn(aX, aY: Integer): TDisplayCoord;
     procedure Redo;
@@ -1121,21 +1122,25 @@ begin
   Result := PixelsToRowColumn(aX, aY);
 end;
 
-function TCustomSynEdit.PixelsToColumn(const S: string; aX: Integer): Integer;
+function TCustomSynEdit.PixelsToColumn(P: PChar; Len: Integer; aX: Integer;
+  CharBefore: Boolean = False): Integer;
+{ Returns the character index at given pixel position aX when the text is
+  rendered with the SynEdit TextFormat.
+  If CharBefore is true you always get the character at or before the pixel
+  position, othwerwise you get the nearest character}
 var
   Layout: TSynTextLayout;
   HTM: TDwriteHitTestMetrics;
   IsTrailing, IsInside: LongBool;
-  P, P2, PStart, PEnd: PChar;
+  P2, PStart, PEnd: PChar;
   W : Integer;
 begin
-  if (S = '') or (aX <= 0) then
+  if (Len = 0) or (aX <= 0) then
     Result := Max((ax div fCharWidth) + 1, 1)
   else
   begin
-    P := PChar(S);
     PStart := P;
-    PEnd := P + S.Length;
+    PEnd := P + Len;
     W := 0;
 
     while (P < PEnd) and (W < aX) do
@@ -1150,7 +1155,7 @@ begin
          end;
          Inc(P);
       end;
-      if ((P = PEnd) or (W >= aX)) and (W <= aX + fCharWidth div 2) then
+      if not CharBefore and ((P = PEnd) or (W >= aX)) and (W <= aX + fCharWidth div 2) then
         Inc(P);
 
       if (P >= PEnd) or (W >= aX) then Break;
@@ -1177,7 +1182,8 @@ begin
       Inc(W, Round(HTM.left + HTM.width));
       if IsInside then
       begin
-        Inc(P, Integer(HTM.textPosition) + IfThen(IsTrailing, HTM.length + 1, 1));
+        Inc(P, Integer(HTM.textPosition) +
+          IfThen(not CharBefore and IsTrailing, HTM.length + 1, 1));
         Break;
       end
       else
@@ -1195,7 +1201,7 @@ var
 begin
   Result.Row := MinMax(TopLine + (aY div fTextHeight), 1, DisplayRowCount);
   S := Rows[Result.Row];
-  Result.Column := PixelsToColumn(S, ax - fTextOffset);
+  Result.Column := PixelsToColumn(PChar(S), S.Length, ax - fTextOffset);
 end;
 
 function TCustomSynEdit.ColumnToPixels(const S: string; Col: Integer): Integer;
@@ -2509,6 +2515,8 @@ procedure TCustomSynEdit.PaintTextLines(RT: ID2D1RenderTarget; AClip: TRect;
   const aFirstRow, aLastRow: Integer);
 var
   LinesRect: TRect;
+  FirstChar, LastChar: Integer;
+  XRowOffset: Integer;
 
   function WhitespaceColor(Bkground: Boolean = True;
     ResetHighlighter: Boolean = False): TColor;
@@ -2562,7 +2570,7 @@ var
   end;
 
   procedure FullRowColors(const Row, Line: Integer;
-    var FullRowFG, FullRowBG: TColor; var BGAlpha: TD2D1ColorF);
+    var FullRowBG, FullRowFG: TColor; var BGAlpha: TD2D1ColorF);
   { Return clNone to do normal processing of text foreground/background color }
   var
     IsLineSpecial: Boolean;
@@ -2707,11 +2715,11 @@ var
     X1, Y1, X2, Y2: Single;
     HitMetrics: TDwriteHitTestMetrics;
   begin
-    Layout.IDW.HitTestTextPosition(Start - 1, False, X1, Y1, HitMetrics);
+    Layout.IDW.HitTestTextPosition(Max(Start - 1, 0), False, X1, Y1, HitMetrics);
     Layout.IDW.HitTestTextPosition(Start + Len - 2, True, X2, Y2, HitMetrics);
     RT.FillRectangle(
-      Rect(FTextOffset + Round(X1), YRowOffset(Row),
-           FTextOffset + Round(X2) + 1, YRowOffset(Row + 1)),
+      Rect(fTextOffset + XRowOffset + Round(X1), YRowOffset(Row),
+           fTextOffset + XRowOffset + Round(X2) + 1, YRowOffset(Row + 1)),
            TSynDWrite.SolidBrush(AColor));
   end;
 
@@ -2727,7 +2735,7 @@ var
     TabLayout.Create(FTextFormat, @SynTabGlyph, 1, Round(X2 - X1), fTextHeight);
     TabLayout.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
     TabLayout.SetFontColor(TabColor, 1, 1);
-    TabLayout.Draw(RT, FTextOffset + Round(X1), YRowOffset(Row), TabColor);
+    TabLayout.Draw(RT, FTextOffset + XRowOffset + Round(X1), YRowOffset(Row), TabColor);
   end;
 
   procedure DrawIndentGuides;
@@ -2843,18 +2851,54 @@ var
     end;
   end;
 
-  procedure TextRangeToDisplay(const S: string; out FirstChar, LastChar: Integer);
+  procedure TextRangeToDisplay(const S: string);
+  var
+    HasTabs: Boolean;
+    I: Integer;
   begin
-    FirstChar := Min(PixelsToColumn(S, FLeftChar * FCharWidth), S.Length);
+    if S = '' then
+    begin
+      FirstChar := 1;
+      LastChar := IfThen(FLeftChar = 1, 0, -1); // To display CR;
+      XRowOffset := 0;
+      Exit;
+    end;
+    FirstChar := PixelsToColumn(PChar(S), S.Length,
+      (FLeftChar - 1) * FCharWidth, True);
+    if FirstChar > S.Length then
+    begin
+      // nothing to display
+      FirstChar := 1;
+      LastChar := -1;
+      Exit;
+    end;
+
     while (FirstChar > 1) and not (Word(S[FirstChar - 1]) in [9, 32..126]) do
       Dec(FirstChar);
-    // to deal with combining characters
-    if (FirstChar > 1) and (Word(S[FirstChar - 1]) in [9, 32..126]) then
-      Dec(FirstChar);
 
-    LastChar := Min(PixelsToColumn(S, ClientWidth - fTextOffset), S.Length);
+    XRowOffset := ColumnToPixels(S, FirstChar);
+
+    LastChar := Min(FirstChar + PixelsToColumn(PChar(S) + FirstChar - 1,
+      S.Length - FirstChar + 1, ClientWidth - fTextOffset - XRowOffset),
+      S.Length);
     while (LastChar < S.Length) and not (Word(S[LastChar + 1]) in [9, 32..126]) do
       Inc(LastChar);
+
+    // If there are tabs *inside* the displayed range we need to make sure
+    // the are rendered at the correct place
+    HasTabs := False;
+    for I := FirstChar to LastChar do
+      if S[I] = #9 then
+      begin
+        HasTabs := True;
+        Break;
+      end;
+    if HasTabs and (LeftChar mod TabWidth <> 0) then
+    begin
+      // Unfortunately this case cannot be readily optimized
+      FirstChar := 1;
+      XRowOffset := 0;
+    end;
   end;
 
   function SelEndX(Left, Width: Single; SelLast, I, RangeCount: Integer): Integer;
@@ -2890,7 +2934,7 @@ var
   SelBG, SelFG: TColor;
   RangeCount: Cardinal;
   BGAlpha: TD2D1ColorF;
-  FirstChar, LastChar: Integer;
+  HavePartialSelection: Boolean;
   HMArr: array of TDwriteHitTestMetrics;
 begin
   // Paint background
@@ -2900,7 +2944,6 @@ begin
   RT.FillRectangle(LinesRect, TSynDWrite.SolidBrush(BGColor));
 
   Inc(LinesRect.Left, FTextMargin);
-  LayoutWidth := ClientWidth - FTextOffset;
 
   RT.PushAxisAlignedClip(LinesRect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
@@ -2909,33 +2952,43 @@ begin
     Line := RowToLine(Row);
     SLine := Lines[Line -  1];
 
-    // Get the row including control characters
     SRow := Rows[Row];
     CharOffset := DisplayToBufferPos(DisplayCoord(1, Row)).Char;
-
     DoTabPainting := False;
-    if (eoShowSpecialChars in fOptions) then
+
+    // Restrict the text to what can/should be displayed
+    TextRangeToDisplay(SRow);
+
+    // Deal with eoShowSpecialChars
+    if (eoShowSpecialChars in fOptions) and (LastChar >= 0) then
     begin
-      for I := 1 to SRow.Length do
+      for I := FirstChar to LastChar do
         if SRow[I] = #32 then
           SRow[I] := SynSpaceGlyph
         else if SRow[I] = #9 then
           DoTabPainting := True;
-      if (CharOffset + SRow.Length = SLine.Length + 1) and (Line < Lines.Count) then
+      // Add LineBreak Glyph
+      if (CharOffset + LastChar = SLine.Length + 1)
+        {and (LastChar = SRow.Length)} and (Line < Lines.Count) then
+      begin
         SRow := SRow + SynLineBreakGlyph;
+        Inc(LastChar);
+      end;
     end;
 
-    // Restrict the text to what can/should be displayed
-    TextRangeToDisplay(SRow, FirstChar, LastChar);
-
     // Create the text layout
-    Layout.Create(FTextFormat, PChar(SRow), LastChar, LayoutWidth, fTextHeight);
-    if not (eoShowLigatures in FOptions) or (Line = CaretY) then
-      // No ligatures for current line
-      Layout.SetTypography(typNoLigatures, 1, SRow.Length);
+    if LastChar > 0 then
+    begin
+      LayoutWidth := ClientWidth - FTextOffset - XRowOffset;
+      Layout.Create(FTextFormat, PChar(SRow) + FirstChar - 1,
+        LastChar - FirstChar + 1, LayoutWidth, fTextHeight);
+      if not (eoShowLigatures in FOptions) or (Line = CaretY) then
+        // No ligatures for current line
+        Layout.SetTypography(typNoLigatures, 1, SRow.Length);
+    end;
 
     // Special colors, full line selection and ActiveLineColor
-    FullRowColors(Row, Line, FullRowFG, FullRowBG, BGAlpha);
+    FullRowColors(Row, Line, FullRowBG, FullRowFG, BGAlpha);
     AColor := FullRowBG;
     if (AColor = clNone) and (WhitespaceColor <> BGColor) then
       AColor := WhiteSpaceColor; // Whitespace color may differ per line
@@ -2944,7 +2997,7 @@ begin
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(FullRowBG));
 
     // Highlighted tokens
-    if fHighlighter <> nil then
+    if (fHighlighter <> nil) and (LastChar > 0) then
     begin
       if Line > 1 then
         fHighlighter.SetRange(TSynEditStringList(Lines).Ranges[Line - 2]);
@@ -2952,18 +3005,17 @@ begin
 
       while not FHighLighter.GetEol do
       begin
-        TokenPos := FHighLighter.GetTokenPos - CharOffset + 2; //TokenPos is zero based
-        if TokenPos > LastChar then Break;
-        Token := FHighLighter.GetToken;
-        if TokenPos + Token.Length <= 1 then
+        TokenPos := FHighLighter.GetTokenPos - CharOffset - FirstChar + 3; //TokenPos is zero based
+        if TokenPos > LastChar - FirstChar + 1 then Break;
+        if TokenPos + FHighLighter.GetTokenLength <= 0 then
         begin
           fHighlighter.Next;
-          Continue;  //for WordWrap
+          Continue;
         end;
+        Token := FHighLighter.GetToken;
         Attr := FHighLighter.GetTokenAttribute;
 
-        if (Token <> '') and Assigned(Attr) and
-         (TokenPos + Token.Length - 1 >= FirstChar) then
+        if (Token <> '') and Assigned(Attr) then
         begin
           Layout.SetFontStyle(Attr.Style, TokenPos, Token.Length);
           AColor := Attr.Foreground;
@@ -2976,44 +3028,68 @@ begin
         FHighLighter.Next;
       end;
       if (eoShowSpecialChars in fOptions) and (FullRowFG = clNone) and
-        (CharOffset + SRow.Length = SLine.Length + 2) and
+        (CharOffset + LastChar = SLine.Length + 2) and
         Assigned(fHighlighter.WhitespaceAttribute) and
         (fHighlighter.WhitespaceAttribute.Foreground <> clNone)
       then
-        Layout.SetFontColor(fHighlighter.WhitespaceAttribute.Foreground, SRow.Length, 1);
+        Layout.SetFontColor(fHighlighter.WhitespaceAttribute.Foreground, LastChar - FirstChar + 1, 1);
     end;
 
     // Paint selection if Line is partially selected - deals with bidi text
     // The foreground needs to be set before we render the layout
     // The background needs to be painted before we render the layout if we
     // are not blending the selection otherwise after
-    RangeCount := 0;
-    if PartialSelection(Row, Line, SelFirst, SelLast, SelBG, SelFG) then
+    HavePartialSelection :=
+      PartialSelection(Row, Line, SelFirst, SelLast, SelBG, SelFG) and
+      (SelLast >= FirstChar) and ((SelLast = MaxInt) or (SelFirst <= LastChar));
+    if HavePartialSelection then
     begin
-      Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast -SelFirst + 1,
-        FTextOffset, YRowOffset(Row), PDwriteHitTestMetrics(nil)^, 0, RangeCount);
-      SetLength(HMArr, RangeCount);
-      Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast- SelFirst + 1,
-        FTextOffset, YRowOffset(Row), HMArr[0], RangeCount, RangeCount);
-      if SameValue(fSelectedColor.Alpha, 1)  then
+      if (LastChar <= 0) and (SelLast = MaxInt) and SameValue(fSelectedColor.Alpha, 1) then
       begin
-        for I := 0 to RangeCount -1  do
+        if fSelectedColor.FillWholeLines then
+          RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row),
+            LinesRect.Right,
+            YRowOffset(Row + 1)), TSynDWrite.SolidBrush(SelBG))
+        else if LeftChar = 1 then
+          RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row),
+            LinesRect.Left + fCharWidth,
+            YRowOffset(Row + 1)), TSynDWrite.SolidBrush(SelBG))
+      end
+      else if LastChar > 0 then
+      begin
+        // Adjust for First/LastChar
+        SelFirst := Max(SelFirst - FirstChar + 1, 1);
+        if SelLast <> MaxInt then
+          SelLast := SelLast - FirstChar + 1;
+
+        Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast - SelFirst + 1,
+          FTextOffset, YRowOffset(Row), PDwriteHitTestMetrics(nil)^, 0, RangeCount);
+        SetLength(HMArr, RangeCount);
+        Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast - SelFirst + 1,
+          FTextOffset + XRowOffset, YRowOffset(Row), HMArr[0], RangeCount, RangeCount);
+        if SameValue(fSelectedColor.Alpha, 1)  then
         begin
-          Layout.SetFontColor(SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
-          RT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
-            SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
-            YRowOffset(Row + 1)), TSynDWrite.SolidBrush(SelBG));
+          for I := 0 to RangeCount -1  do
+          begin
+            Layout.SetFontColor(SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
+            RT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
+              SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
+              YRowOffset(Row + 1)), TSynDWrite.SolidBrush(SelBG));
+          end;
+          RangeCount := 0;
         end;
-        RangeCount := 0;
       end;
     end;
 
     // Paint the layout
-    if FullRowFG = clNone then
-      FGColor := Font.Color
-    else
-      FGColor := FullRowFG;
-    Layout.Draw(RT, FTextOffset, YRowOffset(Row), FGColor);
+    if LastChar > 0 then
+    begin
+      if FullRowFG = clNone then
+        FGColor := Font.Color
+      else
+        FGColor := FullRowFG;
+      Layout.Draw(RT, FTextOffset + XRowOffset, YRowOffset(Row), FGColor);
+    end;
 
     // Paint tab control characters
     if DoTabPainting then
@@ -3022,15 +3098,15 @@ begin
         TabColor := FullRowFG
       else
         TabColor := WhitespaceColor(False);
-      for I := 1 to SRow.Length do
-        if (SRow[I] = #9) and InRange(I, FirstChar, LastChar) then
+      for I := FirstChar to LastChar do
+        if (SRow[I] = #9) then
         begin
           if InRange(I, SelFirst, SelLast) and
             SameValue(fSelectedColor.Alpha, 1)
           then
-            DrawTab(Layout, Row, I, SelFG)
+            DrawTab(Layout, Row, I - FirstChar + 1, SelFG)
           else
-            DrawTab(Layout, Row, I, TabColor);
+            DrawTab(Layout, Row, I - FirstChar + 1, TabColor);
         end;
     end;
 
@@ -3046,12 +3122,31 @@ begin
       RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row), LinesRect.Right,
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(BGAlpha));
     // partial selection
-    for I := 0 to Integer(RangeCount) - 1 do
-      RT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
-        SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
-        YRowOffset(Row + 1)),
-        TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background,
-        fSelectedColor.Alpha)));
+    if HavePartialSelection then
+    begin
+      if (LastChar <= 0) and (SelLast = MaxInt) then
+      begin
+        if fSelectedColor.FillWholeLines then
+          RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row),
+            LinesRect.Right, YRowOffset(Row + 1)),
+            TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background,
+              fSelectedColor.Alpha)))
+        else if LeftChar = 1 then
+          RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row),
+            LinesRect.Left + fCharWidth, YRowOffset(Row + 1)),
+            TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background,
+              fSelectedColor.Alpha)));
+      end
+      else if LastChar > 0 then
+      begin
+        for I := 0 to Integer(RangeCount) - 1 do
+          RT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(Row),
+            SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
+            YRowOffset(Row + 1)),
+            TSynDWrite.SolidBrush(D2D1ColorF(fSelectedColor.Background,
+            fSelectedColor.Alpha)));
+      end;
+    end;
   end;
 
   // Draw right edge
@@ -7141,6 +7236,7 @@ procedure TCustomSynEdit.MoveCaretVert(DY: Integer; SelectionCommand: Boolean);
 var
   Org, Dst: TDisplayCoord;
   SaveLastPosX: Integer;
+  SDestRow: string;
 begin
   Org := DisplayXY;
   Dst := Org;
@@ -7157,7 +7253,10 @@ begin
   if (Org.Row <> Dst.Row) then
   begin
     if eoKeepCaretX in Options then
-      Dst.Column := PixelsToColumn(Rows[Dst.Row], FLastPosX);
+    begin
+      SDestRow := Rows[Dst.Row];
+      Dst.Column := PixelsToColumn(PChar(SDestRow), SDestRow.Length, FLastPosX);
+    end;
   end;
   Dst.Column := ValidTextPos(Rows[Dst.Row], Dst.Column, False);
 

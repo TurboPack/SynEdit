@@ -161,6 +161,7 @@ type
     function GetToken: string; virtual;
     function GetTokenAttribute: TSynHighlighterAttributes; virtual; abstract;
     function GetTokenKind: Integer; virtual; abstract;
+    function GetTokenLength: Integer; virtual;
     function GetTokenPos: Integer; virtual;
     function IsKeyword(const AKeyword: string): Boolean; virtual;
     procedure Next; virtual;
@@ -935,6 +936,11 @@ var
 begin
   Len := Run - fTokenPos;
   SetString(Result, fCasedLine + fTokenPos, Len);
+end;
+
+function TSynCustomHighlighter.GetTokenLength: Integer;
+begin
+  Result := Run - fTokenPos;
 end;
 
 function TSynCustomHighlighter.GetTokenPos: Integer;
