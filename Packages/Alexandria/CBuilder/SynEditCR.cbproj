@@ -13,16 +13,6 @@
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Android' and '$(Base)'=='true') or '$(Base_Android)'!=''">
-        <Base_Android>true</Base_Android>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='iOSDevice64' and '$(Base)'=='true') or '$(Base_iOSDevice64)'!=''">
-        <Base_iOSDevice64>true</Base_iOSDevice64>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
         <Base_Win32>true</Base_Win32>
         <CfgParent>Base</CfgParent>
@@ -38,12 +28,6 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='iOSDevice64' and '$(Cfg_1)'=='true') or '$(Cfg_1_iOSDevice64)'!=''">
-        <Cfg_1_iOSDevice64>true</Cfg_1_iOSDevice64>
-        <CfgParent>Cfg_1</CfgParent>
-        <Cfg_1>true</Cfg_1>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
         <Cfg_1_Win32>true</Cfg_1_Win32>
         <CfgParent>Cfg_1</CfgParent>
@@ -53,12 +37,6 @@
     <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='iOSDevice64' and '$(Cfg_2)'=='true') or '$(Cfg_2_iOSDevice64)'!=''">
-        <Cfg_2_iOSDevice64>true</Cfg_2_iOSDevice64>
-        <CfgParent>Cfg_2</CfgParent>
-        <Cfg_2>true</Cfg_2>
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
@@ -73,12 +51,12 @@
         <DCC_UnitSearchPath>..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
         <ProjectType>CppPackage</ProjectType>
-        <ILINK_LibraryPath>..\..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <ILINK_LibraryPath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <ILINK_GenerateLibFile>true</ILINK_GenerateLibFile>
         <SanitizedProjectName>SynEditCR</SanitizedProjectName>
         <ILINK_Description>TurboPack SynEdit CBuilder runtime package</ILINK_Description>
-        <IncludePath>..\..\..\Source\;$(IncludePath)</IncludePath>
+        <IncludePath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(IncludePath)</IncludePath>
         <_TCHARMapping>char</_TCHARMapping>
         <Multithreaded>true</Multithreaded>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -96,23 +74,6 @@
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
         <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_Android)'!=''">
-        <EnabledSysJars>android-support-v4.dex.jar;apk-expansion.dex.jar;cloud-messaging.dex.jar;fmx.dex.jar;google-analytics-v2.dex.jar;google-play-billing.dex.jar;google-play-licensing.dex.jar;google-play-services.dex.jar</EnabledSysJars>
-        <PackageImports>bindcomp;bindcompdbx;bindcompfmx;bindengine;CloudService;CustomIPTransport;DataSnapClient;DataSnapCommon;DataSnapFireDAC;DataSnapNativeClient;DataSnapProviderClient;dbexpress;dbrtl;dbxcds;DbxClientDriver;DbxCommonDriver;DBXInterBaseDriver;DBXSqliteDriver;dsnap;dsnapxml;emsclient;emsclientfiredac;FireDAC;FireDACCommon;FireDACCommonDriver;FireDACDBXDriver;FireDACDSDriver;FireDACIBDriver;FireDACSqliteDriver;fmx;fmxFireDAC;FMXTee;FmxTeeUI;ibxpress;IndyCore;IndyIPClient;IndyIPCommon;IndyIPServer;IndyProtocols;IndySystem;inet;RESTBackendComponents;RESTComponents;rtl;soapmidas;soaprtl;soapserver;tethering;xmlrtl;$(PackageImports)</PackageImports>
-        <Android_LauncherIcon192>$(BDS)\bin\Artwork\Android\FM_LauncherIcon_192x192.png</Android_LauncherIcon192>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_iOSDevice64)'!=''">
-        <CfgParent>Base</CfgParent>
-        <VerInfo_UIDeviceFamily>iPhoneAndiPad</VerInfo_UIDeviceFamily>
-        <VerInfo_BundleId>$(MSBuildProjectName)</VerInfo_BundleId>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <Base_iOSDevice>true</Base_iOSDevice>
-        <Base>true</Base>
-        <PackageImports>bindcomp;bindcompdbx;bindcompfmx;bindengine;CloudService;CustomIPTransport;DataSnapClient;DataSnapCommon;DataSnapFireDAC;DataSnapNativeClient;DataSnapProviderClient;dbexpress;dbrtl;dbxcds;DbxClientDriver;DbxCommonDriver;DBXInterBaseDriver;DBXSqliteDriver;dsnap;dsnapxml;emsclient;emsclientfiredac;FireDAC;FireDACCommon;FireDACCommonDriver;FireDACDBXDriver;FireDACDSDriver;FireDACIBDriver;FireDACSqliteDriver;fmx;fmxase;fmxFireDAC;FMXTee;FmxTeeUI;ibxpress;IndyCore;IndyIPClient;IndyIPCommon;IndyIPServer;IndyProtocols;IndySystem;inet;RESTBackendComponents;RESTComponents;rtl;soapmidas;soaprtl;soapserver;tethering;xmlrtl;$(PackageImports);$(PackageImports)</PackageImports>
-        <VerInfo_Keys>CFBundleName=$(MSBuildProjectName);CFBundleDevelopmentRegion=en;CFBundleDisplayName=$(MSBuildProjectName);CFBundleIdentifier=$(MSBuildProjectName);CFBundleInfoDictionaryVersion=7.1;CFBundleVersion=1.0.0.0;CFBundlePackageType=APPL;CFBundleSignature=????;LSRequiresIPhoneOS=true;CFBundleAllowMixedLocalizations=YES;CFBundleExecutable=$(MSBuildProjectName);UIDeviceFamily=iPhone &amp; iPad;CFBundleResourceSpecification=ResourceRules.plist;NSLocationAlwaysUsageDescription=The reason for accessing the location information of the user;NSLocationWhenInUseUsageDescription=The reason for accessing the location information of the user</VerInfo_Keys>
-        <BT_BuildType>Debug</BT_BuildType>
-        <iOS_AppStore1024>$(BDS)\bin\Artwork\iOS\iPhone\FM_ApplicationIcon_1024x1024.png</iOS_AppStore1024>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <PackageImports>adortl;bcbie;bcbsmp;bindcomp;bindcompdbx;bindcompfmx;bindcompvcl;bindengine;CloudService;CodeSiteExpressPkg;CustomIPTransport;DataSnapClient;DataSnapCommon;DataSnapConnectors;DatasnapConnectorsFreePascal;DataSnapFireDAC;DataSnapIndy10ServerTransport;DataSnapNativeClient;DataSnapProviderClient;DataSnapServer;DataSnapServerMidas;dbexpress;dbrtl;dbxcds;DbxClientDriver;DbxCommonDriver;DBXDb2Driver;DBXFirebirdDriver;DBXInformixDriver;DBXInterBaseDriver;DBXMSSQLDriver;DBXMySQLDriver;DBXOdbcDriver;DBXOracleDriver;DBXSqliteDriver;DBXSybaseASADriver;DBXSybaseASEDriver;dsnap;dsnapcon;dsnapxml;emsclient;emsclientfiredac;FireDAC;FireDACADSDriver;FireDACASADriver;FireDACCommon;FireDACCommonDriver;FireDACDb2Driver;FireDACDBXDriver;FireDACDSDriver;FireDACIBDriver;FireDACInfxDriver;FireDACMSAccDriver;FireDACMSSQLDriver;FireDACMySQLDriver;FireDACODBCDriver;FireDACOracleDriver;FireDACPgDriver;FireDACSqliteDriver;fmx;fmxase;fmxdae;fmxFireDAC;fmxobj;FMXTee;FmxTeeUI;frx21;frxDB21;frxe21;frxTee21;ibxpress;IndyCore;IndyIPClient;IndyIPCommon;IndyIPServer;IndyProtocols;IndySystem;inet;inetdb;inetdbxpress;Intraweb;MetropolisUILiveTile;RESTBackendComponents;RESTComponents;rtl;soapmidas;soaprtl;soapserver;svn;Tee;TeeDB;TeeUI;tethering;vcl;vclactnband;vcldb;vcldsnap;vclFireDAC;vclib;vclie;vclimg;VCLRESTComponents;vclribbon;VclSmp;vcltouch;vclx;xmlrtl;$(PackageImports)</PackageImports>
@@ -151,9 +112,6 @@
         <ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\debug\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_1_iOSDevice64)'!=''">
-        <DCC_RemoteDebug>true</DCC_RemoteDebug>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -162,15 +120,15 @@
         <Defines>NDEBUG;$(Defines)</Defines>
         <TASM_Debugging>None</TASM_Debugging>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_iOSDevice64)'!=''">
-        <DCC_RemoteDebug>true</DCC_RemoteDebug>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <ItemGroup>
+        <PackageImport Include="bindengine.bpi">
+            <BuildOrder>117</BuildOrder>
+        </PackageImport>
         <PackageImport Include="dbrtl.bpi">
             <BuildOrder>116</BuildOrder>
         </PackageImport>
@@ -201,6 +159,189 @@
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>113</BuildOrder>
         </PackageImport>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas">
+            <BuildOrder>53</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas">
+            <BuildOrder>54</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas">
+            <BuildOrder>55</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterBaan.pas">
+            <BuildOrder>56</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterBat.pas">
+            <BuildOrder>57</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCAC.pas">
+            <BuildOrder>58</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCache.pas">
+            <BuildOrder>59</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCobol.pas">
+            <BuildOrder>60</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCPM.pas">
+            <BuildOrder>61</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCpp.pas">
+            <BuildOrder>62</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCS.pas">
+            <BuildOrder>63</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCss.pas">
+            <BuildOrder>64</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDfm.pas">
+            <BuildOrder>65</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDml.pas">
+            <BuildOrder>66</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDOT.pas">
+            <BuildOrder>67</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDWS.pas">
+            <BuildOrder>68</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterEiffel.pas">
+            <BuildOrder>69</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterFortran.pas">
+            <BuildOrder>70</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterFoxpro.pas">
+            <BuildOrder>71</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGalaxy.pas">
+            <BuildOrder>72</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGeneral.pas">
+            <BuildOrder>73</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGWS.pas">
+            <BuildOrder>74</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHaskell.pas">
+            <BuildOrder>75</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHC11.pas">
+            <BuildOrder>76</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHP48.pas">
+            <BuildOrder>77</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHtml.pas">
+            <BuildOrder>78</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterIDL.pas">
+            <BuildOrder>79</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterIni.pas">
+            <BuildOrder>80</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterInno.pas">
+            <BuildOrder>81</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJava.pas">
+            <BuildOrder>82</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJScript.pas">
+            <BuildOrder>83</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJSON.pas">
+            <BuildOrder>84</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterKix.pas">
+            <BuildOrder>85</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas">
+            <BuildOrder>86</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas">
+            <BuildOrder>87</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterM3.pas">
+            <BuildOrder>88</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas">
+            <BuildOrder>90</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas">
+            <BuildOrder>91</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas">
+            <BuildOrder>92</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas">
+            <BuildOrder>93</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPerl.pas">
+            <BuildOrder>94</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPHP.pas">
+            <BuildOrder>95</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterProgress.pas">
+            <BuildOrder>96</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPython.pas">
+            <BuildOrder>97</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRC.pas">
+            <BuildOrder>98</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRexx.pas">
+            <BuildOrder>99</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRuby.pas">
+            <BuildOrder>100</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSDD.pas">
+            <BuildOrder>101</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSml.pas">
+            <BuildOrder>102</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSQL.pas">
+            <BuildOrder>103</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterST.pas">
+            <BuildOrder>104</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterTclTk.pas">
+            <BuildOrder>105</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterTeX.pas">
+            <BuildOrder>106</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterUNIXShellScript.pas">
+            <BuildOrder>107</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterUnreal.pas">
+            <BuildOrder>108</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterURI.pas">
+            <BuildOrder>109</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVB.pas">
+            <BuildOrder>110</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVBScript.pas">
+            <BuildOrder>111</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas">
+            <BuildOrder>112</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas">
+            <BuildOrder>113</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas">
+            <BuildOrder>114</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynAutoCorrect.pas">
             <BuildOrder>110</BuildOrder>
         </DelphiCompile>
@@ -234,9 +375,6 @@
             <BuildOrder>113</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditHighlighter.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditHighlighterOptions.pas">
             <BuildOrder>113</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynEditKbdHandler.pas">
@@ -334,192 +472,6 @@
         <DelphiCompile Include="..\..\..\Source\SynExportTeX.pas">
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterADSP21xx.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterAsm.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterAWK.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterBaan.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterBat.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterCAC.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterCache.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterCobol.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterCPM.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterCpp.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterCS.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterCss.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterDfm.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterDml.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterDOT.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterDWS.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterEiffel.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterFortran.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterFoxpro.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterGalaxy.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterGeneral.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterGWS.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterHashEntries.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterHaskell.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterHC11.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterHP48.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterHtml.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterIDL.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterIni.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterInno.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterJava.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterJScript.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterJSON.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterKix.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterLDraw.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterLLVM.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterM3.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterModelica.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterMsg.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterMulti.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterPas.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterPerl.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterPHP.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterProgress.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterPython.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterRC.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterRexx.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterRuby.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterSDD.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterSml.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterSQL.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterST.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterTclTk.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterTeX.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterUNIXShellScript.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterUnreal.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterURI.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterVB.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterVBScript.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterVrml97.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterWebIDL.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynHighlighterXML.pas">
-            <BuildOrder>116</BuildOrder>
-        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynMacroRecorder.pas">
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
@@ -529,6 +481,12 @@
         <DelphiCompile Include="..\..\..\Source\SynURIOpener.pas">
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
+        <PackageImport Include="designide.bpi">
+            <BuildOrder>115</BuildOrder>
+        </PackageImport>
+        <PackageImport Include="designideresources.bpi">
+            <BuildOrder>116</BuildOrder>
+        </PackageImport>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -675,9 +633,14 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\21.0\BPL\SynEditCR270.bpl" Configuration="Release" Class="ProjectOutput">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\BPL\SynEditCR280.bpl" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>SynEditCR.bpl</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32160.dll" Class="DependencyModule">
+                    <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -688,11 +651,6 @@
                 </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin64\cc64160mt.dll" Class="DependencyModule">
                     <Platform Name="Win64">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32160.dll" Class="DependencyModule">
-                    <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -833,6 +791,16 @@
                     </Platform>
                     <Platform Name="Win32">
                         <Operation>0</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="AndroidClasses">
+                    <Platform Name="Android">
+                        <RemoteDir>classes</RemoteDir>
+                        <Operation>64</Operation>
+                    </Platform>
+                    <Platform Name="Android64">
+                        <RemoteDir>classes</RemoteDir>
+                        <Operation>64</Operation>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="AndroidClassesDexFile">
@@ -1854,8 +1822,6 @@
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
             </Deployment>
             <Platforms>
-                <Platform value="Android">False</Platform>
-                <Platform value="iOSDevice64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
