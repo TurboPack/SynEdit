@@ -687,6 +687,7 @@ constructor TSynTextFormat.Create(AFont: TFont; TabWidth, CharExtra,
     NameLength: Cardinal;
   begin
     Result := '';
+
     CheckOSError(Font.GetFontFamily(FontFamily));
     CheckOSError(FontFamily.GetFamilyNames(Names));
     if Names.GetCount > 0 then
@@ -703,7 +704,7 @@ constructor TSynTextFormat.Create(AFont: TFont; TabWidth, CharExtra,
       CheckOSError(Names.GetString(Index, PChar(Result), NameLength + 1));
     end
     else
-      raise ESynError.Create('Family Name not found');
+      raise ESynError.Create('Font family name not found');
   end;
 
 var
@@ -768,8 +769,6 @@ var
   TextLayout1: IDWriteTextLayout1;
 begin
   FCount := Count;
-//  CheckOSError(TSynDWrite.DWriteFactory.CreateTextLayout(Text,
-//    Count, TextFormat.FIDW, LayoutWidth, LayoutHeight, FIDW));
   CheckOSError(TSynDWrite.DWriteFactory.CreateGdiCompatibleTextLayout(Text,
     Count, TextFormat.FIDW, LayoutWidth, LayoutHeight,
     PixelsPerDip, nil, TextFormat.UseGDINatural, FIDW));
