@@ -337,6 +337,7 @@ function ScaledWicBitmap(Source: IWICBitmap;
 procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList; X, Y,
     Index: Integer);
 function IsFontMonospacedAndValid(Font: TFont): Boolean;
+function FontFamilyName(Font: IDWriteFont): string;
 
 var
   DefaultLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
@@ -446,9 +447,40 @@ begin
     Assert(GetObject(Font.Handle, SizeOf(TLogFont), @LogFont) <> 0);
     CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
     Result := (DWFont as IDWriteFont1).IsMonospacedFont;
+    if (FontFamilyName(DWFont) <> Font.Name) and (fsBold in Font.Style) then
+      Font.Style := Font.Style - [fsBold];
   except
     Exit(False);
   end;
+end;
+
+function FontFamilyName(Font: IDWriteFont): string;
+var
+  FontFamily: IDWriteFontFamily;
+  Names: IDWriteLocalizedStrings;
+  Index: Cardinal;
+  Exists: BOOL;
+  NameLength: Cardinal;
+begin
+  Result := '';
+
+  CheckOSError(Font.GetFontFamily(FontFamily));
+  CheckOSError(FontFamily.GetFamilyNames(Names));
+  if Names.GetCount > 0 then
+  begin
+    CheckOSError(Names.FindLocaleName(DefaultLocaleName, Index, Exists));
+    if not Exists then
+    begin
+      CheckOSError(Names.FindLocaleName('en-us', Index, Exists));
+      if not Exists then
+        Index := 0;
+    end;
+    CheckOSError(Names.GetStringLength(Index, NameLength));
+    SetLength(Result, NameLength);
+    CheckOSError(Names.GetString(Index, PChar(Result), NameLength + 1));
+  end
+  else
+    raise ESynError.Create('Font family name not found');
 end;
 
 {$ENDREGION}
@@ -677,36 +709,6 @@ end;
 
 constructor TSynTextFormat.Create(AFont: TFont; TabWidth, CharExtra,
     LineSpacingExtra: Cardinal);
-
-  function GetFamilyName(Font: IDWriteFont): string;
-  var
-    FontFamily: IDWriteFontFamily;
-    Names: IDWriteLocalizedStrings;
-    Index: Cardinal;
-    Exists: BOOL;
-    NameLength: Cardinal;
-  begin
-    Result := '';
-
-    CheckOSError(Font.GetFontFamily(FontFamily));
-    CheckOSError(FontFamily.GetFamilyNames(Names));
-    if Names.GetCount > 0 then
-    begin
-      CheckOSError(Names.FindLocaleName(DefaultLocaleName, Index, Exists));
-      if not Exists then
-      begin
-        CheckOSError(Names.FindLocaleName('en-us', Index, Exists));
-        if not Exists then
-          Index := 0;
-      end;
-      CheckOSError(Names.GetStringLength(Index, NameLength));
-      SetLength(Result, NameLength);
-      CheckOSError(Names.GetString(Index, PChar(Result), NameLength + 1));
-    end
-    else
-      raise ESynError.Create('Font family name not found');
-  end;
-
 var
   DWFontStyle: DWRITE_FONT_STYLE;
   DWFont: IDWriteFont;
@@ -748,7 +750,7 @@ begin
     DWFontStyle := DWRITE_FONT_STYLE_NORMAL;
 
   CheckOSError(TSynDWrite.DWriteFactory.CreateTextFormat(
-    PChar(GetFamilyName(DWFont)), nil,
+    PChar(FontFamilyName(DWFont)), nil,
     DWFont.GetWeight, DWFontStyle, DWRITE_FONT_STRETCH_NORMAL,
     -AFont.Height, DefaultLocaleName, FIDW));
   FIDW.SetIncrementalTabStop(TabWidth * FCharWidth);

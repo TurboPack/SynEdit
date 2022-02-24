@@ -127,7 +127,6 @@ function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer;
 function DefaultFontName: string;
 
 function GetCorrectFontWeight(Font: TFont): Integer;
-//function IsFontMonospacedAndValid(Font: TFont): Boolean;
 
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
