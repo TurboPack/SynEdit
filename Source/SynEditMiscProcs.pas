@@ -126,7 +126,8 @@ function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer;
 // In Windows Vista or later use the Consolas font
 function DefaultFontName: string;
 
-function IsFontMonospacedAndValid(Font: TFont): Boolean;
+function GetCorrectFontWeight(Font: TFont): Integer;
+//function IsFontMonospacedAndValid(Font: TFont): Boolean;
 
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
@@ -135,6 +136,7 @@ function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 implementation
 
 uses
+  System.UITypes,
   System.SysUtils,
   SynHighlighterMulti,
   Winapi.D2D1,
@@ -717,44 +719,33 @@ begin
     Result := 'Courier New';
 end;
 
-function EnumFontsProc(EnumLogFontExDV: PEnumLogFontExDV;
+function WeightEnumFontsProc(EnumLogFontExDV: PEnumLogFontExDV;
   EnumTextMetric: PEnumTextMetric;
   FontType: DWORD; LParam: LPARAM): Integer; stdcall;
 begin;
-  PBoolean(LPARAM)^ :=
-    (EnumLogFontExDV.elfEnumLogfontEx.elfLogFont.lfPitchAndFamily and FIXED_PITCH) = FIXED_PITCH;
+  PInteger(LPARAM)^ :=  EnumLogFontExDV.elfEnumLogfontEx.elfLogFont.lfWeight;
   Result := 0;
 end;
 
-function IsFontMonospacedAndValid(Font: TFont): Boolean;
+function GetCorrectFontWeight(Font: TFont): Integer;
 var
   DC: HDC;
   LogFont: TLogFont;
-  DWFont: IDWriteFont;
-  IsMonoSpaced: Boolean;
 begin
-  Result := Screen.Fonts.IndexOf(Font.Name) >= 0;
-  if not Result then Exit;
-
-  // Is it fixed pitch?
-  DC := GetDC(0);
-  IsMonospaced := False;
-  FillChar(LogFont, SizeOf(LogFont), 0);
-  LogFont.lfCharSet := DEFAULT_CHARSET;
-  StrPLCopy(LogFont.lfFaceName, Font.Name, Length(LogFont.lfFaceName) - 1);
-  EnumFontFamiliesEx(DC, LogFont, @EnumFontsProc, LPARAM(@IsMonospaced), 0);
-  ReleaseDC(0, DC);
-  Result := IsMonospaced;
-  if not Result then Exit;
-
-  // Can it be used by DirectWrite?
-  try
-    Assert(GetObject(Font.Handle, SizeOf(TLogFont), @LogFont) <> 0);
-    CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
-  except
-    Result := False;
+  if TFontStyle.fsBold in Font.Style then
+    Result := FW_BOLD
+  else
+  begin
+    Result := FW_NORMAL;
+    DC := GetDC(0);
+    FillChar(LogFont, SizeOf(LogFont), 0);
+    LogFont.lfCharSet := DEFAULT_CHARSET;
+    StrPLCopy(LogFont.lfFaceName, Font.Name, Length(LogFont.lfFaceName) - 1);
+    EnumFontFamiliesEx(DC, LogFont, @WeightEnumFontsProc, LPARAM(@Result), 0);
+    ReleaseDC(0, DC);
   end;
 end;
+
 
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;

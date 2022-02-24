@@ -1618,7 +1618,7 @@ begin
 
   // We need to recalculate line widths
   TSynEditStringList(fLines).FontChanged;
-  if fGutter.ShowLineNumbers then
+  if fGutter.ShowLineNumbers and not fGutter.UseFontStyle then
     GutterChanged(Self);
 
   // Invalidate and handle the changes

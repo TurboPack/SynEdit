@@ -198,6 +198,16 @@ type
 {$ENDREGION}
 
 {$REGION 'DWrite_1.h DWrite_2.h DWrite_3.h'}
+  IDWriteFont1 = interface(IDWriteFont)
+    ['{acd16696-8c14-4f5d-877e-fe3fc1d32738}']
+    procedure GetMetrics(fontMetrics: Pointer); stdcall; //DWRITE_FONT_METRICS1 not translated
+    procedure GetPanose(panose: Pointer); stdcall; // panose structure not translated
+    function GetUnicodeRanges(maxRangeCount: UINT32; unicodeRanges: Pointer; // DWRITE_UNICODE_RANGE not tranlsated
+        out actualRangeCount: UINT32): HResult; stdcall;
+    function IsMonospacedFont(): longbool; stdcall;
+  end;
+  {$EXTERNALSYM IDWriteFont1}
+
   IDWriteTextLayout1 = interface(IDWriteTextLayout)
     ['{9064D822-80A7-465C-A986-DF65F78B8FEB}']
     function SetPairKerning(isPairKerningEnabled: longbool; textRange: TDwriteTextRange): HResult; stdcall;
@@ -208,6 +218,7 @@ type
     function GetCharacterSpacing(currentPosition: UINT32; out leadingSpacing: single; out trailingSpacing: single;
         out minimumAdvanceWidth: single; out textRange: TDwriteTextRange): HResult; stdcall;
   end;
+  {$EXTERNALSYM IDWriteTextLayout1}
 {$ENDREGION}
 
   TSynDWrite = class
@@ -325,6 +336,7 @@ function ScaledWicBitmap(Source: IWICBitmap;
   const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
 procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList; X, Y,
     Index: Integer);
+function IsFontMonospacedAndValid(Font: TFont): Boolean;
 
 var
   DefaultLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
@@ -336,7 +348,9 @@ Uses
   Winapi.CommCtrl,
   Winapi.DxgiFormat,
   System.Math,
-  Vcl.Forms;
+  Vcl.Forms,
+  SynEditTypes,
+  SynEditMiscProcs;
 
 {$REGION 'Support functions'}
 function D2D1ColorF(const AColor: TColor): TD2D1ColorF; overload;
@@ -422,6 +436,21 @@ begin
     DestroyIcon(Icon);
   end;
 end;
+
+function IsFontMonospacedAndValid(Font: TFont): Boolean;
+var
+  LogFont: TLogFont;
+  DWFont: IDWriteFont;
+begin
+  try
+    Assert(GetObject(Font.Handle, SizeOf(TLogFont), @LogFont) <> 0);
+    CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
+    Result := (DWFont as IDWriteFont1).IsMonospacedFont;
+  except
+    Exit(False);
+  end;
+end;
+
 {$ENDREGION}
 
 {$REGION 'TSynDWrite'}
@@ -648,9 +677,37 @@ end;
 
 constructor TSynTextFormat.Create(AFont: TFont; TabWidth, CharExtra,
     LineSpacingExtra: Cardinal);
+
+  function GetFamilyName(Font: IDWriteFont): string;
+  var
+    FontFamily: IDWriteFontFamily;
+    Names: IDWriteLocalizedStrings;
+    Index: Cardinal;
+    Exists: BOOL;
+    NameLength: Cardinal;
+  begin
+    Result := '';
+    CheckOSError(Font.GetFontFamily(FontFamily));
+    CheckOSError(FontFamily.GetFamilyNames(Names));
+    if Names.GetCount > 0 then
+    begin
+      CheckOSError(Names.FindLocaleName(DefaultLocaleName, Index, Exists));
+      if not Exists then
+      begin
+        CheckOSError(Names.FindLocaleName('en-us', Index, Exists));
+        if not Exists then
+          Index := 0;
+      end;
+      CheckOSError(Names.GetStringLength(Index, NameLength));
+      SetLength(Result, NameLength);
+      CheckOSError(Names.GetString(Index, PChar(Result), NameLength + 1));
+    end
+    else
+      raise ESynError.Create('Family Name not found');
+  end;
+
 var
   DWFontStyle: DWRITE_FONT_STYLE;
-  DWFontWeight: DWRITE_FONT_WEIGHT;
   DWFont: IDWriteFont;
   LogFont: TLogFont;
   FontMetrics: TDwriteFontMetrics;
@@ -663,13 +720,13 @@ var
 begin
   FUseGDINatural := AFont.Quality = TFontQuality.fqClearTypeNatural;
   GetObject(AFont.Handle, SizeOf(TLogFont), @LogFont);
+  LogFont.lfWeight := GetCorrectFontWeight(AFont);
+
   CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
   CheckOSError(DWFont.CreateFontFace(FontFace));
-  //FontFace.GetMetrics(FontMetrics);
   FontFace.GetGdiCompatibleMetrics(-AFont.Height, 1, PDwriteMatrix(nil)^, FontMetrics);
   CodePoint := Ord('W');
   FontFace.GetGlyphIndices(CodePoint, 1, FontIndex);
-  //FontFace.GetDesignGlyphMetrics(@FontIndex, 1, @GlyphMetrics);
   IDWriteFontFace(FontFace).GetGdiCompatibleGlyphMetrics(
     -AFont.Height, 1, nil, UseGDINatural,
     @FontIndex, 1, @GlyphMetrics);
@@ -688,13 +745,10 @@ begin
     DWFontStyle := DWRITE_FONT_STYLE_ITALIC
   else
     DWFontStyle := DWRITE_FONT_STYLE_NORMAL;
-  if TFontStyle.fsBold in AFont.Style then
-    DWFontWeight := DWRITE_FONT_WEIGHT_BOLD
-  else
-    DWFontWeight := DWRITE_FONT_WEIGHT_NORMAL;
 
-  CheckOSError(TSynDWrite.DWriteFactory.CreateTextFormat(PChar(AFont.Name), nil,
-    DWFontWeight, DWFontStyle, DWRITE_FONT_STRETCH_NORMAL,
+  CheckOSError(TSynDWrite.DWriteFactory.CreateTextFormat(
+    PChar(GetFamilyName(DWFont)), nil,
+    DWFont.GetWeight, DWFontStyle, DWRITE_FONT_STRETCH_NORMAL,
     -AFont.Height, DefaultLocaleName, FIDW));
   FIDW.SetIncrementalTabStop(TabWidth * FCharWidth);
 

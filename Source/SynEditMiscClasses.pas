@@ -40,6 +40,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
+  System.Generics.Collections,
   Winapi.Windows,
   Winapi.Messages,
   Winapi.D2D1,
@@ -80,6 +81,7 @@ type
       default True;
   end;
 
+  {$REGION 'Indentation Guides'}
   TSynIdentGuidesStyle = (igsSolid, igsDotted);
 
   TSynIndentGuides = class(TPersistent)
@@ -102,6 +104,9 @@ type
     property Color: TColor read FColor write SetColor
       default clMedGray;
   end;
+  {$ENDREGION 'Indentation Guides'}
+
+  {$REGION 'Bands'}
 
   TSynGutterBorderStyle = (gbsNone, gbsMiddle, gbsRight);
 
@@ -235,9 +240,11 @@ type
   public
     property Bands[Index: Integer]: TSynGutterBand read GetBands; default;
   end;
+  {$ENDREGION 'Bands'}
 
   TSynInternalImage = class;
 
+  {$REGION 'TSynGutter'}
   TSynGutter = class(TPersistent)
   private
     [Weak]
@@ -342,6 +349,7 @@ type
     property Bands: TSynBandsCollection read FBands write SetBands;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
+  {$ENDREGION 'TSynGutter'}
 
   TSynBookMarkOpt = class(TPersistent)
   private
@@ -361,9 +369,7 @@ type
   public
     constructor Create(AOwner: TComponent);
     procedure Assign(Source: TPersistent); override;
-    // ++ DPI-Aware
     procedure ChangeScale(M, D: Integer); virtual;
-    // -- DPI-Aware
   published
     property BookmarkImages: TCustomImageList read FBookmarkImages
       write SetBookmarkImages;
@@ -459,7 +465,7 @@ type
     // -- DPI-Aware
   end;
 
-  { TSynHotKey }
+  {$REGION 'TSynHotKey'}
 
 const
   BorderWidth = 0;
@@ -509,6 +515,7 @@ type
     property Modifiers: THKModifiers read FModifiers write SetModifiers
       default [hkAlt];
   end;
+  {$ENDREGION 'TSynHotKey'}
 
   TSynEditSearchCustom = class(TComponent)
   protected
@@ -531,6 +538,44 @@ type
     property Options: TSynSearchOptions write SetOptions;
   end;
 
+  {$REGION 'Indicators'}
+
+  TSynIndicatorStyle = (sisTextDecoration, sisSquiggleMicrosoftWord,
+    sisSqiggleWordPerfect, sisRectangle);
+
+  TSynIndicatorSpec = record
+    ID: TGuid;
+    Style: TSynIndicatorStyle;
+    FontColor,
+    Background: TD2D1ColorF;
+  end;
+
+  TSynIndicator = record
+    Id: TGuid;
+    CharStart, CharEnd : Integer;
+  end;
+
+  TSynIndicators = class
+  private
+    FOwner: TCustomControl;
+    FRegister: TDictionary<TGUID, TSynIndicatorSpec>;
+    FList: TDictionary<Integer, TArray<TSynIndicator>>;
+    procedure InvalidateIndicator(Line: Integer; Indicator: TSynIndicator);
+  public
+    constructor Create(Owner: TCustomControl);
+    destructor Destroy; override;
+    procedure RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
+    procedure AddIndicator(Line: Integer; Indicator: TSynIndicator);
+    procedure ClearIndicators; overload;
+    procedure ClearIndicators(Id: TGuid); overload;
+    function LineIndicators(Line: Integer): TArray<TSynIndicator>;
+    // Should only used by Synedit
+    procedure LinesInserted(FirstLine, Count: Integer);
+    procedure LinesDeleted(FirstLine, Count: Integer);
+    procedure LinePut(aIndex: Integer);
+  end;
+  {$ENDREGION 'TSynIndicators'}
+
 implementation
 
 uses
@@ -541,7 +586,7 @@ uses
   SynEdit,
   SynEditTextBuffer;
 
-{ TSynSelectedColor }
+{$REGION 'TSynSelectedColor'}
 
 constructor TSynSelectedColor.Create;
 begin
@@ -609,7 +654,10 @@ begin
   end;
 end;
 
-{ TSynGutter }
+{$ENDREGION}
+
+
+{$REGION 'TSynGutter'}
 
 procedure TSynGutter.Changed;
 begin
@@ -1016,15 +1064,16 @@ begin
   Result := FOwner;
 end;
 
-{ TSynBookMarkOpt }
+{$ENDREGION}
 
-// ++ DPI-Aware
+
+{$REGION 'TSynBookMarkOpt'}
+
 procedure TSynBookMarkOpt.ChangeScale(M, D: Integer);
 begin
   FLeftMargin := MulDiv(FLeftMargin, M, D);
   FXoffset := MulDiv(FXoffset, M, D);
 end;
-// -- DPI-Aware
 
 constructor TSynBookMarkOpt.Create(AOwner: TComponent);
 begin
@@ -1109,7 +1158,10 @@ begin
   end;
 end;
 
-{ TSynGlyph }
+{$ENDREGION}
+
+
+{$REGION 'TSynGlyph'}
 
 procedure TSynGlyph.ChangeScale(M, D: Integer);
 begin
@@ -1204,7 +1256,10 @@ begin
   end;
 end;
 
-{ TSynMethodChain }
+{$ENDREGION}
+
+
+{$REGION 'TSynMethodChain'}
 
 procedure TSynMethodChain.Add(AEvent: TMethod);
 begin
@@ -1297,7 +1352,10 @@ begin
   end;
 end;
 
-{ TSynNotifyEventChain }
+{$ENDREGION}
+
+
+{$REGION 'TSynNotifyEventChain'}
 
 procedure TSynNotifyEventChain.Add(AEvent: TNotifyEvent);
 begin
@@ -1320,7 +1378,10 @@ begin
   inherited Remove(TMethod(AEvent));
 end;
 
-{ TSynInternalImage }
+{$ENDREGION}
+
+
+{$REGION 'TSynInternalImage'}
 
 type
   TInternalResource = class(TObject)
@@ -1384,7 +1445,10 @@ begin
   end;
 end;
 
-{ TSynHotKey }
+{$ENDREGION}
+
+
+{$REGION 'TSynHotKey'}
 
 function KeySameAsShiftState(Key: Word; Shift: TShiftState): Boolean;
 begin
@@ -1614,7 +1678,10 @@ begin
   Result := AReplace;
 end;
 
-{ TSynGutterBand }
+{$ENDREGION}
+
+
+{$REGION 'TSynGutterBand'}
 
 procedure TSynGutterBand.Assign(Source: TPersistent);
 var
@@ -2240,7 +2307,10 @@ begin
   end;
 end;
 
-{ TSynBandsCollection }
+{$ENDREGION}
+
+
+{$REGION 'TSynBandsCollection'}
 
 function TSynBandsCollection.GetBands(Index: Integer): TSynGutterBand;
 begin
@@ -2256,7 +2326,10 @@ begin
     Gutter.Changed;
 end;
 
-{ TTrackChanges }
+{$ENDREGION}
+
+
+{$REGION 'TTrackChanges'}
 
 procedure TSynTrackChanges.Assign(Source: TPersistent);
 var
@@ -2350,7 +2423,10 @@ begin
   end;
 end;
 
-{ TSynIndentGuides }
+{$ENDREGION}
+
+
+{$REGION 'TSynIndentGuides'}
 
 procedure TSynIndentGuides.Assign(Source: TPersistent);
 var
@@ -2397,5 +2473,123 @@ begin
   if Assigned(FOnChange) then
     FOnChange(Self);
 end;
+
+{$ENDREGION}
+
+
+{$REGION 'TSynIndicators'}
+
+procedure TSynIndicators.AddIndicator(Line: Integer; Indicator:
+    TSynIndicator);
+var
+  Arr: TArray<TSynIndicator>;
+begin
+  if FList.TryGetValue(Line, Arr) then
+    FList[Line] := Arr + [Indicator]
+  else
+    FList[Line] := [Indicator];
+  InvalidateIndicator(Line, Indicator);
+end;
+
+procedure TSynIndicators.ClearIndicators;
+begin
+  FList.Clear;
+end;
+
+procedure TSynIndicators.ClearIndicators(Id: TGuid);
+var
+  Keys: TArray<Integer>;
+  Line: Integer;
+  Arr: TArray<TSynIndicator>;
+  I: Integer;
+begin
+  Keys := FList.Keys.ToArray;
+  for Line in Keys do
+  begin
+    Arr := Flist[Line];
+    for I :=Length(Arr) - 1 downto 0 do
+      if Arr[I].Id = Id then
+      begin
+        InvalidateIndicator(I, Arr[I]);
+        Delete(Arr, I, 1);
+      end;
+    if Length(Arr) = 0 then
+      FList.Remove(Line);
+  end;
+end;
+
+constructor TSynIndicators.Create(Owner: TCustomControl);
+begin
+  inherited Create;
+  FOwner := Owner;
+  FList := TDictionary<Integer, TArray<TSynIndicator>>.Create;
+end;
+
+destructor TSynIndicators.Destroy;
+begin
+  FRegister.Free;
+  FList.Free;
+  inherited;
+end;
+
+procedure TSynIndicators.InvalidateIndicator(Line: Integer;  Indicator: TSynIndicator);
+begin
+  TCustomSynEdit(FOwner).InvalidateRange(BufferCoord(Indicator.CharStart, Line),
+    BufferCoord(Indicator.CharEnd, Line));
+end;
+
+function TSynIndicators.LineIndicators(Line: Integer): TArray<TSynIndicator>;
+begin
+  // Sets Result to [] if not found
+  FList.TryGetValue(Line, Result);
+end;
+
+procedure TSynIndicators.LinePut(aIndex: Integer);
+begin
+  FList.Remove(aIndex);
+end;
+
+procedure TSynIndicators.LinesDeleted(FirstLine, Count: Integer);
+var
+  Keys: TArray<Integer>;
+  Line: Integer;
+begin
+  Keys := FList.Keys.ToArray;
+  TArray.Sort<Integer>(Keys);
+  for Line in Keys do
+  begin
+    if InRange(Line, FirstLine, FirstLine + Count - 1) then
+      FList.Remove(Line)
+    else if Line > FirstLine + Count - 1 then
+    begin
+      FList[Line - Count] := FList[Line];
+      FList.Remove(Line);
+    end;
+  end;
+end;
+
+procedure TSynIndicators.LinesInserted(FirstLine, Count: Integer);
+var
+  Keys: TArray<Integer>;
+  Line: Integer;
+begin
+  Keys := FList.Keys.ToArray;
+  TArray.Sort<Integer>(Keys);
+  for Line := Length(Keys) - 1 downto 0 do
+    if Line >= FirstLine then
+    begin
+      FList[Line + Count] := FList[Line];
+      FList.Remove(Line);
+    end;
+end;
+
+procedure TSynIndicators.RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
+begin
+  if FRegister = nil then
+    FRegister := TDictionary<TGUID, TSynIndicatorSpec>.Create;
+  FRegister[Id] := Spec;
+end;
+{$ENDREGION}
+
 
 end.
