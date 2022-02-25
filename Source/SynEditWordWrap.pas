@@ -56,11 +56,9 @@ type
     fLineOffsets: TList<Integer>;
     fRowLengths: TList<Integer>;
     fLineCount: integer;
-
     fEditor: TCustomSynEdit;
     fMaxRowWidth: Integer;
     procedure SetEmpty;
-    function PrepareLine(const S: string): string;
   protected
     procedure WrapLine(const Index: Integer; out RowLengths: TArray<Integer>);
     procedure WrapLines;
@@ -85,6 +83,7 @@ type
 implementation
 
 uses
+  Winapi.Windows,
   Winapi.D2D1,
   System.RTLConsts,
   System.Math,
@@ -362,59 +361,107 @@ begin
   fRowLengths.TrimExcess;
 end;
 
-function TSynWordWrapPlugin.PrepareLine(const S: string): string;
-{
-  Serves two purposes
-  - Take account of WordBreakChars defined in Editor or Highlighter
-  - DWrite ignores white space at the end of the line and this is a trick
-    around this.
-}
-var
-  I: Integer;
-begin
-  Result := S;
-  for I := 1 to S.Length do
-  begin
-    if not (Word(Result[I]) in [9, 32]) and Editor.IsWordBreakChar(Result[I]) then
-      Result[I] := '-';
-    if (Result[I] = ' ') and (I > 1) and (Word(Result[I - 1]) in [9, 32]) then
-      Result[I] := '-';
-  end;
-end;
-
 procedure TSynWordWrapPlugin.WrapLine(const Index: Integer;
   out RowLengths: TArray<Integer>);
 var
   SLine: string;
   Layout: TSynTextLayout;
-  LineMetrics: array of TDwriteLineMetrics;
-  NRows: Cardinal;
-  I: Integer;
+  W: Integer;
+  P, P2, PStart, PEnd, PBreak: PChar;
+  CW, TW, LW: Integer;
+  IsTrailing, IsInside: BOOL;
+  fWorkList: TList<Integer>;
+  HTM: TDwriteHitTestMetrics;
 begin
-  SLine := PrepareLine(Editor.Lines[Index]);
-  if SLine.Length * Editor.CharWidth < fMaxRowWidth div 2 then
-  begin
+  CW := Editor.CharWidth;
+  TW := Editor.TabWidth * Editor.CharWidth;
+  SLine := Editor.Lines[Index];
+
+  PStart := PChar(SLine);
+  PEnd := PStart + SLine.Length;
+  if (PEnd - PStart) * CW < fMaxRowWidth   then
     // Optimization.  Assume line will fit!
-    NRows := 1;
-    SetLength(RowLengths, 1);
-    RowLengths[0] := SLine.Length;
-  end
+    RowLengths := [SLine.Length]
   else
   begin
-    SetLength(LineMetrics, 1);
-    // Editor.TextMargin is subtracted from Layout width to allow space for
-    // cursor, text overhangs etc.
-    Layout.Create(Editor.TextFormat, PChar(SLine), SLine.Length,
-      fMaxRowWidth,  MaxInt, True);
-    Layout.IDW.GetLineMetrics(@LineMetrics[0], Length(LineMetrics), NRows);
-    if Integer(NRows) > Length(LineMetrics) then
-    begin
-      SetLength(LineMetrics, NRows);
-      Layout.IDW.GetLineMetrics(@LineMetrics[0], Length(LineMetrics), NRows);
+    fWorkList := TList<Integer>.Create;
+    try
+      // Preallocation helps with very long lines
+      fWorkList.Capacity := MulDiv(SLine.Length, CW + 1, fMaxRowWidth);
+      P := PStart;
+      PBreak := nil;
+      W := 0;
+      while (P < PEnd) do
+      begin
+        while (P < PEnd) and (W < fMaxRowWidth) do
+        begin
+          if (P > PStart) and Editor.IsWordBreakChar(P^) then
+            PBreak := P + IfThen(P^ = #32, 1, 0);
+          case P^ of
+             #9: Inc(W, TW - W mod TW);
+             #32..#126: Inc(W, CW);
+           else
+             break;
+           end;
+           Inc(P);
+        end;
+
+        if (P < PEnd) and (W < fMaxRowWidth) then
+        begin
+          // Just in case P is followed by combining characters
+          if (P > PStart) and not (Word((P-1)^) in [9, 32]) then
+          begin
+            Dec(P);
+            Dec(W, CW);
+          end;
+
+          // Measure non-ascii text code points
+          P2 := P;
+          while P2 < PEnd do
+          begin
+            Inc(P2);
+            if Word(P2^) in [9, 32..126] then Break;
+          end;
+
+          Layout.Create(Editor.TextFormat, P, P2-P, MaxInt, Editor.LineHeight);
+          LW := Round(Layout.TextMetrics.width);
+
+          if W + LW >= fMaxRowWidth then
+          begin
+            CheckOSError(Layout.IDW.HitTestPoint(fMaxRowWidth - W,
+              Editor.LineHeight div 2, IsTrailing, IsInside, HTM));
+            Inc(P, HTM.textPosition + 1);
+          end
+          else
+            P := P2;
+          Inc(W, LW);
+        end;
+
+        if W >= fMaxRowWidth then
+        begin
+          if Assigned(PBreak) then
+          begin
+            FWorkList.Add(PBreak - PStart);
+            PStart := PBreak;
+            P := PStart;
+            PBreak := nil;
+          end
+          else
+          begin
+            // "emergency" wrapping
+            FWorkList.Add(P - PStart);
+            PStart := P;
+          end;
+          W := 0;
+        end;
+      end;
+      if P > PStart then
+        FWorkList.Add(P - PStart);
+
+      RowLengths := fWorkList.ToArray;
+    finally
+      fWorkList.Free;
     end;
-    SetLength(RowLengths, NRows);
-    for I := 0 to NRows - 1 do
-      RowLengths[I] := LineMetrics[I].length;
   end;
 end;
 
