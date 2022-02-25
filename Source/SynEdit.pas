@@ -27,7 +27,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 -------------------------------------------------------------------------------}
-//todo: in WordWrap mode, parse lines only once in PaintLines()
 //todo: Remove checks for WordWrap. Must abstract the behaviour with the plugins instead.
 //todo: Move WordWrap glyph to the WordWrap plugin.
 
@@ -3015,9 +3014,12 @@ begin
     // Highlighted tokens
     if (fHighlighter <> nil) and (LastChar > 0) then
     begin
-      if Line > 1 then
-        fHighlighter.SetRange(TSynEditStringList(Lines).Ranges[Line - 2]);
-      FHighlighter.SetLine(SLine, Line);
+      if not WordWrap or (Row = aFirstRow) or (RowToLine(Row - 1) <> Line) then
+      begin
+        if Line > 1 then
+          fHighlighter.SetRange(TSynEditStringList(Lines).Ranges[Line - 2]);
+        FHighlighter.SetLine(SLine, Line);
+      end;
 
       while not FHighLighter.GetEol do
       begin
@@ -3041,7 +3043,10 @@ begin
           if (FullRowBG = clNone) and (AColor <> clNone) then
             PaintTokenBackground(Layout, Row, TokenPos, Token.Length, AColor);
         end;
-        FHighLighter.Next;
+        if TokenPos + Token.Length - 1 > LastChar - FirstChar + 1 then
+          Break
+        else
+          FHighLighter.Next;
       end;
       if (eoShowSpecialChars in fOptions) and (FullRowFG = clNone) and
         (CharOffset + LastChar = SLine.Length + 2) and
