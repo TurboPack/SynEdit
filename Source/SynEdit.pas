@@ -3014,7 +3014,7 @@ begin
     // Highlighted tokens
     if (fHighlighter <> nil) and (LastChar > 0) then
     begin
-      if not WordWrap or (Row = aFirstRow) or (RowToLine(Row - 1) <> Line) then
+      if not WordWrap or (Row = aFirstRow) or (CharOffset = 1) then
       begin
         if Line > 1 then
           fHighlighter.SetRange(TSynEditStringList(Lines).Ranges[Line - 2]);
