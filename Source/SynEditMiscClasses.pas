@@ -541,18 +541,20 @@ type
   {$REGION 'Indicators'}
 
   TSynIndicatorStyle = (sisTextDecoration, sisSquiggleMicrosoftWord,
-    sisSqiggleWordPerfect, sisRectangle);
+    sisSquiggleWordPerfect, sisRectangle, sisFilledRectangle,
+    sisRoundedRectangle, sisRoundedFilledRectangle);
 
   TSynIndicatorSpec = record
-    ID: TGuid;
     Style: TSynIndicatorStyle;
-    FontColor,
+    Foreground,
     Background: TD2D1ColorF;
+    FontStyle: TFontStyles;
   end;
 
   TSynIndicator = record
     Id: TGuid;
     CharStart, CharEnd : Integer;
+    constructor Create(aId: TGuid; aCharStart, aCharEnd: Integer);
   end;
 
   TSynIndicators = class
@@ -565,14 +567,18 @@ type
     constructor Create(Owner: TCustomControl);
     destructor Destroy; override;
     procedure RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
-    procedure AddIndicator(Line: Integer; Indicator: TSynIndicator);
-    procedure ClearIndicators; overload;
-    procedure ClearIndicators(Id: TGuid); overload;
+    function GetSpec(Id: TGUID): TSynIndicatorSpec;
+    procedure Add(Line: Integer; Indicator: TSynIndicator);
+    procedure Clear; overload;
+    procedure Clear(Id: TGuid); overload;
     function LineIndicators(Line: Integer): TArray<TSynIndicator>;
+    function IndicatorAtPos(Pos: TBufferCoord; var Indicator: TSynIndicator): Boolean;
+    function IndicatorAtMousePos(MousePos: TPoint; var Indicator: TSynIndicator): Boolean;
     // Should only used by Synedit
     procedure LinesInserted(FirstLine, Count: Integer);
     procedure LinesDeleted(FirstLine, Count: Integer);
     procedure LinePut(aIndex: Integer);
+    class procedure Paint(RT: ID2D1RenderTarget; Spec: TSynIndicatorSpec; R: TRect);
   end;
   {$ENDREGION 'TSynIndicators'}
 
@@ -2479,7 +2485,7 @@ end;
 
 {$REGION 'TSynIndicators'}
 
-procedure TSynIndicators.AddIndicator(Line: Integer; Indicator:
+procedure TSynIndicators.Add(Line: Integer; Indicator:
     TSynIndicator);
 var
   Arr: TArray<TSynIndicator>;
@@ -2487,16 +2493,16 @@ begin
   if FList.TryGetValue(Line, Arr) then
     FList[Line] := Arr + [Indicator]
   else
-    FList[Line] := [Indicator];
+    FList.Add(Line, [Indicator]);
   InvalidateIndicator(Line, Indicator);
 end;
 
-procedure TSynIndicators.ClearIndicators;
+procedure TSynIndicators.Clear;
 begin
   FList.Clear;
 end;
 
-procedure TSynIndicators.ClearIndicators(Id: TGuid);
+procedure TSynIndicators.Clear(Id: TGuid);
 var
   Keys: TArray<Integer>;
   Line: Integer;
@@ -2532,6 +2538,42 @@ begin
   inherited;
 end;
 
+function TSynIndicators.GetSpec(Id: TGUID): TSynIndicatorSpec;
+begin
+  Result := FRegister[Id];
+end;
+
+function TSynIndicators.IndicatorAtMousePos(MousePos: TPoint;
+  var Indicator: TSynIndicator): Boolean;
+var
+  DC: TDisplayCoord;
+  BC: TBufferCoord;
+  Editor: TCustomSynEdit;
+begin
+  Editor := FOwner as TCustomSynEdit;
+  DC := Editor.PixelsToRowColumn(MousePos.X, MousePos.Y);
+  BC := Editor.DisplayToBufferPos(DC);
+  Result := IndicatorAtPos(BC, Indicator);
+end;
+
+function TSynIndicators.IndicatorAtPos(Pos: TBufferCoord; var Indicator:
+    TSynIndicator): Boolean;
+var
+  LineIndicators:  TArray<TSynIndicator>;
+  LIndicator: TSynIndicator;
+begin
+  Result := False;
+  if FList.TryGetValue(Pos.Line, LineIndicators) then
+  begin
+    for LIndicator in LineIndicators do
+      if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd) then
+      begin
+        Indicator := LIndicator;
+        Exit(True);
+      end;
+  end;
+end;
+
 procedure TSynIndicators.InvalidateIndicator(Line: Integer;  Indicator: TSynIndicator);
 begin
   TCustomSynEdit(FOwner).InvalidateRange(BufferCoord(Indicator.CharStart, Line),
@@ -2545,11 +2587,14 @@ begin
 end;
 
 procedure TSynIndicators.LinePut(aIndex: Integer);
+{  aIndex 0-based Indicator lines 1-based}
 begin
-  FList.Remove(aIndex);
+  FList.Remove(aIndex + 1);
 end;
 
 procedure TSynIndicators.LinesDeleted(FirstLine, Count: Integer);
+{ Adjust Indicator lines for deletion -
+  FirstLine 0-based Indicator lines 1-based}
 var
   Keys: TArray<Integer>;
   Line: Integer;
@@ -2558,38 +2603,131 @@ begin
   TArray.Sort<Integer>(Keys);
   for Line in Keys do
   begin
-    if InRange(Line, FirstLine, FirstLine + Count - 1) then
+    if InRange(Line, FirstLine + 1, FirstLine + Count) then
       FList.Remove(Line)
-    else if Line > FirstLine + Count - 1 then
+    else if Line > FirstLine + Count then
     begin
-      FList[Line - Count] := FList[Line];
+      FList.Add(Line - Count, FList[Line]);
       FList.Remove(Line);
     end;
   end;
 end;
 
 procedure TSynIndicators.LinesInserted(FirstLine, Count: Integer);
+{ Adjust Indicator lines for insertion -
+  FirstLine 0-based Indicator lines 1-based}
 var
   Keys: TArray<Integer>;
-  Line: Integer;
+  I, Line: Integer;
 begin
   Keys := FList.Keys.ToArray;
   TArray.Sort<Integer>(Keys);
-  for Line := Length(Keys) - 1 downto 0 do
-    if Line >= FirstLine then
+  for I := Length(Keys) - 1 downto 0 do
+  begin
+    Line := Keys[I];
+    if Line > FirstLine then
     begin
-      FList[Line + Count] := FList[Line];
+      FList.Add(Line + Count, FList[Line]);
       FList.Remove(Line);
     end;
+  end;
+end;
+
+class procedure TSynIndicators.Paint(RT: ID2D1RenderTarget;
+  Spec: TSynIndicatorSpec; R: TRect);
+const
+  // Microsoft Word style
+  MW_POINTS: array [0 .. 3] of ShortInt = (0, 1, 2, 1);
+  // Corel Word Perfect style
+  WP_POINTS: array [0 .. 3] of ShortInt = (2, 1, 0, -1);
+var
+  Geometry: ID2D1PathGeometry;
+  Sink: ID2D1GeometrySink;
+  Delta: Integer;
+  P: TPoint;
+begin
+  case Spec.Style of
+    sisTextDecoration:
+      // Otherwise it is already hanlded
+      if not SameValue(Spec.Background.a, 0) and
+        not SameValue(Spec.Background.a, 1)
+      then
+        RT.FillRectangle(R, TSynDWrite.SolidBrush(Spec.Background));
+    sisSquiggleMicrosoftWord,
+    sisSquiggleWordPerfect:
+      begin
+        CheckOSError(TSynDWrite.D2DFactory.CreatePathGeometry(Geometry));
+        CheckOSError(Geometry.Open(Sink));
+        Delta := Round(R.Height / 6);
+        if Spec.Style = sisSquiggleMicrosoftWord then
+        begin
+          P := Point(R.Left, R.Bottom - Delta - 1);
+          Sink.BeginFigure(P, D2D1_FIGURE_BEGIN_HOLLOW);
+          while P.X < R.Right do
+          begin
+            Inc(P.X, Abs(Delta));
+            Inc(P.Y, Delta);
+            Delta := -Delta;
+            Sink.AddLine(P);
+          end;
+          Sink.EndFigure(D2D1_FIGURE_END_OPEN);
+        end
+        else
+        begin
+          P := Point(R.Left, R.Bottom - 1);
+          while P.X < R.Right do
+          begin
+            Sink.BeginFigure(P, D2D1_FIGURE_BEGIN_HOLLOW);
+            P.Offset(Delta, -Delta);
+            Sink.AddLine(P);
+            Sink.EndFigure(D2D1_FIGURE_END_OPEN);
+            P.Offset(Delta - 1, Delta)
+          end;
+        end;
+        CheckOSError(Sink.Close);
+
+        RT.PushAxisAlignedClip(R, D2D1_ANTIALIAS_MODE_ALIASED);
+        RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        RT.DrawGeometry(Geometry, TSynDWrite.SolidBrush(Spec.Foreground));
+        RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        RT.PopAxisAlignedClip;
+      end;
+    sisRectangle:
+      RT.DrawRectangle(R, TSynDWrite.SolidBrush(Spec.Foreground));
+    sisFilledRectangle:
+      begin
+       RT.FillRectangle(R, TSynDWrite.SolidBrush(Spec.Background));
+       RT.DrawRectangle(R, TSynDWrite.SolidBrush(Spec.Foreground));
+      end;
+    sisRoundedRectangle:
+      RT.DrawRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
+        TSynDWrite.SolidBrush(Spec.Foreground));
+    sisRoundedFilledRectangle:
+      begin
+        RT.FillRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
+          TSynDWrite.SolidBrush(Spec.Background));
+        RT.DrawRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
+          TSynDWrite.SolidBrush(Spec.Foreground));
+      end;
+  end;
 end;
 
 procedure TSynIndicators.RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
 begin
   if FRegister = nil then
     FRegister := TDictionary<TGUID, TSynIndicatorSpec>.Create;
-  FRegister[Id] := Spec;
+  FRegister.AddOrSetValue(Id, Spec);
 end;
 {$ENDREGION}
 
+
+{ TSynIndicator }
+
+constructor TSynIndicator.Create(aId: TGuid; aCharStart, aCharEnd: Integer);
+begin
+  Self.Id := aId;
+  Self.CharStart := aCharStart;
+  Self.CharEnd := aCharEnd;
+end;
 
 end.

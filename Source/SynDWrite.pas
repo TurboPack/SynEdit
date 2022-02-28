@@ -276,7 +276,8 @@ type
         PixelsPerDip: Single = 1);
     procedure SetFontStyle(FontStyles: System.UITypes.TFontStyles; const Start,
         Count: Integer);
-    procedure SetFontColor(Color: TColor; const Start, Count: Integer);
+    procedure SetFontColor(Color: TD2D1ColorF; const Start, Count: Integer); overload;
+    procedure SetFontColor(Color: TColor; const Start, Count: Integer); overload;
     procedure SetTypography(Typography: TSynTypography; const Start, Count: Integer);
     procedure Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor: TColor; Alpha: Single = 1);
     procedure DrawClipped(RT: ID2D1RenderTarget; X, Y: Integer; ClipRect: TRect;
@@ -810,8 +811,8 @@ begin
   CheckOSError(FIDW.GetMetrics(Result));
 end;
 
-procedure TSynTextLayout.SetFontColor(Color: TColor; const Start, Count:
-    Integer);
+procedure TSynTextLayout.SetFontColor(Color: TD2D1ColorF; const Start,
+  Count: Integer);
 var
   Range: TDwriteTextRange;
   FirstChar, LastChar: Cardinal;
@@ -822,6 +823,12 @@ begin
   Range := DWTextRange(FirstChar, LastChar - FirstChar + 1);
 
   FIDW.SetDrawingEffect(TSynDWrite.SolidBrush(Color), Range);
+end;
+
+procedure TSynTextLayout.SetFontColor(Color: TColor; const Start, Count:
+    Integer);
+begin
+  SetFontColor(D2D1ColorF(Color), Start, Count);
 end;
 
 procedure TSynTextLayout.SetFontStyle(FontStyles: System.UITypes.TFontStyles;

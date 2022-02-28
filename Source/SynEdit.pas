@@ -106,6 +106,10 @@ type
   TGutterGetTextEvent = procedure(Sender: TObject; aLine: Integer;
     var aText: string) of object;
 
+  TGetLineIndicatorsEvent = procedure(Sender: TObject; const Line: Integer;
+    var LineIndicators: TArray<TSynIndicator>) of Object;
+
+
   TSynEditCaretType = (ctVerticalLine, ctHorizontalLine, ctHalfBlock, ctBlock);
 
   TSynStateFlag = (sfCaretChanged, sfScrollbarChanged, sfLinesChanging,
@@ -380,6 +384,7 @@ type
     fScrollDeltaX, fScrollDeltaY: Integer;
     fClickCountTimer: TStopWatch;
     fClickCount: Integer;
+    FIndicators: TSynIndicators;
     FPaintTransientLock: Integer;
     FAdditionalWordBreakChars: TSysCharSet;
     FAdditionalIdentChars: TSysCharSet;
@@ -405,6 +410,7 @@ type
     fOnScroll: TScrollEvent;
     fOnShowHint: TShowHintEvent;
     fOnGutterGetText: TGutterGetTextEvent;
+    FOnGetLineIndicators: TGetLineIndicatorsEvent;
     fOnStatusChange: TStatusChangeEvent;
     fOnTripleClick: TNotifyEvent;
     fOnQudrupleClick: TNotifyEvent;
@@ -437,7 +443,7 @@ type
     procedure DoLinesBeforeDeleted(FirstLine, Count: Integer);
     procedure DoLinesDeleted(FirstLine, Count: Integer);
     procedure DoLinesInserted(FirstLine, Count: Integer);
-    procedure DoLinePut(FirstLine: Integer; const OldLine: string);
+    procedure DoLinePut(Index: Integer; const OldLine: string);
     procedure DoShiftTabKey;
     procedure DoTabKey;
     function FindHookedCmdEvent(AHandlerProc: THookedCommandEvent): integer;
@@ -839,8 +845,9 @@ type
     property Color;
     property Cursor default crIBeam;
     property Font;
-    property Highlighter: TSynCustomHighlighter
-      read fHighlighter write SetHighlighter;
+    property Indicators: TSynIndicators read FIndicators;
+    property Highlighter: TSynCustomHighlighter read fHighlighter
+      write SetHighlighter;
     property LeftChar: Integer read fLeftChar write SetLeftChar;
     property LineHeight: Integer read fTextHeight;
     property LinesInWindow: Integer read fLinesInWindow;
@@ -931,6 +938,8 @@ type
       read fOnGutterClick write fOnGutterClick;
     property OnGutterGetText: TGutterGetTextEvent read fOnGutterGetText
       write fOnGutterGetText;
+    property OnGetLineIndicators: TGetLineIndicatorsEvent
+      read FOnGetLineIndicators write FOnGetLineIndicators;
     property OnMouseCursor: TMouseCursorEvent read fOnMouseCursor
       write fOnMouseCursor;
     property OnPaint: TPaintEvent read fOnPaint write fOnPaint;
@@ -1443,8 +1452,9 @@ begin
   fGutter.OnChange := GutterChanged;
   fWordWrapGlyph := TSynGlyph.Create(HINSTANCE, 'SynEditWrapped');
   fWordWrapGlyph.OnChange := WordWrapGlyphChange;
-  ControlStyle := ControlStyle + [csOpaque, csSetCaption];
-  ControlStyle := ControlStyle + [csNeedsBorderPaint];
+  FIndicators := TSynIndicators.Create(Self);
+
+  ControlStyle := ControlStyle + [csOpaque, csSetCaption, csNeedsBorderPaint];
   Height := 150;
   Width := 200;
   Cursor := crIBeam;
@@ -1572,6 +1582,7 @@ begin
   fOrigUndoRedo := nil;
   fGutter.Free;
   fWordWrapGlyph.Free;
+  FIndicators.Free;
   fFontDummy.Free;
   fOrigLines.Free;
   fCodeFolding.Free;
@@ -2530,7 +2541,6 @@ procedure TCustomSynEdit.PaintTextLines(RT: ID2D1RenderTarget; AClip: TRect;
   const aFirstRow, aLastRow: Integer);
 var
   LinesRect: TRect;
-  FirstChar, LastChar: Integer;
   XRowOffset: Integer;
 
   function WhitespaceColor(Bkground: Boolean = True;
@@ -2724,17 +2734,22 @@ var
     Result := (Row - fTopLine) * fTextHeight;
   end;
 
-  procedure PaintTokenBackground(Layout: TSynTextLayout;
-    const Row , Start, Len: Integer; AColor: TColor);
+  function GetTokenRect(Layout: TSynTextLayout;
+    const Row , Start, Len: Integer): TRect;
   var
     X1, Y1, X2, Y2: Single;
     HitMetrics: TDwriteHitTestMetrics;
   begin
     Layout.IDW.HitTestTextPosition(Max(Start - 1, 0), False, X1, Y1, HitMetrics);
     Layout.IDW.HitTestTextPosition(Start + Len - 2, True, X2, Y2, HitMetrics);
-    RT.FillRectangle(
-      Rect(fTextOffset + XRowOffset + Round(X1), YRowOffset(Row),
-           fTextOffset + XRowOffset + Round(X2) + 1, YRowOffset(Row + 1)),
+    Result := Rect(fTextOffset + XRowOffset + Round(X1), YRowOffset(Row),
+       fTextOffset + XRowOffset + Round(X2) + 1, YRowOffset(Row + 1));
+  end;
+
+  procedure PaintTokenBackground(Layout: TSynTextLayout;
+    const Row , Start, Len: Integer; AColor: TD2D1ColorF);
+  begin
+    RT.FillRectangle(GetTokenRect(Layout, Row, Start, Len),
            TSynDWrite.SolidBrush(AColor));
   end;
 
@@ -2866,7 +2881,7 @@ var
     end;
   end;
 
-  procedure TextRangeToDisplay(const S: string);
+  procedure TextRangeToDisplay(const S: string; out FirstChar, LastChar: Integer);
   var
     HasTabs: Boolean;
     I: Integer;
@@ -2936,12 +2951,16 @@ var
   Line, Row, CharOffset, I: Integer;
   LayoutWidth: Integer;
   SLine, SRow: string;
+  FirstChar, LastChar: Integer;
   DoTabPainting: Boolean;
   Layout: TSynTextLayout;
   BGColor, FGColor, TabColor: TColor;
   Token: string;
-  TokenPos: Integer;
+  TokenPos, TokenLen: Integer;
   Attr: TSynHighlighterAttributes;
+  LineIndicators: TArray<TSynIndicator>;
+  Indicator: TSynIndicator;
+  IndicatorSpec: TSynIndicatorSpec;
   AColor: TColor;
   REdgePos: Integer;
   FullRowFG, FullRowBG: TColor;
@@ -2972,7 +2991,7 @@ begin
     DoTabPainting := False;
 
     // Restrict the text to what can/should be displayed
-    TextRangeToDisplay(SRow);
+    TextRangeToDisplay(SRow, FirstChar, LastChar);
 
     // Deal with eoShowSpecialChars
     if (eoShowSpecialChars in fOptions) and (LastChar >= 0) then
@@ -3041,7 +3060,7 @@ begin
             Layout.SetFontColor(AColor, TokenPos, Token.Length);
           AColor := Attr.Background;
           if (FullRowBG = clNone) and (AColor <> clNone) then
-            PaintTokenBackground(Layout, Row, TokenPos, Token.Length, AColor);
+            PaintTokenBackground(Layout, Row, TokenPos, Token.Length, D2D1ColorF(AColor));
         end;
         if TokenPos + Token.Length - 1 > LastChar - FirstChar + 1 then
           Break
@@ -3102,6 +3121,33 @@ begin
       end;
     end;
 
+    // Indicators
+    LineIndicators := FIndicators.LineIndicators(Line);
+    if Assigned(FOnGetLineIndicators) then
+      FOnGetLineIndicators(Self, Line, LineIndicators);
+
+    for Indicator in LineIndicators do
+    begin
+      TokenPos := Indicator.CharStart - CharOffset - FirstChar + 2;
+      TokenLen := Indicator.CharEnd - Indicator.CharStart + 1;
+      if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 0)
+      then
+        Continue;
+
+      IndicatorSpec := Indicators.GetSpec(Indicator.Id);
+      if (IndicatorSpec.Style = sisTextDecoration) then
+      begin
+        Layout.SetFontStyle(IndicatorSpec.FontStyle, TokenPos, TokenLen);
+        if TAlphaColorF(IndicatorSpec.Foreground) <> TAlphaColorF(clNoneF) then
+          Layout.SetFontColor(IndicatorSpec.Foreground, TokenPos, TokenLen);
+
+        // Paint Indicator background before Layout if it is not alpha blended
+        if SameValue(IndicatorSpec.Background.a, 1) then
+          PaintTokenBackground(Layout, Row, TokenPos, TokenLen,
+          IndicatorSpec.Background);
+      end;
+    end;
+
     // Paint the layout
     if LastChar > 0 then
     begin
@@ -3136,6 +3182,20 @@ begin
       DrawIndentGuides;
     if UseCodeFolding then
       PaintFoldMarks;
+
+    // Indicators
+    for Indicator in LineIndicators do
+    begin
+      TokenPos := Indicator.CharStart - CharOffset - FirstChar + 2;
+      TokenLen := Indicator.CharEnd - Indicator.CharStart + 1;
+      if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 0)
+      then
+        Continue;
+
+      IndicatorSpec := Indicators.GetSpec(Indicator.Id);
+      Indicators.Paint(RT, IndicatorSpec,
+        GetTokenRect(Layout, Row, TokenPos, TokenLen));
+    end;
 
     // Alpha blend selection
     if TAlphaColorF(BGAlpha) <> TAlphaColorF(clNoneF) then
@@ -4550,10 +4610,8 @@ procedure TCustomSynEdit.ListPut(Sender: TObject; Index: Integer;
   const OldLine: string);
 var
   vEndLine: Integer;
-//++ CodeFolding
   vLastScan: Integer;
   FoldIndex: Integer;
-//-- CodeFolding
 begin
   DoLinePut(Index, OldLine);
 
@@ -8499,6 +8557,9 @@ begin
     else if Marks[i].Line > FirstLine then
       Marks[i].Line := FirstLine;
 
+  // SynIndicators
+  FIndicators.LinesDeleted(FirstLine, Count);
+
   // plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
@@ -8515,12 +8576,15 @@ var
   Plugin: TSynEditPlugin;
 begin
   fGutter.AutoSizeDigitCount;
-  // gutter marks
+  // Gutter marks
   for i := 0 to Marks.Count - 1 do
     if Marks[i].Line >= FirstLine then
       Marks[i].Line := Marks[i].Line + Count;
 
-  // plugins
+  // SynIndicators
+  FIndicators.LinesInserted(FirstLine, Count);
+
+  // Plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
     begin
@@ -8530,18 +8594,21 @@ begin
     end;
 end;
 
-procedure TCustomSynEdit.DoLinePut(FirstLine: Integer; const OldLine: string);
+procedure TCustomSynEdit.DoLinePut(Index: Integer; const OldLine: string);
 var
   i: Integer;
   Plugin: TSynEditPlugin;
 begin
+  // SynIndicators
+  FIndicators.LinePut(Index);
+
   // plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
     begin
       PlugIn := TSynEditPlugin(fPlugins[i]);
       if phLinePut in Plugin.Handlers then
-        Plugin.LinePut(FirstLine, OldLine);
+        Plugin.LinePut(Index, OldLine);
     end;
 end;
 
