@@ -267,9 +267,8 @@ const
                  'EndHTML:%.10d'#13#10 +
                  'StartFragment:%.10d'#13#10 +
                  'EndFragment:%.10d'#13#10;
-  HTMLAsTextHeader = '<?xml version="1.0" encoding="%s"?>'#13#10 +
-                     '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'#13#10 +
-                     '<html xmlns="http://www.w3.org/1999/xhtml">'#13#10 +
+  HTMLAsTextHeader = '<!DOCTYPE html>'#13#10 +
+                     '<html>'#13#10 +
                      '<head>'#13#10;
   HTMLAsTextHeader2 ='<meta http-equiv="Content-Type" content="text/html; charset=%s" />'#13#10 +
                      '<meta name="generator" content="SynEdit HTML exporter" />'#13#10 +
