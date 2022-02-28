@@ -134,12 +134,13 @@ function TSynExporterHTML.AttriToCSS(Attri: TSynHighlighterAttributes;
 var
   StyleName: string;
 begin
-  if Assigned(Attri) and FStyleNameCache.ContainsKey(Attri) then
-    StyleName := FStyleNameCache[Attri]
-  else
+  // Note: A future improvement would be to skip css attributes that aren't in
+  //   the Style cache (i.e. unused in the html) although this would rely on
+  //   css generation happening last (which it currently is.)
+  if Assigned(Attri) and not FStyleNameCache.TryGetValue(Attri, StyleName) then
   begin
     StyleName := MakeValidName(UniqueAttriName);
-    FStyleNameCache.Add(Attri, Result);
+    FStyleNameCache.Add(Attri, StyleName);
   end;
   Result := '.' + StyleName + ' { ';
   if UseBackground and (Attri.Background <> clNone) then
@@ -166,7 +167,7 @@ var
   Styles: ^string;
 begin
   Styles := Params[0];
-  Styles^ := Styles^ + AttriToCSS(Attri, UniqueAttriName) + #13#10;  
+  Styles^ := Styles^ + AttriToCSS(Attri, UniqueAttriName) + #13#10;
   Result := True; // we want all attributes => tell EnumHighlighterAttris to continue
 end;
 
@@ -289,9 +290,11 @@ begin
   EnumHighlighterAttris(Highlighter, True, AttriToCSSCallback, [@Styles]);
 
   Header := Format(HTMLAsTextHeader, [EncodingStr]);
-  Header := Header + '<title>' + Title + '</title>'#13#10 +
+  if not fCreateHTMLFragment then
+    Header := Header + '<title>' + Title + '</title>';
+  Header := Header + #13#10 +
     Format(HTMLAsTextHeader2, [EncodingStr, ColorToHtml(fFont.Color),
-      ColorToHTML(fBackgroundColor), Styles]);
+    ColorToHTML(fBackgroundColor), Styles]);
 
   Result := '';
   if fExportAsText then
@@ -317,9 +320,7 @@ end;
 function TSynExporterHTML.GetStyleName(Highlighter: TSynCustomHighlighter;
   Attri: TSynHighlighterAttributes): string;
 begin
-  if Assigned(Attri) and FStyleNameCache.ContainsKey(Attri) then
-    Result := FStyleNameCache[Attri]
-  else
+  if Assigned(Attri)  and not FStyleNameCache.TryGetValue(Attri, Result) then
   begin
     EnumHighlighterAttris(Highlighter, False, StyleNameCallback, [Attri, @Result]);
     FStyleNameCache.Add(Attri, Result);
