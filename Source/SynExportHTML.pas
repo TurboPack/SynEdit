@@ -51,11 +51,13 @@ uses
   SynEditExport,
   SynEditHighlighter,
   SynUnicode,
+  System.Generics.Collections,
   Classes;
 
 type
   TSynExporterHTML = class(TSynCustomExporter)
   private
+    FStyleNameCache: TDictionary<TSynHighlighterAttributes, String>;
     function AttriToCSS(Attri: TSynHighlighterAttributes;
       UniqueAttriName: string): string;
     function AttriToCSSCallback(Highlighter: TSynCustomHighlighter;
@@ -85,7 +87,9 @@ type
     function UseBom: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     function SupportedEncodings: TSynEncodings; override;
+    procedure Clear; override;
   published
     property Color;
     property CreateHTMLFragment: boolean read fCreateHTMLFragment
@@ -113,9 +117,16 @@ const
   CF_HTML = 'HTML Format';
 begin
   inherited Create(AOwner);
+  FStyleNameCache := TDictionary<TSynHighlighterAttributes, String>.Create;
   fClipboardFormat := RegisterClipboardFormat(CF_HTML);
   fDefaultFilter := SYNS_FilterHTML;
   FEncoding := seUTF8;
+end;
+
+destructor TSynExporterHTML.Destroy;
+begin
+  FStyleNameCache.Free;
+  inherited;
 end;
 
 function TSynExporterHTML.AttriToCSS(Attri: TSynHighlighterAttributes;
@@ -123,8 +134,13 @@ function TSynExporterHTML.AttriToCSS(Attri: TSynHighlighterAttributes;
 var
   StyleName: string;
 begin
-  StyleName := MakeValidName(UniqueAttriName);
-
+  if Assigned(Attri) and FStyleNameCache.ContainsKey(Attri) then
+    StyleName := FStyleNameCache[Attri]
+  else
+  begin
+    StyleName := MakeValidName(UniqueAttriName);
+    FStyleNameCache.Add(Attri, Result);
+  end;
   Result := '.' + StyleName + ' { ';
   if UseBackground and (Attri.Background <> clNone) then
     Result := Result + 'background-color: ' + ColorToHTML(Attri.Background) + '; ';
@@ -152,6 +168,13 @@ begin
   Styles := Params[0];
   Styles^ := Styles^ + AttriToCSS(Attri, UniqueAttriName) + #13#10;  
   Result := True; // we want all attributes => tell EnumHighlighterAttris to continue
+end;
+
+procedure TSynExporterHTML.Clear;
+begin
+  inherited;
+  if Assigned(FStyleNameCache) then
+    FStyleNameCache.Clear;
 end;
 
 function TSynExporterHTML.ColorToHTML(AColor: TColor): string;
@@ -200,7 +223,7 @@ var
   StyleName: string;
 begin
   StyleName := GetStyleName(Highlighter, Highlighter.GetTokenAttribute);
-  AddData(Format('<span class="%s">', [StyleName]));
+  AddData('<span class="' + StyleName + '">');
 end;
 
 procedure TSynExporterHTML.FormatBeforeFirstAttribute(BackgroundChanged,
@@ -209,7 +232,7 @@ var
   StyleName: string;
 begin
   StyleName := GetStyleName(Highlighter, Highlighter.GetTokenAttribute);
-  AddData(Format('<span class="%s">', [StyleName]));
+  AddData('<span class="' + StyleName + '">');
 end;
 
 procedure TSynExporterHTML.FormatNewLine;
@@ -294,7 +317,13 @@ end;
 function TSynExporterHTML.GetStyleName(Highlighter: TSynCustomHighlighter;
   Attri: TSynHighlighterAttributes): string;
 begin
-  EnumHighlighterAttris(Highlighter, False, StyleNameCallback, [Attri, @Result]);
+  if Assigned(Attri) and FStyleNameCache.ContainsKey(Attri) then
+    Result := FStyleNameCache[Attri]
+  else
+  begin
+    EnumHighlighterAttris(Highlighter, False, StyleNameCallback, [Attri, @Result]);
+    FStyleNameCache.Add(Attri, Result);
+  end;
 end;
 
 function TSynExporterHTML.MakeValidName(Name: string): string;
