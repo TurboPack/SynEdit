@@ -578,7 +578,8 @@ type
     procedure LinesInserted(FirstLine, Count: Integer);
     procedure LinesDeleted(FirstLine, Count: Integer);
     procedure LinePut(aIndex: Integer);
-    class procedure Paint(RT: ID2D1RenderTarget; Spec: TSynIndicatorSpec; R: TRect);
+    class procedure Paint(RT: ID2D1RenderTarget; Spec: TSynIndicatorSpec; const
+        ClipR: TRect; StartOffset: Integer);
   end;
   {$ENDREGION 'TSynIndicators'}
 
@@ -2634,18 +2635,19 @@ begin
 end;
 
 class procedure TSynIndicators.Paint(RT: ID2D1RenderTarget;
-  Spec: TSynIndicatorSpec; R: TRect);
-const
-  // Microsoft Word style
-  MW_POINTS: array [0 .. 3] of ShortInt = (0, 1, 2, 1);
-  // Corel Word Perfect style
-  WP_POINTS: array [0 .. 3] of ShortInt = (2, 1, 0, -1);
+  Spec: TSynIndicatorSpec; const ClipR: TRect; StartOffset: Integer);
 var
   Geometry: ID2D1PathGeometry;
   Sink: ID2D1GeometrySink;
   Delta: Integer;
   P: TPoint;
+  R: TRect;
 begin
+  R := ClipR;
+  Dec(R.Left, StartOffset);
+  // Avoid painting spillover
+  Inc(R.Top); Dec(R.Bottom); Inc(R.Left); Dec(R.Right,2);
+  RT.PushAxisAlignedClip(ClipR, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   case Spec.Style of
     sisTextDecoration:
       // Otherwise it is already hanlded
@@ -2661,7 +2663,7 @@ begin
         Delta := Round(R.Height / 6);
         if Spec.Style = sisSquiggleMicrosoftWord then
         begin
-          P := Point(R.Left, R.Bottom - Delta - 1);
+          P := Point(R.Left, R.Bottom - Delta);
           Sink.BeginFigure(P, D2D1_FIGURE_BEGIN_HOLLOW);
           while P.X < R.Right do
           begin
@@ -2674,7 +2676,7 @@ begin
         end
         else
         begin
-          P := Point(R.Left, R.Bottom - 1);
+          P := Point(R.Left, R.Bottom);
           while P.X < R.Right do
           begin
             Sink.BeginFigure(P, D2D1_FIGURE_BEGIN_HOLLOW);
@@ -2686,30 +2688,26 @@ begin
         end;
         CheckOSError(Sink.Close);
 
-        RT.PushAxisAlignedClip(R, D2D1_ANTIALIAS_MODE_ALIASED);
-        RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
         RT.DrawGeometry(Geometry, TSynDWrite.SolidBrush(Spec.Foreground));
-        RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-        RT.PopAxisAlignedClip;
       end;
-    sisRectangle:
-      RT.DrawRectangle(R, TSynDWrite.SolidBrush(Spec.Foreground));
+    sisRectangle,
     sisFilledRectangle:
       begin
-       RT.FillRectangle(R, TSynDWrite.SolidBrush(Spec.Background));
-       RT.DrawRectangle(R, TSynDWrite.SolidBrush(Spec.Foreground));
+        if Spec.Style = sisFilledRectangle then
+          RT.FillRectangle(R, TSynDWrite.SolidBrush(Spec.Background));
+        RT.DrawRectangle(R, TSynDWrite.SolidBrush(Spec.Foreground));
       end;
-    sisRoundedRectangle:
-      RT.DrawRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
-        TSynDWrite.SolidBrush(Spec.Foreground));
+    sisRoundedRectangle,
     sisRoundedFilledRectangle:
       begin
-        RT.FillRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
-          TSynDWrite.SolidBrush(Spec.Background));
+        if Spec.Style = sisRoundedFilledRectangle then
+         RT.FillRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
+            TSynDWrite.SolidBrush(Spec.Background));
         RT.DrawRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
-          TSynDWrite.SolidBrush(Spec.Foreground));
+           TSynDWrite.SolidBrush(Spec.Foreground));
       end;
   end;
+  RT.PopAxisAlignedClip;
 end;
 
 procedure TSynIndicators.RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);

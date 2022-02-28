@@ -3044,7 +3044,7 @@ begin
       begin
         TokenPos := FHighLighter.GetTokenPos - CharOffset - FirstChar + 3; //TokenPos is zero based
         if TokenPos > LastChar - FirstChar + 1 then Break;
-        if TokenPos + FHighLighter.GetTokenLength <= 0 then
+        if TokenPos + FHighLighter.GetTokenLength <= 1 then
         begin
           fHighlighter.Next;
           Continue;
@@ -3130,7 +3130,7 @@ begin
     begin
       TokenPos := Indicator.CharStart - CharOffset - FirstChar + 2;
       TokenLen := Indicator.CharEnd - Indicator.CharStart + 1;
-      if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 0)
+      if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 1)
       then
         Continue;
 
@@ -3188,13 +3188,15 @@ begin
     begin
       TokenPos := Indicator.CharStart - CharOffset - FirstChar + 2;
       TokenLen := Indicator.CharEnd - Indicator.CharStart + 1;
-      if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 0)
+      if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 1)
       then
         Continue;
 
       IndicatorSpec := Indicators.GetSpec(Indicator.Id);
       Indicators.Paint(RT, IndicatorSpec,
-        GetTokenRect(Layout, Row, TokenPos, TokenLen));
+        GetTokenRect(Layout, Row, TokenPos, TokenLen),
+        IfThen(TokenPos < 1,
+          TextWidth(Copy(SLine, Indicator.CharStart, 1 - TokenPos)), 0));
     end;
 
     // Alpha blend selection
