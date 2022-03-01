@@ -266,6 +266,7 @@ uses
   SysUtils,
   SynEdit,
   SynEditTypes,
+  SynEditMiscClasses,
 {$IFNDEF ONLY_HADIFF_ALGORITHM}
   SynSpellCheckMetaphone,
 {$ENDIF}
@@ -325,17 +326,21 @@ type
   TUnderlineStyle = (usCorelWordPerfect, usMicrosoftWord);
 
   TDrawAutoSpellCheckPlugin = class(TSynEditPlugin)
+  public
+    const SpellErrorIndicatorId: TGUID  = '{A59BCD6A-02A6-4B34-B28C-D9EACA0C9F09}';
   private
     FPenColor: TColor;
     FUnderlineStyle: TUnderlineStyle;
     { Procedures }
     procedure SetPenColor(const Value: TColor);
     procedure SetUnderlineStyle(const Value: TUnderlineStyle);
+    procedure RegisterIndicatorSpec;
+    procedure SpellCheckLine(Line: Integer);
   protected
     FSynSpellCheck: TSynSpellCheck;
     { Procedures }
-    procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect; FirstLine,
-      LastLine: Integer); override;
+    procedure LinesInserted(FirstLine, Count: Integer); override;
+    procedure LinePut(aIndex: Integer; const OldLine: string); override;
   public
     constructor Create(AOwner: TCustomSynEdit);
     { Properties }
@@ -452,6 +457,7 @@ type
     procedure AddDictWordList(WordList: TstringList);
     procedure AddSkipWord(Word: string);
     procedure AddSkipWordList(WordList: TstringList);
+    procedure ClearIndicators;
     procedure ClearDictWords;
     procedure ClearSkipWords;
     procedure CloseDictionary;
@@ -465,12 +471,14 @@ type
     procedure SaveUserDictionary;
     procedure SelectWordAtCursor;
     procedure SpellCheck;
+  public
+    property Busy: Boolean read FBusy;
+    property OpenDictionary: Boolean read FOpenDictionary;
   published
     { Properties }
     property Algorithm: HashAlgorithms read FHashAlgorithm write SetHashAlgorithm
       default haDiff;
     property Apostrophes: string read FApostrophes write FApostrophes;
-    property Busy: Boolean read FBusy default False;
     property CheckAttribs: TstringList read FCheckAttribs write SetCheckAttribs;
     property Dictionary: string read FDictionary;
     property DictionaryPath: string read GetDictionaryDir write FDictPath;
@@ -479,7 +487,6 @@ type
       default 4;
     property Language: TLanguageRec read FLanguage;
     property Modified: Boolean read FModified write FModified default False;
-    property OpenDictionary: Boolean read FOpenDictionary;
     property Options: TSynSpellCheckOptions read FOptions write FOptions;
     property PenColor: TColor read FPenColor write SetPenColor default clRed;
     property SkipList: TStringList read FSkipList write SetSkipList;
@@ -530,12 +537,14 @@ procedure Register;
 implementation
 
 uses
-  Dialogs,
+  WinApi.D2D1,
+  Vcl.Dialogs,
   System.Win.Registry,
   SynEditHighlighter,
   SynEditMiscProcs,
   SynHighlighterURI,
-  System.UITypes;
+  System.UITypes,
+  SynDWrite;
 
 procedure Register;
 begin
@@ -782,133 +791,38 @@ end;
 constructor TDrawAutoSpellCheckPlugin.Create(AOwner: TCustomSynEdit);
 begin
   inherited;
-  FHandlers := [phAfterPaint];
+  FHandlers := [phLinesInserted, phLinePut];
   FPenColor := clRed;
   FUnderlineStyle := usMicrosoftWord;
 end;
 
-procedure TDrawAutoSpellCheckPlugin.AfterPaint(ACanvas: TCanvas; const AClip:
-  TRect;
-  FirstLine, LastLine: Integer);
-var
-  LH, CX: Integer;
-  CurrentWord: string;
-  Editor: TSynEdit;
-  CurrentXY: TBufferCoord;
-  TP: TPoint;
-
-  procedure PaintUnderLine;
-  var
-    MaxX,
-      NewPoint,
-      NewY: Integer;
-
-    procedure DrawPoint;
-    begin
-      // Do not draw on gutter.
-      // This happens when a word is underlined and part of it is "hidden" under
-      // the gutter.
-      if TP.X <= Editor.Gutter.RealGutterWidth then
-        Exit;
-      with ACanvas do
-      begin
-        if NewY = TP.Y - 1 then
-          Pen.Color := Editor.Color
-        else
-          Pen.Color := FPenColor;
-        Pixels[TP.X, NewY] := Pen.Color;
-      end;
-    end;
-
-  const
-    // Microsoft Word style
-//  MW_POINTS: array[0..6] of ShortInt = (1, 2, 2, 1, 0, 0, 0);
-    MW_POINTS: array[0..3] of ShortInt = (0, 1, 2, 1);
-    // Corel Word Perfect style
-//  WP_POINTS: array[0..4] of ShortInt = (3, 2, 1, -1, -1);
-    WP_POINTS: array[0..3] of ShortInt = (2, 1, 0, -1);
-
-  begin
-    Inc(TP.Y, LH - 3);
-    NewPoint := 0;
-    if FUnderlineStyle = usMicrosoftWord then
-      NewY := TP.Y + MW_POINTS[NewPoint]
-    else
-      NewY := TP.Y + WP_POINTS[NewPoint];
-    DrawPoint;
-    MaxX := TP.X + ACanvas.TextWidth(CurrentWord);
-    while TP.X <= MaxX do
-    begin
-      DrawPoint;
-      Inc(NewPoint);
-      if FUnderlineStyle = usMicrosoftWord then
-      begin
-        if NewPoint > High(MW_POINTS) then
-          NewPoint := 0
-      end
-      else
-      begin
-        if NewPoint > High(WP_POINTS) then
-          NewPoint := 0;
-      end;
-      DrawPoint;
-      Inc(TP.X);
-      if FUnderlineStyle = usMicrosoftWord then
-        NewY := TP.Y + MW_POINTS[NewPoint]
-      else
-        NewY := TP.Y + WP_POINTS[NewPoint];
-    end;
-  end;
-
-var
-  sToken: string;
-  Attri: TSynHighlighterAttributes;
+procedure TDrawAutoSpellCheckPlugin.LinePut(aIndex: Integer;
+  const OldLine: string);
 begin
-  if not Assigned(FSynSpellCheck) or not Assigned(FSynSpellCheck.Editor) or
-    not(sscoAutoSpellCheck in FSynSpellCheck.Options)
-  then
-    Exit;
-  Editor := TSynEdit(FSynSpellCheck.Editor);
-  LH := Editor.LineHeight;
-  ACanvas.Font.Assign(Editor.Font);
-{
-  if Editor.WordWrap then
-  begin
-    FirstLine := Editor.DisplayY;
-    LastLine := Editor.DisplayY + Editor.LinesInWindow;
-  end;
-}
-  while FirstLine <= LastLine do
-  begin
-    // Paint "Bad Words"
-    CX := 1;
-    while CX < Length(Editor.Lines[FirstLine - 1]) do
-    begin
-      CurrentXY := BufferCoord(CX, FirstLine);
-//      CurrentWord := TSynEditEx(Editor).GetWordAtRowColEx(CurrentXY,
-//        TSynEditEx(Editor).IsIdentChar, True);
-      CurrentWord := TSynEditEx(Editor).GetWordAtRowColEx(CurrentXY,
-        FSynSpellCheck.SpellIsIdentChar, True);
-      TP := Editor.RowColumnToPixels(Editor.BufferToDisplayPos(CurrentXY));
-      if TP.X > ACanvas.ClipRect.Right - ACanvas.ClipRect.Left then
-        Break;
-      if Assigned(Editor.Highlighter) and not (Editor.Highlighter is TSynUriSyn) then
-      begin
-        if Editor.GetHighlighterAttriAtRowCol(CurrentXY, sToken, Attri) = False then
-          Attri := Editor.Highlighter.WhitespaceAttribute;
-        if Assigned(Attri) and (FSynSpellCheck.FCheckAttribs.IndexOf(Attri.Name) <> -1) and
-          (CurrentWord <> '') then
-          if FSynSpellCheck.CheckWord(CurrentWord) = False then
-            PaintUnderLine;
-      end
-      else
-        if FSynSpellCheck.CheckWord(CurrentWord) = False then
-          PaintUnderLine;
-      Inc(CX, Length(CurrentWord));
-      Inc(CX);
-    end;
-    Inc(FirstLine);
-  end;
+  SpellCheckLine(aIndex + 1);
+end;
+
+procedure TDrawAutoSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);
+var
+  Line: Integer;
+begin
+  for Line := FirstLine + 1 to FirstLine + Count do
+    SpellCheckLine(Line);
+end;
+
+procedure TDrawAutoSpellCheckPlugin.RegisterIndicatorSpec;
+var
+  Spec: TSynIndicatorSpec;
+begin
+  if Self.UnderlineStyle = usMicrosoftWord then
+    Spec.Style := sisSquiggleMicrosoftWord
+  else
+    Spec.Style := sisSquiggleWordPerfect;
+  Spec.Foreground := D2D1ColorF(PenColor);
+
+  Editor.Indicators.RegisterSpec(SpellErrorIndicatorId, Spec);
+  if (sscoAutoSpellCheck in FSynSpellCheck.Options) and Editor.HandleAllocated then
+    Editor.Invalidate;
 end;
 
 procedure TDrawAutoSpellCheckPlugin.SetPenColor(const Value: TColor);
@@ -916,8 +830,7 @@ begin
   if FPenColor <> Value then
   begin
     FPenColor := Value;
-//    if Editor <> nil then                                                     //Fiala
-//      Editor.Repaint;
+    RegisterIndicatorSpec;
   end;
 end;
 
@@ -927,13 +840,44 @@ begin
   if FUnderlineStyle <> Value then
   begin
     FUnderlineStyle := Value;
-    if Editor <> nil then
-      try
-        Editor.Repaint;
-      except
-
-      end;
+    RegisterIndicatorSpec;
   end;
+end;
+
+procedure TDrawAutoSpellCheckPlugin.SpellCheckLine(Line: Integer);
+var
+  BC: TBufferCoord;
+  SLine, Token, CurrentWord: string;
+  CX: Integer;
+  Attri: TSynHighlighterAttributes;
+  TokenType, TokenStart: Integer;
+begin
+    CX := 1;
+    SLine := Editor.Lines[Line - 1];
+    while CX < SLine.Length do
+    begin
+      BC := BufferCoord(CX, Line);
+      CurrentWord := TSynEditEx(Editor).GetWordAtRowColEx(BC,
+        FSynSpellCheck.SpellIsIdentChar, True);
+     if Assigned(Editor.Highlighter) and not (Editor.Highlighter is TSynUriSyn) then
+      begin
+        if Editor.GetHighlighterAttriAtRowColEx(BC, Token, TokenType, TokenStart, Attri) = False then
+          Attri := Editor.Highlighter.WhitespaceAttribute;
+        if Assigned(Attri) and (FSynSpellCheck.FCheckAttribs.IndexOf(Attri.Name) <> -1) and
+          (CurrentWord <> '') then
+          if FSynSpellCheck.CheckWord(CurrentWord) = False then
+            Editor.Indicators.Add(Line,
+              TSynIndicator.Create(SpellErrorIndicatorId,
+              TokenStart, TokenStart + Token.Length - 1));
+      end
+      else
+        if FSynSpellCheck.CheckWord(CurrentWord) = False then
+            Editor.Indicators.Add(Line,
+              TSynIndicator.Create(SpellErrorIndicatorId,
+              CX, CX + CurrentWord.Length - 1));
+      Inc(CX, Length(CurrentWord));
+      Inc(CX);
+    end;
 end;
 
 { TSynSpellCheck }
@@ -1171,7 +1115,6 @@ begin
   Result := JHCMPIsSimilar(Str1, Str2, MaxDiffCount, Differences);
 end;
 
-
 procedure TSynSpellCheck.AddDictWord(Word: string);
 var
   AWordItem: PWordRec;
@@ -1264,8 +1207,9 @@ begin
         with Plugin do
         begin
           FSynSpellCheck := Self;
-          PenColor := Self.FPenColor;
-          UnderlineStyle := Self.FUnderlineStyle;
+          FPenColor := Self.FPenColor;
+          FUnderlineStyle := Self.FUnderlineStyle;
+          RegisterIndicatorSpec;
         end;
         iI := FEditors.Add(AEditor);
         Sleep(10);
@@ -1374,6 +1318,20 @@ begin
     Dispose(AWordItem);
   end;
   FWordList.Clear;
+end;
+
+procedure TSynSpellCheck.ClearIndicators;
+var
+  Ed: TCustomSynEdit;
+  I: Integer;
+begin
+   for I := 0 to FEditors.Count - 1 do
+   begin
+     Ed := TCustomSynEdit(FEditors.Items[i]);
+     Ed.Indicators.Clear(TDrawAutoSpellCheckPlugin.SpellErrorIndicatorId);
+     if Ed.HandleAllocated then
+       Ed.Invalidate;
+   end;
 end;
 
 procedure TSynSpellCheck.ClearSkipWords;
