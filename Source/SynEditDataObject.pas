@@ -201,11 +201,14 @@ begin
   Ed := Editor as TCustomSynEdit;
   HTMLExport := TSynExporterHTML.Create(nil);
   try
+    HTMLExport.Font := Ed.Font;
     HTMLExport.CreateHTMLFragment := True;
     HTMLExport.UseBackground := True;
     HTMLExport.Highlighter := Ed.Highlighter;
     HTMLExport.ExportRange(Ed.Lines, Ed.BlockBegin, Ed.BlockEnd);
     HTMLExport.SaveToStream(Stream);
+    // Adding a terminating null byte to the Stream.
+    Stream.WriteBuffer([Byte(0)], 1);
   finally
     HTMLExport.Free;
   end;
