@@ -127,6 +127,8 @@ type
     fUpdateChange: Boolean;
     Run: Integer;
     fOldRun: Integer;
+    // If FScanningToEOL is true then only ranges need to be scanned.
+    FScanningToEOL: Boolean;
     procedure Loaded; override;
     procedure AddAttribute(Attri: TSynHighlighterAttributes);
     procedure DefHighlightChange(Sender: TObject);
@@ -1076,7 +1078,9 @@ end;
 
 procedure TSynCustomHighlighter.NextToEol;
 begin
+  FScanningToEOL := True;
   while not GetEol do Next;
+  FScanningToEOL := False;
 end;
 
 procedure TSynCustomHighlighter.ResetRange;
@@ -1113,6 +1117,7 @@ end;
 
 procedure TSynCustomHighlighter.SetLine(const Value: string; LineNumber: Integer);
 begin
+  FScanningToEOL := False;
   DoSetLine(Value, LineNumber);
   Next;
 end;
@@ -1127,7 +1132,6 @@ procedure TSynCustomHighlighter.DoSetLine(const Value: string; LineNumber: Integ
   end;
 
 begin
-  // UnicodeStrings are not reference counted, hence we need to copy
   if fCaseSensitive then
   begin
     fLineStr := Value;
