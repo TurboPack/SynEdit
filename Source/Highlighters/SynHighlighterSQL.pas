@@ -1350,7 +1350,7 @@ const
 
 function TSynSQLSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
@@ -1361,10 +1361,10 @@ begin
     Inc(Maybe);
   end;
   fStringLen := Maybe - fToIdent;
+  if FScanningToEOL then
+    Exit(tkIdentifier);
   SetString(S, fToIdent, fStringLen);
-  if FKeywords.ContainsKey(S) then
-    Result := FKeywords[S]
-  else
+  if not FKeywords.TryGetValue(S, Result) then
     Result := tkIdentifier;
 end;
 
@@ -1374,8 +1374,7 @@ begin
 
   fCaseSensitive := False;
 
-  // Create the keywords dictionary case-insensitive
-  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
+  FKeywords := TDictionary<string, TtkTokenKind>.Create;
 
   FProcNames := TStringList.Create;
   TStringList(FProcNames).OnChange := ProcNamesChanged;
@@ -1855,10 +1854,16 @@ end;
 function TSynSQLSyn.IsKeyword(const AKeyword: string): Boolean;
 var
   tk: TtkTokenKind;
+  S: string;
 begin
-  tk := IdentKind(PWideChar(AKeyword));
-  Result := tk in [tkDatatype, tkException, tkFunction, tkKey, tkPLSQL,
-    tkDefaultPackage];
+  if not fCaseSensitive then
+    S := AnsiLowerCase(AKeyword)
+  else
+    S := AKeyword;
+  if not FKeywords.TryGetValue(S, tk) then
+    tk := tkUnknown;
+  Result := tk in
+    [tkDatatype, tkException, tkFunction, tkKey, tkPLSQL, tkDefaultPackage];
 end;
 
 procedure TSynSQLSyn.Next;
@@ -2006,9 +2011,12 @@ begin
 end;
 
 procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: integer);
+var
+  S: string;
 begin
-  if not FKeywords.ContainsKey(AKeyword) then
-    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
+  S := AnsiLowerCase(AKeyword);
+  if not FKeywords.ContainsKey(S) then
+    FKeywords.Add(S, TtkTokenKind(AKind));
 end;
 
 procedure TSynSQLSyn.SetTableNames(const Value: TStrings);
@@ -2024,28 +2032,40 @@ end;
 procedure TSynSQLSyn.PutTableNamesInKeywordList;
 var
   i: Integer;
+  S: string;
 begin
   for i := 0 to fTableNames.Count - 1 do
-    if not FKeywords.ContainsKey(fTableNames[i]) then
-      FKeywords.Add(fTableNames[i], tkTableName);
+  begin
+    S := AnsiLowerCase(fTableNames[i]);
+    if not FKeywords.ContainsKey(S) then
+      FKeywords.Add(S, tkTableName);
+  end;
 end;
 
 procedure TSynSQLSyn.PutFunctionNamesInKeywordList;
 var
   i: Integer;
+  S: string;
 begin
   for i := 0 to (fFunctionNames.Count - 1) do
-    if not FKeywords.ContainsKey(fFunctionNames[i]) then
-      FKeywords.Add(fFunctionNames[i], tkFunction);
+  begin
+    S := AnsiLowerCase(fFunctionNames[i]);
+    if not FKeywords.ContainsKey(S) then
+      FKeywords.Add(S, tkFunction);
+  end;
 end;
 
 procedure TSynSQLSyn.PutProcNamesInKeywordList;
 var
   i: Integer;
+  S: string;
 begin
   for i := 0 to (fProcNames.Count - 1) do
-    if not FKeywords.ContainsKey(fProcNames[i]) then
-      FKeywords.Add(fProcNames[i], tkProcName);
+  begin
+    S := AnsiLowerCase(fProcNames[i]);
+    if not FKeywords.ContainsKey(S) then
+      FKeywords.Add(S, tkProcName);
+  end;
 end;
 
 procedure TSynSQLSyn.InitializeKeywordLists;
