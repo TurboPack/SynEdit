@@ -324,7 +324,7 @@ begin
   // Cache all our CSS values.
   EnumHighlighterAttris(Highlighter, True, AttriToInlineCSSCallback, []);
   AddData('<div style="font-family: ' + FFont.Name + ', ''Courier New'', monospace; font-size: ' +
-    FFont.Size.ToString + 'px; white-space: pre; ">');
+    FFont.Size.ToString + 'pt; white-space: pre; ">');
   if FCreateHTMLFragment or FInlineCSS then
   begin
     FStyleValueCache.TryGetValue(Highlighter.GetTokenAttribute, StyleValue);
