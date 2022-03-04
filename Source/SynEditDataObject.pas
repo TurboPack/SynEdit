@@ -208,7 +208,7 @@ begin
     HTMLExport.ExportRange(Ed.Lines, Ed.BlockBegin, Ed.BlockEnd);
     HTMLExport.SaveToStream(Stream);
     // Adding a terminating null byte to the Stream.
-    Stream.WriteBuffer([Byte(0)], 1);
+    Stream.WriteData(0, 1);
   finally
     HTMLExport.Free;
   end;
