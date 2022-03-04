@@ -354,8 +354,8 @@ function TSynExporterHTML.GetFooter: string;
 begin
   Result := '';
   if FCreateHTMLFragment then
-    Result := Result + FragmentEndText + #13#10;
-  Result := Result + BodyEndText + HTMLEndText;
+    Result := Result + FragmentEndText;
+  Result := Result + #13#10 + BodyEndText + HTMLEndText;
 end;
 
 function TSynExporterHTML.GetFormatName: string;
@@ -376,6 +376,7 @@ begin
   Header := HTMLStartText;
   if not FCreateHTMLFragment then
   begin
+    Header := Header +  HeadStartText;
     Header := Header + '<title>' + Title + '</title>'#13#10;
     if not InlineCSS then
     begin
