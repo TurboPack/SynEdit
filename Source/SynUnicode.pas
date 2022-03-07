@@ -234,7 +234,7 @@ begin
   begin
     SetLength(Buffer, BufferSize);
     Stream.Read(Buffer, 0, BufferSize);
-    Stream.Seek(-BufferSize, soFromCurrent);
+    Stream.Seek(-BufferSize, soCurrent);
 
     { first search for BOM }
     Encoding := nil;
@@ -398,7 +398,7 @@ begin
   begin
     Setlength(Buffer, Length(Preamble));
     Stream.Read(Buffer, 0, Length(Preamble));
-    Stream.Seek(-Length(Preamble), soFromCurrent);
+    Stream.Seek(-Length(Preamble), soCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin
       WithBOM := True;
@@ -411,7 +411,7 @@ begin
   begin
     Setlength(Buffer, Length(Preamble));
     Stream.Read(Buffer, 0, Length(Preamble));
-    Stream.Seek(-Length(Preamble), soFromCurrent);
+    Stream.Seek(-Length(Preamble), soCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin
       WithBOM := True;
