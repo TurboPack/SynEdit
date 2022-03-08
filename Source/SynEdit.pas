@@ -2620,39 +2620,29 @@ var
 
   procedure DrawIndentGuides;
   { Only used when WordWrap is False, so rows correspond to full lines }
-
-  function StrIsBlank(S: string): Boolean;
   var
-    I: Integer;
-  begin
-    for I := 1 to S.Length do
-      if not (Word(S[I]) in [9, 32]) then Exit(False);
-    Result := True;
-  end;
-
-  var
-    TabSteps, NonBlankLine, X, YTop, YBottom, Row, Line: Integer;
+    TabSteps, NonBlankLine, X, Row, Line: Integer;
     StrokeStyle: ID2D1StrokeStyle;
     LinesIndents: TArray<Integer>;
     MaxIndent: Integer;
     SLine: string;
   begin
     SetLength(LinesIndents, aLastRow - aFirstRow + 1);
-
     // Calculate LinesIndents for every line
     MaxIndent := 0;
     for Row := aLastRow downto aFirstRow do begin
       Line := RowToLine(Row);  // for code folding
       SLine := fLines[Line - 1];
 
-      if StrIsBlank(SLine) then
+      LinesIndents[Row - aFirstRow] := LeftSpaces(SLine, True);
+      if SLine.TrimLeft = '' then // "blank" line
       begin
         if Row = aLastRow then
         begin
           // Get next nonblank line
           NonBlankLine := Line;
           while (NonBlankLine <= fLines.Count) and
-           StrIsBlank(fLines[NonBlankLine - 1])
+            (fLines[NonBlankLine - 1].TrimLeft = '')
           do
             Inc(NonBlankLine);
           LinesIndents[Row - aFirstRow] := IfThen(NonBlankLine <= Lines.Count,
@@ -2660,10 +2650,7 @@ var
         end
         else
           LinesIndents[Row - aFirstRow] := LinesIndents[Row - aFirstRow + 1];
-      end
-      else
-        LinesIndents[Row - aFirstRow] := LeftSpaces(SLine, True);
-
+      end;
       MaxIndent := Max(MaxIndent, LinesIndents[Row - aFirstRow]);
     end;
 
@@ -2685,8 +2672,8 @@ var
           if LinesIndents[Row - aFirstRow] > TabSteps then
           begin
             // we have the top line of an indendation guide
-            YTop := YRowOffset(Row);
-            YBottom := YTop + fTextHeight;
+            var YTop := YRowOffset(Row);
+            var YBottom := YTop + fTextHeight;
             while (Row < aLastRow) and (LinesIndents[Row - aFirstRow + 1] > TabSteps) do
             begin
               Inc(Row);

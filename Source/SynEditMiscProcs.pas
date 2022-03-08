@@ -62,6 +62,8 @@ type
 function MinMax(x, mi, ma: Integer): Integer;
 procedure SwapInt(var l, r: Integer);
 
+procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
+
 // Expand tabs to spaces
 function ExpandTabs(const Line: string; TabWidth: Integer): string;
 function ExpandTabsEx(const Line: string; TabWidth: Integer;
@@ -146,6 +148,11 @@ begin
   tmp := r;
   r := l;
   l := tmp;
+end;
+
+procedure InternalFillRect(dc: HDC; const rcPaint: TRect);
+begin
+  ExtTextOut(dc, 0, 0, ETO_OPAQUE, @rcPaint, nil, 0, nil);
 end;
 
 // Please don't change this function; no stack frame and efficient register use.
