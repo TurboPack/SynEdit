@@ -36,7 +36,7 @@ Uses
   Vcl.Graphics,
   Vcl.ImgList;
 
-{$IF CompilerVersion <= 32}
+{$IF CompilerVersion <= 33}
 // some constants missing from old Delphi D2D1 unit
 const
   DWRITE_WORD_WRAPPING_EMERGENCY_BREAK = 2;
