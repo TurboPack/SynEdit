@@ -341,7 +341,6 @@ function IsFontMonospacedAndValid(Font: TFont): Boolean;
 function FontFamilyName(Font: IDWriteFont): string;
 
 var
-  DefaultLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
   clNoneF: TD2D1ColorF;
 
 implementation
@@ -351,6 +350,7 @@ Uses
   Winapi.DxgiFormat,
   System.Math,
   Vcl.Forms,
+  SynUnicode,
   SynEditTypes,
   SynEditMiscProcs;
 
@@ -469,7 +469,7 @@ begin
   CheckOSError(FontFamily.GetFamilyNames(Names));
   if Names.GetCount > 0 then
   begin
-    CheckOSError(Names.FindLocaleName(DefaultLocaleName, Index, Exists));
+    CheckOSError(Names.FindLocaleName(UserLocaleName, Index, Exists));
     if not Exists then
     begin
       CheckOSError(Names.FindLocaleName('en-us', Index, Exists));
@@ -666,7 +666,7 @@ begin
   FStart := 0;
   CheckOSError(TSynDWrite.DWriteFactory.CreateTextFormat('Segoe UI', nil,
     DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
-    MulDiv(9, 96, 72), DefaultLocaleName, TextFormat));
+    MulDiv(9, 96, 72), UserLocaleName, TextFormat));
   CheckOSError(TSynDWrite.DWriteFactory.CreateTextLayout(PChar(FString), FString.Length,
     TextFormat, MaxInt, MaxInt, FTextLayout));
 end;
@@ -753,7 +753,7 @@ begin
   CheckOSError(TSynDWrite.DWriteFactory.CreateTextFormat(
     PChar(FontFamilyName(DWFont)), nil,
     DWFont.GetWeight, DWFontStyle, DWRITE_FONT_STRETCH_NORMAL,
-    -AFont.Height, DefaultLocaleName, FIDW));
+    -AFont.Height, UserLocaleName, FIDW));
   FIDW.SetIncrementalTabStop(TabWidth * FCharWidth);
 
 //  Trimming.granularity := DWRITE_TRIMMING_GRANULARITY_CHARACTER;
@@ -922,8 +922,6 @@ begin
 end;
 
 initialization
-  if LCIDToLocaleName(GetUserDefaultLCID, DefaultLocaleName, LOCALE_NAME_MAX_LENGTH, 0) = 0 then
-    RaiseLastOSError;
   clNoneF := D2D1ColorF(0, 0, 0, 0);
 finalization
   // Delphi 10.1 does not support class destructors

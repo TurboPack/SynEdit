@@ -89,6 +89,9 @@ procedure SetClipboardText(const Text: string);
 { misc functions }
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
 
+var
+  UserLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
+
 implementation
 
 uses
@@ -367,6 +370,8 @@ begin
 end;
 
 initialization
-  Assert(Win32Platform = VER_PLATFORM_WIN32_NT, 'Unsupported Windows version');
+  Assert(TOSVersion.Check(6), 'Unsupported Windows version');
+  if LCIDToLocaleName(GetUserDefaultLCID, UserLocaleName, LOCALE_NAME_MAX_LENGTH, 0) = 0 then
+    RaiseLastOSError;
 
 end.
