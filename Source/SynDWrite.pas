@@ -787,8 +787,9 @@ begin
   else
     FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
 
-  TextOptions :=
-    D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT;
+  TextOptions := D2D1_DRAW_TEXT_OPTIONS_CLIP;
+  if TOSVersion.Check(6, 3) then
+    TextOptions := TextOptions + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT;
 end;
 
 procedure TSynTextLayout.Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor:
