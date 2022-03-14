@@ -555,6 +555,7 @@ type
     Id: TGuid;
     CharStart, CharEnd : Integer;
     constructor Create(aId: TGuid; aCharStart, aCharEnd: Integer);
+    class operator Equal(const A, B: TSynIndicator): Boolean;
   end;
 
   TSynIndicators = class
@@ -569,9 +570,15 @@ type
     procedure RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
     function GetSpec(Id: TGUID): TSynIndicatorSpec;
     procedure Add(Line: Integer; Indicator: TSynIndicator);
+    // Clears all indicators
     procedure Clear; overload;
-    procedure Clear(Id: TGuid); overload;
+    // Clears all indicators with a given Id
+    procedure Clear(Id: TGuid; Line: Integer = -1); overload;
+    // Clears just one indicator
+    procedure Clear(Line: Integer; const Indicator: TSynIndicator); overload;
+    // Returns the indicators of a given line
     function LineIndicators(Line: Integer): TArray<TSynIndicator>;
+    // Return the indicator at a given buffer or window position
     function IndicatorAtPos(Pos: TBufferCoord; var Indicator: TSynIndicator): Boolean;
     function IndicatorAtMousePos(MousePos: TPoint; var Indicator: TSynIndicator): Boolean;
     // Should only used by Synedit
@@ -2060,7 +2067,8 @@ begin
         SynEdit.OnGutterGetText(SynEdit, Line, S);
       RT.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
         TSynDWrite.SolidBrush(FontColor),
-        D2D1_DRAW_TEXT_OPTIONS_CLIP + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+        D2D1_DRAW_TEXT_OPTIONS_CLIP +
+        IfThen(TOSVersion.Check(6,3), D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT, 0),
         DWRITE_MEASURING_MODE_GDI_NATURAL);
     end;
   end;
@@ -2503,25 +2511,56 @@ begin
   FList.Clear;
 end;
 
-procedure TSynIndicators.Clear(Id: TGuid);
+procedure TSynIndicators.Clear(Id: TGuid; Line: Integer = -1);
+
+  procedure ProcessLine(ALine: Integer);
+  var
+    Indicators: TArray<TSynIndicator>;
+    I: Integer;
+  begin
+    if FList.TryGetValue(ALine, Indicators) then
+    begin
+      for I := Length(Indicators) - 1 downto 0 do
+        if Indicators[I].Id = Id then
+        begin
+          InvalidateIndicator(ALine, Indicators[I]);
+          Delete(Indicators, I, 1);
+        end;
+      if Length(Indicators) = 0 then
+        FList.Remove(ALine)
+      else
+        FList[ALine] := Indicators;
+    end;
+  end;
+
 var
-  Keys: TArray<Integer>;
-  Line: Integer;
-  Arr: TArray<TSynIndicator>;
+  ALine: Integer;
+begin
+  if Line < 0  then
+    for ALine in FList.Keys.ToArray do
+      ProcessLine(ALine)
+  else
+    ProcessLine(Line);
+end;
+
+procedure TSynIndicators.Clear(Line: Integer; const Indicator: TSynIndicator);
+var
+  Indicators: TArray<TSynIndicator>;
   I: Integer;
 begin
-  Keys := FList.Keys.ToArray;
-  for Line in Keys do
+  if FList.TryGetValue(Line, Indicators) then
   begin
-    Arr := Flist[Line];
-    for I :=Length(Arr) - 1 downto 0 do
-      if Arr[I].Id = Id then
+    for I := 0 to Length(Indicators) - 1 do
+      if Indicators[I] = Indicator then
       begin
-        InvalidateIndicator(I, Arr[I]);
-        Delete(Arr, I, 1);
+        InvalidateIndicator(Line, Indicator);
+        Delete(Indicators, I, 1);
+        if Length(Indicators) = 0 then
+          FList.Remove(Line)
+        else
+          FList[Line] := Indicators;
+        Break;
       end;
-    if Length(Arr) = 0 then
-      FList.Remove(Line);
   end;
 end;
 
@@ -2567,7 +2606,7 @@ begin
   if FList.TryGetValue(Pos.Line, LineIndicators) then
   begin
     for LIndicator in LineIndicators do
-      if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd) then
+      if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd - 1) then
       begin
         Indicator := LIndicator;
         Exit(True);
@@ -2726,6 +2765,12 @@ begin
   Self.Id := aId;
   Self.CharStart := aCharStart;
   Self.CharEnd := aCharEnd;
+end;
+
+class operator TSynIndicator.Equal(const A, B: TSynIndicator): Boolean;
+begin
+  Result := (A.Id = B.Id) and (A.CharStart = B.CharStart)
+    and (A.CharEnd = B.CharEnd);
 end;
 
 end.

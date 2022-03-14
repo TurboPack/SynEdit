@@ -370,7 +370,7 @@ begin
 end;
 
 initialization
-  Assert(TOSVersion.Check(6), 'Unsupported Windows version');
+  Assert(TOSVersion.Check(6), 'Unsupported Windows version.  Windows Vista or higher required');
   if LCIDToLocaleName(GetUserDefaultLCID, UserLocaleName, LOCALE_NAME_MAX_LENGTH, 0) = 0 then
     RaiseLastOSError;
 

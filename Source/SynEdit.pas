@@ -3129,7 +3129,7 @@ begin
     for Indicator in LineIndicators do
     begin
       TokenPos := Indicator.CharStart - CharOffset - FirstChar + 2;
-      TokenLen := Indicator.CharEnd - Indicator.CharStart + 1;
+      TokenLen := Indicator.CharEnd - Indicator.CharStart;
       if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 1)
       then
         Continue;
@@ -3187,7 +3187,7 @@ begin
     for Indicator in LineIndicators do
     begin
       TokenPos := Indicator.CharStart - CharOffset - FirstChar + 2;
-      TokenLen := Indicator.CharEnd - Indicator.CharStart + 1;
+      TokenLen := Indicator.CharEnd - Indicator.CharStart;
       if (TokenPos > LastChar - FirstChar + 1) or (TokenPos + TokenLen <= 1)
       then
         Continue;
@@ -4553,8 +4553,6 @@ begin
   if WordWrap then
     fWordWrapPlugin.LinesDeleted(aIndex, aCount);
 
-  DoLinesDeleted(aIndex, aCount);
-
   vLastScan := aIndex;
   if Assigned(fHighlighter) and (Lines.Count > 0) then
     vLastScan := ScanFrom(aIndex);
@@ -4566,11 +4564,11 @@ begin
     InvalidateGutterBand(gbkFold);
   end;
 
+  DoLinesDeleted(aIndex, aCount);
+
   InvalidateLines(aIndex + 1, MaxInt);
   InvalidateGutterLines(aIndex + 1, MaxInt);
-//++ Flicker Reduction
   Include(fStateFlags, sfScrollbarChanged);
-//-- Flicker Reduction
 end;
 
 procedure TCustomSynEdit.ListInserted(Sender: TObject; Index: Integer;
@@ -4581,8 +4579,6 @@ var
 begin
   if WordWrap then
     fWordWrapPlugin.LinesInserted(Index, aCount);
-
-  DoLinesInserted(Index, aCount);
 
   vLastScan := Index;
   if Assigned(fHighlighter) and (Lines.Count > 0) then
@@ -4602,6 +4598,8 @@ begin
     ReScanForFoldRanges(Index, vLastScan-1);
   end;
 
+  DoLinesInserted(Index, aCount);
+
   InvalidateLines(Index + 1, MaxInt);
   InvalidateGutterLines(Index + 1, MaxInt);
   // Flicker Reduction
@@ -4615,8 +4613,6 @@ var
   vLastScan: Integer;
   FoldIndex: Integer;
 begin
-  DoLinePut(Index, OldLine);
-
   vEndLine := Index +1;
   if WordWrap and (fWordWrapPlugin.LinePut(Index, OldLine) <> 0) then
     vEndLine := MaxInt;
@@ -4639,6 +4635,8 @@ begin
     // Scan the same lines the highlighter has scanned
     ReScanForFoldRanges(Index, vLastScan);
   end;
+
+  DoLinePut(Index, OldLine);
 
   InvalidateLines(Index + 1, vEndLine);
   InvalidateGutterLines(Index + 1, vEndLine);
@@ -7822,6 +7820,10 @@ begin
     else
     begin
       // part of a row
+      if not InRange(DB.Row, TopLine, TopLine + LinesInWindow) or
+        (DB.Column = DE.Column)
+      then
+        Exit;
       P1 := RowColumnToPixels(DB);
       P2 := RowColumnToPixels(DE);
       R := Rect(P1.X, fTextHeight * (DB.Row - TopLine), P2.X,
@@ -8083,9 +8085,7 @@ begin
   if (not HandleAllocated) or (Line < 1) or (Line > Lines.Count) or (not Visible) then
     Exit;
 
-//++ CodeFolding
   if UseCodeFolding or WordWrap then
-//-- CodeFolding
   begin
     InvalidateLines(Line, Line);
     Exit;
