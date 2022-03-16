@@ -39,6 +39,8 @@ unit SynEditReg;
 interface
 
 uses
+  System.Classes,
+  System.Actions,
   // SynEdit components
   SynEdit,
   SynDBEdit,
@@ -49,7 +51,7 @@ uses
   SynEditExport,
   SynExportHTML,
   SynExportRTF,
-  SynExportTeX,      
+  SynExportTeX,
   SynHighlighterMulti,
   SynCompletionProposal,
   SynEditPythonBehaviour,
@@ -64,11 +66,11 @@ uses
   SynHighlighterADSP21xx,
   SynHighlighterAsm,
   SynHighlighterAWK,
-  SynHighlighterBaan, 
+  SynHighlighterBaan,
   SynHighlighterBat,
   SynHighlighterCAC,
   SynHighlighterCache,
-  SynHighlighterCobol,   
+  SynHighlighterCobol,
   SynHighlighterCpp,
   SynHighlighterCS,
   SynHighlighterCss,
@@ -83,7 +85,7 @@ uses
   SynHighlighterGeneral,
   SynHighlighterHaskell,
   SynHighlighterHC11,
-  SynHighlighterHP48, 
+  SynHighlighterHP48,
   SynHighlighterHtml,
   SynHighlighterIni,
   SynHighlighterInno,
@@ -99,28 +101,27 @@ uses
   SynHighlighterProgress, 
   SynHighlighterPython,
   SynHighlighterRC,
-  SynHighlighterRuby, 
+  SynHighlighterRuby,
   SynHighlighterSml,
-  SynHighlighterSQL,  
+  SynHighlighterSQL,
   SynHighlighterTclTk,
   SynHighlighterTeX,
   SynHighlighterUNIXShellScript,
   SynHighlighterURI,
   SynHighlighterVB,
   SynHighlighterVBScript,
-  SynHighlighterVrml97,  
+  SynHighlighterVrml97,
   SynHighlighterGWS,
-  SynHighlighterCPM, 
+  SynHighlighterCPM,
   SynHighlighterSDD,
   SynHighlighterXML,
-  SynHighlighterMsg, 
+  SynHighlighterMsg,
   SynHighlighterIDL,
   SynHighlighterUnreal,
   SynHighlighterST,
-  SynHighlighterLDraw,   
+  SynHighlighterLDraw,
   SynSpellCheck,
-  SynURIOpener,
-  Classes;
+  SynURIOpener;
 
 procedure Register;
 
@@ -183,6 +184,13 @@ begin
     TSynIdlSyn, TSynUnrealSyn, TSynCPMSyn, TSynTeXSyn,
     TSynHaskellSyn, TSynLDRSyn, TSynURISyn, TSynDOTSyn, TSynRCSyn
   ]);
+
+  // SynEdit Actions
+  RegisterActions('SynEdit Spell Check',
+    [TSynSpellCheckFile, TSynSpellCheckLine, TSynSpellCheckSelection,
+    TSynSpellCheckWord, TSynSpellClearErrors, TSynSpellCheckAsYouType,
+    TSynSpellErrorAdd, TSynSpellErrorIgnoreOnce, 
+    TSynSpellErrorIgnore, TSynSpellErrorDelete], nil);
 end;
 
 end.

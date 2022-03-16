@@ -569,11 +569,12 @@ type
     destructor Destroy; override;
     procedure RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
     function GetSpec(Id: TGUID): TSynIndicatorSpec;
-    procedure Add(Line: Integer; Indicator: TSynIndicator);
+    procedure Add(Line: Integer; Indicator: TSynIndicator; Invalidate: Boolean = True);
     // Clears all indicators
     procedure Clear; overload;
     // Clears all indicators with a given Id
-    procedure Clear(Id: TGuid; Line: Integer = -1); overload;
+    procedure Clear(Id: TGuid; Invalidate: Boolean = True; Line: Integer = -1);
+        overload;
     // Clears just one indicator
     procedure Clear(Line: Integer; const Indicator: TSynIndicator); overload;
     // Returns the indicators of a given line
@@ -2494,8 +2495,8 @@ end;
 
 {$REGION 'TSynIndicators'}
 
-procedure TSynIndicators.Add(Line: Integer; Indicator:
-    TSynIndicator);
+procedure TSynIndicators.Add(Line: Integer; Indicator: TSynIndicator;
+    Invalidate: Boolean = True);
 var
   Arr: TArray<TSynIndicator>;
 begin
@@ -2503,7 +2504,8 @@ begin
     FList[Line] := Arr + [Indicator]
   else
     FList.Add(Line, [Indicator]);
-  InvalidateIndicator(Line, Indicator);
+  if Invalidate then
+    InvalidateIndicator(Line, Indicator);
 end;
 
 procedure TSynIndicators.Clear;
@@ -2511,7 +2513,7 @@ begin
   FList.Clear;
 end;
 
-procedure TSynIndicators.Clear(Id: TGuid; Line: Integer = -1);
+procedure TSynIndicators.Clear(Id: TGuid; Invalidate: Boolean = True; Line: Integer = -1);
 
   procedure ProcessLine(ALine: Integer);
   var
@@ -2523,7 +2525,8 @@ procedure TSynIndicators.Clear(Id: TGuid; Line: Integer = -1);
       for I := Length(Indicators) - 1 downto 0 do
         if Indicators[I].Id = Id then
         begin
-          InvalidateIndicator(ALine, Indicators[I]);
+          if Invalidate then
+            InvalidateIndicator(ALine, Indicators[I]);
           Delete(Indicators, I, 1);
         end;
       if Length(Indicators) = 0 then

@@ -1,341 +1,212 @@
-////////////////////////////////////////////////////////////////////////////////
-// TSynSpellCheck 1.30
-//
-// Copyright (c) 2002 Jacob Dybala a.k.a. "m3Rlin". All rights reserved.
-//
-// E-Mail: jacobdybala@synspellcheck.prv.pl
-// WWW   : http://www.synspellcheck.prv.pl/ SynSpellCheck Home
-//         http://www.delphifaq.net/        Merlin's Delphi Forge
-//
-// Elf hash algorithm
-//   Copyright (c) 1998-2002 Scalabium
-//   <http://www.scalabium.com/faq/dct0136.htm>
-// SoundEx algorithm
-//   Copyright (c) 1995-2001 Borland Software Corporation
-// Metaphone Phonetic Hash Algorithm
-//   Copyright (c) Tom White <wcstom@yahoo.com>
-// Word differences algorithm JHCMP...
-//   Copyright (c) Josef Hampl
-//
-// Created : Jan-10-2002
-// Modified: Aug-31-2002
-////////////////////////////////////////////////////////////////////////////////
-// All dictionaries are located in the 'Program Files\Common\SynSpell' folder.
-// This is to limit the number of copies of the same dictionary on a single
-// computer to one file.
-//
-// Dictionaries are flat text files with a single word in each line. All words
-// MUST be lowercase. The dictionaries are case insensitive.
-////////////////////////////////////////////////////////////////////////////////
-// Changes:
-//
-// 1.30 (Contributed in large by Jan Fiala)
-//   * Many, many minor adjustments, optimizations.
-//   * Rewritten SetApostrophes().
-//   + New word suggestion algorithm: haDiff. Finds words based on differences.
-//     haSoundex and haMetaphone *may* be removed in upcoming versions.
-//   + New action added: ACTION_UNDO.
-//   + New function: GetDictionaryDir(). This allows users to specify their own
-//     paths.
-//   + Dutch (compiled by Arno Verhoeven) dictionary added.
-//
-// 1.24 Released privately to certain users.
-//   * Bug Fix: PChar and string incompatiblity. Fixed.
-//
-// 1.23 Released privately to certain users.
-//   * Minor code adjustments.
-//   + New dictionaries: Norwegian and Spanish.
-//
-// 1.22
-//   * Bug Fix: The Apostrophes property did not allow changing. Fixed.
-//     Submitted by R.K. Wittye.
-//   * Bug Fix: ClearDictWords did not properly dispose of words creating a
-//     rather large memory leak. Fixed. Submitted by Ascher Stefan.
-//   * English and Polish dictionaries updated.
-//   + Added Value field to TWordRec record. Each word is assigned an Elf value
-//     and is checked by it. Major speed optimization. Suggested by Jan Fiala
-//     (CRC32).
-//
-// 1.21
-//   * Bug Fix: %ProgramFilesDir%\Common Files was read instead of %CommonFilesDir%.
-//     This created problems on non-English versions of Windows. The directory
-//     was not found. Fixed.
-//   * English and Polish dictionaries updated.
-//
-// 1.20
-//   * FindWord() routine rewritten to make use of cache array. Other functions
-//     have only been slightly modified yet no functions have been broken.
-//   * LoadDictionary() routine now converts all words to lowercase.
-//   * LoadSkipList() does not add the words one-by-one any more. They are
-//     assigned in whole.
-//   * FSkipList is now cleared when a dictionary is closed.
-//   * SaveSkipList() now removes all empty lines before saving to file.
-//   + Added cache array to speed up word checks.
-//   + ENoDictionaryLoaded is now thrown when no dictionary has been loaded.
-//
-// 1.19
-//   * Bug Fix: Word underlining would also draw on gutter when the word was
-//     partially scrolled under it. Fixed.
-//   * SoundexLength property converted to HashLength.
-//   * PaintUnderLine() code modified to directly color pixels instead of drawing
-//     lines.
-//   * Dictionary updates: English (1.1.2), Polish (1.1.1). The Polish word list
-//     has been *significantly* reduced due to the fact that this word list is
-//     being started all over to include words with non-latin characters.
-//   + New option: sscoTrimApostrophes.
-//   + New properties: Busy and UnderlineStyle (to mimic Corel Wordperfect
-//     auto spell checking).
-//   + MetaPhone algorithm has been finally implemented. In beta stage (works,
-//     but slow on big lists).
-//   + AddDictSkipList(), AddDictWordList() routines added.
-//   + New dictionaries: German (by Ascher Stefan) and Russian.
-//
-// 1.18
-//   * Bug Fix: OnSkipWord event did not return proper ASkipAll value. Fixed.
-//   * Bug Fix: GetDictionaryList() included all copies of dictionaries for a
-//     specific language instead of newest. Fixed.
-//   * DupeString() has been corrected with proper compiler conditional.
-//   * Minor code changes to always pass lowercase words to FindWord().
-//   * English dictionary updated to version 1.1.0.
-//   * Updated component demo.
-//   + New option: sscoMaintainCase. Idea suggested by Jeff Rafter.
-//   + New event: OnAddWord.
-//   + Added support for words with apostrophes. Idea by Stefan van As.
-//   + GetDictionaryList() now returns a sorted list.
-//
-// 1.17
-//   * SelectWordAtCursor() made public.
-//   + Added support for localized languages and numbers.
-//
-// 1.16
-//   * Bug Fix: Compiler conditional around SoundEx() routines was broken.
-//     Fixed.
-//   * Bug Fix: sscoSelectWord did not work when set to False. Fixed.
-//   + SelectWordAtCursor() routine added. Contributed by Stefan van As.
-//
-// 1.15
-//   * Bug Fix: PenColor property did not work. Fixed by Jeff Corbets.
-//   * Bug Fix: OnAbort event was not called when spell checking was aborted.
-//     Fixed.
-//   * TSoundEx class has been removed in favor of Borland implementation of
-//     SoundEx() function.
-//   * Minor code modifications.
-//   + Added support for dashed words.
-//   + New option: sscoGoUp.
-//   + New property: SoundExLength.
-//
-// 1.14
-//   * Bug Fix: If the editor had no text and sscoHourGlass was set the cursor
-//     did not revert to it's previous value. Fixed by Jeff Corbets.
-//
-// 1.13
-//   * Bug Fix: When empty lines in base dictionary and user dictionary were
-//     added to word list and raised AV when attempting to calculate word hash.
-//     Fixed.
-//
-// 1.12
-//   * Bug Fix: GetSuggestions did not properly support words with uppercase
-//     characters. Fixed. Found by Jeff Rafter.
-//   + Added Metaphon algorithm for word hashes. Not working, just skeleton for
-//     now.
-//
-// 1.11
-//   + Added support for multiple editors: AddEditor() and RemoveEditor().
-//
-// 1.10 (code contributed by Ricardo Cardona)
-//   * Bug Fix: When not highlighter was selected and sscoAutoSpellCheck was set
-//     in Options the component generated an AV. Fixed.
-//   * New property: CheckAttribs.
-//   * Improved code for underlining unknown words.
-//
-// 1.09
-//   * Bug Fix: FWordList did not free memory when the component was destroyed.
-//     It just cleared the word and hash lists. Fixed.
-//
-// 1.08
-//   * Bug Fix: FindWord() function was case sensitive. Fix contributed by
-//     Gerald Nunn.
-//   + New events: OnDictClose and OnDictLoad.
-//   + New options: sscoAutoSpellCheck (contributed by Ricardo Cardona),
-//     sscoIgnoreWordsWithNumbers and sscoIgnoreSingleChars.
-//   + New property: PenColor.
-//   + Added support for Java documentation.
-//
-// 1.07
-//   * Bug Fix: When spell checking the last word under certain conditions the
-//     component would enter an infinite loop. Fixed.
-//
-// 1.06
-//   * Bug Fix: When correcting words in OnCheckWord event the word would not be
-//     replaced but added to the beginning of the old one. Fixed.
-//   + New dictionary: Danish.
-//   + New property: OpenDictionary.
-//   + New option: sscoSelectWord.
-//
-// 1.05
-//   + New events: OnCorrectWord and OnSkipWord.
-//   + Demo added.
-//
-// 1.04
-//   * Bug Fix: Would not compile under Delphi 6 due to duplicate resource
-//     error. Fixed.
-//   * GetDictionaryList() now searches for file that match the correct naming
-//     scheme - name.major-minor-revision.dic, where major, minor and revision
-//     are single characters.
-//   + New dictionaries: Italian, Latin, Japanese, Polish, Spanish (Thanks to
-//     Ricardo Cardona), and Turkish.
-//   + New routines: CloseDictionary(), GetWordCount().
-//   + New property: Dictionary.
-//   - Removed {$IFDEF SYN_WIN32} directive from GetDictionaryList(). The
-//     routines are available under Kylix also.
-//   - Removed Version parameter from LoadDictionary.
-//
-// 1.03
-//   + Added /usr/local/SynSpell dir under Linux as the default dictionary
-//     directory.
-//   + Added Language property.
-//   + %ProgramFiles%\Common Files\SynSpell is now dynamically read from system
-//     Registry.
-//   + Added user dictionary.
-//   + Added GetDictionaryList().
-//
-// 1.02
-//   * Bug Fix: When the word list was cleared, the SoundEx list still hogged up
-//     the memory =) Fixed.
-//   * Bug Fix: When a word was deleted from the dictionary, the SoundEx hash
-//     remained undeleted. Therefor, after deleting a word the whole SoundEx
-//     hash list after the deleted word was wrong (1 up).
-//   * Bug Fix: Suggestions were not passed in ASuggestions in OnCheckWord
-//     event. Fixed.
-//   * Bug Fix: DeleteSkipWord() fixed to delete form skip word list, not word
-//     list ;-)
-//   * Bug Fix: editor did not update when searching for words, the screen
-//     would "blur". Fixed.
-//   * GetSuggestions() changed from procedure to function to return number or
-//     words in list.
-//   * FWordList is now type of TList instead of TStringList.
-//   + If no AAction is specified in the OnCheckWord event, then ACTION_SKIP is
-//     default.
-//   + Now double words are automatically ignored in FWordList.
-//   + Added sscoSuggestWords option.
-//   + Added OnAbort event.
-//   + Added support for HTML Text.
-//   - Removed unsupported options from Options property.
-//
-// 1.01
-//   + Added Options property (support for selecting unknown words in editor,
-//     spell checking from cursor, and spell checking only selection, hour glass
-//     cursor during spell check, removing cursor visibility during spell
-//     check).
-//   + Added word suggestion list.
-////////////////////////////////////////////////////////////////////////////////
+{-------------------------------------------------------------------------------
+The contents of this file are subject to the Mozilla Public License
+Version 1.1 (the "License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at
+http://www.mozilla.org/MPL/
 
-{-----------------------------------------------------------------
-  Usage:
+Software distributed under the License is distributed on an "AS IS" basis,
+WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
+the specific language governing rights and limitations under the License.
 
-  UserDirectory := 'some paths in user profile';
-  LoadDictionary('some DIC file');
-  Editor := Synedit1;
-  // for words underline like words
-  Options := Options + [sscoAutoSpellCheck];
+Alternatively, the contents of this file may be used under the terms of the
+GNU General Public License Version 2 or later (the "GPL"), in which case
+the provisions of the GPL are applicable instead of those above.
+If you wish to allow use of your version of this file only under the terms
+of the GPL and not to allow others to use your version of this file
+under the MPL, indicate your decision by deleting the provisions above and
+replace them with the notice and other provisions required by the GPL.
+If you do not delete the provisions above, a recipient may use your version
+of this file under either the MPL or the GPL.
+-------------------------------------------------------------------------------}
 
-  or you can start SpellCheck with dialog, in this case handle events
-  In case you add some words to user dictionary, you can save it
-
-  if SynSpellCheck.Modified then
-    SaveUserDictionary;
------------------------------------------------------------------}
-
-
-{$define ONLY_HADIFF_ALGORITHM}  //don't use Metaphone method to find near word //Fiala
 
 unit SynSpellCheck;
-
 {$I synedit.inc}
+{$WARN SYMBOL_PLATFORM OFF}
 
 interface
 
 uses
-  Math,
-  Classes,
-  Graphics,
-  Windows,
-  Controls,
-  Forms,
-  StrUtils,
-  SysUtils,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  System.UITypes,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Collections,
+  Vcl.Graphics,
+  Vcl.ActnList,
   SynEdit,
-  SynEditTypes,
-  SynEditMiscClasses,
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-  SynSpellCheckMetaphone,
-{$ENDIF}
-  comctrls;
+  SynEditMiscClasses;
+
+{$REGION 'Spell Checking Interfaces'}
+
+// *********************************************************************//
+// GUIDS declared in the TypeLibrary. Following prefixes are used:
+//   Type Libraries     : LIBID_xxxx
+//   CoClasses          : CLASS_xxxx
+//   DISPInterfaces     : DIID_xxxx
+//   Non-DISP interfaces: IID_xxxx
+// *********************************************************************//
+const
+  IID_ISpellCheckerFactory: TGUID = '{8E018A9D-2415-4677-BF08-794EA61F94BB}';
+  IID_IUserDictionariesRegistrar: TGUID = '{AA176B85-0E12-4844-8E1A-EEF1DA77F586}';
+  IID_IEnumString: TGUID = '{00000101-0000-0000-C000-000000000046}';
+  IID_ISpellChecker: TGUID = '{B6FD0B71-E2BC-4653-8D05-F197E412770B}';
+  IID_IEnumSpellingError: TGUID = '{803E3BD4-2828-4410-8290-418D1D73C762}';
+  IID_ISpellingError: TGUID = '{B7C82D61-FBE8-4B47-9B27-6C0D2E0DE0A3}';
+  IID_ISpellCheckerChangedEventHandler: TGUID = '{0B83A5B0-792F-4EAB-9799-ACF52C5ED08A}';
+  IID_IOptionDescription: TGUID = '{432E5F85-35CF-4606-A801-6F70277E1D7A}';
+  CLASS_SpellCheckerFactory: TGUID = '{7AB36653-1796-484B-BDFA-E74F1DB7C1DC}';
+
+// *********************************************************************//
+// Declaration of Enumerations defined in Type Library
+// *********************************************************************//
+// Constants for enum CORRECTIVE_ACTION
+type
+  CORRECTIVE_ACTION = TOleEnum;
+  TCorrectiveAction = (secaNone, secaSuggestions, secaReplace, secaDelete);
+const
+  CORRECTIVE_ACTION_NONE = $00000000;
+  CORRECTIVE_ACTION_GET_SUGGESTIONS = $00000001;
+  CORRECTIVE_ACTION_REPLACE = $00000002;
+  CORRECTIVE_ACTION_DELETE = $00000003;
 
 type
-  THashLength = 1..16;
-  TSoundExLength = 1..8;
 
-  TJHCMPLongintArray = array of Longint;
-  TJHCMPLongintMatrix = array of TJHCMPLongintArray;
+// *********************************************************************//
+// Forward declaration of types defined in TypeLibrary
+// *********************************************************************//
+  ISpellCheckerFactory = interface;
+  IUserDictionariesRegistrar = interface;
+  ISpellChecker = interface;
+  IEnumSpellingError = interface;
+  ISpellingError = interface;
+  ISpellCheckerChangedEventHandler = interface;
+  IOptionDescription = interface;
 
-  TLanguageRec = record
-    Name, Version: String[50];
+// *********************************************************************//
+// Declaration of CoClasses defined in Type Library
+// (NOTE: Here we map each CoClass to its Default Interface)
+// *********************************************************************//
+  SpellCheckerFactory = ISpellCheckerFactory;
+
+
+// *********************************************************************//
+// Interface: ISpellCheckerFactory
+// Flags:     (0)
+// GUID:      {8E018A9D-2415-4677-BF08-794EA61F94BB}
+// *********************************************************************//
+  ISpellCheckerFactory = interface(IUnknown)
+    ['{8E018A9D-2415-4677-BF08-794EA61F94BB}']
+    function Get_SupportedLanguages(out value: IEnumString): HResult; stdcall;
+    function IsSupported(languageTag: PWideChar; out value: Integer): HResult; stdcall;
+    function CreateSpellChecker(languageTag: PWideChar; out value: ISpellChecker): HResult; stdcall;
   end;
 
-  PWordRec = ^TWordRec;
-  TWordRec = record
-    Word, Hash: String;  //*
-    Value: Integer;
-    User: Boolean;
+// *********************************************************************//
+// Interface: IUserDictionariesRegistrar
+// Flags:     (0)
+// GUID:      {AA176B85-0E12-4844-8E1A-EEF1DA77F586}
+// *********************************************************************//
+  IUserDictionariesRegistrar = interface(IUnknown)
+    ['{AA176B85-0E12-4844-8E1A-EEF1DA77F586}']
+    function RegisterUserDictionary(dictionaryPath: PWideChar; languageTag: PWideChar): HResult; stdcall;
+    function UnregisterUserDictionary(dictionaryPath: PWideChar; languageTag: PWideChar): HResult; stdcall;
   end;
 
-  TSynEditEx = class(TCustomSynEdit)
-  public
-    function GetWordAtRowColEx(XY: TBufferCoord; SpellIsIdentChar: TCategoryMethod;
-      OverrideHighlighterChars: Boolean): string;
-    function SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar: TCategoryMethod):
-      TBufferCoord;
-    function SCPrevWordPosEx(SpellIsIdentChar, SpellIsWhiteChar: TCategoryMethod):
-      TBufferCoord;
-    function SCWordEndEx(SpellIsWhiteChar: TCategoryMethod): TBufferCoord;
-    function SCWordStartEx(SpellIsWhiteChar: TCategoryMethod): TBufferCoord;
+// *********************************************************************//
+// Interface: ISpellChecker
+// Flags:     (0)
+// GUID:      {B6FD0B71-E2BC-4653-8D05-F197E412770B}
+// *********************************************************************//
+  ISpellChecker = interface(IUnknown)
+    ['{B6FD0B71-E2BC-4653-8D05-F197E412770B}']
+    function Get_languageTag(out value: PWideChar): HResult; stdcall;
+    function Check(text: PWideChar; out value: IEnumSpellingError): HResult; stdcall;
+    function Suggest(word: PWideChar; out value: IEnumString): HResult; stdcall;
+    function Add(word: PWideChar): HResult; stdcall;
+    function Ignore(word: PWideChar): HResult; stdcall;
+    function AutoCorrect(from: PWideChar; to_: PWideChar): HResult; stdcall;
+    function GetOptionValue(optionId: PWideChar; out value: Byte): HResult; stdcall;
+    function Get_OptionIds(out value: IEnumString): HResult; stdcall;
+    function Get_Id(out value: PWideChar): HResult; stdcall;
+    function Get_LocalizedName(out value: PWideChar): HResult; stdcall;
+    function add_SpellCheckerChanged(const handler: ISpellCheckerChangedEventHandler;
+                                     out eventCookie: LongWord): HResult; stdcall;
+    function remove_SpellCheckerChanged(eventCookie: LongWord): HResult; stdcall;
+    function GetOptionDescription(optionId: PWideChar; out value: IOptionDescription): HResult; stdcall;
+    function ComprehensiveCheck(text: PWideChar; out value: IEnumSpellingError): HResult; stdcall;
   end;
 
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-  TMetaphone = class(TComponent)
-  private
-    LengthVar: Integer;
-    sIn, sOut: string;
-    { Procedures }
-    procedure SetLength(Value: Integer);
-  public
-    constructor Create(AOwner: TComponent); override;
-    { Procedures }
-    procedure MetaPhone(A: string; lg: Integer; var Res: string);
-    procedure Execute;
-  published
-    { Properties }
-    property InString: string read sIn write sIn;
-    property OutLength: Integer read LengthVar write SetLength default 20;
-    property OutString: string read sOut write sOut;
+// *********************************************************************//
+// Interface: ISpellChecker2
+// Flags:     (0)
+// GUID:      {E7ED1C71-87F7-4378-A840-C9200DACEE47}
+// *********************************************************************//
+  ISpellChecker2 = interface(ISpellChecker)
+    ['{E7ED1C71-87F7-4378-A840-C9200DACEE47}']
+    function Remove(word: PWideChar): HResult; stdcall;
   end;
-{$ENDIF}
 
-  TSynSpellCheck = class;
+// *********************************************************************//
+// Interface: IEnumSpellingError
+// Flags:     (0)
+// GUID:      {803E3BD4-2828-4410-8290-418D1D73C762}
+// *********************************************************************//
+  IEnumSpellingError = interface(IUnknown)
+    ['{803E3BD4-2828-4410-8290-418D1D73C762}']
+    function Next(out value: ISpellingError): HResult; stdcall;
+  end;
+
+// *********************************************************************//
+// Interface: ISpellingError
+// Flags:     (0)
+// GUID:      {B7C82D61-FBE8-4B47-9B27-6C0D2E0DE0A3}
+// *********************************************************************//
+  ISpellingError = interface(IUnknown)
+    ['{B7C82D61-FBE8-4B47-9B27-6C0D2E0DE0A3}']
+    function Get_StartIndex(out value: LongWord): HResult; stdcall;
+    function Get_Length(out value: LongWord): HResult; stdcall;
+    function Get_CorrectiveAction(out value: CORRECTIVE_ACTION): HResult; stdcall;
+    function Get_Replacement(out value: PWideChar): HResult; stdcall;
+  end;
+
+// *********************************************************************//
+// Interface: ISpellCheckerChangedEventHandler
+// Flags:     (0)
+// GUID:      {0B83A5B0-792F-4EAB-9799-ACF52C5ED08A}
+// *********************************************************************//
+  ISpellCheckerChangedEventHandler = interface(IUnknown)
+    ['{0B83A5B0-792F-4EAB-9799-ACF52C5ED08A}']
+    function Invoke(const sender: ISpellChecker): HResult; stdcall;
+  end;
+
+// *********************************************************************//
+// Interface: IOptionDescription
+// Flags:     (0)
+// GUID:      {432E5F85-35CF-4606-A801-6F70277E1D7A}
+// *********************************************************************//
+  IOptionDescription = interface(IUnknown)
+    ['{432E5F85-35CF-4606-A801-6F70277E1D7A}']
+    function Get_Id(out value: PWideChar): HResult; stdcall;
+    function Get_Heading(out value: PWideChar): HResult; stdcall;
+    function Get_Description(out value: PWideChar): HResult; stdcall;
+    function Get_Labels(out value: IEnumString): HResult; stdcall;
+  end;
+
+{$ENDREGION 'Spell Checking Interfaces'}
+
   TUnderlineStyle = (usCorelWordPerfect, usMicrosoftWord);
 
-  TDrawAutoSpellCheckPlugin = class(TSynEditPlugin)
-  public
-    const SpellErrorIndicatorId: TGUID  = '{A59BCD6A-02A6-4B34-B28C-D9EACA0C9F09}';
+{$REGION 'TSpellCheckPlugin'}
+
+  TSynSpellCheck = class;
+
+
+  TSpellCheckPlugin = class(TSynEditPlugin)
   private
-    FPenColor: TColor;
-    FUnderlineStyle: TUnderlineStyle;
-    { Procedures }
-    procedure SetPenColor(const Value: TColor);
-    procedure SetUnderlineStyle(const Value: TUnderlineStyle);
     procedure RegisterIndicatorSpec;
-    procedure SpellCheckLine(Line: Integer);
+    procedure Changed(LangId: Boolean = False);
   protected
     FSynSpellCheck: TSynSpellCheck;
     { Procedures }
@@ -344,2021 +215,820 @@ type
   public
     constructor Create(AOwner: TCustomSynEdit);
     { Properties }
-    property PenColor: TColor read FPenColor write SetPenColor default clRed;
-    property UnderlineStyle: TUnderlineStyle read FUnderlineStyle
-      write SetUnderlineStyle default usMicrosoftWord;
   end;
 
-  { Procedure types }
-  TOnAddWord = procedure(Sender: TObject; AWord: string) of object;
-  TOnCheckWord = procedure(Sender: TObject; AWord: string;
-    ASuggestions: TstringList; var ACorrectWord: string; var AAction: Integer;
-    const AUndoEnabled: Boolean = True) of object;
-  TOnCorrectWord = procedure(Sender: TObject; AWord, ACorrectWord: string)
-    of object;
-  TOnSkipWord = procedure(Sender: TObject; AWord: string; ASkipAll: Boolean)
-    of object;
+{$REGION 'TSpellCheckPlugin'}
 
-  { Sets }
-  HashAlgorithms = (haSoundEx, haMetaphone, haDiff);
-  SynSpellCheckOptions = (
-    sscoAutoSpellCheck,
-    sscoGoUp,
-    sscoHideCursor,
-    sscoHourGlass,
-    sscoIgnoreSingleChars,
-    sscoIgnoreWordsWithNumbers,
-    sscoMaintainCase,
-    sscoSelectWord,
-    sscoStartFromCursor,
-    sscoSuggestWords,
-    sscoTrimApostrophes
-    );
-  TSynSpellCheckOptions = set of SynSpellCheckOptions;
+{$REGION 'TSynSpellCheck'}
 
+  { Singleton class you can/need only have one instance in your application}
   TSynSpellCheck = class(TComponent)
-  private
-    FAnsi2Ascii: array[128..255] of Char;  //*
-    FCacheArray: array[0..65535] of array[0..1] of Cardinal;
-//    FIdentChars: set of Char;
-    FBusy, FModified, FOpenDictionary, FUseUserDictionary: Boolean;
-    FHashAlgorithm: HashAlgorithms;
-    FMaxWordLength: Integer;
-    FApostrophes, FDictPath, FUserFileName, FUserDictPath: string;
-    FDictionary: string;
-    FPenColor: TColor;
-    FCursor: TCursor;
-    FEditor: TCustomSynEdit;
-    FDrawAutoSpellCheck: TDrawAutoSpellCheckPlugin;
-    FHashLength: THashLength;
-    FOnAddWord: TOnAddWord;
-    FLanguage: TLanguageRec;
-    FEditors, FPlugins, FWordList: TList;
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-    FMetaphone: TMetaphone;
-{$ENDIF}
-    FOnAbort, FOnDictClose, FOnDictLoad, FOnDone, FOnStart: TNotifyEvent;
-    FOnCheckWord: TOnCheckWord;
-    FOnCorrectWord: TOnCorrectWord;
-    FOnSkipWord: TOnSkipWord;
-    FCheckAttribs: TstringList;
-    FSkipList: TStringList;
-    FOptions: TSynSpellCheckOptions;
-    FUnderlineStyle: TUnderlineStyle;
-    FIntEnc: TEncoding;                                                         //Fiala
-    { Functions }
-    function FindWord(sWord: string): Integer;
-    function GetDefaultDictionaryDir: string;
-    function GetDictionaryDir: string;
-    function GetUserDictionaryDir: string;
-    { Procedures }
-    procedure CalculateCacheArray;
-    procedure JHCMPInit(const Max1, Max2: longint; var Differences:
-      TJHCMPLongintMatrix);
-    procedure SetSkipList(Value: TStringList);  //*
-    procedure SortWordList;
-    procedure SetCheckAttribs(const Value: TstringList);
-    procedure SetEditor(const Value: TCustomSynEdit);
-    procedure SetHashAlgorithm(const Value: HashAlgorithms);
-    procedure SetPenColor(const Value: TColor);
-    procedure SetHashLength(const Value: THashLength);
-    procedure SetUnderlineStyle(const Value: TUnderlineStyle);
   public
-{begin moved from private}                                                      //Fiala
-    // Compare table alocation
-    // Compare str1 and str2 and Max1 and Max2 are their max lengths
-    function JHCMPDiffCount(const Str1, Str2: string): Longint; overload;
-    function JHCMPDiffCount(const Str1, Str2: string; Differences: TJHCMPLongintMatrix): Longint; overload;
-    function JHCMPFindSimilar(const Word: string; const MaxDiffCount: Integer; const MaxDiffLength: Integer; Similar: Tstrings): Integer;
-    // Count number of differences str1 and str2 (case sensitive)
-    function JHCMPIsSimilar(const Str1, Str2: string; const MaxDiffCount: Longint): Boolean; overload;
-    function JHCMPIsSimilar(const Str1, Str2: string; const MaxDiffCount: Longint; Differences: TJHCMPLongintMatrix): Boolean; overload;
-{end}                                                                           //Fiala
+    const SpellErrorIndicatorId: TGUID  = '{A59BCD6A-02A6-4B34-B28C-D9EACA0C9F09}';
+    class var GlobalInstance: TSynSpellCheck;
+  private type
+    TWorkItem = record
+      Token: string;
+      TokenPos: Integer;
+      constructor Create(AToken: string; ATokenPos: Integer);
+    end;
+  private
+    FLanguageCode: string;
+    FSpellChecker: ISpellChecker;
+    FEditor: TCustomSynEdit;
+    FEditors: TList<TCustomSynEdit>;
+    FPlugins: TList<TSpellCheckPlugin>;
+    FUnderlineStyle: TUnderlineStyle;
+    FPenColor: TColor;
+    FAttributesChecked: TStringList;
+    FUpdateCount: Integer;
+    FAttibutesChecked: TStringList;
+    FCheckAsYouType: Boolean;
+    FDictionaryNA: Boolean;
+    FWorkList: TList<TWorkItem>;
+    procedure CreateSpellChecker;
+    procedure SetLanguageCode(const Value: string);
+    procedure SetEditor(const Value: TCustomSynEdit);
+    procedure SetPenColor(const Value: TColor);
+    procedure SetUnderlineStyle(const Value: TUnderlineStyle);
+    procedure SetAttributesChecked(const Value: TStringList);
+    class var FSpellCheckFactory: ISpellCheckerFactory;
+  protected
+    procedure Notification(AComponent: TComponent;
+      Operation: TOperation); override;
+    function SpellCheckLine(Editor: TCustomSynEdit; Line: Integer;
+        StartChar:Integer = 0; EndChar: Integer = MaxInt; ErrorPos: Integer = -1):
+        ISpellingError;
+    class function SpellCheckFactory: ISpellCheckerFactory;
+  public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    { Functions }
-    function SpellIsIdentChar(AChar: WideChar): Boolean;
-    function SpellIsWhiteChar(AChar: WideChar): Boolean;
-
+    procedure BeginUpdate;
+    procedure EndUpdate;
+    procedure Changed(LangId: Boolean = False);
     function AddEditor(AEditor: TCustomSynEdit): Integer;
-    function Ansi2Ascii(const sString: string): string;       //*
-    function CheckWord(Word: string): Boolean;
-    function DictionaryExists(Language: string; Path: string = ''): Boolean;
-    function GetNewestDictionary(Language: string): string;
-    function GetSuggestions(Word: string; SuggestionList: TstringList): Integer;
-    function GetWordCount: Integer;
-    function GetWordFromASCIIWord(sWord: string): string;
-    function IsDictWord(Word: string): Boolean;
-    function IsSkipWord(Word: string): Boolean;
     function RemoveEditor(AEditor: TCustomSynEdit): Boolean;
-    { Procedures }
-    procedure AddDiacritic(Progress: TProgressBar);
-    procedure AddDictWord(Word: string);
-    procedure AddDictWordList(WordList: TstringList);
-    procedure AddSkipWord(Word: string);
-    procedure AddSkipWordList(WordList: TstringList);
-    procedure ClearIndicators;
-    procedure ClearDictWords;
-    procedure ClearSkipWords;
-    procedure CloseDictionary;
-    procedure DeleteDictWord(Word: string);
-    procedure DeleteSkipWord(Word: string);
-    procedure FixLists;
-    procedure GetDictionaryList(var tslList: TstringList);
-    procedure LoadDictionary(Language: string; FileName: string = '');
-    procedure LoadSkipList(FileName: string);
-    procedure SaveSkipList(FileName: string);
-    procedure SaveUserDictionary;
-    procedure SelectWordAtCursor;
-    procedure SpellCheck;
-  public
-    property Busy: Boolean read FBusy;
-    property OpenDictionary: Boolean read FOpenDictionary;
+    // Spell checking actions applied to FEditor
+    procedure CheckFile;
+    procedure CheckLine;
+    procedure CheckSelection;
+    procedure CheckWord;
+    procedure ClearErrors(Invalidate: Boolean = True);
+    function ErrorAtPos(BC: TBufferCoord): ISpellingError;
+    // provides access to to the SpellChecker interface
+    function SpellChecker: ISpellChecker;
+    property LanguageCode: string read FLanguageCode write SetLanguageCode;
+    class function SupportedLanguages: TArray<string>;
   published
-    { Properties }
-    property Algorithm: HashAlgorithms read FHashAlgorithm write SetHashAlgorithm
-      default haDiff;
-    property Apostrophes: string read FApostrophes write FApostrophes;
-    property CheckAttribs: TstringList read FCheckAttribs write SetCheckAttribs;
-    property Dictionary: string read FDictionary;
-    property DictionaryPath: string read GetDictionaryDir write FDictPath;
-    property Editor: TCustomSynEdit read FEditor write SetEditor;
-    property HashLength: THashLength read FHashLength write SetHashLength
-      default 4;
-    property Language: TLanguageRec read FLanguage;
-    property Modified: Boolean read FModified write FModified default False;
-    property Options: TSynSpellCheckOptions read FOptions write FOptions;
     property PenColor: TColor read FPenColor write SetPenColor default clRed;
-    property SkipList: TStringList read FSkipList write SetSkipList;
     property UnderlineStyle: TUnderlineStyle read FUnderlineStyle
       write SetUnderlineStyle default usMicrosoftWord;
-    property UserDirectory: string read GetUserDictionaryDir write
-      FUserDictPath;
-    property UseUserDictionary: Boolean read FUseUserDictionary write
-      FUseUserDictionary default True;
-    { Events }
-    property OnAbort: TNotifyEvent read FOnAbort write FOnAbort;
-    property OnAddWord: TOnAddWord read FOnAddWord write FOnAddWord;
-    property OnCheckWord: TOnCheckWord read FOnCheckWord write FOnCheckWord;
-    property OnCorrectWord: TOnCorrectWord read FOnCorrectWord
-      write FOnCorrectWord;
-    property OnDictClose: TNotifyEvent read FOnDictClose write FOnDictClose;
-    property OnDictLoad: TNotifyEvent read FOnDictLoad write FOnDictLoad;
-    property OnDone: TNotifyEvent read FOnDone write FOnDone;
-    property OnSkipWord: TOnSkipWord read FOnSkipWord write FOnSkipWord;
-    property OnStart: TNotifyEvent read FOnStart write FOnStart;
+    property AttributesChecked: TStringList read FAttibutesChecked
+      write SetAttributesChecked;
+    property Editor: TCustomSynEdit read FEditor write SetEditor;
+    property CheckAsYouType: Boolean read FCheckAsYouType write FCheckAsYouType;
   end;
 
-  ENoDictionaryLoaded = class(EExternal);
+{$ENDREGION 'TSynSpellCheck'}
 
-resourcestring
-  SNoDictionaryLoaded = 'No dictionary is loaded.';
+{$REGION 'Spell Check Actions'}
 
-function DupeString(const AText: string; ACount: Integer): string;
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-function SoundEx(const AText: string; ALength: TSoundExLength): string;
-{$ENDIF}
-function ElfHash(const Value: string): Integer;
-function TrimEx(const sWord: string; const chChar: WideChar): string;
+  TSynSpellCheckAction = class abstract (TAction)
+  // base class for spell check actions
+  private
+    FControl: TCustomSynEdit;
+    procedure SetControl(Value: TCustomSynEdit);
+  protected
+    function GetControl(Target: TObject): TCustomSynEdit; virtual;
+    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+  public
+    destructor Destroy; override;
+    function HandlesTarget(Target: TObject): Boolean; override;
+    procedure UpdateTarget(Target: TObject); override;
+    property Control: TCustomSynEdit read FControl write SetControl;
+  end;
 
-const
-  //////////////////////////////////////////////////////////////////////////////
-  // Action constants
-  //////////////////////////////////////////////////////////////////////////////
-  ACTION_ABORT = -1;
-  ACTION_SKIP = 0;
-  ACTION_SKIPALL = 1;
-  ACTION_CORRECT = 2;
-  ACTION_ADD = 3;
-  ACTION_UNDO = -2;
+  TSynSpellCheckFile = class(TSynSpellCheckAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
 
-procedure Register;
+  TSynSpellCheckLine = class(TSynSpellCheckAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellCheckSelection = class(TSynSpellCheckAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellCheckWord = class(TSynSpellCheckAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellClearErrors = class(TSynSpellCheckAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellCheckAsYouType = class(TAction)
+    function HandlesTarget(Target: TObject): Boolean; override;
+    procedure UpdateTarget(Target: TObject); override;
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellErrorAction = class abstract(TSynSpellCheckAction)
+    procedure UpdateTarget(Target: TObject); override;
+  end;
+
+  TSynSpellErrorReplace = class(TSynSpellErrorAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellErrorAdd = class(TSynSpellErrorAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellErrorIgnoreOnce = class(TSynSpellErrorAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellErrorIgnore = class(TSynSpellErrorAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+  TSynSpellErrorDelete = class(TSynSpellErrorAction)
+    procedure ExecuteTarget(Target: TObject); override;
+  end;
+
+{$ENDREGION 'Spell Check Actions'}
 
 implementation
 
 uses
-  WinApi.D2D1,
-  Vcl.Dialogs,
-  System.Win.Registry,
+  Winapi.Messages,
+  System.Math,
+  System.Win.ComObj,
+  SynEditTypes,
+  SynUnicode,
+  SynDWrite,
   SynEditHighlighter,
-  SynEditMiscProcs,
   SynHighlighterURI,
-  System.UITypes,
-  SynDWrite;
+  SynEditTextBuffer;
 
-procedure Register;
-begin
-  RegisterComponents('SynEdit', [TSynSpellCheck]);
-end;
+resourcestring
+  SYNS_SingletonSynSpellCheck =
+    'You can not and do not need to create more than one instance of TSynSpellCheck';
 
-function ContainsNumbers(sWord: string): Boolean;
+{$REGION 'TSynSpellCheck Implementation'}
+
+function TSynSpellCheck.AddEditor(AEditor: TCustomSynEdit): Integer;
 var
-  iI: Integer;
+  Plugin: TSpellCheckPlugin;
 begin
-  Result := False;
-  for iI := 1 to Length(sWord) do
-    if CharInSet(sWord[iI], ['0'..'9']) then
-    begin
-      Result := True;
-      Break;
-    end;
-end;
-
-function DupeString(const AText: string; ACount: Integer): string;
-var
-  P: PWideChar;
-  C: Integer;
-begin
-  C := Length(AText);
-  SetLength(Result, C * ACount);
-  P := Pointer(Result);
-  if P = nil then
-    Exit;
-  while ACount > 0 do
+  // Adds an Editor and returns its index in the list
+  Result := FEditors.IndexOf(AEditor);
+  if Result < 0 then
   begin
-    Move(Pointer(AText)^, P^, C * sizeof(WideChar));
-    Inc(P, C);
-    Dec(ACount);
+    FEditors.Add(AEditor);
+    AEditor.FreeNotification(Self);
+    Plugin := TSpellCheckPlugin.Create(AEditor);
+    Plugin.FSynSpellCheck := Self;
+    Plugin.Changed;
+    FPlugins.Add(Plugin);
   end;
 end;
 
-function ElfHash(const Value: string): Integer;
-var
-  iI, iJ: Integer;
+procedure TSynSpellCheck.BeginUpdate;
 begin
-  Result := 0;
-  for iI := 1 to Length(Value) do
-  begin
-    Result := (Result shl 4) + Ord(Value[iI]);
-    iJ := Result and $F0000000;
-    if (iJ <> 0) then
-      Result := Result xor (iJ shr 24);
-    Result := Result and (not iJ);
-  end;
+  Inc(FUpdateCount);
 end;
 
-procedure JHCMPMatrix(X, Y: Longint; var LongintMatrix: TJHCMPLongintMatrix);
-var
-  lI: longint;
-begin
-  SetLength(LongintMatrix, X);
-  for lI := Low(LongintMatrix) to High(LongintMatrix) do
-    SetLength(LongintMatrix[lI], Y);
-end;
-
-procedure JHCMPMatrixInit(var LongintMatrix: TJHCMPLongintMatrix);
-var
-  lI: Longint;
-begin
-  for lI := Low(LongintMatrix) to High(LongintMatrix) do
-    LongintMatrix[lI][0] := lI;
-  for lI := Low(LongintMatrix[0]) to High(LongintMatrix[0]) do
-    LongintMatrix[0][lI] := lI;
-end;
-
-function JHCMPMin(A, B, C: Longint): Longint;
-begin
-  Result := Min(Min(A, B), C);
-end;
-
-{ TSynSpellCheck }
-
-function TSynSpellCheck.GetDefaultDictionaryDir: string;
-begin
-  Result := 'C:\Program Files\Common Files\SynSpell\';
-  with TRegistry.Create do
-  try
-    RootKey := HKEY_LOCAL_MACHINE;
-    if OpenKeyReadOnly('Software\Microsoft\Windows\CurrentVersion') then
-    begin
-      if ValueExists('CommonFilesDir') then
-        Result := ReadString('CommonFilesDir') + '\SynSpell\';
-      CloseKey;
-    end;
-  finally
-    Free;
-  end;
-end;
-
-function TSynSpellCheck.GetDictionaryDir: string;
-begin
-  if FDictPath <> '' then
-    Result := IncludeTrailingPathDelimiter(FDictPath)
-  else
-    Result := IncludeTrailingPathDelimiter(GetDefaultDictionaryDir);
-end;
-
-function TSynSpellCheck.GetUserDictionaryDir;
-begin
-  if FUserDictPath <> '' then
-    Result := IncludeTrailingPathDelimiter(FUserDictPath)
-  else
-    Result := IncludeTrailingPathDelimiter(GetDefaultDictionaryDir);
-end;
-
-function IsNumber(const PWord: PWideChar): Boolean;
-var
-  iI: Integer;
-begin
-  Result := True;
-  for iI := 1 to StrLen(PWord) do
-    if not CharInSet((PWord + iI)[1], ['0'..'9']) then
-    begin
-      Result := False;
-      Break;
-    end;
-end;
-
-function SortFunc(Item1, Item2: Pointer): Integer;
-var
-  s1, s2: string;
-begin
-  // this is intentional construction, AnsiCompareText isn't useable here
-  // this form of sort is used for indexing later
-  s1 := AnsiLowerCase(TWordRec(Item1^).Word);
-  s2 := AnsiLowerCase(TWordRec(Item2^).Word);
-
- if s1 = s2 then
-  Result := 0
- else
- if s1 < s2 then
-  Result := -1
- else
-  Result := 1;
-end;
-
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-function SoundEx(const AText: string; ALength: TSoundExLength): string;
-const
-  // This table gives the Soundex score for all characters upper- and lower-
-  // case hence no need to convert.  This is faster than doing an UpCase on the
-  // whole input string.  The 5 non characters in middle are just given 0.
-  CSoundExTable: array[65..122] of ShortInt =
-  // A  B  C  D  E  F  G  H   I  J  K  L  M  N  O  P  Q  R  S  T  U  V  W   X  Y  Z
-  (0, 1, 2, 3, 0, 1, 2, -1, 0, 2, 2, 4, 5, 5, 0, 1, 2, 6, 2, 3, 0, 1, -1, 2, 0,
-    2,
-    // [  /  ]  ^  _  '
-    0, 0, 0, 0, 0, 0,
-    // a  b  c  d  e  f  g  h   i  j  k  l  m  n  o  p  q  r  s  t  u  v  w   x  y  z
-    0, 1, 2, 3, 0, 1, 2, -1, 0, 2, 2, 4, 5, 5, 0, 1, 2, 6, 2, 3, 0, 1, -1, 2, 0,
-      2);
-
-  function Score(AChar: Integer): Integer;
-  begin
-    Result := 0;
-    if (AChar >= Low(CSoundExTable)) and (AChar <= High(CSoundExTable)) then
-      Result := CSoundExTable[AChar];
-  end;
-
-var
-  iI, LScore, LPrevScore: Integer;
-begin
-  Result := '';
-  if AText <> '' then
-  begin
-    Result := WideUpperCase(AText[1]);
-    LPrevScore := Score(Ord(AText[1]));
-    for iI := 2 to Length(AText) do
-    begin
-      LScore := Score(Ord(AText[iI]));
-      if (LScore > 0) and (LScore <> LPrevScore) then
-      begin
-        Result := Result + IntToStr(LScore);
-        if Length(Result) = ALength then
-          Break;
-      end;
-      if LScore <> -1 then
-        LPrevScore := LScore;
-    end;
-    if Length(Result) < ALength then
-      Result := Copy(Result + DupeString('0', ALength), 1, ALength);
-  end;
-end;
-{$ENDIF}
-
-function TrimEx(const sWord: string; const chChar: WideChar): string;
-var
-  iI, iLength: Integer;
-begin
-  iLength := Length(sWord);
-  iI := 1;
-  while (iI <= iLength) and (sWord[iI] <= chChar) do
-    Inc(iI);
-  if iI > iLength then
-    Result := ''
-  else
-  begin
-    while sWord[iLength] = chChar do
-      Dec(iLength);
-    Result := Copy(sWord, iI, iLength - iI + 1);
-  end;
-end;
-
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-{ TMetaphone }
-constructor TMetaphone.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  LengthVar := 20; // Looks like a kinda nice value
-end;
-
-procedure TMetaphone.Execute;
-begin
-  if (sIn <> '') and (LengthVar > 0) then
-    Metaphone(sIn, LengthVar, sOut)
-  else
-    sOut := '';
-end;
-
-procedure TMetaphone.SetLength(Value: Integer);
-begin
-  if (Value >= 1) and (Value <= 99) then
-    LengthVar := Value;
-end;
-
-procedure TMetaphone.Metaphone(A: string; lg: Integer; var Res: string);
-var
-  iI: Integer;
-begin
-  for iI := 1 to lg do
-    Res := Res + ' ';
-  Res := SynSpellCheckMetaphone.Metaphone(PWideChar(a), lg);
-end;
-{$ENDIF}
-
-{ TDrawAutoSpellCheckPlugin }
-
-constructor TDrawAutoSpellCheckPlugin.Create(AOwner: TCustomSynEdit);
-begin
-  inherited;
-  FHandlers := [phLinesInserted, phLinePut];
-  FPenColor := clRed;
-  FUnderlineStyle := usMicrosoftWord;
-end;
-
-procedure TDrawAutoSpellCheckPlugin.LinePut(aIndex: Integer;
-  const OldLine: string);
-begin
-  SpellCheckLine(aIndex + 1);
-end;
-
-procedure TDrawAutoSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);
+procedure TSynSpellCheck.CheckFile;
 var
   Line: Integer;
 begin
-  for Line := FirstLine + 1 to FirstLine + Count do
-    SpellCheckLine(Line);
+  if not Assigned(FEditor) then Exit;
+
+  ClearErrors(False);
+
+  for Line := 0 to FEditor.Lines.Count - 1 do
+    SpellCheckLine(FEditor, Line);
+  Editor.Invalidate;
 end;
 
-procedure TDrawAutoSpellCheckPlugin.RegisterIndicatorSpec;
+procedure TSynSpellCheck.CheckSelection;
 var
-  Spec: TSynIndicatorSpec;
+  BB, BE: TBufferCoord;
+  Line: Integer;
 begin
-  if Self.UnderlineStyle = usMicrosoftWord then
-    Spec.Style := sisSquiggleMicrosoftWord
+  if not Assigned(FEditor) then Exit;
+  BB := Editor.BlockBegin;
+  BE := Editor.BlockEnd;
+
+  if BB.Line = BE.Line then
+    SpellCheckLine(FEditor, BB.Line, BB.Char, BE.Char)
   else
-    Spec.Style := sisSquiggleWordPerfect;
-  Spec.Foreground := D2D1ColorF(PenColor);
-
-  Editor.Indicators.RegisterSpec(SpellErrorIndicatorId, Spec);
-  if (sscoAutoSpellCheck in FSynSpellCheck.Options) and Editor.HandleAllocated then
-    Editor.Invalidate;
-end;
-
-procedure TDrawAutoSpellCheckPlugin.SetPenColor(const Value: TColor);
-begin
-  if FPenColor <> Value then
   begin
-    FPenColor := Value;
-    RegisterIndicatorSpec;
+    // First line
+    SpellCheckLine(FEditor, BB.Line, BB.Char);
+    for Line := BB.Line + 1 to BE.Line - 1 do
+      SpellCheckLine(FEditor, Line);
+    // Last line
+    SpellCheckLine(FEditor, BE.Line, 1, BE.Char);
   end;
+  FEditor.InvalidateSelection;
 end;
 
-procedure TDrawAutoSpellCheckPlugin.SetUnderlineStyle(
-  const Value: TUnderlineStyle);
+procedure TSynSpellCheck.CheckLine;
 begin
-  if FUnderlineStyle <> Value then
-  begin
-    FUnderlineStyle := Value;
-    RegisterIndicatorSpec;
-  end;
+  if not Assigned(FEditor) then Exit;
+
+  TCustomSynEdit(FEditor).Indicators.Clear(SpellErrorIndicatorId,
+    False, TCustomSynEdit(FEditor).CaretY);
+  SpellCheckLine(TCustomSynEdit(FEditor), TCustomSynEdit(FEditor).CaretY);
+  Editor.InvalidateLine(TCustomSynEdit(FEditor).CaretY);
 end;
 
-procedure TDrawAutoSpellCheckPlugin.SpellCheckLine(Line: Integer);
+procedure TSynSpellCheck.CheckWord;
 var
-  BC: TBufferCoord;
-  SLine, Token, CurrentWord: string;
-  CX: Integer;
-  Attri: TSynHighlighterAttributes;
-  TokenType, TokenStart: Integer;
+  BB, BE: TBufferCoord;
 begin
-    CX := 1;
-    SLine := Editor.Lines[Line - 1];
-    while CX < SLine.Length do
-    begin
-      BC := BufferCoord(CX, Line);
-      CurrentWord := TSynEditEx(Editor).GetWordAtRowColEx(BC,
-        FSynSpellCheck.SpellIsIdentChar, True);
-     if Assigned(Editor.Highlighter) and not (Editor.Highlighter is TSynUriSyn) then
-      begin
-        if Editor.GetHighlighterAttriAtRowColEx(BC, Token, TokenType, TokenStart, Attri) = False then
-          Attri := Editor.Highlighter.WhitespaceAttribute;
-        if Assigned(Attri) and (FSynSpellCheck.FCheckAttribs.IndexOf(Attri.Name) <> -1) and
-          (CurrentWord <> '') then
-          if FSynSpellCheck.CheckWord(CurrentWord) = False then
-            Editor.Indicators.Add(Line,
-              TSynIndicator.Create(SpellErrorIndicatorId,
-              TokenStart, TokenStart + Token.Length - 1));
-      end
-      else
-        if FSynSpellCheck.CheckWord(CurrentWord) = False then
-            Editor.Indicators.Add(Line,
-              TSynIndicator.Create(SpellErrorIndicatorId,
-              CX, CX + CurrentWord.Length - 1));
-      Inc(CX, Length(CurrentWord));
-      Inc(CX);
-    end;
+  if not Assigned(FEditor) then Exit;
+
+  BB := FEditor.WordStart;
+  BE := FEditor.WordEnd;
+
+  if BB >= BE then Exit;
+
+  SpellCheckLine(TCustomSynEdit(FEditor), BB.Line, BB.Char, BE.Char);
+  FEditor.InvalidateRange(BB, BE);
 end;
 
-{ TSynSpellCheck }
+procedure TSynSpellCheck.ClearErrors(Invalidate: Boolean = True);
+begin
+  if not Assigned(FEditor) then Exit;
+  TCustomSynEdit(FEditor).Indicators.Clear(SpellErrorIndicatorId, Invalidate);
+end;
+
+procedure TSynSpellCheck.Changed(LangId: Boolean);
+var
+  Plugin: TSpellCheckPlugin;
+begin
+  if FUpdateCount = 0 then
+  for Plugin in FPlugins do
+    Plugin.Changed(LangId);
+end;
 
 constructor TSynSpellCheck.Create(AOwner: TComponent);
-const
-  CP_ASCII = 20127;
-var
-  iI: Integer;
 begin
-  inherited Create(AOwner);
-  FPenColor := clRed;
-  FBusy := False;
-  FModified := False;
-  FHashAlgorithm := haDiff;
-  FHashLength := 4;
-  FMaxWordLength := 0;
-  FUnderlineStyle := usMicrosoftWord;
-  FUseUserDictionary := True;
-  FApostrophes := '''`+';
-  //////////////////////////////////////////////////////////////////////////////
-  // Lists
-  //////////////////////////////////////////////////////////////////////////////
-  FEditors := TList.Create;
-  FPlugins := TList.Create;
-  FWordList := TList.Create;
-  FSkipList := TStringList.Create;
-  FSkipList.Duplicates := dupIgnore;
+  if Assigned(GlobalInstance) then
+    raise ESynError.CreateRes(@SYNS_SingletonSynSpellCheck);
 
-  FCheckAttribs := TstringList.Create;
-  with FCheckAttribs do
+  inherited Create(AOwner);
+  FLanguageCode := UserLocaleName;
+  FPenColor := clRed;
+  FUnderlineStyle := usMicrosoftWord;
+  FEditors := TList<TCustomSynEdit>.Create;
+  FPlugins := TList<TSpellCheckPlugin>.Create;
+  FAttributesChecked := TStringList.Create;
+  with FAttributesChecked do
   begin
     Add('Comment');
     Add('Text');
     Add('String');
     Add('Documentation');
   end;
-  for iI := 1 to 255 do
+  FWorkList := TList<TWorkItem>.Create;
+  GlobalInstance := Self;
+end;
+
+procedure TSynSpellCheck.CreateSpellChecker;
+begin
+  FSpellChecker := nil;
+  if not Assigned(SpellCheckFactory()) then
   begin
-    FCacheArray[iI][0] := 0;
-    FCacheArray[iI][1] := 0;
+    FDictionaryNA := True;
+    Exit;
   end;
-  FIntEnc := TEncoding.GetEncoding(CP_ASCII);                                   //Fiala
+
+  try
+    CheckOSError(SpellCheckFactory.CreateSpellChecker(
+      PChar(FLanguageCode), FSpellChecker));
+  except
+    FDictionaryNA := True;
+  end;
 end;
 
 destructor TSynSpellCheck.Destroy;
 var
-  i: Integer;
+  Ed: TCustomSynEdit;
 begin
-  for i := FEditors.Count - 1 downto 0 do
-    RemoveEditor(TCustomSynEdit(FEditors.Items[i]));
-  CloseDictionary;
-  //////////////////////////////////////////////////////////////////////////////
-  // Free used memory
-  //////////////////////////////////////////////////////////////////////////////
-  FCheckAttribs.Free;
+  GlobalInstance := nil;
+  if Assigned(FEditors) then
+    for Ed in FEditors do
+      Ed.RemoveFreeNotification(Self);
   FEditors.Free;
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-  FMetaphone.Free;
-{$ENDIF}
   FPlugins.Free;
-  FSkipList.Free;
-  FWordList.Free;
-  FIntEnc.Free;
+  FAttributesChecked.Free;
+  FWorkList.Free;
   inherited;
 end;
 
-function TSynSpellCheck.Ansi2Ascii(const sString: String): String;
+procedure TSynSpellCheck.EndUpdate;
+begin
+  Dec(FUpdateCount);
+  Changed;
+end;
+
+function TSynSpellCheck.ErrorAtPos(BC: TBufferCoord): ISpellingError;
 var
-  by: TBytes;
+  Indicator: TSynIndicator;
 begin
-  by := TEncoding.Unicode.GetBytes(sString);
-  by := TEncoding.Convert(TEncoding.Unicode, FIntEnc, by);
-  Result := FIntEnc.GetString(by);
-end;
+  if not Assigned(FEditor) then Exit;
 
-function TSynSpellCheck.DictionaryExists(Language: string; Path: string = ''): Boolean;
-var
-  sTemp: string;
-begin
-  if Trim(Path) = '' then
-    sTemp := GetDictionaryDir // Search in shared dictionary directory
-  else
-    sTemp := Path; // Search in user specified directory
-  Result := FileExists(sTemp + Language + '.dic');                              //Fiala
-end;
-
-function TSynSpellCheck.GetNewestDictionary(Language: string): string;
-var
-  srDict: TSearchRec;
-  tslTemp: TstringList;
-begin
-  tslTemp := TstringList.Create;
-  if FindFirst(GetDictionaryDir + Language + '.?-?-?.dic', faAnyFile,
-    srDict) = 0 then
-  begin
-    if Pos('.user.', srDict.Name) = 0 then
-      tslTemp.Add(WideLowerCase(srDict.Name));
-    while FindNext(srDict) = 0 do
-    begin
-      if Pos('.user.', srDict.Name) = 0 then
-        tslTemp.Add(WideLowerCase(srDict.Name));
-    end;
-  end;
-  with tslTemp do
-  begin
-    if Count > 0 then
-    begin
-      Sort;
-      Result := Strings[Count - 1];
-    end;
-    Free;
-  end;
-  SysUtils.FindClose(srDict);
-end;
-
-function TSynSpellCheck.GetWordCount: Integer;
-begin
-  Result := FWordList.Count;
-end;
-
-// Returns word from word without diacritic
-
-function TSynSpellCheck.GetWordFromASCIIWord(sWord: string): string;
-var
-  iI, iJ, iLength: Integer;
-  sLower, sTemp: string;
-
-  function CorrectCase(const AsWord: string; const Word: string): string;
-  var
-    s1, s2, s3, s4: string;
-    iX: Integer;
-  begin
-    s1 := WideUpperCase(AsWord);
-    s2 := WideLowerCase(AsWord);
-    s3 := WideUpperCase(Word);
-    s4 := WideLowerCase(Word);
-    Result := Word;
-    for iX := 1 to Length(Word) do
-    begin
-      if s1[iX] = AsWord[iX] then
-        Result[iX] := s3[iX]
-      else if s2[iX] = AsWord[iX] then
-        Result[iX] := s4[iX];
-    end;
-  end;
-
-begin
-  // Are there any words at all starting with this letter?
-  sLower := AnsiLowerCase(sWord);
-  if FCacheArray[Ord(sLower[1])][1] = 0 then
-    Exit;
-  if FindWord(sLower) <> -1 then
-    Exit;
-  iLength := Length(sLower);
-  for iI := FCacheArray[Ord(sLower[1])][0] to FCacheArray[Ord(sLower[1])][1] do
-  begin
-    sTemp := PWordRec(FWordList.Items[iI])^.Word;
-    if iLength = Length(sTemp) then
-    begin
-      // Remove diacritic in dictionary and try find word
-      if Ansi2Ascii(sTemp) = sLower then
-      begin
-        Result := CorrectCase(sWord, sTemp);
-        Exit;
-      end;
-    end;
-  end;
-
-  // Not found in base, first char has diacritic, we must continue search
-  for iI := 128 to 254 do
-  begin
-    // Some optimalization
-    if FAnsi2Ascii[iI] = sLower[1] then
-      for iJ := FCacheArray[iI][0] to FCacheArray[iI][1] do
-      begin
-        sTemp := PWordRec(FWordList.Items[iJ])^.Word;
-        if iLength = Length(sTemp) then
-          // Remove diacritic in dictionary and try find word
-          if Ansi2Ascii(sTemp) = sLower then
-          begin
-            Result := CorrectCase(sWord, sTemp);
-            Exit;
-          end;
-      end;
-  end;
-end;
-
-function TSynSpellCheck.JHCMPDiffCount(const Str1, Str2: String;
-  Differences: TJHCMPLongintMatrix): Longint;
-var
-  I1, I2,
-    Length1,
-    Length2: Longint;
-begin
-  Length1 := Length(Str1);
-  Length2 := Length(Str2);
-  for I1 := 1 to Length1 do
-    for I2 := 1 to Length2 do
-      if Str1[I1] = Str2[I2] then
-        Differences[I1][I2] := Differences[I1 - 1][I2 - 1]
-      else
-        Differences[I1][I2] := JHCMPMin(Differences[I1 - 1][I2],
-          Differences[I1][I2 - 1], Differences[I1 - 1][I2 - 1]) + 1;
-  Result := Differences[Length1][Length2];
-end;
-
-function TSynSpellCheck.JHCMPDiffCount(const Str1, Str2: String): longint;
-var
-  Differences: TJHCMPLongintMatrix;
-begin
-  JHCMPInit(length(Str1), length(Str2), Differences);
-  Result := JHCMPDiffCount(Str1, Str2, Differences);
-end;
-
-procedure TSynSpellCheck.JHCMPInit(const Max1, Max2: Integer;
-  var Differences: TJHCMPLongintMatrix);
-begin
-  JHCMPMatrix(Max1 + 1, Max2 + 1, Differences);
-  JHCMPMatrixInit(Differences);
-end;
-
-function TSynSpellCheck.JHCMPIsSimilar(const Str1, Str2: String;
-  const MaxDiffCount: Integer; Differences: TJHCMPLongintMatrix): boolean;
-begin
-  Result := (JHCMPDiffCount(Str1, Str2, Differences) <= MaxDiffCount);
-end;
-
-function TSynSpellCheck.JHCMPIsSimilar(const Str1, Str2: String;
-  const MaxDiffCount: Integer): Boolean;
-var
-  Differences: TJHCMPLongintMatrix;
-begin
-  JHCMPInit(Length(Str1), Length(Str2), Differences);
-  Result := JHCMPIsSimilar(Str1, Str2, MaxDiffCount, Differences);
-end;
-
-procedure TSynSpellCheck.AddDictWord(Word: string);
-var
-  AWordItem: PWordRec;
-
-  { Return list position for insert new word }
-  function GetInsertPos(const Word: string): Integer;
-  var
-    iI: Integer;
-  begin
-    Result := 0;
-    // If not any words at all starting with this letter, we find next word
-    if FCacheArray[Ord(Word[1])][1] = 0 then
-    begin
-      for iI := Ord(Word[1]) + 1 to 255 do
-        if FCacheArray[iI][1] <> 0 then
-        begin
-          Result := FCacheArray[iI][0];
-          Break;
-        end;
-    end
-    else
-      // Words with this letter exists, we find right pos
-      for iI := FCacheArray[Ord(Word[1])][0] to
-        Succ(FCacheArray[Ord(Word[1])][1]) do
-        if PWordRec(FWordList.Items[iI])^.Word > Word then
-        begin
-          Result := iI;
-          Break;
-        end;
-  end;
-
-begin
-  if Trim(Word) = '' then
-    Exit;
-  Word := WideLowerCase(Word);
-  if FindWord(Word) = -1 then
-  begin
-    New(AWordItem);
-    FMaxWordLength := Max(FMaxWordLength, Length(Word));
-    AWordItem^.Word := Word;
-    AWordItem^.User := True;
-    AWordItem^.Value := ElfHash(Word);
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-    if FHashAlgorithm <> haDiff then
-    begin
-      if FHashAlgorithm = haSoundEx then
-        AWordItem^.Hash := SoundEx(Word, FHashLength)
-      else
-        AWordItem^.Hash := MetaPhone(PWideChar(Word), FHashLength);
-    end;
-{$ENDIF}
-    // Quickest way is insert one word than add and than sort whole list
-    FWordList.Insert(GetInsertPos(AnsiLowerCase(Word)), AWordItem);
-    CalculateCacheArray; // Calculate cache array to speed up searches
-    FModified := True;
-    if Assigned(FOnAddWord) then
-      FOnAddWord(Self, Word);
-  end;
-end;
-
-procedure TSynSpellCheck.AddDictWordList(WordList: TstringList);
-var
-  iI: Integer;
-begin
-  for iI := 0 to WordList.Count - 1 do
-    AddDictWord(WordList.Strings[iI]);
-end;
-
-function TSynSpellCheck.AddEditor(AEditor: TCustomSynEdit): integer;
-var
-  i, iI: Integer;                                                               //Fiala
-  Plugin: TDrawAutoSpellCheckPlugin;
-begin
-  // Adds an Editor and returns its index in the list
-  Result := -1;
-  try
-    if Assigned(AEditor) then                                                     //Fiala
-    begin
-      iI := -1;
-      for i := 0 to FEditors.Count - 1 do
-        if FEditors.Items[i] = AEditor then
-        begin
-          iI := i;
-          Break;
-        end;
-      if iI = -1 then
-      begin
-        Plugin := TDrawAutoSpellCheckPlugin.Create(AEditor);
-
-        with Plugin do
-        begin
-          FSynSpellCheck := Self;
-          FPenColor := Self.FPenColor;
-          FUnderlineStyle := Self.FUnderlineStyle;
-          RegisterIndicatorSpec;
-        end;
-        iI := FEditors.Add(AEditor);
-        Sleep(10);
-        FPlugIns.Add(Plugin);
-        Result := iI;
-      end
-      else
-        Result := iI;
-    end;
-  except
-    // there is problem in x64 editor (not in debug version)                    //Fiala
-  end;
-end;
-
-procedure TSynSpellCheck.AddSkipWord(Word: string);
-begin
-  if Trim(Word) <> '' then
-    FSkipList.Add(WideLowerCase(Word));
-end;
-
-procedure TSynSpellCheck.AddSkipWordList(WordList: TstringList);
-var
-  iI: Integer;
-begin
-  for iI := 0 to WordList.Count - 1 do
-    AddSkipWord(WordList.Strings[iI]);
-end;
-
-procedure TSynSpellCheck.CalculateCacheArray;
-var
-  sOld, sNew: string;
-  chOld, chNew: Char;  //*
-  iI: Integer;
-begin
-  if FWordList.Count = 0 then
+  if not FEditor.Indicators.IndicatorAtPos(BC, Indicator) or
+    (Indicator.Id <> SpellErrorIndicatorId)
+  then
     Exit;
 
-  sOld := AnsiLowerCase(TWordRec(FWordList.Items[0]^).Word);
-  chOld := sOld[1];
-  chNew := chOld;
-  FCacheArray[Ord(chOld)][0] := 0;
-  FCacheArray[Ord(chOld)][1] := 0;
-  for iI := 0 to FWordList.Count - 1 do
-  begin
-    sNew := AnsiLowerCase(TWordRec(FWordList.Items[iI]^).Word);
-    if chOld <> sNew[1] then
-    begin
-      chNew := sNew[1];
-      FCacheArray[Ord(chOld)][1] := iI - 1; // Last occurence of previous letter
-      FCacheArray[Ord(chNew)][0] := iI; // First occurence of new letter
-      chOld := chNew;
-    end;
-  end;
-  // Last occurence of last letter
-  FCacheArray[Ord(chNew)][1] := FWordList.Count - 1;
+  Result := SpellCheckLine(FEditor, BC.Line, 0, MaxInt, BC.Char);
 end;
 
-function TSynSpellCheck.CheckWord(Word: string): Boolean;
-var
-  iI: Integer;
+procedure TSynSpellCheck.Notification(AComponent: TComponent;
+  Operation: TOperation);
 begin
-  Word := Trim(Word);
-  if (Word = '') or (sscoIgnoreSingleChars in FOptions) and (Length(Word) = 1)
-    then
-  begin
-    Result := True;
-    Exit;
-  end;
-  // It's quicker to check before checking word list
-  if sscoIgnoreWordsWithNumbers in FOptions then
-    for iI := 1 to Length(Word) do
-      if CharInSet(Word[iI], ['0'..'9']) then
-      begin
-        Result := True;
-        Exit;
-      end;
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Check if word consists only of dashes or apostrophes. Quite often these
-  // are used when dividing sections in ASCII text files.
-  //////////////////////////////////////////////////////////////////////////////
-  if (TrimEx(Word, '-') = '') or (TrimEx(Word, '''') = '') then
-  begin
-    Result := True;
-    Exit;
-  end;
-
-  if sscoTrimApostrophes in FOptions then
-    Word := TrimEx(Word, ''''); // Trim apostrophes
-  //////////////////////////////////////////////////////////////////////////////
-  // Main Searching Routine
-  //////////////////////////////////////////////////////////////////////////////
-  Result := (FindWord(AnsiLowerCase(Word)) > -1);
-  if not Result and (FSkipList.IndexOf(AnsiLowerCase(Word)) <> -1) then
-    Result := True;
-end;
-
-procedure TSynSpellCheck.ClearDictWords;
-var
-  iI: Integer;
-  AWordItem: PWordRec;
-begin
-  for iI := 0 to FWordList.Count - 1 do
-  begin
-    AWordItem := FWordList.Items[iI];
-    Dispose(AWordItem);
-  end;
-  FWordList.Clear;
-end;
-
-procedure TSynSpellCheck.ClearIndicators;
-var
-  Ed: TCustomSynEdit;
-  I: Integer;
-begin
-   for I := 0 to FEditors.Count - 1 do
-   begin
-     Ed := TCustomSynEdit(FEditors.Items[i]);
-     Ed.Indicators.Clear(TDrawAutoSpellCheckPlugin.SpellErrorIndicatorId);
-     if Ed.HandleAllocated then
-       Ed.Invalidate;
-   end;
-end;
-
-procedure TSynSpellCheck.ClearSkipWords;
-begin
-  FSkipList.Clear;
-end;
-
-procedure TSynSpellCheck.CloseDictionary;
-var
-  iI: Integer;
-begin
-  for iI := 0 to 255 do
-  begin
-    FCacheArray[iI][0] := 0;
-    FCacheArray[iI][1] := 0;
-  end;
-  ClearDictWords;
-  FSkipList.Clear;
-  FOpenDictionary := False;
-  if Assigned(FOnDictClose) then
-    FOnDictClose(Self);
-end;
-
-procedure TSynSpellCheck.DeleteDictWord(Word: string);
-begin
-  Dispose(PWordRec(FWordList.Items[FindWord(WideLowerCase(Word))]^));
-end;
-
-procedure TSynSpellCheck.DeleteSkipWord(Word: string);
-begin
-  with FSkipList do
-    Delete(IndexOf(WideLowerCase(Word)));
-end;
-
-function TSynSpellCheck.IsDictWord(Word: string): Boolean;
-begin
-  Result := (FindWord(WideLowerCase(Word)) <> -1);
-end;
-
-function TSynSpellCheck.IsSkipWord(Word: string): Boolean;
-begin
-  Result := (FSkipList.IndexOf(WideLowerCase(Word)) <> -1);
-end;
-
-procedure TSynSpellCheck.FixLists;
-var
-  iI: Integer;
-begin
-  for iI := 0 to FSkipList.Count - 1 do
-    FSkipList.Strings[iI] := WideLowerCase(FSkipList.Strings[iI]);
-end;
-
-procedure TSynSpellCheck.GetDictionaryList(var tslList: TstringList);
-var
-  srDics: TSearchRec;
-
-  procedure AddDictionary;
-  var
-    sLanguage: string;
-  begin
-    sLanguage := Copy(srDics.Name, 1, Pos('.', srDics.Name) - 1);
-    if (tslList.IndexOf(sLanguage) = -1) and (Pos('.user.', srDics.Name) = 0)
-      then
-      tslList.Add(sLanguage);
-  end;
-
-var
-  iI: Integer;
-begin
-  if FindFirst(GetDictionaryDir + '*.?-?-?.dic', faAnyFile, srDics) = 0 then
-  begin
-    AddDictionary;
-    while FindNext(srDics) = 0 do
-      AddDictionary;
-  end;
-  SysUtils.FindClose(srDics);
-  for iI := 0 to tslList.Count - 1 do
-    tslList.Strings[iI] := WideUpperCase(tslList.Strings[iI][1]) +
-      Copy(tslList.Strings[iI], 2, Length(tslList.Strings[iI]));
-  tslList.Sort;
-end;
-
-function TSynSpellCheck.GetSuggestions(Word: string;
-  SuggestionList: TstringList): Integer;
-var
-  iI,
-    iLength: Integer;
-  sHash,
-    sWord: string;
-begin
-  Result := 0;
-  if not (sscoSuggestWords in FOptions) then
-    Exit;
-  if Assigned(SuggestionList) then
-  begin
-    ////////////////////////////////////////////////////////////////////////////
-    // Select algorithm
-    ////////////////////////////////////////////////////////////////////////////
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-    if FHashAlgorithm = haSoundEx then
-      sHash := SoundEx(Word, FHashLength)
-    else if FHashAlgorithm = haMetaphone then
-      sHash := MetaPhone(PWideChar(Word), FHashLength);
-{$ENDIF}
-    iLength := Length(Word);
-    for iI := 0 to FWordList.Count - 1 do
-      if (TWordRec(FWordList.Items[iI]^).Hash = sHash) and (Abs(iLength -
-        Length(TWordRec(FWordList.Items[iI]^).Word)) < 2) then
-      begin
-        sWord := TWordRec(FWordList.Items[iI]^).Word;
-        if sscoMaintainCase in FOptions then
-        begin
-          //////////////////////////////////////////////////////////////////////
-          // Maintain case for uppercase and capitalized words.
-          //////////////////////////////////////////////////////////////////////
-          if WideUpperCase(Word) = Word then
-            sWord := WideUpperCase(sWord)
-          else if WideUpperCase(sWord[1])[1] = Word[1] then
-            sWord[1] := WideUpperCase(sWord[1])[1];
-        end;
-        SuggestionList.Add(sWord);
-      end;
-    Result := SuggestionList.Count;
-  end;
-end;
-
-function TSynSpellCheck.JHCMPFindSimilar(const Word: String;
-  const MaxDiffCount: Integer; const MaxDiffLength: Integer;
-  Similar: Tstrings): Integer;
-var
-  chFirst: Char;
-  iI, iJ, iLength: Integer;
-  sLower, sWord: String;
-  Differences: TJHCMPLongintMatrix;
-begin
-  Result := 0;
-  if Trim(Word) = '' then
-    Exit;
-  sLower := AnsiLowerCase(Word);
-  chFirst := sLower[1];
-  Similar.Clear;
-  JHCMPInit(Length(Word), FMaxWordLength, Differences);
-
-  iLength := Length(Word);
-  for iI := FCacheArray[Ord(chFirst)][0] to FCacheArray[Ord(chFirst)][1] do
-  begin
-    sWord := PWordRec(FWordList.Items[iI])^.Word;
-    if Abs(iLength - Length(sWord)) > MaxDiffLength then
-      Continue;
-    if JHCMPIsSimilar(sLower, sWord, MaxDiffCount, Differences) then
-    begin
-      if AnsiUpperCase(Word[1])[1] = Word[1] then
-        sWord[1] := AnsiUpperCase(sWord[1])[1];
-      Similar.Add(sWord);
-    end;
-  end;
-
-  // Not found in base, first char has diacritic, we must continue search
-  for iJ := 128 to 254 do
-    // Some optimalizations
-    if (FAnsi2Ascii[iJ] = chFirst) and (FCacheArray[iJ][1] > 0) then
-      for iI := FCacheArray[iJ][0] to FCacheArray[iJ][1] do
-      begin
-        sWord := PWordRec(FWordList.Items[iI])^.Word;
-        if Abs(iLength - Length(sWord)) > MaxDiffCount then
-          Continue;
-        if JHCMPIsSimilar(sLower, sWord, MaxDiffCount, Differences) then
-        begin
-          if AnsiUpperCase(Word[1])[1] = Word[1] then
-            sWord[1] := AnsiUpperCase(sWord[1])[1];
-          Similar.Add(sWord);
-        end;
-      end;
-
-  Result := Similar.Count;
-end;
-
-procedure TSynSpellCheck.LoadDictionary(Language: string; FileName: string = '');
-var
-  AWordItem: PWordRec;
-  sLine, sName: string;
-  fOut: TextFile;
-
-  procedure SaveToDriveC;
-  var
-    i: Integer;
-    sl: TStringList;
-  begin
-    sl := TStringList.Create;
-    for i := 0 to FWordList.Count - 1 do
-      sl.Add(PWordRec(FWordList.Items[I])^.Word);
-    sl.SaveToFile('C:\Dic.txt');
-    sl.Free;
-  end;
-
-  procedure AddNewWord(sWord: string; IsUser: Boolean);
-  begin
-    New(AWordItem);
-    with AWordItem^ do
-    begin
-      Word := sWord;
-      User := IsUser;
-    end;
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-    if (sscoSuggestWords in FOptions) and (FHashAlgorithm <> haDiff) then
-    begin
-      if FHashAlgorithm <> haDiff then
-      begin
-        if FHashAlgorithm = haSoundEx then
-          AWordItem^.Hash := SoundEx(sWord, FHashLength)
-        else
-          AWordItem^.Hash := MetaPhone(PWideChar(sWord), FHashLength);
-      end;
-    end;
-{$ENDIF}
-    FWordList.Add(AWordItem);
-  end;
-
-begin
-  FMaxWordLength := 0;
-  FDictionary := ChangeFileExt(Language, '');
-  if Trim(FileName) = '' then
-    sName := GetDictionaryDir + GetNewestDictionary(Language)
-  else
-    sName := FileName;
-  AssignFile(fOut, sName);
-  Reset(fOut);
-  while not Eof(fOut) do
-  begin
-    ReadLn(fOut, sLine);
-    if Trim(sLine) <> '' then
-    begin
-      FMaxWordLength := Max(FMaxWordLength, Length(sLine));
-      AddNewWord(sLine, False);
-    end;
-  end;
-  CloseFile(fOut);
-  sName := ExtractFileName(sName);
-  with FLanguage do
-  begin
-    Name := ShortString(FDictionary);
-    Version := ShortString(Copy(sName, Pos('.', sName) + 1, 5));
-  end;
-  FUserFileName := string(FLanguage.Name) + '.user.dic';
-  //////////////////////////////////////////////////////////////////////////////
-  // Load user's dictionary if present
-  //////////////////////////////////////////////////////////////////////////////
-  FModified := False;
-  if FUseUserDictionary then
-  begin
-    if FUserDictPath = '' then
-      FUserDictPath := GetUserDictionaryDir;
-    sName := IncludeTrailingPathDelimiter(FUserDictPath) + FUserFileName;
-    if FileExists(sName) then
-    begin
-      AssignFile(fOut, sName);
-      Reset(fOut);
-      while not Eof(fOut) do
-      begin
-        ReadLn(fOut, sLine);
-        FMaxWordLength := Max(FMaxWordLength, Length(sLine));
-        if Trim(sLine) <> '' then
-          AddNewWord(sLine, True);
-      end;
-      CloseFile(fOut);
-      FModified := False;
-    end;
-  end;
-  SortWordList; // Sort the whole word list
-  CalculateCacheArray; // Calculate cache array to speed up searches
-  FOpenDictionary := True;
-end;
-
-function TSynSpellCheck.FindWord(sWord: String): Integer;
-var
-  L, H, I, C: Integer;
-  sw: string;
-
-begin
-  Result := -1;
-  if sWord = '' then Exit;
-  // Are there any words at all starting with this letter?
-  sw := sWord;
-  if FCacheArray[Ord(sw[1])][1] = 0 then
-    Exit;
-  L := FCacheArray[Ord(sw[1])][0];
-  H := FCacheArray[Ord(sw[1])][1];
-  while L <= H do
-  begin
-    I := (L + H) shr 1;
-    { weak place, in some cases i was greater than word count }                 //Fiala
-    if I >= FWordList.Count then
-    begin
-      Result := -1;
-      Exit;
-    end;
-    { must be CompareStr not AnsiCompareStr, because dictionary is ASCII sorted }
-    C := CompareStr(PWordRec(FWordList.Items[I])^.Word, sw);
-    if C < 0 then
-      L := I + 1
-    else
-    begin
-      H := I - 1;
-      if C = 0 then
-        Result := I;
-    end;
-  end;
-end;
-
-procedure TSynSpellCheck.LoadSkipList(FileName: string);
-begin
-  if FileExists(FileName) then
-    FSkipList.LoadFromFile(FileName);
+  inherited;
+  if (AComponent is TCustomSynEdit) and (Operation = opRemove) then
+  RemoveEditor(TCustomSynEdit(AComponent));
 end;
 
 function TSynSpellCheck.RemoveEditor(AEditor: TCustomSynEdit): Boolean;
 var
-  i, iI: Integer;                                                               //Fiala
+  Index: Integer;
 begin
-  Result := False;
-  try
-    if Assigned(AEditor) then                                                     //Fiala
-    begin
-      iI := -1;
-      for i := 0 to FEditors.Count - 1 do
-        if TCustomSynEdit(FEditors.Items[i]) = AEditor then
-        begin
-          iI := i;
-          Break;
-        end;
-      if iI > -1 then
-      begin
-        if FEditor = AEditor then
-        begin
-          FEditor := nil;
-          FDrawAutoSpellCheck := nil;
-        end;
-        FEditors.Delete(iI);
-        FPlugIns.Delete(iI);
-        Result := True;
-      end;
-    end;
-  except
-    // quiet exception for x64 compiler in 10.4.2                               //Fiala
-  end;
-end;
+  Index := FEditors.IndexOf(AEditor);
+  Result := Index >= 0;
 
-procedure TSynSpellCheck.SaveSkipList(FileName: string);
-var
-  iI: Integer;
-begin
-  for iI := 0 to FSkipList.Count - 1 do
-    if Trim(FSkipList.Strings[iI]) = '' then
-      FSkipList.Delete(iI);
-  FSkipList.SaveToFile(FileName);
-end;
-
-procedure TSynSpellCheck.SaveUserDictionary;
-var
-  iI: Integer;
-  fIn: TextFile;
-begin
-  if not FModified then Exit;
-  if not ForceDirectories(ExtractFileDir(FUserDictPath)) then Exit;
-  try
-    AssignFile(fIn, IncludeTrailingPathDelimiter(FUserDictPath) + FUserFileName);
-    Rewrite(fIn);
-    for iI := 0 to FWordList.Count - 1 do
-      if TWordRec(FWordList.Items[iI]^).User then
-        WriteLn(fIn, TWordRec(FWordList.Items[iI]^).Word);
-    CloseFile(fIn);
-  except
-  end;
-  FModified := False;
-end;
-
-procedure TSynSpellCheck.SelectWordAtCursor;
-begin
-  if FEditor = nil then
-    Exit;
-  with TSynEditEx(FEditor) do
+  if Result then
   begin
-    BlockBegin := SCWordStartEx(SpellIsWhiteChar);
-    BlockEnd := SCWordEndEx(SpellIsWhiteChar);
+    AEditor.RemoveFreeNotification(Self);
+    FEditors.Delete(Index);
+    FPlugins[Index].Free;
+    FPlugins.Delete(Index);
+    if FEditor = AEditor then
+      FEditor := nil;
   end;
 end;
 
-procedure TSynSpellCheck.SetCheckAttribs(const Value: TstringList);
+procedure TSynSpellCheck.SetAttributesChecked(const Value: TStringList);
 begin
-  FCheckAttribs.Assign(Value);
+  FAttibutesChecked.Assign(Value);
+  Changed;
 end;
 
 procedure TSynSpellCheck.SetEditor(const Value: TCustomSynEdit);
-var
-  iI: Integer;
 begin
   if Value <> FEditor then
   begin
-    iI := AddEditor(Value);
-    if iI > -1 then
+    if Assigned(Value) then
     begin
-      FEditor := FEditors[iI];
-      FDrawAutoSpellCheck := FPlugIns[iI];
-      with FDrawAutoSpellCheck do
-      begin
-        FSynSpellCheck := Self;
-        PenColor := Self.FPenColor;
-      end;
+      AddEditor(Value);
+      FEditor := Value;
     end
     else
-    begin
       FEditor := nil;
-      FDrawAutoSpellCheck := nil;
-    end;
   end;
 end;
 
-procedure TSynSpellCheck.SetHashAlgorithm(const Value: HashAlgorithms);
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-var
-  iI: Integer;
-  AWordItem: PWordRec;
-{$ENDIF}
+procedure TSynSpellCheck.SetLanguageCode(const Value: string);
 begin
-{$IFDEF ONLY_HADIFF_ALGORITHM}
-  FHashAlgorithm := haDiff;
-{$ELSE}
-  if Value <> FHashAlgorithm then
+  if FLanguageCode <> Value  then
   begin
-    FHashAlgorithm := Value;
-    if FWordList.Count > 0 then
-      for iI := 0 to FWordList.Count - 1 do
-      begin
-        AWordItem := FWordList.Items[iI];
-        if FHashAlgorithm = haSoundEx then
-          AWordItem^.Hash := SoundEx(AWordItem^.Word, FHashLength)
-        else
-          AWordItem^.Hash := MetaPhone(PWideChar(AWordItem^.Word), FHashLength);
-      end;
+    FLanguageCode := Value;
+    FDictionaryNA := False;
+    if Assigned(FSpellChecker) then
+      CreateSpellChecker;
+    Changed;
   end;
-{$ENDIF}
-end;
-
-procedure TSynSpellCheck.SetHashLength(const Value: THashLength);
-{$IFNDEF ONLY_HADIFF_ALGORITHM}
-var
-  iI: Integer;
-  AWordItem: PWordRec;
-{$ENDIF}
-begin
-{$IFDEF ONLY_HADIFF_ALGORITHM}
-  FHashLength := Value;
-{$ELSE}
-  if FHashLength <> Value then
-  begin
-    ////////////////////////////////////////////////////////////////////////////
-    // Soundex hashes are supported up to 8 characters long.
-    ////////////////////////////////////////////////////////////////////////////
-    if (FHashLength > 8) and (FHashAlgorithm = haMetaphone) then
-      FHashLength := 8;
-    FHashLength := Value;
-    if FWordList.Count > 0 then
-      for iI := 0 to FWordList.Count - 1 do
-      begin
-        AWordItem := FWordList.Items[iI];
-        if FHashAlgorithm = haSoundEx then
-          AWordItem^.Hash := SoundEx(AWordItem^.Word, FHashLength)
-        else
-          AWordItem^.Hash := MetaPhone(PWideChar(AWordItem^.Word), FHashLength);
-      end;
-  end;
-{$ENDIF}
 end;
 
 procedure TSynSpellCheck.SetPenColor(const Value: TColor);
 begin
-  FPenColor := Value;
-  if FDrawAutoSpellCheck <> nil then
-    FDrawAutoSpellCheck.PenColor := Value;
-end;
-
-procedure TSynSpellCheck.SetSkipList(Value: TStringList);
-begin
-  SkipList.Assign(Value);
+  if FPenColor <> Value then
+  begin
+    FPenColor := Value;
+    Changed;
+  end;
 end;
 
 procedure TSynSpellCheck.SetUnderlineStyle(const Value: TUnderlineStyle);
 begin
-  FUnderlineStyle := Value;
-  if FDrawAutoSpellCheck <> nil then
-    FDrawAutoSpellCheck.UnderlineStyle := Value;
+  if FUnderlineStyle <> Value then
+  begin
+    FUnderlineStyle := Value;
+    Changed;
+  end;
 end;
 
-procedure TSynSpellCheck.SortWordList;
+function TSynSpellCheck.SpellChecker: ISpellChecker;
 begin
-  FWordList.Sort(SortFunc);
+  if FDictionaryNA then Exit(nil);
+
+  if not Assigned(FSpellChecker) then
+    CreateSpellChecker;
+  Result := FSpellChecker;
 end;
 
-procedure TSynSpellCheck.SpellCheck;
-var
-  bAborted, bUndoEnabled: Boolean;
-  sToken, sWord: string;
-  pLastWord, pNextWord: TBufferCoord;
-  tslSuggestions: TstringList;
-  Attri: TSynHighlighterAttributes;
+class function TSynSpellCheck.SpellCheckFactory: ISpellCheckerFactory;
+begin
+  // Windows 8 required
+  if not TOSVersion.Check(6, 2) then
+    Exit(nil);
 
-  function InternalCheckWord(Word: string): Boolean;
+  if not Assigned(FSpellCheckFactory) then
+    FSpellCheckFactory := CreateComObject(CLASS_SpellCheckerFactory) as ISpellCheckerFactory;
+  Result := FSpellCheckFactory;
+end;
+
+function TSynSpellCheck.SpellCheckLine(Editor: TCustomSynEdit; Line:
+    Integer; StartChar:Integer = 0; EndChar: Integer = MaxInt;
+    ErrorPos: Integer = -1): ISpellingError;
+{ The core spell checking function.   Spells checks a whole or part of
+  a line.  If ErrorPos > 0 then instead of adding indicators, it returns the
+  SpellingError at the ErrorPos
+
+  Spell checking may cause repainting due to the appartment thread model
+  marshalling via the Windows message queue.  Hence the use of the WorkList
+  to avoid messing up the highlighter scanning, which is not reentrant}
+
+  procedure SpellCheckToken(const Token: string; TokenPos: Integer = 0);
   var
-    iAction: Integer;
-    sCorrectWord: string;
+    SpellingErrors: IEnumSpellingError;
+    SpellingError: ISpellingError;
+    StartIndex, Len: LongWord;
   begin
-    Result := True;
-    if not CheckWord(WideLowerCase(Word)) then
+    CheckOSError(SpellChecker.Check(PChar(Token), SpellingErrors));
+    while SpellingErrors.Next(SpellingError) = S_OK do
     begin
-      if sscoHideCursor in FOptions then
-        FEditor.EndUpdate;
-      with FEditor do
+      SpellingError.Get_StartIndex(StartIndex);
+      SpellingError.Get_Length(Len);
+
+      if (Integer(StartIndex) + 1 < StartChar) then Continue;
+      if (Integer(StartIndex + Len) > EndChar) then Break;
+
+      if ErrorPos < 0 then
+        Editor.Indicators.Add(Line,
+          TSynIndicator.Create(SpellErrorIndicatorId,
+            Integer(StartIndex) + TokenPos + 1,
+            Integer(StartIndex) + TokenPos + 1 + Integer(Len)), False)
+      else if InRange(ErrorPos - TokenPos, StartIndex + 1, StartIndex + Len) then
       begin
-        Update;
-        EnsureCursorPosVisible;
+       Result := SpellingError;
+       Exit;
       end;
-      if sscoHourGlass in FOptions then
-        Screen.Cursor := FCursor;
-      if Assigned(FOnCheckWord) then
-      begin
-        // Get suggestions
-        if sscoSuggestWords in FOptions then
-          if FHashAlgorithm = haDiff then
-            JHCMPFindSimilar(Word, 2, 2, tslSuggestions)
-          else
-            GetSuggestions(Word, tslSuggestions);
-        if sscoSelectWord in FOptions then
-          SelectWordAtCursor;
-        FOnCheckWord(Self, Word, tslSuggestions, sCorrectWord, iAction);
-        tslSuggestions.Clear; // Remove items to free some memory
-        case iAction of
-          ACTION_ABORT:
-            begin
-              Result := False;
-              bAborted := True;
-              with FEditor do
-              begin
-                BlockBegin := CaretXY;
-                BlockEnd := BlockBegin;
-              end;
-            end;
-          ACTION_ADD: AddDictWord(sWord);
-          ACTION_CORRECT:
-            begin
-              SelectWordAtCursor;
-              TSynEditEx(FEditor).SelText := sCorrectWord;
-              if Assigned(FOnCorrectWord) then
-                FOnCorrectWord(Self, sWord, sCorrectWord);
-            end;
-          ACTION_SKIPALL:
-            begin
-              AddSkipWord(sWord);
-              if Assigned(FOnSkipWord) then
-                FOnSkipWord(Self, sWord, True);
-            end;
-          ACTION_SKIP: if Assigned(FOnSkipWord) then
-              FOnSkipWord(Self, sWord, False);
-          ACTION_UNDO:
-            begin
-              with TSynEditEx(FEditor) do
-              begin
-                Undo;
-                CaretXY := pLastWord;
-                if sscoGoUp in FOptions then
-                  CaretXY := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar)
-                else
-                  CaretXY := SCPrevWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
-                bUndoEnabled := False;
-              end;
-            end;
-        end;
-      end;
-      if sscoHourGlass in FOptions then
-        Screen.Cursor := crHourGlass;
-      if sscoHideCursor in FOptions then
-        FEditor.BeginUpdate;
     end;
   end;
 
-begin
-  bUndoEnabled := False;
-  // If no dictionary if loaded and spell checking is requested and Exception
-  // is thrown.
-  if not FOpenDictionary then
-    raise ENoDictionaryLoaded.CreateRes(@SNoDictionaryLoaded);
-
-  FBusy := True;
-//  if Assigned(FOnStart) then
-//    FOnStart(Self);
-  bAborted := False;
-  if sscoHourGlass in FOptions then
-  begin
-    FCursor := Screen.Cursor;
-    Screen.Cursor := crHourGlass;
-  end;
-  tslSuggestions := TstringList.Create;
-  with TSynEditEx(FEditor) do
-  begin
-    if Trim(Lines.Text) = '' then
-    begin
-      Screen.Cursor := FCursor;
-      FOnDone(Self);
-      FBusy := False;
-      Exit;
-    end;
-    if not (sscoStartFromCursor in FOptions) then
-      CaretXY := BufferCoord(1, 1);
-    if sscoHideCursor in FOptions then
-      BeginUpdate;
-    if sscoGoUp in FOptions then
-      pNextWord := SCPrevWordPosEx(SpellIsIdentChar, SpellIsWhiteChar)
-    else
-      pNextWord := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
-    pLastWord := pNextWord;
-    while pNextWord.Char > 0 do
-    begin
-      Attri := nil;
-      //////////////////////////////////////////////////////////////////////////
-      // Check if the word is the last word
-      // Is cursor at end of text?
-      //////////////////////////////////////////////////////////////////////////
-      if sscoGoUp in FOptions then
-      begin
-        if (SCPrevWordPosEx(SpellIsIdentChar, SpellIsWhiteChar).Char = CaretX) and
-          (Lines.Count = CaretY) then
-          Break;
-      end
-      else
-      begin
-        if (SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar).Char = CaretX) and
-          (Lines.Count = CaretY) then
-          Break;
-      end;
-      //////////////////////////////////////////////////////////////////////////
-      // Make sure we do not get any 'blank' words
-      //////////////////////////////////////////////////////////////////////////
-      while Trim(GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True)) = '' do
-      begin
-        { Just move to next word }
-        if sscoGoUp in FOptions then
-          pNextWord := SCPrevWordPosEx(SpellIsIdentChar, SpellIsWhiteChar)
-        else
-          pNextWord := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
-        CaretXY := pNextWord;
-        { If it the last word then exit loop }
-        if pNextWord.Char = 0 then
-          Break;
-      end;
-      if pNextWord.Char = 0 then
-        Break;
-      sWord := GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True);
-      //////////////////////////////////////////////////////////////////////////
-      // Check if the word is in the dictionary
-      //////////////////////////////////////////////////////////////////////////
-      if (Highlighter = nil) or (Highlighter is TSynURISyn) then
-      begin
-        if InternalCheckWord(sWord) = False then
-          Break;
-      end
-      else
-      begin
-        if GetHighlighterAttriAtRowCol(CaretXY, sToken, Attri) = False then
-          Attri := Highlighter.WhitespaceAttribute;
-        if Assigned(Attri) and (FCheckAttribs.IndexOf(Attri.Name) <> -1) and
-          (not InternalCheckWord(sWord)) then
-          Break;
-      end;
-      //////////////////////////////////////////////////////////////////////////
-      // Prepare next word position
-      //////////////////////////////////////////////////////////////////////////
-      if sscoGoUp in FOptions then
-        pNextWord := SCPrevWordPosEx(SpellIsIdentChar, SpellIsWhiteChar)
-      else
-        pNextWord := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
-      CaretXY := pNextWord;
-    end;
-    if sscoHideCursor in FOptions then
-      EndUpdate;
-  end;
-  tslSuggestions.Free;
-  if sscoHourGlass in FOptions then
-    Screen.Cursor := FCursor;
-  //////////////////////////////////////////////////////////////////////////////
-  // Remove last word selection
-  //////////////////////////////////////////////////////////////////////////////
-  with FEditor do
-  begin
-    BlockBegin := CaretXY;
-    BlockEnd := BlockBegin;
-  end;
-  if bAborted then
-  begin
-    if Assigned(FOnAbort) then
-      FOnAbort(Self)
-  end
-  else if Assigned(FOnDone) then
-    FOnDone(Self);
-  FBusy := False;
-end;
-
-procedure TSynSpellCheck.AddDiacritic(Progress: TProgressBar);
 var
-  sToken, sWord: string;
-  pNextWord: TBufferCoord;
+  SLine, Token: string;
   Attri: TSynHighlighterAttributes;
-  blBeg, blEnd: TBufferCoord;
-
-  procedure InternalCheckWord(Word: string);
-  var
-    sCorrectWord: string;
-  begin
-    sCorrectWord := GetWordFromASCIIWord(Word);
-    if sCorrectWord <> '' then
-    begin
-      SelectWordAtCursor;
-      TSynEditEx(FEditor).SelText := sCorrectWord;
-    end;
-  end;
-
+  TokenPos: Integer;
+  WorkItem: TWorkItem;
 begin
-  // If no dictionary if loaded and spell checking is requested and Exception is
-  // thrown.
-  if not FOpenDictionary then
-    raise ENoDictionaryLoaded.CreateRes(@SNoDictionaryLoaded);
-  if FEditor = nil then
-    Exit;
+  Result := nil;
+  if not Assigned(SpellChecker()) then Exit;
 
-  if FEditor.SelAvail then
+  SLine := Editor.Lines[Line - 1];
+  if SLine = '' then Exit;
+
+  if Assigned(Editor.Highlighter) and not (Editor.Highlighter is TSynUriSyn) then
   begin
-    if (FEditor.BlockBegin.Line > FEditor.BlockEnd.Line) or
-       ((FEditor.BlockBegin.Line = FEditor.BlockEnd.Line) and
-       (FEditor.BlockBegin.Char > FEditor.BlockEnd.Char)) then
-    begin
-      blEnd := FEditor.BlockBegin;
-      blBeg := FEditor.BlockEnd;
-    end
+    if Line > 1 then
+      Editor.Highlighter.SetRange(TSynEditStringList(Editor.Lines).Ranges[Line - 2])
     else
+      Editor.Highlighter.ResetRange;
+    Editor.Highlighter.SetLine(SLine, Line);
+
+    FWorkList.Clear;
+    while not Editor.HighLighter.GetEol do
     begin
-      blBeg := FEditor.BlockBegin;
-      blEnd := FEditor.BlockEnd;
+      TokenPos := Editor.HighLighter.GetTokenPos; //TokenPos is zero based
+      Token := Editor.HighLighter.GetToken;
+
+      if TokenPos >= EndChar then Break;
+      if TokenPos + Token.Length < StartChar then Continue;
+
+      Attri := Editor.HighLighter.GetTokenAttribute;
+      if (Token <> '') and Assigned(Attri) and
+        (FAttributesChecked.IndexOf(Attri.Name) >= 0)
+      then
+        FWorkList.Add(TWorkItem.Create(Token,TokenPos));
+
+      Editor.HighLighter.Next;
+    end;
+
+    for WorkItem in FWorkList do
+    begin
+      SpellCheckToken(WorkItem.Token, WorkItem.TokenPos);
+
+      // Check if ErrorPos >= 0 and we found the error
+      if Assigned(Result) then Exit;
     end;
   end
   else
-  begin
-    blBeg := BufferCoord(1, 1);
-    blEnd := BufferCoord(0, 0);
-  end;
-
-  FBusy := True;
-  with TSynEditEx(FEditor) do
-  begin
-    if Trim(Lines.Text) = '' then
-    begin
-      FBusy := False;
-      Exit;
-    end;
-    CaretXY := blBeg;
-    if Progress <> nil then
-    begin
-      Progress.Min := 0;
-      Progress.Max := Lines.Count;
-    end;
-    pNextWord := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
-    while pNextWord.Char > 0 do
-    begin
-      Attri := nil;
-      //////////////////////////////////////////////////////////////////////////
-      // Check if the word is the last word
-      // Is cursor at end of text?
-      //////////////////////////////////////////////////////////////////////////
-      if (SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar).Char = CaretX) and
-        (Lines.Count = CaretY) then
-        Break;
-      //////////////////////////////////////////////////////////////////////////
-      // Make sure we do not get any 'blank' words
-      //////////////////////////////////////////////////////////////////////////
-      while Trim(GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True)) = '' do
-      begin
-        pNextWord := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
-        CaretXY := pNextWord;
-        { If it the last word then exit loop }
-        if pNextWord.Char = 0 then
-          Break;
-      end;
-      if pNextWord.Char = 0 then
-        Continue;
-      sWord := GetWordAtRowColEx(CaretXY, SpellIsIdentChar, True);
-      //////////////////////////////////////////////////////////////////////////
-      // Check if the word is in the dictionary
-      //////////////////////////////////////////////////////////////////////////
-      if (Highlighter = nil) or (Highlighter is TSynURISyn) then
-        InternalCheckWord(sWord)
-      else
-      begin
-        if GetHighlighterAttriAtRowCol(CaretXY, sToken, Attri) = False then
-          Attri := Highlighter.WhitespaceAttribute;
-        if Assigned(Attri) and (FCheckAttribs.IndexOf(Attri.Name) <> -1) then
-          InternalCheckWord(sWord);
-      end;
-      //////////////////////////////////////////////////////////////////////////
-      // Prepare next word position
-      //////////////////////////////////////////////////////////////////////////
-      pNextWord := SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar);
-
-      { only work on selection }
-      if (blEnd.Line > 0) and ((pNextWord.Line > blEnd.Line) or
-        (blEnd.Line = pNextWord.Line) and (pNextWord.Char > blEnd.Char)) then
-        Break;
-
-      CaretXY := pNextWord;
-      if Progress <> nil then
-        if Progress.Position <> CaretY then
-        begin
-          Progress.Position := CaretY;
-          Progress.Update;
-        end;
-    end;
-  end;
-  FBusy := False;
+    SpellCheckToken(SLine);
 end;
 
-function TSynSpellCheck.SpellIsIdentChar(AChar: WideChar): Boolean;
+class function TSynSpellCheck.SupportedLanguages: TArray<string>;
+var
+  Languages: IEnumString;
+  Lang: PChar;
+  Fetched: LongInt;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (Pos(AChar, FApostrophes) > 0) or (AChar='-')
+  SetLength(Result, 0);
+  if not Assigned(SpellCheckFactory()) then Exit;
+
+  SpellCheckFactory.Get_SupportedLanguages(Languages);
+  while Languages.Next(1, Lang, @Fetched) = S_OK do
+  begin
+    Result := Result + [string(Lang)];
+    CoTaskMemFree(Lang);
+  end;
 end;
 
-function TSynSpellCheck.SpellIsWhiteChar(AChar: WideChar): Boolean;
+{$ENDREGION 'TSynSpellCheck'}
+
+
+{$REGION 'TSpellCheckPlugin Implementation'}
+
+procedure TSpellCheckPlugin.Changed(LangId: Boolean);
 begin
-  case AChar of
-    #0..#32:
-      Result := True;
-    else
-      Result := not SpellIsIdentChar(AChar);
-  end
+  if LangId then
+    Editor.Indicators.Clear(FSynSpellCheck.SpellErrorIndicatorId);
+  RegisterIndicatorSpec;
+  if Editor.HandleAllocated then
+    Editor.Invalidate;
 end;
 
-{ TSynEditEx }
+constructor TSpellCheckPlugin.Create(AOwner: TCustomSynEdit);
+begin
+  inherited;
+  FHandlers := [phLinesInserted, phLinePut];
+end;
 
-function TSynEditEx.GetWordAtRowColEx(XY: TBufferCoord;
-  SpellIsIdentChar: TCategoryMethod; OverrideHighlighterChars: Boolean): string;
+procedure TSpellCheckPlugin.LinePut(aIndex: Integer; const OldLine: string);
+begin
+  if Assigned(FSynSpellCheck.SpellChecker()) and FSynSpellCheck.CheckAsYouType then
+    FSynSpellCheck.SpellCheckLine(Editor, aIndex + 1);
+end;
+
+procedure TSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);
+var
+  Line: Integer;
+begin
+  if Assigned(FSynSpellCheck.SpellChecker()) and FSynSpellCheck.CheckAsYouType then
+    for Line := FirstLine + 1 to FirstLine + Count do
+      FSynSpellCheck.SpellCheckLine(Editor, Line);
+end;
+
+procedure TSpellCheckPlugin.RegisterIndicatorSpec;
+var
+  Spec: TSynIndicatorSpec;
+begin
+  if FSynSpellCheck.UnderlineStyle = usMicrosoftWord then
+    Spec.Style := sisSquiggleMicrosoftWord
+  else
+    Spec.Style := sisSquiggleWordPerfect;
+  Spec.Foreground := D2D1ColorF(FSynSpellCheck.PenColor);
+
+  Editor.Indicators.RegisterSpec(FSynSpellCheck.SpellErrorIndicatorId, Spec);
+  if Editor.HandleAllocated then
+    Editor.Invalidate;
+end;
+
+{$ENDREGION 'TSpellCheckPlugin'}
+
+{$REGION 'SpellCheck Actions implementation'}
+
+destructor TSynSpellCheckAction.Destroy;
+begin
+  if Assigned(FControl) then
+    FControl.RemoveFreeNotification(Self);
+  inherited;
+end;
+
+function TSynSpellCheckAction.GetControl(Target: TObject): TCustomSynEdit;
+begin
+  { We could hard cast Target as a TCustomSynEdit since HandlesTarget "should" be
+    called before ExecuteTarget and UpdateTarget, however, we're being safe. }
+  Result := Target as TCustomSynEdit;
+end;
+
+function TSynSpellCheckAction.HandlesTarget(Target: TObject): Boolean;
+begin
+  Result := Assigned(TSynSpellCheck.GlobalInstance) and
+    (((Control <> nil) and (Target = Control) or
+    (Control = nil) and (Target is TCustomSynEdit))
+    and TCustomSynEdit(Target).Focused);
+end;
+
+procedure TSynSpellCheckAction.Notification(AComponent: TComponent;
+  Operation: TOperation);
+begin
+  inherited Notification(AComponent, Operation);
+  if (Operation = opRemove) and (AComponent = Control) then Control := nil;
+end;
+
+procedure TSynSpellCheckAction.SetControl(Value: TCustomSynEdit);
+begin
+  if Value <> FControl then
+  begin
+    FControl := Value;
+    if Value <> nil then Value.FreeNotification(Self);
+  end;
+end;
+
+procedure TSynSpellCheckAction.UpdateTarget(Target: TObject);
+begin
+  Enabled := Assigned(TSynSpellCheck.GlobalInstance.SpellChecker());
+end;
+
+{ TSynSpellCheckFile }
+
+procedure TSynSpellCheckFile.ExecuteTarget(Target: TObject);
+begin
+  TSynSpellCheck.GlobalInstance.Editor := GetControl(Target);
+  TSynSpellCheck.GlobalInstance.CheckFile;
+end;
+
+{ TSynSpellCheckLine }
+
+procedure TSynSpellCheckLine.ExecuteTarget(Target: TObject);
+begin
+  TSynSpellCheck.GlobalInstance.Editor := GetControl(Target);
+  TSynSpellCheck.GlobalInstance.CheckLine;
+end;
+
+{ TSynSpellCheckSelection }
+
+procedure TSynSpellCheckSelection.ExecuteTarget(Target: TObject);
+begin
+  TSynSpellCheck.GlobalInstance.Editor := GetControl(Target);
+  TSynSpellCheck.GlobalInstance.CheckSelection;
+end;
+
+{ TSpellCheckWord }
+
+procedure TSynSpellCheckWord.ExecuteTarget(Target: TObject);
+begin
+  TSynSpellCheck.GlobalInstance.Editor := GetControl(Target);
+  TSynSpellCheck.GlobalInstance.CheckWord;
+end;
+
+{ TSpellClearErros }
+
+procedure TSynSpellClearErrors.ExecuteTarget(Target: TObject);
+begin
+  TSynSpellCheck.GlobalInstance.Editor := GetControl(Target);
+  TSynSpellCheck.GlobalInstance.ClearErrors;
+end;
+
+{ TSynSpellCheckAsYouType }
+
+procedure TSynSpellCheckAsYouType.ExecuteTarget(Target: TObject);
+begin
+  TSynSpellCheck.GlobalInstance.CheckAsYouType :=
+    not TSynSpellCheck.GlobalInstance.CheckAsYouType;
+end;
+
+function TSynSpellCheckAsYouType.HandlesTarget(Target: TObject): Boolean;
+begin
+  Result := True;
+end;
+
+procedure TSynSpellCheckAsYouType.UpdateTarget(Target: TObject);
+begin
+  Enabled := Assigned(TSynSpellCheck.GlobalInstance.SpellChecker());
+  Checked := TSynSpellCheck.GlobalInstance.CheckAsYouType;
+end;
+
+{ TSynSpellErrorAction }
+procedure TSynSpellErrorAction.UpdateTarget(Target: TObject);
+var
+  Ed: TCustomSynEdit;
+  Indicator: TSynIndicator;
+begin
+  inherited;
+  if Enabled then
+  begin
+    Ed := TCustomSynEdit(Target);
+    Enabled :=  Ed.Indicators.IndicatorAtPos(Ed.CaretXY, Indicator) and
+      (Indicator.Id = TSynSpellCheck.SpellErrorIndicatorId);
+  end;
+end;
+
+{ TSynSpellErrorAdd }
+
+procedure TSynSpellErrorAdd.ExecuteTarget(Target: TObject);
+var
+  AWord: string;
+  Ed: TCustomSynEdit;
+  Indicator: TSynIndicator;
+begin
+  Ed := TCustomSynEdit(Target);
+  if Ed.Indicators.IndicatorAtPos(Ed.CaretXY, Indicator) and
+    (Indicator.Id = TSynSpellCheck.SpellErrorIndicatorId) then
+  begin
+    Ed.Indicators.Clear(Ed.CaretY, Indicator);
+    AWord := Copy(Ed.Lines[Ed.CaretY - 1], Indicator.CharStart,
+       Indicator.CharEnd - Indicator.CharStart);
+    TSynSpellCheck.GlobalInstance.SpellChecker.Add(PChar(AWord));
+  end;
+end;
+
+{ TSynSpellErrorReplace }
+
+procedure TSynSpellErrorReplace.ExecuteTarget(Target: TObject);
 var
   Line: string;
-  Len, Stop: Integer;
+  Ed: TCustomSynEdit;
+  Indicator: TSynIndicator;
 begin
-  Result := '';
-  if (XY.Line >= 1) and (XY.Line <= Lines.Count) then
+  Ed := TCustomSynEdit(Target);
+  if Ed.Indicators.IndicatorAtPos(Ed.CaretXY, Indicator) and
+    (Indicator.Id = TSynSpellCheck.SpellErrorIndicatorId) then
   begin
-    Line := Lines[XY.Line - 1];
-    Len := Length(Line);
-    if (XY.Char >= 1) and (XY.Char <= Len + 1) then
-    begin
-      Stop := XY.Char;
-      while (Stop <= Len) and SpellIsIdentChar(Line[Stop]) do
-        Inc(Stop);
-      while (XY.Char > 1) and SpellIsIdentChar(Line[XY.Char - 1]) do
-        Dec(XY.Char);
-      if Stop > XY.Char then
-        Result := Copy(Line, XY.Char, Stop - XY.Char);
-    end;
+    Line := Ed.Lines[Ed.CaretY -1];
+    Delete(Line, Indicator.CharStart, Indicator.CharEnd - Indicator.CharStart);
+    Insert(Caption, Line, Indicator.CharStart);
+    Ed.Lines[Ed.CaretY -1] := Line;
+    TSynSpellCheck.GlobalInstance.CheckLine;
+
+    TSynSpellCheck.GlobalInstance.Editor := Ed;
+    TSynSpellCheck.GlobalInstance.CheckLine;
   end;
 end;
 
-function TSynEditEx.SCNextWordPosEx(SpellIsIdentChar, SpellIsWhiteChar: TCategoryMethod): TBufferCoord;
+{ TSynSpellErrorIgnoreOnce }
+
+procedure TSynSpellErrorIgnoreOnce.ExecuteTarget(Target: TObject);
 var
-  CX, CY, LineLen: integer;
-  Line: string;
-
-  procedure CheckOnNextLine;
-  begin
-    // find first IdentChar or multibyte char in the next line
-    if CY < Lines.Count then
-    begin
-      Line := Lines[CY];
-      Inc(CY);
-      CX := StrScanForCharInCategory(Line, 1, SpellIsIdentChar);
-      if CX = 0 then
-        CheckOnNextLine;
-    end;
-  end;
-
+  Ed: TCustomSynEdit;
+  Indicator: TSynIndicator;
 begin
-  CX := CaretX;
-  CY := CaretY;
-  // valid line?
-  if (CY >= 1) and (CY <= Lines.Count) then
-  begin
-    Line := Lines[CY - 1];
-    LineLen := Length(Line);
-    if CX >= LineLen then
-    begin
-      CheckOnNextLine;
-    end
-    else
-    begin
-      // find next "whitespace" if current char is an IdentChar
-      if SpellIsIdentChar(Line[CX]) then
-        CX := StrScanForCharInCategory(Line, CX, SpellIsWhiteChar);
-
-      // if "whitespace" found, find the next IdentChar
-      if (CX > 0) and (CX < LineLen) then
-      begin
-        CX := StrScanForCharInCategory(Line, CX, SpellIsIdentChar);
-        // if one of those failed just position at the end of the line
-        if CX = 0 then
-          CheckOnNextLine;
-      end
-      else
-        CheckOnNextLine;
-    end;
-  end;
-  Result := BufferCoord(CX, CY);
+  Ed := TCustomSynEdit(Target);
+  if Ed.Indicators.IndicatorAtPos(Ed.CaretXY, Indicator) and
+    (Indicator.Id = TSynSpellCheck.SpellErrorIndicatorId)
+  then
+    Ed.Indicators.Clear(Ed.CaretY, Indicator);
 end;
 
-function TSynEditEx.SCPrevWordPosEx(SpellIsIdentChar, SpellIsWhiteChar: TCategoryMethod): TBufferCoord;
+{ TSynSpellErrorIgnore }
+
+procedure TSynSpellErrorIgnore.ExecuteTarget(Target: TObject);
 var
-  CX, CY: Integer;
-  Line: string;
-
-  procedure CheckForIdentChar;
-  begin
-    if CX <= 1 then
-      Exit;
-    // If previous char is a "whitespace" search for the last IdentChar
-    if SpellIsWhiteChar(Line[CX - 1]) then
-      CX := StrRScanForCharInCategory(Line, CX - 1, SpellIsIdentChar);
-    if CX > 0 then
-      // Search for the first IdentChar of this "word"
-      CX := StrRScanForCharInCategory(Line, CX - 1, SpellIsWhiteChar) + 1;
-
-    if CX = 0 then
-    begin
-      // Same as CheckOnPrevLine, but we can't have a circular reference
-      //  find last cIdentChar in the previous line
-      if CY > 1 then
-      begin
-        Dec(CY);
-        Line := Lines[CY - 1];
-        while (CY > 1) and (Line = '') do
-        begin
-          Dec(CY);
-          Line := Lines[CY - 1];
-        end;
-        if Line = '' then
-          CX := 1
-        else
-        begin
-          CX := Length(Line) + 1;
-          CheckForIdentChar;
-        end;
-      end
-      else
-        CX := 1;
-    end;
-  end;
-
-  procedure CheckOnPrevLine;
-  begin
-    // Find last IdentChar in the previous line
-    if CY > 1 then
-    begin
-      Dec(CY);
-      Line := Lines[CY - 1];
-      CX := Length(Line) + 1;
-      CheckForIdentChar;
-    end
-    else
-      CX := 1;
-  end;
-
+  AWord: string;
+  Ed: TCustomSynEdit;
+  Indicator: TSynIndicator;
 begin
-  CX := CaretX;
-  CY := CaretY;
-  // Valid line?
-  if (CY >= 1) and (CY <= Lines.Count) then
+  Ed := TCustomSynEdit(Target);
+  if Ed.Indicators.IndicatorAtPos(Ed.CaretXY, Indicator) and
+    (Indicator.Id = TSynSpellCheck.SpellErrorIndicatorId) then
   begin
-    Line := Lines[CY - 1];
-    CX := Min(CX, Length(Line) + 1);
-    if CX <= 1 then
-      CheckOnPrevLine
-    else
-      CheckForIdentChar;
+    Ed.Indicators.Clear(Ed.CaretY, Indicator);
+    AWord := Copy(Ed.Lines[Ed.CaretY - 1], Indicator.CharStart,
+       Indicator.CharEnd - Indicator.CharStart);
+    TSynSpellCheck.GlobalInstance.SpellChecker.Ignore(PChar(AWord));
   end;
-  Result := BufferCoord(CX, CY);
 end;
 
-function TSynEditEx.SCWordEndEx(SpellIsWhiteChar: TCategoryMethod): TBufferCoord;
+{ TSynSpellErrorDelete }
+
+procedure TSynSpellErrorDelete.ExecuteTarget(Target: TObject);
 var
-  CX, CY: Integer;
+  Ed: TCustomSynEdit;
+  Indicator: TSynIndicator;
   Line: string;
 begin
-  CX := CaretX;
-  CY := CaretY;
-  // Valid line?
-  if (CY >= 1) and (CY <= Lines.Count) then
+  Ed := TCustomSynEdit(Target);
+  if Ed.Indicators.IndicatorAtPos(Ed.CaretXY, Indicator) and
+    (Indicator.Id = TSynSpellCheck.SpellErrorIndicatorId) then
   begin
-    Line := Lines[CY - 1];
-    CX := StrScanForCharInCategory(Line, CX, SpellIsWhiteChar);
-    // If no "whitespace" is found just position at the end of the line
-    if CX = 0 then
-      CX := Length(Line) + 1;
+    Line := Ed.Lines[Ed.CaretY -1];
+    Delete(Line, Indicator.CharStart, Indicator.CharEnd - Indicator.CharStart + 1);
+    Ed.Lines[Ed.CaretY -1] := Line;
+
+    TSynSpellCheck.GlobalInstance.Editor := Ed;
+    TSynSpellCheck.GlobalInstance.CheckLine;
   end;
-  Result := BufferCoord(CX, CY);
 end;
 
-function TSynEditEx.SCWordStartEx(SpellIsWhiteChar: TCategoryMethod): TBufferCoord;
-var
-  CX, CY: Integer;
-  Line: string;
+{$ENDREGION 'SpellCheck Actions implementation'}
+
+{ TSynSpellCheck.TWorkItem }
+
+constructor TSynSpellCheck.TWorkItem.Create(AToken: string; ATokenPos: Integer);
 begin
-  CX := CaretX;
-  CY := CaretY;
-  // Valid line?
-  if (CY >= 1) and (CY <= Lines.Count) then
-  begin
-    Line := Lines[CY - 1];
-    CX := Min(CX, Length(Line) + 1);
-    if CX > 1 then // Only find previous char, if not already on start of line
-      // If previous char isn't a "whitespace" search for the last IdentChar
-      if not SpellIsWhiteChar(Line[CX - 1]) then
-        CX := StrRScanForCharInCategory(Line, CX - 1, SpellIsWhiteChar) + 1;
-  end;
-  Result := BufferCoord(CX, CY);
+  Self.Token := AToken;
+  Self.TokenPos := ATokenPos;
 end;
 
 end.
