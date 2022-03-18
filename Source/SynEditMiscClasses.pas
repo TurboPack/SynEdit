@@ -37,6 +37,7 @@ interface
 
 uses
   System.Types,
+  System.UITypes,
   System.SysUtils,
   System.Classes,
   System.Math,
@@ -2687,8 +2688,6 @@ var
 begin
   R := ClipR;
   Dec(R.Left, StartOffset);
-  // Avoid painting spillover
-  Inc(R.Top); Dec(R.Bottom); Inc(R.Left); Dec(R.Right,2);
   RT.PushAxisAlignedClip(ClipR, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   case Spec.Style of
     sisTextDecoration:
@@ -2700,6 +2699,7 @@ begin
     sisSquiggleMicrosoftWord,
     sisSquiggleWordPerfect:
       begin
+        Dec(R.Right);
         CheckOSError(TSynDWrite.D2DFactory.CreatePathGeometry(Geometry));
         CheckOSError(Geometry.Open(Sink));
         Delta := Round(R.Height / 6);
@@ -2735,13 +2735,16 @@ begin
     sisRectangle,
     sisFilledRectangle:
       begin
+        Dec(R.Right); Dec(R.Bottom);
         if Spec.Style = sisFilledRectangle then
           RT.FillRectangle(R, TSynDWrite.SolidBrush(Spec.Background));
-        RT.DrawRectangle(R, TSynDWrite.SolidBrush(Spec.Foreground));
+        if TAlphaColorF(Spec.Foreground) <> TAlphaColorF(clNoneF) then
+          RT.DrawRectangle(R, TSynDWrite.SolidBrush(Spec.Foreground));
       end;
     sisRoundedRectangle,
     sisRoundedFilledRectangle:
       begin
+        Dec(R.Right); Dec(R.Bottom);
         if Spec.Style = sisRoundedFilledRectangle then
          RT.FillRoundedRectangle(D2D1RoundedRect(R, R.Height div 4, R.Height div 4),
             TSynDWrite.SolidBrush(Spec.Background));
