@@ -102,6 +102,7 @@ type
     fTableNameAttri: TSynHighlighterAttributes;
     fProcNameAttri: TSynHighlighterAttributes;
     fVariableAttri: TSynHighlighterAttributes;
+    function IsStrictIdentChar(AChar: WideChar): Boolean;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
     procedure SetDialect(Value: TSQLDialect);
@@ -210,6 +211,7 @@ type
 implementation
 
 uses
+  System.Character,
   SynEditMiscProcs,
   SynEditStrConst;
 
@@ -1348,12 +1350,33 @@ const
     'RPAD,SIN,SITENAME,SQRT,STDEV,SUBSTR,SUBSTRING,SUM,TAN,THEN,TO_CHAR,TO_DATE,' +
     'TODAY,TRIM,TRUNC,UNITS,UPPER,USER,VARIANCE,WEEKDAY,WHEN,YEAR';
 
+function TSynSQLSyn.IsStrictIdentChar(AChar: WideChar): Boolean;
+begin
+  // This routine follows the strict identifier rules of our supported databases.
+  // This may have to be revisited if dialects allow non-ascii chars in unquoted
+  // identifiers
+  case AChar of
+    'a'..'z', 'A'..'Z', '0'..'9', '_':
+      Result := True;
+    '-':
+      Result := fDialect = sqlStandard;
+    '#', '$':                          // TODO: check this case, ANSI code wasn't clear here if this is exclusively Oracle
+      Result := fDialect in [sqlOracle, sqlNexus];
+    '@':
+      Result := fDialect in [sqlMSSQL7, sqlMSSQL2K];
+     '!', '^', '{', '}','~':
+      Result := fDialect = sqlNexus
+    else
+      Result := False;
+  end;
+end;
+
 function TSynSQLSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
   S: string;
 begin
   fToIdent := MayBe;
-  while IsIdentChar(MayBe^) do
+  while IsStrictIdentChar(MayBe^) do
   begin
     // Special case for sqlStandard which allows hyphen as an identifier.
     if (MayBe^ = '-') and ((MayBe + 1)^ = '-') then
@@ -1551,7 +1574,7 @@ begin
       Inc(Run);
   end
   else
-    while IsIdentChar(fLine[Run]) do
+    while IsStrictIdentChar(fLine[Run]) do
     begin
       FoundDoubleMinus := (fLine[Run] = '-') and (fLine[Run + 1] = '-');
       if FoundDoubleMinus then Break;
@@ -1815,7 +1838,7 @@ begin
       FoundDoubleMinus := (fLine[i] = '-') and (fLine[i + 1] = '-');
       if FoundDoubleMinus then Break;
       Inc(i);
-    until not IsIdentChar(fLine[i]);
+    until not IsStrictIdentChar(fLine[i]);
     Run := i;
   end;
 end;
@@ -1990,8 +2013,6 @@ end;
 function TSynSQLSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
   case AChar of
-    'a'..'z', 'A'..'Z', '0'..'9', '_':
-      Result := True;
     '-':
       Result := fDialect = sqlStandard;
     '#', '$':                          // TODO: check this case, ANSI code wasn't clear here if this is exclusively Oracle
@@ -2001,7 +2022,9 @@ begin
      '!', '^', '{', '}','~':
       Result := fDialect = sqlNexus
     else
-      Result := False;
+      Result := (AChar = '_') or AChar.IsLetterOrDigit or
+        CharInSet(AChar, AdditionalIdentChars) and
+        not IsWordBreakChar(AChar);
   end;
 end;
 
@@ -2076,7 +2099,7 @@ begin
   fToIdent := nil;
 
   for I := 0 to Ord(High(TtkTokenKind)) do
-    EnumerateKeywords(I, GetKeywords(I), IsIdentChar, DoAddKeyword);
+    EnumerateKeywords(I, GetKeywords(I), IsStrictIdentChar, DoAddKeyword);
 
   PutProcNamesInKeywordList;
   PutTableNamesInKeywordList;
