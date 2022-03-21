@@ -379,7 +379,7 @@ begin
 
   PStart := PChar(SLine);
   PEnd := PStart + SLine.Length;
-  if (PEnd - PStart) * CW < fMaxRowWidth   then
+  if (PEnd - PStart) * CW < fMaxRowWidth div 3 then
     // Optimization.  Assume line will fit!
     RowLengths := [SLine.Length]
   else
