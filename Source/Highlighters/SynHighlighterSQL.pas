@@ -1935,7 +1935,7 @@ begin
       else
       begin
         // This will work with ansi and unicode letters, including surrogate pairs
-        if Char.IsLetter(FLineStr, Run) then  // Index is 0 based here
+        if (not FLine[Run].IsLowSurrogate) and Char.IsLetter(FLineStr, Run) then  // Index is 0 based here
           IdentProc
         else
           UnknownProc;
@@ -2039,7 +2039,7 @@ begin
     else
       Result := False;
   end;
-  if not Result then
+  if not Result and (not AChar.IsLowSurrogate) then
     Result := AChar.IsLetterOrDigit or
       CharInSet(AChar, AdditionalIdentChars) and
       not IsWordBreakChar(AChar);
