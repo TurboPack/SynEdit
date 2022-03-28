@@ -103,7 +103,6 @@ type
     fProcNameAttri: TSynHighlighterAttributes;
     fVariableAttri: TSynHighlighterAttributes;
 
-    function IsIdentCharFromIndex(Index: Integer): Boolean;
     function IdentKind: TtkTokenKind;
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
     procedure SetDialect(Value: TSQLDialect);
@@ -1352,32 +1351,33 @@ const
     'RPAD,SIN,SITENAME,SQRT,STDEV,SUBSTR,SUBSTRING,SUM,TAN,THEN,TO_CHAR,TO_DATE,' +
     'TODAY,TRIM,TRUNC,UNITS,UPPER,USER,VARIANCE,WEEKDAY,WHEN,YEAR';
 
-function TSynSQLSyn.IsIdentCharFromIndex(Index: Integer): Boolean;
-begin
-  case FLineStr[Index] of
-    'a'..'z', 'A'..'Z', '0'..'9', '_':
-      Result := True;
-    '-':
-      Result := fDialect = sqlStandard;
-    '#', '$':
-      Result := fDialect in [sqlOracle, sqlNexus];
-    '@':
-      Result := fDialect in [sqlMSSQL7, sqlMSSQL2K];
-     '!', '^', '{', '}', '~':
-      Result := fDialect = sqlNexus
-    else
-      Result := False;
-  end;
-  if not Result then
-    Result := Char.IsLetterOrDigit(FLineStr, Index - 1) or    // Handles surrogates and is 0 based.
-      CharInSet(FLineStr[Index], AdditionalIdentChars) and
-      not IsWordBreakChar(FLineStr[Index]);
-end;
-
 function TSynSQLSyn.IdentKind: TtkTokenKind;
 var
   S: string;
   p: PChar;
+
+  function IsIdentCharFromIndex(Index: Integer): Boolean;
+  begin
+    case FLineStr[Index] of
+      'a'..'z', 'A'..'Z', '0'..'9', '_':
+        Result := True;
+      '-':
+        Result := fDialect = sqlStandard;
+      '#', '$':
+        Result := fDialect in [sqlOracle, sqlNexus];
+      '@':
+        Result := fDialect in [sqlMSSQL7, sqlMSSQL2K];
+       '!', '^', '{', '}', '~':
+        Result := fDialect = sqlNexus
+      else
+        Result := False;
+    end;
+    if not Result then
+      Result := Char.IsLetterOrDigit(FLineStr, Index - 1) or
+        CharInSet(FLineStr[Index], AdditionalIdentChars) and
+        not IsWordBreakChar(FLineStr[Index]);
+  end;
+
 begin
   // This version handles non-ascii letters and surrogate pairs.
   fToIdent := fLine + Run;
@@ -1935,7 +1935,7 @@ begin
       else
       begin
         // This will work with ansi and unicode letters, including surrogate pairs
-        if Char.IsLetter(FLineStr, Run) then  // Index is 0 based here
+        if (not FLine[Run].IsLowSurrogate) and Char.IsLetter(FLineStr, Run) then  // Index is 0 based here
           IdentProc
         else
           UnknownProc;
