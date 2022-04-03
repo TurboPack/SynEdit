@@ -240,9 +240,8 @@ type
     FPlugins: TList<TSpellCheckPlugin>;
     FUnderlineStyle: TUnderlineStyle;
     FPenColor: TColor;
-    FAttributesChecked: TStringList;
+    FAttributesChecked: TStrings;
     FUpdateCount: Integer;
-    FAttibutesChecked: TStringList;
     FCheckAsYouType: Boolean;
     FDictionaryNA: Boolean;
     FWorkList: TList<TWorkItem>;
@@ -251,7 +250,7 @@ type
     procedure SetEditor(const Value: TCustomSynEdit);
     procedure SetPenColor(const Value: TColor);
     procedure SetUnderlineStyle(const Value: TUnderlineStyle);
-    procedure SetAttributesChecked(const Value: TStringList);
+    procedure SetAttributesChecked(const Value: TStrings);
     class var FSpellCheckFactory: ISpellCheckerFactory;
   protected
     procedure Notification(AComponent: TComponent;
@@ -283,7 +282,7 @@ type
     property PenColor: TColor read FPenColor write SetPenColor default clRed;
     property UnderlineStyle: TUnderlineStyle read FUnderlineStyle
       write SetUnderlineStyle default usMicrosoftWord;
-    property AttributesChecked: TStringList read FAttibutesChecked
+    property AttributesChecked: TStrings read FAttributesChecked
       write SetAttributesChecked;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
     property CheckAsYouType: Boolean read FCheckAsYouType write FCheckAsYouType;
@@ -578,9 +577,9 @@ begin
   end;
 end;
 
-procedure TSynSpellCheck.SetAttributesChecked(const Value: TStringList);
+procedure TSynSpellCheck.SetAttributesChecked(const Value: TStrings);
 begin
-  FAttibutesChecked.Assign(Value);
+  FAttributesChecked.Assign(Value);
   Changed;
 end;
 
