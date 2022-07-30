@@ -9529,4 +9529,11 @@ begin
   // nothing
 end;
 
+
+initialization
+ TCustomStyleEngine.RegisterStyleHook(TSynEdit, TScrollingStyleHook);// TSynEditVclStyleScrollBarsHook);
+
+finalization
+ TCustomStyleEngine.UnRegisterStyleHook(TSynEdit, TScrollingStyleHook); //TSynEditVclStyleScrollBarsHook);
+
 end.
