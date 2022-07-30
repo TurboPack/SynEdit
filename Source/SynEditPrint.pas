@@ -429,7 +429,8 @@ var
 begin
   SaveCurrentFont;
   AStr := IntToStr(LineNumber + FLineOffset) + ': ';
-  FCanvas.Brush.Color := FDefaultBG; 
+  FCanvas.Brush.Color := FDefaultBG;
+  FCanvas.Font.Assign(Font);
   FCanvas.Font.Style := [];
   FCanvas.Font.Color := clBlack;
   FCanvas.TextOut(FMargins.PLeft - FCanvas.TextWidth(AStr), YPos, AStr);
