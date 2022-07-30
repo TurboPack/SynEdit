@@ -443,9 +443,11 @@ function IsFontMonospacedAndValid(Font: TFont): Boolean;
 var
   LogFont: TLogFont;
   DWFont: IDWriteFont;
+  IsFontFound : integer;
 begin
   try
-    Assert(GetObject(Font.Handle, SizeOf(TLogFont), @LogFont) <> 0);
+    IsFontFound := GetObject(Font.Handle, SizeOf(TLogFont), @LogFont);
+    Assert(IsFontFound <> 0);
     CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
     Result := (DWFont as IDWriteFont1).IsMonospacedFont;
     if (FontFamilyName(DWFont) <> Font.Name) and (fsBold in Font.Style) then
