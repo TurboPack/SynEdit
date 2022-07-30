@@ -444,8 +444,9 @@ var
   LogFont: TLogFont;
   DWFont: IDWriteFont;
 begin
+  if GetObject(Font.Handle, SizeOf(TLogFont), @LogFont) = 0 then
+    Exit(False);
   try
-    Assert(GetObject(Font.Handle, SizeOf(TLogFont), @LogFont) <> 0);
     CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
     Result := (DWFont as IDWriteFont1).IsMonospacedFont;
     if (FontFamilyName(DWFont) <> Font.Name) and (fsBold in Font.Style) then
