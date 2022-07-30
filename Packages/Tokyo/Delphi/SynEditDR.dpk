@@ -140,6 +140,7 @@ contains
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
-  SynURIOpener in '..\..\..\Source\SynURIOpener.pas';
+  SynURIOpener in '..\..\..\Source\SynURIOpener.pas',
+  SynVCLStyleHooks in '..\..\..\Source\SynVCLStyleHooks.pas';
 
 end.

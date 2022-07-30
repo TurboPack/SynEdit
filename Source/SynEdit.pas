@@ -1094,7 +1094,8 @@ uses
   SynEditWordWrap,
   SynEditStrConst,
   SynEditDataObject,
-  SynEditDragDrop;
+  SynEditDragDrop,
+  SynVCLStyleHooks;
 
 { THookedCommandHandlerEntry }
 
@@ -9528,5 +9529,11 @@ procedure TSynEditPlugin.LinesDeleted(FirstLine, Count: Integer);
 begin
   // nothing
 end;
+
+initialization
+  TCustomStyleEngine.RegisterStyleHook(TSynEdit, TSynEditVclStyleScrollBarsHook);
+
+finalization
+  TCustomStyleEngine.UnRegisterStyleHook(TSynEdit, TSynEditVclStyleScrollBarsHook);
 
 end.
