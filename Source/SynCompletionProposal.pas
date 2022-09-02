@@ -124,8 +124,8 @@ type
     fClSelectText: TColor;
     FClTitleBackground: TColor;
     fClBackGround: TColor;
-    Bitmap: TBitmap; // used for drawing
-    TitleBitmap: TBitmap; // used for title-drawing
+    FPaintBitmap: TBitmap; // used for drawing
+    FTitleBitmap: TBitmap; // used for title-drawing
     FCurrentEditor: TCustomSynEdit;
     FTitle: string;
     FTitleFont: TFont;
@@ -154,8 +154,15 @@ type
     FEndOfTokenChr: string;
     FTriggerChars: string;
     OldShowCaret: Boolean;
-    FHeightBuffer: Integer;
+    FTitleHeight: Integer;
     FColumns: TProposalColumns;
+    FResizing : boolean;
+    FResizeStart : TPoint;
+    FGripperHeight : integer;
+    FGripperRect : TRect;
+    FGripperBarRect : TRect;
+    FTitleRect : TRect;
+    FScaledMargin : integer;
     procedure SetCurrentString(const Value: string);
     procedure MoveLine(cnt: Integer);
     procedure ScrollbarOnChange(Sender: TObject);
@@ -183,21 +190,30 @@ type
     procedure RecalcItemHeight;
     function IsWordBreakChar(AChar: WideChar): Boolean;
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
+    procedure ResetCanvas(const Canvas: TCanvas);
   protected
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure KeyPress(var Key: Char); override;
     procedure Paint; override;
+    procedure PaintTitle;
+    procedure PaintCodeItems;
+    procedure PaintGripper;
+    procedure PaintHint;
+    procedure PaintParams;
     procedure Activate; override;
     procedure Deactivate; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Integer; Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X: Integer; Y: Integer); override;
     procedure Resize; override;
+    procedure DoAfterMonitorDpiChanged(OldDPI: Integer; NewDPI: Integer); override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
     procedure WMActivate (var Message: TWMActivate); message WM_ACTIVATE;
     procedure WMEraseBackgrnd(var Message: TMessage); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetCurrentPPI: Integer; {$IF CompilerVersion > 32}override;{$ENDIF}
+    function GetCurrentPPI: Integer;{$IF CompilerVersion > 32}override;{$ENDIF}
   public
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
@@ -544,6 +560,8 @@ uses
 
 const
   TextHeightString = 'CompletionProposal';
+
+  cGripperBarHeight = 16;
 
 //------------------------- Formatted painting stuff ---------------------------
 
@@ -1156,22 +1174,30 @@ end;
 
 { TSynBaseCompletionProposalForm }
 
+
+
+
 constructor TSynBaseCompletionProposalForm.Create(AOwner: TComponent);
 begin
+  ControlState := ControlState + [csCreating];
   CreateNew(AOwner);
-  Bitmap := TBitmap.Create;
-  TitleBitmap := TBitmap.Create;
+  DoubleBuffered := true;
+
+  FPaintBitmap := TBitmap.Create;
+  FTitleBitmap := TBitmap.Create;
   FItemList := TStringList.Create;
   FInsertList := TStringList.Create;
   FAssignedList := TStringList.Create;
   FMatchText := False;
-  BorderStyle := bsNone;
+  BorderStyle := bsSingle;
+  BorderWidth := 1;
   FScrollbar := TScrollBar.Create(Self);
   FScrollbar.Kind := sbVertical;
   FScrollbar.ParentCtl3D := False;
   FScrollbar.OnChange := ScrollbarOnChange;
   FScrollbar.OnScroll := ScrollbarOnScroll;
   FScrollbar.OnEnter := ScrollbarOnEnter;
+  FScrollbar.TabStop := false;
   FScrollbar.Parent := Self;
 
   FTitleFont := TFont.Create;
@@ -1199,6 +1225,7 @@ begin
 
   FColumns := TProposalColumns.Create(AOwner, TProposalColumn);
 
+  FGripperHeight := 0;
   FItemHeight := 0;
   FMargin := 2;
   FEffectiveItemHeight := 0;
@@ -1206,7 +1233,7 @@ begin
 
   Canvas.Font.Assign(FTitleFont);
   FTitleFontHeight := Canvas.TextHeight(TextHeightString);
-  FHeightBuffer := 0;
+  FTitleHeight := 0;
 
   FTitleFont.OnChange := TitleFontChange;
   FFont.OnChange := FontChange;
@@ -1218,6 +1245,8 @@ begin
   StyleElements := [seClient];
   Resizeable := False;
   Visible := False;
+  ControlState := ControlState - [csCreating];
+
 end;
 
 procedure TSynBaseCompletionProposalForm.CreateParams(var Params: TCreateParams);
@@ -1225,22 +1254,9 @@ begin
   inherited;
   with Params do
   begin
-    Style := WS_POPUP;
+    Style := WS_POPUP or WS_BORDER + WS_CLIPCHILDREN;
     ExStyle := WS_EX_TOOLWINDOW;
 
-   Params.WindowClass.style := Params.WindowClass.style or CS_DROPSHADOW;
-
-    {
-      WS_THICKFRAME causes Windows 10 to display a 6 pixel title bar
-      Also with VCL Styles the window is not resizable
-      So we use WS_DLGFRAME (could instead use WS_SBORDER)
-      and make the window sizeable by handling WM_NCHITTEST
-    }
-    if DisplayType = ctCode then
-      //if FResizeable then
-      //  Style := Style or WS_THICKFRAME
-      //else
-        Style := Style or WS_DLGFRAME;
   end;
 end;
 
@@ -1263,8 +1279,8 @@ destructor TSynBaseCompletionProposalForm.Destroy;
 begin
   inherited Destroy;
   FColumns.Free;
-  Bitmap.Free;
-  TitleBitmap.Free;
+  FPaintBitmap.Free;
+  FTitleBitmap.Free;
   FItemList.Free;
   FInsertList.Free;
   FAssignedList.Free;
@@ -1440,9 +1456,58 @@ end;
 procedure TSynBaseCompletionProposalForm.MouseDown(Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  y := (y - fHeightBuffer) div FEffectiveItemHeight;
-  Position := FScrollbar.Position + y;
+  if (y > FTitleHeight) and (Y < ClientHeight - FGripperHeight) then
+  begin
+    y := (y - FTitleHeight) div FEffectiveItemHeight;
+    Position := FScrollbar.Position + y;
+  end
+  else if FResizeable and (Y > ClientHeight - FGripperHeight) then
+  begin
+    //if in the bottom right corner
+    if X > (ClientWidth - 30) then
+    begin
+      FResizeStart := TPoint.Create(X, Y);
+      FResizing := true;
+      SetCapture(Handle);
+    end;
+  end;
+
 //  (CurrentEditor as TCustomSynEdit).UpdateCaret;
+end;
+
+procedure TSynBaseCompletionProposalForm.MouseMove(Shift: TShiftState; X, Y: Integer);
+var
+  bounds : TRect;
+  deltaX : integer;
+  deltaY : integer;
+begin
+  inherited;
+  if FResizing then
+  begin
+    bounds := Self.BoundsRect;
+    deltaX := X - FResizeStart.X;
+    deltaY := Y - FResizeStart.Y;
+    Inc(bounds.Right, deltaX);
+    Inc(bounds.Bottom, deltaY);
+    bounds.Right := Max(bounds.Right, 100);
+    bounds.Bottom := Max(bounds.Bottom, 100);
+
+    FResizeStart := TPoint.Create(X, Y);
+    Self.BoundsRect := bounds;
+    Self.Cursor := crSizeNWSE;
+  end
+  else if PtInRect(FGripperRect,Point(x, y)) then
+    Self.Cursor := crSizeNWSE
+  else
+    Self.Cursor := crDefault;
+end;
+
+procedure TSynBaseCompletionProposalForm.MouseUp(Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  FResizing := false;
+  SetCapture(0);
+  inherited;
 end;
 
 procedure TSynBaseCompletionProposalForm.Resize;
@@ -1450,7 +1515,7 @@ begin
   inherited;
 
   if FEffectiveItemHeight <> 0 then
-    FLinesInWindow := (ClientHeight - FHeightBuffer) div FEffectiveItemHeight;
+    FLinesInWindow := (ClientHeight - FTitleHeight - FGripperHeight) div FEffectiveItemHeight;
 
   if not(csCreating in ControlState) then
     AdjustMetrics;
@@ -1459,149 +1524,191 @@ begin
   Invalidate;
 end;
 
-procedure TSynBaseCompletionProposalForm.Paint;
-
-  procedure ResetCanvas;
+procedure TSynBaseCompletionProposalForm.ResetCanvas(const Canvas : TCanvas);
+begin
+  with Canvas do
   begin
-    with Bitmap.Canvas do
+    Pen.Color := StyleServices.GetSystemColor(FClBackGround);
+    Brush.Color := Pen.Color;
+    Brush.Style := bsSolid;
+    Font.Assign(FFont);
+    Font.Color := StyleServices.GetSystemColor(FFont.Color);
+  end;
+end;
+
+procedure TSynBaseCompletionProposalForm.Paint;
+begin
+  case FDisplayKind of
+    ctCode:
     begin
-      Pen.Color := StyleServices.GetSystemColor(FClBackGround);
-      Brush.Color := StyleServices.GetSystemColor(FClBackGround);
-      Font.Assign(FFont);
-      Font.Color := StyleServices.GetSystemColor(clWindowText);
+      PaintTitle;
+      PaintCodeItems;
+      PaintGripper;
+    end;
+    ctHint: PaintHint;
+    ctParams: PaintParams;
+  end;
+end;
+
+procedure TSynBaseCompletionProposalForm.PaintCodeItems;
+var
+  AlreadyDrawn: Boolean;
+  i: Integer;
+begin
+  with FPaintBitmap do
+  begin
+    ResetCanvas(FPaintBitmap.Canvas);
+    Canvas.FillRect(Rect(0, 0, FPaintBitmap.Width, FPaintBitmap.Height));
+    for i := 0 to Min(FLinesInWindow - 1, FAssignedList.Count - 1) do
+    begin
+      if i + FScrollbar.Position = Position then
+      begin
+        Canvas.Brush.Color := StyleServices.GetSystemColor(FClSelect);
+        Canvas.Pen.Color := StyleServices.GetSystemColor(FClSelect);
+        Canvas.Rectangle(0, (FEffectiveItemHeight * i), ClientWidth - FScrollbar.Width, (FEffectiveItemHeight * (i + 1)));
+        Canvas.Font.Assign(FFont);
+        Canvas.Font.Color := StyleServices.GetSystemColor(fClSelectText);
+      end;
+
+      AlreadyDrawn := False;
+
+      if Assigned(OnPaintItem) then
+        OnPaintItem(Self, LogicalToPhysicalIndex(FScrollBar.Position + i),
+          Canvas, Rect(0, (FEffectiveItemHeight * i), ClientWidth - FScrollbar.Width, (FEffectiveItemHeight * (i + 1))), AlreadyDrawn);
+
+      if AlreadyDrawn then
+        ResetCanvas(FPaintBitmap.Canvas)
+      else
+      begin
+        if FFormattedText then
+        begin
+          FormattedTextOut(Canvas,
+            Rect(FScaledMargin, (FEffectiveItemHeight * i)  + ((FEffectiveItemHeight - FFontHeight) div 2), FPaintBitmap.Width, FEffectiveItemHeight * (i + 1)),
+            CurrentPPI, FAssignedList[FScrollbar.Position + i],
+            (i + FScrollbar.Position = Position), FColumns, FImages);
+        end
+        else
+        begin
+          Canvas.TextOut(FScaledMargin, FEffectiveItemHeight * i, FAssignedList[FScrollbar.Position + i]);
+        end;
+
+        if i + FScrollbar.Position = Position then
+          ResetCanvas(FPaintBitmap.Canvas);
+      end;
+    end;
+  end;
+  Canvas.Draw(0, FTitleHeight, FPaintBitmap);
+end;
+
+procedure TSynBaseCompletionProposalForm.PaintGripper;
+var
+  Details:  TThemedElementDetails;
+  LStyle: TCustomStyleServices;
+const
+  cGripSize = 16;
+begin
+  if FGripperHeight > 0 then
+  begin
+    Canvas.Brush.Color := StyleServices.GetSystemColor(FClTitleBackground);
+    Canvas.FillRect(FGripperBarRect);
+    Canvas.Pen.Color := StyleServices.GetSystemColor(clBtnShadow);
+    Canvas.PenPos := FGripperBarRect.TopLeft;
+    Canvas.LineTo(FGripperBarRect.Right,FGripperBarRect.Top);
+    LStyle := StyleServices;
+
+    //Draw gripper.
+    if StyleServices.Available then
+    begin
+      details := StyleServices(Self).GetElementDetails(tsGripper);
+      LStyle.DrawElement(Canvas.Handle, Details, FGripperRect, nil, CurrentPPI);
     end;
   end;
 
+end;
+
+procedure TSynBaseCompletionProposalForm.PaintHint;
+begin
+  PaintParams; //does the same right now so this is just to make it easier if they diverge.
+end;
+
+procedure TSynBaseCompletionProposalForm.PaintParams;
 var
   TmpRect: TRect;
-  TmpX: Integer;
   AlreadyDrawn: Boolean;
   TmpString: string;
   i: Integer;
   ScaledMargin: Integer;
 begin
   ScaledMargin := MulDiv((Owner as TSynBaseCompletionProposal).Margin, CurrentPPI, 96);
-  if FDisplayKind = ctCode then
+  with FPaintBitmap do
   begin
-    with Bitmap do
+    ResetCanvas(FPaintBitmap.Canvas);
+    tmpRect := Rect(0, 0, ClientWidth, ClientHeight);
+    Canvas.FillRect(tmpRect);
+    if StyleServices.IsSystemStyle then
+      Frame3D(Canvas, tmpRect, cl3DLight, cl3DDkShadow, 1);
+
+    for i := 0 to FAssignedList.Count - 1 do
     begin
-      ResetCanvas;
-      Canvas.Pen.Color := StyleServices.GetSystemColor(clBtnFace);
-      Canvas.Rectangle(0, 0, ClientWidth - FScrollbar.Width, ClientHeight);
-      for i := 0 to Min(FLinesInWindow - 1, FAssignedList.Count - 1) do
+      AlreadyDrawn := False;
+      if Assigned(OnPaintItem) then
+        OnPaintItem(Self, i, Canvas, Rect(0, FEffectiveItemHeight * i + ScaledMargin,
+          ClientWidth, FEffectiveItemHeight * (i + 1) + ScaledMargin), AlreadyDrawn);
+
+      if AlreadyDrawn then
+        ResetCanvas(FPaintBitmap.Canvas)
+      else
       begin
-        if i + FScrollbar.Position = Position then
-        begin
-          Canvas.Brush.Color := StyleServices.GetSystemColor(FClSelect);
-          Canvas.Pen.Color := StyleServices.GetSystemColor(FClSelect);
-          Canvas.Rectangle(0, FEffectiveItemHeight * i, ClientWidth - FScrollbar.Width,
-            FEffectiveItemHeight * (i + 1));
-          Canvas.Pen.Color := StyleServices.GetSystemColor(fClSelectText);
-          Canvas.Font.Assign(FFont);
-          Canvas.Font.Color := StyleServices.GetSystemColor(FClSelectText);
-        end;
-
-        AlreadyDrawn := False;
-
-        if Assigned(OnPaintItem) then
-          OnPaintItem(Self, LogicalToPhysicalIndex(FScrollBar.Position + i),
-            Canvas, Rect(0, FEffectiveItemHeight * i, ClientWidth - FScrollbar.Width,
-            FEffectiveItemHeight * (i + 1)), AlreadyDrawn);
-
-        if AlreadyDrawn then
-          ResetCanvas
+        if (FDisplayKind = ctParams) then
+          TmpString := FormatParamList(FAssignedList[i], CurrentIndex)
         else
-        begin
-          if FFormattedText then
-          begin
-            FormattedTextOut(Canvas, Rect(ScaledMargin,
-              FEffectiveItemHeight * i  + ((FEffectiveItemHeight - FFontHeight) div 2),
-              Bitmap.Width, FEffectiveItemHeight * (i + 1)),
-              CurrentPPI, FAssignedList[FScrollbar.Position + i],
-              (i + FScrollbar.Position = Position), FColumns, FImages);
-          end
-          else
-          begin
-            Canvas.TextOut(ScaledMargin, FEffectiveItemHeight * i,
-              FAssignedList[FScrollbar.Position + i]);
-          end;
+          TmpString := FAssignedList[i];
 
-          if i + FScrollbar.Position = Position then
-            ResetCanvas;
-        end;
-      end;
-      if TStyleManager.IsCustomStyleActive then
-      begin
-        TmpRect := ClientRect;
-        DrawStyleEdge(Canvas, TmpRect, [eeRaisedOuter], [efRect, efFlat]);
+        FormattedTextOut(Canvas, Rect(ScaledMargin + 1,
+          FEffectiveItemHeight * i + ((FEffectiveItemHeight-FFontHeight) div 2) + ScaledMargin,
+          FPaintBitmap.Width - 1, FEffectiveItemHeight * (i + 1) + ScaledMargin), CurrentPPI, TmpString,
+          False, nil, FImages);
       end;
     end;
-    Canvas.Draw(0, FHeightBuffer, Bitmap);
+  end;
+  Canvas.Draw(0, 0, FPaintBitmap);
+end;
 
-    if FTitle <> '' then
-    begin
-      with TitleBitmap do
-      begin
-        Canvas.Brush.Color := StyleServices.GetSystemColor(FClTitleBackground);
-        TmpRect := Rect(0, 0, ClientWidth + 1, FHeightBuffer);                        //GBN
-        Canvas.FillRect(TmpRect);
-        Canvas.Pen.Color := StyleServices.GetSystemColor(clBtnShadow);
-        dec(TmpRect.Bottom, 1);
-        Canvas.PenPos := TmpRect.BottomRight;
-        Canvas.LineTo(TmpRect.Left - 1,TmpRect.Bottom);
-        Canvas.Pen.Color := StyleServices.GetSystemColor(clBtnFace);
-
-        Canvas.Font.Assign(FTitleFont);
-        Canvas.Font.Color := StyleServices.GetSystemColor(FTitleFont.Color);
-
-        if CenterTitle then
-        begin
-          TmpX := (Width - Canvas.TextWidth(Title)) div 2;
-          if TmpX < ScaledMargin then
-            TmpX := ScaledMargin;  //We still want to be able to read it, even if it does go over the edge
-        end else
-        begin
-          TmpX := ScaledMargin;
-        end;
-        Canvas.TextRect(TmpRect, TmpX, ScaledMargin - 1, FTitle); // -1 because TmpRect.Top is already 1
-      end;
-      Canvas.Draw(0, 0, TitleBitmap);
-    end;
-  end else
-  if (FDisplayKind = ctHint) or (FDisplayKind = ctParams) then
+procedure TSynBaseCompletionProposalForm.PaintTitle;
+var
+  TmpRect: TRect;
+  TmpX: Integer;
+begin
+  if FTitle <> '' then
   begin
-    with Bitmap do
+    ResetCanvas(FTitleBitmap.Canvas);
+    with FTitleBitmap do
     begin
-      ResetCanvas;
-      tmpRect := Rect(0, 0, ClientWidth, ClientHeight);
-      Canvas.FillRect(tmpRect);
-      if StyleServices.IsSystemStyle then
-        Frame3D(Canvas, tmpRect, cl3DLight, cl3DDkShadow, 1);
+      Canvas.Brush.Color := StyleServices.GetSystemColor(FClTitleBackground);
+      Canvas.FillRect(FTitleRect);
+      Canvas.Font.Assign(FTitleFont);
+      Canvas.Font.Color := StyleServices.GetSystemColor(FTitleFont.Color);
 
-      for i := 0 to FAssignedList.Count - 1 do
+      if CenterTitle then
       begin
-        AlreadyDrawn := False;
-        if Assigned(OnPaintItem) then
-          OnPaintItem(Self, i, Canvas, Rect(0, FEffectiveItemHeight * i + ScaledMargin,
-            ClientWidth, FEffectiveItemHeight * (i + 1) + ScaledMargin), AlreadyDrawn);
-
-        if AlreadyDrawn then
-          ResetCanvas
-        else
-        begin
-          if (FDisplayKind = ctParams) then
-            TmpString := FormatParamList(FAssignedList[i], CurrentIndex)
-          else
-            TmpString := FAssignedList[i];
-
-          FormattedTextOut(Canvas, Rect(ScaledMargin + 1,
-            FEffectiveItemHeight * i + ((FEffectiveItemHeight-FFontHeight) div 2) + ScaledMargin,
-            Bitmap.Width - 1, FEffectiveItemHeight * (i + 1) + ScaledMargin), CurrentPPI, TmpString,
-            False, nil, FImages);
-        end;
+        TmpX := (Width - Canvas.TextWidth(Title)) div 2;
+        if TmpX < FScaledMargin then
+          TmpX := FScaledMargin;  //We still want to be able to read it, even if it does go over the edge
+      end else
+      begin
+        TmpX := FScaledMargin;
       end;
+      Canvas.TextRect(FTitleRect, TmpX, FScaledMargin - 1, FTitle); // -1 because TmpRect.Top is already 1
+
+
+      TmpRect := FTitleRect;
+      dec(TmpRect.Bottom, 1);
+      Canvas.Pen.Color := StyleServices.GetSystemColor(clBtnShadow);
+      Canvas.PenPos := TPoint.Create(TmpRect.Left, TmpRect.Bottom);
+      Canvas.LineTo(TmpRect.Right,TmpRect.Bottom);
+
     end;
-    Canvas.Draw(0, 0, Bitmap);
+    Canvas.Draw(0, 0, FTitleBitmap);
   end;
 end;
 
@@ -1613,11 +1720,10 @@ begin
     if Position > FScrollbar.Position + FLinesInWindow - 1 then
       Position := FScrollbar.Position + FLinesInWindow - 1
     else
-      Invalidate;
+      PaintCodeItems; //just paint items rather than whole form!
 end;
 
-procedure TSynBaseCompletionProposalForm.ScrollbarOnScroll(Sender: TObject;
-  ScrollCode: TScrollCode; var ScrollPos: Integer);
+procedure TSynBaseCompletionProposalForm.ScrollbarOnScroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
   with CurrentEditor as TCustomSynEdit do
   begin
@@ -1733,7 +1839,7 @@ begin
       FOnChangePosition(Owner as TSynBaseCompletionProposal,
         LogicalToPhysicalIndex(FPosition));
 
-    Invalidate;
+    PaintCodeItems; //just paint the items
   end
   else
   begin
@@ -1760,6 +1866,16 @@ begin
   FInsertList.Assign(Value);
 end;
 
+
+procedure TSynBaseCompletionProposalForm.DoAfterMonitorDpiChanged(OldDPI,
+  NewDPI: Integer);
+begin
+  inherited;
+  RecalcItemHeight;
+
+end;
+
+
 procedure TSynBaseCompletionProposalForm.DoDoubleClick(Sender: TObject);
 begin
 //we need to do the same as the enter key;
@@ -1783,14 +1899,18 @@ begin
     if Visible and Assigned(FOnChangePosition) and (DisplayType = ctCode) then
       FOnChangePosition(Owner as TSynBaseCompletionProposal,
         LogicalToPhysicalIndex(FPosition));
-
-    Invalidate;
+    PaintCodeItems; //just paint the items not the whole window.
+//    Invalidate;
   end;
 end;
 
 procedure TSynBaseCompletionProposalForm.SetResizeable(const Value: Boolean);
 begin
   FResizeable := Value;
+  if Resizeable then
+    FGripperHeight := cGripperBarHeight
+  else
+    FGripperHeight := 0;
   RecreateWnd;
 end;
 
@@ -1821,10 +1941,10 @@ begin
   Canvas.Font.Assign(FFont);
   FFontHeight := Canvas.TextHeight(TextHeightString);
   if FItemHeight > 0 then
-    FEffectiveItemHeight := FItemHeight
+    FEffectiveItemHeight := MulDiv(FItemHeight, CurrentPPI, 96)
   else
   begin
-    FEffectiveItemHeight := FFontHeight;
+    FEffectiveItemHeight := FFontHeight;   //fonts are scaled
   end;
 end;
 
@@ -1903,6 +2023,7 @@ begin
     inherited;
 end;
 
+
 function GetMDIParent (const Form: TSynForm): TSynForm;
 { Returns the parent of the specified MDI child form. But, if Form isn't a
   MDI child, it simply returns Form. }
@@ -1945,6 +2066,7 @@ begin
     SendMessage(ParentForm.Handle, WM_NCACTIVATE, Ord(Message.Active <> WA_INACTIVE), 0);
 end;
 
+
 procedure TSynBaseCompletionProposalForm.DoFormHide(Sender: TObject);
 begin
   if CurrentEditor <> nil then
@@ -1953,8 +2075,8 @@ begin
 //    (CurrentEditor as TCustomSynEdit).UpdateCaret;
     if (Owner as TSynBaseCompletionProposal).FontsAreScaled then
     begin
-      TitleFont.Height := MulDiv(TitleFont.Height, 96, CurrentEditor.CurrentPPI);
-      Font.Height := MulDiv(Font.Height, 96, CurrentEditor.CurrentPPI);
+      TitleFont.Height := MulDiv(TitleFont.Height, 96, CurrentPPI);
+      Font.Height := MulDiv(Font.Height, 96, CurrentPPI);
       TSynBaseCompletionProposal(Owner).FontsAreScaled := False;
     end;
     if DisplayType = ctCode then
@@ -1985,8 +2107,7 @@ begin
     (Owner as TSynBaseCompletionProposal).OnShow(Self);
 end;
 
-procedure TSynBaseCompletionProposalForm.WMEraseBackgrnd(
-  var Message: TMessage);
+procedure TSynBaseCompletionProposalForm.WMEraseBackgrnd(var Message: TMessage);
 begin
   Message.Result:=1;
 end;
@@ -1999,23 +2120,47 @@ begin
 end;
 
 procedure TSynBaseCompletionProposalForm.AdjustMetrics;
+var
+  scaledGripSize : integer;
 begin
+  FScaledMargin := MulDiv((Owner as TSynBaseCompletionProposal).Margin, CurrentPPI, 96);
+
   if DisplayType = ctCode then
   begin
     if FTitle <> '' then
-      FHeightBuffer := FTitleFontHeight + MulDiv(2 * FMargin, CurrentPPI, 96)
+    begin
+      FTitleHeight := FTitleFontHeight + MulDiv(2 * FMargin, CurrentPPI, 96);
+      FTitleRect := TRect.Create(0,0,ClientWidth, FTitleHeight);
+    end
     else
-      FHeightBuffer := 0;
+    begin
+      FTitleRect := TRect.Empty;
+      FTitleHeight := 0;
+    end;
 
-    if (ClientWidth >= FScrollbar.Width) and (ClientHeight >= FHeightBuffer) then
-      Bitmap.SetSize(ClientWidth - FScrollbar.Width, ClientHeight - FHeightBuffer);
+    if (ClientWidth >= FScrollbar.Width) and (ClientHeight >= FTitleHeight) then
+      FPaintBitmap.SetSize(ClientWidth - FScrollbar.Width, ClientHeight - FTitleHeight - FGripperHeight);
 
-    if (ClientWidth > 0) and (FHeightBuffer > 0) then
-      TitleBitmap.SetSize(ClientWidth, FHeightBuffer);
+    if (ClientWidth > 0) and (FTitleHeight > 0) then
+      FTitleBitmap.SetSize(ClientWidth, FTitleHeight);
+    if FResizeable then
+    begin
+      FGripperHeight := MulDiv(cGripperBarHeight, CurrentPPI, 96); //scaled.
+      FGripperBarRect := TRect.Create(0, ClientHeight - FGripperHeight, ClientWidth, ClientHeight);
+      scaledGripSize := MulDiv(cGripperBarHeight, CurrentPPI, 96);
+      FGripperRect := TRect.Create(ClientWidth - scaledGripSize, ClientHeight - scaledGripSize, ClientWidth, ClientHeight);
+    end
+    else
+    begin
+      FGripperBarRect := TRect.Empty;
+      FGripperRect := TRect.Empty;
+    end;
+
   end else
   begin
     if (ClientWidth > 0) and (ClientHeight > 0) then
-      Bitmap.SetSize(ClientWidth, ClientHeight);
+      FPaintBitmap.SetSize(ClientWidth, ClientHeight);
+    FGripperRect := TRect.Empty;
   end;
 end;
 
@@ -2025,8 +2170,8 @@ begin
   begin
     if Assigned(FScrollbar) then
     begin
-      FScrollbar.Top := FHeightBuffer;
-      FScrollbar.Height := ClientHeight - FHeightBuffer;
+      FScrollbar.Top := FTitleHeight;
+      FScrollbar.Height := ClientHeight - FTitleHeight - FGripperHeight;
       FScrollbar.Left := ClientWidth - FScrollbar.Width;
 
       if FAssignedList.Count - FLinesInWindow < 0 then
@@ -2199,7 +2344,7 @@ Var
     ctCode:
       begin
         tmpWidth := MulDiv(FWidth, ActivePPI, 96);
-        tmpHeight := Form.FHeightBuffer + Form.FEffectiveItemHeight * FNbLinesInWindow;
+        tmpHeight := Form.FTitleHeight + Form.FGripperHeight +  Form.FEffectiveItemHeight * FNbLinesInWindow;
       end;
     ctHint:
       begin
@@ -2265,6 +2410,18 @@ begin
 
   DisplayType := Kind;
 
+  if DisplayType = ctCode then
+  begin
+    //if the form is sized too small the metrics calcs fall over.
+    Form.Constraints.MinHeight := 100;
+    Form.Constraints.MinWidth := 100;
+  end
+  else
+  begin
+    Form.Constraints.MinHeight := 0;
+    Form.Constraints.MinWidth := 0;
+  end;
+
   FCanExecute := True;
   if Assigned(OnExecute) then
     OnExecute(Kind, Self, s, x, y, FCanExecute);
@@ -2277,7 +2434,7 @@ begin
   end;
 
   Form.PopupMode := pmExplicit;
-  if (Kind =  ctCode) then Form.FormStyle := fsStayOnTop;
+  if (Kind =  ctCode) then Form.FormStyle := fsStayOnTop; //this never gets reset??
 
   if Assigned(Form.CurrentEditor) then
   begin
