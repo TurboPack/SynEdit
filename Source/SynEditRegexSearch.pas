@@ -65,7 +65,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     function FindAll(const NewText: string): Integer; override;
-    function PreprocessReplaceExpression(const AReplace: string): string; override;    
+    function PreprocessReplaceExpression(const AReplace: string): string; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
 
@@ -78,15 +78,15 @@ uses
   System.SysUtils,
   Consts;
 
-
+{$IF (CompilerVersion <= 35) and not Declared(RTLVersion112)}
 type
   { TPerlRegExHelper }
 
   TPerlRegExHelper = class helper for TPerlRegEx
-    procedure SetAdditionalPCREOptions(PCREOptions : Integer);
+    procedure AddRawOptions(PCREOptions : Integer);
   end;
 
-procedure TPerlRegExHelper.SetAdditionalPCREOptions(PCREOptions: Integer);
+procedure TPerlRegExHelper.AddRawOptions(PCREOptions: Integer);
 begin
   with Self do FPCREOptions := FPCREOptions or PCREOptions;
 end;
@@ -94,13 +94,14 @@ end;
 type
   TRegExHelper = record helper for TRegEx
   public
-    procedure SetAdditionalPCREOptions(PCREOptions : Integer);
+    procedure AddRawOptions(PCREOptions : Integer);
   end;
 
-procedure TRegExHelper.SetAdditionalPCREOptions(PCREOptions: Integer);
+procedure TRegExHelper.AddRawOptions(PCREOptions: Integer);
 begin
-  with Self do FRegEx.SetAdditionalPCREOptions(PCREOptions);
+  with Self do FRegEx.AddRawOptions(PCREOptions);
 end;
+{$ENDIF}
 
 { TSynEditRegexSearch }
 
@@ -156,14 +157,14 @@ begin
   else
     fOptions := [roIgnoreCase];
   RegEx := TRegEx.Create(fPattern, fOptions);
-  RegEx.SetAdditionalPCREOptions(PCRE_UCP);
+  RegEx.AddRawOptions(PCRE_UCP);
 end;
 
 procedure TSynEditRegexSearch.SetPattern(const Value: string);
 begin
   fPattern := Value;
   RegEx := TRegEx.Create(fPattern, fOptions);
-  RegEx.SetAdditionalPCREOptions(PCRE_UCP);
+  RegEx.AddRawOptions(PCRE_UCP);
 end;
 
 end.
