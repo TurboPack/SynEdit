@@ -232,6 +232,11 @@ begin
   if FLine[Run] = '0' then
     if FLine[Run + 1] <> '.' then
     begin
+      if CharInSet(FLine[Run + 1], [',', #32]) then
+      begin
+        Inc(Run);
+        Exit;
+      end;
       FTokenID := tkUnknown;
       while (FLine[Run] <> #32) and not IsLineEnd(Run) do Inc(Run);
       Exit;
