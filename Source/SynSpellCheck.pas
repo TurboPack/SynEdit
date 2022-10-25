@@ -202,7 +202,6 @@ type
 
   TSynSpellCheck = class;
 
-
   TSpellCheckPlugin = class(TSynEditPlugin)
   private
     procedure RegisterIndicatorSpec;
@@ -245,6 +244,7 @@ type
     FCheckAsYouType: Boolean;
     FDictionaryNA: Boolean;
     FWorkList: TList<TWorkItem>;
+    FOnChange: TNotifyEvent;
     procedure CreateSpellChecker;
     procedure SetLanguageCode(const Value: string);
     procedure SetEditor(const Value: TCustomSynEdit);
@@ -286,6 +286,7 @@ type
       write SetAttributesChecked;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
     property CheckAsYouType: Boolean read FCheckAsYouType write FCheckAsYouType;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
 {$ENDREGION 'TSynSpellCheck'}
@@ -368,6 +369,7 @@ uses
   SynEditTypes,
   SynUnicode,
   SynDWrite,
+  SynEditMiscProcs,
   SynEditHighlighter,
   SynHighlighterURI,
   SynEditTextBuffer;
@@ -472,8 +474,13 @@ var
   Plugin: TSpellCheckPlugin;
 begin
   if FUpdateCount = 0 then
-  for Plugin in FPlugins do
-    Plugin.Changed(LangId);
+  begin
+    for Plugin in FPlugins do
+      Plugin.Changed(LangId);
+
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
 end;
 
 constructor TSynSpellCheck.Create(AOwner: TComponent);
@@ -502,6 +509,7 @@ end;
 procedure TSynSpellCheck.CreateSpellChecker;
 begin
   FSpellChecker := nil;
+
   if not Assigned(SpellCheckFactory()) then
   begin
     FDictionaryNA := True;
@@ -543,9 +551,7 @@ var
 begin
   if not Assigned(FEditor) then Exit;
 
-  if not FEditor.Indicators.IndicatorAtPos(BC, Indicator) or
-    (Indicator.Id <> SpellErrorIndicatorId)
-  then
+  if not FEditor.Indicators.IndicatorAtPos(BC, SpellErrorIndicatorId, Indicator) then
     Exit;
 
   Result := SpellCheckLine(FEditor, BC.Line, 0, MaxInt, BC.Char);
@@ -774,9 +780,18 @@ begin
 end;
 
 procedure TSpellCheckPlugin.LinePut(aIndex: Integer; const OldLine: string);
+var
+  Line: string;
+  Len1, Len2: Integer;
+  StartingPos: Integer;
 begin
   if Assigned(FSynSpellCheck.SpellChecker()) and FSynSpellCheck.CheckAsYouType then
-    FSynSpellCheck.SpellCheckLine(Editor, aIndex + 1);
+  begin
+    Line := Editor.Lines[aIndex];
+    LineDiff(Line, OldLine, StartingPos, Len1, Len2);
+    if (Len1 <> 0) or (Len2 <> 1) or not Editor.IsIdentChar(Line[StartingPos]) then
+      FSynSpellCheck.SpellCheckLine(Editor, aIndex + 1);
+  end;
 end;
 
 procedure TSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);

@@ -47,6 +47,7 @@ uses
   System.Math,
   System.Generics.Collections,
   Vcl.Controls,
+  SynEditMiscProcs,
   SynEditTextBuffer;
 
 type
@@ -750,23 +751,8 @@ begin
 
   FIndex := Index;
   Line := Editor.Lines[Index];
-  Len1 := OldLine.Length;
-  Len2 := Line.Length;
-  // Compare from start
-  FStartPos := 1;
-  while (Len1 > 0) and (Len2 > 0) and (OldLine[FStartPos] = Line[FStartPos]) do
-  begin
-    Dec(Len1);
-    Dec(Len2);
-    Inc(FStartPos);
-  end;
-  // Compare from end
-  while (Len1 > 0) and (Len2 > 0) and
-    (OldLine[Len1 + FStartPos - 1] = Line[len2 + FStartPos - 1]) do
-  begin
-    Dec(len1);
-    Dec(len2);
-  end;
+
+  LineDiff(Line, OldLine, FStartPos, Len1, Len2);
 
   FOldValue := Copy(OldLine, FStartPos, Len1);
   FNewValue := Copy(Line, FStartPos, Len2);

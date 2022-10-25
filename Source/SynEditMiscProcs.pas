@@ -128,6 +128,10 @@ function DefaultFontName: string;
 
 function GetCorrectFontWeight(Font: TFont): Integer;
 
+// Calculates the difference between two lines
+// Returns the starting point of the difference and the lengths of the change
+procedure LineDiff(Const Line, OldLine: string; out StartPos, Len1, Len2: Integer);
+
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 {$ENDIF}
@@ -745,7 +749,6 @@ begin
   end;
 end;
 
-
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 begin
@@ -763,5 +766,26 @@ begin
   until Result >= NewCount;
 end;
 {$ENDIF}
+
+procedure LineDiff(Const Line, OldLine: string; out StartPos, Len1, Len2: Integer);
+begin
+  Len1 := OldLine.Length;
+  Len2 := Line.Length;
+  // Compare from start
+  StartPos := 1;
+  while (Len1 > 0) and (Len2 > 0) and (OldLine[StartPos] = Line[StartPos]) do
+  begin
+    Dec(Len1);
+    Dec(Len2);
+    Inc(StartPos);
+  end;
+  // Compare from end
+  while (Len1 > 0) and (Len2 > 0) and
+    (OldLine[Len1 + StartPos - 1] = Line[len2 + StartPos - 1]) do
+  begin
+    Dec(len1);
+    Dec(len2);
+  end;
+end;
 
 end.

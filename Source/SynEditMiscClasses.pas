@@ -553,9 +553,9 @@ type
   end;
 
   TSynIndicator = record
-    Id: TGuid;
+    Id: TGUID;
     CharStart, CharEnd : Integer;
-    constructor Create(aId: TGuid; aCharStart, aCharEnd: Integer);
+    constructor Create(aId: TGUID; aCharStart, aCharEnd: Integer);
     class operator Equal(const A, B: TSynIndicator): Boolean;
   end;
 
@@ -568,21 +568,24 @@ type
   public
     constructor Create(Owner: TCustomControl);
     destructor Destroy; override;
-    procedure RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
+    procedure RegisterSpec(Id: TGUID; Spec: TSynIndicatorSpec);
     function GetSpec(Id: TGUID): TSynIndicatorSpec;
     procedure Add(Line: Integer; Indicator: TSynIndicator; Invalidate: Boolean = True);
     // Clears all indicators
     procedure Clear; overload;
     // Clears all indicators with a given Id
-    procedure Clear(Id: TGuid; Invalidate: Boolean = True; Line: Integer = -1);
+    procedure Clear(Id: TGUID; Invalidate: Boolean = True; Line: Integer = -1);
         overload;
     // Clears just one indicator
     procedure Clear(Line: Integer; const Indicator: TSynIndicator); overload;
     // Returns the indicators of a given line
     function LineIndicators(Line: Integer): TArray<TSynIndicator>;
     // Return the indicator at a given buffer or window position
-    function IndicatorAtPos(Pos: TBufferCoord; var Indicator: TSynIndicator): Boolean;
-    function IndicatorAtMousePos(MousePos: TPoint; var Indicator: TSynIndicator): Boolean;
+    function IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var Indicator:
+        TSynIndicator): Boolean; overload;
+    function IndicatorAtPos(Pos: TBufferCoord; var Indicator: TSynIndicator): Boolean; overload;
+    function IndicatorAtMousePos(MousePos: TPoint; const Id: TGUID; var Indicator: TSynIndicator): Boolean; overload;
+    function IndicatorAtMousePos(MousePos: TPoint; var Indicator: TSynIndicator): Boolean; overload;
     // Should only used by Synedit
     procedure LinesInserted(FirstLine, Count: Integer);
     procedure LinesDeleted(FirstLine, Count: Integer);
@@ -2514,7 +2517,7 @@ begin
   FList.Clear;
 end;
 
-procedure TSynIndicators.Clear(Id: TGuid; Invalidate: Boolean = True; Line: Integer = -1);
+procedure TSynIndicators.Clear(Id: TGUID; Invalidate: Boolean = True; Line: Integer = -1);
 
   procedure ProcessLine(ALine: Integer);
   var
@@ -2587,8 +2590,8 @@ begin
   Result := FRegister[Id];
 end;
 
-function TSynIndicators.IndicatorAtMousePos(MousePos: TPoint;
-  var Indicator: TSynIndicator): Boolean;
+function TSynIndicators.IndicatorAtMousePos(MousePos: TPoint; const Id: TGUID;
+    var Indicator: TSynIndicator): Boolean;
 var
   DC: TDisplayCoord;
   BC: TBufferCoord;
@@ -2597,11 +2600,23 @@ begin
   Editor := FOwner as TCustomSynEdit;
   DC := Editor.PixelsToRowColumn(MousePos.X, MousePos.Y);
   BC := Editor.DisplayToBufferPos(DC);
-  Result := IndicatorAtPos(BC, Indicator);
+  Result := IndicatorAtPos(BC, Id, Indicator);
 end;
 
-function TSynIndicators.IndicatorAtPos(Pos: TBufferCoord; var Indicator:
-    TSynIndicator): Boolean;
+function TSynIndicators.IndicatorAtMousePos(MousePos: TPoint;
+  var Indicator: TSynIndicator): Boolean;
+begin
+  Result := IndicatorAtMousePos(MousePos, TGUID.Empty, Indicator);
+end;
+
+function TSynIndicators.IndicatorAtPos(Pos: TBufferCoord;
+  var Indicator: TSynIndicator): Boolean;
+begin
+  Result := IndicatorAtPos(Pos, TGUID.Empty, Indicator);
+end;
+
+function TSynIndicators.IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var
+    Indicator: TSynIndicator): Boolean;
 var
   LineIndicators:  TArray<TSynIndicator>;
   LIndicator: TSynIndicator;
@@ -2610,7 +2625,8 @@ begin
   if FList.TryGetValue(Pos.Line, LineIndicators) then
   begin
     for LIndicator in LineIndicators do
-      if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd - 1) then
+      if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd - 1) and
+       ((Id = TGUID.Empty) or (Indicator.Id = Id)) then
       begin
         Indicator := LIndicator;
         Exit(True);
@@ -2755,7 +2771,7 @@ begin
   RT.PopAxisAlignedClip;
 end;
 
-procedure TSynIndicators.RegisterSpec(Id: TGuid; Spec: TSynIndicatorSpec);
+procedure TSynIndicators.RegisterSpec(Id: TGUID; Spec: TSynIndicatorSpec);
 begin
   if FRegister = nil then
     FRegister := TDictionary<TGUID, TSynIndicatorSpec>.Create;
@@ -2766,7 +2782,7 @@ end;
 
 { TSynIndicator }
 
-constructor TSynIndicator.Create(aId: TGuid; aCharStart, aCharEnd: Integer);
+constructor TSynIndicator.Create(aId: TGUID; aCharStart, aCharEnd: Integer);
 begin
   Self.Id := aId;
   Self.CharStart := aCharStart;
