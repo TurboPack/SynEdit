@@ -2626,7 +2626,7 @@ begin
   begin
     for LIndicator in LineIndicators do
       if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd - 1) and
-       ((Id = TGUID.Empty) or (Indicator.Id = Id)) then
+       ((Id = TGUID.Empty) or (LIndicator.Id = Id)) then
       begin
         Indicator := LIndicator;
         Exit(True);

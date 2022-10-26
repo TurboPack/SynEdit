@@ -223,7 +223,7 @@ type
   { Singleton class you can/need only have one instance in your application}
   TSynSpellCheck = class(TComponent)
   public
-    const SpellErrorIndicatorId: TGUID  = '{A59BCD6A-02A6-4B34-B28C-D9EACA0C9F09}';
+    const SpellErrorIndicatorId: TGUID  = '{CAD19326-12B3-4190-9241-99DE3FDDE214}';
     class var GlobalInstance: TSynSpellCheck;
   private type
     TWorkItem = record
@@ -252,6 +252,7 @@ type
     procedure SetUnderlineStyle(const Value: TUnderlineStyle);
     procedure SetAttributesChecked(const Value: TStrings);
     class var FSpellCheckFactory: ISpellCheckerFactory;
+    procedure SetCheckAsYouType(const Value: Boolean);
   protected
     procedure Notification(AComponent: TComponent;
       Operation: TOperation); override;
@@ -285,7 +286,7 @@ type
     property AttributesChecked: TStrings read FAttributesChecked
       write SetAttributesChecked;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
-    property CheckAsYouType: Boolean read FCheckAsYouType write FCheckAsYouType;
+    property CheckAsYouType: Boolean read FCheckAsYouType write SetCheckAsYouType;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
@@ -589,6 +590,15 @@ begin
   Changed;
 end;
 
+procedure TSynSpellCheck.SetCheckAsYouType(const Value: Boolean);
+begin
+  if Value <> FCheckAsYouType then
+  begin
+    FCheckAsYouType := Value;
+    Changed;
+  end;
+end;
+
 procedure TSynSpellCheck.SetEditor(const Value: TCustomSynEdit);
 begin
   if Value <> FEditor then
@@ -785,6 +795,8 @@ var
   Len1, Len2: Integer;
   StartingPos: Integer;
 begin
+  if Editor <> FSynSpellCheck.Editor then Exit;  // Chained editors
+
   if Assigned(FSynSpellCheck.SpellChecker()) and FSynSpellCheck.CheckAsYouType then
   begin
     Line := Editor.Lines[aIndex];
@@ -798,6 +810,8 @@ procedure TSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);
 var
   Line: Integer;
 begin
+  if Editor <> FSynSpellCheck.Editor then Exit;
+
   if Assigned(FSynSpellCheck.SpellChecker()) and FSynSpellCheck.CheckAsYouType then
     for Line := FirstLine + 1 to FirstLine + Count do
       FSynSpellCheck.SpellCheckLine(Editor, Line);
