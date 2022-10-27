@@ -152,7 +152,7 @@ type
     function GetOwner: TPersistent; override;
   public
     constructor Create(Gutter: TSynGutter);
-    procedure Assign(Source: TPersistent); Override;
+    procedure Assign(Source: TPersistent); override;
   published
     property Width: Integer read FWidth write SetWidth default 4;
     property Visible: Boolean read FVisible write SetVisible default False;
@@ -2352,17 +2352,23 @@ end;
 {$REGION 'TTrackChanges'}
 
 procedure TSynTrackChanges.Assign(Source: TPersistent);
-var
-  Src: TSynTrackChanges;
 begin
   if Assigned(Source) and (Source is TSynTrackChanges) then
   begin
-    Src := TSynTrackChanges(Source);
-    FWidth := Src.Width;
-    FSavedColor := Src.SavedColor;
-    FModifiedColor := Src.ModifiedColor;
-    FSavedModifiedColor :=  Src.SavedModifiedColor;
-    FOriginalColor := Src.OriginalColor;
+    var Src := TSynTrackChanges(Source);
+    if Assigned(FOwner) then
+      FOwner.BeginUpdate;
+    try
+      FVisible := Src.Visible;
+      FWidth := Src.Width;
+      FSavedColor := Src.SavedColor;
+      FModifiedColor := Src.ModifiedColor;
+      FSavedModifiedColor :=  Src.SavedModifiedColor;
+      FOriginalColor := Src.OriginalColor;
+    finally
+      if Assigned(FOwner) then
+        FOwner.EndUpdate;
+    end;
   end
   else
     inherited;
@@ -2389,7 +2395,7 @@ begin
   if FModifiedColor <> Value then
   begin
     FModifiedColor := Value;
-    if FVisible then
+    if FVisible and Assigned(FOwner) then
       FOwner.Changed;
   end;
 end;
@@ -2399,7 +2405,7 @@ begin
   if FOriginalColor <> Value then
   begin
     FOriginalColor := Value;
-    if FVisible then
+    if FVisible and Assigned(FOwner) then
       FOwner.Changed;
   end;
 end;
@@ -2409,7 +2415,7 @@ begin
   if FSavedColor <> Value then
   begin
     FSavedColor := Value;
-    if FVisible then
+    if FVisible and Assigned(FOwner) then
       FOwner.Changed;
   end;
 end;
@@ -2419,7 +2425,7 @@ begin
   if FSavedModifiedColor <> Value then
   begin
     FSavedModifiedColor := Value;
-    if FVisible then
+    if FVisible and Assigned(FOwner) then
       FOwner.Changed;
   end;
 end;
@@ -2429,7 +2435,8 @@ begin
   if FVisible <> Value then
   begin
     FVisible := Value;
-    FOwner.Changed;
+    if Assigned(FOwner) then
+      FOwner.Changed;
   end;
 end;
 
@@ -2438,7 +2445,7 @@ begin
   if FWidth <> Value then
   begin
     FWidth := Value;
-    if FVisible then
+    if FVisible and Assigned(FOwner) then
       FOwner.Changed;
   end;
 end;
