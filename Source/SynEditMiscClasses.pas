@@ -617,14 +617,14 @@ begin
 end;
 
 procedure TSynSelectedColor.Assign(Source: TPersistent);
-var
-  Src: TSynSelectedColor;
 begin
   if (Source <> nil) and (Source is TSynSelectedColor) then
   begin
-    Src := TSynSelectedColor(Source);
+    var Src := TSynSelectedColor(Source);
     FBG := Src.FBG;
     FFG := Src.FFG;
+    FAlpha := Src.Alpha;
+    FFillWholeLines := Src.FillWholeLines;
     if Assigned(FOnChange) then
       FOnChange(Self);
   end
