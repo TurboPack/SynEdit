@@ -8154,10 +8154,10 @@ var
   Index, PosX, PosY, Len: Integer;
   Test, BracketInc, BracketDec: WideChar;
   NumBrackets: Integer;
-  vDummy: string;
-  attr: TSynHighlighterAttributes;
-  p: TBufferCoord;
-  isCommentOrString: Boolean;
+  SDummy: string;
+  Attr: TSynHighlighterAttributes;
+  P: TBufferCoord;
+  IsCommentOrString: Boolean;
 begin
   Result.Char := 0;
   Result.Line := 0;
@@ -8185,25 +8185,22 @@ begin
           begin
             Dec(PosX);
             Test := Line[PosX];
-            p.Char := PosX;
-            p.Line := PosY;
+            P.Char := PosX;
+            P.Line := PosY;
             if (Test = BracketInc) or (Test = BracketDec) then
             begin
-              if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
-                isCommentOrString := (attr = Highlighter.StringAttribute) or
-                  (attr = Highlighter.CommentAttribute)
-              else
-                isCommentOrString := False;
-              if (Test = BracketInc) and (not isCommentOrString) then
+              IsCommentOrString := GetHighlighterAttriAtRowCol(P, SDummy, Attr) and
+                ((Attr = Highlighter.StringAttribute) or (Attr = Highlighter.CommentAttribute));
+              if (Test = BracketInc) and (not IsCommentOrString) then
                 Inc(NumBrackets)
-              else if (Test = BracketDec) and (not isCommentOrString) then
+              else if (Test = BracketDec) and (not IsCommentOrString) then
               begin
                 Dec(NumBrackets);
                 if NumBrackets = 0 then
                 begin
                   // matching bracket found, set caret and bail out
                   Result := P;
-                  exit;
+                  Exit;
                 end;
               end;
             end;
@@ -8223,25 +8220,22 @@ begin
           begin
             Inc(PosX);
             Test := Line[PosX];
-            p.Char := PosX;
-            p.Line := PosY;
+            P.Char := PosX;
+            P.Line := PosY;
             if (Test = BracketInc) or (Test = BracketDec) then
             begin
-              if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
-                isCommentOrString := (attr = Highlighter.StringAttribute) or
-                  (attr = Highlighter.CommentAttribute)
-              else
-                isCommentOrString := False;
-              if (Test = BracketInc) and (not isCommentOrString) then
+              IsCommentOrString := GetHighlighterAttriAtRowCol(P, SDummy, Attr) and
+                ((Attr = Highlighter.StringAttribute) or (Attr = Highlighter.CommentAttribute));
+              if (Test = BracketInc) and (not IsCommentOrString) then
                 Inc(NumBrackets)
-              else if (Test = BracketDec)and (not isCommentOrString) then
+              else if (Test = BracketDec)and (not IsCommentOrString) then
               begin
                 Dec(NumBrackets);
                 if NumBrackets = 0 then
                 begin
                   // matching bracket found, set caret and bail out
                   Result := P;
-                  exit;
+                  Exit;
                 end;
               end;
             end;
