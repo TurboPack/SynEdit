@@ -11,7 +11,7 @@ The master branch remains compatible with Delphi 10.1 Berlin or later.
 
 ## Introduction
 
-![SynEdit](https://raw.githubusercontent.com/TurboPack/SynEdit/master/Doc/SynEdit-1.3.png "TurboPower SynEdit")
+![SynEdit](https://raw.githubusercontent.com/pyscripter/SynEdit/master/Doc/SynEdit-1.3.png "TurboPower SynEdit")
 
 
 SynEdit is a syntax highlighting edit control, not based on the Windows 
@@ -38,9 +38,7 @@ C++Builder
 
 ## Installation
 
-TurboPack SynEdit is available via the [GetIt Package Manager](http://docwiki.embarcadero.com/RADStudio/en/Installing_a_Package_Using_GetIt_Package_Manager) where you can quickly and easily install and uninstall it.
-
-To manually install TurboPack SynEdit into your IDE, take the following
+To install  SynEdit into your IDE, take the following
 steps:
 
 1. Unzip the release files into a directory (e.g., d:\SynEdit).
