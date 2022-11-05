@@ -112,6 +112,7 @@ type
     procedure SetEnabled(const Value: Boolean);
     procedure SetAdditionalIdentChars(const Value: TSysCharSet);
     procedure SetAdditionalWordBreakChars(const Value: TSysCharSet);
+    function IsBracketsStored: Boolean;
   protected
     fCasedLine: PWideChar;
     fCasedLineStr: string;
@@ -125,6 +126,8 @@ type
     fToIdent: PWideChar;
     fTokenPos: Integer;
     fUpdateChange: Boolean;
+    fBrackets: string;
+    DefaultBrackets: string;
     Run: Integer;
     fOldRun: Integer;
     // If FScanningToEOL is true then only ranges need to be scanned.
@@ -208,6 +211,8 @@ type
       index SYN_ATTR_WHITESPACE read GetDefaultAttribute;
     property ExportName: string read GetExportName;
   published
+    property Brackets: string read fBrackets write fBrackets
+      stored IsBracketsStored;
     property DefaultFilter: string read GetDefaultFilter write SetDefaultFilter
       stored IsFilterStored;
     property Enabled: Boolean read fEnabled write SetEnabled default True;
@@ -718,6 +723,8 @@ begin
   fAttrChangeHooks := TSynNotifyEventChain.CreateEx(Self);
   fDefaultFilter := '';
   fEnabled := True;
+  DefaultBrackets := '()[]{}';
+  fBrackets := DefaultBrackets;
 end;
 
 destructor TSynCustomHighlighter.Destroy;
@@ -790,6 +797,7 @@ begin
       //fWordBreakChars := Src.WordBreakChars; //TODO: does this make sense anyway?
       DefaultFilter := Src.DefaultFilter;
       Enabled := Src.Enabled;
+      Brackets := Src.Brackets;
     finally
       EndUpdate;
     end;
@@ -963,6 +971,11 @@ end;
 procedure TSynCustomHighlighter.HookAttrChangeEvent(ANotifyEvent: TNotifyEvent);
 begin
   fAttrChangeHooks.Add(ANotifyEvent);
+end;
+
+function TSynCustomHighlighter.IsBracketsStored: Boolean;
+begin
+  Result := FBrackets <> DefaultBrackets;
 end;
 
 function TSynCustomHighlighter.IsCurrentToken(const Token: string): Boolean;

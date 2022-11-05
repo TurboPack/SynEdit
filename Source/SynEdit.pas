@@ -149,7 +149,8 @@ type
     eoTrimTrailingSpaces,      //Spaces at the end of lines will be trimmed and not saved
     eoShowLigatures,           //Shows font ligatures, by default it is disabled
     eoCopyPlainText,           //Do not include additional clipboard formats when you copy to Clipboard or drag text
-    eoWrapWithRightEdge        //WordWrap with RightEdge position instead of the whole text area
+    eoWrapWithRightEdge,       //WordWrap with RightEdge position instead of the whole text area
+    eoBracketsHighlight        //Enable bracket highlighting
     );
 
   TSynEditorOptions = set of TSynEditorOption;
@@ -158,7 +159,8 @@ const
   SYNEDIT_DEFAULT_OPTIONS = [eoAutoIndent, eoDragDropEditing, eoKeepCaretX,
     eoEnhanceHomeKey, eoEnhanceEndKey, eoHideShowScrollbars,
     eoDisableScrollArrows, eoShowScrollHint, eoTabIndent, eoTabsToSpaces,
-    eoSmartTabDelete, eoGroupUndo, eoDropFiles, eoShowLigatures];
+    eoSmartTabDelete, eoGroupUndo, eoDropFiles, eoShowLigatures,
+    eoBracketsHighlight];
 
 type
   TCreateParamsW = record
@@ -391,6 +393,7 @@ type
     FTextFormat: TSynTextFormat;
     SelStartBeforeSearch: integer;
     SelLengthBeforeSearch: integer;
+    FBracketsHighlight: TSynBracketsHighlight;
 
     // event handlers
     fOnChange: TNotifyEvent;
@@ -491,7 +494,7 @@ type
     procedure ReadRemovedKeystrokes(Reader: TReader);
     function ScanFrom(Index: Integer): Integer;
     procedure ScrollTimerHandler(Sender: TObject);
-    procedure SelectedColorsChanged(Sender: TObject);
+    procedure SelectedColorChanged(Sender: TObject);
     procedure SetBlockBegin(Value: TBufferCoord);
     procedure SetBlockEnd(Value: TBufferCoord);
     procedure SetBorderStyle(Value: TSynBorderStyle);
@@ -570,6 +573,7 @@ type
     procedure DecPaintLock;
     procedure DefineProperties(Filer: TFiler); override;
     procedure DoChange; virtual;
+    procedure HighlightBrackets; virtual;
     //++ Ole Drag & Drop
     procedure OleDragEnter(Sender : TObject; DataObject : IDataObject;
       State : TShiftState; MousePt : TPoint; var Effect: LongInt;
@@ -846,6 +850,7 @@ type
     property Cursor default crIBeam;
     property Font;
     property Indicators: TSynIndicators read FIndicators;
+    property BracketsHighlight: TSynBracketsHighlight read FBracketsHighlight;
     property Highlighter: TSynCustomHighlighter read fHighlighter
       write SetHighlighter;
     property LeftChar: Integer read fLeftChar write SetLeftChar;
@@ -1440,7 +1445,7 @@ begin
   DoubleBuffered := False;
   fActiveLineColor := clNone;
   fSelectedColor := TSynSelectedColor.Create;
-  fSelectedColor.OnChange := SelectedColorsChanged;
+  fSelectedColor.OnChange := SelectedColorChanged;
   FIndentGuides := TSynIndentGuides.Create;
   FIndentGuides.OnChange := IndentGuidesChanged;
   fBookMarkOpt := TSynBookMarkOpt.Create(Self);
@@ -1453,6 +1458,7 @@ begin
   fWordWrapGlyph := TSynGlyph.Create(HINSTANCE, 'SynEditWrapped');
   fWordWrapGlyph.OnChange := WordWrapGlyphChange;
   FIndicators := TSynIndicators.Create(Self);
+  FBracketsHighlight := TSynBracketsHighlight.Create(Self);
 
   ControlStyle := ControlStyle + [csOpaque, csSetCaption, csNeedsBorderPaint];
   Height := 150;
@@ -1480,7 +1486,7 @@ begin
   fFocusList := TList.Create;
   fKbdHandler := TSynEditKbdHandler.Create;
   fKeystrokes := TSynEditKeyStrokes.Create(Self);
-  fMarkList := TSynEditMarkList.Create(self);
+  fMarkList := TSynEditMarkList.Create(Self);
   fMarkList.OnChange := MarkListChange;
   SetDefaultKeystrokes;
   fRightEdgeColor := clSilver;
@@ -1496,6 +1502,7 @@ begin
   fBlockBegin.Line := 1;
   fBlockEnd := fBlockBegin;
   fOptions := SYNEDIT_DEFAULT_OPTIONS;
+
   fScrollTimer := TTimer.Create(Self);
   fScrollTimer.Enabled := False;
   fScrollTimer.Interval := 100;
@@ -1582,6 +1589,7 @@ begin
   fOrigUndoRedo := nil;
   fGutter.Free;
   fWordWrapGlyph.Free;
+  FBracketsHighlight.Free;
   FIndicators.Free;
   fFontDummy.Free;
   fOrigLines.Free;
@@ -2118,6 +2126,7 @@ begin
     if not (eoScrollPastEof in Options) then
       TopLine := TopLine;
   end;
+  HighlightBrackets;
   DoChange;
 end;
 
@@ -6916,7 +6925,7 @@ begin
   end;
 end;
 
-procedure TCustomSynEdit.SelectedColorsChanged(Sender: TObject);
+procedure TCustomSynEdit.SelectedColorChanged(Sender: TObject);
 begin
   InvalidateSelection;
 end;
@@ -7433,6 +7442,64 @@ begin
   end
   else
     CaretXY := Value;
+end;
+
+procedure TCustomSynEdit.HighlightBrackets;
+
+  function PosHasBracket(Pos: TBufferCoord): Boolean;
+  var
+    Token: string;
+    Attri: TSynHighlighterAttributes;
+  begin
+    Result := GetHighlighterAttriAtRowCol(Pos, Token, Attri) and
+      (Attri = fHighlighter.SymbolAttribute) and (Token.Length = 1) and
+      (fHighlighter.Brackets.IndexOf(Token[1]) >= 0);
+  end;
+
+var
+  BracketPos,
+  MatchingBracketPos: TBufferCoord;
+  HasBracket: Boolean;
+  Indicator: TSynIndicator;
+begin
+  if (eoBracketsHighlight in FOptions) and Assigned(fHighlighter) then
+  begin
+    Indicators.Clear(BracketsHighlight.MatchingBracketsIndicatorID);
+    Indicators.Clear(BracketsHighlight.UnbalancedBracketIndicatorID);
+
+    BracketPos := CaretXY;
+    MatchingBracketPos := BufferCoord(0,0);
+
+    // First Look at the previous character like Site
+    if BracketPos.Char > 1 then Dec(BracketPos.Char);
+    HasBracket := PosHasBracket(BracketPos);
+    //if it is not a bracket then look at the next character;
+    if not HasBracket and (CaretX > 1) then
+    begin
+      Inc(BracketPos.Char);
+      HasBracket := PosHasBracket(BracketPos);
+    end;
+
+    if HasBracket then
+    begin
+      MatchingBracketPos := GetMatchingBracketEx(BracketPos, fHighlighter.Brackets);
+      if MatchingBracketPos.Char = 0 then
+      begin
+        Indicator := TSynIndicator.Create(fBracketsHighlight.UnbalancedBracketIndicatorID,
+          BracketPos.Char, BracketPos.Char + 1);
+        Indicators.Add(BracketPos.Line, Indicator);
+      end
+      else
+      begin
+        Indicator := TSynIndicator.Create(fBracketsHighlight.MatchingBracketsIndicatorID,
+          BracketPos.Char, BracketPos.Char + 1);
+        Indicators.Add(BracketPos.Line, Indicator);
+        Indicator := TSynIndicator.Create(fBracketsHighlight.MatchingBracketsIndicatorID,
+          MatchingBracketPos.Char, MatchingBracketPos.Char + 1);
+        Indicators.Add(MatchingBracketPos.Line, Indicator);
+      end;
+    end;
+  end;
 end;
 
 procedure TCustomSynEdit.HighlighterAttrChanged(Sender: TObject);
@@ -8144,7 +8211,10 @@ end;
 
 function TCustomSynEdit.GetMatchingBracket: TBufferCoord;
 begin
-  Result := GetMatchingBracketEx(CaretXY);
+  if fHighlighter <> nil then
+    Result := GetMatchingBracketEx(CaretXY, fHighlighter.Brackets)
+  else
+    Result := GetMatchingBracketEx(CaretXY);
 end;
 
 function TCustomSynEdit.GetMatchingBracketEx(const APoint: TBufferCoord;
@@ -8450,11 +8520,11 @@ end;
 
 procedure TCustomSynEdit.DoOnStatusChange(Changes: TSynStatusChanges);
 begin
+  if Changes * [scCaretX, scCaretY] <> [] then
+    HighlightBrackets;
   if Assigned(fOnStatusChange) then
-  begin
     fOnStatusChange(Self, fStatusChanges);
-    fStatusChanges := [];
-  end;
+  fStatusChanges := [];
 end;
 
 procedure TCustomSynEdit.ModifiedChanged(Sender: TObject);

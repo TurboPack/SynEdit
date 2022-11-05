@@ -59,6 +59,7 @@ uses
   SynUnicode;
 
 type
+  {$REGION 'Selected Color'}
   TSynSelectedColor = class(TPersistent)
   private
     FBG: TColor;
@@ -81,6 +82,7 @@ type
     property FillWholeLines: Boolean read FFillWholeLines write SetFillWholeLines
       default True;
   end;
+  {$ENDREGION 'Selected Color'}
 
   {$REGION 'Indentation Guides'}
   TSynIdentGuidesStyle = (igsSolid, igsDotted);
@@ -550,6 +552,8 @@ type
     Foreground,
     Background: TD2D1ColorF;
     FontStyle: TFontStyles;
+    constructor Create(AStyle: TSynIndicatorStyle; AForeground, ABackground: TD2D1ColorF;
+      AFontStyle: TFontStyles);
   end;
 
   TSynIndicator = record
@@ -594,6 +598,22 @@ type
         ClipR: TRect; StartOffset: Integer);
   end;
   {$ENDREGION 'TSynIndicators'}
+
+  {$REGION 'Bracket Highlight'}
+  TSynBracketsHighlight = class
+  public
+    const MatchingBracketsIndicatorID: TGUID = '{EC19D246-8F03-42FE-BDFB-A11F3E60B00B}';
+    const UnbalancedBracketIndicatorID: TGUID = '{259B198E-9963-4BA3-BDC7-34BA12F3CB10}';
+  private
+    FOwner: TPersistent;
+  public
+    constructor Create(Owner: TPersistent);
+    procedure SetFontColorsAndStyle(const MatchingBracketsColor,
+        UnbalancedBracketColor: TColor; FontStyle: TFontStyles);
+    // SetIndicatorSpecs provides more painting options
+    procedure SetIndicatorSpecs(const MatchingBracketsSpec,
+      UnbalancedBracketSpec: TSynIndicatorSpec);
+  end;
 
 implementation
 
@@ -2784,8 +2804,17 @@ begin
     FRegister := TDictionary<TGUID, TSynIndicatorSpec>.Create;
   FRegister.AddOrSetValue(Id, Spec);
 end;
-{$ENDREGION}
 
+{ TSynIndicatorSpec }
+
+constructor TSynIndicatorSpec.Create(AStyle: TSynIndicatorStyle; AForeground,
+  ABackground: TD2D1ColorF; AFontStyle: TFontStyles);
+begin
+  Self.Style := AStyle;
+  Self.Foreground := AForeground;
+  Self.Background := ABackground;
+  Self.FontStyle := AFontStyle;
+end;
 
 { TSynIndicator }
 
@@ -2801,5 +2830,39 @@ begin
   Result := (A.Id = B.Id) and (A.CharStart = B.CharStart)
     and (A.CharEnd = B.CharEnd);
 end;
+{$ENDREGION}
+
+{$REGION 'TSynBracketsHighlight'}
+
+constructor TSynBracketsHighlight.Create(Owner: TPersistent);
+begin
+  inherited Create;
+  FOwner := Owner;
+  // Initialize with a blueish color
+  SetFontColorsAndStyle($FF8800, clRed, [fsBold]);
+end;
+
+procedure TSynBracketsHighlight.SetFontColorsAndStyle(
+  const MatchingBracketsColor, UnbalancedBracketColor: TColor;
+  FontStyle: TFontStyles);
+var
+  MatchingBracketsSpec, UnbalancedBracketSpec: TSynIndicatorSpec;
+begin
+  MatchingBracketsSpec.Create(sisTextDecoration, D2D1ColorF(MatchingBracketsColor), clNoneF, FontStyle);
+  UnbalancedBracketSpec.Create(sisTextDecoration, D2D1ColorF(UnbalancedBracketColor), clNoneF, FontStyle);
+  SetIndicatorSpecs(MatchingBracketsSpec, UnbalancedBracketSpec);
+end;
+
+procedure TSynBracketsHighlight.SetIndicatorSpecs(const MatchingBracketsSpec,
+  UnbalancedBracketSpec: TSynIndicatorSpec);
+begin
+  if FOwner is TCustomSynEdit then
+  begin
+    TCustomSynEdit(FOwner).Indicators.RegisterSpec(MatchingBracketsIndicatorID, MatchingBracketsSpec);
+    TCustomSynEdit(FOwner).Indicators.RegisterSpec(UnbalancedBracketIndicatorID, UnbalancedBracketSpec);
+  end;
+end;
+
+{$ENDREGION}
 
 end.
