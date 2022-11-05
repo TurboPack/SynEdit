@@ -571,13 +571,13 @@ type
     FOwner: TCustomControl;
     FRegister: TDictionary<TGUID, TSynIndicatorSpec>;
     FList: TDictionary<Integer, TArray<TSynIndicator>>;
-    procedure InvalidateIndicator(Line: Integer; Indicator: TSynIndicator);
+    procedure InvalidateIndicator(Line: Integer; const Indicator: TSynIndicator);
   public
     constructor Create(Owner: TCustomControl);
     destructor Destroy; override;
     procedure RegisterSpec(Id: TGUID; Spec: TSynIndicatorSpec);
     function GetSpec(Id: TGUID): TSynIndicatorSpec;
-    procedure Add(Line: Integer; Indicator: TSynIndicator; Invalidate: Boolean = True);
+    procedure Add(Line: Integer; const Indicator: TSynIndicator; Invalidate: Boolean = True);
     // Clears all indicators
     procedure Clear; overload;
     // Clears all indicators with a given Id
@@ -2529,7 +2529,7 @@ end;
 
 {$REGION 'TSynIndicators'}
 
-procedure TSynIndicators.Add(Line: Integer; Indicator: TSynIndicator;
+procedure TSynIndicators.Add(Line: Integer; const Indicator: TSynIndicator;
     Invalidate: Boolean = True);
 var
   Arr: TArray<TSynIndicator>;
@@ -2664,7 +2664,7 @@ begin
   end;
 end;
 
-procedure TSynIndicators.InvalidateIndicator(Line: Integer;  Indicator: TSynIndicator);
+procedure TSynIndicators.InvalidateIndicator(Line: Integer;  const Indicator: TSynIndicator);
 begin
   TCustomSynEdit(FOwner).InvalidateRange(BufferCoord(Indicator.CharStart, Line),
     BufferCoord(Indicator.CharEnd, Line));
