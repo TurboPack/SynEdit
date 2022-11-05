@@ -554,12 +554,15 @@ type
     FontStyle: TFontStyles;
     constructor Create(AStyle: TSynIndicatorStyle; AForeground, ABackground: TD2D1ColorF;
       AFontStyle: TFontStyles);
+    class function New(AStyle: TSynIndicatorStyle; AForeground, ABackground: TD2D1ColorF;
+      AFontStyle: TFontStyles): TSynIndicatorSpec; static;
   end;
 
   TSynIndicator = record
     Id: TGUID;
     CharStart, CharEnd : Integer;
     constructor Create(aId: TGUID; aCharStart, aCharEnd: Integer);
+    class function New(aId: TGUID; aCharStart, aCharEnd: Integer): TSynIndicator; static;
     class operator Equal(const A, B: TSynIndicator): Boolean;
   end;
 
@@ -2816,6 +2819,12 @@ begin
   Self.FontStyle := AFontStyle;
 end;
 
+class function TSynIndicatorSpec.New(AStyle: TSynIndicatorStyle; AForeground,
+  ABackground: TD2D1ColorF; AFontStyle: TFontStyles): TSynIndicatorSpec;
+begin
+  Result.Create(AStyle, AForeground, ABackground, AFontStyle);
+end;
+
 { TSynIndicator }
 
 constructor TSynIndicator.Create(aId: TGUID; aCharStart, aCharEnd: Integer);
@@ -2830,6 +2839,13 @@ begin
   Result := (A.Id = B.Id) and (A.CharStart = B.CharStart)
     and (A.CharEnd = B.CharEnd);
 end;
+
+class function TSynIndicator.New(aId: TGUID; aCharStart,
+  aCharEnd: Integer): TSynIndicator;
+begin
+  Result.Create(aId, aCharStart, aCharEnd);
+end;
+
 {$ENDREGION}
 
 {$REGION 'TSynBracketsHighlight'}
@@ -2845,12 +2861,10 @@ end;
 procedure TSynBracketsHighlight.SetFontColorsAndStyle(
   const MatchingBracketsColor, UnbalancedBracketColor: TColor;
   FontStyle: TFontStyles);
-var
-  MatchingBracketsSpec, UnbalancedBracketSpec: TSynIndicatorSpec;
 begin
-  MatchingBracketsSpec.Create(sisTextDecoration, D2D1ColorF(MatchingBracketsColor), clNoneF, FontStyle);
-  UnbalancedBracketSpec.Create(sisTextDecoration, D2D1ColorF(UnbalancedBracketColor), clNoneF, FontStyle);
-  SetIndicatorSpecs(MatchingBracketsSpec, UnbalancedBracketSpec);
+  SetIndicatorSpecs(
+    TSynIndicatorSpec.New(sisTextDecoration, D2D1ColorF(MatchingBracketsColor), clNoneF, FontStyle),
+    TSynIndicatorSpec.New(sisTextDecoration, D2D1ColorF(UnbalancedBracketColor), clNoneF, FontStyle));
 end;
 
 procedure TSynBracketsHighlight.SetIndicatorSpecs(const MatchingBracketsSpec,
