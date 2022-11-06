@@ -561,8 +561,9 @@ type
   TSynIndicator = record
     Id: TGUID;
     CharStart, CharEnd : Integer;
-    constructor Create(aId: TGUID; aCharStart, aCharEnd: Integer);
-    class function New(aId: TGUID; aCharStart, aCharEnd: Integer): TSynIndicator; static;
+    Tag: NativeInt;  // for storing user data
+    constructor Create(aId: TGUID; aCharStart, aCharEnd: Integer; aTag: NativeInt = 0);
+    class function New(aId: TGUID; aCharStart, aCharEnd: Integer; aTag: NativeInt = 0): TSynIndicator; static;
     class operator Equal(const A, B: TSynIndicator): Boolean;
   end;
 
@@ -2827,11 +2828,13 @@ end;
 
 { TSynIndicator }
 
-constructor TSynIndicator.Create(aId: TGUID; aCharStart, aCharEnd: Integer);
+constructor TSynIndicator.Create(aId: TGUID; aCharStart, aCharEnd: Integer;
+    aTag: NativeInt = 0);
 begin
   Self.Id := aId;
   Self.CharStart := aCharStart;
   Self.CharEnd := aCharEnd;
+  Self.Tag := aTag;
 end;
 
 class operator TSynIndicator.Equal(const A, B: TSynIndicator): Boolean;
@@ -2840,10 +2843,10 @@ begin
     and (A.CharEnd = B.CharEnd);
 end;
 
-class function TSynIndicator.New(aId: TGUID; aCharStart,
-  aCharEnd: Integer): TSynIndicator;
+class function TSynIndicator.New(aId: TGUID; aCharStart, aCharEnd: Integer;
+    aTag: NativeInt = 0): TSynIndicator;
 begin
-  Result.Create(aId, aCharStart, aCharEnd);
+  Result.Create(aId, aCharStart, aCharEnd, aTag);
 end;
 
 {$ENDREGION}
