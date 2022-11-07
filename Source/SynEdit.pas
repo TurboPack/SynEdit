@@ -7446,14 +7446,16 @@ end;
 
 procedure TCustomSynEdit.HighlightBrackets;
 
-  function PosHasBracket(Pos: TBufferCoord): Boolean;
+  function PosHasBracket(Pos: TBufferCoord; const Line: string): Boolean;
   var
     Token: string;
     Attri: TSynHighlighterAttributes;
   begin
-    Result := GetHighlighterAttriAtRowCol(Pos, Token, Attri) and
-      (Attri = fHighlighter.SymbolAttribute) and (Token.Length = 1) and
-      (fHighlighter.Brackets.IndexOf(Token[1]) >= 0);
+    Result := (Pos.Char <= Line.Length) and
+     (fHighlighter.Brackets.IndexOf(Line[Pos.Char]) >= 0) and
+     GetHighlighterAttriAtRowCol(Pos, Token, Attri) and
+     (Attri <> fHighlighter.CommentAttribute) and
+     (Attri <> fHighlighter.StringAttribute);
   end;
 
 var
@@ -7461,6 +7463,7 @@ var
   MatchingBracketPos: TBufferCoord;
   HasBracket: Boolean;
   Indicator: TSynIndicator;
+  Line: string;
 begin
   if (eoBracketsHighlight in FOptions) and Assigned(fHighlighter) then
   begin
@@ -7468,16 +7471,17 @@ begin
     Indicators.Clear(BracketsHighlight.UnbalancedBracketIndicatorID);
 
     BracketPos := CaretXY;
-    MatchingBracketPos := BufferCoord(0,0);
+    if BracketPos.Line > Lines.Count then Exit;
+    Line := Lines[BracketPos.Line - 1];
 
     // First Look at the previous character like Site
     if BracketPos.Char > 1 then Dec(BracketPos.Char);
-    HasBracket := PosHasBracket(BracketPos);
+    HasBracket := PosHasBracket(BracketPos, Line);
     //if it is not a bracket then look at the next character;
     if not HasBracket and (CaretX > 1) then
     begin
       Inc(BracketPos.Char);
-      HasBracket := PosHasBracket(BracketPos);
+      HasBracket := PosHasBracket(BracketPos, Line);
     end;
 
     if HasBracket then

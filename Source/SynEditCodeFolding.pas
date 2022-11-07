@@ -1040,12 +1040,9 @@ begin
 end;
 
 procedure TSynCodeFolding.SetGutterShapeSize(const Value: Integer);
-Var
-  NewValue: Integer;
 begin
-  NewValue := Value;
-  if fGutterShapeSize <> NewValue then begin
-    fGutterShapeSize := NewValue;
+  if fGutterShapeSize <> Value then begin
+    fGutterShapeSize := Value;
     if Assigned(fOnChange) then fOnChange(Self);
   end;
 end;
