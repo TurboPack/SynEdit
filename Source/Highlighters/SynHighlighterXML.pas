@@ -264,6 +264,9 @@ begin
 
   fRange := rsText;
   fDefaultFilter := SYNS_FilterXML;
+
+  DefaultBrackets := '<>()[]';
+  fBrackets := DefaultBrackets;
 end;
 
 procedure TSynXMLSyn.NullProc;
