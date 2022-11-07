@@ -779,7 +779,7 @@ begin
   fDefaultFilter := SYNS_FilterHTML;
   fAndCode := -1;
 
-  DefaultBrackets := '<>()[]';
+  DefaultBrackets := '<>()[]{}';
   fBrackets := DefaultBrackets;
 end;
 
