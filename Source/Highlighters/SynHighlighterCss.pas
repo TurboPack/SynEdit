@@ -122,7 +122,7 @@ type
     procedure PlusProc;
     procedure TildeProc;
     procedure PipeProc;
-    procedure CircumflexProc;
+    procedure WildCardProc;
     procedure EqualProc;
     procedure ExclamProc;
   protected
@@ -618,12 +618,12 @@ begin
   if IsStopChar then
   begin
     case fLine[Run] of
-      #0..#31, '{', '/': NextDeclaration;
+      #0..#31: NextDeclaration;
       ']': BracketCloseProc;
       '~': TildeProc;
       '|': PipeProc;
       '=': EqualProc;
-      '^': CircumflexProc;
+      '^', '*', '$': WildCardProc;
     end;
     Exit;
   end;
@@ -661,7 +661,7 @@ begin
   fTokenID := tkSymbol;
 end;
 
-procedure TSynCssSyn.CircumflexProc;
+procedure TSynCssSyn.WildCardProc;
 begin
   Inc(Run);
   if fLine[Run] = '=' then
