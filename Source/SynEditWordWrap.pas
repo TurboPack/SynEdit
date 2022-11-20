@@ -284,7 +284,8 @@ end;
 
 procedure TSynWordWrapPlugin.Reset;
 begin
-  fMaxRowWidth := Editor.WrapAreaWidth;
+  // Ensure minimum line length
+  fMaxRowWidth := Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth);
 
   WrapLines;
 end;
