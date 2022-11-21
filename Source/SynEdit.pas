@@ -2982,7 +2982,6 @@ var
   DoTabPainting: Boolean;
   Layout: TSynTextLayout;
   BGColor, FGColor, TabColor: TColor;
-  Token: string;
   TokenPos, TokenLen: Integer;
   Attr: TSynHighlighterAttributes;
   LineIndicators: TArray<TSynIndicator>;
@@ -3057,6 +3056,8 @@ begin
     // Highlighted tokens
     if fHighlighter <> nil then
     begin
+      // Optimization.  In WordWrap mode we carry on where the previous row ended,
+      // if they are parts of the same line.  So, each line is scanned once.
       if not WordWrap or (Row = aFirstRow) or (CharOffset = 1) then
       begin
         if Line > 1 then
@@ -3066,7 +3067,7 @@ begin
         FHighlighter.SetLine(SLine, Line);
       end;
 
-      //  Whitespace color may differ per line
+      //  Whitespace color (returned by GetDefaultAttribute) may differ per line
       //  Done here so that the highlighter range is set correctly
       if (FullRowBG = clNone) then begin
         AColor := WhitespaceColor(True);
@@ -3075,31 +3076,47 @@ begin
           YRowOffset(Row + 1)), TSynDWrite.SolidBrush(AColor));
       end;
 
+      // When you scroll to the right the whole row may be hidden
       if (LastChar > 0) then
       begin
         while not FHighLighter.GetEol do
         begin
-          TokenPos := FHighLighter.GetTokenPos - CharOffset - FirstChar + 3; //TokenPos is zero based
-          if TokenPos > LastChar - FirstChar + 1 then Break;
-          if TokenPos + FHighLighter.GetTokenLength <= 1 then
+          // CharOffset adjusts for wrapped lines and FirstChar for LeftChar > 1
+          TokenPos := FHighLighter.GetTokenPos;  //TokenPos is zero based
+
+          // Check whether the start of the token is beyond the end of the row
+          // CharOffset points to the start of the row and LastChar is a row offset
+          if TokenPos - CharOffset + 2 > LastChar then Break;
+
+          TokenLen := FHighLighter.GetTokenLength;
+
+          // Skip if the whole token is on the left of FirstChar
+          if TokenPos + TokenLen - CharOffset  + 2 <= FirstChar then
           begin
             fHighlighter.Next;
             Continue;
           end;
-          Token := FHighLighter.GetToken;
+
+          // We need to display at least part of the token
+          // Adjust for CharOffset and FirstChar
+          Dec(TokenLen, Max(0,  FirstChar  - (TokenPos - CharOffset + 2)));
+          TokenPos := TokenPos - CharOffset - FirstChar + 3 +
+            Max(0,  FirstChar  - (TokenPos - CharOffset + 2));
+
           Attr := FHighLighter.GetTokenAttribute;
 
-          if (Token <> '') and Assigned(Attr) then
+          if (TokenLen > 0) and Assigned(Attr) then
           begin
-            Layout.SetFontStyle(Attr.Style, TokenPos, Token.Length);
+            Layout.SetFontStyle(Attr.Style, TokenPos, TokenLen);
             AColor := Attr.Foreground;
             if (FullRowFG = clNone) and (AColor <> clNone) then
-              Layout.SetFontColor(AColor, TokenPos, Token.Length);
+              Layout.SetFontColor(AColor, TokenPos, TokenLen);
             AColor := Attr.Background;
             if (FullRowBG = clNone) and (AColor <> clNone) then
-              PaintTokenBackground(Layout, Row, TokenPos, Token.Length, D2D1ColorF(AColor));
+              PaintTokenBackground(Layout, Row, TokenPos, TokenLen, D2D1ColorF(AColor));
           end;
-          if TokenPos + Token.Length - 1 > LastChar - FirstChar + 1 then
+          // check whether the whole row has been painted
+          if TokenPos + TokenLen - 1 > LastChar - FirstChar + 1 then
             Break
           else
             FHighLighter.Next;
