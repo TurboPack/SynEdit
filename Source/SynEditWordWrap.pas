@@ -394,7 +394,7 @@ begin
       W := 0;
       while (P < PEnd) do
       begin
-        while (P < PEnd) and (W < fMaxRowWidth) do
+        while (P < PEnd) do
         begin
           if (P > PStart) and Editor.IsWordBreakChar(P^) then
             PBreak := P + IfThen(P^ = #32, 1, 0);
@@ -402,12 +402,14 @@ begin
              #9: Inc(W, TW - W mod TW);
              #32..#126: Inc(W, CW);
            else
-             break;
+             Break;
            end;
+           if W > fMaxRowWidth then
+             Break;
            Inc(P);
         end;
 
-        if (P < PEnd) and (W < fMaxRowWidth) then
+        if (P < PEnd) and (W <= fMaxRowWidth) then
         begin
           // Just in case P is followed by combining characters
           if (P > PStart) and not (Word((P-1)^) in [9, 32]) then
@@ -431,7 +433,7 @@ begin
           begin
             CheckOSError(Layout.IDW.HitTestPoint(fMaxRowWidth - W,
               Editor.LineHeight div 2, IsTrailing, IsInside, HTM));
-            Inc(P, HTM.textPosition + 1);
+            Inc(P, HTM.textPosition);
           end
           else
             P := P2;
