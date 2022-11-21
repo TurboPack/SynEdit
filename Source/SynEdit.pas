@@ -2517,6 +2517,7 @@ begin
   if Highlighter <> nil then
   begin
     Highlighter.ResetRange;
+    Highlighter.SetLine('', 1);  // Workaround for SynHighlighterWeb
     Attri := Highlighter.WhitespaceAttribute;
     if (Attri <> nil) and (Attri.Background <> clNone) then
       EdBkgrColor := Attri.Background;
@@ -2564,7 +2565,10 @@ var
     if fHighlighter <> nil then
     begin
       if ResetHighlighter then
+      begin
         fHighlighter.ResetRange;
+        fHighlighter.SetLine('', 1);  // workaround for SynHighlighterWeb
+      end;
       Attr := Highlighter.WhitespaceAttribute;
       if Attr <> nil then
         if Bkground and (Attr.Background <> clNone) then
@@ -2891,6 +2895,20 @@ var
   end;
 
   procedure TextRangeToDisplay(const S: string; out FirstChar, LastChar: Integer);
+  {
+    When LeftChar > 1, we try to rended only the text that is visible.  This
+    is particularly important when the edited text contains super long lines.
+    FirstChar is the first char that should be displayed, which could be
+    partially visible.  The presence of tabs prevents the use of this
+    optimization.
+
+    This routine also adjust XRowOffset.
+
+    Text is painted at fTextOffset + XRowOffset
+    fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
+    fTextOffset can be negative.
+  }
+
   var
     HasTabs: Boolean;
     I: Integer;
@@ -2924,7 +2942,7 @@ var
       Inc(LastChar);
 
     // If there are tabs *inside* the displayed range we need to make sure
-    // the are rendered at the correct place
+    // they are rendered at the correct place
     HasTabs := False;
     for I := FirstChar to LastChar do
       if S[I] = #9 then
@@ -3032,56 +3050,67 @@ begin
 
     // Special colors, full line selection and ActiveLineColor
     FullRowColors(Row, Line, FullRowBG, FullRowFG, BGAlpha);
-    AColor := FullRowBG;
-    if (AColor = clNone) and (WhitespaceColor <> BGColor) then
-      AColor := WhiteSpaceColor; // Whitespace color may differ per line
-    if AColor <> clNone then
+    if FullRowBG <> clNone then
       RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row), LinesRect.Right,
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(FullRowBG));
 
     // Highlighted tokens
-    if (fHighlighter <> nil) and (LastChar > 0) then
+    if fHighlighter <> nil then
     begin
       if not WordWrap or (Row = aFirstRow) or (CharOffset = 1) then
       begin
         if Line > 1 then
-          fHighlighter.SetRange(TSynEditStringList(Lines).Ranges[Line - 2]);
+          fHighlighter.SetRange(TSynEditStringList(Lines).Ranges[Line - 2])
+        else
+          fHighlighter.ResetRange;
         FHighlighter.SetLine(SLine, Line);
       end;
 
-      while not FHighLighter.GetEol do
-      begin
-        TokenPos := FHighLighter.GetTokenPos - CharOffset - FirstChar + 3; //TokenPos is zero based
-        if TokenPos > LastChar - FirstChar + 1 then Break;
-        if TokenPos + FHighLighter.GetTokenLength <= 1 then
-        begin
-          fHighlighter.Next;
-          Continue;
-        end;
-        Token := FHighLighter.GetToken;
-        Attr := FHighLighter.GetTokenAttribute;
-
-        if (Token <> '') and Assigned(Attr) then
-        begin
-          Layout.SetFontStyle(Attr.Style, TokenPos, Token.Length);
-          AColor := Attr.Foreground;
-          if (FullRowFG = clNone) and (AColor <> clNone) then
-            Layout.SetFontColor(AColor, TokenPos, Token.Length);
-          AColor := Attr.Background;
-          if (FullRowBG = clNone) and (AColor <> clNone) then
-            PaintTokenBackground(Layout, Row, TokenPos, Token.Length, D2D1ColorF(AColor));
-        end;
-        if TokenPos + Token.Length - 1 > LastChar - FirstChar + 1 then
-          Break
-        else
-          FHighLighter.Next;
+      //  Whitespace color may differ per line
+      //  Done here so that the highlighter range is set correctly
+      if (FullRowBG = clNone) then begin
+        AColor := WhitespaceColor(True);
+        if (AColor <> clNone) and (AColor <> BGColor) then
+        RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row), LinesRect.Right,
+          YRowOffset(Row + 1)), TSynDWrite.SolidBrush(AColor));
       end;
-      if (eoShowSpecialChars in fOptions) and (FullRowFG = clNone) and
-        (CharOffset + LastChar = SLine.Length + 2) and
-        Assigned(fHighlighter.WhitespaceAttribute) and
-        (fHighlighter.WhitespaceAttribute.Foreground <> clNone)
-      then
-        Layout.SetFontColor(fHighlighter.WhitespaceAttribute.Foreground, LastChar - FirstChar + 1, 1);
+
+      if (LastChar > 0) then
+      begin
+        while not FHighLighter.GetEol do
+        begin
+          TokenPos := FHighLighter.GetTokenPos - CharOffset - FirstChar + 3; //TokenPos is zero based
+          if TokenPos > LastChar - FirstChar + 1 then Break;
+          if TokenPos + FHighLighter.GetTokenLength <= 1 then
+          begin
+            fHighlighter.Next;
+            Continue;
+          end;
+          Token := FHighLighter.GetToken;
+          Attr := FHighLighter.GetTokenAttribute;
+
+          if (Token <> '') and Assigned(Attr) then
+          begin
+            Layout.SetFontStyle(Attr.Style, TokenPos, Token.Length);
+            AColor := Attr.Foreground;
+            if (FullRowFG = clNone) and (AColor <> clNone) then
+              Layout.SetFontColor(AColor, TokenPos, Token.Length);
+            AColor := Attr.Background;
+            if (FullRowBG = clNone) and (AColor <> clNone) then
+              PaintTokenBackground(Layout, Row, TokenPos, Token.Length, D2D1ColorF(AColor));
+          end;
+          if TokenPos + Token.Length - 1 > LastChar - FirstChar + 1 then
+            Break
+          else
+            FHighLighter.Next;
+        end;
+        if (eoShowSpecialChars in fOptions) and (FullRowFG = clNone) and
+          (CharOffset + LastChar = SLine.Length + 2) and
+          Assigned(fHighlighter.WhitespaceAttribute) and
+          (fHighlighter.WhitespaceAttribute.Foreground <> clNone)
+        then
+          Layout.SetFontColor(fHighlighter.WhitespaceAttribute.Foreground, LastChar - FirstChar + 1, 1);
+      end;
     end;
 
     // Paint selection if Line is partially selected - deals with bidi text
