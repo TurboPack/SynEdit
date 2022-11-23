@@ -6579,7 +6579,7 @@ end;
 function TCustomSynEdit.NextWordPosEx(const XY: TBufferCoord): TBufferCoord;
 var
   CX, CY, LineLen: Integer;
-  Line: string;
+  Line: UnicodeString;
 begin
   CX := XY.Char;
   CY := XY.Line;
@@ -6590,29 +6590,40 @@ begin
     Line := Lines[CY - 1];
 
     LineLen := Length(Line);
-    if CX >= LineLen then
+    if CX > LineLen then
     begin
-      // find first IdentChar or multibyte char in the next line
+      // invalid char
+      // find first non-whitespace char in the next line
       if CY < Lines.Count then
       begin
         Line := Lines[CY];
+        LineLen := Length(Line);
         Inc(CY);
-        CX := StrScanForCharInCategory(Line, 1, IsIdentChar);
-        if CX = 0 then
+        CX := 1;
+        while (CX <= LineLen) and IsWhiteChar(Line[CX]) do
           Inc(CX);
       end;
     end
     else
     begin
-      // find next word-break-char if current char is an IdentChar
-      if IsIdentChar(Line[CX]) then
-        CX := StrScanForCharInCategory(Line, CX, IsWordBreakChar);
-      // if word-break-char found, find the next IdentChar
-      if CX > 0 then
-        CX := StrScanForCharInCategory(Line, CX, IsIdentChar);
-      // if one of those failed just position at the end of the line
       if CX = 0 then
-        CX := LineLen + 1;
+        CX := 1;
+      // valid char
+      if IsIdentChar(Line[CX]) then begin
+        while (CX <= LineLen) and IsIdentChar(Line[CX]) do
+          Inc(CX);
+        while (CX <= LineLen) and IsWhiteChar(Line[CX]) do
+          Inc(CX);
+      end else if IsWhiteChar(Line[CX]) then begin
+        while (CX <= LineLen) and IsWhiteChar(Line[CX]) do
+          Inc(CX);
+      end else begin
+        // breakchar and not whitechar
+        while (CX <= LineLen) and (IsWordBreakChar(Line[CX]) and not IsWhiteChar(Line[CX])) do
+          Inc(CX);
+        while (CX <= LineLen) and IsWhiteChar(Line[CX]) do
+          Inc(CX);
+      end;
     end;
   end;
   Result.Char := CX;
@@ -6668,10 +6679,11 @@ end;
 function TCustomSynEdit.PrevWordPosEx(const XY: TBufferCoord): TBufferCoord;
 var
   CX, CY: Integer;
-  Line: string;
+  Line: UnicodeString;
 begin
   CX := XY.Char;
   CY := XY.Line;
+
   // valid line?
   if (CY >= 1) and (CY <= Lines.Count) then
   begin
@@ -6680,33 +6692,47 @@ begin
 
     if CX <= 1 then
     begin
-      // find last IdentChar in the previous line
+      // skip whitespace at the end of the previous line
       if CY > 1 then
       begin
         Dec(CY);
         Line := Lines[CY - 1];
         CX := Length(Line) + 1;
+        while (CX > 1) and IsWhiteChar(Line[CX-1]) do
+          Dec(CX);
       end;
     end
     else
     begin
-      // if previous char is a word-break-char search for the last IdentChar
-      if IsWordBreakChar(Line[CX - 1]) then
-        CX := StrRScanForCharInCategory(Line, CX - 1, IsIdentChar);
-      if CX > 0 then
-        // search for the first IdentChar of this "word"
-        CX := StrRScanForCharInCategory(Line, CX - 1, IsWordBreakChar) + 1;
-      if CX = 0 then
-      begin
-        // else just position at the end of the previous line
-        if CY > 1 then
-        begin
-          Dec(CY);
-          Line := Lines[CY - 1];
-          CX := Length(Line) + 1;
-        end
-        else
-          CX := 1;
+      // CX > 1 and <= LineLenght + 1
+      if IsIdentChar(Line[CX-1]) then begin
+        while (CX > 1) and IsIdentChar(Line[CX-1]) do
+          Dec(CX);
+      end else if IsWhiteChar(Line[CX-1]) then begin
+        while (CX > 1) and IsWhiteChar(Line[CX-1]) do
+          Dec(CX);
+        if CX <= 1 then begin
+          // skip whitespace at the end of the previous line
+          if CY > 1 then
+          begin
+            Dec(CY);
+            Line := Lines[CY - 1];
+            CX := Length(Line) + 1;
+            while (CX > 1) and IsWhiteChar(Line[CX-1]) do
+              Dec(CX);
+          end;
+        end else if IsIdentChar(Line[CX-1]) then begin
+          while (CX > 1) and IsIdentChar(Line[CX-1]) do
+            Dec(CX);
+        end else begin
+          // breakchar and not whitechar
+          while (CX > 1) and (IsWordBreakChar(Line[CX-1]) and not IsWhiteChar(Line[CX-1])) do
+            Dec(CX);
+        end;
+      end else begin
+        // breakchar and not whitechar
+        while (CX > 1) and (IsWordBreakChar(Line[CX-1]) and not IsWhiteChar(Line[CX-1])) do
+          Dec(CX);
       end;
     end;
   end;
