@@ -7308,23 +7308,27 @@ begin
     bSetDrag := (eoDropFiles in fOptions) <> (eoDropFiles in Value);
     bInvalidate := (eoShowSpecialChars in fOptions) <> (eoShowSpecialChars in Value);
     bUpdateScroll := (Options * ScrollOptions) <> (Value * ScrollOptions);
-    CalcTextAreaWidth;  // in case eoWrapWithRightEdge changed
+    fOptions := Value;
 
     FUndoRedo.GroupUndo := eoGroupUndo in Options;
 
-    if not (eoScrollPastEol in Options) then
-      LeftChar := LeftChar;
-    if not (eoScrollPastEof in Options) then
-      TopLine := TopLine;
-    fOptions := Value;
+    if HandleAllocated then
+    begin
+      CalcTextAreaWidth;  // in case eoWrapWithRightEdge changed
 
-    // (un)register HWND as drop target
-    if bSetDrag and not (csDesigning in ComponentState) and HandleAllocated then
-      DragAcceptFiles(Handle, (eoDropFiles in fOptions));
-    if bInvalidate then
-      Invalidate;
-    if bUpdateScroll then
-      UpdateScrollBars;
+      if not (eoScrollPastEol in Options) then
+        LeftChar := LeftChar;
+      if not (eoScrollPastEof in Options) then
+        TopLine := TopLine;
+
+      // (un)register HWND as drop target
+      if bSetDrag and not (csDesigning in ComponentState) then
+        DragAcceptFiles(Handle, (eoDropFiles in fOptions));
+      if bInvalidate then
+        Invalidate;
+      if bUpdateScroll then
+        UpdateScrollBars;
+    end;
   end;
 end;
 
