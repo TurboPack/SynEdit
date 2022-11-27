@@ -134,7 +134,9 @@ const
   ecLineSelect      = 233;  // Line selection mode
 
   ecMatchBracket    = 250;  // Go to matching bracket
-  ecCommentBlock    = 251;  // Comment Block
+  ecSelMatchBracket = 251;  // Select to matching bracket
+
+  ecCommentBlock    = 260;  // Comment Block
 
   ecGotoMarker0     = 301;  // Goto marker
   ecGotoMarker1     = 302;  // Goto marker
@@ -310,7 +312,7 @@ uses
 
 const
 //++ CodeFolding
-  EditorCommandStrs: array[0..112] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..113] of TIdentMapEntry = (
 //-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
@@ -378,6 +380,7 @@ const
     (Value: ecTab; Name: 'ecTab'),
     (Value: ecShiftTab; Name: 'ecShiftTab'),
     (Value: ecMatchBracket; Name: 'ecMatchBracket'),
+    (Value: ecSelMatchBracket; Name: 'ecSelMatchBracket'),
     (Value: ecCommentBlock; Name: 'ecCommentBlock'),
     (Value: ecNormalSelect; Name: 'ecNormalSelect'),
     (Value: ecColumnSelect; Name: 'ecColumnSelect'),
@@ -839,7 +842,8 @@ begin
   AddKey(ecNormalSelect, Ord('N'), [ssCtrl,ssShift]);
   AddKey(ecColumnSelect, Ord('C'), [ssCtrl,ssShift]);
   AddKey(ecLineSelect, Ord('L'), [ssCtrl,ssShift]);
-  AddKey(ecMatchBracket, Ord('B'), [ssCtrl,ssShift]);
+  AddKey(ecMatchBracket, VK_OEM_6, [ssCtrl]); // VK_OEM_6 is ']' in US keyboards
+  AddKey(ecSelMatchBracket, VK_OEM_6, [ssCtrl,ssShift]);
   AddKey(ecLowerCase, Ord('K'), [ssCtrl], Ord('L'), [ssCtrl]);
   AddKey(ecUpperCase, Ord('K'), [ssCtrl], Ord('U'), [ssCtrl]);
   AddKey(ecTitleCase, Ord('K'), [ssCtrl], Ord('T'), [ssCtrl]);

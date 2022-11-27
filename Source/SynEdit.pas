@@ -712,6 +712,9 @@ type
     function GetMatchingBracket: TBufferCoord; virtual;
     function GetMatchingBracketEx(const APoint: TBufferCoord;
       Brackets: string = '()[]{}<>'): TBufferCoord; virtual;
+    function GetMatchingBracketEnhanced(var BracketPos: TBufferCoord; Brackets:
+        string = '()[]{}<>'; AdjustMatchingPos: Boolean = True): TBufferCoord;
+        virtual;
     function ExecuteAction(Action: TBasicAction): Boolean; override;
     procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
@@ -6394,8 +6397,12 @@ begin
         if not ReadOnly then DoTabKey;
       ecShiftTab:
         if not ReadOnly then DoShiftTabKey;
-      ecMatchBracket:
-        FindMatchingBracket;
+      ecMatchBracket,
+      ecSelMatchBracket:
+        begin
+          CaretNew := GetMatchingBracket;
+          MoveCaretAndSelection(CaretNew, Command = ecSelMatchBracket);
+        end;
       ecChar:
         InsertCharAtCursor(AChar);
       ecUpperCase,
@@ -7521,56 +7528,32 @@ begin
 end;
 
 procedure TCustomSynEdit.HighlightBrackets;
-
-  function PosHasBracket(Pos: TBufferCoord; const Line: string): Boolean;
-  var
-    Token: string;
-    Attri: TSynHighlighterAttributes;
-  begin
-    Result := (Pos.Char <= Line.Length) and
-     (fHighlighter.Brackets.IndexOf(Line[Pos.Char]) >= 0) and
-     GetHighlighterAttriAtRowCol(Pos, Token, Attri) and
-     (Attri <> fHighlighter.CommentAttribute) and
-     (Attri <> fHighlighter.StringAttribute);
-  end;
-
 var
   BracketPos,
   MatchingBracketPos: TBufferCoord;
-  HasBracket: Boolean;
   Indicator: TSynIndicator;
-  Line: string;
 begin
-  if (eoBracketsHighlight in FOptions) and Assigned(fHighlighter) then
+  if HandleAllocated and (eoBracketsHighlight in FOptions) and Assigned(fHighlighter) then
   begin
     Indicators.Clear(BracketsHighlight.MatchingBracketsIndicatorID);
     Indicators.Clear(BracketsHighlight.UnbalancedBracketIndicatorID);
 
     BracketPos := CaretXY;
-    if BracketPos.Line > Lines.Count then Exit;
-    Line := Lines[BracketPos.Line - 1];
+    MatchingBracketPos := GetMatchingBracketEnhanced(BracketPos, fHighlighter.Brackets, False);
 
-    // First Look at the previous character like Site
-    if BracketPos.Char > 1 then Dec(BracketPos.Char);
-    HasBracket := PosHasBracket(BracketPos, Line);
-    //if it is not a bracket then look at the next character;
-    if not HasBracket and (CaretX > 1) then
+    if MatchingBracketPos.Char >= 0 then
     begin
-      Inc(BracketPos.Char);
-      HasBracket := PosHasBracket(BracketPos, Line);
-    end;
-
-    if HasBracket then
-    begin
-      MatchingBracketPos := GetMatchingBracketEx(BracketPos, fHighlighter.Brackets);
+      // We have a bracket at BracketPos
       if MatchingBracketPos.Char = 0 then
       begin
+        // The bracket at BracketPos is unbalanced
         Indicator := TSynIndicator.Create(fBracketsHighlight.UnbalancedBracketIndicatorID,
           BracketPos.Char, BracketPos.Char + 1);
         Indicators.Add(BracketPos.Line, Indicator);
       end
       else
       begin
+        // Matching pair of brackets
         Indicator := TSynIndicator.Create(fBracketsHighlight.MatchingBracketsIndicatorID,
           BracketPos.Char, BracketPos.Char + 1);
         Indicators.Add(BracketPos.Line, Indicator);
@@ -8290,11 +8273,14 @@ begin
 end;
 
 function TCustomSynEdit.GetMatchingBracket: TBufferCoord;
+var
+  Pos: TBufferCoord;
 begin
+  Pos := CaretXY;
   if fHighlighter <> nil then
-    Result := GetMatchingBracketEx(CaretXY, fHighlighter.Brackets)
+    Result := GetMatchingBracketEnhanced(Pos, fHighlighter.Brackets)
   else
-    Result := GetMatchingBracketEx(CaretXY);
+    Result := GetMatchingBracketEnhanced(Pos);
 end;
 
 function TCustomSynEdit.GetMatchingBracketEx(const APoint: TBufferCoord;
@@ -8398,6 +8384,65 @@ begin
           PosX := 0;
         until False;
       end;
+    end;
+  end;
+end;
+
+function TCustomSynEdit.GetMatchingBracketEnhanced(var BracketPos: TBufferCoord;
+  Brackets: string = '()[]{}<>'; AdjustMatchingPos: Boolean = True): TBufferCoord;
+{
+   If there is a bracket on the left of BracketPos.Char it is used instead.
+   On Exit BracketPos points at the position of the bracket used for matching.
+   Returns BufferCoord(-1, -1) if BracketPos is not a bracket.
+   Returns BufferCoord(0, 0) if BracketPos contains an unbalanced bracket.
+   If AdjustMatchingPos and there is a match, the matching pair of positions
+   will be both either inside or outside the brackets.
+}
+
+  function PosHasBracket(Pos: TBufferCoord; const Line: string): Boolean;
+  var
+    Token: string;
+    Attri: TSynHighlighterAttributes;
+  begin
+    Result :=
+     InRange(Pos.Char, 1, Line.Length) and
+     (Brackets.IndexOf(Line[Pos.Char]) >= 0) and
+     (not Assigned(fHighlighter) or
+     (GetHighlighterAttriAtRowCol(Pos, Token, Attri) and
+     (Attri <> fHighlighter.CommentAttribute) and
+     (Attri <> fHighlighter.StringAttribute)));
+  end;
+
+var
+  Line: string;
+  HasBracket, IsPreviousChar, IsOpenChar, IsOutside: Boolean;
+begin
+  Result := BufferCoord(-1, -1);
+  if BracketPos.Line > Lines.Count then Exit;
+  Line := Lines[BracketPos.Line - 1];
+
+  // First Look at the previous character like Site
+  IsPreviousChar := BracketPos.Char > 1;
+  if IsPreviousChar  then
+    Dec(BracketPos.Char);
+  HasBracket := PosHasBracket(BracketPos, Line);
+  //if it is not a bracket then look at the next character;
+  if not HasBracket and IsPreviousChar then
+  begin
+    Inc(BracketPos.Char);
+    IsPreviousChar := False;
+    HasBracket := PosHasBracket(BracketPos, Line);
+  end;
+
+  if HasBracket then
+  begin
+    Result := GetMatchingBracketEx(BracketPos, Brackets);
+    if (Result.Char > 0) and AdjustMatchingPos then
+    begin
+      IsOpenChar := not Odd(Brackets.IndexOf(Line[BracketPos.Char]));
+      IsOutside := IsOpenChar xor IsPreviousChar;
+      if IsOutside xor not IsOpenChar then
+        Inc(Result.Char);
     end;
   end;
 end;
