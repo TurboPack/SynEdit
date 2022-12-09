@@ -1,19 +1,17 @@
 object Form1: TForm1
   Left = 212
   Top = 100
-  Width = 776
-  Height = 586
   Caption = 'SynEdit Code Completion Demo for ctCode'
+  ClientHeight = 547
+  ClientWidth = 760
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 8
@@ -48,13 +46,34 @@ object Form1: TForm1
         Font.Height = -13
         Font.Name = 'Courier New'
         Font.Style = []
+        Font.Quality = fqClearTypeNatural
         TabOrder = 9
+        UseCodeFolding = False
         Gutter.Font.Charset = DEFAULT_CHARSET
         Gutter.Font.Color = clWindowText
         Gutter.Font.Height = -11
-        Gutter.Font.Name = 'Terminal'
+        Gutter.Font.Name = 'Consolas'
         Gutter.Font.Style = []
+        Gutter.Font.Quality = fqClearTypeNatural
         Gutter.Visible = False
+        Gutter.Bands = <
+          item
+            Kind = gbkMarks
+            Width = 13
+          end
+          item
+            Kind = gbkLineNumbers
+          end
+          item
+            Kind = gbkFold
+          end
+          item
+            Kind = gbkTrackChanges
+          end
+          item
+            Kind = gbkMargin
+            Width = 3
+          end>
         Lines.Strings = (
           'This is a Demo to show you how the'
           'Code Completion component works'
@@ -96,6 +115,7 @@ object Form1: TForm1
           '  dropdown to the items matching the'
           '  text you have typed, similar to the'
           '  way the D6 does it.')
+        SelectedColor.Alpha = 0.400000005960464500
         RemovedKeystrokes = <
           item
             Command = ecContextHelp
@@ -172,18 +192,40 @@ object Form1: TForm1
         Font.Height = -13
         Font.Name = 'Courier New'
         Font.Style = []
+        Font.Quality = fqClearTypeNatural
         TabOrder = 8
+        UseCodeFolding = False
         Gutter.Font.Charset = DEFAULT_CHARSET
         Gutter.Font.Color = clWindowText
         Gutter.Font.Height = -11
-        Gutter.Font.Name = 'Terminal'
+        Gutter.Font.Name = 'Consolas'
         Gutter.Font.Style = []
+        Gutter.Font.Quality = fqClearTypeNatural
+        Gutter.Bands = <
+          item
+            Kind = gbkMarks
+            Width = 13
+          end
+          item
+            Kind = gbkLineNumbers
+          end
+          item
+            Kind = gbkFold
+          end
+          item
+            Kind = gbkTrackChanges
+          end
+          item
+            Kind = gbkMargin
+            Width = 3
+          end>
         Lines.Strings = (
           'Use Ctrl+Space to activate Code Completion'
           'with a shortcut, or use the '#39'.'#39' key'
           'to activate it with a timer'
           ''
           '')
+        SelectedColor.Alpha = 0.400000005960464500
         RemovedKeystrokes = <
           item
             Command = ecContextHelp
@@ -305,23 +347,26 @@ object Form1: TForm1
   end
   object scpDemo: TSynCompletionProposal
     Options = [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoUseBuiltInTimer, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter]
-    Width = 262
+    NbLinesInWindow = 10
+    Width = 300
     EndOfTokenChr = '()[]. '
     TriggerChars = '.'
     Title = 'Completion Proposal Demo'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Height = -12
+    Font.Name = 'Consolas'
     Font.Style = []
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clBtnText
-    TitleFont.Height = -11
-    TitleFont.Name = 'MS Sans Serif'
+    TitleFont.Height = -13
+    TitleFont.Name = 'Consolas'
     TitleFont.Style = [fsBold]
     Columns = <
       item
+        ColumnWidth = 100
       end>
+    Resizeable = True
     ShortCut = 16416
     Editor = SynEdit1
     Left = 216
