@@ -264,6 +264,28 @@ object Form1: TForm1
         TabOrder = 7
         OnClick = Button4Click
       end
+      object cbShowGripper: TCheckBox
+        Tag = 1
+        Left = 186
+        Top = 38
+        Width = 129
+        Height = 17
+        Caption = 'Show Gripper'
+        TabOrder = 10
+        OnClick = cbShowGripperClick
+      end
+      object cbFormShadow: TCheckBox
+        Tag = 3
+        Left = 186
+        Top = 62
+        Width = 129
+        Height = 17
+        Caption = 'Form Shadow'
+        Checked = True
+        State = cbChecked
+        TabOrder = 11
+        OnClick = cbFormShadowClick
+      end
     end
     object TabSheet2: TTabSheet
       Caption = 'Insert and Item Lists'

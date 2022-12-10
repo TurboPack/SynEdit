@@ -1,18 +1,14 @@
 unit FormMain_ctCode;
-
 interface
-
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   SynCompletionProposal, StdCtrls, SynEdit, ComCtrls;
-
 const
   cCaseSensitive = 1;
   cAnsiStrings   = 2;
   cPrettyText    = 3;
   cInsertList    = 4;
   cMatchedText   = 5;
-
 type
   TForm1 = class(TForm)
     scpDemo: TSynCompletionProposal;
@@ -38,6 +34,8 @@ type
     Button3: TButton;
     Button4: TButton;
     FontDialog1: TFontDialog;
+    cbShowGripper: TCheckBox;
+    cbFormShadow: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure CheckBoxClick(Sender: TObject);
     procedure edBiggestWordChange(Sender: TObject);
@@ -46,20 +44,18 @@ type
     procedure edTitleChange(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure cbFormShadowClick(Sender: TObject);
+    procedure cbShowGripperClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
   end;
-
 var
   Form1: TForm1;
-
 implementation
-
 {$R *.DFM}
-
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   with mmoInsert.Lines do
@@ -85,7 +81,6 @@ begin
     Add('WMHScroll');
     Add('WMPaste');
   end;
-
   with mmoItem.Lines do
   begin
     Clear;              
@@ -112,7 +107,6 @@ begin
   scpDemo.InsertList.AddStrings(mmoInsert.Lines);
   scpDemo.ItemList.AddStrings(mmoItem.Lines);
 end;
-
 procedure TForm1.CheckBoxClick(Sender: TObject);
 begin
   if Sender is TCheckBox then
@@ -135,48 +129,52 @@ begin
     end;
   end;
 end;
-
 procedure TForm1.edBiggestWordChange(Sender: TObject);
 begin
 //TODO: set column width based on word length
 //  scpDemo.Columns[0].BiggestWord := edBiggestWord.Text;
 end;
-
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   scpDemo.InsertList.Clear;
   scpDemo.InsertList.AddStrings(mmoInsert.Lines);
 end;
-
 procedure TForm1.Button2Click(Sender: TObject);
 begin
   scpDemo.ItemList.Clear;
   scpDemo.ItemList.AddStrings(mmoItem.Lines);
   scpDemo.ResetAssignedList;
 end;
-
 procedure TForm1.edTitleChange(Sender: TObject);
 begin
   scpDemo.Title := edTitle.Text;
 end;
-
 procedure TForm1.Button3Click(Sender: TObject);
 begin
   FontDialog1.Font.Assign(scpDemo.Font);
   if FontDialog1.Execute then
     scpDemo.Font.Assign(FontDialog1.Font);
 end;
-
 procedure TForm1.Button4Click(Sender: TObject);
 begin
   FontDialog1.Font.Assign(scpDemo.TitleFont);
   if FontDialog1.Execute then
     scpDemo.TitleFont.Assign(FontDialog1.Font);
 end;
+procedure TForm1.cbFormShadowClick(Sender: TObject);
+begin
+  scpDemo.PaintFormShadow := cbFormShadow.Checked;
+end;
+
+procedure TForm1.cbShowGripperClick(Sender: TObject);
+begin
+  scpDemo.ShowGripper := cbShowGripper.Checked;
+end;
 
 procedure TForm1.FormShow(Sender: TObject);
 begin
   SynEdit1.SetFocus;
 end;
-
+initialization
+  ReportMemoryLeaksOnShutdown := True;
 end.
