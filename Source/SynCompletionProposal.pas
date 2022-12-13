@@ -1448,6 +1448,9 @@ procedure TSynBaseCompletionProposalForm.Resize;
 begin
   inherited;
 
+  if Owner.ComponentState * [csDesigning, csLoading] <> [] then
+    Exit;
+
   AdjustMetrics;
 
   if FEffectiveItemHeight <> 0 then
