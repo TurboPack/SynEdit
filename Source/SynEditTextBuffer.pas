@@ -117,6 +117,8 @@ type
     procedure PutRange(Index: Integer; ARange: TSynEditRange);
     function GetChangeFlags(Index: Integer): TSynLineChangeFlags;
     procedure SetChangeFlags(Index: Integer; const Value: TSynLineChangeFlags);
+    function GetFileFormat: TSynEditFileFormat;
+    procedure SetFileFormat(const Value: TSynEditFileFormat);
   protected
     // TStrings overriden protected methods
     function Get(Index: Integer): string; override;
@@ -152,7 +154,8 @@ type
     function LineCharIndex(Index: Integer): Integer;
     procedure SetTextAndFileFormat(const Value: string);
 
-    property FileFormat: TSynEditFileFormat read FFileFormat write FFileFormat;
+    // FileFormat is deprecated and will be removed - Use LineBreak instead
+    property FileFormat: TSynEditFileFormat read GetFileFormat write SetFileFormat;
     property TextWidth[Index: Integer]: Integer read GetTextWidth;
     property MaxWidth: Integer read GetMaxWidth;
     property Ranges[Index: Integer]: TSynEditRange read GetRange write PutRange;
@@ -349,6 +352,18 @@ end;
 function TSynEditStringList.GetCount: Integer;
 begin
   Result := FCount;
+end;
+
+function TSynEditStringList.GetFileFormat: TSynEditFileFormat;
+begin
+  if LineBreak = WideLF then
+    Result := sffUnix
+  else if LineBreak = WideCR then
+    Result := sffMac
+  else if LineBreak = WideLineSeparator then
+    Result := sffUnicode
+  else
+    Result := sffDos;
 end;
 
 function TSynEditStringList.GetTextWidth(Index: Integer): Integer;
@@ -594,20 +609,13 @@ end;
 procedure TSynEditStringList.SaveToStream(Stream: TStream; Encoding: TEncoding);
 Var
   Cancel: Boolean;
-  OldLineBreak: string;
   S: string;
   Buffer, Preamble: TBytes;
 begin
   if Encoding = nil then
     Encoding := DefaultEncoding;
 
-  OldLineBreak := LineBreak;
-  try
-    LineBreak := LineBreakFromFileFormat(FFileFormat);
-    S := GetTextStr;
-  finally
-    LineBreak := OldLineBreak;
-  end;
+  S := GetTextStr;
 
   Cancel := False;
   if (Encoding = TEncoding.ANSI) and Assigned(FOnInfoLoss) and not IsAnsiOnly(S)
@@ -707,6 +715,16 @@ begin
   inherited;
 end;
 
+procedure TSynEditStringList.SetFileFormat(const Value: TSynEditFileFormat);
+begin
+  case FileFormat of
+    sffDos: LineBreak := WideCRLF;
+    sffUnix: LineBreak := WideLF;
+    sffMac: LineBreak := WideCR;
+    sffUnicode: LineBreak := WideLineSeparator;
+  end;
+end;
+
 procedure TSynEditStringList.SetTabWidth(Value: Integer);
 begin
   if Value <> FTabWidth then
@@ -721,9 +739,9 @@ var
   S: string;
   Size: Integer;
   P, Start, Pmax: PChar;
-  fCR, fLF, fLINESEPARATOR: Boolean;
+  fCR, fLF, fUnicodeSeparator: Boolean;
 begin
-  fLINESEPARATOR := False;
+  fUnicodeSeparator := False;
   fCR := False;
   fLF := False;
   BeginUpdate;
@@ -751,7 +769,7 @@ begin
           Inc(P);
         if P^ = WideLineSeparator then
         begin
-          fLINESEPARATOR := True;
+          fUnicodeSeparator := True;
           Inc(P);
         end;
         if P^ = WideCR then
@@ -775,14 +793,14 @@ begin
   finally
     EndUpdate;
   end;
-  if fLINESEPARATOR then
-    FileFormat := sffUnicode
+  if fUnicodeSeparator then
+    LineBreak := WideLineSeparator
   else if fCR and not fLF then
-    FileFormat := sffMac
+    LineBreak := WideCR
   else if fLF and not fCR then
-    FileFormat := sffUnix
+    LineBreak := WideCR
   else
-    FileFormat := sffDos;
+    LineBreak := WideCRLF;
 end;
 
 procedure TSynEditStringList.SetTextStr(const Value: string);

@@ -117,7 +117,6 @@ type
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
-function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
 
 type
 { ************************* For ScrollBars ********************************}
@@ -360,16 +359,6 @@ end;
 class operator TDisplayCoord.NotEqual(a, b: TDisplayCoord): Boolean;
 begin
   Result := (a.Row <> b.Row) or (a.Column <> b.Column);
-end;
-
-function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
-begin
-  case FileFormat of
-    sffDos: Result := WideCRLF;
-    sffUnix: Result := WideLF;
-    sffMac: Result := WideCR;
-    sffUnicode: Result := WideLineSeparator;
-  end;
 end;
 
 {$IF CompilerVersion <= 32}
