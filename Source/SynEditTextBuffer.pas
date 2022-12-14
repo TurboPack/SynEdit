@@ -798,7 +798,7 @@ begin
   else if fCR and not fLF then
     LineBreak := WideCR
   else if fLF and not fCR then
-    LineBreak := WideCR
+    LineBreak := WideLF
   else
     LineBreak := WideCRLF;
 end;
