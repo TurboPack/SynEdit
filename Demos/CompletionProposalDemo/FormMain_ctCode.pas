@@ -2,7 +2,9 @@ unit FormMain_ctCode;
 interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  SynCompletionProposal, StdCtrls, SynEdit, ComCtrls;
+  SynCompletionProposal, StdCtrls, SynEdit, ComCtrls, System.ImageList,
+  Vcl.ImgList, Vcl.VirtualImageList, Vcl.BaseImageCollection,
+  Vcl.ImageCollection;
 const
   cCaseSensitive = 1;
   cAnsiStrings   = 2;
@@ -36,6 +38,8 @@ type
     FontDialog1: TFontDialog;
     cbShowGripper: TCheckBox;
     cbFormShadow: TCheckBox;
+    ImageCollection1: TImageCollection;
+    VirtualImageList1: TVirtualImageList;
     procedure FormCreate(Sender: TObject);
     procedure CheckBoxClick(Sender: TObject);
     procedure edBiggestWordChange(Sender: TObject);
@@ -83,26 +87,26 @@ begin
   end;
   with mmoItem.Lines do
   begin
-    Clear;              
-    Add('constructor \column{}\style{+B}Create\style{-B}(AOwner: TCustomSynEdit)');
-    Add('destructor \column{}\style{+B}Destroy\style{-B}');
-    Add('function \column{}\style{+B}Add\style{-B}(Item: TSynEditMark): Integer');
-    Add('procedure \column{}\style{+B}ClearLine\style{-B}(line: integer)');
-    Add('procedure \column{}\style{+B}Delete\style{-B}(Index: Integer)');
-    Add('function \column{}\style{+B}First\style{-B}: TSynEditMark');
-    Add('procedure \column{}\style{+B}GetMarksForLine\style{-B}(line: integer; var Marks: TSynEditMarks)');
-    Add('procedure \column{}\style{+B}Insert\style{-B}(Index: Integer; Item: TSynEditMark)');
-    Add('function \column{}\style{+B}Last\style{-B}: TSynEditMark');
-    Add('procedure \column{}\style{+B}Place\style{-B}(mark: TSynEditMark)');
-    Add('function \column{}\style{+B}Remove\style{-B}(Item: TSynEditMark): Integer');
-    Add('procedure \column{}\style{+B}WMCaptureChanged\style{-B}(var Msg: TMessage); message WM_CAPTURECHANGED');
-    Add('procedure \column{}\style{+B}WMCopy\style{-B}(var Message: TMessage); message WM_COPY');
-    Add('procedure \column{}\style{+B}WMCut\style{-B}(var Message: TMessage); message WM_CUT');
-    Add('procedure \column{}\style{+B}WMDropFiles\style{-B}(var Msg: TMessage); message WM_DROPFILES');
-    Add('procedure \column{}\style{+B}WMEraseBkgnd\style{-B}(var Msg: TMessage); message WM_ERASEBKGND');
-    Add('procedure \column{}\style{+B}WMGetDlgCode\style{-B}(var Msg: TWMGetDlgCode); message WM_GETDLGCODE');
-    Add('procedure \column{}\style{+B}WMHScroll\style{-B}(var Msg: TWMScroll); message WM_HSCROLL');
-    Add('procedure \column{}\style{+B}WMPaste\style{-B}(var Message: TMessage); message WM_PASTE');
+    Clear;
+    Add('\image{5}\hspace{2}constructor \column{}\style{+B}Create\style{-B}(AOwner: TCustomSynEdit)');
+    Add('\image{5}\hspace{2}destructor \column{}\style{+B}Destroy\style{-B}');
+    Add('\image{3}\hspace{2}function \column{}\style{+B}Add\style{-B}(Item: TSynEditMark): Integer');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}ClearLine\style{-B}(line: integer)');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}Delete\style{-B}(Index: Integer)');
+    Add('\image{3}\hspace{2}function \column{}\style{+B}First\style{-B}: TSynEditMark');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}GetMarksForLine\style{-B}(line: integer; var Marks: TSynEditMarks)');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}Insert\style{-B}(Index: Integer; Item: TSynEditMark)');
+    Add('\image{3}\hspace{2}function \column{}\style{+B}Last\style{-B}: TSynEditMark');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}Place\style{-B}(mark: TSynEditMark)');
+    Add('\image{3}\hspace{2}function \column{}\style{+B}Remove\style{-B}(Item: TSynEditMark): Integer');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMCaptureChanged\style{-B}(var Msg: TMessage); message WM_CAPTURECHANGED');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMCopy\style{-B}(var Message: TMessage); message WM_COPY');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMCut\style{-B}(var Message: TMessage); message WM_CUT');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMDropFiles\style{-B}(var Msg: TMessage); message WM_DROPFILES');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMEraseBkgnd\style{-B}(var Msg: TMessage); message WM_ERASEBKGND');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMGetDlgCode\style{-B}(var Msg: TWMGetDlgCode); message WM_GETDLGCODE');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMHScroll\style{-B}(var Msg: TWMScroll); message WM_HSCROLL');
+    Add('\image{4}\hspace{2}procedure \column{}\style{+B}WMPaste\style{-B}(var Message: TMessage); message WM_PASTE');
   end;
   scpDemo.InsertList.AddStrings(mmoInsert.Lines);
   scpDemo.ItemList.AddStrings(mmoItem.Lines);
@@ -175,6 +179,7 @@ procedure TForm1.FormShow(Sender: TObject);
 begin
   SynEdit1.SetFocus;
 end;
+
 initialization
   ReportMemoryLeaksOnShutdown := True;
 end.
