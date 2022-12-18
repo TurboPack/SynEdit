@@ -14,7 +14,6 @@ object Form1: TForm1
   WindowState = wsMaximized
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object SynEdit: TSynEdit
     Left = 0
@@ -36,10 +35,10 @@ object Form1: TForm1
     Gutter.Font.Height = -11
     Gutter.Font.Name = 'Courier New'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
     Gutter.Bands = <
       item
         Kind = gbkMarks
-        Visible = True
         Width = 13
       end
       item
@@ -53,10 +52,10 @@ object Form1: TForm1
       end
       item
         Kind = gbkMargin
-        Visible = True
         Width = 3
       end>
     Highlighter = SynPasSyn
+    SelectedColor.Alpha = 0.400000005960464500
   end
   object ToolBar1: TToolBar
     Left = 0
@@ -74,7 +73,6 @@ object Form1: TForm1
       Left = 5
       Top = 0
       Action = FileOpenCmd
-      ImageName = 'Item1'
       ParentShowHint = False
       ShowHint = True
     end
@@ -91,7 +89,6 @@ object Form1: TForm1
       Left = 37
       Top = 0
       Action = FilePageSetup
-      ImageName = 'Item2'
       ParentShowHint = False
       ShowHint = True
     end
@@ -99,7 +96,6 @@ object Form1: TForm1
       Left = 61
       Top = 0
       Action = FilePrinterSetupCmd
-      ImageName = 'Item3'
       ParentShowHint = False
       ShowHint = True
     end
@@ -107,7 +103,6 @@ object Form1: TForm1
       Left = 85
       Top = 0
       Action = FilePrintPreviewCmd
-      ImageName = 'Item4'
       ParentShowHint = False
       ShowHint = True
     end
@@ -115,7 +110,6 @@ object Form1: TForm1
       Left = 109
       Top = 0
       Action = FilePrintCmd
-      ImageName = 'Item5'
       ParentShowHint = False
       ShowHint = True
     end
@@ -132,16 +126,12 @@ object Form1: TForm1
       Left = 141
       Top = 0
       Action = FileExitCmd
-      ImageName = 'Item6'
       ParentShowHint = False
       ShowHint = True
     end
   end
   object SynPasSyn: TSynPasSyn
     DefaultFilter = 'Pascal files (*.pas,*.dpr,*.dpk,*.inc)|*.pas;*.dpr;*.dpk;*.inc'
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     CommentAttri.Foreground = clNavy
     NumberAttri.Foreground = clBlue
     StringAttri.Foreground = clMaroon
@@ -199,6 +189,7 @@ object Form1: TForm1
       Caption = '&Open'
       Hint = 'Open'
       ImageIndex = 0
+      ImageName = 'Item1'
       ShortCut = 16463
       OnExecute = FileOpenCmdExecute
     end
@@ -206,24 +197,28 @@ object Form1: TForm1
       Caption = 'Page Setup'
       Hint = 'Page setup'
       ImageIndex = 1
+      ImageName = 'Item2'
       OnExecute = FilePageSetupExecute
     end
     object FilePrinterSetupCmd: TAction
       Caption = 'Printer &Setup'
       Hint = 'Printer setup'
       ImageIndex = 2
+      ImageName = 'Item3'
       OnExecute = FilePrinterSetupCmdExecute
     end
     object FilePrintPreviewCmd: TAction
       Caption = 'Print Preview'
       Hint = 'Print preview'
       ImageIndex = 3
+      ImageName = 'Item4'
       OnExecute = FilePrintPreviewCmdExecute
     end
     object FilePrintCmd: TAction
       Caption = '&Print'
       Hint = 'Print'
       ImageIndex = 4
+      ImageName = 'Item5'
       ShortCut = 16464
       OnExecute = FilePrintCmdExecute
     end
@@ -231,6 +226,7 @@ object Form1: TForm1
       Caption = '&Exit'
       Hint = 'Exit'
       ImageIndex = 5
+      ImageName = 'Item6'
       OnExecute = FileExitCmdExecute
     end
   end
@@ -246,33 +242,27 @@ object Form1: TForm1
       Caption = '&File'
       object FileOpenCmd1: TMenuItem
         Action = FileOpenCmd
-        ImageName = 'Item1'
       end
       object N1: TMenuItem
         Caption = '-'
       end
       object PageSetup1: TMenuItem
         Action = FilePageSetup
-        ImageName = 'Item2'
       end
       object PrinterSetup1: TMenuItem
         Action = FilePrinterSetupCmd
-        ImageName = 'Item3'
       end
       object PrintPreview1: TMenuItem
         Action = FilePrintPreviewCmd
-        ImageName = 'Item4'
       end
       object Print1: TMenuItem
         Action = FilePrintCmd
-        ImageName = 'Item5'
       end
       object N2: TMenuItem
         Caption = '-'
       end
       object Exit1: TMenuItem
         Action = FileExitCmd
-        ImageName = 'Item6'
       end
     end
   end
