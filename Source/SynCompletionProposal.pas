@@ -1865,7 +1865,7 @@ begin
   Canvas.Font.Assign(FFont);
   FFontHeight := Canvas.TextHeight(TextHeightString);
   if FItemHeight > 0 then
-    FEffectiveItemHeight := FItemHeight
+    FEffectiveItemHeight := MulDiv(FItemHeight, GetCurrentPPI, 96)
   else
   begin
     FEffectiveItemHeight := FFontHeight;
