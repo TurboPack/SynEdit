@@ -2005,7 +2005,7 @@ begin
     if DisplayType = ctCode then
     begin
       // Save after removing the PPI scaling
-      (Owner as TSynBaseCompletionProposal).FWidth := MulDiv(Width, 96, GetCurrentPPI);
+      (Owner as TSynBaseCompletionProposal).FWidth := MulDiv(ClientWidth, 96, GetCurrentPPI);
       (Owner as TSynBaseCompletionProposal).FNbLinesInWindow := FLinesInWindow;
     end;
   end;
