@@ -1475,6 +1475,7 @@ begin
   fFontDummy.CharSet := DEFAULT_CHARSET;
   fFontDummy.Quality := fFontQuality;
   Font.Assign(fFontDummy);
+  Font.PixelsPerInch := 96;
   Font.OnChange := SynFontChanged;
   ParentFont := False;
   ParentColor := False;
@@ -5357,6 +5358,9 @@ begin
   fWordWrapGlyph.ChangeScale(M, D);
   {$if CompilerVersion >= 31}end;{$endif}
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
+  // Adjust Font.PixelsPerInch so that Font.Size is correct
+  // Delphi should be doing that but it doesn't
+  Font.PixelsPerInch := MulDiv(Font.PixelsPerInch, M, D);
  end;
 
 procedure TCustomSynEdit.UnHookTextBuffer;

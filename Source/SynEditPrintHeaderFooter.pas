@@ -85,11 +85,10 @@ CONTENTS:
       procedure SetPixPrInch(Value : Integer);
         Corrects the PixPerInch property of fonts. Used internally by
         TSynEditPrint.
-      procedure InitPrint(ACanvas : TCanvas;NumPages : Integer; Title : string;
-                          Margins : TSynEditPrintMargins);
+      procedure InitPrint
         Prepares the header or footer for printing. Used internally by
         TSynEditPrint.
-      procedure Print(ACanvas : TCanvas; PageNum : Integer = 0);
+      procedure Print
         Prints the header or footer. Used internally by TSynEditPrint.
 
 -------------------------------------------------------------------------------}
@@ -102,13 +101,14 @@ unit SynEditPrintHeaderFooter;
 interface
 
 uses
-  Windows,
+  Winapi.Windows,
+  Winapi.D2D1,
+  Vcl.Graphics,
   SynEditPrintTypes,
   SynEditPrintMargins,
   SynUnicode,
-  Graphics,
-  Classes,
-  SysUtils;
+  System.Classes,
+  System.SysUtils;
 
 type
   //An item in a header or footer. An item has a text,Font,LineNumber and
@@ -143,14 +143,6 @@ type
 
   THeaderFooterType = (hftHeader, hftFooter);
 
-  //Used internally to calculate line height and font-base-line for header and
-  //footer
-  TLineInfo = class
-  public
-    LineHeight: Integer;
-    MaxBaseDist: Integer;
-  end;
-
   //The header/footer class
   THeaderFooter = class(TPersistent)
   private
@@ -169,14 +161,13 @@ type
     FOldBrush: TBrush;
     FOldFont: TFont;
     FRomanNumbers: Boolean;
-    FLineInfo: TList;
+    FLineHeights: TArray<Integer>;
     FLineCount: Integer;
     FMirrorPosition: Boolean;
+    FPPI: Integer;
     procedure SetDefaultFont(const Value: TFont);
-    procedure DrawFrame(ACanvas: TCanvas);
-    procedure CalcHeight(ACanvas: TCanvas);
-    procedure SaveFontPenBrush(ACanvas: TCanvas);
-    procedure RestoreFontPenBrush(ACanvas: TCanvas);
+    procedure DrawFrame(RT: ID2D1RenderTarget);
+    procedure CalcHeight;
     function GetAsString: string;
     procedure SetAsString(const Value: string);
   public
@@ -189,9 +180,9 @@ type
     function Count: Integer;
     function Get(Index: Integer): THeaderFooterItem;
     procedure SetPixPrInch(Value: Integer);
-    procedure InitPrint(ACanvas: TCanvas; NumPages: Integer; Title: string;
-      Margins: TSynEditPrintMargins);
-    procedure Print(ACanvas: TCanvas; PageNum: Integer);
+    procedure InitPrint(NumPages: Integer; Title: string; Margins:
+        TSynEditPrintMargins);
+    procedure Print(RT: ID2D1RenderTarget; PageNum: Integer);
     procedure Assign(Source: TPersistent); override;
     procedure FixLines;
     property AsString: string read GetAsString write SetAsString;
@@ -225,8 +216,10 @@ type
 implementation
 
 uses
-  UITypes,
-  Math,
+  System.Types,
+  System.UITypes,
+  System.Math,
+  SynDWrite,
   SynEditMiscProcs;
 
 // Helper routine for AsString processing.
@@ -248,6 +241,7 @@ constructor THeaderFooterItem.Create;
 begin
   inherited;
   FFont := TFont.Create;
+  FFont.PixelsPerInch := 96;
 end;
 
 destructor THeaderFooterItem.Destroy;
@@ -300,7 +294,7 @@ var
     Macro: string;
   begin
     Result := True;
-    Macro := SysUtils.AnsiUpperCase(Copy(FText, Start, Run - Start + 1));
+    Macro := System.SysUtils.AnsiUpperCase(Copy(FText, Start, Run - Start + 1));
     if Macro = '$PAGENUM$' then
     begin
       if Roman then
@@ -523,18 +517,17 @@ begin
   FOldFont := TFont.Create;
   FRomanNumbers := False;
   FMirrorPosition := False;
-  FLineInfo := TList.Create;
+  FPPI := 96;
   with FDefaultFont do
   begin
     Name := 'Arial';
     Size := 10;
     Color := clBlack;
+    PixelsPerInch := 96;
   end;
 end;
 
 destructor THeaderFooter.Destroy;
-var
-  i: Integer;
 begin
   Clear;
   FItems.Free;
@@ -542,9 +535,6 @@ begin
   FOldPen.Free;
   FOldBrush.Free;
   FOldFont.Free;
-  for i := 0 to FLineInfo.Count - 1 do
-    TLineInfo(FLineInfo[i]).Free;
-  FLineInfo.Free;
   inherited;
 end;
 
@@ -598,11 +588,8 @@ end;
 procedure THeaderFooter.FixLines;
 var
   i, CurLine: Integer;
-  LineInfo: TLineInfo;
 begin
-  for i := 0 to FLineInfo.Count - 1 do
-    TLineInfo(FLineInfo[i]).Free;
-  FLineInfo.Clear;
+  SetLength(FLineHeights, 0);
   CurLine := 0;
   FLineCount := 0;
   for i := 0 to FItems.Count - 1 do
@@ -610,22 +597,21 @@ begin
     if THeaderFooterItem(FItems[i]).LineNumber <> CurLine then
     begin
       CurLine := THeaderFooterItem(FItems[i]).LineNumber;
-      FLineCount := FLineCount + 1;
-      LineInfo := TLineInfo.Create;
-      FLineInfo.Add(LineInfo);
+      Inc(FLineCount);
     end;
     THeaderFooterItem(FItems[i]).LineNumber := FLineCount;
   end;
+  SetLength(FLineHeights, FLineCount);
 end;
 
-{ Calculates the hight of the header/footer, finds the line height for each line
+{ Calculates the height of the header/footer, finds the line height for each line
   and calculates the font baseline where text is to be written }
-procedure THeaderFooter.CalcHeight(ACanvas: TCanvas);
+procedure THeaderFooter.CalcHeight;
 var
-  i, CurLine: Integer;
+  I, CurLine: Integer;
   AItem: THeaderFooterItem;
   FOrgHeight: Integer;
-  TextMetric: TTextMetric;
+  TextFormat: TSynTextFormat;
 begin
   FFrameHeight := -1;
   if FItems.Count <= 0 then Exit;
@@ -633,22 +619,18 @@ begin
   CurLine := 1;
   FFrameHeight := 0;
   FOrgHeight := FFrameHeight;
-  for i := 0 to FItems.Count - 1 do
+  for I := 0 to FItems.Count - 1 do
   begin
-    AItem := THeaderFooterItem(FItems[i]);
+    AItem := THeaderFooterItem(FItems[I]);
     if AItem.LineNumber <> CurLine then
     begin
       CurLine := AItem.LineNumber;
       FOrgHeight := FFrameHeight;
     end;
-    ACanvas.Font.Assign(AItem.Font);
-    GetTextMetrics(ACanvas.Handle, TextMetric);
-    with TLineInfo(FLineInfo[CurLine - 1]), TextMetric do
-    begin
-      LineHeight := Max(LineHeight, ACanvas.TextHeight('W'));
-      MaxBaseDist := Max(MaxBaseDist, tmHeight - tmDescent);
-    end;
-    FFrameHeight := Max(FFrameHeight, FOrgHeight + ACanvas.TextHeight('W'));
+
+    TextFormat:= TSynTextFormat.Create(AItem.Font);
+    FLineHeights[CurLine - 1] := Max(FLineHeights[CurLine - 1], TextFormat.LineHeight);
+    FFrameHeight := Max(FFrameHeight, FOrgHeight + FLineHeights[CurLine - 1]);
   end;
   FFrameHeight := FFrameHeight + 2 * FMargins.PHFInternalMargin;
 end;
@@ -666,6 +648,7 @@ var
   i, TmpSize: Integer;
   AFont: TFont;
 begin
+  FPPI := Value;
   for i := 0 to FItems.Count - 1 do
   begin
     AFont := THeaderFooterItem(FItems[i]).Font;
@@ -675,10 +658,9 @@ begin
   end;
 end;
 
-procedure THeaderFooter.InitPrint(ACanvas: TCanvas; NumPages: Integer; Title: string;
+procedure THeaderFooter.InitPrint(NumPages: Integer; Title: string;
   Margins: TSynEditPrintMargins);
 begin
-  SaveFontPenBrush(ACanvas);
   FDate := DateToStr(Now);
   FTime := TimeToStr(Now);
   FNumPages := NumPages;
@@ -686,71 +668,52 @@ begin
   FTitle := Title;
   FItems.Sort(CompareItems);
   FixLines;
-  CalcHeight(ACanvas);
-  RestoreFontPenBrush(ACanvas);
+  CalcHeight;
 end;
 
-procedure THeaderFooter.SaveFontPenBrush(ACanvas: TCanvas);
-begin
-  FOldFont.Assign(ACanvas.Font);
-  FOldPen.Assign(ACanvas.Pen);
-  FOldBrush.Assign(ACanvas.Brush);
-end;
-
-procedure THeaderFooter.RestoreFontPenBrush(ACanvas: TCanvas);
-begin
-  ACanvas.Font.Assign(FOldFont);
-  ACanvas.Pen.Assign(FOldPen);
-  ACanvas.Brush.Assign(FOldBrush);
-end;
-
-procedure THeaderFooter.DrawFrame(ACanvas: TCanvas);
+procedure THeaderFooter.DrawFrame(RT: ID2D1RenderTarget);
 //Draws frame around header/footer
+Var
+  BoxRect: TD2D1RectF;
 begin
   if (FrameTypes = []) then Exit;
-  with ACanvas, FMargins do begin
-    Pen.Color := LineColor;
-    Brush.Color := ShadedColor;
+  with FMargins do begin
+    if FType = hftHeader then
+      BoxRect := Rect(PLeft, PHeader - FFrameHeight, PRight, PHeader)
+    else
+      BoxRect := Rect(PLeft, PFooter, PRight, PFooter + FFrameHeight);
+
     if ftShaded in FrameTypes then
-      Brush.Style := bsSolid
-    else
-      Brush.Style := bsClear;
+      RT.FillRectangle(BoxRect, TSynDWrite.SolidBrush(ShadedColor));
     if ftBox in FrameTypes then
-      Pen.Style := psSolid
-    else
-      Pen.Style := psClear;
-    if FrameTypes * [ftBox, ftShaded] <> [] then begin
-      if FType = hftHeader then
-        Rectangle(PLeft, PHeader - FFrameHeight, PRight, PHeader)
-      else
-        Rectangle(PLeft, PFooter, PRight, PFooter + FFrameHeight);
-    end;
+      RT.DrawRectangle(BoxRect, TSynDWrite.SolidBrush(LineColor), FPPI/96);
     if ftLine in FrameTypes then begin
-      Pen.Style := psSolid;
-      if FType = hftHeader then begin
-        MoveTo(PLeft, PHeader);
-        LineTo(PRight, PHeader);
-      end
-      else begin
-        MoveTo(PLeft, PFooter);
-        LineTo(PRight, PFooter);
-      end
+      if FType = hftHeader then
+        RT.DrawLine(Point(PLeft, PHeader), Point(PRight, PHeader),
+          TSynDWrite.SolidBrush(LineColor), FPPI/96)
+      else
+        RT.DrawLine(Point(PLeft, PFooter), Point(PRight, PFooter),
+          TSynDWrite.SolidBrush(LineColor), FPPI/96);
     end;
   end;
 end;
 
-procedure THeaderFooter.Print(ACanvas: TCanvas; PageNum: Integer);
+procedure THeaderFooter.Print(RT: ID2D1RenderTarget; PageNum: Integer);
+const
+  DWriteTextAlignment: array[TAlignment] of DWRITE_TEXT_ALIGNMENT =
+    (DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_TEXT_ALIGNMENT_CENTER);
 var
-  i, X, Y, CurLine: Integer;
+  I, Y, CurLine: Integer;
   AStr: string;
   AItem: THeaderFooterItem;
-  OldAlign: UINT;
   TheAlignment: TAlignment;
+  TextFormat: TSynTextFormat;
+  Layout: TSynTextLayout;
 begin
   if (FFrameHeight <= 0) then Exit; // No header/footer
-  SaveFontPenBrush(ACanvas);
-  DrawFrame(ACanvas);
-  ACanvas.Brush.Style := bsClear;
+
+  DrawFrame(RT);
+
   if FType = hftHeader then
     Y := FMargins.PHeader - FFrameHeight
   else
@@ -758,17 +721,24 @@ begin
   Y := Y + FMargins.PHFInternalMargin; // Add the specified internal margin
 
   CurLine := 1;
-  for i := 0 to FItems.Count - 1 do
+  for I := 0 to FItems.Count - 1 do
   begin
-    AItem := THeaderFooterItem(FItems[i]);
-    ACanvas.Font := AItem.Font;
+    AItem := THeaderFooterItem(FItems[I]);
+
+    TextFormat := TSynTextFormat.Create(AItem.Font);
     if AItem.LineNumber <> CurLine then
     begin
-      Y := Y + TLineInfo(FLineInfo[CurLine - 1]).LineHeight;
+      Y := Y + FLineHeights[CurLine - 1];
       CurLine := AItem.LineNumber;
     end;
+
     AStr := AItem.GetText(FNumPages, PageNum, FRomanNumbers, FTitle, FTime, FDate);
-      //Find the alignment of the header/footer item - check for MirrorPosition
+
+    Layout := TSynTextLayout.Create(TextFormat, PChar(AStr), AStr.Length,
+      FMargins.PRightHFTextIndent - FMargins.PLeftHFTextIndent,
+      FLineHeights[CurLine - 1]);
+    Layout.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
+    //Find the alignment of the header/footer item - check for MirrorPosition
     TheAlignment := AItem.Alignment;
     if MirrorPosition and ((PageNum mod 2) = 0) then
     begin
@@ -777,21 +747,10 @@ begin
         taLeftJustify: TheAlignment := taRightJustify;
       end;
     end;
-      //Find X-position of text
-    with FMargins do begin
-      X := PLeftHFTextIndent;
-      case TheAlignment of
-        taRightJustify: X := PRightHFTextIndent - ACanvas.TextWidth(AStr);
-        taCenter: X := (PLeftHFTextIndent + PRightHFTextIndent - ACanvas.TextWidth(AStr)) div 2;
-      end;
-    end;
-      {Aligning at base line - Fonts can have different size in headers and footers}
-    OldAlign := SetTextAlign(ACanvas.Handle, TA_BASELINE);
-    ExtTextOutW(ACanvas.Handle, X, Y + TLineInfo(FLineInfo[CurLine - 1]).MaxBaseDist,
-      0, nil, PWideChar(AStr), Length(AStr), nil);
-    SetTextAlign(ACanvas.Handle, OldAlign);
+    Layout.SetTextAlignment(DWriteTextAlignment[TheAlignment]);
+
+    Layout.Draw(RT, FMargins.PLeftHFTextIndent, Y, AItem.Font.Color);
   end;
-  RestoreFontPenBrush(ACanvas);
 end;
 
 procedure THeaderFooter.Assign(Source: TPersistent);
