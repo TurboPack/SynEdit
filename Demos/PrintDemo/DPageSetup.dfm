@@ -21,7 +21,7 @@ object PageSetupDlg: TPageSetupDlg
     Top = 0
     Width = 632
     Height = 397
-    ActivePage = HeaderFooter
+    ActivePage = Margins
     Align = alClient
     TabOrder = 2
     OnChange = PageControlChange
@@ -1151,70 +1151,70 @@ object PageSetupDlg: TPageSetupDlg
         Left = 110
         Top = 40
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 1
       end
       object EditRight: TEdit
         Left = 110
         Top = 65
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 2
       end
       object EditTop: TEdit
         Left = 110
         Top = 90
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 3
       end
       object EditBottom: TEdit
         Left = 110
         Top = 115
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 4
       end
       object EditGutter: TEdit
         Left = 110
         Top = 140
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 5
       end
       object EditHeader: TEdit
         Left = 110
         Top = 170
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 6
       end
       object EditFooter: TEdit
         Left = 110
         Top = 195
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 7
       end
       object EditHFInternalMargin: TEdit
         Left = 110
         Top = 220
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 8
       end
       object EditLeftHFTextIndent: TEdit
         Left = 110
         Top = 245
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 9
       end
       object EditRightHFTextIndent: TEdit
         Left = 110
         Top = 270
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 10
       end
       object CBUnits: TComboBox
@@ -1244,7 +1244,7 @@ object PageSetupDlg: TPageSetupDlg
         Top = 340
         Width = 156
         Height = 17
-        Caption = 'Print line numbers in margin'
+        Caption = 'Line numbers in margin'
         TabOrder = 13
       end
       object CBHighlight: TCheckBox

@@ -289,16 +289,27 @@ end;
 
 procedure TSynEditPrintPreview.Paint;
 var
-  ptOrgScreen: TPoint;
   RT: ID2D1DCRenderTarget;
   ScaleX, ScaleY: Single;
+  ClipR: TRect;
 begin
   PaintPaper;
   if (csDesigning in ComponentState) or (not Assigned(FSynEditPrint)) then
     Exit;
 
-  with FPaperRect do
-    IntersectClipRect(Canvas.Handle, Left, Top, Right, Bottom);
+  with FSynEditPrint.PrinterInfo do
+  begin
+    // The RenderTarget expects a PPI of 96
+    ScaleX := FPageSize.Width / (PhysicalWidth * 96 / XPixPrInch) ;
+    ScaleY := FPageSize.Height / (PhysicalHeight * 96 / YPixPrInch);
+  end;
+
+  ClipR := Canvas.ClipRect;
+  // Transform ClipR to the Coordinate system of RenderTarget
+  ClipR.Offset(-FPaperRect.Left, -FPaperRect.Top);
+  ClipR := TRect.Create(
+    ScalePoint(ClipR.TopLeft, 1 / ScaleX, 1 / ScaleY),
+    ScalePoint(ClipR.BottomRight, 1 / ScaleX, 1 / ScaleY));
 
   // Reset so that rendering for printing is not mixed up with Synedit rendering
   TSynDWrite.ResetRenderTarget;
@@ -307,19 +318,13 @@ begin
     RT.BindDC(Canvas.Handle, FPaperRect);
     RT.BeginDraw;
     try
-      with FSynEditPrint.PrinterInfo do
-      begin
-        // The RenderTarget expects a PPI of 96
-        ScaleX := FPageSize.Width / (PhysicalWidth * 96 / XPixPrInch) ;
-        ScaleY := FPageSize.Height / (PhysicalHeight * 96 / YPixPrInch);
-      end;
       RT.SetTransform(
         TD2DMatrix3X2F.Scale(ScaleX, ScaleY, Point(0, 0)));
-      FSynEditPrint.PaintPreview(RT, FPageNumber);
+
+      FSynEditPrint.PaintPreview(RT, FPageNumber, ClipR);
     finally
       RT.EndDraw;
     end;
-
   finally
     // Reset so that it does not mess up the SynEdit drawing
     TSynDWrite.ResetRenderTarget;

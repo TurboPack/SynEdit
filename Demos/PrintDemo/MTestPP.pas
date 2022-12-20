@@ -103,7 +103,7 @@ var
 
 implementation
 
-uses DTestPrintPreview, DPageSetup;
+uses DTestPrintPreview, DPageSetup, Printers;
 
 {$R *.DFM}
 
@@ -164,10 +164,19 @@ end;
 
 procedure TForm1.FilePrintCmdExecute(Sender: TObject);
 begin
+  SynEditPrint.SynEdit := SynEdit;
+  SynEditPrint.Title := FCurFile;
+  PrintDialog.MinPage := 1;
+  PrintDialog.MaxPage := SynEditPrint.PageCount;
+  PrintDialog.FromPage := 1;
+  PrintDialog.ToPage := PrintDialog.MaxPage;
   if PrintDialog.Execute then begin
     SynEditPrint.SynEdit := SynEdit;
     SynEditPrint.Title := FCurFile;
-    SynEditPrint.Print;
+    if PrintDialog.PrintRange = prAllPages then
+      SynEditPrint.Print
+    else
+      SynEditPrint.PrintRange(PrintDialog.FromPage, PrintDialog.ToPage);
   end;
 end;
 

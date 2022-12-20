@@ -24,7 +24,7 @@ object Form1: TForm1
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
-    Font.Name = 'Courier New'
+    Font.Name = 'Consolas'
     Font.Pitch = fpFixed
     Font.Style = []
     Font.Quality = fqClearTypeNatural
@@ -143,6 +143,7 @@ object Form1: TForm1
     Top = 119
   end
   object PrintDialog: TPrintDialog
+    Options = [poPageNums]
     Left = 201
     Top = 119
   end
@@ -162,8 +163,8 @@ object Form1: TForm1
     Margins.Left = 25.000000000000000000
     Margins.Right = 15.000000000000000000
     Margins.Top = 25.000000000000000000
-    Margins.Bottom = 25.000000000000000000
-    Margins.Header = 15.000000000000000000
+    Margins.Bottom = 20.000000000000000000
+    Margins.Header = 20.000000000000000000
     Margins.Footer = 15.000000000000000000
     Margins.LeftHFTextIndent = 2.000000000000000000
     Margins.RightHFTextIndent = 2.000000000000000000
@@ -171,11 +172,13 @@ object Form1: TForm1
     Margins.MirrorMargins = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Height = -13
+    Font.Name = 'Consolas'
     Font.Style = []
     Colors = True
+    LineNumbers = True
     Highlighter = SynPasSyn
+    LineNumbersInMargin = True
     TabWidth = 8
     Color = clWhite
     Left = 22
