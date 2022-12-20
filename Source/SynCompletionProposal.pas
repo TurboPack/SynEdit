@@ -155,6 +155,8 @@ type
     FTitleHeight: Integer;
     FColumns: TProposalColumns;
     FGripperHeight : integer;
+    FGripperText : string;
+    FGripperFont : TFont;
 
     FScaledMargin : integer;
     procedure SetCurrentString(const Value: string);
@@ -183,6 +185,8 @@ type
     function IsWordBreakChar(AChar: WideChar): Boolean;
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
     procedure ResetCanvas(const Canvas: TCanvas);
+    procedure SetGripperText(const Value: string);
+    procedure SetGripperFont(const Value: TFont);
   protected
     const cGripperBarHeight = 16;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
@@ -226,6 +230,7 @@ type
     property AssignedList: TStrings read FAssignedList write FAssignedList;
     property Position: Integer read FPosition write SetPosition;
     property Title: string read fTitle write SetTitle;
+    property GripperText : string read FGripperText write SetGripperText;
     property ClSelect: TColor read FClSelect write FClSelect default clHighlight;
     property ClSelectedText: TColor read FClSelectText write FClSelectText default clHighlightText;
     property ClBackground: TColor read FClBackGround write FClBackGround default clWindow;
@@ -246,6 +251,7 @@ type
 
     property TitleFont: TFont read fTitleFont write SetTitleFont;
     property Font: TFont read fFont write SetFont;  // hides inherited property - not auto scaled
+    property GripperFont : TFont read FGripperFont write SetGripperFont;
     property Columns: TProposalColumns read FColumns write SetColumns;
     property Resizeable: Boolean read FResizeable write SetResizeable;
     property Images: TCustomImageList read FImages write SetImages;
@@ -310,6 +316,7 @@ type
     function GetTitleFont: TFont;
     procedure SetFont(const Value: TFont);
     procedure SetTitleFont(const Value: TFont);
+    procedure SetGripperFont(const Value : TFont);
     function GetOptions: TSynCompletionOptions;
     function GetTriggerChars: string;
     procedure SetTriggerChars(const Value: string);
@@ -326,6 +333,9 @@ type
     function GetImages: TCustomImageList;
     function IsWordBreakChar(AChar: WideChar): Boolean;
     procedure SetPaintFormShadow(const Value: Boolean);
+    procedure SetGripperText(const Value: string);
+    function GetGripperFont: TFont;
+    function GetGripperText: string;
   protected
     procedure DefineProperties(Filer: TFiler); override;
     procedure SetOptions(const Value: TSynCompletionOptions); virtual;
@@ -374,6 +384,7 @@ type
     property Title: string read GetTitle write SetTitle;
     property Font: TFont read GetFont write SetFont;
     property TitleFont: TFont read GetTitleFont write SetTitleFont;
+    property GripperFont : TFont read GetGripperFont write SetGripperFont;
     property Columns: TProposalColumns read GetColumns write SetColumns;
     property Resizeable: Boolean read GetResizeable write SetResizeable default False;
     property ItemHeight: Integer read GetItemHeight write SetItemHeight default 0;
@@ -381,6 +392,7 @@ type
     property Margin: Integer read GetMargin write SetMargin default 2;
     property PaintFormShadow: Boolean read FPaintFormShadow write SetPaintFormShadow default True;
     property ShowGripper: Boolean read FShowGripper write FShowGripper default False;
+    property GripperText : string read GetGripperText write SetGripperText;
 
     property OnChange: TCompletionChange read GetOnChange write SetOnChange;
     property OnClose: TNotifyEvent read FOnClose write FOnClose;
@@ -1195,6 +1207,9 @@ begin
 
   FFont := TFont.Create;
 
+  FGripperFont := TFont.Create;
+  FGripperFont.Color := clBtnText;
+
   ClSelect := clHighlight;
   ClSelectedText := clHighlightText;
   ClBackground := clWindow;
@@ -1269,6 +1284,7 @@ begin
   FAssignedList.Free;
   FTitleFont.Free;
   FFont.Free;
+  FGripperFont.Free;
 end;
 
 procedure TSynBaseCompletionProposalForm.KeyDown(var Key: Word; Shift: TShiftState);
@@ -1545,6 +1561,7 @@ var
   GripperRect : TRect;
   GripperBarRect : TRect;
   ScaledGripSize: Integer;
+  textRect : TRect;
 begin
   if FGripperHeight > 0 then
   begin
@@ -1558,6 +1575,14 @@ begin
     Canvas.PenPos := GripperBarRect.TopLeft;
     Canvas.LineTo(GripperBarRect.Right,GripperBarRect.Top);
     LStyle := StyleServices;
+
+    if FGripperText <> '' then
+    begin
+      textRect := TRect.Create(0, ClientHeight - ScaledGripSize , ClientWidth - ScaledGripSize, ClientHeight);
+      textRect.Inflate(-FScaledMargin, -FScaledMargin);
+      Canvas.Font.Assign(FGripperFont);
+      Canvas.TextRect(textRect, FGripperText);
+    end;
 
     //Draw gripper.
     if StyleServices.Available then
@@ -2107,6 +2132,16 @@ end;
 procedure TSynBaseCompletionProposalForm.SetFont(const Value: TFont);
 begin
   FFont.Assign(Value);
+end;
+
+procedure TSynBaseCompletionProposalForm.SetGripperFont(const Value: TFont);
+begin
+  FGripperFont.Assign(Value);
+end;
+
+procedure TSynBaseCompletionProposalForm.SetGripperText(const Value: string);
+begin
+  FGripperText := value;
 end;
 
 procedure TSynBaseCompletionProposalForm.SetTitleFont(const Value: TFont);
@@ -2685,6 +2720,16 @@ begin
   Result := Form.Font;
 end;
 
+function TSynBaseCompletionProposal.GetGripperFont: TFont;
+begin
+  result := Form.GripperFont;
+end;
+
+function TSynBaseCompletionProposal.GetGripperText: string;
+begin
+  result := Form.GripperText;
+end;
+
 function TSynBaseCompletionProposal.GetTitleFont: TFont;
 begin
   Result := Form.TitleFont;
@@ -2693,6 +2738,16 @@ end;
 procedure TSynBaseCompletionProposal.SetFont(const Value: TFont);
 begin
   Form.Font := Value;
+end;
+
+procedure TSynBaseCompletionProposal.SetGripperFont(const Value: TFont);
+begin
+  Form.GripperFont := Value;
+end;
+
+procedure TSynBaseCompletionProposal.SetGripperText(const Value: string);
+begin
+  Form.GripperText := Value;
 end;
 
 procedure TSynBaseCompletionProposal.SetTitleFont(const Value: TFont);
