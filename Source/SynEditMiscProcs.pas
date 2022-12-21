@@ -133,6 +133,10 @@ function GetCorrectFontWeight(Font: TFont): Integer;
 procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen:
     Integer);
 
+// Tests whether a color is dark
+function IsColorDark(AColor : TColor) : boolean;
+
+
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 {$ENDIF}
@@ -788,5 +792,15 @@ begin
     Dec(NewLen);
   end;
 end;
+
+function IsColorDark(AColor : TColor) : boolean;
+var
+  ACol: Longint;
+begin
+  ACol := ColorToRGB(AColor) and $00FFFFFF;
+  Result := ((2.99 * GetRValue(ACol) + 5.87 * GetGValue(ACol) +
+                 1.14 * GetBValue(ACol)) < $400);
+end;
+
 
 end.

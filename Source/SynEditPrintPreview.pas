@@ -162,7 +162,7 @@ const
 constructor TSynEditPrintPreview.Create(AOwner: TComponent);
 begin
   inherited;
-  ControlStyle := ControlStyle + [csNeedsBorderPaint];
+  ControlStyle := ControlStyle + [csOpaque, csNeedsBorderPaint];
   FBorderStyle := bsSingle;
   FScaleMode := pscUserScaled;
   FScalePercent := 100;
@@ -267,7 +267,7 @@ begin
         Top := FVirtualOffset.Y + FScrollPosition.Y;
       Right := Left + FPageSize.Width;
       Bottom := Top + FPageSize.Height;
-      rgnPaper := CreateRectRgn(Left, Top, Right + 1, Bottom + 1);
+      rgnPaper := CreateRectRgn(Left, Top, Right, Bottom);
     end;
     if (NULLREGION <> ExtSelectClipRgn(Handle, rgnPaper, RGN_DIFF)) then
       FillRect(rcClip);
@@ -280,9 +280,6 @@ begin
     end;
       // paint paper background
     SelectClipRgn(Handle, rgnPaper);
-    Brush.Color := FPageBG;
-    with FPaperRect do
-      Rectangle(Left, Top, Right + 1, Bottom + 1);
     DeleteObject(rgnPaper);
   end;
 end;
@@ -760,5 +757,11 @@ function TSynEditPrintPreview.GetPageCount: Integer;
 begin
   Result := SynEditPrint.PageCount;
 end;
+
+initialization
+ TCustomStyleEngine.RegisterStyleHook(TSynEditPrintPreview, TScrollingStyleHook);
+
+finalization
+ TCustomStyleEngine.UnRegisterStyleHook(TSynEditPrintPreview, TScrollingStyleHook);
 
 end.

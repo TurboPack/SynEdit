@@ -157,9 +157,6 @@ type
     FTitle: string;
     FMargins: TSynEditPrintMargins;
     FFrameHeight: Integer;
-    FOldPen: TPen;
-    FOldBrush: TBrush;
-    FOldFont: TFont;
     FRomanNumbers: Boolean;
     FLineHeights: TArray<Integer>;
     FLineCount: Integer;
@@ -512,9 +509,6 @@ begin
   FLineColor := clBlack;
   FItems := TList.Create;
   FDefaultFont := TFont.Create;
-  FOldPen := TPen.Create;
-  FOldBrush := TBrush.Create;
-  FOldFont := TFont.Create;
   FRomanNumbers := False;
   FMirrorPosition := False;
   FPPI := 96;
@@ -532,9 +526,6 @@ begin
   Clear;
   FItems.Free;
   FDefaultFont.Free;
-  FOldPen.Free;
-  FOldBrush.Free;
-  FOldFont.Free;
   inherited;
 end;
 

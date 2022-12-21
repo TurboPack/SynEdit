@@ -109,6 +109,7 @@ type
     LastLine: Integer;
     LastRow: Integer;
   end;
+
   //The actual print controller object
   TSynEditPrint = class(TComponent)
   private
@@ -154,7 +155,7 @@ type
     procedure SetMaxLeftChar(const Value: Integer);
     procedure PrintPage(RT: ID2D1RenderTarget; Num: Integer; const ClipR: TRect);
     procedure WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos:
-        Integer);
+        Integer; FontColor: TColor);
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure SetPixelsPrInch;
     procedure InitRanges;
@@ -414,7 +415,8 @@ end;
 { Writes the line number. FMargins. PLeft is the position of the left margin
   (which is automatically incremented by the length of the linenumber text, if
   the linenumbers should not be placed in the margin) }
-procedure TSynEditPrint.WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos: Integer);
+procedure TSynEditPrint.WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos: Integer;
+  FontColor: TColor);
 var
   AStr: string;
   Layout: TSynTextLayout;
@@ -422,7 +424,7 @@ begin
   AStr := IntToStr(LineNumber + FLineOffset) + ': ';
   Layout := TSynTextLayout.Create(FSynTextFormat, PChar(AStr), AStr.Length);
   Layout.Draw(RT, FMargins.PLeft -
-    Round(Layout.TextMetrics.widthIncludingTrailingWhitespace), YPos, Font.Color);
+    Round(Layout.TextMetrics.widthIncludingTrailingWhitespace), YPos, FontColor);
 end;
 
 procedure TSynEditPrint.PrintPage(RT: ID2D1RenderTarget; Num: Integer; const ClipR: TRect);
@@ -441,7 +443,7 @@ var
   Token: string;
   TokenPos, TokenEnd: Integer;
   Attr: TSynHighlighterAttributes;
-  AColor: TColor;
+  BkgColor, FontColor, AColor: TColor;
   HitMetrics: TDwriteHitTestMetrics;
   X1, X2, Y1, Y2: Single;
 begin
@@ -452,7 +454,18 @@ begin
     begin
       RT.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
       RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-      RT.Clear(D2D1ColorF(Color));
+
+      if FColors and FSynOK then
+        BkgColor := FHighlighter.WhitespaceAttribute.Background
+      else
+        BkgColor := Color;
+
+      if IsColorDark(BkgColor) then
+        FontColor := clWhite
+      else
+        FontColor := Font.Color;
+
+      RT.Clear(D2D1ColorF(BkgColor));
 
       FHeader.Print(RT, Num + FPageOffset);
 
@@ -460,7 +473,7 @@ begin
       for i := FPages[Num - 1].FirstLine to  FPages[Num - 1].LastLine do
       begin
         if FLineNumbers and (YPos + FLineHeight >= ClipR.Top) then
-          WriteLineNumber(RT, i + 1, YPos);
+          WriteLineNumber(RT, i + 1, YPos, FontColor);
 
         LineText := FLines[I];
 
@@ -513,12 +526,13 @@ begin
                   if AColor <> clNone then
                     TextLayout.SetFontColor(AColor, TokenPos, TokenEnd - TokenPos);
                   AColor := Attr.Background;
-                  if AColor <> clNone then
+                  if (AColor <> clNone) and (AColor <> BkgColor) then
                   begin
                     TextLayout.IDW.HitTestTextPosition(TokenPos - 1, False, X1, Y1, HitMetrics);
                     TextLayout.IDW.HitTestTextPosition(TokenEnd - 2, True, X2, Y2, HitMetrics);
-                    RT.FillRectangle(Rect(Round(X1), YPos + Round(Y1), Round(X2),
-                      YPos + Round(Y2) + FLineHeight), TSynDWrite.SolidBrush(AColor));
+                    RT.FillRectangle(Rect(Round(X1) + FMargins.PLeft, YPos + Round(Y1),
+                      Round(X2) + FMargins.PLeft, YPos + Round(Y2) + FLineHeight),
+                      TSynDWrite.SolidBrush(AColor));
                   end;
                 end;
               end;
@@ -534,7 +548,7 @@ begin
             begin
               TextLayout.DrawClipped(RT, FMargins.PLeft,
                 YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
-                Rect(0, YPos, FMaxWidth,
+                Rect(FMargins.PLeft, YPos, FMargins.PRight,
                 ((FMargins.PBottom - FMargins.PTop) div FLineHeight) * FLineHeight),
                 FFont.Color);
               LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
@@ -542,8 +556,8 @@ begin
               (FPages[Num - 1].LastRow < LayoutRowCount)
             then
               TextLayout.DrawClipped(RT, FMargins.PLeft, YPos,
-                Rect(0, YPos, FMaxWidth, YPos + FPages[Num - 1].LastRow * FLineHeight),
-                FFont.Color)
+                Rect(FMargins.PLeft, YPos, FMargins.PRight,
+                YPos + FPages[Num - 1].LastRow * FLineHeight), FFont.Color)
             else
               TextLayout.Draw(RT, FMargins.PLeft, YPos, FFont.Color);
         end;
