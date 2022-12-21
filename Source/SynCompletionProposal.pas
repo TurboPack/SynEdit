@@ -56,8 +56,6 @@ uses
 type
   SynCompletionType = (ctCode, ctHint, ctParams);
 
-  TSynForm = TCustomForm;
-
   TSynBaseCompletionProposalPaintItem = procedure(Sender: TObject;
     Index: Integer; TargetCanvas: TCanvas; ItemRect: TRect;
     var CustomDraw: Boolean) of object;
@@ -103,7 +101,7 @@ const
 type
   TProposalColumns = class;
 
-  TSynBaseCompletionProposalForm = class(TSynForm)
+  TSynBaseCompletionProposalForm = class(TCustomForm)
   private
     FCurrentString: string;
     FOnPaintItem: TSynBaseCompletionProposalPaintItem;
@@ -1973,7 +1971,7 @@ begin
     inherited;
 end;
 
-function GetMDIParent (const Form: TSynForm): TSynForm;
+function GetMDIParent(const Form: TCustomForm): TCustomForm;
 { Returns the parent of the specified MDI child form. But, if Form isn't a
   MDI child, it simply returns Form. }
 var
@@ -1982,7 +1980,7 @@ begin
   Result := Form;
   if Form = nil then
     exit;
-  if (Form is TSynForm) and
+  if (Form is TCustomForm) and
      ((Form as TForm).FormStyle = fsMDIChild) then
     for I := 0 to Screen.FormCount-1 do
       with Screen.Forms[I] do
@@ -1999,15 +1997,19 @@ end;
 
 procedure TSynBaseCompletionProposalForm.WMActivate(var Message: TWMActivate);
 var
-  ParentForm: TSynForm;
+  ParentForm: TCustomForm;
 begin
   if csDesigning in ComponentState then begin
     inherited;
     Exit;
   end;
-     {Owner of the component that created me}
-  if Owner.Owner is TSynForm then
-    ParentForm := GetMDIParent(Owner.Owner as TSynForm)
+
+  if Assigned(CurrentEditor) then
+  begin
+    ParentForm := GetParentForm(CurrentEditor);
+    if Assigned(ParentForm) then
+      ParentForm := GetMDIParent(ParentForm);
+  end
   else
     ParentForm := nil;
 
