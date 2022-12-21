@@ -467,7 +467,8 @@ begin
 
       RT.Clear(D2D1ColorF(BkgColor));
 
-      FHeader.Print(RT, Num + FPageOffset);
+      if FMargins.PTop >= ClipR.Top then
+        FHeader.Print(RT, Num + FPageOffset);
 
       YPos := FMargins.PTop;
       for i := FPages[Num - 1].FirstLine to  FPages[Num - 1].LastLine do
