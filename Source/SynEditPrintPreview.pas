@@ -82,6 +82,10 @@ type
     FOnPreviewPage: TPreviewPageEvent;
     FOnScaleChange: TNotifyEvent;
     FWheelAccumulator: Integer;
+    FMargin_X: Integer;
+    FMargin_Y: Integer;
+    FShadow_Size: Integer;
+
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetPageBG(Value: TColor);
     procedure SetSynEditPrint(Value: TSynEditPrint);
@@ -108,6 +112,7 @@ type
     procedure ScrollVertTo(Value: Integer); virtual;
     procedure UpdateScrollbars; virtual;
     procedure SizeChanged; virtual;
+    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif}); override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure Paint; override;
@@ -159,6 +164,16 @@ const
 
 { TSynEditPrintPreview }
 
+procedure TSynEditPrintPreview.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif});
+begin
+  {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
+    FMargin_X := MulDiv(FMargin_X, M, D);
+    FMargin_Y := MulDiv(FMargin_Y, M, D);
+    FShadow_Size := MulDiv(FShadow_Size, M, D);
+  {$if CompilerVersion >= 31}end;{$endif}
+  inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
+end;
+
 constructor TSynEditPrintPreview.Create(AOwner: TComponent);
 begin
   inherited;
@@ -176,6 +191,9 @@ begin
   FShowScrollHint := True;
   Align := alClient;
   FWheelAccumulator := 0;
+  FMargin_X:= MARGIN_X;
+  FMargin_Y:= MARGIN_Y;
+  FShadow_Size:= SHADOW_SIZE;
 end;
 
 procedure TSynEditPrintPreview.CreateParams(var Params: TCreateParams);
@@ -255,7 +273,7 @@ begin
     if (csDesigning in ComponentState) or (not Assigned(FSynEditPrint)) then begin
       FillRect(rcClip);
       Brush.Color := FPageBG;
-      Rectangle(MARGIN_X, MARGIN_Y, MARGIN_X + 30, MARGIN_Y + 43);
+      Rectangle(FMargin_X, FMargin_Y, FMargin_X + 30, FMargin_Y + 43);
       Exit;
     end;
       // fill background around paper
@@ -274,7 +292,7 @@ begin
       // paper shadow
     Brush.Color := clDkGray;
     with FPaperRect do begin
-      for i := 1 to SHADOW_SIZE do
+      for i := 1 to FShadow_Size do
         PolyLine([Point(Left + i, Bottom + i), Point(Right + i, Bottom + i),
           Point(Right + i, Top + i)]);
     end;
@@ -392,8 +410,8 @@ begin
   // compute paper size
   case fScaleMode of
     pscWholePage: begin
-        FPageSize.Width := ClientWidth - 2 * MARGIN_X - SHADOW_SIZE;
-        FPageSize.Height := ClientHeight - 2 * MARGIN_Y - SHADOW_SIZE;
+        FPageSize.Width := ClientWidth - 2 * FMargin_X - FShadow_Size;
+        FPageSize.Height := ClientHeight - 2 * FMargin_Y - FShadow_Size;
         nWDef := GetPageWidthFromHeight(FPageSize.Height);
         if (nWDef < FPageSize.Width) then
           FPageSize.Width := nWDef
@@ -401,7 +419,7 @@ begin
           FPageSize.Height := GetPageHeightFromWidth(FPageSize.Width);
       end;
     pscPageWidth: begin
-        FPageSize.Width := ClientWidth - 2 * MARGIN_X - SHADOW_SIZE;
+        FPageSize.Width := ClientWidth - 2 * FMargin_X - FShadow_Size;
         FPageSize.Height := GetPageHeightFromWidth(FPageSize.Width);
       end;
     pscUserScaled: begin
@@ -409,12 +427,12 @@ begin
         FPageSize.Height := MulDiv(GetPageHeight100Percent, fScalePercent, 100);
       end;
   end;
-  FVirtualSize.Width := FPageSize.Width + 2 * MARGIN_X + SHADOW_SIZE;
-  FVirtualSize.Height := FPageSize.Height + 2 * MARGIN_Y + SHADOW_SIZE;
-  FVirtualOffset.X := MARGIN_X;
+  FVirtualSize.Width := FPageSize.Width + 2 * FMargin_X + FShadow_Size;
+  FVirtualSize.Height := FPageSize.Height + 2 * FMargin_Y + FShadow_Size;
+  FVirtualOffset.X := FMargin_X;
   if (FVirtualSize.Width < ClientWidth) then
     Inc(FVirtualOffset.X, (ClientWidth - FVirtualSize.Width) div 2);
-  FVirtualOffset.Y := MARGIN_Y;
+  FVirtualOffset.Y := FMargin_Y;
   if (FVirtualSize.Height < ClientHeight) then
     Inc(FVirtualOffset.Y, (ClientHeight - FVirtualSize.Height) div 2);
   UpdateScrollbars;
