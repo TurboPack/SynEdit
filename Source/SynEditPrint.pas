@@ -175,8 +175,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure InitPrint;
-    procedure PaintPreview(RT: ID2D1RenderTarget; PageNumber: Integer;
-      const ClipR: TRect);
+    procedure PrintToCanvas(ACanvas: TCanvas;  RenderRect: TRect; PageNo: Integer);
     procedure Print;
     procedure PrintRange(StartPage, EndPage: Integer);
     property PrinterInfo: TSynEditPrinterInfo read FPrinterInfo;
@@ -574,13 +573,50 @@ begin
   end;
 end;
 
-procedure TSynEditPrint.PaintPreview(RT: ID2D1RenderTarget; PageNumber:
-    Integer; const ClipR: TRect);
+procedure TSynEditPrint.PrintToCanvas(ACanvas: TCanvas; RenderRect: TRect;
+  PageNo: Integer);
 // Used by preview component
+var
+  RT:  ID2D1DCRenderTarget;
+  ScaleX, ScaleY: Single;
+  ClipR: TRect;
 begin
   FAbort := False;
   FPrinting := False;
-  PrintPage(RT, PageNumber, ClipR);
+
+  with PrinterInfo do
+  begin
+    // The RenderTarget expects a PPI of 96
+    ScaleX := RenderRect.Width / (PhysicalWidth * 96 / XPixPrInch) ;
+    ScaleY := RenderRect.Height / (PhysicalHeight * 96 / YPixPrInch);
+  end;
+
+  ClipR := ACanvas.ClipRect;
+  // Transform ClipR to the Coordinate system of RenderTarget
+  ClipR.Offset(-RenderRect.Left, -RenderRect.Top);
+  ClipR := TRect.Create(
+    ScalePoint(ClipR.TopLeft, 1 / ScaleX, 1 / ScaleY),
+    ScalePoint(ClipR.BottomRight, 1 / ScaleX, 1 / ScaleY));
+
+  // Reset so that rendering for printing is not mixed up with Synedit rendering
+  TSynDWrite.ResetRenderTarget;
+  RT := TSynDWrite.RenderTarget;
+  try
+    RT.BindDC(ACanvas.Handle, RenderRect);
+    RT.BeginDraw;
+    try
+      RT.SetTransform(
+        TD2DMatrix3X2F.Scale(ScaleX, ScaleY, Point(0, 0)));
+
+      PrintPage(RT, PageNo, ClipR);
+    finally
+      RT.EndDraw;
+    end;
+  finally
+    // Reset so that it does not mess up the SynEdit drawing
+    TSynDWrite.ResetRenderTarget;
+  end;
+
 end;
 
 procedure TSynEditPrint.Print;
