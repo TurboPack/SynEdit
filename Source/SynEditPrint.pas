@@ -175,7 +175,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure InitPrint;
-    procedure PrintToCanvas(ACanvas: TCanvas;  RenderRect: TRect; PageNo: Integer);
+    procedure PrintToCanvas(ACanvas: TCanvas; RenderRect: TRect; PageNo: Integer);
     procedure Print;
     procedure PrintRange(StartPage, EndPage: Integer);
     property PrinterInfo: TSynEditPrinterInfo read FPrinterInfo;
@@ -616,7 +616,6 @@ begin
     // Reset so that it does not mess up the SynEdit drawing
     TSynDWrite.ResetRenderTarget;
   end;
-
 end;
 
 procedure TSynEditPrint.Print;
