@@ -175,7 +175,8 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure InitPrint;
-    procedure PrintToCanvas(ACanvas: TCanvas; RenderRect: TRect; PageNo: Integer);
+    procedure PrintToCanvas(ACanvas: TCanvas; const RenderRect, ClipRect: TRect;
+      PageNo: Integer);
     procedure Print;
     procedure PrintRange(StartPage, EndPage: Integer);
     property PrinterInfo: TSynEditPrinterInfo read FPrinterInfo;
@@ -573,8 +574,8 @@ begin
   end;
 end;
 
-procedure TSynEditPrint.PrintToCanvas(ACanvas: TCanvas; RenderRect: TRect;
-  PageNo: Integer);
+procedure TSynEditPrint.PrintToCanvas(ACanvas: TCanvas; const RenderRect,
+    ClipRect: TRect; PageNo: Integer);
 // Used by preview component
 var
   RT:  ID2D1DCRenderTarget;
@@ -591,7 +592,7 @@ begin
     ScaleY := RenderRect.Height / (PhysicalHeight * 96 / YPixPrInch);
   end;
 
-  ClipR := ACanvas.ClipRect;
+  ClipR := ClipRect;
   // Transform ClipR to the Coordinate system of RenderTarget
   ClipR.Offset(-RenderRect.Left, -RenderRect.Top);
   ClipR := TRect.Create(

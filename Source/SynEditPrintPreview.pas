@@ -308,7 +308,7 @@ begin
   if (csDesigning in ComponentState) or (not Assigned(FSynEditPrint)) then
     Exit;
 
-  FSynEditPrint.PrintToCanvas(Canvas, FPaperRect, FPageNumber);
+  FSynEditPrint.PrintToCanvas(Canvas, FPaperRect, Canvas.ClipRect, FPageNumber);
 end;
 
 procedure TSynEditPrintPreview.ScrollHorzFor(Value: Integer);
