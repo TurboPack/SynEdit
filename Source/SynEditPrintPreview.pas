@@ -81,7 +81,8 @@ type
     FShowScrollHint: Boolean;
     FOnPreviewPage: TPreviewPageEvent;
     FOnScaleChange: TNotifyEvent;
-    FWheelAccumulator: Integer;
+    FWheelVAccumulator: Integer;
+    FWheelHAccumulator: Integer;
     FMargin_X: Integer;
     FMargin_Y: Integer;
     FShadow_Size: Integer;
@@ -97,6 +98,7 @@ type
     procedure WMSize(var Msg: TWMSize); message WM_SIZE;
     procedure WMVScroll(var Msg: TWMVScroll); message WM_VSCROLL;
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
+    procedure WMMouseHWheel(var Message: TWMMouseWheel); message WM_MOUSEHWHEEL;
     procedure PaintPaper;
     function GetPageCount: Integer;
   protected
@@ -113,6 +115,7 @@ type
     procedure UpdateScrollbars; virtual;
     procedure SizeChanged; virtual;
     procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif}); override;
+    function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure Paint; override;
@@ -190,7 +193,8 @@ begin
   FPageNumber := 1;
   FShowScrollHint := True;
   Align := alClient;
-  FWheelAccumulator := 0;
+  FWheelVAccumulator := 0;
+  FWheelHAccumulator := 0;
   FMargin_X:= MARGIN_X;
   FMargin_Y:= MARGIN_Y;
   FShadow_Size:= SHADOW_SIZE;
@@ -626,50 +630,109 @@ begin
   end;
 end;
 
-procedure TSynEditPrintPreview.WMMouseWheel(var Message: TWMMouseWheel);
+// Shared mousewheel function called by both vertical and horizontal wheel message handlers.
+function TSynEditPrintPreview.DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean;
 var
-  bCtrl: Boolean;
-
-  procedure MouseWheelUp;
-  begin
-    if bCtrl and (fPageNumber > 1) then
-      PreviousPage
-    else
-      ScrollVertFor(WHEEL_DELTA);
-  end;
-
-  procedure MouseWheelDown;
-  begin
-    if bCtrl and (fPageNumber < PageCount) then
-      NextPage
-    else
-      ScrollVertFor(-WHEEL_DELTA);
-  end;
-
-var
-  MousePos: TPoint;
   IsNeg: Boolean;
 begin
-  { Find modifiers }
-  bCtrl := GetKeyState(VK_CONTROL) < 0;
-
-  { Find mouse pos and increment accumulator }
-  MousePos:= SmallPointToPoint(Message.Pos);
-  Inc(FWheelAccumulator, Message.WheelDelta);
-
-  { Do actions while accumulated is bigger than delta }
-  while Abs(FWheelAccumulator) >= WHEEL_DELTA do
+  // Note that we do not call inherited as we do all handling here.
+  Result := False;
+  if Assigned(OnMouseWheel) then
+    OnMouseWheel(Self, Shift, WheelDelta, MousePos, Result);
+  if not Result then
   begin
-    IsNeg := FWheelAccumulator < 0;
-    FWheelAccumulator := Abs(FWheelAccumulator) - WHEEL_DELTA;
-    if IsNeg then
+    if not (ssHorizontal in Shift) then
     begin
-      if FWheelAccumulator <> 0 then FWheelAccumulator := -FWheelAccumulator;
-      MouseWheelDown;
+      // Vertical Mouse Wheel
+      Inc(FWheelVAccumulator, WheelDelta);
+      while Abs(FWheelVAccumulator) >= WHEEL_DELTA do
+      begin
+        IsNeg := FWheelVAccumulator < 0;
+        FWheelVAccumulator := Abs(FWheelVAccumulator) - WHEEL_DELTA;
+        if IsNeg then
+        begin
+          // Vertical Mouse Wheel Down;
+          if FWheelVAccumulator <> 0 then FWheelVAccumulator := -FWheelVAccumulator;
+          Result := DoMouseWheelDown(Shift, MousePos);
+          if not Result then
+          begin
+            if (ssCtrl in Shift) and (fPageNumber < PageCount) then
+              NextPage
+            else
+              ScrollVertFor(-WHEEL_DELTA);
+            Result := True;
+          end;
+        end
+        else
+        begin
+          // Vertical Mouse Wheel Up;
+          Result := DoMouseWheelUp(Shift, MousePos);
+          if not Result then
+          begin
+            if (ssCtrl in Shift) and (fPageNumber > 1) then
+              PreviousPage
+            else
+              ScrollVertFor(WHEEL_DELTA);
+            Result := True;
+          end;
+        end;
+      end;
     end
     else
-      MouseWheelUp;
+    begin
+      // Horizontal Mouse Wheel
+      Inc(FWheelHAccumulator, WheelDelta);
+      while Abs(FWheelHAccumulator) >= WHEEL_DELTA do
+      begin
+        IsNeg := FWheelHAccumulator < 0;
+        FWheelHAccumulator := Abs(FWheelHAccumulator) - WHEEL_DELTA;
+        if IsNeg then
+        begin
+          // Horizontal Mouse Wheel Down/Right;
+          if FWheelHAccumulator <> 0 then FWheelHAccumulator := -FWheelHAccumulator;
+          ScrollHorzFor(-WHEEL_DELTA);
+        end
+        else
+        begin
+          // Horizontal Mouse Wheel Up/Left;
+          ScrollHorzFor(WHEEL_DELTA);
+        end;
+        Result := True;
+      end;
+    end;
   end;
+end;
+
+procedure TSynEditPrintPreview.WMMouseWheel(var Message: TWMMouseWheel);
+Var
+  Shift: TShiftState;
+  WheelDelta: SmallInt;
+  MousePos: TSmallPoint;
+begin
+  Shift := KeysToShiftState(Message.Keys);
+  // Shift-MouseWheel causes horizonal scrolling.  This is a semi-standard
+  //   used in several products including VsCode and Edge.
+  if ssShift in Shift then
+    Include(Shift, System.Classes.ssHorizontal);
+  WheelDelta := Message.WheelDelta;
+  MousePos := Message.Pos;
+  if DoMouseWheel(Shift, WheelDelta, MousePos) then
+    Message.Result := 1;
+end;
+
+procedure TSynEditPrintPreview.WMMouseHWheel(var Message: TWMMouseWheel);
+Var
+  Shift: TShiftState;
+  WheelDelta: SmallInt;
+  MousePos: TSmallPoint;
+begin
+  Shift := KeysToShiftState(Message.Keys);
+  Include(Shift, System.Classes.ssHorizontal);
+  // HWheel directions are reversed from Wheel - retest
+  WheelDelta := - Message.WheelDelta;
+  MousePos := Message.Pos;
+  if DoMouseWheel(Shift, WheelDelta, MousePos) then
+    Message.Result := 1;
 end;
 
 procedure TSynEditPrintPreview.UpdatePreview;
