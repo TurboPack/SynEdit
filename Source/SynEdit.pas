@@ -163,20 +163,6 @@ const
     eoBracketsHighlight];
 
 type
-  TCreateParamsW = record
-    Caption: PWideChar;
-    Style: DWORD;
-    ExStyle: DWORD;
-    X, Y: Integer;
-    Width, Height: Integer;
-    WndParent: HWnd;
-    Param: Pointer;
-    WindowClass: TWndClassW;
-    WinClassName: array[0..63] of WideChar;
-    InternalCaption: string;
-  end;
-
-type
 // use scAll to update a statusbar when another TCustomSynEdit got the focus
   TSynStatusChange = (scAll, scCaretX, scCaretY, scLeftChar, scTopLine,
     scInsertMode, scModified, scSelection, scReadOnly);
