@@ -572,7 +572,6 @@ type
       var Result: HResult); virtual;
     procedure OleDragLeave(Sender : TObject; var Result : HResult); virtual;
     //-- Ole Drag & Drop
-    function GetReadOnly: boolean; virtual;
     procedure HighlighterAttrChanged(Sender: TObject);
     procedure IncPaintLock;
     procedure InitializeCaret;
@@ -851,7 +850,7 @@ type
     property Marks: TSynEditMarkList read fMarkList;
     property Modified: Boolean read GetModified write SetModified;
     property PaintLock: Integer read fPaintLock;
-    property ReadOnly: Boolean read GetReadOnly write SetReadOnly default False;
+    property ReadOnly: Boolean read fReadOnly write SetReadOnly default False;
     property SearchEngine: TSynEditSearchCustom read fSearchEngine write SetSearchEngine;
     property SelAvail: Boolean read GetSelAvail;
     property SelLength: Integer read GetSelLength write SetSelLength;
@@ -3546,7 +3545,7 @@ begin
     Value.Char := 1;
 
   //Trim here
-  if (Value.Line <> fCaretY) and (eoTrimTrailingSpaces in fOptions) and
+  if not FReadOnly and (Value.Line <> fCaretY) and (eoTrimTrailingSpaces in fOptions) and
      (fCaretY <= Lines.Count) and (fCaretY >= 1) then
   begin
     S := Lines[fCaretY-1];
@@ -8218,11 +8217,6 @@ begin
     rcInval.Bottom := rcInval.Top + fTextHeight;
     InvalidateRect(rcInval, False);
   end;
-end;
-
-function TCustomSynEdit.GetReadOnly: Boolean;
-begin
-  Result := fReadOnly;
 end;
 
 function TCustomSynEdit.GetRow(RowIndex: Integer): string;
