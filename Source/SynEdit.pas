@@ -3501,7 +3501,7 @@ begin
     Value.Char := 1;
 
   //Trim here
-  if (Value.Line <> fCaretY) and (eoTrimTrailingSpaces in fOptions) and
+  if not FReadOnly and (Value.Line <> fCaretY) and (eoTrimTrailingSpaces in fOptions) and
      (fCaretY <= Lines.Count) and (fCaretY >= 1) then
   begin
     S := Lines[fCaretY-1];
