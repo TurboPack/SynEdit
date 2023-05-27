@@ -475,6 +475,9 @@
         <DelphiCompile Include="..\..\..\Source\SynHighlighterXML.pas">
             <BuildOrder>102</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas">
+            <BuildOrder>110</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynMacroRecorder.pas">
             <BuildOrder>103</BuildOrder>
         </DelphiCompile>

@@ -137,6 +137,7 @@ contains
   SynHighlighterVrml97 in '..\..\..\Source\Highlighters\SynHighlighterVrml97.pas',
   SynHighlighterWebIDL in '..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas',
   SynHighlighterXML in '..\..\..\Source\Highlighters\SynHighlighterXML.pas',
+  SynHighlighterYAML in '..\..\..\Source\Highlighters\SynHighlighterYAML.pas',
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',

@@ -55,6 +55,7 @@ const
 //
 //
 const
+  SYNS_AttrAnchor               =  'Anchor';
   SYNS_AttrAreaAIdentifier      =  'Area_A_Identifier';
   SYNS_AttrArrowHead            =  'ArrowHead';
   SYNS_AttrAsm                  =  'Asm';
@@ -87,6 +88,7 @@ const
   SYNS_AttrDirective            =  'Directive';
   SYNS_AttrDOCTYPESection       =  'DOCTYPE-Section';
   SYNS_AttrDocumentation        =  'Documentation';
+  SYNS_AttrDocumentDelimiter    =  'DocumentDelimiter';
   SYNS_AttrElementName          =  'ElementName';
   SYNS_AttrEmbedSQL             =  'EmbeddedSQL';
   SYNS_AttrEmbedText            =  'EmbeddedText';
@@ -123,6 +125,7 @@ const
   SYNS_AttrNonReservedKeyword   =  'NonreservedKeyword';
   SYNS_AttrNull                 =  'Null';
   SYNS_AttrNumber               =  'Number';
+  SYNS_AttrNumericValue         =  'NumericValue';
   SYNS_AttrOctal                =  'Octal';
   SYNS_AttrOperator             =  'Operator';
   SYNS_AttrOperatorAndSymbols   =  'OperatorAndSymbols';
@@ -164,12 +167,14 @@ const
   SYNS_AttrSyntaxError          =  'SyntaxError';
   SYNS_AttrSystem               =  'SystemFunctionsAndVariables';
   SYNS_AttrSystemValue          =  'SystemValue';
+  SYNS_AttrTag                  =  'Tag';
   SYNS_AttrTagArea              =  'TagArea';
   SYNS_AttrTableName            =  'TableName';
   SYNS_AttrTemplate             = 'Template';
   SYNS_AttrTerminator           =  'Terminator';
   SYNS_AttrTeXCommand           =  'TeX-Command';
   SYNS_AttrText                 =  'Text';
+  SYNS_AttrTextValue            =  'TextValue';
   SYNS_AttrTextMathMode         =  'TextInMathMode';
   SYNS_AttrThirdTri             =  'ThirdTri';
   SYNS_AttrTixKeyWords          =  'Tix-Keywords';
@@ -265,6 +270,7 @@ const
   SYNS_LangUnknown              =  '<Unknown>';
   SYNS_LangURI                  =  'URI';
   SYNS_LangVrml97               =  'Vrml97';
+  SYNS_LangYAML                 =  'YAML';
 
 resourcestring
   SYNS_NoSearchEngineError      = 'No search engine has been assigned';
@@ -272,6 +278,7 @@ resourcestring
   SYNS_Untitled                 =  'Untitled';
 
   // Friendly names for highlighter attributes
+  SYNS_FriendlyAttrAnchor               =  'Anchor';
   SYNS_FriendlyAttrAreaAIdentifier      =  'Area A Identifier';
   SYNS_FriendlyAttrArrowHead            =  'ArrowHead';
   SYNS_FriendlyAttrAsm                  =  'Asm';
@@ -304,6 +311,7 @@ resourcestring
   SYNS_FriendlyAttrDirective            =  'Directive';
   SYNS_FriendlyAttrDOCTYPESection       =  'DOCTYPE Section';
   SYNS_FriendlyAttrDocumentation        =  'Documentation';
+  SYNS_FriendlyAttrDocumentDelimiter    =  'Document Delimiter';
   SYNS_FriendlyAttrElementName          =  'Element Name';
   SYNS_FriendlyAttrEmbedSQL             =  'Embedded SQL';
   SYNS_FriendlyAttrEmbedText            =  'Embedded Text';
@@ -340,6 +348,7 @@ resourcestring
   SYNS_FriendlyAttrNonReservedKeyword   =  'Non-reserved Keyword';
   SYNS_FriendlyAttrNull                 =  'Null';
   SYNS_FriendlyAttrNumber               =  'Number';
+  SYNS_FriendlyAttrNumericValue         =  'Numeric Value';
   SYNS_FriendlyAttrOctal                =  'Octal';
   SYNS_FriendlyAttrOperator             =  'Operator';
   SYNS_FriendlyAttrOperatorAndSymbols   =  'Operator And Symbols';
@@ -381,12 +390,14 @@ resourcestring
   SYNS_FriendlyAttrSyntaxError          =  'Syntax Error';
   SYNS_FriendlyAttrSystem               =  'System Functions and Variables';
   SYNS_FriendlyAttrSystemValue          =  'System Value';
+  SYNS_FriendlyAttrTag                  =  'Tag';
   SYNS_FriendlyAttrTagArea              =  'Tag Area';
   SYNS_FriendlyAttrTableName            =  'Table Name';
-  SYNS_FriendlyAttrTemplate             = 'Template';
+  SYNS_FriendlyAttrTemplate             =  'Template';
   SYNS_FriendlyAttrTerminator           =  'Terminator';
   SYNS_FriendlyAttrTeXCommand           =  'TeX Command';
   SYNS_FriendlyAttrText                 =  'Text';
+  SYNS_FriendlyAttrTextValue            =  'Text Value';
   SYNS_FriendlyAttrTextMathMode         =  'Text in Math Mode';
   SYNS_FriendlyAttrThirdTri             =  'ThirdTri';
   SYNS_FriendlyAttrTixKeyWords          =  'Tix Keywords';
@@ -498,6 +509,7 @@ resourcestring
   SYNS_FilterLLVMIR             =  'LLVM IR files (*.ll)|*.ll';
   SYNS_FilterURI                =  'All Files (*.*)|*.*';
   SYNS_FilterVrml97             =  'Vrml97/X3D World (*.wrl;*.wrml;*.vrl;*.vrml;*.x3d)|*.wrl;*.wrml;*.vrl;*.vrml;*.x3d';
+  SYNS_FilterYAML               =  'YAML files (*.yaml)|*.yaml';
 
   // friendly language names
   SYNS_FriendlyLangHP48                 =  'HP48';
@@ -561,6 +573,7 @@ resourcestring
   SYNS_FriendlyLangUnknown              =  '<Unknown>';
   SYNS_FriendlyLangURI                  =  'URI';
   SYNS_FriendlyLangVrml97               =  'Vrml97';
+  SYNS_FriendlyLangYAML                 =  'YAML';
 
 implementation
 

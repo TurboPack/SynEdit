@@ -115,6 +115,7 @@ uses
   SynHighlighterCPM,
   SynHighlighterSDD,
   SynHighlighterXML,
+  SynHighlighterYAML,
   SynHighlighterMsg,
   SynHighlighterIDL,
   SynHighlighterUnreal,
@@ -181,7 +182,7 @@ begin
     TSynDfmSyn, TSynIniSyn, TSynInnoSyn,
     // other
     TSynBaanSyn, TSynGalaxySyn, TSynProgressSyn, TSynMsgSyn,
-    TSynIdlSyn, TSynUnrealSyn, TSynCPMSyn, TSynTeXSyn,
+    TSynIdlSyn, TSynUnrealSyn, TSynCPMSyn, TSynTeXSyn, TSynYAMLSyn,
     TSynHaskellSyn, TSynLDRSyn, TSynURISyn, TSynDOTSyn, TSynRCSyn
   ]);
 
