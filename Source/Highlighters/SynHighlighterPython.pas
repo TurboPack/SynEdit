@@ -177,7 +177,8 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 var
   GlobalKeywords: TStringList;
@@ -1211,27 +1212,6 @@ const
     end;
   end;
 
-  function LeftSpaces: Integer;
-  var
-    p: PWideChar;
-  begin
-    p := PWideChar(CurLine);
-    if Assigned(p) then
-    begin
-      Result := 0;
-      while (p^ >= #1) and (p^ <= #32) do
-      begin
-        if (p^ = #9) then
-          Inc(Result, TabW)
-        else
-          Inc(Result);
-        Inc(p);
-      end;
-    end
-    else
-      Result := 0;
-  end;
-
 begin
   //  Deal with multiline strings
   for Line := FromLine to ToLine do begin
@@ -1256,7 +1236,7 @@ begin
       Continue;
 
     TabW := TabWidth(LinesToScan);
-    Indent := LeftSpaces;
+    Indent := LeftSpaces(CurLine, True, TabW);
 
     // find fold openers
     with BlockOpenerRE.Match(LeftTrimmedLine) do

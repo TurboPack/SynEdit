@@ -465,7 +465,6 @@ type
     procedure InternalSetCaretX(Value: Integer);
     procedure InternalSetCaretY(Value: Integer);
     procedure InsertCharAtCursor(const AChar: string);
-    function LeftSpaces(const Line: string; ExpandTabs: Boolean = False): Integer;
     function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
     procedure LinesChanging(Sender: TObject);
     procedure MoveCaretAndSelection(const NewPos: TBufferCoord; SelectionCmd:
@@ -2056,25 +2055,6 @@ begin
     Exclude(fStateFlags, sfIgnoreNextChar);
 end;
 
-function TCustomSynEdit.LeftSpaces(const Line: string; ExpandTabs: Boolean): Integer;
-var
-  P: PChar;
-begin
-  Result := 0;
-  P := PChar(Line);
-  if Assigned(P) then
-  begin
-    while (P^ >= #1) and (P^ <= #32) do
-    begin
-      if (P^ = #9) and ExpandTabs then
-        Inc(Result, TabWidth - (Result mod FTabWidth))
-      else
-        Inc(Result);
-      Inc(P);
-    end;
-  end;
-end;
-
 function TCustomSynEdit.GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
 begin
   if WantTabs and not(eoTabsToSpaces in Options) and (CharCount >= TabWidth) then
@@ -2821,7 +2801,7 @@ var
         StrIsBlank(fLines[NonBlankLine - 1])
       do
         Inc(NonBlankLine);
-      LineIndent := LeftSpaces(fLines[NonBlankLine - 1], True);
+      LineIndent := LeftSpaces(fLines[NonBlankLine - 1], True, FTabWidth);
       // Step horizontally
       Y := YRowOffset(Row);
       TabSteps := TabWidth;
@@ -6128,7 +6108,7 @@ begin
                       BackCounter := CaretY - 2;
                       while BackCounter >= 0 do
                       begin
-                        SpaceCount2 := LeftSpaces(Lines[BackCounter]);
+                        SpaceCount2 := LeftSpaces(Lines[BackCounter], False);
                         if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
                           break;
                         Dec(BackCounter);
@@ -6164,9 +6144,9 @@ begin
               end
               else begin
                 // delete text before the caret
-                if (Temp[CaretX - 1] <= #32) and (LeftSpaces(Temp) = CaretX - 1) then
+                if (Temp[CaretX - 1] <= #32) and (LeftSpaces(Temp, False) = CaretX - 1) then
                 begin
-                  SpaceCount1 := LeftSpaces(Temp, True);
+                  SpaceCount1 := LeftSpaces(Temp, True, FTabWidth);
                   Assert(SpaceCount1 > 0);
                   // only spaces - special treatment
                   if eoSmartTabDelete in fOptions then
@@ -6177,7 +6157,7 @@ begin
                     while BackCounter >= 0 do
                     begin
                       Temp2 := Lines[BackCounter];
-                      SpaceCount2 := LeftSpaces(Temp2, True);
+                      SpaceCount2 := LeftSpaces(Temp2, True, FTabWidth);
                       if (Temp2.Length > 0) and (SpaceCount2 < SpaceCount1) then
                         break;
                       Dec(BackCounter);
@@ -6187,7 +6167,7 @@ begin
                   end
                   else
                     SpaceCount2 := SpaceCount1 - (SpaceCount1 - 1) mod TabWidth - 1;
-                  Delete(Temp, 1, LeftSpaces(Temp));
+                  Delete(Temp, 1, LeftSpaces(Temp, False));
                   Temp2 := GetLeftSpacing(SpaceCount2, True);
                   Temp := Temp2 + Temp;
                   CaretXNew := Temp2.Length + 1;
@@ -6342,7 +6322,7 @@ begin
               begin
                 Temp := Copy(LineText, 1, CaretX - 1);
                 if eoAutoIndent in Options then
-                  SpaceCount1 := LeftSpaces(Temp, True)
+                  SpaceCount1 := LeftSpaces(Temp, True, FTabWidth)
                 else
                   SpaceCount1 := 0;
                 Delete(Temp2, 1, CaretX - 1);
@@ -6370,7 +6350,7 @@ begin
                 repeat
                   Dec(BackCounter);
                   Temp := Lines[BackCounter];
-                  SpaceCount2 := LeftSpaces(Temp, True);
+                  SpaceCount2 := LeftSpaces(Temp, True, FTabWidth);
                 until (BackCounter = 0) or (Temp <> '');
               end;
               SpaceBuffer := GetLeftSpacing(SpaceCount2, True);
@@ -7804,7 +7784,7 @@ begin
     if (iLine > 0) and (iLine < Lines.Count) then
     begin
       TempS := Lines[CaretY - 1];
-      SpaceCount1 := LeftSpaces(TempS, True);
+      SpaceCount1 := LeftSpaces(TempS, True, FTabWidth);
       if SpaceCount1 = 0 then Exit;
 
       Dec(iLine);
@@ -7835,7 +7815,7 @@ begin
       if SpaceCount2 = 0 then // UnIndent at least
         SpaceCount2 := ((SpaceCount1 -1)  mod TabWidth) + 1;
       TempS2 := GetLeftSpacing(SpaceCount1 - SpaceCount2, True);
-      SpaceCount1 := LeftSpaces(TempS);
+      SpaceCount1 := LeftSpaces(TempS, False);
       Delete(TempS, 1, SpaceCount1);
       TempS := TempS2 + TempS;
       Lines[CaretY - 1] :=  TempS;

@@ -66,8 +66,10 @@ procedure SwapInt(var l, r: Integer);
 function ExpandTabs(const Line: string; TabWidth: Integer): string;
 function ExpandTabsEx(const Line: string; TabWidth: Integer;
   var HasTabs: Boolean): string;
-
 function GetExpandedLength(const aStr: string; aTabWidth: Integer): Integer;
+function LeftSpaces(const Line: string; ExpandTabs: Boolean;
+  TabWidth: Integer = 2): Integer;
+
 
 function CharIndex2CaretPos(Index, TabWidth: Integer;
   const Line: string): Integer;
@@ -269,6 +271,23 @@ begin
     else
       Inc(Result);
     Inc(iRun);
+  end;
+end;
+
+function LeftSpaces(const Line: string; ExpandTabs: Boolean;
+  TabWidth: Integer = 2): Integer;
+var
+  P: PChar;
+begin
+  Result := 0;
+  P := PChar(Line);
+  while (P^ >= #1) and (P^ <= #32) do
+  begin
+    if (P^ = #9) and ExpandTabs then
+      Inc(Result, TabWidth - (Result mod TabWidth))
+    else
+      Inc(Result);
+    Inc(P);
   end;
 end;
 
