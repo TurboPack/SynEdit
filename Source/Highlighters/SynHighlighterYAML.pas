@@ -34,8 +34,7 @@ uses
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
-  SynEditHighlighter,
-  StringResources;
+  SynEditHighlighter;
 
 //State constants
 Const
