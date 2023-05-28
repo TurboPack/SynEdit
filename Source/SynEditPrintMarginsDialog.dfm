@@ -6,12 +6,12 @@ object SynEditPrintMarginsDlg: TSynEditPrintMarginsDlg
   Caption = 'Margins'
   ClientHeight = 344
   ClientWidth = 506
+  Color = clBtnFace
   ParentFont = True
   Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 15
   object Image1: TImage
     Left = 275
     Top = 10
@@ -1050,79 +1050,79 @@ object SynEditPrintMarginsDlg: TSynEditPrintMarginsDlg
   object Label1: TLabel
     Left = 10
     Top = 44
-    Width = 21
-    Height = 13
+    Width = 23
+    Height = 15
     Caption = 'Left:'
   end
   object Label2: TLabel
     Left = 10
     Top = 69
-    Width = 28
-    Height = 13
+    Width = 31
+    Height = 15
     Caption = 'Right:'
   end
   object Label3: TLabel
     Left = 10
     Top = 94
     Width = 22
-    Height = 13
+    Height = 15
     Caption = 'Top:'
   end
   object Label4: TLabel
     Left = 10
     Top = 119
-    Width = 36
-    Height = 13
+    Width = 43
+    Height = 15
     Caption = 'Bottom:'
   end
   object Label5: TLabel
     Left = 10
     Top = 14
-    Width = 27
-    Height = 13
+    Width = 30
+    Height = 15
     Caption = 'Units:'
   end
   object Label6: TLabel
     Left = 10
     Top = 174
-    Width = 38
-    Height = 13
+    Width = 41
+    Height = 15
     Caption = 'Header:'
   end
   object Label7: TLabel
     Left = 10
     Top = 199
-    Width = 33
-    Height = 13
+    Width = 37
+    Height = 15
     Caption = 'Footer:'
   end
   object Label8: TLabel
     Left = 10
     Top = 224
-    Width = 84
-    Height = 13
+    Width = 96
+    Height = 15
     Caption = 'HFInternalMargin:'
   end
   object Label9: TLabel
     Left = 10
     Top = 249
-    Width = 86
-    Height = 13
+    Width = 93
+    Height = 15
     Caption = 'LeftHFTextIndent:'
   end
   object Label10: TLabel
     Left = 10
     Top = 274
-    Width = 93
-    Height = 13
+    Width = 101
+    Height = 15
     Caption = 'RightHFTextIndent:'
   end
   object Label11: TLabel
     Left = 10
     Top = 144
-    Width = 29
-    Height = 13
-    Caption = 'Gutter'
+    Width = 36
+    Height = 15
+    Caption = 'Gutter:'
   end
   object OKBtn: TButton
     Left = 344
@@ -1156,85 +1156,84 @@ object SynEditPrintMarginsDlg: TSynEditPrintMarginsDlg
     Left = 110
     Top = 40
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 1
   end
   object EditRight: TEdit
     Left = 110
     Top = 65
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 2
   end
   object EditTop: TEdit
     Left = 110
     Top = 90
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 3
   end
   object EditBottom: TEdit
     Left = 110
     Top = 115
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 4
   end
   object EditGutter: TEdit
     Left = 110
     Top = 140
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 5
   end
   object EditHeader: TEdit
     Left = 110
     Top = 170
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 6
   end
   object EditFooter: TEdit
     Left = 110
     Top = 195
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 7
   end
   object EditHFInternalMargin: TEdit
     Left = 110
     Top = 220
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 8
   end
   object EditLeftHFTextIndent: TEdit
     Left = 110
     Top = 245
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 9
   end
   object EditRightHFTextIndent: TEdit
     Left = 110
     Top = 270
     Width = 151
-    Height = 21
+    Height = 23
     TabOrder = 10
   end
   object CBUnits: TComboBox
     Left = 110
     Top = 10
     Width = 151
-    Height = 21
+    Height = 23
     Style = csDropDownList
-    ItemHeight = 13
+    TabOrder = 0
+    OnChange = CBUnitsChange
     Items.Strings = (
       'mm'
       'cm'
       'Inches'
       'Thousandths Of Inches')
-    TabOrder = 0
-    OnChange = CBUnitsChange
   end
 end
