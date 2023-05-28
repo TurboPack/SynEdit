@@ -8964,8 +8964,10 @@ begin
     if Chars + x + 2 > Index then
     begin
       x := Index - Chars;
-      break;
-    end;
+      Break;
+    end
+    else if (y = Lines.Count - 1) and (Index >= Chars + x) then
+      Break;
     Inc(Chars, x + 2);
     x := 0;
     Inc(y);
