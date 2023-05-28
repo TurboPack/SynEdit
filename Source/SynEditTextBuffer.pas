@@ -717,7 +717,7 @@ end;
 
 procedure TSynEditStringList.SetFileFormat(const Value: TSynEditFileFormat);
 begin
-  case FileFormat of
+  case Value of
     sffDos: LineBreak := WideCRLF;
     sffUnix: LineBreak := WideLF;
     sffMac: LineBreak := WideCR;
