@@ -315,11 +315,16 @@ procedure TSynExporterHTML.FormatBeforeFirstAttribute(BackgroundChanged,
 var
   StyleName: string;
   StyleValue: string;
+  BkgColor: string;
 begin
   // Cache all our CSS values.
   EnumHighlighterAttris(Highlighter, True, AttriToInlineCSSCallback, []);
+  if UseBackground then
+    BkgColor := ' background-color: '+ ColorToHTML(fBackgroundColor) + ';'
+  else
+    BkgColor := '';
   AddData('<div style="font-family: ' + FFont.Name + ', ''Courier New'', monospace; font-size: ' +
-    FFont.Size.ToString + 'pt; white-space: pre; ">');
+    FFont.Size.ToString + 'pt; white-space: pre;' + BkgColor + '">');
   if FCreateHTMLFragment or FInlineCSS then
   begin
     FStyleValueCache.TryGetValue(Highlighter.GetTokenAttribute, StyleValue);

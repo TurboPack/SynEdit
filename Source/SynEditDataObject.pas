@@ -203,7 +203,7 @@ begin
   try
     HTMLExport.Font := Ed.Font;
     HTMLExport.CreateHTMLFragment := True;
-    HTMLExport.UseBackground := True;
+    HTMLExport.UseBackground := not (eoNoHTMLBackground in TCustomSynEdit(Editor).Options);
     HTMLExport.Highlighter := Ed.Highlighter;
     HTMLExport.ExportRange(Ed.Lines, Ed.BlockBegin, Ed.BlockEnd);
     HTMLExport.SaveToStream(Stream);

@@ -149,6 +149,7 @@ type
     eoTrimTrailingSpaces,      //Spaces at the end of lines will be trimmed and not saved
     eoShowLigatures,           //Shows font ligatures, by default it is disabled
     eoCopyPlainText,           //Do not include additional clipboard formats when you copy to Clipboard or drag text
+    eoNoHTMLBackground,        //Ignore SynEdit background color when copying in HTML format
     eoWrapWithRightEdge,       //WordWrap with RightEdge position instead of the whole text area
     eoBracketsHighlight        //Enable bracket highlighting
     );
