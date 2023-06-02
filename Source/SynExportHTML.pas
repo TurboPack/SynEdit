@@ -168,7 +168,9 @@ end;
 function TSynExporterHTML.AttriToInlineCSS(Attri: TSynHighlighterAttributes): string;
 begin
   Result := '';
-  if UseBackground and (Attri.Background <> clNone) then
+  if UseBackground and (Attri.Background <> clNone) and
+    (ColorToRGB(Attri.Background) <> ColorToRGB(fBackgroundColor))
+  then
     Result := Result + 'background-color: ' + ColorToHTML(Attri.Background) + '; ';
   if Attri.Foreground <> clNone then
     Result := Result + 'color: ' + ColorToHTML(Attri.Foreground) + '; ';
@@ -275,6 +277,7 @@ begin
     AddData('</span><br></div></div>')
   else
     AddData('</span></div></div>');
+  FAddNewLine := False;
 end;
 
 procedure TSynExporterHTML.FormatAttributeDone(BackgroundChanged,
@@ -282,7 +285,7 @@ procedure TSynExporterHTML.FormatAttributeDone(BackgroundChanged,
 begin
   if FAddNewLine then
   begin
-    AddData('</span></div><div>');
+    AddData('</span><br></div><div>');
     FAddNewLine := False;
   end
   else
@@ -317,9 +320,7 @@ var
   StyleValue: string;
   BkgColor: string;
 begin
-  // Cache all our CSS values.
-  EnumHighlighterAttris(Highlighter, True, AttriToInlineCSSCallback, []);
-  if UseBackground then
+  if BackgroundChanged then
     BkgColor := ' background-color: '+ ColorToHTML(fBackgroundColor) + ';'
   else
     BkgColor := '';
@@ -327,6 +328,9 @@ begin
     FFont.Size.ToString + 'pt; white-space: pre;' + BkgColor + '">');
   if FCreateHTMLFragment or FInlineCSS then
   begin
+    // Cache all our CSS values.
+    FStyleValueCache.Clear;
+    EnumHighlighterAttris(Highlighter, True, AttriToInlineCSSCallback, []);
     FStyleValueCache.TryGetValue(Highlighter.GetTokenAttribute, StyleValue);
     if StyleValue <> '' then
       AddData('<div><span style="' + StyleValue + '">')
@@ -336,7 +340,7 @@ begin
   else
   begin
     StyleName := GetStyleName(Highlighter, Highlighter.GetTokenAttribute);
-    AddData('<span class="' + StyleName + '">');
+    AddData('<div><span class="' + StyleName + '">');
   end;
 end;
 
@@ -373,20 +377,20 @@ var
   StartFragmentPos: Integer;
   EndFragmentPos: Integer;
 begin
-  EnumHighlighterAttris(Highlighter, True, AttriToCSSCallback, [@Styles]);
   Header := HTMLStartText;
   if not FCreateHTMLFragment then
   begin
     Header := Header +  HeadStartText;
     Header := Header + '<title>' + Title + '</title>'#13#10;
+    Header := Header + StyleStartText;
+    Header := Header +
+      Format(BodyStyleTextFormat, [ColorToHtml(fFont.Color), ColorToHTML(fBackgroundColor)]);
     if not InlineCSS then
     begin
-      Header := Header + StyleStartText;
-      Header := Header +
-        Format(BodyStyleTextFormat, [ColorToHtml(fFont.Color), ColorToHTML(fBackgroundColor)]);
+      EnumHighlighterAttris(Highlighter, True, AttriToCSSCallback, [@Styles]);
       Header := Header + Styles;
-      Header := Header + StyleEndText;
     end;
+    Header := Header + StyleEndText;
     Header := Header + HeadEndText;
   end;
   Header := Header + BodyStartText;
