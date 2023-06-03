@@ -4501,7 +4501,6 @@ begin
             TargetText := '';
         end;
         TargetByteLength := Length(TargetText) * sizeof(Char);
-
         if (Message.LParam = 0) then
         begin
           // 1st time (get buffer size (bytes))
@@ -4519,10 +4518,8 @@ begin
           pReconvert.dwVersion := 0;
           pReconvert.dwStrLen := Length(TargetText);
           pReconvert.dwStrOffset := Sizeof(TReconvertString);
-
           pTarget := Pointer(Message.LParam + Sizeof(TReconvertString));
           move(TargetText[1], pTarget^, TargetByteLength);
-
           if (Self.SelLength <> 0) then
           begin
             pReconvert.dwTargetStrLen := 0;
@@ -4574,10 +4571,8 @@ begin
           pReconvert.dwCompStrOffset := 0;
           pReconvert.dwTargetStrLen := 0;
           pReconvert.dwTargetStrOffset := (Self.CaretX - 1) * sizeof(Char);
-
           pTarget := Pointer(Message.LParam + Sizeof(TReconvertString));
           move(TargetText[1], pTarget^, Length(TargetText) * sizeof(Char));
-
           Message.Result := Sizeof(TReconvertString) + Length(TargetText) * sizeof(Char);
         end;
       end;
