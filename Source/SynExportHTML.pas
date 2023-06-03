@@ -120,7 +120,7 @@ uses
 { TSynExporterHTML }
 
 const
-  DetailLength = 105;  // This is the fixed length of the filled-in DetailSection.
+  DetailLength = 95 + 5 * Length(SLineBreak);  // This is the fixed length of the filled-in DetailSection.
   DetailSection = 'Version:0.9' + SLineBreak +
                  'StartHTML:%.10d' + SLineBreak +
                  'EndHTML:%.10d' + SLineBreak +
