@@ -121,26 +121,28 @@ uses
 
 const
   DetailLength = 105;  // This is the fixed length of the filled-in DetailSection.
-  DetailSection = 'Version:0.9'#13#10 +
-                 'StartHTML:%.10d'#13#10 +
-                 'EndHTML:%.10d'#13#10 +
-                 'StartFragment:%.10d'#13#10 +
-                 'EndFragment:%.10d'#13#10;
+  DetailSection = 'Version:0.9' + SLineBreak +
+                 'StartHTML:%.10d' + SLineBreak +
+                 'EndHTML:%.10d' + SLineBreak +
+                 'StartFragment:%.10d' + SLineBreak +
+                 'EndFragment:%.10d' + SLineBreak;
 
-  HTMLStartText = '<html>'#13#10;
-  HeadStartText = '<head>'#13#10;
+  HTMLStartText = '<html>' + SLineBreak;
+  DocType = '<!DOCTYPE html>'  + SLineBreak;
+  HeadStartText = '<head>' + SLineBreak;
+  MetaUTF8Encoding = '<meta charset="utf-8">' + SLineBreak;
 
-  StyleStartText = '<style type="text/css">'#13#10 + '<!--'#13#10;
-  BodyStyleTextFormat = 'body { color: %s; background-color: %s; }'#13#10;
-  StyleEndText = '-->'#13#10 + '</style>'#13#10;
+  StyleStartText = '<style>' + SLineBreak + '<!--' + SLineBreak;
+  BodyStyleTextFormat = 'body { color: %s; background-color: %s; }' + SLineBreak;
+  StyleEndText = '-->' + SLineBreak + '</style>' + SLineBreak;
 
-  HeadEndText = '</head>'#13#10;
-  BodyStartText   = '<body>'#13#10;
+  HeadEndText = '</head>' + SLineBreak;
+  BodyStartText   = '<body>' + SLineBreak;
 
   FragmentStartText = '<!--StartFragment-->';
   FragmentEndText =   '<!--EndFragment-->';
 
-  BodyEndText   = '</body>'#13#10;
+  BodyEndText   = '</body>' + SLineBreak;
   HTMLEndText   = '</html>';
 
 
@@ -217,7 +219,7 @@ begin
   Styles := Params[0];
   StyleText := AttriToCSS(Attri, UniqueAttriName);
   if StyleText <> '' then
-    Styles^ := Styles^ + StyleText + #13#10;
+    Styles^ := Styles^ + StyleText + SLineBreak;
   Result := True; // we want all attributes => tell EnumHighlighterAttris to continue
 end;
 
@@ -266,7 +268,7 @@ begin
   // If a newline happens while there are tokens with no attributes we add <br>s
   if FAddNewLine then
   begin
-    AddData('<br>');
+    AddData('<br>' + SLineBreak);
     FAddNewLine := False;
   end;
 end;
@@ -274,7 +276,7 @@ end;
 procedure TSynExporterHTML.FormatAfterLastAttribute;
 begin
   if FAddNewLine then
-    AddData('</span><br></div></div>')
+    AddData('</span><br></div>' + SLineBreak + '</div>')
   else
     AddData('</span></div></div>');
   FAddNewLine := False;
@@ -285,7 +287,7 @@ procedure TSynExporterHTML.FormatAttributeDone(BackgroundChanged,
 begin
   if FAddNewLine then
   begin
-    AddData('</span><br></div><div>');
+    AddData('</span><br></div>' + SLineBreak + '<div>');
     FAddNewLine := False;
   end
   else
@@ -325,7 +327,7 @@ begin
   else
     BkgColor := '';
   AddData('<div style="font-family: ' + FFont.Name + ', ''Courier New'', monospace; font-size: ' +
-    FFont.Size.ToString + 'pt; white-space: pre;' + BkgColor + '">');
+    FFont.Size.ToString + 'pt;' + BkgColor + '">');
   if FCreateHTMLFragment or FInlineCSS then
   begin
     // Cache all our CSS values.
@@ -348,7 +350,7 @@ procedure TSynExporterHTML.FormatNewLine;
 begin
   if FAddNewLine then
   begin
-    AddData('<br>');
+    AddData('<br>' + SLineBreak);
     FAddNewLine := False;
   end;
   FAddNewLine := True;
@@ -360,7 +362,7 @@ begin
   if FCreateHTMLFragment and not FSuppressFragmentInfo then
     Result := Result + FragmentEndText;
   if not FCreateHTMLFragment then
-    Result := Result + #13#10 + BodyEndText + HTMLEndText;
+    Result := Result + SLineBreak + BodyEndText + HTMLEndText;
 end;
 
 function TSynExporterHTML.GetFormatName: string;
@@ -380,8 +382,10 @@ begin
   Header := HTMLStartText;
   if not FCreateHTMLFragment then
   begin
-    Header := Header +  HeadStartText;
-    Header := Header + '<title>' + Title + '</title>'#13#10;
+    Header := DocType + Header +  HeadStartText;
+    if Encoding = seUTF8 then
+      Header := Header + MetaUTF8Encoding;
+    Header := Header + '<title>' + Title + '</title>' + SLineBreak;
     Header := Header + StyleStartText;
     Header := Header +
       Format(BodyStyleTextFormat, [ColorToHtml(fFont.Color), ColorToHTML(fBackgroundColor)]);
