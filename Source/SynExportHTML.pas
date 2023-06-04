@@ -322,7 +322,7 @@ var
   StyleValue: string;
   BkgColor: string;
 begin
-  if BackgroundChanged then
+  if UseBackground then
     BkgColor := ' background-color: '+ ColorToHTML(fBackgroundColor) + ';'
   else
     BkgColor := '';
