@@ -171,6 +171,9 @@
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>113</BuildOrder>
         </PackageImport>
+        <DelphiCompile Include="..\..\..\Source\SynAccesibility.pas">
+            <BuildOrder>116</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynAutoCorrect.pas">
             <BuildOrder>3</BuildOrder>
         </DelphiCompile>

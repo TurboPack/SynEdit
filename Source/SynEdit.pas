@@ -151,7 +151,8 @@ type
     eoCopyPlainText,           //Do not include additional clipboard formats when you copy to Clipboard or drag text
     eoNoHTMLBackground,        //Ignore SynEdit background color when copying in HTML format
     eoWrapWithRightEdge,       //WordWrap with RightEdge position instead of the whole text area
-    eoBracketsHighlight        //Enable bracket highlighting
+    eoBracketsHighlight,       //Enable bracket highlighting
+    eoAccessibility            //Enable accessibility support
     );
 
   TSynEditorOptions = set of TSynEditorOption;
@@ -161,7 +162,7 @@ const
     eoEnhanceHomeKey, eoEnhanceEndKey, eoHideShowScrollbars,
     eoDisableScrollArrows, eoShowScrollHint, eoTabIndent, eoTabsToSpaces,
     eoSmartTabDelete, eoGroupUndo, eoDropFiles, eoShowLigatures,
-    eoBracketsHighlight];
+    eoBracketsHighlight, eoAccessibility];
 
 type
 // use scAll to update a statusbar when another TCustomSynEdit got the focus
@@ -299,6 +300,7 @@ type
     procedure WMSize(var Msg: TWMSize); message WM_SIZE;
     procedure WMUndo(var Msg: TMessage); message WM_UNDO;
     procedure WMVScroll(var Msg: TWMScroll); message WM_VSCROLL;
+    procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
   private
 //++ CodeFolding
     fUseCodeFolding : Boolean;
@@ -382,6 +384,10 @@ type
     SelStartBeforeSearch: integer;
     SelLengthBeforeSearch: integer;
     FBracketsHighlight: TSynBracketsHighlight;
+
+    // Accessibility
+    FUIAutomationProvider: IInterface;  // IRawElementProviderSimple
+    FAccessibleName: string;   // For screen readers.
 
     // event handlers
     fOnChange: TNotifyEvent;
@@ -921,6 +927,8 @@ type
     property WantTabs: boolean read fWantTabs write SetWantTabs default False;
     property WordWrap: boolean read GetWordWrap write SetWordWrap default False;
     property WordWrapGlyph: TSynGlyph read fWordWrapGlyph write SetWordWrapGlyph;
+    property AccessibleName: string read FAccessibleName write FAccessibleName;
+
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnClearBookmark: TPlaceMarkEvent read fOnClearMark
       write fOnClearMark;
@@ -967,6 +975,7 @@ type
   TSynEdit = class(TCustomSynEdit)
   published
     // inherited properties
+    property AccessibleName;
     property Align;
     property Anchors;
     property DoubleBuffered;
@@ -1084,6 +1093,7 @@ uses
   Winapi.ShellAPI,
   Vcl.Consts,
   Vcl.Clipbrd,
+  SynAccessibility,
   SynEditScrollBars,
   SynEditUndo,
   SynEditWordWrap,
@@ -1554,6 +1564,9 @@ end;
 
 destructor TCustomSynEdit.Destroy;
 begin
+//  if Assigned(FUIAutomationProvider) then
+//    UiaDisconnectProvider(IRawElementProviderSimple(FUIAutomationProvider));
+
   Highlighter := nil;
   if (fChainedEditor <> nil) or (fLines <> fOrigLines) then
     RemoveLinesPointer;
@@ -2100,6 +2113,11 @@ begin
   end;
   HighlightBrackets;
   DoChange;
+
+  if Assigned(FUIAutomationProvider) and UiaClientsAreListening
+  then
+    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
+      UIA_Text_TextChangedEventId);
 end;
 
 procedure TCustomSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
@@ -4360,6 +4378,14 @@ begin
   if (eoDropFiles in fOptions) and not (csDesigning in ComponentState) then
     DragAcceptFiles(Handle, False);
 
+  //https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiareturnrawelementprovider
+  if Assigned(FUIAutomationProvider) then
+  begin
+    UiaDisconnectProvider(IRawElementProviderSimple(FUIAutomationProvider));
+    UiaReturnRawElementProvider(Handle, 0, 0, nil);
+    FUIAutomationProvider := nil;
+  end;
+
   RevokeDragDrop(Handle);
 
   inherited;
@@ -4378,6 +4404,20 @@ begin
     Msg.Result := Msg.Result or DLGC_WANTTAB;
   if fWantReturns then
     Msg.Result := Msg.Result or DLGC_WANTALLKEYS;
+end;
+
+procedure TCustomSynEdit.WMGetObject(var Message: TMessage);
+begin
+  if (Message.LParam = UiaRootObjectId) and not (csDestroying in ComponentState)
+   and (eoAccessibility in FOptions) then
+  begin
+    if FUIAutomationProvider = nil then
+      FUIAutomationProvider := TSynUIAutomationProvider.Create(Self) as IRawElementProviderSimple;
+    Message.Result :=  UiaReturnRawElementProvider(Handle, Message.WParam,
+        Message.LParam, FUIAutomationProvider as IRawElementProviderSimple);
+  end
+  else
+    inherited;
 end;
 
 procedure TCustomSynEdit.WMGetText(var Msg: TWMGetText);
@@ -4583,6 +4623,11 @@ procedure TCustomSynEdit.WMKillFocus(var Msg: TWMKillFocus);
 begin
   inherited;
   CommandProcessor(ecLostFocus, #0, nil);
+
+  if Assigned(FUIAutomationProvider) and UiaClientsAreListening then
+    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
+      UIA_AutomationFocusChangedEventId);
+
   //Added check for focused to prevent caret disappearing problem
   if Focused or FAlwaysShowCaret then
     exit;
@@ -4624,6 +4669,10 @@ procedure TCustomSynEdit.WMSetFocus(var Msg: TWMSetFocus);
 begin
   CommandProcessor(ecGotFocus, #0, nil);
 
+  if Assigned(FUIAutomationProvider) and UiaClientsAreListening then
+    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
+      UIA_AutomationFocusChangedEventId);
+
   InitializeCaret;
   if FHideSelection and SelAvail then
     InvalidateSelection;
@@ -4639,6 +4688,9 @@ procedure TCustomSynEdit.WMSize(var Msg: TWMSize);
 begin
   inherited;
   SizeOrFontChanged(False);
+
+  if Assigned(FUIAutomationProvider) and UiaClientsAreListening then
+    (FUIAutomationProvider as TSynUIAutomationProvider).NotifyBoundingRectangleChange;
 end;
 
 procedure TCustomSynEdit.WMUndo(var Msg: TMessage);
@@ -8749,6 +8801,13 @@ procedure TCustomSynEdit.DoOnStatusChange(Changes: TSynStatusChanges);
 begin
   if Changes * [scCaretX, scCaretY] <> [] then
     HighlightBrackets;
+
+  if (Changes * [scCaretX, scCaretY, scSelection] <> [])
+    and Assigned(FUIAutomationProvider) and UiaClientsAreListening
+  then
+    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
+      UIA_Text_TextSelectionChangedEventId);
+
   if Assigned(fOnStatusChange) then
     fOnStatusChange(Self, fStatusChanges);
   fStatusChanges := [];

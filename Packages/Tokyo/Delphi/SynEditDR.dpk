@@ -37,6 +37,7 @@ requires
   rtl;
 
 contains
+  SynAccessibility in '..\..\..\Source\SynAccessibility.pas',
   SynAutoCorrect in '..\..\..\Source\SynAutoCorrect.pas',
   SynAutoCorrectEditor in '..\..\..\Source\SynAutoCorrectEditor.pas' {frmAutoCorrectEditor},
   SynCompletionProposal in '..\..\..\Source\SynCompletionProposal.pas',

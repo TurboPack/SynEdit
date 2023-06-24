@@ -345,6 +345,9 @@
         <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas">
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynAccesibility.pas">
+            <BuildOrder>116</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynAutoCorrect.pas">
             <BuildOrder>110</BuildOrder>
         </DelphiCompile>
