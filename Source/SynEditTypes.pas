@@ -83,6 +83,7 @@ type
   TBufferCoord = record
     Char: integer;
     Line: integer;
+    function ToString(ShortForm: Boolean = True): string;
     class operator Equal(a, b: TBufferCoord): Boolean;
     class operator NotEqual(a, b: TBufferCoord): Boolean;
     class operator LessThan(a, b: TBufferCoord): Boolean;
@@ -235,6 +236,7 @@ Uses
 {$IF CompilerVersion <= 32}
   Vcl.Forms,
 {$ENDIF}
+  SynEditStrConst,
   SynUnicode;
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
@@ -303,6 +305,14 @@ end;
 class operator TBufferCoord.NotEqual(a, b: TBufferCoord): Boolean;
 begin
   Result := (a.Char <> b.Char) or (a.Line <> b.Line);
+end;
+
+function TBufferCoord.ToString(ShortForm: Boolean = True): string;
+begin
+  if ShortForm then
+    Result := Format('%d:%d', [Self.Line, Self.Char])
+  else
+    Result := Format('%s: %d %s: %d',[SYNS_Line, Self.Line, SYNS_Char, Self.Char]);
 end;
 
 { TDisplayCoord }

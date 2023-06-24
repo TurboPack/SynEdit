@@ -275,7 +275,12 @@ const
 resourcestring
   SYNS_NoSearchEngineError      = 'No search engine has been assigned';
 
-  SYNS_Untitled                 =  'Untitled';
+  SYNS_Untitled                 = 'Untitled';
+  SYNS_Line                     = 'Line';
+  SYNS_Char                     = 'Char';
+  SYNS_Row                      = 'Row';
+  SYNS_Column                   = 'Column';
+
 
   // Friendly names for highlighter attributes
   SYNS_FriendlyAttrAnchor               =  'Anchor';
