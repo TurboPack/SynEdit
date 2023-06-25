@@ -281,7 +281,7 @@ var
 begin
   Result := 0;
   P := PChar(Line);
-  while (P^ >= #1) and (P^ <= #32) do
+  while (P^ >= #1) and ((P^ <= #32) or (P^ = #160)) do
   begin
     if (P^ = #9) and ExpandTabs then
       Inc(Result, TabWidth - (Result mod TabWidth))
