@@ -1195,7 +1195,6 @@ begin
     if BB > BE then
       BB := BE;
   end;
-  OutputDebugString(PChar('Move Endpoint by Range: ' + BC.ToString));
 end;
 
 function TSynTextRangeProvider.MoveEndpointByUnit(endpoint:
@@ -1209,7 +1208,6 @@ begin
 
   Result := S_OK;
 
-  OutputDebugString('Move Endpoint by Unit');
   if endpoint = TextPatternRangeEndpoint_Start then
   begin
     BC := BE; // store
