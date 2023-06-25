@@ -1162,7 +1162,7 @@ begin
       begin
         case P^ of
            #9: Inc(W, fTabWidth * fCharWidth - W mod (fTabWidth * fCharWidth));
-           #32..#126: Inc(W, FCharWidth);
+           #32..#126, #160: Inc(W, FCharWidth);
          else
            break;
          end;
@@ -1236,7 +1236,7 @@ begin
     begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
-         #32..#126: Inc(Result, FCharWidth);
+         #32..#126, #160: Inc(Result, FCharWidth);
        else
          break;
        end;
@@ -3013,7 +3013,7 @@ begin
     if (eoShowSpecialChars in fOptions) and (LastChar >= 0) then
     begin
       for I := FirstChar to LastChar do
-        if SRow[I] = #32 then
+        if (SRow[I] = #32) or (SRow[I] = #160) then
           SRow[I] := SynSpaceGlyph
         else if SRow[I] = #9 then
           DoTabPainting := True;
@@ -6020,7 +6020,7 @@ begin
     begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
-         #32..#126: Inc(Result, FCharWidth);
+         #32..#126, #160: Inc(Result, FCharWidth);
        else
          break;
        end;
@@ -6328,7 +6328,8 @@ begin
               end
               else begin
                 // delete text before the caret
-                if (Temp[CaretX - 1] <= #32) and (LeftSpaces(Temp, False) = CaretX - 1) then
+                if ((Temp[CaretX - 1] <= #32) or (Temp[CaretX - 1] = #160))
+                   and (LeftSpaces(Temp, False) = CaretX - 1) then
                 begin
                   SpaceCount1 := LeftSpaces(Temp, True, FTabWidth);
                   Assert(SpaceCount1 > 0);
@@ -7844,14 +7845,14 @@ begin
           p := @PrevLine[MinLen];
           // scan over non-whitespaces
           repeat
-            if (p^ = #9) or (p^ = #32) then break;
+            if (p^ = #9) or (p^ = #32) or (p^ = #160) then break;
             Inc(i);
             Inc(p);
           until p^ = #0;
           // scan over whitespaces
           if p^ <> #0 then
             repeat
-              if (p^ <> #9) and (p^ <> #32) then break;
+              if (p^ <> #9) and (p^ <> #32) or (p^ <> #160) then break;
               Inc(i);
               Inc(p);
             until p^ = #0;
@@ -7981,14 +7982,14 @@ begin
           p := @PrevLine[MaxLen];
           // scan over whitespaces
           repeat
-            if p^ <> #32 then break;
+            if (p^ <> #32) or (p^ <> #160) then break;
             Inc(SpaceCount2);
             Dec(p);
           until SpaceCount2 = SpaceCount1;
           // scan over non-whitespaces
           if SpaceCount2 < SpaceCount1 then
             repeat
-              if p^ = #32 then break;
+              if (p^ = #32) or (p^ = #160) then break;
               Inc(SpaceCount2);
               Dec(p);
             until SpaceCount2 = SpaceCount1;
@@ -8191,7 +8192,7 @@ procedure TCustomSynEdit.DoBlockUnindent;
     //Deal with compound tabwidths  Sometimes they have TabChars after a few
     //spaces, yet we need to delete the whole tab width even though the char
     //count might not be FTabWidth because of the TabChar
-    while (Run[0] = #32) and (Result < FTabWidth) do
+    while ((Run[0] = #32) or (Run[0] = #160)) and (Result < FTabWidth) do
     begin
       Inc(Result);
       Inc(Run);
@@ -9068,7 +9069,7 @@ begin
   else
   begin
     case AChar of
-      #0..#32, '.', ',', ';', ':', '"', '''', WideChar(#$00B4), '`',
+      #0..#32, #160, '.', ',', ';', ':', '"', '''', WideChar(#$00B4), '`',
       WideChar(#$00B0), '^', '!', '?', '&', '$', '@', WideChar(#$00A7), '%',
       '#', '~', '[', ']', '(', ')', '{', '}', '<', '>', '-', '=', '+', '*',
       '/', '\', '|':
