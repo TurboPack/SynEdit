@@ -756,7 +756,7 @@ begin
             if FSynEdit.IsIdentChar(FSynEdit.Lines[BB.Line - 1][BB.Char]) then
               // if BB is inside a word expand to the left
               BB := FSynEdit.WordStartEx(BB)
-            else if BB.Char > 1 then
+            else if (BB.Char > 1) and FSynEdit.IsWhiteChar(FSynEdit.Lines[BB.Line - 1][BB.Char])then
               BB := FSynEdit.PrevWordPosEx(BB);
             BE := FSynEdit.NextWordPosEx(BB);
           end
@@ -1108,10 +1108,10 @@ begin
             for I := 1 to Count do
             begin
               BB := BE;
-              BB := FSynEdit.NextWordPosEx(BE);
+              BE := FSynEdit.NextWordPosEx(BE);
               if BB = BE then
                 Break;
-              BE := BB;
+              BB := BE;
               if not IsDegenerate then
                 ExpandToEnclosingUnit(TextUnit_Word);
               Inc(NMoves);

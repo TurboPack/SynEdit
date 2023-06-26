@@ -6855,8 +6855,8 @@ begin
         Dec(CY);
         Line := Lines[CY - 1];
         CX := Length(Line) + 1;
-        while (CX > 1) and IsWhiteChar(Line[CX-1]) do
-          Dec(CX);
+        if CX > 1 then
+          Exit(PrevWordPosEx(BufferCoord(CX, CY)));  // recursive call
       end;
     end
     else
@@ -6868,23 +6868,15 @@ begin
       end else if IsWhiteChar(Line[CX-1]) then begin
         while (CX > 1) and IsWhiteChar(Line[CX-1]) do
           Dec(CX);
-        if CX <= 1 then begin
-          // skip whitespace at the end of the previous line
-          if CY > 1 then
-          begin
-            Dec(CY);
-            Line := Lines[CY - 1];
-            CX := Length(Line) + 1;
-            while (CX > 1) and IsWhiteChar(Line[CX-1]) do
+        if (CX > 1) then
+        begin
+          if IsIdentChar(Line[CX-1]) then
+            while (CX > 1) and IsIdentChar(Line[CX-1]) do
+              Dec(CX)
+          else
+            // breakchar and not whitechar
+            while (CX > 1) and (IsWordBreakChar(Line[CX-1]) and not IsWhiteChar(Line[CX-1])) do
               Dec(CX);
-          end;
-        end else if IsIdentChar(Line[CX-1]) then begin
-          while (CX > 1) and IsIdentChar(Line[CX-1]) do
-            Dec(CX);
-        end else begin
-          // breakchar and not whitechar
-          while (CX > 1) and (IsWordBreakChar(Line[CX-1]) and not IsWhiteChar(Line[CX-1])) do
-            Dec(CX);
         end;
       end else begin
         // breakchar and not whitechar
