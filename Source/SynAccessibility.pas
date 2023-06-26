@@ -1111,16 +1111,9 @@ begin
               BB := FSynEdit.NextWordPosEx(BE);
               if BB = BE then
                 Break;
-              if (BB.Char <= FSynEdit.Lines[BB.Line - 1].Length) and
-                FSynEdit.IsIdentChar(FSynEdit.Lines[BB.Line - 1][BB.Char])
-              then
-                BE := FSynEdit.WordEndEx(BB)
-              else
-              begin
-                BE := BB;
-                if not IsDegenerate then
-                  ExpandToEnclosingUnit(TextUnit_Character);
-              end;
+              BE := BB;
+              if not IsDegenerate then
+                ExpandToEnclosingUnit(TextUnit_Word);
               Inc(NMoves);
             end;
           end
@@ -1135,10 +1128,9 @@ begin
               BB := FSynEdit.PrevWordPosEx(BB);
               if BB = BE then
                 Break;
-              if IsDegenerate then
-                BE := BB
-              else
-                BE := FSynEdit.WordEndEx(BB);
+              BE := BB;
+              if not IsDegenerate then
+                ExpandToEnclosingUnit(TextUnit_Word);
               Dec(NMoves)
             end;
           end;
