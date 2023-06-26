@@ -417,8 +417,11 @@ end;
 
 procedure TSynUIAutomationProvider.NotifyBoundingRectangleChange;
 begin
-  UiaRaiseAutomationPropertyChangedEvent(IRawElementProviderSimple(Self),
-    UIA_BoundingRectanglePropertyId, OldBoundingRectangle, BoundingRectangle);
+  TThread.ForceQueue(nil, procedure
+  begin
+    UiaRaiseAutomationPropertyChangedEvent(IRawElementProviderSimple(Self),
+      UIA_BoundingRectanglePropertyId, OldBoundingRectangle, BoundingRectangle);
+  end);
 end;
 
 function TSynUIAutomationProvider.GetCaretRange(out isActive: BOOL;
@@ -540,11 +543,14 @@ begin
   if FSynEdit = nil then
     Exit(E_UNEXPECTED);
 
-  if FSynEdit.Lines.Count = 0 then
-    BC := BufferCoord(1, 1)
-  else
-    BC := BufferCoord(FSynEdit.Lines[FSynEdit.Lines.Count -1].Length + 1,
-            FSynEdit.Lines.Count);
+  TThread.Synchronize(nil, procedure
+  begin
+    if FSynEdit.Lines.Count = 0 then
+      BC := BufferCoord(1, 1)
+    else
+      BC := BufferCoord(FSynEdit.Lines[FSynEdit.Lines.Count -1].Length + 1,
+              FSynEdit.Lines.Count);
+  end);
 
   RetVal := TSynTextRangeProvider.Create(FSynEdit, BufferCoord(1, 1), BC);
   Result := S_OK;
@@ -621,14 +627,17 @@ begin
     Exit(E_UNEXPECTED);
   end;
 
-  if FSynEdit.Lines.Count = 0 then
-    BC := BufferCoord(1, 1)
-  else
+  TThread.Synchronize(nil, procedure
   begin
-    P := TPoint.Create(Round(point.x), Round(point.y));
-    P := FSynEdit.ScreenToClient(P);
-    BC := FSynEdit.DisplayToBufferPos(FSynEdit.PixelsToNearestRowColumn(P.X, P.Y));
-  end;
+    if FSynEdit.Lines.Count = 0 then
+      BC := BufferCoord(1, 1)
+    else
+    begin
+      P := TPoint.Create(Round(point.x), Round(point.y));
+      P := FSynEdit.ScreenToClient(P);
+      BC := FSynEdit.DisplayToBufferPos(FSynEdit.PixelsToNearestRowColumn(P.X, P.Y));
+    end;
+  end);
 
   RetVal := TSynTextRangeProvider.Create(FSynEdit, BC, BC);
   Result := S_OK;
@@ -641,7 +650,10 @@ begin
   else
     Result := S_OK;
 
-  FSynEdit.Text := val;
+  TThread.Synchronize(nil, procedure
+  begin
+    FSynEdit.Text := val;
+  end);
 end;
 
 {$ENDREGION 'TSynUIAutomationProvider'}
@@ -706,87 +718,78 @@ begin
 end;
 
 function TSynTextRangeProvider.ExpandToEnclosingUnit(AUnit: TextUnit): HResult;
-var
-  BC: TBufferCoord;
 begin
   if FSynEdit = nil then
     Exit(E_UNEXPECTED);
 
   Result := S_OK;
-  if FSynEdit.Lines.Count = 0 then
+
+  TThread.Synchronize(nil, procedure
   begin
-    BB := BufferCoord(1, 1);
-    BE := BB;
-    Exit;
-  end;
+    if FSynEdit.Lines.Count = 0 then
+    begin
+      BB := BufferCoord(1, 1);
+      BE := BB;
+      Exit;
+    end;
 
-  if AUnit = TextUnit_Format then
-    AUnit := TextUnit_Word
-  else if AUnit = TextUnit_Paragraph then
-    AUnit := TextUnit_Page;
+    if AUnit = TextUnit_Format then
+      AUnit := TextUnit_Word
+    else if AUnit = TextUnit_Paragraph then
+      AUnit := TextUnit_Page;
 
-  BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
-  BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
+    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+    BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
 
-  case AUnit of
-    TextUnit_Character:
-      begin
-        BE := BB;
-        BE.Char := Min(BB.Char + 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
-      end;
-    TextUnit_Word:
-      begin
-        // if BB is inside a word expand to the left
-        if (BB.Char <= FSynEdit.Lines[BB.Line -1].Length) and
-          FSynEdit.IsIdentChar(FSynEdit.Lines[BB.Line -1][BB.Char])
-        then
-          BB := FSynEdit.WordStartEx(BB);
-
-        if BB.Char <= FSynEdit.Lines[BB.Line -1].Length then
-        begin
-          if FSynEdit.IsIdentChar(FSynEdit.Lines[BB.Line -1][BB.Char]) then
-            // IdentChar in BB
-            BE := FSynEdit.WordEndEx(BB)
-          else if FSynEdit.IsWhiteChar(FSynEdit.Lines[BB.Line -1][BB.Char]) then
-          begin
-            //  BB not inside a word - Do not expand WordBreakChars except whitespace
-            BC := FSynEdit.NextWordPosEx(BB);
-            if (BC <= BE) and (BC.Char <= FSynEdit.Lines[BC.Line - 1].Length) and
-              FSynEdit.IsIdentChar(FSynEdit.Lines[BC.Line - 1][BC.Char]) then
-            begin
-              //Found IdentChar inside our range
-              BB := BC;
-              BE := FSynEdit.WordEndEx(BB);
-            end;
-          end;
-        end;
-
-        if BB >= BE then
+    case AUnit of
+      TextUnit_Character:
         begin
           BE := BB;
-          ExpandToEnclosingUnit(TextUnit_Character);
+          BE.Char := Min(BB.Char + 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
         end;
-      end;
-    TextUnit_Line:
-      begin
-        BB.Char := 1;
-        BE.Line := BB.Line;
-        BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
-      end;
-    TextUnit_Page:
-      begin
-        BB.Char := 1;
-        BE.Line := BB.Line + FSynEdit.LinesInWindow;
-        BE.Line := EnsureRange(BE.Line, 1, FSynEdit.Lines.Count);
-        BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
-      end;
-    TextUnit_Document:
-      begin
-        BB := BufferCoord(1, 1);
-        BE.Line := FSynEdit.Lines.Count;
-        BE.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
-      end;
-  end;
+      TextUnit_Word:
+        // Words include whitespace at the end.
+        // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-uiautomationtextunits#word
+        begin
+          if BB.Char <= FSynEdit.Lines[BB.Line -1].Length then
+          begin
+            if FSynEdit.IsIdentChar(FSynEdit.Lines[BB.Line - 1][BB.Char]) then
+              // if BB is inside a word expand to the left
+              BB := FSynEdit.WordStartEx(BB)
+            else if BB.Char > 1 then
+              BB := FSynEdit.PrevWordPosEx(BB);
+            BE := FSynEdit.NextWordPosEx(BB);
+          end
+          else
+            BE := BB;
+
+          if BB >= BE then
+          begin
+            BE := BB;
+            ExpandToEnclosingUnit(TextUnit_Character);
+          end;
+        end;
+      TextUnit_Line:
+        begin
+          BB.Char := 1;
+          BE.Line := BB.Line;
+          BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
+        end;
+      TextUnit_Page:
+        begin
+          BB.Char := 1;
+          BE.Line := BB.Line + FSynEdit.LinesInWindow;
+          BE.Line := EnsureRange(BE.Line, 1, FSynEdit.Lines.Count);
+          BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
+        end;
+      TextUnit_Document:
+        begin
+          BB := BufferCoord(1, 1);
+          BE.Line := FSynEdit.Lines.Count;
+          BE.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
+        end;
+    end;
+  end);
 end;
 
 function TSynTextRangeProvider.FindAttribute(attributeId: SYSINT; val:
@@ -799,10 +802,7 @@ end;
 function TSynTextRangeProvider.FindText(const text: WideString; backward:
     BOOL; ignoreCase: BOOL; out RetVal: ITextRangeProvider): HResult;
 var
-  SearchS: string;
-  Line: string;
-  I: Integer;
-  Index, StartIndex: Integer;
+  TextRange: ITextRangeProvider;
 begin
   RetVal := nil;
   if FSynEdit = nil then
@@ -814,59 +814,68 @@ begin
   if BB = BE then
     Exit;
 
-  BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
-  BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line -1].Length + 1);
-  BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
-  BE.Char := EnsureRange(BE.Char, 1, FSynEdit.Lines[BB.Line -1].Length + 1);
-
-  if IgnoreCase then
-    SearchS := AnsiLowerCase(text)
-  else
-    SearchS := text;
-
-  if BackWard then
+  TThread.Synchronize(nil, procedure
+  var
+    SearchS: string;
+    Line: string;
+    I: Integer;
+    Index, StartIndex: Integer;
   begin
-    for I := BE.Line downto BB.Line do
-    begin
-      Line := FSynEdit.Lines[I - 1];
-      if I = BE.Line then
-        Line := Copy(Line, 1, BE.Char - 1);
-      if I = BB.Line then
-        StartIndex := BB.Char
-      else
-        StartIndex := 1;
+    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+    BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line -1].Length + 1);
+    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
+    BE.Char := EnsureRange(BE.Char, 1, FSynEdit.Lines[BB.Line -1].Length + 1);
 
-      Index := Line.LastIndexOf(SearchS, Line.Length - 1, Line.Length - StartIndex + 1);
-      // Index is zero-based
-      if Index >= 0 then
+    if IgnoreCase then
+      SearchS := AnsiLowerCase(text)
+    else
+      SearchS := text;
+
+    if BackWard then
+    begin
+      for I := BE.Line downto BB.Line do
       begin
-        RetVal := TSynTextRangeProvider.Create(FSynEdit,
-          BufferCoord(Index + 1, I), BufferCoord(Index + SearchS.Length + 1, I));
-        Exit;
+        Line := FSynEdit.Lines[I - 1];
+        if I = BE.Line then
+          Line := Copy(Line, 1, BE.Char - 1);
+        if I = BB.Line then
+          StartIndex := BB.Char
+        else
+          StartIndex := 1;
+
+        Index := Line.LastIndexOf(SearchS, Line.Length - 1, Line.Length - StartIndex + 1);
+        // Index is zero-based
+        if Index >= 0 then
+        begin
+          TextRange := TSynTextRangeProvider.Create(FSynEdit,
+            BufferCoord(Index + 1, I), BufferCoord(Index + SearchS.Length + 1, I));
+          Exit;
+        end;
+      end;
+    end
+    else
+    begin
+      for I := BB.Line to BE.Line do
+      begin
+        Line := FSynEdit.Lines[I - 1];
+        if I = BE.Line then
+          Line := Copy(Line, 1, BE.Char - 1);
+        if I = BB.Line then
+          StartIndex := BB.Char
+        else
+          StartIndex := 1;
+
+        Index := Pos(SearchS, Line, StartIndex);
+        if Index > 0 then
+        begin
+          TextRange := TSynTextRangeProvider.Create(FSynEdit,
+            BufferCoord(Index, I), BufferCoord(Index + SearchS.Length, I));
+          Exit;
+        end;
       end;
     end;
-  end
-  else
-  begin
-    for I := BB.Line to BE.Line do
-    begin
-      Line := FSynEdit.Lines[I - 1];
-      if I = BE.Line then
-        Line := Copy(Line, 1, BE.Char - 1);
-      if I = BB.Line then
-        StartIndex := BB.Char
-      else
-        StartIndex := 1;
-
-      Index := Pos(SearchS, Line, StartIndex);
-      if Index > 0 then
-      begin
-        RetVal := TSynTextRangeProvider.Create(FSynEdit,
-          BufferCoord(Index, I), BufferCoord(Index + SearchS.Length, I));
-        Exit;
-      end;
-    end;
-  end;
+  end);
+  RetVal := TextRange;
 end;
 
 function TSynTextRangeProvider.GetAttributeValue(attributeId: SYSINT; out
@@ -908,11 +917,11 @@ begin
     begin
       // Special case for the line breaks
       P := FSynEdit.RowColumnToPixels(FSynEdit.BufferToDisplayPos(BB));
-      R := Rect(P.X, P.Y, P.X + FSynEdit.CharWidth, P.Y + FSynEdit.LineHeight);
+      R := Rect(P.X, P.Y, P.X + 0, P.Y + FSynEdit.LineHeight);
     end
     else
     begin
-      R := Rect(MaxInt, 0, FSynEdit.CharWidth, 0);
+      R := Rect(MaxInt, 0, 0, 0);
 
       for I := BB.Line to BE.Line do
       begin
@@ -940,8 +949,9 @@ begin
     end;
   end;
 
-  R := TRect.Intersect(R, FSynEdit.ClientRect);
   R.Left := Max(R.Left, FSynEdit.GutterWidth + FSynEdit.TextMargin);
+  R.Right := Max(R.Right, R.Left + FSynEdit.CharWidth);
+  R := TRect.Intersect(R, FSynEdit.ClientRect);
 
   R := FSynEdit.ClientToScreen(R);
 
@@ -975,39 +985,44 @@ function TSynTextRangeProvider.GetText(maxLength: SYSINT; out RetVal:
     WideString): HResult;
 var
   S: string;
-  I: Integer;
 begin
   RetVal := '';
   if not Assigned(FSynEdit)  then
     Exit(S_FALSE);
 
   Result := S_OK;
-  if FSynEdit.Lines.Count = 0 then
-    Exit;
 
-  BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
-  BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
-  BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
-  BE.Char := EnsureRange(BE.Char, 1, FSynEdit.Lines[BE.Line - 1].Length + 1);
+  TThread.Synchronize(nil, procedure
+  var
+    I: Integer;
+  begin
+    if FSynEdit.Lines.Count = 0 then
+      Exit;
 
-  if BB = BE then
-  begin
-    if BB.Char = FSynEdit.Lines[BB.Line - 1].Length + 1 then
-      S := WideLineFeed; // SLineBreak confused NVDA
-  end
-  else if BB.Line = BE.Line then
-    S := Copy(FSynEdit.Lines[BB.Line - 1], BB.Char, BE.Char - BB.Char)
-  else
-  begin
-    S := Copy(FSynEdit.Lines[BB.Line - 1], BB.Char);  // first line
-    for I := BB.Line + 1 to BE.Line - 1 do
+    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+    BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
+    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
+    BE.Char := EnsureRange(BE.Char, 1, FSynEdit.Lines[BE.Line - 1].Length + 1);
+
+    if BB = BE then
     begin
-      S := S + SLineBreak + FSynEdit.Lines[I - 1];
-      if (maxLength >= 0) and (S.Length >= maxLength) then
-        Break;
+      if BB.Char = FSynEdit.Lines[BB.Line - 1].Length + 1 then
+        S := WideLineFeed; // SLineBreak confused NVDA
+    end
+    else if BB.Line = BE.Line then
+      S := Copy(FSynEdit.Lines[BB.Line - 1], BB.Char, BE.Char - BB.Char)
+    else
+    begin
+      S := Copy(FSynEdit.Lines[BB.Line - 1], BB.Char);  // first line
+      for I := BB.Line + 1 to BE.Line - 1 do
+      begin
+        S := S + SLineBreak + FSynEdit.Lines[I - 1];
+        if (maxLength >= 0) and (S.Length >= maxLength) then
+          Break;
+      end;
+      S := S + SLineBreak + Copy(FSynEdit.Lines[BE.Line - 1], 1, BE.Char - 1); // last line
     end;
-    S := S + SLineBreak + Copy(FSynEdit.Lines[BE.Line - 1], 1, BE.Char - 1); // last line
-  end;
+  end);
 
   if maxLength < 0 then
     RetVal := S
@@ -1018,8 +1033,7 @@ end;
 function TSynTextRangeProvider.Move(AUnit: TextUnit; count: SYSINT; out RetVal:
     SYSINT): HResult;
 var
-  I: Integer;
-  IsDegenerate: Boolean;
+  NMoves: SYSINT;
 begin
   if FSynEdit = nil then
     Exit(E_UNEXPECTED);
@@ -1041,130 +1055,138 @@ begin
   else if AUnit = TextUnit_Paragraph then
     AUnit := TextUnit_Page;
 
-  IsDegenerate := BB = BE;
-  case AUnit of
-    TextUnit_Character:
-      begin
-        while Abs(RetVal) < Abs(Count) do
+  TThread.Synchronize(nil, procedure
+  var
+    I: Integer;
+    IsDegenerate: Boolean;
+  begin
+    IsDegenerate := BB = BE;
+    NMoves := 0;
+    case AUnit of
+      TextUnit_Character:
         begin
-          if (Count < 0) and (BB.Char = 1) then
+          while Abs(NMoves) < Abs(Count) do
           begin
-            if BB.Line = 1 then
-              Break
+            if (Count < 0) and (BB.Char = 1) then
+            begin
+              if BB.Line = 1 then
+                Break
+              else
+              begin
+                Dec(BB.Line);
+                BB.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
+                Dec(NMoves);
+              end;
+            end
+            else if (Count > 0) and (BB.Char = FSynEdit.Lines[BB.Line - 1].Length + 1) then
+            begin
+              if BB.Line = FSynEdit.Lines.Count then
+                Break
+              else
+              begin
+                Inc(BB.Line);
+                BB.Char := 1;
+                Inc(NMoves);
+              end;
+            end
             else
             begin
-              Dec(BB.Line);
-              BB.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
-              Dec(RetVal);
+              BE := BB;
+              Inc(BB.Char, Count - NMoves);
+              BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
+              Inc(NMoves, BB.Char - BE.Char);
             end;
-          end
-          else if (Count > 0) and (BB.Char = FSynEdit.Lines[BB.Line - 1].Length + 1) then
+          end;
+          BE := BB;
+          if not IsDegenerate then
+            ExpandToEnclosingUnit(TextUnit_Character);
+        end;
+      TextUnit_Word:
+        begin
+          if Count > 0 then
           begin
-            if BB.Line = FSynEdit.Lines.Count then
-              Break
-            else
+            for I := 1 to Count do
             begin
-              Inc(BB.Line);
-              BB.Char := 1;
-              Inc(RetVal);
+              BB := BE;
+              BB := FSynEdit.NextWordPosEx(BE);
+              if BB = BE then
+                Break;
+              if (BB.Char <= FSynEdit.Lines[BB.Line - 1].Length) and
+                FSynEdit.IsIdentChar(FSynEdit.Lines[BB.Line - 1][BB.Char])
+              then
+                BE := FSynEdit.WordEndEx(BB)
+              else
+              begin
+                BE := BB;
+                if not IsDegenerate then
+                  ExpandToEnclosingUnit(TextUnit_Character);
+              end;
+              Inc(NMoves);
             end;
           end
           else
           begin
-            BE := BB;
-            Inc(BB.Char, Count - RetVal);
-            BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
-            Inc(RetVal, BB.Char - BE.Char);
-          end;
-        end;
-        BE := BB;
-        if not IsDegenerate then
-          ExpandToEnclosingUnit(TextUnit_Character);
-      end;
-    TextUnit_Word:
-      begin
-        if Count > 0 then
-        begin
-          for I := 1 to Count do
-          begin
-            BB := BE;
-            BB := FSynEdit.NextWordPosEx(BE);
-            if BB = BE then
-              Break;
-            if (BB.Char <= FSynEdit.Lines[BB.Line - 1].Length) and
-              FSynEdit.IsIdentChar(FSynEdit.Lines[BB.Line - 1][BB.Char])
-            then
-              BE := FSynEdit.WordEndEx(BB)
-            else
+            for I := 1 to -Count do
             begin
               BE := BB;
-              if not IsDegenerate then
-                ExpandToEnclosingUnit(TextUnit_Character);
+              // move to the start of the word if BB is inside a word
+              BB := FSynEdit.WordStartEx(BB);
+
+              BB := FSynEdit.PrevWordPosEx(BB);
+              if BB = BE then
+                Break;
+              if IsDegenerate then
+                BE := BB
+              else
+                BE := FSynEdit.WordEndEx(BB);
+              Dec(NMoves)
             end;
-            Inc(RetVal);
           end;
+        end;
+      TextUnit_Line:
+        begin
+          BE := BB;
+          Inc(BB.Line, Count);
+          BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+          BB.Char := 1;
+          NMoves := BB.Line - BE.Line;
+          BE := BB;
+          if not IsDegenerate then
+            BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
+        end;
+      TextUnit_Page:
+        begin
+          BE := BB;
+          Inc(BB.Line, Count * FSynEdit.LinesInWindow);
+          BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+          BB.Char := 1;
+          NMoves := Ceil((BB.Line - BE.Line) / FSynEdit.LinesInWindow);
+          if IsDegenerate then
+            BE := BB
+          else
+          begin
+            BE.Line := Min(BB.Line + FSynEdit.LinesInWindow - 1, FSynEdit.Lines.Count);
+            BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
+          end;
+        end;
+      TextUnit_Document:
+        if Count > 0 then
+        begin
+          BB.Line := FSynEdit.Lines.Count;
+          BB.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
+          BE := BB;
+          NMoves := 1;
         end
         else
         begin
-          for I := 1 to -Count do
-          begin
-            BE := BB;
-            // move to the start of the word if BB is inside a word
-            BB := FSynEdit.WordStartEx(BB);
-
-            BB := FSynEdit.PrevWordPosEx(BB);
-            if BB = BE then
-              Break;
-            if IsDegenerate then
-              BE := BB
-            else
-              BE := FSynEdit.WordEndEx(BB);
-            Dec(RetVal)
-          end;
-        end;
-      end;
-    TextUnit_Line:
-      begin
-        BE := BB;
-        Inc(BB.Line, Count);
-        BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
-        BB.Char := 1;
-        RetVal := BB.Line - BE.Line;
-        BE := BB;
-        if not IsDegenerate then
-          BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
-      end;
-    TextUnit_Page:
-      begin
-        BE := BB;
-        Inc(BB.Line, Count * FSynEdit.LinesInWindow);
-        BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
-        BB.Char := 1;
-        RetVal := Ceil((BB.Line - BE.Line) / FSynEdit.LinesInWindow);
-        if IsDegenerate then
-          BE := BB
-        else
-        begin
-          BE.Line := Min(BB.Line + FSynEdit.LinesInWindow - 1, FSynEdit.Lines.Count);
-          BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
-        end;
-      end;
-    TextUnit_Document:
-      if Count > 0 then
-      begin
-        BB.Line := FSynEdit.Lines.Count;
-        BB.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
-        BE := BB;
-        RetVal := 1;
-      end
-      else
-      begin
-        BB.Line := 1;
-        BB.Char := 1;
-        BE := BB;
-        RetVal := -1;
-      end
-  end;
+          BB.Line := 1;
+          BB.Char := 1;
+          BE := BB;
+          NMoves := -1;
+        end
+    end;
+  end);
+  RetVal := NMoves;
 end;
 
 function TSynTextRangeProvider.MoveEndpointByRange(
@@ -1242,10 +1264,13 @@ function TSynTextRangeProvider.ScrollIntoView(alignToTop: BOOL): HResult;
 var
   DC: TDisplayCoord;
 begin
-  Result := S_FALSE;
   if Assigned(FSynEdit) and FSynEdit.HandleAllocated then
+    Result := S_OK
+  else
+    Exit(S_FALSE);
+
+  TThread.Synchronize(nil, procedure
   begin
-    Result := S_OK;
     if alignToTop then
     begin
       DC := FSynEdit.BufferToDisplayPos(BB);
@@ -1256,7 +1281,7 @@ begin
       DC := FSynEdit.BufferToDisplayPos(BE);
       FSynEdit.TopLine := DC.Row - FSynEdit.LinesInWindow + 1;
     end;
-  end;
+  end);
 end;
 
 function TSynTextRangeProvider.Select: HResult;

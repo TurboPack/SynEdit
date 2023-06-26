@@ -2116,8 +2116,11 @@ begin
 
   if Assigned(FUIAutomationProvider) and UiaClientsAreListening
   then
-    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
-      UIA_Text_TextChangedEventId);
+    TThread.ForceQueue(nil, procedure
+    begin
+      UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
+        UIA_Text_TextChangedEventId);
+    end);
 end;
 
 procedure TCustomSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
@@ -4624,10 +4627,6 @@ begin
   inherited;
   CommandProcessor(ecLostFocus, #0, nil);
 
-  if Assigned(FUIAutomationProvider) and UiaClientsAreListening then
-    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
-      UIA_AutomationFocusChangedEventId);
-
   //Added check for focused to prevent caret disappearing problem
   if Focused or FAlwaysShowCaret then
     exit;
@@ -4668,10 +4667,6 @@ end;
 procedure TCustomSynEdit.WMSetFocus(var Msg: TWMSetFocus);
 begin
   CommandProcessor(ecGotFocus, #0, nil);
-
-  if Assigned(FUIAutomationProvider) and UiaClientsAreListening then
-    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
-      UIA_AutomationFocusChangedEventId);
 
   InitializeCaret;
   if FHideSelection and SelAvail then
@@ -8805,8 +8800,11 @@ begin
   if (Changes * [scCaretX, scCaretY, scSelection] <> [])
     and Assigned(FUIAutomationProvider) and UiaClientsAreListening
   then
-    UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
-      UIA_Text_TextSelectionChangedEventId);
+    TThread.ForceQueue(nil, procedure
+    begin
+      UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
+        UIA_Text_TextSelectionChangedEventId);
+    end);
 
   if Assigned(fOnStatusChange) then
     fOnStatusChange(Self, fStatusChanges);
