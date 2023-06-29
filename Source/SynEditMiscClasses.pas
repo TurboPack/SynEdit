@@ -387,27 +387,30 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
+  /// <summary>
+  ///   Encapsulates a bitmap that is either loaded from resources or assigned.
+  /// </summary>
+  /// <remarks>
+  ///   Used for the word wrap glyph painted in the Gutter.
+  /// </remarks>
   TSynGlyph = class(TPersistent)
   private
     FVisible: Boolean;
     FInternalGlyph, FGlyph: TBitmap;
-    FWICBitmap: IWICBitmap;
-    FScaledBitmap: IWICBitmap;
-    FScaledW, FScaledH: Cardinal;
+    FPPI: Cardinal;
     FOnChange: TNotifyEvent;
     procedure SetGlyph(Value: TBitmap);
     procedure Changed;
     procedure SetVisible(Value: Boolean);
     function GetSize: TSize;
-    function GetWicBitmap: IWICBitmap;
   public
     constructor Create(aModule: THandle; const aName: string);
     destructor Destroy; override;
     procedure Assign(aSource: TPersistent); override;
     procedure ChangeScale(M, D: Integer); virtual;
+    function D2D1Bitmap(RT: ID2D1RenderTarget): ID2D1Bitmap;
   published
     property Glyph: TBitmap read FGlyph write SetGlyph;
-    property WicBitmap: IWICBitmap read GetWicBitmap;
     property Visible: Boolean read FVisible write SetVisible default True;
     property Size: TSize read GetSize;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -450,22 +453,27 @@ type
     property ExceptionHandler;
     property Sender: TObject read FSender write FSender;
   end;
+
   { TSynInternalImage }
 
-
+  /// <summary>
+  ///   Manages a bitmap containing many glyphs and loaded from resources
+  /// </summary>
+  /// <remarks>
+  ///   Used for the bookmark images
+  /// </remarks>
   TSynInternalImage = class(TObject)
   private
-    FImages: IWicBitmap;
-    FScaledImages: IWicBitmap;
+    FImages: TBitmap;
     FWidth: Integer;
     FHeight: Integer;
+    FPPI: Integer;
     FCount: Integer;
   public
     constructor Create(aModule: THandle; const Name: string; Count: Integer);
+    destructor Destroy; override;
     procedure Draw(RT: ID2D1RenderTarget; Number, X, Y, LineHeight: Integer);
-    // ++ DPI-Aware
     procedure ChangeScale(M, D: Integer); virtual;
-    // -- DPI-Aware
   end;
 
   {$REGION 'TSynHotKey'}
@@ -603,7 +611,6 @@ type
   end;
   {$ENDREGION 'TSynIndicators'}
 
-  {$REGION 'Bracket Highlight'}
   TSynBracketsHighlight = class
   public
     const MatchingBracketsIndicatorID: TGUID = '{EC19D246-8F03-42FE-BDFB-A11F3E60B00B}';
@@ -618,6 +625,7 @@ type
     procedure SetIndicatorSpecs(const MatchingBracketsSpec,
       UnbalancedBracketSpec: TSynIndicatorSpec);
   end;
+
 
 implementation
 
@@ -1094,10 +1102,9 @@ begin
   begin
     FInternalImage := TSynInternalImage.Create(HINSTANCE,
       'SynEditInternalImages', 10);
-    // ++ DPI-Aware
+
     if Assigned(FOwner) then
       FInternalImage.ChangeScale(FCurrentPPI, 96);
-    // -- DPI-Aware
   end;
   Result := FInternalImage;
 end;
@@ -1208,9 +1215,7 @@ end;
 
 procedure TSynGlyph.ChangeScale(M, D: Integer);
 begin
-  FScaledW := MulDiv(FScaledW, M, D);
-  FSCaledH := MulDiv(FScaledH, M, D);
-  FScaledBitmap := ScaledWicBitmap(FWICBitmap, FScaledW, FScaledH);
+  FPPI := MulDiv(FPPI, M, D);
 end;
 
 constructor TSynGlyph.Create(aModule: THandle; const aName: string);
@@ -1223,12 +1228,22 @@ begin
     FInternalGlyph.LoadFromResourceName(aModule, aName);
     FInternalGlyph.AlphaFormat := afDefined;
   end;
-  FWICBitmap := WicBitmapFromBitmap(FInternalGlyph);
-  FWICBitmap.GetSize(FScaledW, FScaledH);
-  FScaledBitmap := FWICBitmap;
+
+  FPPI := Screen.DefaultPixelsPerInch;
 
   FVisible := True;
   FGlyph := TBitmap.Create;
+end;
+
+function TSynGlyph.D2D1Bitmap(RT: ID2D1RenderTarget): ID2D1Bitmap;
+var
+  BM: TBitmap;
+begin
+  if FGlyph.Empty then
+    BM := FInternalGlyph
+  else
+    BM := FGlyph;
+  Result := D2D1BitmapFromBitmap(BM, RT);
 end;
 
 destructor TSynGlyph.Destroy;
@@ -1241,13 +1256,14 @@ begin
 end;
 
 function TSynGlyph.GetSize: TSize;
+var
+  BM: TBitmap;
 begin
-  Result.Create(FScaledW, FScaledH);
-end;
-
-function TSynGlyph.GetWicBitmap: IWICBitmap;
-begin
-  Result := FScaledBitmap;
+  if FGlyph.Empty then
+    BM := FInternalGlyph
+  else
+    BM := FGlyph;
+  Result.Create(MulDiv(BM.Width, FPPI, 96), MulDiv(BM.Height, FPPI, 96));
 end;
 
 procedure TSynGlyph.Assign(aSource: TPersistent);
@@ -1260,12 +1276,6 @@ begin
     FInternalGlyph.Assign(vSrc.FInternalGlyph);
     FVisible := vSrc.FVisible;
     FGlyph.Assign(vSrc.FGlyph);
-    if FGlyph.Empty then
-      FWICBitmap := WicBitmapFromBitmap(FInternalGlyph)
-    else
-      FWICBitmap := WicBitmapFromBitmap(FGlyph);
-    FWICBitmap.GetSize(FScaledW, FScaledH);
-    FScaledBitmap := FWICBitmap;
   end
   else
     inherited;
@@ -1274,13 +1284,8 @@ end;
 
 procedure TSynGlyph.SetGlyph(Value: TBitmap);
 begin
-FGlyph.Assign(Value);
-  if FGlyph.Empty then
-    FWICBitmap := WicBitmapFromBitmap(FInternalGlyph)
-  else
-    FWICBitmap := WicBitmapFromBitmap(FGlyph);
-  FWICBitmap.GetSize(FScaledW, FScaledH);
-  FScaledBitmap := FWICBitmap;
+  FGlyph.Assign(Value);
+  FGlyph.AlphaFormat := afDefined;
   Changed;
 end;
 
@@ -1436,54 +1441,45 @@ type
 
 procedure TSynInternalImage.ChangeScale(M, D: Integer);
 begin
-  if M = D then
-    Exit;
-
-  FWidth := MulDiv(FWidth, M, D);
-  FHeight := MulDiv(FHeight, M, D);
-  FScaledImages := ScaledWicBitmap(FImages, FCount * FWidth, FHeight);
+  FPPI := MulDiv(FPPI, M, D);
 end;
 
 constructor TSynInternalImage.Create(aModule: THandle; const Name: string;
   Count: Integer);
-var
- BM: TBitmap;
 begin
   inherited Create;
-  BM := TBitmap.Create;
-  try
-    BM.LoadFromResourceName(aModule, Name);
-    FWidth := (BM.Width + Count shr 1) div Count;
-    FHeight := BM.Height;
-    FCount := Count;
-    FImages := WicBitmapFromBitmap(BM);
-    FScaledImages := FImages;
-  finally
-    BM.Free;
-  end;
+  FPPI := 96;
+  FImages := TBitmap.Create;
+  FImages.LoadFromResourceName(aModule, Name);
+  FImages.AlphaFormat := afPremultiplied;
+  FWidth := (FImages.Width + Count shr 1) div Count;
+  FHeight := FImages.Height;
+  FCount := Count;
+end;
+
+destructor TSynInternalImage.Destroy;
+begin
+  FImages.Free;
+  inherited;
 end;
 
 procedure TSynInternalImage.Draw(RT: ID2D1RenderTarget;
   Number, X, Y, LineHeight: Integer);
 var
+  ScaledW, ScaledH: Integer;
   rcSrc, rcDest: TRectF;
   BM: ID2D1Bitmap;
 begin
   if (Number >= 0) and (Number < FCount) then
   begin
-    if LineHeight >= FHeight then
-    begin
-      rcSrc := Rect(Number * FWidth, 0, (Number + 1) * FWidth, FHeight);
-      Inc(Y, (LineHeight - FHeight) div 2);
-      rcDest := Rect(X, Y, X + FWidth, Y + FHeight);
-    end
-    else
-    begin
-      rcDest := Rect(X, Y, X + FWidth, Y + LineHeight);
-      Y := (FHeight - LineHeight) div 2;
-      rcSrc := Rect(Number * FWidth, Y, (Number + 1) * FWidth, Y + LineHeight);
-    end;
-    CheckOSError(RT.CreateBitmapFromWicBitmap(FScaledImages, nil, BM));
+    ScaledW := MulDiv(FWidth, FPPI, 96);
+    ScaledH := MulDiv(FHeight, FPPI, 96);
+
+    rcSrc := Rect(Number * FWidth, 0, (Number + 1) * FWidth, FHeight);
+    rcDest := Rect(0, 0, ScaledW, ScaledH);
+    rcDest := rcDest.FitInto(Rect(X, Y, X + ScaledW, Y + LineHeight));
+
+    BM := D2D1BitmapFromBitmap(FImages, RT);
     RT.DrawBitmap(BM, @rcDest, 1, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, @rcSrc);
   end;
 end;
@@ -2061,8 +2057,11 @@ begin
   TextFormat.IDW.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
   if SynEdit.WordWrap and SynEdit.WordWrapGlyph.Visible then
-    RT.CreateBitmapFromWicBitmap(SynEdit.WordWrapGlyph.WicBitmap, nil,
-     WordWrapGlyph);
+  try
+    WordWrapGlyph := SynEdit.WordWrapGlyph.D2D1Bitmap(RT);
+  except
+    WordWrapGlyph := nil;
+  end;
 
   for Row := FirstRow to LastRow do
   begin
@@ -2072,7 +2071,7 @@ begin
       ClipR.Right, LineTop + SynEdit.LineHeight);
 
     if SynEdit.WordWrap and SynEdit.WordWrapGlyph.Visible and
-      (Row <> SynEdit.LineToRow(Line))
+      (Row <> SynEdit.LineToRow(Line)) and Assigned(WordWrapGlyph)
     then
     begin
       // paint wrapped line glyphs
@@ -2086,7 +2085,7 @@ begin
         RectF := RectF.FitInto(LineRect);
         RectF.Offset(LineRect.Right - RectF.Right, 0);
       end;
-      RT.DrawBitmap(WordWrapGlyph, @RectF);
+      RT.DrawBitmap(WordWrapGlyph, @RectF, 1000);
     end
     else
     begin

@@ -1519,8 +1519,7 @@ type
 function Graphemes(const AValue: string): TGraphemeEnumeratorHelper;
 
 // Support functions
-function D2D1ColorF(const AColor: TColor): TD2D1ColorF; overload;
-function D2D1ColorF(const AColor: TColor; Opacity: Single): TD2D1ColorF; overload;
+function D2D1ColorF(const AColor: TColor; Opacity: Single = 1.0): TD2D1ColorF; overload;
 function DWTextRange(startPosition: Cardinal; length: Cardinal): TDwriteTextRange;
 function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: Cardinal): TDwriteFontFeature;
 function DWGetTypography(Features: array of Integer) : IDWriteTypography;
@@ -1531,6 +1530,11 @@ procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList; X, Y,
     Index: Integer);
 function IsFontMonospacedAndValid(Font: TFont): Boolean;
 function FontFamilyName(Font: IDWriteFont): string;
+/// <summary>
+///   Converts a Delphi bitmap to a ID2D1Bitmap.
+///   Similar to the one in Vcl.Direct2D
+/// </summary>
+function D2D1BitmapFromBitmap(Bitmap: TBitmap; RT: ID2D1RenderTarget): ID2D1Bitmap;
 
 var
   clNoneF: TD2D1ColorF;
@@ -1550,7 +1554,8 @@ resourcestring
   SYNS_FontFamilyNotFound = 'Font family name not found';
 
 {$REGION 'Support functions'}
-function D2D1ColorF(const AColor: TColor): TD2D1ColorF; overload;
+
+function D2D1ColorF(const AColor: TColor; Opacity: Single): TD2D1ColorF;
 var
   RGB: Cardinal;
 const
@@ -1560,12 +1565,6 @@ begin
   Result.r := TColors(RGB).R * CScale;
   Result.g := TColors(RGB).G * CScale;
   Result.b := TColors(RGB).B * CScale;
-  Result.a :=  1.0;
-end;
-
-function D2D1ColorF(const AColor: TColor; Opacity: Single): TD2D1ColorF; overload;
-begin
-  Result := D2D1ColorF(AColor);
   Result.a := Opacity;
 end;
 
@@ -1613,25 +1612,48 @@ end;
 procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList;
   X, Y, Index: Integer);
 var
-  Icon: HIcon;
-  WicBitmap: IWicBitmap;
   Bitmap: ID2D1Bitmap;
+  BitmapInfo: TBitmapInfo;
+  Buf: array of Byte;
+  BitmapProperties: TD2D1BitmapProperties;
+  Icon: HIcon;
+  IconInfo: TIconInfo;
   R: TRectF;
-  BMProps: TD2D1BitmapProperties;
+  DC: HDC;
 begin
   Icon := ImageList_GetIcon(IL.Handle, Index, ILD_NORMAL);
   try
-    CheckOSError(TSynDWrite.ImagingFactory.CreateBitmapFromHICON(Icon, WicBitmap));
-    BMProps.dpiX := 1;
-    BMProps.dpiY := 1;
-    BMProps.pixelFormat.format := DXGI_FORMAT_B8G8R8A8_UNORM;
-    BMProps.pixelFormat.alphaMode :=  D2D1_ALPHA_MODE_PREMULTIPLIED;
-    CheckOSError(RT.CreateBitmapFromWicBitmap(WicBitmap, @BMProps, Bitmap));
-    R := Rect(X, Y, X + IL.Width, Y + IL.Height);
-    RT.DrawBitmap(Bitmap, @R);
+    if not GetIconInfo(Icon, IconInfo) then
+      Exit;
+
+    DC := CreateCompatibleDC(0);
+    try
+      FillChar(BitmapInfo, SizeOf(BitmapInfo), 0);
+      BitmapInfo.bmiHeader.biSize := Sizeof(BitmapInfo.bmiHeader);
+      // call with nil to get the Bitmap Info filled.
+      if (GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, nil, BitmapInfo, DIB_RGB_COLORS) = 0) or
+        (BitmapInfo.bmiHeader.biBitCount <> 32)
+      then
+        Exit;  // Exit if it fails or if biBitCount <> 32
+      BitmapInfo.bmiHeader.biCompression := BI_RGB; // set to uncompressed
+      SetLength(Buf, IL.Height * IL.Width * 4);
+      if GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, @Buf[0], BitmapInfo, DIB_RGB_COLORS) = 0 then
+        Exit;
+    finally
+      DeleteDC(DC);
+    end;
   finally
     DestroyIcon(Icon);
   end;
+
+  BitmapProperties := D2D1BitmapProperties(D2D1PixelFormat(
+    DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 0, 0);
+
+  CheckOSError(RT.CreateBitmap(D2D1SizeU(IL.Width, IL.Height), @Buf[0],
+                4 * IL.Width, BitmapProperties, Bitmap));
+
+  R := Rect(X, Y, X + IL.Width, Y + IL.Height);
+  RT.DrawBitmap(Bitmap, @R, 1);
 end;
 
 function IsFontMonospacedAndValid(Font: TFont): Boolean;
@@ -1680,6 +1702,36 @@ begin
     raise ESynError.CreateRes(@SYNS_FontFamilyNotFound);
 end;
 
+function D2D1BitmapFromBitmap(Bitmap: TBitmap; RT: ID2D1RenderTarget): ID2D1Bitmap;
+var
+  BitmapInfo: TBitmapInfo;
+  buf: array of Byte;
+  BitmapProperties: TD2D1BitmapProperties;
+  Hbmp: HBitmap;
+begin
+  FillChar(BitmapInfo, SizeOf(BitmapInfo), 0);
+  BitmapInfo.bmiHeader.biSize := Sizeof(BitmapInfo.bmiHeader);
+  BitmapInfo.bmiHeader.biHeight := -Bitmap.Height;
+  BitmapInfo.bmiHeader.biWidth := Bitmap.Width;
+  BitmapInfo.bmiHeader.biPlanes := 1;
+  BitmapInfo.bmiHeader.biBitCount := 32;
+
+  SetLength(buf, Bitmap.Height * Bitmap.Width * 4);
+  // Forces evaluation of Bitmap.Handle before Bitmap.Canvas.Handle
+  Hbmp := Bitmap.Handle;
+  GetDIBits(Bitmap.Canvas.Handle, Hbmp, 0, Bitmap.Height, @buf[0], BitmapInfo, DIB_RGB_COLORS);
+
+  BitmapProperties.dpiX := 0;
+  BitmapProperties.dpiY := 0;
+  BitmapProperties.pixelFormat.format := DXGI_FORMAT_B8G8R8A8_UNORM;
+  if (Bitmap.PixelFormat <> pf32bit) or (Bitmap.AlphaFormat = afIgnored) then
+    BitmapProperties.pixelFormat.alphaMode := D2D1_ALPHA_MODE_IGNORE
+  else
+    BitmapProperties.pixelFormat.alphaMode := D2D1_ALPHA_MODE_PREMULTIPLIED;
+
+
+  RT.CreateBitmap(D2D1SizeU(Bitmap.Width, Bitmap.Height), @buf[0], 4*Bitmap.Width, BitmapProperties, Result)
+end;
 {$ENDREGION}
 
 {$REGION 'TSynDWrite'}
