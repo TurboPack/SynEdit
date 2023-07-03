@@ -3021,17 +3021,17 @@ procedure TSynCompletionProposal.EditorKeyDown(Sender: TObject;
 var
   ShortCutKey: Word;
   ShortCutShift: TShiftState;
+  Editor: TCustomSynedit;
 begin
+  Editor := Sender as TCustomSynEdit;
   ShortCutToKey (fShortCut,ShortCutKey,ShortCutShift);
-  with Sender as TCustomSynEdit do
-  begin
-    if ((DefaultType <> ctCode) or not(ReadOnly)) and (Shift = ShortCutShift) and (Key = ShortCutKey) then
+    if ((DefaultType <> ctCode) or not Editor.ReadOnly) and
+       (Shift = ShortCutShift) and (Key = ShortCutKey) then
     begin
-      Form.CurrentEditor := Sender as TCustomSynEdit;
+      Form.CurrentEditor := Editor;
       Key := 0;
-      DoExecute(Sender as TCustomSynEdit);
+      DoExecute(Editor);
     end;
-  end;
 end;
 
 function TSynCompletionProposal.GetCurrentInput(AEditor: TCustomSynEdit): string;
