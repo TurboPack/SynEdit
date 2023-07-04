@@ -561,9 +561,9 @@ end;
 procedure TSynSpellCheck.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
-  inherited;
   if (AComponent is TCustomSynEdit) and (Operation = opRemove) then
-  RemoveEditor(TCustomSynEdit(AComponent));
+    RemoveEditor(TCustomSynEdit(AComponent));
+  inherited;
 end;
 
 function TSynSpellCheck.RemoveEditor(AEditor: TCustomSynEdit): Boolean;
@@ -603,13 +603,9 @@ procedure TSynSpellCheck.SetEditor(const Value: TCustomSynEdit);
 begin
   if Value <> FEditor then
   begin
+    FEditor := Value;
     if Assigned(Value) then
-    begin
       AddEditor(Value);
-      FEditor := Value;
-    end
-    else
-      FEditor := nil;
   end;
 end;
 
