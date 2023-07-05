@@ -31,6 +31,7 @@ uses
   System.Classes,
   System.Win.Registry,
   System.IniFiles,
+  Generics.Collections,
   Vcl.Graphics,
   SynEditTypes,
   SynEditMiscClasses,
@@ -220,19 +221,10 @@ type
 
   TSynCustomHighlighterClass = class of TSynCustomHighlighter;
 
-  TSynHighlighterList = class(TList)
-  private
-    hlList: TList;
-    function GetItem(Index: Integer): TSynCustomHighlighterClass;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function Count: Integer;
+  TSynHighlighterList = class(TList<TSynCustomHighlighterClass>)
     function FindByFriendlyName(FriendlyName: string): Integer;
     function FindByName(Name: string): Integer;
     function FindByClass(Comp: TComponent): Integer;
-    property Items[Index: Integer]: TSynCustomHighlighterClass
-      read GetItem; default;
   end;
 
   procedure RegisterPlaceableHighlighter(highlighter:
@@ -246,23 +238,6 @@ uses
   SynEditStrConst;
 
 { THighlighterList }
-function TSynHighlighterList.Count: Integer;
-begin
-  Result := hlList.Count;
-end;
-
-constructor TSynHighlighterList.Create;
-begin
-  inherited Create;
-  hlList := TList.Create;
-end;
-
-destructor TSynHighlighterList.Destroy;
-begin
-  hlList.Free;
-  inherited;
-end;
-
 function TSynHighlighterList.FindByClass(Comp: TComponent): Integer;
 var
   i: Integer;
@@ -308,11 +283,6 @@ begin
   end;
 end;
 
-function TSynHighlighterList.GetItem(Index: Integer): TSynCustomHighlighterClass;
-begin
-  Result := TSynCustomHighlighterClass(hlList[Index]);
-end;
-
 var
   G_PlaceableHighlighters: TSynHighlighterList;
 
@@ -323,8 +293,8 @@ var
 
   procedure RegisterPlaceableHighlighter(highlighter: TSynCustomHighlighterClass);
   begin
-    if G_PlaceableHighlighters.hlList.IndexOf(highlighter) < 0 then
-      G_PlaceableHighlighters.hlList.Add(highlighter);
+    if G_PlaceableHighlighters.IndexOf(highlighter) < 0 then
+      G_PlaceableHighlighters.Add(highlighter);
   end;
 
 { TSynHighlighterAttributes }

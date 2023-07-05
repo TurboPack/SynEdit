@@ -280,16 +280,22 @@ end;
 { TSynHighlighterForm }
 
 constructor TSynHighlighterForm.Create(highlighters: TSynHighlighterList);
+
+  function PPIScale(Value: Integer): Integer;
+  begin
+    Result := MulDiv(Value, Application.MainForm.CurrentPPI, 96);
+  end;
+
 begin
   CreateNew(nil);
   Caption := 'Highlighter Manager';
-  Width  := 410;
-  Height := 243;
+  ClientWidth  := PPIScale(403);
+  ClientHeight := PPIScale(217);
   Position := poScreenCenter;
   BorderStyle := bsDialog;
 
   Highlight := highlighters;
-  
+
 //object clbHighlighters: TCheckListBox
 //  Left = 8
 //  Top = 8
@@ -347,11 +353,11 @@ begin
   begin
     Name := 'clbHighlighters';
     Parent := Self;
-    Left := 8;
-    Top := 8;
-    Width := 305;
-    Height := 201;
-    ItemHeight := 13;
+    Left := PPIScale(8);
+    Top := PPIScale(8);
+    Width := PPIScale(305);
+    Height := PPIScale(201);
+    //ItemHeight := 13;
     Sorted := true;
     TabOrder := 0;
   end;
@@ -359,10 +365,10 @@ begin
   begin
     Name := 'btnSelectAll';
     Parent := Self;
-    Left := 320;
-    Top := 8;
-    Width := 75;
-    Height := 25;
+    Left := PPIScale(320);
+    Top := PPIScale(8);
+    Width := PPIScale(75);
+    Height := PPIScale(25);
     Caption := '&Select All';
     TabOrder := 1;
     OnClick := SelectAll;
@@ -371,10 +377,10 @@ begin
   begin
     Name := 'btnDeselectAll';
     Parent := Self;
-    Left := 320;
-    Top := 40;
-    Width := 75;
-    Height := 25;
+    Left := PPIScale(320);
+    Top := PPIScale(40);
+    Width := PPIScale(75);
+    Height := PPIScale(25);
     Caption := '&Deselect All';
     TabOrder := 2;
     OnClick := DeselectAll;
@@ -383,10 +389,10 @@ begin
   begin
     Name := 'btnOK';
     Parent := Self;
-    Left := 320;
-    Top := 152;
-    Width := 75;
-    Height := 25;
+    Left := PPIScale(320);
+    Top := PPIScale(152);
+    Width := PPIScale(75);
+    Height := PPIScale(25);
     Caption := 'OK';
     Default := True;
     ModalResult := 1;
@@ -396,10 +402,10 @@ begin
   begin
     Name := 'btnCancel';
     Parent := Self;
-    Left := 320;
-    Top := 184;
-    Width := 75;
-    Height := 25;
+    Left := PPIScale(320);
+    Top := PPIScale(184);
+    Width := PPIScale(75);
+    Height := PPIScale(25);
     Caption := 'Cancel';
     ModalResult := 2;
     TabOrder := 4;
