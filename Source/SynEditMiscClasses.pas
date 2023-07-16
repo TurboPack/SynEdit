@@ -718,7 +718,9 @@ end;
 
 procedure TSynGutter.ChangeScale(M, D: Integer);
 begin
-  FFont.Height := Round(FFont.Height * M / D);
+  FFont.Height := MulDiv(FFont.Height, M, D);
+  // So that FFont.Size does not change
+  FFont.PixelsPerInch := MulDiv(FFont.PixelsPerInch, M, D);
   if Assigned(FInternalImage) then
     FInternalImage.ChangeScale(M, D);
   FCurrentPPI := M; // Vcl does the same
@@ -744,6 +746,7 @@ begin
   FFont.Name := DefaultFontName;
   FFont.Size := 8;
   FFont.Style := [];
+  FFont.PixelsPerInch := Screen.DefaultPixelsPerInch;
   FUseFontStyle := True;
   FFont.OnChange := OnFontChange;
   OnFontChange(Self);

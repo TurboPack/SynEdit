@@ -26,14 +26,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditOptionsDialog.pas,v 1.21.2.5 2005/07/20 13:37:18 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
-
 -------------------------------------------------------------------------------}
 
 unit SynEditOptionsDialog;
@@ -339,7 +331,7 @@ begin
   FForm:= TfmEditorOptionsDialog.Create(Self);
 end;
 
-destructor TSynEditOptionsDialog.destroy;
+destructor TSynEditOptionsDialog.Destroy;
 begin
   FForm.Free;
   inherited;
@@ -437,19 +429,18 @@ end;
 constructor TSynEditorOptionsContainer.create(AOwner: TComponent);
 begin
   inherited;
-  FBookmarks:= TSynBookMarkOpt.Create(Self);
-  FKeystrokes:= TSynEditKeyStrokes.Create(Self);
-  FSynGutter:= TSynGutter.Create;
+  FBookmarks := TSynBookMarkOpt.Create(Self);
+  FKeystrokes := TSynEditKeyStrokes.Create(Self);
+  FSynGutter := TSynGutter.Create;
   FSynGutter.AssignableBands := False;
   FSelectedColor := TSynSelectedColor.Create;
   FIndentGuides := TSynIndentGuides.Create;
-  FFont:= TFont.Create;
-  FFont.Name:= DefaultFontName;
-  FFont.Size:= 8;
+  FFont := TFont.Create;
+  FFont.Name := DefaultFontName;
+  FFont.Size := 10;
   Color:= clWindow;
   Keystrokes.ResetDefaults;
-  Options := [eoAutoIndent,eoDragDropEditing,eoDropFiles,eoScrollPastEol,
-    eoShowScrollHint,eoSmartTabs,eoAltSetsColumnMode, eoTabsToSpaces,eoTrimTrailingSpaces, eoKeepCaretX];
+  Options := SYNEDIT_DEFAULT_OPTIONS;
   ExtraLineSpacing := 0;
   HideSelection := False;
   InsertCaret := ctVerticalLine;
@@ -462,7 +453,7 @@ begin
   WantTabs := True;
 end;
 
-destructor TSynEditorOptionsContainer.destroy;
+destructor TSynEditorOptionsContainer.Destroy;
 begin
   FBookMarks.Free;
   FKeyStrokes.Free;
@@ -825,8 +816,9 @@ begin
 end;
 
 procedure TfmEditorOptionsDialog.FormShow(Sender: TObject);
-var Commands: TStringList;
-    i : Integer;
+var 
+  Commands: TStringList;
+  i : Integer;
 begin
 //We need to do this now because it will not have been assigned when
 //create occurs
@@ -851,6 +843,11 @@ begin
   end;
 
   PageControl1.ActivePage := PageControl1.Pages[0];
+
+  labFont.Font.PixelsPerInch := FCurrentPPI;
+  labFont.Canvas.Font.PixelsPerInch := FCurrentPPI;
+  lblGutterFont.Font.PixelsPerInch := FCurrentPPI;
+  lblGutterFont.Canvas.Font.PixelsPerInch := FCurrentPPI;
 end;
 
 procedure TfmEditorOptionsDialog.KeyListEditing(Sender: TObject;
