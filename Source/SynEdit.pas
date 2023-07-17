@@ -5496,14 +5496,19 @@ end;
 procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif});
 begin
   {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
-  fExtraLineSpacing := MulDiv(fExtraLineSpacing, M, D);
-  fTextMargin := MulDiv(fTextMargin, M, D);
-  fGutter.ChangeScale(M,D);
-  fBookMarkOpt.ChangeScale(M, D);
-  fWordWrapGlyph.ChangeScale(M, D);
-  // Adjust Font.PixelsPerInch so that Font.Size is correct
-  // Delphi should be doing that but it doesn't
-  Font.PixelsPerInch := MulDiv(Font.PixelsPerInch, M, D);
+  IncPaintLock;
+  try
+    fExtraLineSpacing := MulDiv(fExtraLineSpacing, M, D);
+    fTextMargin := MulDiv(fTextMargin, M, D);
+    fGutter.ChangeScale(M,D);
+    fBookMarkOpt.ChangeScale(M, D);
+    fWordWrapGlyph.ChangeScale(M, D);
+    // Adjust Font.PixelsPerInch so that Font.Size is correct
+    // Delphi should be doing that but it doesn't
+    Font.PixelsPerInch := MulDiv(Font.PixelsPerInch, M, D);
+  finally
+    DecPaintLock;
+  end;
   {$if CompilerVersion >= 31}end;{$endif}
   inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
  end;
