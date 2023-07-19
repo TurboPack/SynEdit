@@ -682,7 +682,7 @@ type
     procedure BeginUndoBlock;
     procedure BeginUpdate;
     function CaretInView: Boolean;
-    function CharIndexToRowCol(Index: Integer): TBufferCoord;
+    function CharIndexToRowCol(Index: Integer; LineBreak: string = SLineBreak): TBufferCoord;
     procedure Clear;
     procedure ClearAll;
     procedure ClearBookMark(BookMark: Integer);
@@ -768,7 +768,7 @@ type
     function RowColumnInView(RowCol: TDisplayCoord): Boolean;
     function ColumnToPixels(const S: string; Col: Integer): Integer;
     function RowColumnToPixels(const RowCol: TDisplayCoord): TPoint;
-    function RowColToCharIndex(RowCol: TBufferCoord): Integer;
+    function RowColToCharIndex(RowCol: TBufferCoord; LineBreak: string = SLineBreak): Integer;
     function SearchReplace(const ASearch, AReplace: string;
       AOptions: TSynSearchOptions): Integer;
     procedure SelectAll;
@@ -9137,25 +9137,27 @@ begin
     Result := Self.GetWordAtRowCol(Point); // return the point at the mouse position
 end;
 
-function TCustomSynEdit.CharIndexToRowCol(Index: Integer): TBufferCoord;
+function TCustomSynEdit.CharIndexToRowCol(Index: Integer;
+  LineBreak: string): TBufferCoord;
 { Index is 0-based; Result.x and Result.y are 1-based }
 var
-  x, y, Chars: Integer;
+  x, y, LBLength, Chars: Integer;
 begin
   x := 0;
   y := 0;
   Chars := 0;
+  LBLength := LineBreak.Length;
   while y < Lines.Count do
   begin
     x := Length(Lines[y]);
-    if Chars + x + 2 > Index then
+    if Chars + x + LBLength > Index then
     begin
       x := Index - Chars;
       Break;
     end
     else if (y = Lines.Count - 1) and (Index >= Chars + x) then
       Break;
-    Inc(Chars, x + 2);
+    Inc(Chars, x + LBLength);
     x := 0;
     Inc(y);
   end;
@@ -9163,16 +9165,16 @@ begin
   Result.Line := y + 1;
 end;
 
-function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord): Integer;
+function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord;
+  LineBreak: string): Integer;
 { Row and Col are 1-based; Result is 0-based }
 var
   synEditStringList : TSynEditStringList;
 begin
   RowCol.Line := Max(0, Min(Lines.Count, RowCol.Line) - 1);
   synEditStringList := (FLines as TSynEditStringList);
-  // CharIndexToRowCol assumes a line break size of two
   Result :=  synEditStringList.LineCharIndex(RowCol.Line)
-           + RowCol.Line * 2 + (RowCol.Char -1);
+           + RowCol.Line * LineBreak.Length + (RowCol.Char -  1);
 end;
 
 procedure TCustomSynEdit.Clear;
