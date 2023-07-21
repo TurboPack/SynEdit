@@ -741,9 +741,19 @@ end;
 function DefaultFontName: string;
 begin
   if CheckWin32Version(6) then
-    Result := 'Consolas'
-  else
-    Result := 'Courier New';
+  begin
+    Result := 'Consolas';
+    if Screen.Fonts.IndexOf(Result) >= 0 then
+      Exit;
+  end;
+
+  Result := 'Lucida Console';
+  if Screen.Fonts.IndexOf(Result) >= 0 then
+    Exit;
+
+  Result := 'Courier New';
+  if Screen.Fonts.IndexOf(Result) < 0 then
+    Result := 'Courier';
 end;
 
 function WeightEnumFontsProc(EnumLogFontExDV: PEnumLogFontExDV;
