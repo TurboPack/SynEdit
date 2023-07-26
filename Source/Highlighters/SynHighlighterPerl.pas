@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+ï»¿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterPerl.pas, released 2000-04-10.
 The Original Code is based on the DcjSynPerl.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Trier.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -1299,7 +1299,7 @@ function TSynPerlSyn.IsWordBreakChar(AChar: WideChar): Boolean;                 
 begin
   case AChar of
     #0..#32, '.', ',', ';', ':', '"', '''', '+', '`', '-', '^', '!', '?', '&',
-    '§', '#', '~', '[', ']', '(', ')', '{', '}', '<', '>',
+    'Â§', '#', '~', '[', ']', '(', ')', '{', '}', '<', '>',
     '=', '*', '/', '\', '|':
       Result := True;
     else

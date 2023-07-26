@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+ï»¿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -13,7 +13,7 @@ The Original Code is based on the wmPHPSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Willo van der Merwe.
 "Heredoc" syntax highlighting implementation by Marko Njezic.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -1229,7 +1229,7 @@ function TSynPHPSyn.IsWordBreakChar(AChar: WideChar): Boolean;
 begin
   case AChar of
     #0..#32, '.', ',', ';', ':', '"', '''', '+', '`', '-', '^', '!', '?', '&',
-    '@', '§', '%', '#', '~', '[', ']', '(', ')', '{', '}', '<', '>',
+    '@', 'Â§', '%', '#', '~', '[', ']', '(', ')', '{', '}', '<', '>',
     '=', '*', '/', '\', '|':
       Result := True;
     else
