@@ -292,7 +292,7 @@ end;
 
 function TSynEditStringList.Get(Index: Integer): string;
 begin
-  if Cardinal(Index) < Cardinal(FCount) then
+  if (Index >= 0) and (Index < FCount) then
     Result := FList^[Index].FString
   else
     Result := '';
@@ -318,7 +318,7 @@ end;
 
 function TSynEditStringList.LineCharLength(Index: Integer): Integer;
 begin
-  if Cardinal(Index) < Cardinal(FCount) then
+  if (Index >= 0) and (Index < FCount) then
     Result := Length(FList^[Index].FString)
   else
     Result := 0;
@@ -326,7 +326,7 @@ end;
 
 function TSynEditStringList.LineCharIndex(Index: Integer): Integer;
 begin
-  if Cardinal(Index) < Cardinal(FCount) then
+  if (Index >= 0)  and (Index < FCount) then
   begin
     if not FCharIndexesAreValid then
       UpdateCharIndexes;
@@ -648,7 +648,7 @@ begin
     if (Index = 0) and (FCount = 0) or (FCount = Index) then
       Add('');
 
-    if Cardinal(Index) >= Cardinal(FCount) then
+    if (Index < 0) or (Index >= FCount) then
       ListIndexOutOfBounds(Index);
 
     with FList^[Index] do
@@ -680,7 +680,7 @@ end;
 
 procedure TSynEditStringList.PutObject(Index: Integer; AObject: TObject);
 begin
-  if Cardinal(Index) >= Cardinal(FCount) then
+  if (Index < 0) or (Index >= FCount) then
     ListIndexOutOfBounds(Index);
   BeginUpdate;
   FList^[Index].FObject := AObject;
@@ -689,7 +689,7 @@ end;
 
 procedure TSynEditStringList.PutRange(Index: Integer; ARange: TSynEditRange);
 begin
-  if Cardinal(Index) >= Cardinal(FCount) then
+  if (Index < 0) or (Index >= FCount) then
     ListIndexOutOfBounds(Index);
   FList^[Index].FRange := ARange;
 end;

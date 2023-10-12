@@ -4959,10 +4959,13 @@ end;
 
 procedure TCustomSynEdit.Collapse(FoldRangeIndex: Integer; Invalidate:Boolean);
 begin
-  AllFoldRanges.Ranges.List[FoldRangeIndex].Collapsed := True;
-
-  with AllFoldRanges.Ranges[FoldRangeIndex] do
+  with AllFoldRanges.Ranges.List[FoldRangeIndex] do
   begin
+    if ToLine <= FromLine then
+      Exit;
+
+    Collapsed := True;
+
     // Extract caret from fold
     if (fCaretY > FromLine) and (fCaretY <= ToLine) then
       CaretXY := BufferCoord(Length(Lines[FromLine - 1]) + 1, FromLine);
@@ -8401,7 +8404,10 @@ begin
   else
   begin
     BC := DisplayToBufferPos(DisplayCoord(1, RowIndex));
-    Result := Lines[BC.Line - 1];
+    if InRange(BC.Line, 1, Lines.Count) then
+      Result := Lines[BC.Line - 1]
+    else
+      Result := '';
   end;
 end;
 
