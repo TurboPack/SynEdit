@@ -151,7 +151,7 @@ end;
 
 procedure TSynWordWrapPlugin.DisplayChanged;
 begin
-  if Editor.WrapAreaWidth <> fMaxRowWidth then
+  if Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth) <> fMaxRowWidth then
     Reset;
 end;
 
@@ -208,7 +208,6 @@ var
   vEndRow: integer;
   cLine: integer;
 begin
-  if fMaxRowWidth < Editor.CharWidth then Exit(0);
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
   Assert(aIndex + aCount <= fLineCount);
@@ -238,7 +237,6 @@ var
   cLine: integer;
   TempArray: TArray<Integer>;
 begin
-  if fMaxRowWidth < Editor.CharWidth then Exit(0);
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
   Assert(aIndex <= fLineCount);
@@ -259,7 +257,6 @@ function TSynWordWrapPlugin.LinePut(aIndex: integer; const OldLine: string): int
 var
   cLine: integer;
 begin
-  if fMaxRowWidth < Editor.CharWidth then Exit(0);
   Assert(aIndex >= 0);
   Assert(aIndex < fLineCount);
   // Rewrap
