@@ -58,11 +58,10 @@ type
     fLineCount: integer;
     fEditor: TCustomSynEdit;
     fMaxRowWidth: Integer;
-    procedure SetEmpty;
   protected
     procedure WrapLine(const Index: Integer; out RowLengths: TArray<Integer>);
     procedure WrapLines;
-    function ReWrapLine(aIndex: TLineIndex): integer;
+    function ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean = False): integer;
     procedure TrimArrays;
     property Editor: TCustomSynEdit read fEditor;
   public
@@ -108,7 +107,7 @@ begin
   begin
     // beyond EOF
     Result.Column := aPos.Char;
-    Result.Row := RowCount + (aPos.Line - fLineCount);
+    Result.Row := fRowLengths.Count + (aPos.Line - fLineCount);
     Exit;
   end;
   if aPos.Line = 1 then
@@ -164,11 +163,11 @@ var
 begin
   Assert(aPos.Column > 0);
   Assert(aPos.Row > 0);
-  if aPos.Row > RowCount then
+  if aPos.Row > fRowLengths.Count then
   begin
     // beyond EOF
     Result.Char := aPos.Column;
-    Result.Line := aPos.Row - RowCount + fLineCount;
+    Result.Line := aPos.Row - fRowLengths.Count + fLineCount;
     Exit;
   end;
   //Optimized loop start point but could use binary search
@@ -197,7 +196,7 @@ end;
 function TSynWordWrapPlugin.GetRowLength(aRow: integer): integer;
 // aRow is 1-based...
 begin
-  if (aRow <= 0) or (aRow > RowCount) then
+  if (aRow <= 0) or (aRow > fRowLengths.Count) then
     TList.Error(SListIndexError, aRow);
   Result := fRowLengths[aRow - 1];
 end;
@@ -221,7 +220,7 @@ begin
   vEndRow := fLineOffsets[aIndex + aCount - 1];
   Result := vEndRow - vStartRow;
   // resize fRowLengths
-  if vStartRow < RowCount then
+  if vStartRow < fRowLengths.Count then
     fRowLengths.DeleteRange(vStartRow, Result);
   // resize fLineOffsets
   fLineOffsets.DeleteRange(aIndex, aCount);
@@ -230,13 +229,12 @@ begin
   for cLine := aIndex to fLineCount - 1 do
     Dec(fLineOffsets.List[cLine], Result);
   if fLineCount = 0 then
-    SetEmpty;
+    TrimArrays;
 end;
 
 function TSynWordWrapPlugin.LinesInserted(aIndex: integer; aCount: integer): integer;
 // Returns the number of rows inserted
 var
-  vPrevOffset: TRowIndex;
   cLine: integer;
   TempArray: TArray<Integer>;
 begin
@@ -245,23 +243,13 @@ begin
   Assert(aCount >= 1);
   Assert(aIndex <= fLineCount);
   Inc(fLineCount, aCount);
-  // set offset to same as previous line
-  if aIndex = 0 then
-    vPrevOffset := 0
-  else
-    vPrevOffset := fLineOffsets[aIndex - 1];
   // resize fLineOffsets
   SetLength(TempArray, aCount);
   fLineOffsets.InsertRange(aIndex, TempArray);
   // Rewrap
   Result := 0;
   for cLine := aIndex to aIndex + aCount - 1 do
-  begin
-    fLineOffsets[cLine] := vPrevOffset;
-    ReWrapLine(cLine);
-    Inc(Result, fLineOffsets[cLine] - vPrevOffset);
-    vPrevOffset := fLineOffsets[cLine];
-  end;
+    Inc(Result, ReWrapLine(cLine, True));
   // Adjust lines below
   for cLine := aIndex + aCount to fLineCount - 1 do
     Inc(fLineOffsets.List[cLine], Result);
@@ -290,7 +278,8 @@ begin
   WrapLines;
 end;
 
-function TSynWordWrapPlugin.ReWrapLine(aIndex: TLineIndex): integer;
+function TSynWordWrapPlugin.ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean): integer;
+// Wraps the line and adjusts fRowLenghts and fLineOffsets[aIndex]
 // Returns RowCount delta (how many wrapped lines were added or removed by this change).
 var
   RowLengths: TArray<Integer>;
@@ -303,7 +292,10 @@ begin
     PrevOffset := 0
   else
     PrevOffset := fLineOffsets[aIndex - 1];
-  PrevRowCount := fLineOffsets[aIndex] - PrevOffset;
+  if IsLineInserted then
+    PrevRowCount := 0
+  else
+    PrevRowCount := fLineOffsets[aIndex] - PrevOffset;
   if PrevRowCount > 0 then
     fRowLengths.DeleteRange(PrevOffset, PrevRowCount);
   fRowLengths.InsertRange(PrevOffset, RowLengths);
@@ -313,7 +305,6 @@ end;
 
 procedure TSynWordWrapPlugin.WrapLines;
 var
-  cRow: Integer;
   cLine: Integer;
   RowLengths: TArray<TArray<Integer>>;
 begin
@@ -331,29 +322,20 @@ begin
     WrapLine(I, RowLengths[I]);
   end);
 
-  cRow := 0;
   for cLine := 0 to Editor.Lines.Count - 1 do
   begin
     fRowLengths.AddRange(RowLengths[cLine]);
-    Inc(cRow, Length(RowLengths[cLine]));
-    fLineOffsets.Add(cRow);
+    fLineOffsets.Add(fRowLengths.Count);
   end;
 end;
 
 function TSynWordWrapPlugin.RowCount: integer;
 begin
+  Result := fRowLengths.Count;
   if fLineCount > 0 then
-    Result := fLineOffsets[fLineCount - 1]
+    Assert(Result = fLineOffsets[fLineCount - 1])
   else
-    Result := 0;
-  Assert(fRowLengths.Count = Result);
-end;
-
-procedure TSynWordWrapPlugin.SetEmpty;
-begin
-  fLineCount := 0;
-  // free unsused memory
-  TrimArrays;
+    Assert(Result = 0);
 end;
 
 procedure TSynWordWrapPlugin.TrimArrays;
