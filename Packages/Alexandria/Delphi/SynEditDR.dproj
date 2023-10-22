@@ -7,7 +7,7 @@
         <MainSource>SynEditDR.dpk</MainSource>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectGuid>{AC917C2B-5870-48AD-981D-668AD3E4A533}</ProjectGuid>
-        <ProjectVersion>19.3</ProjectVersion>
+        <ProjectVersion>19.5</ProjectVersion>
         <TargetedPlatforms>3</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -70,7 +70,7 @@
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
         <DCC_UnitSearchPath>..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_WriteableConstants>true</DCC_WriteableConstants>
-        <DllSuffix>280</DllSuffix>
+        <DllSuffix>$(Auto)</DllSuffix>
         <GenDll>true</GenDll>
         <GenPackage>true</GenPackage>
         <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
@@ -99,7 +99,6 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <DllSuffix>280</DllSuffix>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
@@ -126,6 +125,7 @@
         <DCCReference Include="vcldb.dcp"/>
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="rtl.dcp"/>
+        <DCCReference Include="..\..\..\Source\SynAccessibility.pas"/>
         <DCCReference Include="..\..\..\Source\SynAutoCorrect.pas"/>
         <DCCReference Include="..\..\..\Source\SynAutoCorrectEditor.pas">
             <Form>frmAutoCorrectEditor</Form>
@@ -236,6 +236,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas"/>
         <DCCReference Include="..\..\..\Source\SynMacroRecorder.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
