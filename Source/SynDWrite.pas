@@ -1625,20 +1625,24 @@ begin
   try
     if not GetIconInfo(Icon, IconInfo) then
       Exit;
-
-    DC := CreateCompatibleDC(0);
     try
-      FillChar(BitmapInfo, SizeOf(BitmapInfo), 0);
-      BitmapInfo.bmiHeader.biSize := Sizeof(BitmapInfo.bmiHeader);
-      // call with nil to get the Bitmap Info filled.
-      if (GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, nil, BitmapInfo, DIB_RGB_COLORS) = 0) or
-        (BitmapInfo.bmiHeader.biBitCount <> 32)
-      then
-        Exit;  // Exit if it fails or if biBitCount <> 32
-      BitmapInfo.bmiHeader.biCompression := BI_RGB; // set to uncompressed
-      SetLength(Buf, IL.Height * IL.Width * 4);
-      if GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, @Buf[0], BitmapInfo, DIB_RGB_COLORS) = 0 then
-        Exit;
+      DC := CreateCompatibleDC(0);
+      try
+        FillChar(BitmapInfo, SizeOf(BitmapInfo), 0);
+        BitmapInfo.bmiHeader.biSize := Sizeof(BitmapInfo.bmiHeader);
+        // call with nil to get the Bitmap Info filled.
+        if (GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, nil, BitmapInfo, DIB_RGB_COLORS) = 0) or
+          (BitmapInfo.bmiHeader.biBitCount <> 32)
+        then
+          Exit;  // Exit if it fails or if biBitCount <> 32
+        BitmapInfo.bmiHeader.biCompression := BI_RGB; // set to uncompressed
+        SetLength(Buf, IL.Height * IL.Width * 4);
+        if GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, @Buf[0], BitmapInfo, DIB_RGB_COLORS) = 0 then
+          Exit;
+      finally
+        DeleteObject(IconInfo.hbmColor);
+        DeleteObject(IconInfo.hbmMask);
+      end;
     finally
       DeleteDC(DC);
     end;
