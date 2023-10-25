@@ -1640,11 +1640,11 @@ begin
         if GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, @Buf[0], BitmapInfo, DIB_RGB_COLORS) = 0 then
           Exit;
       finally
-        DeleteObject(IconInfo.hbmColor);
-        DeleteObject(IconInfo.hbmMask);
+        DeleteDC(DC);
       end;
     finally
-      DeleteDC(DC);
+      DeleteObject(IconInfo.hbmColor);
+      DeleteObject(IconInfo.hbmMask);
     end;
   finally
     DestroyIcon(Icon);
