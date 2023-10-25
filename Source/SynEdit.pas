@@ -2090,7 +2090,8 @@ var
 begin
   DoLinesChanged;
 
-  if (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
+  if (sfLinesChanging in fStateFlags) and
+    (not UseCodeFolding or fAllFoldRanges.StopScanning(fLines)) then
   begin
     if Assigned(fHighlighter) and (fHighlighter is TSynCustomCodeFoldingHighlighter) then
       TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
@@ -3758,8 +3759,6 @@ procedure TCustomSynEdit.SetSelTextPrimitiveEx(PasteMode: TSynSelectionMode;
    Works in two stages:
      -  First deletes selection.
      -  Second inserts text taking into account PasteMode.
-     -  SilentDelete does not restore selection on undo
-     -  The routine takes full care of undo/redo
 }
 var
   BB, BE: TBufferCoord;
@@ -6318,6 +6317,7 @@ begin
                 // join this line with the last line if possible
                 if CaretY > 1 then
                 begin
+                  Lines.BeginUpdate;
                   BeginUndoBlock;
                   try
                     CaretXNew := Lines[CaretY - 2].Length + 1;
@@ -6326,6 +6326,7 @@ begin
                     CaretXY := BufferCoord(CaretXNew, CaretY - 1);
                   finally
                     EndUndoBlock;
+                    Lines.EndUpdate;
                   end;
                 end;
               end
@@ -6405,6 +6406,7 @@ begin
               // join line with the line after
               if CaretY < Lines.Count then
               begin
+                Lines.BeginUpdate;
                 BeginUndoBlock;
                 try
                   Helper := StringofChar(#32, CaretX - 1 - Len);
@@ -6412,6 +6414,7 @@ begin
                   Lines.Delete(CaretY);
                 finally
                   EndUndoBlock;
+                  Lines.EndUpdate;
                 end;
               end;
             end;
@@ -6497,6 +6500,7 @@ begin
       ecInsertLine,
       ecLineBreak:
         if not ReadOnly then begin
+          Lines.BeginUpdate;
           BeginUndoBlock;
           try
             if SelAvail then
@@ -6549,6 +6553,7 @@ begin
             UpdateLastPosX;
           finally
             EndUndoBlock;
+            Lines.EndUpdate;
           end;
         end;
       ecTab:
@@ -7773,35 +7778,30 @@ begin
   Assert((Cmd >= ecUpperCase) and (Cmd <= ecTitleCase));
   if ReadOnly then Exit;
 
-  BeginUndoBlock;
+  oldBlockBegin := BlockBegin;
+  oldBlockEnd := BlockEnd;
+  oldCaret := CaretXY;
   try
-    oldBlockBegin := BlockBegin;
-    oldBlockEnd := BlockEnd;
-    oldCaret := CaretXY;
-    try
-      if not SelAvail then
-        SetSelWord;
+    if not SelAvail then
+      SetSelWord;
 
-      S := SelText;
-      if S <> '' then
-      begin
-        case Cmd of
-          ecUpperCase:
-            S := S.ToUpper;
-          ecLowerCase:
-            S := S.ToLower;
-          ecToggleCase:
-            S := ToggleCase(S);
-          ecTitleCase:
-            S := TitleCase(S);
-        end;
-        SelText := S;
+    S := SelText;
+    if S <> '' then
+    begin
+      case Cmd of
+        ecUpperCase:
+          S := S.ToUpper;
+        ecLowerCase:
+          S := S.ToLower;
+        ecToggleCase:
+          S := ToggleCase(S);
+        ecTitleCase:
+          S := TitleCase(S);
       end;
-    finally
-      SetCaretAndSelection(oldCaret, oldBlockBegin, oldBlockEnd);
+      SelText := S;
     end;
   finally
-    EndUndoBlock;
+    SetCaretAndSelection(oldCaret, oldBlockBegin, oldBlockEnd);
   end;
 end;
 
@@ -9397,9 +9397,7 @@ end;
 procedure TCustomSynEdit.FullFoldScan;
 begin
   if UseCodeFolding then
-  begin
     ReScanForFoldRanges(0, fLines.Count -1);
-  end;
 end;
 
 procedure TCustomSynEdit.ReScanForFoldRanges(FromLine : Integer; ToLine : Integer);

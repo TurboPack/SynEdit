@@ -43,9 +43,9 @@ unit SynEditCodeFolding;
       FoldRanges.NoFoldInfo
    ScanForFoldRanges is called after the standard highlighter scanning has taken
    place so one can use the Range information stored inside LinesToScan, which
-   is  a TSynEditStringList, to avoid duplicating effort.
+   is a TSynEditStringList, to avoid duplicating effort.
 
-   Initally two hightlighters have been converted SynHighlighterJScript and
+   Initally two highlighters have been converted SynHighlighterJScript and
    SynHighlighterPython, to serve as examples of adding code folding suppot to
    brace-based and indentation-based languagges.
 
@@ -733,6 +733,8 @@ begin
             if (PFoldRange^.Indent >= LFI.Indent) then begin
               PFoldRange^.ToLine := LFI.Line - 1; // Do not include Line
               OpenFoldStack.Delete(i);
+              if PFoldRange^.FromLine = PFoldRange^.ToLine then
+                fRanges.Remove(PFoldRange^);
             end;
           end;
         end;
@@ -750,6 +752,8 @@ begin
             if (PFoldRange^.Indent >= LFI.Indent) then begin
               PFoldRange^.ToLine := LFI.Line - 1; // Do not include Line
               OpenFoldStack.Delete(i);
+              if PFoldRange^.FromLine = PFoldRange^.ToLine then
+                fRanges.Remove(PFoldRange^);
             end;
           end;
         end
@@ -779,16 +783,18 @@ begin
         end;
       end;
       // Adjust LineTo for Indent based folds with empty lines in the end
-      for i := 0 to fRanges.Count - 1 do begin
+      for i := fRanges.Count - 1 downto 0 do begin
         PFoldRange := @fRanges.List[i];
         if PFoldRange^.Indent >= 0 then
         begin
           Line := PFoldRange^.ToLine;
-          while (Line > PFoldRange^.FromLine) and (TrimLeft( Lines[Line-1]) = '') do
+          while (Line > PFoldRange^.FromLine) and (TrimLeft(Lines[Line-1]) = '') do
           begin
             Dec(PFoldRange^.ToLine);
             Dec(Line);
           end;
+          if PFoldRange^.FromLine = PFoldRange^.ToLine then
+            fRanges.Delete(i);
         end;
       end;
     end;
