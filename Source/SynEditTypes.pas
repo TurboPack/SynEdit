@@ -120,6 +120,14 @@ function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
 
 type
+{ *************************** For Carets **********************************}
+
+TCaretShape = record
+  Size: Integer;
+  Offset: TPoint;
+end;
+
+
 { ************************* For ScrollBars ********************************}
 
   ISynEditScrollBars = interface

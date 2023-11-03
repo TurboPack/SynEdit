@@ -348,7 +348,7 @@ type
     fHideSelection: Boolean;
     fOverwriteCaret: TSynEditCaretType;
     fInsertCaret: TSynEditCaretType;
-    fCaretOffset: TPoint;
+    fCaretShape: TCaretShape;
     fKeyStrokes: TSynEditKeyStrokes;
     fMarkList: TSynEditMarkList;
     fExtraLineSpacing: Integer;
@@ -1511,6 +1511,8 @@ begin
 
   fScrollHintColor := clInfoBk;
   fScrollHintFormat := shfTopLineOnly;
+
+  fCaretShape.Size := 2;
 
   FSynEditScrollBars := CreateSynEditScrollBars(Self);
 
@@ -4267,21 +4269,15 @@ begin
       Dec(vCaretDisplay.Column);
 
     vCaretPix := RowColumnToPixels(vCaretDisplay);
-    CX := vCaretPix.X + FCaretOffset.X;
-    CY := vCaretPix.Y + FCaretOffset.Y;
+    CX := vCaretPix.X + FCaretShape.Offset.X;
+    CY := vCaretPix.Y + FCaretShape.Offset.Y;
     iClientRect := GetClientRect;
     Inc(iClientRect.Left, fGutterWidth);
-    if (CX >= iClientRect.Left) and (CX < iClientRect.Right)
-      and (CY >= iClientRect.Top) and (CY < iClientRect.Bottom) then
-    begin
-      SetCaretPos(CX, CY);
-      ShowCaret;
-    end
+    SetCaretPos(CX, CY);
+    if PtInRect(iClientRect, Point(CX, CY)) then
+      ShowCaret
     else
-    begin
-      SetCaretPos(CX, CY);
       HideCaret;
-    end;
     if (Self.SelAvail = False) then
     begin
       cf.dwStyle := CFS_POINT;
@@ -5502,6 +5498,7 @@ begin
   try
     fExtraLineSpacing := MulDiv(fExtraLineSpacing, M, D);
     fTextMargin := MulDiv(fTextMargin, M, D);
+    FCaretShape.Size := MulDiv(FCaretShape.Size, M, D);
     fGutter.ChangeScale(M,D);
     fBookMarkOpt.ChangeScale(M, D);
     fWordWrapGlyph.ChangeScale(M, D);
@@ -5771,26 +5768,26 @@ begin
     ctHorizontalLine:
       begin
         cw := fCharWidth;
-        ch := 2;
-        FCaretOffset := Point(0, fTextHeight - 2);
+        ch := FCaretShape.Size;
+        FCaretShape.Offset := Point(0, fTextHeight - FCaretShape.Size);
       end;
     ctHalfBlock:
       begin
         cw := fCharWidth;
-        ch := (fTextHeight - 2) div 2;
-        FCaretOffset := Point(0, ch);
+        ch := (fTextHeight - FCaretShape.Size) div 2;
+        FCaretShape.Offset := Point(0, ch);
       end;
     ctBlock:
       begin
         cw := fCharWidth;
-        ch := fTextHeight - 2;
-        FCaretOffset := Point(0, 0);
+        ch := fTextHeight - FCaretShape.Size;
+        FCaretShape.Offset := Point(0, 0);
       end;
     else
     begin // ctVerticalLine
-      cw := 2;
-      ch := fTextHeight - 2;
-      FCaretOffset := Point(-1, 0);
+      cw := FCaretShape.Size;
+      ch := fTextHeight - FCaretShape.Size;
+      FCaretShape.Offset := Point(-1, 0);
     end;
   end;
   Exclude(fStateFlags, sfCaretVisible);
@@ -6997,7 +6994,7 @@ begin
   if FAlwaysShowCaret <> Value then
   begin
     FAlwaysShowCaret := Value;
-    if not(csDestroying in ComponentState) and  not(focused) then
+    if not(csDestroying in ComponentState) and not(Focused) then
     begin
       if Value then
       begin
