@@ -53,9 +53,9 @@ uses
 type
 
   TSynUndoItem = class abstract(TObject)
-    ChangeNumber: Integer;
+    ChangeNumber: Integer; // Undo items with the same change number are grouped
     FCaret: TBufferCoord;
-    GroupBreak: Boolean;
+    GroupBreak: Boolean; // Singnals not to group items together
   public
     procedure Undo(Editor: TCustomSynEdit); virtual; abstract;
     procedure Redo(Editor: TCustomSynEdit); virtual; abstract;
@@ -251,6 +251,8 @@ begin
   if FBlockCount = 1 then // it was 0
   begin
     FBlockStartModified := GetModified;
+    // All undo items added until the matching EndBlock is called
+    // will get the same change number and will be grouped together
     FBlockChangeNumber := NextChangeNumber;
     // So that position is restored after Redo
     FBlockSelRestoreItem := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);

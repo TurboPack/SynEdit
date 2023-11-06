@@ -129,10 +129,6 @@ const
   ecOverwriteMode   = 222;  // Set overwrite mode
   ecToggleMode      = 223;  // Toggle ins/ovr mode
 
-  ecNormalSelect    = 231;  // Normal selection mode
-  ecColumnSelect    = 232;  // Column selection mode
-  ecLineSelect      = 233;  // Line selection mode
-
   ecMatchBracket    = 250;  // Go to matching bracket
   ecSelMatchBracket = 251;  // Select to matching bracket
 
@@ -312,7 +308,7 @@ uses
 
 const
 //++ CodeFolding
-  EditorCommandStrs: array[0..113] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..110] of TIdentMapEntry = (
 //-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
@@ -382,9 +378,6 @@ const
     (Value: ecMatchBracket; Name: 'ecMatchBracket'),
     (Value: ecSelMatchBracket; Name: 'ecSelMatchBracket'),
     (Value: ecCommentBlock; Name: 'ecCommentBlock'),
-    (Value: ecNormalSelect; Name: 'ecNormalSelect'),
-    (Value: ecColumnSelect; Name: 'ecColumnSelect'),
-    (Value: ecLineSelect; Name: 'ecLineSelect'),
     (Value: ecAutoCompletion; Name: 'ecAutoCompletion'),
     (Value: ecContextHelp; Name: 'ecContextHelp'),
     (Value: ecGotoMarker0; Name: 'ecGotoMarker0'),
@@ -839,9 +832,6 @@ begin
   AddKey(ecSetMarker7, Ord('7'), [ssCtrl,ssShift]);
   AddKey(ecSetMarker8, Ord('8'), [ssCtrl,ssShift]);
   AddKey(ecSetMarker9, Ord('9'), [ssCtrl,ssShift]);
-  AddKey(ecNormalSelect, Ord('N'), [ssCtrl,ssShift]);
-  AddKey(ecColumnSelect, Ord('C'), [ssCtrl,ssShift]);
-  AddKey(ecLineSelect, Ord('L'), [ssCtrl,ssShift]);
   AddKey(ecMatchBracket, VK_OEM_6, [ssCtrl]); // VK_OEM_6 is ']' in US keyboards
   AddKey(ecSelMatchBracket, VK_OEM_6, [ssCtrl,ssShift]);
   AddKey(ecLowerCase, Ord('K'), [ssCtrl], Ord('L'), [ssCtrl]);

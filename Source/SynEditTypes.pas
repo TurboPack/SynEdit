@@ -77,9 +77,6 @@ type
 
   TSynInfoLossEvent = procedure (var Encoding: TEncoding; Cancel: Boolean) of object;
 
-  PSynSelectionMode = ^TSynSelectionMode;
-  TSynSelectionMode = (smNormal, smLine, smColumn);
-
   TBufferCoord = record
     Char: integer;
     Line: integer;
@@ -105,6 +102,21 @@ type
     class operator GreaterThanOrEqual(a, b: TDisplayCoord): Boolean;
     class function Min(a, b: TDisplayCoord): TDisplayCoord; static;
     class function Max(a, b: TDisplayCoord): TDisplayCoord; static;
+  end;
+
+  TSynSelection = record
+    Caret: TBufferCoord;
+    Start: TBufferCoord;
+    Stop: TBufferCoord;
+    procedure Normalize;
+    function Normalized: TSynSelection;
+    function IsEmpty: Boolean;
+    procedure Join(const Sel: TSynSelection);
+    function Intersects(const Other: TSynSelection): Boolean;
+    function Contains(const BC: TBufferCoord): Boolean;
+    constructor Create(const ACaret, AStart, AStop: TBufferCoord);
+    class operator Equal(a, b: TSynSelection): Boolean;
+    class operator NotEqual(a, b: TSynSelection): Boolean;
   end;
 
   (*  Helper methods for TControl - for backwward compatibility *)
@@ -182,7 +194,6 @@ end;
     ChangeStr: string;
     ChangeNumber: Integer;
     ChangeReason: TSynChangeReason;
-    ChangeSelMode: TSynSelectionMode;
     // the following undo item cannot be grouped with this one  when undoing
     // don't group the previous one with this one when redoing
     GroupBreak: Boolean;
@@ -394,6 +405,75 @@ end;
 {$ENDIF}
 
 
+
+{ TSynSelection }
+
+function TSynSelection.Contains(const BC: TBufferCoord): Boolean;
+begin
+  Result := (BC >= TBufferCoord.Min(Start, Stop)) and
+    (BC < TBufferCoord.Max(Start, Stop));
+end;
+
+constructor TSynSelection.Create(const ACaret, AStart, AStop: TBufferCoord);
+begin
+  Self.Caret := ACaret;
+  Self.Start := AStart;
+  Self.Stop := AStop;
+end;
+
+class operator TSynSelection.Equal(a, b: TSynSelection): Boolean;
+begin
+  Result := (a.Start = b.Start) and (a.Stop = b.Stop);
+end;
+
+function TSynSelection.Intersects(const Other: TSynSelection): Boolean;
+begin
+  Result := not Self.Contains(Other.Start) and not Self.Contains(Other.Stop) and
+    not Other.Contains(Self.Start);
+end;
+
+function TSynSelection.IsEmpty: Boolean;
+begin
+  Result := Start = Stop
+end;
+
+procedure TSynSelection.Join(const Sel: TSynSelection);
+var
+  N1, N2: TSynSelection;
+begin
+  N1 := Normalized;
+  N2 := Sel.Normalized;
+  Start := TBufferCoord.Min(N1.Start, N2.Start);
+  Stop := TBufferCoord.Max(N1.Stop, N2.Stop);
+  //  Set the caret to the Start or the Stop depending on the orignal carets
+  if (Sel.Caret = Start) or (Sel.Caret = Stop) then
+    Caret := Sel.Caret
+  else if not (Caret = Start) and not (Caret = Stop) then
+    Caret := Stop;
+end;
+
+procedure TSynSelection.Normalize;
+begin
+  if Start > Stop then
+  begin
+    var Temp := Start;
+    Start := Stop;
+    Stop := Temp;
+  end;
+end;
+
+function TSynSelection.Normalized: TSynSelection;
+begin
+  if Start <= Stop then
+    Result := Self
+  else
+    Result := TSynSelection.Create(Caret, Stop, Start);
+end;
+
+class operator TSynSelection.NotEqual(a, b: TSynSelection): Boolean;
+begin
+  Result := (a.Start <> b.Start) or (a.Stop <> b.Stop)
+end;
 
 end.
 

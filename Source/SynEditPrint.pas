@@ -145,7 +145,6 @@ type
     FTabWidth: integer;
     FSelectedOnly: Boolean;
     FSelAvail: Boolean;
-    FSelMode: TSynSelectionMode;
     FBlockBegin: TBufferCoord;
     FBlockEnd: TBufferCoord;
     FSynTextFormat: TSynTextFormat;
@@ -470,6 +469,7 @@ begin
       if FMargins.PTop >= ClipR.Top then
         FHeader.Print(RT, Num + FPageOffset);
 
+      // TODO multicaret
       YPos := FMargins.PTop;
       for i := FPages[Num - 1].FirstLine to  FPages[Num - 1].LastLine do
       begin
@@ -482,18 +482,18 @@ begin
           LayoutRowCount := 1
         else
         begin
-          if not fSelectedOnly or (fSelMode = smLine) then
+          if not fSelectedOnly then
           begin
             iSelStart := 1;
             iSelLen := LineText.Length;
           end
           else
           begin
-            if (fSelMode = smColumn) or (i = fBlockBegin.Line -1) then
+            if i = fBlockBegin.Line -1 then
               iSelStart := fBlockBegin.Char
             else
               iSelStart := 1;
-            if (fSelMode = smColumn) or (i = fBlockEnd.Line -1) then
+            if i = fBlockEnd.Line -1 then
               iSelLen := fBlockEnd.Char  - iSelStart
             else
               iSelLen := MaxInt;
@@ -747,19 +747,20 @@ begin
 end;
 
 function TSynEditPrint.GetTextLayout(const Line: Integer): TSynTextLayout;
+// TODO multicaret
 var
   iSelStart, iSelLen: Integer;
   S: string;
 begin
-  if not fSelectedOnly or (fSelMode = smLine) then
+  if not fSelectedOnly then
     S := Lines[Line]
   else
   begin
-    if (fSelMode = smColumn) or (Line = fBlockBegin.Line -1) then
+    if Line = fBlockBegin.Line -1 then
       iSelStart := fBlockBegin.Char
     else
       iSelStart := 1;
-    if (fSelMode = smColumn) or (Line = fBlockEnd.Line -1) then
+    if Line = fBlockEnd.Line -1 then
       iSelLen := fBlockEnd.Char  - iSelStart
     else
       iSelLen := MaxInt;
@@ -777,7 +778,6 @@ begin
   fSelAvail := Value.SelAvail;
   fBlockBegin := Value.BlockBegin;
   fBlockEnd := Value.BlockEnd;
-  fSelMode := Value.SelectionMode;
 end;
 
 procedure TSynEditPrint.LoadFromStream(AStream: TStream);
