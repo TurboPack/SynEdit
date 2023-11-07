@@ -1529,7 +1529,9 @@ begin
   begin
     if sfScrollbarChanged in fStateFlags then
       UpdateScrollbars;
-    if fStatusChanges * [scCaretX, scCaretY, scSelection] <> [] then
+    if (fStatusChanges * [scCaretX, scCaretY, scSelection] <> []) or
+      (sfCaretChanged in fStateFlags)
+    then
       FSelections.BaseSelection := FSelection;
     if sfCaretChanged in fStateFlags then
       UpdateCaret;
