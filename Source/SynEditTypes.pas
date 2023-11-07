@@ -108,13 +108,14 @@ type
     Caret: TBufferCoord;
     Start: TBufferCoord;
     Stop: TBufferCoord;
+    CaretAtEOL: Boolean;  // used by wordwrap
     procedure Normalize;
     function Normalized: TSynSelection;
     function IsEmpty: Boolean;
     procedure Join(const Sel: TSynSelection);
     function Intersects(const Other: TSynSelection): Boolean;
     function Contains(const BC: TBufferCoord): Boolean;
-    constructor Create(const ACaret, AStart, AStop: TBufferCoord);
+    constructor Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL: Boolean = False);
     class operator Equal(a, b: TSynSelection): Boolean;
     class operator NotEqual(a, b: TSynSelection): Boolean;
   end;
@@ -135,8 +136,10 @@ type
 { *************************** For Carets **********************************}
 
 TCaretShape = record
-  Size: Integer;
+  Width: Integer;
+  Height: Integer;
   Offset: TPoint;
+  constructor Create(AWidth, AHeight: Integer; AOffset: TPoint);
 end;
 
 
@@ -414,11 +417,12 @@ begin
     (BC < TBufferCoord.Max(Start, Stop));
 end;
 
-constructor TSynSelection.Create(const ACaret, AStart, AStop: TBufferCoord);
+constructor TSynSelection.Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL: Boolean);
 begin
-  Self.Caret := ACaret;
-  Self.Start := AStart;
-  Self.Stop := AStop;
+  Caret := ACaret;
+  Start := AStart;
+  Stop := AStop;
+  CaretAtEOL := ACaretAtEOL;
 end;
 
 class operator TSynSelection.Equal(a, b: TSynSelection): Boolean;
@@ -473,6 +477,15 @@ end;
 class operator TSynSelection.NotEqual(a, b: TSynSelection): Boolean;
 begin
   Result := (a.Start <> b.Start) or (a.Stop <> b.Stop)
+end;
+
+{ TCaretShape }
+
+constructor TCaretShape.Create(AWidth, AHeight: Integer; AOffset: TPoint);
+begin
+  Width := AWidth;
+  Height := AHeight;
+  Offset := AOffset;
 end;
 
 end.

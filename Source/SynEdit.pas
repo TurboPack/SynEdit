@@ -113,7 +113,7 @@ type
   TSynEditCaretType = (ctVerticalLine, ctHorizontalLine, ctHalfBlock, ctBlock);
 
   TSynStateFlag = (sfCaretChanged, sfScrollbarChanged, sfLinesChanging,
-    sfIgnoreNextChar, sfCaretVisible, sfPossibleGutterClick,
+    sfIgnoreNextChar, sfPossibleGutterClick,
     sfOleDragSource, sfGutterDragging);
 
   TSynStateFlags = set of TSynStateFlag;
@@ -308,7 +308,9 @@ type
     fAllFoldRanges: TSynFoldRanges;
 //-- CodeFolding
     fAlwaysShowCaret: Boolean;
+    FCarets: TSynCarets;
     FSelection: TSynSelection;
+    FSelections: TSynSelections;
     FLastPosX: integer;
     fCharWidth: Integer;
     fFontDummy: TFont;
@@ -345,7 +347,6 @@ type
     fHideSelection: Boolean;
     fOverwriteCaret: TSynEditCaretType;
     fInsertCaret: TSynEditCaretType;
-    fCaretShape: TCaretShape;
     fKeyStrokes: TSynEditKeyStrokes;
     fMarkList: TSynEditMarkList;
     fExtraLineSpacing: Integer;
@@ -353,7 +354,6 @@ type
     fWantTabs: Boolean;
     fWordWrapPlugin: ISynEditBufferPlugin;
     fWordWrapGlyph: TSynGlyph;
-    fCaretAtEOL: Boolean; // used by wordwrap
 
     fGutter: TSynGutter;
     fTabWidth: Integer;
@@ -482,6 +482,7 @@ type
     function ScanFrom(Index: Integer): Integer;
     procedure ScrollTimerHandler(Sender: TObject);
     procedure SelectedColorChanged(Sender: TObject);
+    function SelectionToDisplayCoord(var Sel: TSynSelection): TDisplayCoord;
     procedure SetBlockBegin(Value: TBufferCoord);
     procedure SetBlockEnd(Value: TBufferCoord);
     procedure SetBorderStyle(Value: TSynBorderStyle);
@@ -627,8 +628,6 @@ type
   protected
     fGutterWidth: Integer;
     procedure CalcTextAreaWidth;
-    procedure HideCaret;
-    procedure ShowCaret;
     procedure DoBlockIndent;
     procedure DoBlockUnindent;
     procedure DoOnClearBookmark(var Mark: TSynEditMark); virtual;
@@ -669,6 +668,7 @@ type
     property AlwaysShowCaret: Boolean read FAlwaysShowCaret
       write SetAlwaysShowCaret;
     procedure UpdateCaret;
+    procedure UpdateIME;
     procedure AddKey(Command: TSynEditorCommand; Key1: word; SS1: TShiftState;
       Key2: word = 0; SS2: TShiftState = []);
     procedure BeginUndoBlock;
@@ -856,6 +856,7 @@ type
     property SelAvail: Boolean read GetSelAvail;
     property SelLength: Integer read GetSelLength write SetSelLength;
     property SelText: string read GetSelText write SetSelText;
+    property Selections: TSynSelections read FSelections;
     property StateFlags: TSynStateFlags read fStateFlags;
     property Text: string read SynGetText write SynSetText;
     property TopLine: Integer read fTopLine write SetTopLine;
@@ -1469,8 +1470,12 @@ begin
   fLeftChar := 1;
   fTopLine := 1;
   FLastPosX := 0;
+  FCarets := TSynCarets.Create(Canvas);
   var BC := BufferCoord(1, 1);
   FSelection := TSynSelection.Create(BC, BC, BC);
+  FSelections := TSynSelections.Create(Self);
+  FSelections.Add(FSelection, True);
+
   fOptions := SYNEDIT_DEFAULT_OPTIONS;
 
   fScrollTimer := TTimer.Create(Self);
@@ -1480,8 +1485,6 @@ begin
 
   fScrollHintColor := clInfoBk;
   fScrollHintFormat := shfTopLineOnly;
-
-  fCaretShape.Size := 2;
 
   FSynEditScrollBars := CreateSynEditScrollBars(Self);
 
@@ -1526,6 +1529,8 @@ begin
   begin
     if sfScrollbarChanged in fStateFlags then
       UpdateScrollbars;
+    if fStatusChanges * [scCaretX, scCaretY, scSelection] <> [] then
+      FSelections.BaseSelection := FSelection;
     if sfCaretChanged in fStateFlags then
       UpdateCaret;
     if fStatusChanges <> [] then
@@ -1570,6 +1575,8 @@ begin
   fOrigLines.Free;
   fCodeFolding.Free;
   fAllFoldRanges.Free;
+  FSelections.Free;
+  FCarets.Free;
 end;
 
 function TCustomSynEdit.GetBlockBegin: TBufferCoord;
@@ -1747,13 +1754,6 @@ end;
 function TCustomSynEdit.GetWordAtCursor: string;
 begin
    Result:=GetWordAtRowCol(CaretXY);
-end;
-
-procedure TCustomSynEdit.HideCaret;
-begin
-  if sfCaretVisible in fStateFlags then
-    if Winapi.Windows.HideCaret(Handle) then
-      Exclude(fStateFlags, sfCaretVisible);
 end;
 
 procedure TCustomSynEdit.IndentGuidesChanged(Sender: TObject);
@@ -2310,7 +2310,7 @@ begin
     1, DisplayRowCount);
 
   // Now paint everything while the caret is hidden.
-  HideCaret;
+  FCarets.HideCarets;
   try
     //Create the RenderTarget
     RT := TSynDWrite.RenderTarget;
@@ -2466,7 +2466,7 @@ var
       Result := ((BB <= BC) and
         ((BE > BufferCoord(BC.Char + Len, BC.Line)) or
          ((BufferCoord(BC.Char + Len, BC.Line) = BE) and
-         (RowtoLine(Row + 1) = Line) and not fCaretAtEOL)));
+         (RowtoLine(Row + 1) = Line) and not FSelection.CaretAtEOL)));
     end
     else
       Result := (BB.Line < BE.Line) and
@@ -2563,7 +2563,7 @@ var
         ((Line = BB.Line) and
          ((InRange(BB.Char, BC.Char, BC.Char + Len)) and
          not (WordWrap and (BB.Char = BC.Char + Len) and
-         (RowtoLine(Row + 1) = Line) and not fCaretAtEOL))) or
+         (RowtoLine(Row + 1) = Line) and not FSelection.CaretAtEOL))) or
         ((Line = BE.Line) and InRange(BE.Char, BC.Char + 1, BC.Char + Len));
     if not Result then Exit;
 
@@ -2572,7 +2572,7 @@ var
       First := BB.Char - BC.Char + 1;
       Last := IfThen((BE > BufferCoord(BC.Char + Len, BC.Line)) or
         (WordWrap and (BE = BufferCoord(BC.Char + Len, BC.Line)) and
-        (RowtoLine(Row + 1) = Line) and not fCaretAtEOL), MaxInt, BE.Char - BC.Char);
+        (RowtoLine(Row + 1) = Line) and not FSelection.CaretAtEOL), MaxInt, BE.Char - BC.Char);
     end
     else
     begin
@@ -3267,10 +3267,10 @@ begin
   Result := DisplayXY.Row;
 end;
 
-Function TCustomSynEdit.GetDisplayXY: TDisplayCoord;
+function TCustomSynEdit.SelectionToDisplayCoord(var Sel: TSynSelection): TDisplayCoord;
 begin
-  Result := BufferToDisplayPos(CaretXY);
-  if WordWrap and fCaretAtEOL then
+  Result := BufferToDisplayPos(Sel.Caret);
+  if WordWrap and Sel.CaretAtEOL then
   begin
     if Result.Column = 1 then
     begin
@@ -3278,11 +3278,16 @@ begin
       Result.Column := fWordWrapPlugin.GetRowLength(Result.Row) + 1;
     end
     else begin
-      // Work-around situations where fCaretAtEOL should have been updated because of
-      //text change (it's only valid when Column = 1). 
-      fCaretAtEOL := False;
+      // Work-around situations where CaretAtEOL should have been updated because of
+      //text change (it's only valid when Column = 1).
+      Sel.CaretAtEOL := False;
     end;
   end;
+end;
+
+Function TCustomSynEdit.GetDisplayXY: TDisplayCoord;
+begin
+  Result := SelectionToDisplayCoord(FSelection);
 end;
 
 procedure TCustomSynEdit.SetCaretXY(const Value: TBufferCoord);
@@ -3309,7 +3314,7 @@ var
   vTriggerPaint: boolean;
   S, TS : string;
 begin
-  fCaretAtEOL := False;
+  FSelection.CaretAtEOL := False;
   vTriggerPaint := HandleAllocated;
   if vTriggerPaint then
     DoOnPaintTransient(ttBefore);
@@ -3861,58 +3866,71 @@ begin
   Result.Right := Result.Left + fCharWidth * 3 +  4 * (fCharWidth div 7);
 end;
 
-procedure TCustomSynEdit.ShowCaret;
-begin
-  if not (eoNoCaret in Options) and not (sfCaretVisible in fStateFlags) then
-  begin
-    if Winapi.Windows.ShowCaret(Handle) then
-      Include(fStateFlags, sfCaretVisible);
-  end;
-end;
-
 procedure TCustomSynEdit.UpdateCaret;
 var
-  CX, CY: Integer;
   iClientRect: TRect;
   vCaretDisplay: TDisplayCoord;
   vCaretPix: TPoint;
-  cf: TCompositionForm;
-  vSelStartPix: TPoint;
+  Sel: TSynSelection;
+  Index: Integer;
 begin
+  if eoNoCaret in FOptions then
+  begin
+    Exclude(fStateFlags, sfCaretChanged);
+    Exit;
+  end;
+
   if (PaintLock <> 0) or not (Focused or FAlwaysShowCaret) then
     Include(fStateFlags, sfCaretChanged)
   else
   begin
     Exclude(fStateFlags, sfCaretChanged);
 
-    // The last space of a wrapped line may be out of view
-    vCaretDisplay := DisplayXY;
-    if WordWrap and not (eoWrapWithRightEdge in FOptions) and
-      fCaretAtEOL and not RowColumnInView(vCaretDisplay)
-    then
-      Dec(vCaretDisplay.Column);
+    FCarets.HideCarets;
+    FCarets.CaretRects.Clear;
 
-    vCaretPix := RowColumnToPixels(vCaretDisplay);
-    CX := vCaretPix.X + FCaretShape.Offset.X;
-    CY := vCaretPix.Y + FCaretShape.Offset.Y;
-    iClientRect := GetClientRect;
-    Inc(iClientRect.Left, fGutterWidth);
-    SetCaretPos(CX, CY);
-    if PtInRect(iClientRect, Point(CX, CY)) then
-      ShowCaret
-    else
-      HideCaret;
-    if (Self.SelAvail = False) then
+    for Index := 0 to FSelections.Count - 1 do
     begin
-      cf.dwStyle := CFS_POINT;
-      cf.ptCurrentPos := Point(CX, CY);
-      ImmSetCompositionWindow(ImmGetContext(Handle), @cf);
-    end
-    else
-    begin
-      vSelStartPix := Self.RowColumnToPixels(BufferToDisplayPos(Self.BlockBegin));
-      Self.SetImeCompositionWindow(Self.Font, vSelStartPix.X, vSelStartPix.Y);
+      Sel  := FSelections[Index];
+      // The last space of a wrapped line may be out of view
+      vCaretDisplay := SelectionToDisplayCoord(Sel);
+      if WordWrap and not (eoWrapWithRightEdge in FOptions) and
+        Sel.CaretAtEOL and not RowColumnInView(vCaretDisplay)
+      then
+        Dec(vCaretDisplay.Column);
+
+      vCaretPix := RowColumnToPixels(vCaretDisplay);
+      vCaretPix.Offset(FCarets.Shape.Offset);
+      iClientRect := ClientRect;
+      Inc(iClientRect.Left, fGutterWidth);
+      if PtInRect(iClientRect, vCaretPix) then
+        FCarets.CaretRects.Add(TRect.Create(vCaretPix, FCarets.Shape.Width,
+          FCarets.Shape.Height));
     end;
+
+    FCarets.ShowCarets;
+  end;
+end;
+
+procedure TCustomSynEdit.UpdateIME;
+var
+  cf: TCompositionForm;
+  vCaretDisplay: TDisplayCoord;
+  vCaretPix: TPoint;
+  vSelStartPix: TPoint;
+begin
+  if FSelection.IsEmpty then
+  begin
+    vCaretDisplay := DisplayXY;
+    vCaretPix := RowColumnToPixels(vCaretDisplay);
+    cf.dwStyle := CFS_POINT;
+    cf.ptCurrentPos := vCaretPix;
+    ImmSetCompositionWindow(ImmGetContext(Handle), @cf);
+  end
+  else
+  begin
+    vSelStartPix := Self.RowColumnToPixels(BufferToDisplayPos(Self.BlockBegin));
+    Self.SetImeCompositionWindow(Self.Font, vSelStartPix.X, vSelStartPix.Y);
   end;
 end;
 
@@ -4249,8 +4267,7 @@ begin
   //Added check for focused to prevent caret disappearing problem
   if Focused or FAlwaysShowCaret then
     exit;
-  HideCaret;
-  Winapi.Windows.DestroyCaret;
+  FCarets.HideCarets;
   if FHideSelection and SelAvail then
     InvalidateSelection;
 end;
@@ -5095,7 +5112,7 @@ begin
   try
     fExtraLineSpacing := MulDiv(fExtraLineSpacing, M, D);
     fTextMargin := MulDiv(fTextMargin, M, D);
-    FCaretShape.Size := MulDiv(FCaretShape.Size, M, D);
+    FCarets.CaretSize := MulDiv(FCarets.CaretSize, M, D);
     fGutter.ChangeScale(M,D);
     fBookMarkOpt.ChangeScale(M, D);
     fWordWrapGlyph.ChangeScale(M, D);
@@ -5352,48 +5369,26 @@ end;
 procedure TCustomSynEdit.InitializeCaret;
 var
   ct: TSynEditCaretType;
-  cw, ch: Integer;
 begin
-  // CreateCaret automatically destroys the previous one, so we don't have to
-  // worry about cleaning up the old one here with DestroyCaret.
-  // Ideally, we will have properties that control what these two carets look like.
   if InsertMode then
     ct := FInsertCaret
   else
     ct := FOverwriteCaret;
   case ct of
     ctHorizontalLine:
-      begin
-        cw := fCharWidth;
-        ch := FCaretShape.Size;
-        FCaretShape.Offset := Point(0, fTextHeight - FCaretShape.Size);
-      end;
+      FCarets.Shape.Create(fCharWidth, FCarets.CaretSize, Point(0, fTextHeight - FCarets.CaretSize));
     ctHalfBlock:
-      begin
-        cw := fCharWidth;
-        ch := (fTextHeight - FCaretShape.Size) div 2;
-        FCaretShape.Offset := Point(0, ch);
-      end;
+      FCarets.Shape.Create(fCharWidth, (fTextHeight - FCarets.CaretSize) div 2,
+        Point(0, (fTextHeight - FCarets.CaretSize) div 2));
     ctBlock:
-      begin
-        cw := fCharWidth;
-        ch := fTextHeight - FCaretShape.Size;
-        FCaretShape.Offset := Point(0, 0);
-      end;
-    else
-    begin // ctVerticalLine
-      cw := FCaretShape.Size;
-      ch := fTextHeight - FCaretShape.Size;
-      FCaretShape.Offset := Point(-1, 0);
-    end;
+      FCarets.Shape.Create(fCharWidth, fTextHeight - FCarets.CaretSize, Point(0, 0));
+    else // ctVerticalLine
+      FCarets.Shape.Create(FCarets.CaretSize, fTextHeight - FCarets.CaretSize, Point(-1, 0));
   end;
-  Exclude(fStateFlags, sfCaretVisible);
+  fCarets.HideCarets;
 
   if Focused or FAlwaysShowCaret then
-  begin
-    CreateCaret(Handle, 0, cw, ch);
     UpdateCaret;
-  end;
 end;
 
 procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
@@ -6563,17 +6558,12 @@ begin
   if FAlwaysShowCaret <> Value then
   begin
     FAlwaysShowCaret := Value;
-    if not(csDestroying in ComponentState) and not(Focused) then
+    if not(csDestroying in ComponentState) and not Focused then
     begin
       if Value then
-      begin
-        InitializeCaret;
-      end
+        UpdateCaret
       else
-      begin
-        HideCaret;
-        Winapi.Windows.DestroyCaret;
-      end;
+        FCarets.HideCarets;
     end;
   end;
 end;
@@ -7167,7 +7157,7 @@ begin
   end
   else
     SetBlockBegin(BC); // Also sets BlockEnd = NewPos
-  DisplayXY := NewPos; // Correctly sets fCaretAtEOL when WordWrap is True
+  DisplayXY := NewPos; // Correctly sets CaretAtEOL when WordWrap is True
   DecPaintLock;
 end;
 
@@ -8282,11 +8272,11 @@ begin
     begin
       Canvas.Font.Assign(Font);
       Canvas.Brush.Color := Color;
-      HideCaret;
+      FCarets.HideCarets;
       try
         fOnPaintTransient(Self, Canvas, TransientType);
       finally
-        ShowCaret;
+        FCarets.ShowCarets;
       end;
     end;
   end;
@@ -9147,23 +9137,26 @@ procedure TCustomSynEdit.SetDisplayXY(const aPos: TDisplayCoord);
 var
   OldCaretAtEOL: Boolean;
 begin
-  OldCaretAtEOL := fCaretAtEOL;
+  OldCaretAtEOL := FSelection.CaretAtEOL;
   IncPaintLock;
-  SetCaretXYEx(False, DisplayToBufferPos(aPos));
+  try
+    SetCaretXYEx(False, DisplayToBufferPos(aPos));
 
-  // fCaretEOL is set if we are at the end of wrapped row
-  fCaretAtEOL := WordWrap and (aPos.Row <= fWordWrapPlugin.RowCount) and
-    (aPos.Column > fWordWrapPlugin.GetRowLength(aPos.Row)) and
-    (DisplayY <> aPos.Row);
-  if fCaretAtEOL <> OldCaretAtEOL then
-  begin
-    InvalidateLine(CaretY);
-    Include(fStateFlags, sfCaretChanged);
-    UpdateLastPosX;
+    // fCaretEOL is set if we are at the end of wrapped row
+    FSelection.CaretAtEOL := WordWrap and (aPos.Row <= fWordWrapPlugin.RowCount) and
+      (aPos.Column > fWordWrapPlugin.GetRowLength(aPos.Row)) and
+      (DisplayY <> aPos.Row);
+    if FSelection.CaretAtEOL <> OldCaretAtEOL then
+    begin
+      InvalidateLine(CaretY);
+      Include(fStateFlags, sfCaretChanged);
+      UpdateLastPosX;
+    end;
+
+    EnsureCursorPosVisible;
+  finally
+    DecPaintLock;
   end;
-
-  EnsureCursorPosVisible;
-  DecPaintLock;
 end;
 
 procedure TCustomSynEdit.SetWantReturns(Value: Boolean);

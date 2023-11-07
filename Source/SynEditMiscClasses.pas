@@ -53,6 +53,7 @@ uses
   Vcl.StdCtrls,
   Vcl.Menus,
   Vcl.ImgList,
+  Vcl.ExtCtrls,
   SynDWrite,
   SynEditTypes,
   SynEditKeyConst,
@@ -626,11 +627,58 @@ type
       UnbalancedBracketSpec: TSynIndicatorSpec);
   end;
 
+  {$REGION 'TSynCarets'}
+
+  TSynSelections = class;
+
+  TSynCarets = class
+  private
+    FCaretsShown: Boolean;
+    FBlinkTimer: TTimer;
+    FCanvas: TCanvas;
+    procedure Blink(Sender: TObject);
+    procedure InvertCarets;
+  public
+    CaretSize: Integer; // is DPI scaled
+    Shape: TCaretShape;
+    CaretRects: TList<TRect>;
+    constructor Create(Canvas: TCanvas);
+    destructor Destroy; override;
+    procedure HideCarets;
+    procedure ShowCarets;
+  end;
+
+  {$ENDREGION 'TSynCarets'}
+
+  {$REGION 'TSynSelections'}
+
+  // Keeps the selections and is responsible for showing the carets
+  TSynSelections = class
+  private
+    FOwner: TPersistent;
+    FSelections: TList<TSynSelection>;
+    FBaseSelIndex: Integer;
+    procedure SetBaseSelection(const Value: TSynSelection);
+    function GetBaseSelection: TSynSelection;
+    function GetCount: Integer;
+    function GetSelection(Index: Integer): TSynSelection;
+  public
+    constructor Create(Owner: TPersistent);
+    destructor Destroy; override;
+    procedure Add(Sel: TSynSelection; IsBase: Boolean = False);
+    property BaseSelectionIndex: Integer read FBaseSelIndex;
+    property BaseSelection: TSynSelection read GetBaseSelection write SetBaseSelection;
+    property Count: Integer read GetCount;
+    property Selection[Index: Integer]: TSynSelection read GetSelection; default;
+  end;
+
+  {$ENDREGION 'TSynSelections'}
 
 implementation
 
 uses
   System.Rtti,
+  System.Generics.Defaults,
   Vcl.GraphUtil,
   SynEditMiscProcs,
   SynEditCodeFolding,
@@ -2883,5 +2931,115 @@ begin
 end;
 
 {$ENDREGION}
+
+{$REGION 'TSynSelections'}
+
+procedure TSynSelections.Add(Sel: TSynSelection; IsBase: Boolean);
+var
+  Index: Integer;
+begin
+  Index := FSelections.Add(Sel);
+  if IsBase then
+    FBaseSelIndex := Index;
+end;
+
+constructor TSynSelections.Create(Owner: TPersistent);
+begin
+  inherited Create;
+  FOwner := Owner;
+  FSelections := TList<TSynSelection>.Create(TComparer<TSynSelection>.Construct(
+    function(const L, R: TSynSelection): Integer
+    begin
+      if L.Start < R.Start then
+        Result := -1
+      else if L.Start > R.Start then
+        Result := 1
+      else
+        Result := 0;
+    end));
+end;
+
+destructor TSynSelections.Destroy;
+begin
+  FSelections.Free;
+  inherited;
+end;
+
+function TSynSelections.GetBaseSelection: TSynSelection;
+begin
+  Result := FSelections[FBaseSelIndex];
+end;
+
+function TSynSelections.GetCount: Integer;
+begin
+  Result := FSelections.Count;
+end;
+
+function TSynSelections.GetSelection(Index: Integer): TSynSelection;
+begin
+  Result := FSelections[Index];
+end;
+
+procedure TSynSelections.SetBaseSelection(const Value: TSynSelection);
+begin
+  FSelections[FBaseSelIndex] := Value;
+end;
+
+{$ENDREGION 'TSynSelections'}
+
+{$REGION 'TSynCarets'}
+
+procedure TSynCarets.Blink(Sender: TObject);
+begin
+  InvertCarets;
+end;
+
+constructor TSynCarets.Create(Canvas: TCanvas);
+begin
+  inherited Create;
+  FCanvas := Canvas;
+  FBlinkTimer := TTimer.Create(nil);
+  FBlinkTimer.Interval := GetCaretBlinkTime;
+  FBlinkTimer.OnTimer := Blink;
+  FBlinkTimer.Enabled := False;
+  CaretRects := TList<TRect>.Create;
+  CaretSize := 2;
+end;
+
+destructor TSynCarets.Destroy;
+begin
+  FBlinkTimer.Free;
+  CaretRects.Free;
+  inherited;
+end;
+
+procedure TSynCarets.HideCarets;
+begin
+  FBlinkTimer.Enabled := False;
+
+  if FCaretsShown then
+    InvertCarets;
+end;
+
+procedure TSynCarets.InvertCarets;
+var
+  R: TRect;
+begin
+  for R in CaretRects do
+    InvertRect(FCanvas.Handle, R);
+
+  FCaretsShown := not FCaretsShown;
+end;
+
+procedure TSynCarets.ShowCarets;
+begin
+  if CaretRects.Count > 0 then
+  begin
+    InvertCarets; // show immediately
+    FBlinkTimer.Enabled := True;
+  end;
+end;
+
+{$ENDREGION 'TSynCarets'}
 
 end.
