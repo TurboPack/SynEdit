@@ -744,9 +744,12 @@ begin
   FCurrentPPI := 96;
   FFont := TFont.Create;
   FFont.Name := DefaultFontName;
-  FFont.Size := 8;
   FFont.Style := [];
   FFont.PixelsPerInch := Screen.DefaultPixelsPerInch;
+  FFont.Size := 8;
+  {$IF CompilerVersion >= 36}
+  FFont.IsScreenFont := True;
+  {$IFEND CompilerVersion >= 36}
   FUseFontStyle := True;
   FFont.OnChange := OnFontChange;
   OnFontChange(Self);

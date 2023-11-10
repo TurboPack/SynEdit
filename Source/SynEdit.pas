@@ -314,7 +314,6 @@ type
     FLastPosX: integer;
     fCaretY: Integer;
     fCharWidth: Integer;
-    fFontDummy: TFont;
     fFontQuality: TFontQuality;
     fInserting: Boolean;
     fLines: TStrings;
@@ -1423,6 +1422,8 @@ begin
 end;
 
 constructor TCustomSynEdit.Create(AOwner: TComponent);
+var
+  fFontDummy: TFont;
 begin
   inherited Create(AOwner);
   fLines := TSynEditStringList.Create(TextWidth);
@@ -1437,7 +1438,6 @@ begin
     OnInserted := ListInserted;
     OnPut := ListPut;
   end;
-  fFontDummy := TFont.Create;
   fUndoRedo := CreateSynEditUndo(Self);
   fUndoRedo.OnModifiedChanged := ModifiedChanged;
   fOrigUndoRedo := fUndoRedo;
@@ -1467,12 +1467,18 @@ begin
   Color := clWindow;
   fExtraLineSpacing := 2;
   fFontQuality := fqClearTypeNatural;
-  fFontDummy.Name := DefaultFontName;
-  fFontDummy.Size := 10;
-  fFontDummy.CharSet := DEFAULT_CHARSET;
-  fFontDummy.Quality := fFontQuality;
-  Font.Assign(fFontDummy);
-  Font.PixelsPerInch := Screen.DefaultPixelsPerInch;
+  fFontDummy := TFont.Create;
+  try
+    fFontDummy.Name := DefaultFontName;
+    fFontDummy.Size := 10;
+    fFontDummy.CharSet := DEFAULT_CHARSET;
+    fFontDummy.Quality := fFontQuality;
+    Font.Assign(fFontDummy);
+    Font.PixelsPerInch := Screen.DefaultPixelsPerInch;
+    Font.Size := fFontDummy.Size;
+  finally
+    fFontDummy.Free;
+  end;
   Font.OnChange := SynFontChanged;
   ParentFont := False;
   ParentColor := False;
@@ -1597,7 +1603,6 @@ begin
   fWordWrapGlyph.Free;
   FBracketsHighlight.Free;
   FIndicators.Free;
-  fFontDummy.Free;
   fOrigLines.Free;
   fCodeFolding.Free;
   fAllFoldRanges.Free;
@@ -5504,7 +5509,9 @@ begin
     fWordWrapGlyph.ChangeScale(M, D);
     // Adjust Font.PixelsPerInch so that Font.Size is correct
     // Delphi should be doing that but it doesn't
+    {$if CompilerVersion < 36}
     Font.PixelsPerInch := MulDiv(Font.PixelsPerInch, M, D);
+    {$endif}
   finally
     DecPaintLock;
   end;

@@ -741,6 +741,11 @@ end;
 procedure TfmEditorOptionsDialog.btnFontClick(Sender: TObject);
 begin
   FontDialog.Font.Assign(labFont.Font);
+  {$IF CompilerVersion >= 36}
+  // See https://quality.embarcadero.com/browse/RSP-43261
+  FontDialog.Font.IsScreenFont := True;
+  FontDialog.Font.ScaleForDPI(Screen.PixelsPerInch);
+  {$IFEND CompilerVersion >= 36}
   if FontDialog.Execute then
   begin
     labFont.Font.Assign(FontDialog.Font);
@@ -866,7 +871,11 @@ end;
 procedure TfmEditorOptionsDialog.btnGutterFontClick(Sender: TObject);
 begin
   FontDialog.Font.Assign(lblGutterFont.Font);
-  if FontDialog.Execute then
+  {$IF CompilerVersion >= 36}
+  FontDialog.Font.IsScreenFont := True;
+  FontDialog.Font.ScaleForDPI(Screen.PixelsPerInch);
+  {$IFEND CompilerVersion >= 36}
+ if FontDialog.Execute then
   begin
     lblGutterFont.Font.Assign(FontDialog.Font);
     lblGutterFont.Caption:= lblGutterFont.Font.Name + ' ' + IntToStr(lblGutterFont.Font.Size) + 'pt';

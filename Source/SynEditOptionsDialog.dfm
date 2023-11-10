@@ -14,14 +14,13 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   Position = poScreenCenter
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 6
     Top = 8
     Width = 355
     Height = 345
-    ActivePage = Keystrokes
+    ActivePage = Display
     TabOrder = 0
     object Display: TTabSheet
       Caption = 'Display'
@@ -223,10 +222,13 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           BevelOuter = bvNone
           TabOrder = 7
           object lblGutterFont: TLabel
-            Left = 19
-            Top = 9
-            Width = 105
-            Height = 14
+            Left = 0
+            Top = 0
+            Width = 145
+            Height = 33
+            Align = alClient
+            Alignment = taCenter
+            AutoSize = False
             Caption = 'Courier New 8pt'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -285,10 +287,13 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           BevelOuter = bvNone
           TabOrder = 1
           object labFont: TLabel
-            Left = 2
-            Top = 1
-            Width = 128
-            Height = 16
+            Left = 0
+            Top = 0
+            Width = 143
+            Height = 30
+            Align = alClient
+            Alignment = taCenter
+            AutoSize = False
             Caption = 'Courier New 10pt'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
