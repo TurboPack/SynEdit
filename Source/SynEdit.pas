@@ -1479,6 +1479,9 @@ begin
   finally
     fFontDummy.Free;
   end;
+  {$if CompilerVersion >= 36}
+  Font.IsDPIRelated := True;
+  {$ifend CompilerVersion >= 36}
   Font.OnChange := SynFontChanged;
   ParentFont := False;
   ParentColor := False;
@@ -5510,7 +5513,7 @@ begin
     // Adjust Font.PixelsPerInch so that Font.Size is correct
     // Delphi should be doing that but it doesn't
     {$if CompilerVersion < 36}
-    Font.PixelsPerInch := MulDiv(Font.PixelsPerInch, M, D);
+    Font.PixelsPerInch := M;
     {$endif}
   finally
     DecPaintLock;

@@ -718,9 +718,12 @@ end;
 
 procedure TSynGutter.ChangeScale(M, D: Integer);
 begin
+  // Delphi's High DPI Designer sucks
+  // If Design DPI <> 96 ChangeScale is called with M = D = DesignDPI
+  //FFont.Height := MulDiv(FFont.Height, M, FFont.PixelsPerInch);
   FFont.Height := MulDiv(FFont.Height, M, D);
   // So that FFont.Size does not change
-  FFont.PixelsPerInch := MulDiv(FFont.PixelsPerInch, M, D);
+  FFont.PixelsPerInch := M;
   if Assigned(FInternalImage) then
     FInternalImage.ChangeScale(M, D);
   FCurrentPPI := M; // Vcl does the same

@@ -438,6 +438,9 @@ begin
   FFont := TFont.Create;
   FFont.Name := DefaultFontName;
   FFont.Size := 10;
+  {$if CompilerVersion >= 36}
+  FFont.IsScreenFont := True;
+  {$endif}
   Color:= clWindow;
   Keystrokes.ResetDefaults;
   Options := SYNEDIT_DEFAULT_OPTIONS;
