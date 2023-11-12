@@ -236,8 +236,8 @@ begin
   FPrinterInfo := TSynEditPrinterInfo.Create;
   FFont := TFont.Create;
   FFont.Name := DefaultFontName;
-  FFont.Size := 10;
   FFont.PixelsPerInch := 96;
+  FFont.Size := 10;
   MaxLeftChar := 1024;
   FWrap := True;
   FHighlight := True;

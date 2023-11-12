@@ -515,9 +515,9 @@ begin
   with FDefaultFont do
   begin
     Name := 'Arial';
-    Size := 10;
     Color := clBlack;
     PixelsPerInch := 96;
+    Size := 10;
   end;
 end;
 

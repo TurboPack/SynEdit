@@ -289,7 +289,7 @@ type
     procedure SetVisible(Value: Boolean);
     procedure SetZeroStart(const Value: Boolean);
     procedure SetFont(Value: TFont);
-    procedure OnFontChange(Sender: TObject);
+    procedure FontChanged(Sender: TObject);
     procedure SetBorderStyle(const Value: TSynGutterBorderStyle);
     procedure SetLineNumberStart(const Value: Integer);
     procedure SetGradient(const Value: Boolean);
@@ -766,13 +766,15 @@ end;
 
 procedure TSynGutter.ChangeScale(M, D: Integer);
 begin
-  FFont.Height := MulDiv(FFont.Height, M, D);
-  // So that FFont.Size does not change
-  FFont.PixelsPerInch := MulDiv(FFont.PixelsPerInch, M, D);
-  if Assigned(FInternalImage) then
-    FInternalImage.ChangeScale(M, D);
-  FCurrentPPI := M; // Vcl does the same
-  Changed;
+  BeginUpdate;
+  try
+    if Assigned(FInternalImage) then
+      FInternalImage.ChangeScale(M, D);
+    FCurrentPPI := M; // Vcl does the same
+    FontChanged(Self); // Do font scaling
+  finally
+    EndUpdate;
+  end;
 end;
 
 constructor TSynGutter.Create;
@@ -792,12 +794,15 @@ begin
   FCurrentPPI := 96;
   FFont := TFont.Create;
   FFont.Name := DefaultFontName;
-  FFont.Size := 8;
   FFont.Style := [];
   FFont.PixelsPerInch := Screen.DefaultPixelsPerInch;
+  FFont.Size := 8;
+  {$IF CompilerVersion >= 36}
+  FFont.IsScreenFont := True;
+  {$IFEND CompilerVersion >= 36}
   FUseFontStyle := True;
-  FFont.OnChange := OnFontChange;
-  OnFontChange(Self);
+  FFont.OnChange := FontChanged;
+  FontChanged(Self);
 
   FColor := clBtnFace;
   FVisible := True;
@@ -859,29 +864,33 @@ var
 begin
   if Assigned(Source) and (Source is TSynGutter) then
   begin
-    Src := TSynGutter(Source);
-    FFont.Assign(Src.Font);
-    FUseFontStyle := Src.FUseFontStyle;
-    FColor := Src.FColor;
-    FVisible := Src.FVisible;
-    FLeadingZeros := Src.FLeadingZeros;
-    FZeroStart := Src.FZeroStart;
-    FDigitCount := Src.FDigitCount;
-    FAutoSize := Src.FAutoSize;
-    FAutoSizeDigitCount := Src.FAutoSizeDigitCount;
-    FShowLineNumbers := Src.FShowLineNumbers;
-    FLineNumberStart := Src.FLineNumberStart;
-    FBorderColor := Src.FBorderColor;
-    FBorderStyle := Src.FBorderStyle;
-    FGradient := Src.FGradient;
-    FGradientStartColor := Src.FGradientStartColor;
-    FGradientEndColor := Src.FGradientEndColor;
-    FGradientSteps := Src.FGradientSteps;
-    if AssignableBands and Src.AssignableBands then
-      FBands.Assign(Src.FBands);
-    FTrackChanges.Assign(Src.FTrackChanges);
-    AutoSizeDigitCount;
-    Changed;
+    BeginUpdate;
+    try
+      Src := TSynGutter(Source);
+      FFont.Assign(Src.Font);
+      FUseFontStyle := Src.FUseFontStyle;
+      FColor := Src.FColor;
+      FVisible := Src.FVisible;
+      FLeadingZeros := Src.FLeadingZeros;
+      FZeroStart := Src.FZeroStart;
+      FDigitCount := Src.FDigitCount;
+      FAutoSize := Src.FAutoSize;
+      FAutoSizeDigitCount := Src.FAutoSizeDigitCount;
+      FShowLineNumbers := Src.FShowLineNumbers;
+      FLineNumberStart := Src.FLineNumberStart;
+      FBorderColor := Src.FBorderColor;
+      FBorderStyle := Src.FBorderStyle;
+      FGradient := Src.FGradient;
+      FGradientStartColor := Src.FGradientStartColor;
+      FGradientEndColor := Src.FGradientEndColor;
+      FGradientSteps := Src.FGradientSteps;
+      if AssignableBands and Src.AssignableBands then
+        FBands.Assign(Src.FBands);
+      FTrackChanges.Assign(Src.FTrackChanges);
+      AutoSizeDigitCount;
+    finally
+      EndUpdate;
+    end;
   end
   else
     inherited;
@@ -992,7 +1001,9 @@ begin
   FFont.Assign(Value);
 end;
 
-procedure TSynGutter.OnFontChange(Sender: TObject);
+procedure TSynGutter.FontChanged(Sender: TObject);
+var
+  TempFont: TFont;
 begin
   FFont.OnChange := nil;  // avoid recursion
   if Assigned(FOwner) then
@@ -1000,8 +1011,16 @@ begin
   // revert to default font if not monospaced or invalid
   if not IsFontMonospacedAndValid(FFont) then
     Font.Name := DefaultFontName;
-  Font.OnChange := OnFontChange;
-  FTextFormat.Create(FFont, 1, 0, 0);
+  Font.OnChange := FontChanged;
+  TempFont := TFont.Create;
+  try
+    // scale font height
+    TempFont.PixelsPerInch := FCurrentPPI;
+    TempFont.Assign(FFont);
+    FTextFormat.Create(TempFont, 1, 0, 0);
+  finally
+    TempFont.Free;
+  end;
   FCharWidth := FTextFormat.CharWidth;
   Changed;
 end;
@@ -1266,7 +1285,7 @@ end;
 
 procedure TSynGlyph.ChangeScale(M, D: Integer);
 begin
-  FPPI := MulDiv(FPPI, M, D);
+  FPPI := M; // As Delphi does
 end;
 
 constructor TSynGlyph.Create(aModule: THandle; const aName: string);
@@ -1492,7 +1511,7 @@ type
 
 procedure TSynInternalImage.ChangeScale(M, D: Integer);
 begin
-  FPPI := MulDiv(FPPI, M, D);
+  FPPI := M; // As Delphi does
 end;
 
 constructor TSynInternalImage.Create(aModule: THandle; const Name: string;

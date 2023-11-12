@@ -3,25 +3,24 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   Top = 154
   BorderStyle = bsDialog
   Caption = 'Editor Options'
-  ClientHeight = 394
-  ClientWidth = 369
+  ClientHeight = 361
+  ClientWidth = 363
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
   Font.Style = []
-  Position = poScreenCenter
+  Position = poMainFormCenter
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 15
   object PageControl1: TPageControl
     Left = 6
     Top = 8
     Width = 355
     Height = 345
-    ActivePage = Keystrokes
+    ActivePage = Display
     TabOrder = 0
     object Display: TTabSheet
       Caption = 'Display'
@@ -35,15 +34,15 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object Label3: TLabel
           Left = 9
           Top = 56
-          Width = 54
-          Height = 13
+          Width = 59
+          Height = 15
           Caption = 'Edge color:'
         end
         object Label10: TLabel
           Left = 9
           Top = 26
-          Width = 66
-          Height = 13
+          Width = 75
+          Height = 15
           Caption = 'Edge Column:'
         end
         object pRightEdgeBack: TPanel
@@ -93,7 +92,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Left = 80
           Top = 23
           Width = 51
-          Height = 21
+          Height = 23
           TabOrder = 0
           Text = '0'
         end
@@ -108,8 +107,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object Label1: TLabel
           Left = 176
           Top = 89
-          Width = 58
-          Height = 13
+          Width = 66
+          Height = 15
           Caption = 'Gutter color:'
         end
         object ckGutterAutosize: TCheckBox
@@ -223,10 +222,13 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           BevelOuter = bvNone
           TabOrder = 7
           object lblGutterFont: TLabel
-            Left = 19
-            Top = 9
-            Width = 105
-            Height = 14
+            Left = 0
+            Top = 0
+            Width = 145
+            Height = 33
+            Align = alClient
+            Alignment = taCenter
+            AutoSize = False
             Caption = 'Courier New 8pt'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -285,10 +287,13 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           BevelOuter = bvNone
           TabOrder = 1
           object labFont: TLabel
-            Left = 2
-            Top = 1
-            Width = 128
-            Height = 16
+            Left = 0
+            Top = 0
+            Width = 143
+            Height = 30
+            Align = alClient
+            Alignment = taCenter
+            AutoSize = False
             Caption = 'Courier New 10pt'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -309,22 +314,22 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object Label8: TLabel
           Left = 9
           Top = 27
-          Width = 55
-          Height = 13
+          Width = 59
+          Height = 15
           Caption = 'Extra Lines:'
         end
         object Label9: TLabel
           Left = 9
           Top = 56
-          Width = 53
-          Height = 13
+          Width = 56
+          Height = 15
           Caption = 'Tab Width:'
         end
         object eLineSpacing: TEdit
           Left = 80
           Top = 23
           Width = 52
-          Height = 21
+          Height = 23
           TabOrder = 0
           Text = '0'
         end
@@ -332,7 +337,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Left = 80
           Top = 53
           Width = 52
-          Height = 21
+          Height = 23
           TabOrder = 1
           Text = '8'
         end
@@ -584,22 +589,22 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object Label2: TLabel
           Left = 16
           Top = 17
-          Width = 56
-          Height = 13
+          Width = 61
+          Height = 15
           Caption = 'Insert caret:'
         end
         object Label4: TLabel
           Left = 16
           Top = 41
-          Width = 75
-          Height = 13
+          Width = 83
+          Height = 15
           Caption = 'Overwrite caret:'
         end
         object cInsertCaret: TComboBox
           Left = 120
           Top = 13
           Width = 186
-          Height = 21
+          Height = 28
           Style = csDropDownList
           TabOrder = 0
           Items.Strings = (
@@ -612,7 +617,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Left = 120
           Top = 37
           Width = 186
-          Height = 21
+          Height = 28
           Style = csDropDownList
           TabOrder = 1
           Items.Strings = (
@@ -653,29 +658,29 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object Label5: TLabel
           Left = 16
           Top = 28
-          Width = 50
-          Height = 13
+          Width = 60
+          Height = 15
           Caption = 'Command:'
         end
         object Label6: TLabel
           Left = 16
           Top = 91
-          Width = 50
-          Height = 13
+          Width = 54
+          Height = 15
           Caption = 'Keystroke:'
         end
         object Label7: TLabel
           Left = 16
           Top = 59
-          Width = 50
-          Height = 13
+          Width = 54
+          Height = 15
           Caption = 'Keystroke:'
         end
         object cKeyCommand: TComboBox
           Left = 120
           Top = 23
           Width = 186
-          Height = 21
+          Height = 28
           Style = csDropDownList
           TabOrder = 0
           OnKeyUp = cKeyCommandKeyUp
@@ -732,6 +737,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     Width = 75
     Height = 25
     Caption = '&OK'
+    Default = True
     ModalResult = 1
     TabOrder = 1
     OnClick = btnOkClick
@@ -741,6 +747,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     Top = 362
     Width = 75
     Height = 25
+    Cancel = True
     Caption = '&Cancel'
     ModalResult = 2
     TabOrder = 2
