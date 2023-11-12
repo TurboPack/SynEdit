@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 212
   Top = 100
   Caption = 'SynEdit Code Completion Demo for ctCode'
-  ClientHeight = 547
-  ClientWidth = 760
+  ClientHeight = 482
+  ClientWidth = 736
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -190,7 +190,7 @@ object Form1: TForm1
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
-        Font.Name = 'Courier New'
+        Font.Name = 'Consolas'
         Font.Style = []
         Font.Quality = fqClearTypeNatural
         TabOrder = 8
@@ -386,12 +386,18 @@ object Form1: TForm1
     TitleFont.Height = -13
     TitleFont.Name = 'Consolas'
     TitleFont.Style = [fsBold]
+    GripperFont.Charset = DEFAULT_CHARSET
+    GripperFont.Color = clBtnText
+    GripperFont.Height = -12
+    GripperFont.Name = 'Segoe UI'
+    GripperFont.Style = []
     Columns = <
       item
         ColumnWidth = 100
       end>
     Resizeable = True
     Images = VirtualImageList1
+    GripperText = 'Sample Gripper Text'
     ShortCut = 16416
     Editor = SynEdit1
     Left = 48
