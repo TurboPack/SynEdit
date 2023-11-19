@@ -658,15 +658,27 @@ type
     FOwner: TPersistent;
     FSelections: TList<TSynSelection>;
     FBaseSelIndex: Integer;
-    procedure SetBaseSelection(const Value: TSynSelection);
-    function GetBaseSelection: TSynSelection;
+    FActiveSelIndex: Integer;
     function GetCount: Integer;
+    function GetActiveSelection: TSynSelection;
+    function GetBaseSelection: TSynSelection;
+    procedure SetActiveSelection(const Value: TSynSelection);
+    procedure SetBaseSelection(const Value: TSynSelection);
     function GetSelection(Index: Integer): TSynSelection;
   public
+    type
+      TKeepSelection = (ksKeepBase, ksKeepActive);
     constructor Create(Owner: TPersistent);
     destructor Destroy; override;
-    procedure Add(Sel: TSynSelection; IsBase: Boolean = False);
+    procedure Clear(KeepSelection: TKeepSelection = ksKeepActive);
+    procedure Add(const Sel: TSynSelection; IsBase: Boolean = False);
+    procedure AddCaret(const ACaret: TBufferCoord; IsBase: Boolean = False);
+    procedure DeleteSelection(Index: Integer);
+    function FindCaret(const ACaret: TBufferCoord): Integer;
+    function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
+    function RowHasCaret(ARow, ALine: Integer): Boolean;
     property BaseSelectionIndex: Integer read FBaseSelIndex;
+    property ActiveSelection: TSynSelection read GetActiveSelection write SetActiveSelection;
     property BaseSelection: TSynSelection read GetBaseSelection write SetBaseSelection;
     property Count: Integer read GetCount;
     property Selection[Index: Integer]: TSynSelection read GetSelection; default;
@@ -2953,13 +2965,61 @@ end;
 
 {$REGION 'TSynSelections'}
 
-procedure TSynSelections.Add(Sel: TSynSelection; IsBase: Boolean);
+procedure TSynSelections.Add(const Sel: TSynSelection; IsBase: Boolean);
+// TODO deal with overlapping ranges and normalization
+begin
+  if Sel.IsEmpty then
+    AddCaret(Sel.Caret, IsBase);
+end;
+
+procedure TSynSelections.AddCaret(const ACaret: TBufferCoord; IsBase: Boolean);
+// If a selection has the same caret or contains the caret then remove it.
+// Otherwise and a new selection
+var
+  Sel: TSynSelection;
+  Index: Integer;
+begin
+  if FindSelection(ACaret, Index) then
+  begin
+    DeleteSelection(Index);
+    TSynEdit(FOwner).SetCaretAndSelection(FSelections[FActiveSelIndex], False);
+  end
+  else if (Index > 0) and (FSelections[Index - 1].Caret = ACaret) then
+  begin
+    DeleteSelection(Index - 1);
+    TSynEdit(FOwner).SetCaretAndSelection(FSelections[FActiveSelIndex], False);
+  end
+  else
+  begin
+    // ACaret is not included in any selection
+    Sel := TSynSelection.Create(ACaret, ACaret, ACaret);
+    FSelections.Insert(Index, Sel);
+    FActiveSelIndex := Index;
+    if IsBase then
+      FBaseSelIndex := Index
+    else if FBaseSelIndex >= Index then
+      Inc(FBaseSelIndex);
+  end;
+end;
+
+procedure TSynSelections.Clear(KeepSelection: TKeepSelection);
 var
   Index: Integer;
 begin
-  Index := FSelections.Add(Sel);
-  if IsBase then
-    FBaseSelIndex := Index;
+  if FSelections.Count = 1 then Exit;
+
+  if (KeepSelection = ksKeepBase) and (FActiveSelIndex <> FBaseSelIndex) then
+    TSynEdit(FOwner).SetCaretAndSelection(BaseSelection);
+
+  for Index := FSelections.Count - 1 downto 0 do
+    if not (((KeepSelection = ksKeepBase) and (Index = FBaseSelIndex)) or
+      ((KeepSelection = ksKeepActive) and (Index = FActiveSelIndex)))
+    then
+      DeleteSelection(Index);
+
+  Assert (FSelections.Count = 1);
+  FBaseSelIndex := 0;
+  FActiveSelIndex := 0;
 end;
 
 constructor TSynSelections.Create(Owner: TPersistent);
@@ -2969,19 +3029,86 @@ begin
   FSelections := TList<TSynSelection>.Create(TComparer<TSynSelection>.Construct(
     function(const L, R: TSynSelection): Integer
     begin
-      if L.Start < R.Start then
+      if L.Normalized.Start < R.Normalized.Start then
         Result := -1
-      else if L.Start > R.Start then
-        Result := 1
+      else if L.Normalized.Start = R.Normalized.Start then
+        Result := 0
       else
-        Result := 0;
+        Result := 1;
     end));
+end;
+
+procedure TSynSelections.DeleteSelection(Index: Integer);
+var
+  Sel: TSynSelection;
+begin
+  // Leave at least one selection
+  if FSelections.Count <= 1 then Exit;
+
+  Sel := FSelections[Index];
+  if Sel.IsEmpty then
+    TSynEdit(FOwner).InvalidateLine(Sel.Caret.Line)
+  else
+    TSynEdit(FOwner).InvalidateSelection(FSelections[Index]);
+  FSelections.Delete(Index);
+
+  if Index = FActiveSelIndex then
+  begin
+    if Index >= FSelections.Count then
+      FActiveSelIndex := FSelections.Count - 1;
+  end
+  else if FActiveSelIndex > Index then
+    Dec(FActiveSelIndex);
+
+  if FBaseSelIndex = Index then
+    // Base becomes the last one as in VS Code
+    FBaseSelIndex := FSelections.Count - 1
+  else if FBaseSelIndex > Index then
+    Dec(FBaseSelIndex);
 end;
 
 destructor TSynSelections.Destroy;
 begin
   FSelections.Free;
   inherited;
+end;
+
+function TSynSelections.FindCaret(const ACaret: TBufferCoord): Integer;
+var
+  Index: Integer;
+begin
+  if FSelections.Count = 0 then Exit(-1);
+
+  if FindSelection(ACaret, Index) then
+  begin
+    if FSelections[Index].Caret = ACaret then
+      Result := Index
+    else
+      Result := -1;
+  end
+  else if (Index > 0) and (FSelections[Index - 1].Caret = ACaret) then
+    Result := Index - 1
+  else
+    Result := -1;
+end;
+
+function TSynSelections.FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
+begin
+  if FSelections.BinarySearch(TSynSelection.Create(BC, BC, BC), Index) then
+    Exit(True);
+
+  if Index = 0 then
+    // BC is before the start of the top selection
+    Exit(False);
+
+  Result := FSelections[Index - 1].Contains(BC);
+  if Result then
+    Dec(Index)
+end;
+
+function TSynSelections.GetActiveSelection: TSynSelection;
+begin
+  Result := FSelections[FActiveSelIndex];
 end;
 
 function TSynSelections.GetBaseSelection: TSynSelection;
@@ -2997,6 +3124,48 @@ end;
 function TSynSelections.GetSelection(Index: Integer): TSynSelection;
 begin
   Result := FSelections[Index];
+end;
+
+function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;
+// Used to paint the active line
+// Result is True only if selection is empty as in Delphi and VS Code.
+
+  function IsCaretOnRow(Sel: TSynSelection): Boolean;
+  begin
+    if TSynEdit(FOwner).WordWrap then
+      Result := TCustomSynEdit(FOwner).SelectionToDisplayCoord(Sel).Row = ARow
+    else
+      Result := Sel.Caret.Line = ALine;
+  end;
+
+var
+  Sel: TSynSelection;
+  Index: Integer;
+begin
+  if FindSelection(BufferCoord(1, ALine), Index) then
+  begin
+    Sel := FSelections[Index];
+    Exit(Sel.IsEmpty and IsCaretOnRow(Sel));
+  end;
+
+  while Index < FSelections.Count do
+  begin
+    Sel := FSelections[Index];
+    if Sel.IsEmpty and IsCaretOnRow(Sel) then
+      Exit(True)
+    else if not Sel.IsEmpty then
+      Break
+    else if Sel.Start.Line > ALine then
+      Break;
+    Inc(Index);
+  end;
+  Result := False;
+end;
+
+procedure TSynSelections.SetActiveSelection(const Value: TSynSelection);
+begin
+//  Assert(Value.Contains(Value.Caret) or (Value.Caret = Value.Normalized.Stop));
+  FSelections[FActiveSelIndex] := Value;
 end;
 
 procedure TSynSelections.SetBaseSelection(const Value: TSynSelection);

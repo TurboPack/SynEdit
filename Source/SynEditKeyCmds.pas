@@ -209,9 +209,11 @@ const
   ecUnfoldLevel1    = 721;
   ecUnfoldLevel2    = 722;
   ecUnfoldLevel3    = 723;
-  ecFoldRegions      = 731;
-  ecUnfoldRegions    = 732;
+  ecFoldRegions     = 731;
+  ecUnfoldRegions   = 732;
   //-- CodeFolding
+
+  ecEscape          = 800;
 
   ecUserFirst       = 1001; // Start of user-defined commands
 
@@ -308,7 +310,7 @@ uses
 
 const
 //++ CodeFolding
-  EditorCommandStrs: array[0..110] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..111] of TIdentMapEntry = (
 //-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
@@ -421,8 +423,9 @@ const
     (Value: ecUnfoldLevel2; Name:'ecUnfoldLevel2'),
     (Value: ecUnfoldLevel3; Name:'ecUnfoldLevel3'),
     (Value: ecFoldRegions; Name:'ecFoldRanges'),
-    (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'));
+    (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
 //-- CodeFolding
+    (Value: ecEscape; Name:'ecEscape'));
 
 // GetEditorCommandValues and GetEditorCommandExtended for editing key assignments
 procedure GetEditorCommandValues(Proc: TGetStrProc);
@@ -853,6 +856,7 @@ begin
   AddKey(ecUnfoldLevel2, Ord('K'), [ssCtrl, ssShift], Ord('2'), [ssCtrl, ssShift]);
   AddKey(ecUnfoldLevel3, Ord('K'), [ssCtrl, ssShift], Ord('3'), [ssCtrl, ssShift]);
 //-- CodeFolding
+  AddKey(ecEscape, SYNEDIT_ESCAPE, []);
 end;
 
 procedure TSynEditKeyStrokes.SetItem(Index: Integer; Value: TSynEditKeyStroke);

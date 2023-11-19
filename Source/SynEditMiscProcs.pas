@@ -831,5 +831,4 @@ begin
                  1.14 * GetBValue(ACol)) < $400);
 end;
 
-
 end.
