@@ -139,6 +139,7 @@ type
     FDefaultBG: TColor;
     FPageOffset: Integer;
     FRangesOK: Boolean;
+    FMaxRowCount: Integer;
     FMaxWidth: integer;
     FPagesCounted: Boolean;
     FLineNumbersInMargin: Boolean;
@@ -354,7 +355,6 @@ var
   ActualLineCount: Cardinal;
   LayoutRowCount: Integer;
   RowCount: Integer;
-  MaxRowCount: Integer;
   iStartLine, iEndLine: integer;
 begin
   InitRanges;
@@ -374,8 +374,8 @@ begin
   PageLine.FirstRow := 1;
   PageLine.LastLine := -1;
   FPages.Add(PageLine);
-  MaxRowCount := (FMargins.PBottom - FMargins.PTop) div FLineHeight;
-  Assert(MaxRowCount > 1);
+  FMaxRowCount := (FMargins.PBottom - FMargins.PTop) div FLineHeight;
+  Assert(FMaxRowCount > 1);
   RowCount := 0;
   for I := iStartLine to iEndLine do
   begin
@@ -392,21 +392,27 @@ begin
       Inc(RowCount, LayoutRowCount);
     end;
 
-    while RowCount >= MaxRowCount do
+    // Add new paage(s) if needed (word wrap)
+    while RowCount >= FMaxRowCount do
     begin
       PageLine.LastLine := I;
-      PageLine.LastRow := LayoutRowCount - (RowCount - MaxRowCount);
-      if (RowCount = MaxRowCount) and (I = iEndLine) then Break;
+      PageLine.LastRow := FMaxRowCount - (RowCount - LayoutRowCount);
+
+      if (RowCount = FMaxRowCount) and (I = iEndLine) then Break;
+
       PageLine := TPageLine.Create;
-      PageLine.FirstLine := IfThen(RowCount = MaxRowCount, I + 1, I);
-      PageLine.FirstRow := IfThen(RowCount = MaxRowCount, 1,
-         LayoutRowCount - (RowCount - MaxRowCount) + 1);
+      PageLine.FirstLine := IfThen(RowCount = FMaxRowCount, I + 1, I);
+      PageLine.FirstRow := IfThen(RowCount = FMaxRowCount, 1,
+         LayoutRowCount - RowCount + FMaxRowCount + 1);
       FPages.Add(PageLine);
-      RowCount := RowCount - MaxRowCount;
+      RowCount := RowCount - FMaxRowCount;
     end;
 
     if I = iEndLine then
+    begin
       PageLine.LastLine := I;
+      PageLine.LastRow := LayoutRowCount;
+    end;
   end;
   FPagesCounted := True;
 end;
@@ -531,9 +537,24 @@ begin
                   begin
                     TextLayout.IDW.HitTestTextPosition(TokenPos - 1, False, X1, Y1, HitMetrics);
                     TextLayout.IDW.HitTestTextPosition(TokenEnd - 2, True, X2, Y2, HitMetrics);
-                    RT.FillRectangle(Rect(Round(X1) + FMargins.PLeft, YPos + Round(Y1),
-                      Round(X2) + FMargins.PLeft, YPos + Round(Y2) + FLineHeight),
-                      TSynDWrite.SolidBrush(AColor));
+
+                    // Word wrap complications - line continues from previous page
+                    if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1) then
+                    begin
+                      Y1 := Y1 - (FPages[Num - 1].FirstRow - 1) * FLineHeight;
+                      Y2 := Y2 - (FPages[Num - 1].FirstRow - 1) * FLineHeight;
+                    end;
+
+                    if Y2 >= 0 then
+                    begin
+                      if YPos + Round(Y1) >=  FMargins.PTop + FMaxRowCount * FLineHeight
+                      then
+                        Break;
+
+                      RT.FillRectangle(Rect(Round(X1) + FMargins.PLeft, YPos + Round(Y1),
+                        Round(X2) + FMargins.PLeft, YPos + Round(Y2) + FLineHeight),
+                        TSynDWrite.SolidBrush(AColor));
+                    end;
                   end;
                 end;
               end;
@@ -545,13 +566,13 @@ begin
           LayoutRowCount := ActualLineCount; // to avoid warnings
 
           if YPos + LayoutRowCount * FLineHeight >= ClipR.Top then
+          begin
             if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1) then
             begin
               TextLayout.DrawClipped(RT, FMargins.PLeft,
                 YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
                 Rect(FMargins.PLeft, YPos, FMargins.PRight,
-                ((FMargins.PBottom - FMargins.PTop) div FLineHeight) * FLineHeight),
-                FFont.Color);
+                FMargins.PTop + FMaxRowCount * FLineHeight), FFont.Color);
               LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
             end else if (I = FPages[Num - 1].LastLine) and
               (FPages[Num - 1].LastRow < LayoutRowCount)
@@ -561,8 +582,9 @@ begin
                 YPos + FPages[Num - 1].LastRow * FLineHeight), FFont.Color)
             else
               TextLayout.Draw(RT, FMargins.PLeft, YPos, FFont.Color);
+          end;
         end;
-        DoPrintLine(i + 1, Num);
+        DoPrintLine(I + 1, Num);
 
         Inc(YPos, LayoutRowCount * FLineHeight);
         // Optimization do not print anything below ClipR
