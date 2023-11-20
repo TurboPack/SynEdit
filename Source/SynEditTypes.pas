@@ -120,6 +120,8 @@ type
     class operator NotEqual(a, b: TSynSelection): Boolean;
   end;
 
+  TSynSelectionArray = TArray<TSynSelection>;
+
   (*  Helper methods for TControl - for backwward compatibility *)
   {$IF CompilerVersion <= 32}
   TControlHelper = class helper for TControl

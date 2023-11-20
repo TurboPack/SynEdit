@@ -676,6 +676,7 @@ type
     procedure DeleteSelection(Index: Integer);
     function FindCaret(const ACaret: TBufferCoord): Integer;
     function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
+    function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
     property BaseSelectionIndex: Integer read FBaseSelIndex;
     property ActiveSelection: TSynSelection read GetActiveSelection write SetActiveSelection;
@@ -3124,6 +3125,26 @@ end;
 function TSynSelections.GetSelection(Index: Integer): TSynSelection;
 begin
   Result := FSelections[Index];
+end;
+
+function TSynSelections.PartSelectionsForRow(
+  const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
+// Provides a list of canditates for partial selection of a Row
+var
+  Index: Integer;
+  Sel: TSynSelection;
+begin
+  Result := [];
+  for Index := 0 to FSelections.Count - 1  do
+  begin
+    Sel := FSelections.List[Index].Normalized;
+    if Sel.Stop < RowStart then
+      Continue
+    else if Sel.Start > RowEnd then
+      Exit
+    else if not Sel.IsEmpty then
+      Result := Result + [Sel];
+  end;
 end;
 
 function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;

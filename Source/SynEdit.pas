@@ -2461,31 +2461,26 @@ var
     end;
   end;
 
-  function IsRowFullySelected(const Row, Line: Integer): Boolean;
+  function IsRowFullySelected(Row: Integer; const RowStart: TBufferCoord): Boolean;
   var
-    BB, BE: TBufferCoord;
+    RowStop: TBufferCoord;
     Index: Integer;
     Sel: TSynSelection;
   begin
     if (eoNoSelection in FOptions) or (not Focused and FHideSelection) then
       Exit(False);
 
-    if WordWrap then
-      BB := DisplayToBufferPos(DisplayCoord(1, Row))
-    else
-      BB := BufferCoord(1, Line);
-
-    if not FSelections.FindSelection(BB, Index) then
+    if not FSelections.FindSelection(RowStart, Index) then
       Exit(False);
 
-    BE := DisplayToBufferPos(DisplayCoord(1, Row + 1));
+    RowStop := DisplayToBufferPos(DisplayCoord(1, Row + 1));
     Sel := FSelections[Index].Normalized;
-    Result := Sel.Stop >= BE;
-    if Result and WordWrap and (Sel.Stop = BE) and Sel.CaretAtEOL then
+    Result := Sel.Stop >= RowStop;
+    if Result and WordWrap and (Sel.Stop = RowStop) and Sel.CaretAtEOL then
       Result := False;
   end;
 
-  procedure FullRowColors(const Row, Line: Integer;
+  procedure FullRowColors(const RowStart: TBufferCoord; Row, Line: Integer;
     var FullRowBG, FullRowFG: TColor; var BGAlpha: TD2D1ColorF);
   { Return clNone to do normal processing of text foreground/background color }
   var
@@ -2494,7 +2489,7 @@ var
     SpecialFG, SpecialBG: TColor;
   begin
     IsLineSpecial := DoOnSpecialLineColors(Line, SpecialFG, SpecialBG);
-    IsFullySelected := IsRowFullySelected(Row, Line);
+    IsFullySelected := IsRowFullySelected(Row, RowStart);
 
     BGAlpha := clNoneF;
     if IsFullySelected then
@@ -2537,79 +2532,6 @@ var
       FullRowFG := clNone;
       FullRowBG := clNone;
     end;
-  end;
-
-  function PartialSelection(const Row, Line: Integer; var First, Last: Integer;
-    var SelBG, SelFG: TColor): Boolean;
-  var
-    BC, BB, BE: TBufferCoord;
-    Len: Integer;
-    FG, BG: TColor;
-    IsFullySelected: Boolean;
-  begin
-    if (eoNoSelection in FOptions) or (not Focused and FHideSelection) then
-      Exit(False);
-
-    BB := BlockBegin;
-    BE := BlockEnd;
-    First := 0;
-    Last := 0;
-    IsFullySelected := IsRowFullySelected(Row, Line);
-
-    Result := (BB <> BE) and not (IsFullySelected and fSelectedColor.FillWholeLines);
-    if not Result then Exit;
-
-    if WordWrap then
-    begin
-      BC := DisplayToBufferPos(DisplayCoord(1, Row));
-      Len := fWordWrapPlugin.RowLength[Row]
-    end
-    else
-    begin
-      BC := BufferCoord(1, Line);
-      Len := Lines[Line-1].Length;
-    end;
-
-    if IsFullySelected and not fSelectedColor.FillWholeLines then
-      Result := True
-    else
-      Result :=
-        ((Line = BB.Line) and
-         ((InRange(BB.Char, BC.Char, BC.Char + Len)) and
-         not (WordWrap and (BB.Char = BC.Char + Len) and
-         (RowtoLine(Row + 1) = Line) and not FSelection.CaretAtEOL))) or
-        ((Line = BE.Line) and InRange(BE.Char, BC.Char + 1, BC.Char + Len));
-    if not Result then Exit;
-
-    if BB >= BC then
-    begin
-      First := BB.Char - BC.Char + 1;
-      Last := IfThen((BE > BufferCoord(BC.Char + Len, BC.Line)) or
-        (WordWrap and (BE = BufferCoord(BC.Char + Len, BC.Line)) and
-        (RowtoLine(Row + 1) = Line) and not FSelection.CaretAtEOL), MaxInt, BE.Char - BC.Char);
-    end
-    else
-    begin
-      First := 1;
-      if IsFullySelected then
-        Last := MaxInt
-      else
-        Last := BE.Char - BC.Char;
-    end;
-
-    if DoOnSpecialLineColors(Line, FG, BG) and
-      SameValue(fSelectedColor.Alpha, 1)
-    then
-    begin
-      // Invert special colors as in Delphi
-      SelBG := FG;
-      SelFG := BG;
-    end
-    else
-    begin
-      SelBG := fSelectedColor.Background;
-      SelFG := fSelectedColor.Foreground;
-    end
   end;
 
   function YRowOffset(const Row: Integer): Integer;
@@ -2844,69 +2766,172 @@ var
       Result := Round(Left + Width);
   end;
 
-  procedure PaintPartialSelection(const Layout: TSynTextLayout; ARow, Aline,
+  type
+    TPartialSelection = record
+      First, Last: Integer;
+      SelBG, SelFG: TColor;
+    end;
+
+    TPartSelArray = TArray<TPartialSelection>;
+
+  function PartialSelection(Row, Line: Integer; const RowStart: TBufferCoord): TPartSelArray;
+
+  var
+    Len: Integer;
+    IsFullySelected: Boolean;
+
+    function HavePartialSelection(const Sel: TSynSelection; var PartSel: TPartialSelection): Boolean;
+    var
+      BB, BE: TBufferCoord;
+      FG, BG: TColor;
+    begin
+      with Sel.Normalized do
+      begin
+        BB := Start;
+        BE := Stop;
+      end;
+      PartSel.First := 0;
+      PartSel.Last := 0;
+
+      if BB = BE then Exit(False);
+
+      if IsFullySelected then
+        Result := True
+      else
+        Result :=
+          ((Line = BB.Line) and
+           ((InRange(BB.Char, RowStart.Char, RowStart.Char + Len)) and
+           not (WordWrap and (BB.Char = RowStart.Char + Len) and
+           (RowtoLine(Row + 1) = Line) and not Sel.CaretAtEOL))) or
+          ((Line = BE.Line) and InRange(BE.Char, RowStart.Char + 1, RowStart.Char + Len));
+      if not Result then Exit;
+
+      if BB >= RowStart then
+      begin
+        PartSel.First := BB.Char - RowStart.Char + 1;
+        PartSel.Last := IfThen((BE > BufferCoord(RowStart.Char + Len, RowStart.Line)) or
+          (WordWrap and (BE = BufferCoord(RowStart.Char + Len, RowStart.Line)) and
+          (RowtoLine(Row + 1) = Line) and not FSelection.CaretAtEOL), MaxInt, BE.Char - RowStart.Char);
+      end
+      else
+      begin
+        PartSel.First := 1;
+        if IsFullySelected then
+          PartSel.Last := MaxInt
+        else
+          PartSel.Last := BE.Char - RowStart.Char;
+      end;
+
+      if DoOnSpecialLineColors(Line, FG, BG) and
+        SameValue(fSelectedColor.Alpha, 1)
+      then
+      begin
+        // Invert special colors as in Delphi
+        PartSel.SelBG := FG;
+        PartSel.SelFG := BG;
+      end
+      else
+      begin
+        PartSel.SelBG := fSelectedColor.Background;
+        PartSel.SelFG := fSelectedColor.Foreground;
+      end
+    end;
+
+  var
+    PartSel: TPartialSelection;
+    SelArray: TSynSelectionArray;
+    Sel: TSynSelection;
+  begin
+    Result := [];
+    if (eoNoSelection in FOptions) or (not Focused and FHideSelection) then
+      Exit;
+
+    IsFullySelected := IsRowFullySelected(Row, RowStart);
+    if IsFullySelected and fSelectedColor.FillWholeLines then
+      Exit;
+
+    if WordWrap then
+      Len := fWordWrapPlugin.RowLength[Row]
+    else
+      Len := Lines[Line-1].Length;
+
+    SelArray := FSelections.PartSelectionsForRow(RowStart,
+      BufferCoord(RowStart.Char + Len, RowStart.Line));
+
+    for Sel in SelArray do
+      if HavePartialSelection(Sel, PartSel) then
+        Result := Result + [PartSel];
+  end;
+
+  procedure PaintPartialSelection(const Layout: TSynTextLayout;
+    ARow, Aline: Integer; const RowStart: TBufferCoord;
     FirstChar, LastChar: Integer);
   {   Paint selection if ARow is partially selected - deals with bidi text
      The foreground needs to be set before we render the layout
      The background needs to be painted before we render the layout if we
      are not blending the selection otherwise after}
   var
-    SelFirst, SelLast: Integer;
-    SelFG, SelBG: TColor;
+    PartSel: TPartialSelection;
     AlphaBlended: Boolean;
     BGColor: TD2D1ColorF;
     RangeCount: Cardinal;
     HMArr: array of TDwriteHitTestMetrics;
-    I: Integer;
+    Index, I: Integer;
+    PartSelArr: TPartSelArray;
   begin
-    if not (PartialSelection(ARow, ALine, SelFirst, SelLast, SelBG, SelFG) and
-      (SelLast >= FirstChar) and ((SelLast = MaxInt) or (SelFirst <= LastChar)))
-    then
-      Exit;
+    PartSelArr := PartialSelection(ARow, ALine, RowStart);
+    if Length(PartSelArr) = 0 then Exit;
 
-    AlphaBlended := not SameValue(fSelectedColor.Alpha, 1);
-    if AlphaBlended then
-      BGColor := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha)
-    else
-      BGColor := D2D1ColorF(SelBG);
-
-    if (LastChar <= 0) and (SelLast = MaxInt) then
+    for Index := 0 to High(PartSelArr) do
     begin
-      // empty line special case
-      if fSelectedColor.FillWholeLines then
-        RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(ARow),
-          LinesRect.Right,
-          YRowOffset(ARow + 1)), TSynDWrite.SolidBrush(BGColor))
-      else if LeftChar = 1 then
-        RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(ARow),
-          LinesRect.Left + fCharWidth,
-          YRowOffset(ARow + 1)), TSynDWrite.SolidBrush(BGColor))
-    end
-    else if LastChar > 0 then
-    begin
-      // Adjust for First/LastChar
-      SelFirst := Max(SelFirst - FirstChar + 1, 1);
-      if SelLast <> MaxInt then
-        SelLast := SelLast - FirstChar + 1;
+      PartSel := PartSelArr[Index];
+      if (PartSel.Last < MaxInt) and (PartSel.First > LastChar) then Continue;
 
-      Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast - SelFirst + 1,
-        FTextOffset, YRowOffset(ARow), PDwriteHitTestMetrics(nil)^, 0, RangeCount);
-      SetLength(HMArr, RangeCount);
-      Layout.IDW.HitTestTextRange(SelFirst - 1, SelLast - SelFirst + 1,
-      FTextOffset + XRowOffset, YRowOffset(ARow), HMArr[0], RangeCount, RangeCount);
-      for I := 0 to RangeCount -1  do
+      AlphaBlended := not SameValue(fSelectedColor.Alpha, 1);
+      if AlphaBlended then
+        BGColor := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha)
+      else
+        BGColor := D2D1ColorF(PartSel.SelBG);
+
+      if (LastChar <= 0) and (PartSel.Last = MaxInt) then
       begin
-        if not AlphaBlended then
-          Layout.SetFontColor(SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
-        RT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(ARow),
-          SelEndX(HMArr[I].Left, HMArr[I].Width, SelLast, I, RangeCount),
-          YRowOffset(ARow + 1)), TSynDWrite.SolidBrush(BGColor));
+        // empty line special case
+        if fSelectedColor.FillWholeLines then
+          RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(ARow),
+            LinesRect.Right,
+            YRowOffset(ARow + 1)), TSynDWrite.SolidBrush(BGColor))
+        else if LeftChar = 1 then
+          RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(ARow),
+            LinesRect.Left + fCharWidth,
+            YRowOffset(ARow + 1)), TSynDWrite.SolidBrush(BGColor))
+      end
+      else if LastChar > 0 then
+      begin
+        // Adjust for First/LastChar
+        PartSel.First := Max(PartSel.First - FirstChar + 1, 1);
+        if PartSel.Last <> MaxInt then
+          PartSel.Last := PartSel.Last - FirstChar + 1;
+
+        Layout.IDW.HitTestTextRange(PartSel.First - 1, PartSel.Last - PartSel.First + 1,
+          FTextOffset, YRowOffset(ARow), PDwriteHitTestMetrics(nil)^, 0, RangeCount);
+        SetLength(HMArr, RangeCount);
+        Layout.IDW.HitTestTextRange(PartSel.First - 1, PartSel.Last - PartSel.First + 1,
+        FTextOffset + XRowOffset, YRowOffset(ARow), HMArr[0], RangeCount, RangeCount);
+        for I := 0 to RangeCount -1  do
+        begin
+          if not AlphaBlended then
+            Layout.SetFontColor(PartSel.SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
+          RT.FillRectangle(Rect(Round(HMArr[I].left), YRowOffset(ARow),
+            SelEndX(HMArr[I].Left, HMArr[I].Width, PartSel.Last, I, RangeCount),
+            YRowOffset(ARow + 1)), TSynDWrite.SolidBrush(BGColor));
+        end;
       end;
     end;
   end;
 
 var
   Line, Row, CharOffset, I: Integer;
+  RowStart: TBufferCoord;
   LayoutWidth: Integer;
   SLine, SRow: string;
   FirstChar, LastChar: Integer;
@@ -2935,11 +2960,15 @@ begin
 
   for Row:= aFirstRow to aLastRow do
   begin
-    Line := RowToLine(Row);
+    RowStart := DisplayToBufferPos(DisplayCoord(1, Row));
+    Line := RowStart.Line;
     SLine := Lines[Line -  1];
 
-    SRow := Rows[Row];
-    CharOffset := DisplayToBufferPos(DisplayCoord(1, Row)).Char;
+    CharOffset := RowStart.Char;
+    if WordWrap then
+      SRow := Copy(SLine, CharOffset, fWordWrapPlugin.RowLength[Row])
+    else
+      SRow := SLine;
     DoTabPainting := False;
 
     // Restrict the text to what can/should be displayed
@@ -2974,7 +3003,7 @@ begin
     end;
 
     // Special colors, full line selection and ActiveLineColor
-    FullRowColors(Row, Line, FullRowBG, FullRowFG, BGAlpha);
+    FullRowColors(RowStart, Row, Line, FullRowBG, FullRowFG, BGAlpha);
     if FullRowBG <> clNone then
       RT.FillRectangle(Rect(LinesRect.Left, YRowOffset(Row), LinesRect.Right,
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(FullRowBG));
@@ -3058,7 +3087,7 @@ begin
 
     // Paint partial selection if not alpha blending the selection color
     if SameValue(fSelectedColor.Alpha, 1) then
-      PaintPartialSelection(Layout, Row, Line, FirstChar, LastChar);
+      PaintPartialSelection(Layout, Row, Line, RowStart, FirstChar, LastChar);
 
     // Indicators
     LineIndicators := FIndicators.LineIndicators(Line);
@@ -3150,7 +3179,7 @@ begin
 
     // Paint partial selection if not alpha blending the selection color
     if not SameValue(fSelectedColor.Alpha, 1) then
-      PaintPartialSelection(Layout, Row, Line, FirstChar, LastChar);
+      PaintPartialSelection(Layout, Row, Line, RowStart, FirstChar, LastChar);
 
     // Draw right edge
     if (fRightEdge > 0) then
