@@ -5804,7 +5804,6 @@ begin
           end
           else
             MoveCaretVert(-1, Command = ecSelUp);
-//          Update;
         end;
       ecDown, ecSelDown:
         begin
@@ -5818,7 +5817,6 @@ begin
           end
           else
             MoveCaretVert(1, Command = ecSelDown);
-//          Update;
         end;
       ecPageUp, ecSelPageUp, ecPageDown, ecSelPageDown:
         begin
@@ -5847,26 +5845,22 @@ begin
           end
           else
             MoveCaretVert(counter, Command in [ecSelPageUp, ecSelPageDown]);
-//          Update;
         end;
       ecPageTop, ecSelPageTop:
         begin
           MoveDisplayPosAndSelection(DisplayCoord(DisplayX, TopLine),
             Command = ecSelPageTop);
-//          Update;
         end;
       ecPageBottom, ecSelPageBottom:
         begin
           MoveDisplayPosAndSelection(
             DisplayCoord(DisplayX, TopLine + LinesInWindow -1),
             Command = ecSelPageBottom);
-//          Update;
         end;
       ecEditorTop, ecSelEditorTop:
         begin
           MoveDisplayPosAndSelection(DisplayCoord(1, 1),
             Command = ecSelEditorTop);
-//          Update;
         end;
       ecEditorBottom, ecSelEditorBottom:
         begin
@@ -5874,14 +5868,10 @@ begin
           if (CaretNew.Line > 0) then
             CaretNew.Char := Length(Lines[CaretNew.Line - 1]) + 1;
           MoveCaretAndSelection(CaretNew, Command = ecSelEditorBottom);
-//          Update;
         end;
       ecGotoXY, ecSelGotoXY:
         if Assigned(Data) then
-        begin
           MoveCaretAndSelection(TBufferCoord(Data^), Command = ecSelGotoXY);
-//          Update;
-        end;
       ecWordLeft, ecSelWordLeft:
         begin
           CaretNew := PrevWordPos;
@@ -6272,20 +6262,17 @@ begin
                 MoveCaretVert(TopLine - vCaretRow, False);
             end;
             EnsureCursorPosVisible;
-//            Update;
           end;
         end;
       ecScrollLeft:
         begin
           LeftChar := LeftChar - 1;
           EnsureCaretInView;
-//          Update;
         end;
       ecScrollRight:
         begin
           LeftChar := LeftChar + 1;
           EnsureCaretInView;
-//          Update;
         end;
       ecInsertMode:
         begin

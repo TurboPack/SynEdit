@@ -434,8 +434,8 @@ end;
 
 function TSynSelection.Intersects(const Other: TSynSelection): Boolean;
 begin
-  Result := not Self.Contains(Other.Start) and not Self.Contains(Other.Stop) and
-    not Other.Contains(Self.Start);
+  Result := Self.Contains(Other.Start) or Self.Contains(Other.Stop) or
+    Other.Contains(Self.Start);
 end;
 
 function TSynSelection.IsEmpty: Boolean;

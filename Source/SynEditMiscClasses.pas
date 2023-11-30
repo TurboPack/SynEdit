@@ -676,6 +676,7 @@ type
     procedure DeleteSelection(Index: Integer);
     function FindCaret(const ACaret: TBufferCoord): Integer;
     function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
+    procedure Merge;
     function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
     property BaseSelectionIndex: Integer read FBaseSelIndex;
@@ -3125,6 +3126,23 @@ end;
 function TSynSelections.GetSelection(Index: Integer): TSynSelection;
 begin
   Result := FSelections[Index];
+end;
+
+procedure TSynSelections.Merge;
+// It is executed after selection with the mouse
+var
+  ActiveSel: TSynSelection;
+  NeedToMove: Boolean;
+begin
+  if FSelections.Count = 0 then Exit;
+
+  ActiveSel := FSelections[FActiveSelIndex].Normalized;
+  // Is it in the correct position?
+  NeedToMove := ((FActiveSelIndex > 0) and
+    (FSelections[FActiveSelIndex - 1].Normalized.Start > ActiveSel.Start)) or
+   ((FActiveSelIndex < FSelections.Count - 1) and
+      (FSelections[FActiveSelIndex + 1].Normalized.Start < ActiveSel.Start));
+
 end;
 
 function TSynSelections.PartSelectionsForRow(
