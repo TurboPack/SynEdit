@@ -1433,6 +1433,8 @@ type
     class function DottedStrokeStyle: ID2D1StrokeStyle; static;
     class function GradientGutterBrush(StartColor, EndColor: TColor): ID2D1LinearGradientBrush;
     class procedure ResetRenderTarget; static;
+    // if SynEdit inside a DLL call Finalize before unloading the DLL (https://github.com/TurboPack/SynEdit/issues/249)
+    class procedure Finalize;
   end;
 
   TSynTextFormat = record
@@ -1789,6 +1791,17 @@ begin
       SingletonDWriteFactory._AddRef;
   end;
   Result := SingletonDWriteFactory;
+end;
+
+class procedure TSynDWrite.Finalize;
+begin
+  FreeAndNil(TSynDWrite.FSolidBrushes);
+  TSynDWrite.SingletonDottedStrokeStyle := nil;
+  TSynDWrite.SingletonRenderTarget := nil;
+  TSynDWrite.SingletonGDIInterop := nil;
+  TSynDWrite.SingletonImagingFactory := nil;
+  TSynDWrite.SingletonPrintDocumentPackageTargetFactory := nil;
+  TSynDWrite.SingletonD2DFactory := nil;
 end;
 
 class function TSynDWrite.GDIInterop: IDWriteGdiInterop;
@@ -2209,5 +2222,5 @@ initialization
   clNoneF := D2D1ColorF(0, 0, 0, 0);
 finalization
   // Delphi 10.1 does not support class destructors
-  TSynDWrite.FSolidBrushes.Free;
+  TSynDWrite.Finalize;
 end.
