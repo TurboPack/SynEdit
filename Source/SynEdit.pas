@@ -4618,7 +4618,8 @@ begin
           pReconvert.dwTargetStrLen := 0;
           pReconvert.dwTargetStrOffset := (Self.CaretX - 1) * sizeof(Char);
           pTarget := Pointer(Message.LParam + Sizeof(TReconvertString));
-          move(TargetText[1], pTarget^, Length(TargetText) * sizeof(Char));
+          if TargetText <> '' then
+            move(TargetText[1], pTarget^, Length(TargetText) * sizeof(Char));
           Message.Result := Sizeof(TReconvertString) + Length(TargetText) * sizeof(Char);
         end;
       end;
