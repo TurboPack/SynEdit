@@ -67,40 +67,48 @@ type
       var Action: TSynReplaceAction);
     procedure FormCreate(Sender: TObject);
   private
-    FSearchFromCaret: Boolean;
     procedure DoSearchReplaceText(AReplace: boolean; ABackwards: boolean);
     procedure ShowSearchReplaceDialog(AReplace: boolean);
   end;
 var
   SearchReplaceDemoForm: TSearchReplaceDemoForm;
+
 implementation
+
 {$R *.DFM}
+
 uses
-  dlgSearchText, dlgReplaceText, dlgConfirmReplace, plgSearchHighlighter,
-  SynEditTypes, SynEditMiscProcs;
+  dlgSearchText, dlgReplaceText, dlgConfirmReplace, SynEditTypes,
+  SynEditMiscProcs, uSearchHighlighter;
+
 // options - to be saved to the registry
+type
+  TSearchOptions = record
+    SearchBackwards: Boolean;
+    SearchCaseSensitive: Boolean;
+    SearchFromCaret: Boolean;
+    SearchSelectionOnly: Boolean;
+    SearchTextAtCaret: Boolean;
+    SearchWholeWords: Boolean;
+    SearchRegex: Boolean;
+    SearchText: string;
+    SearchTextHistory: string;
+    ReplaceText: string;
+    ReplaceTextHistory: string;
+    TempSearchFromCaret: Boolean;
+    function SetSynSearchOptions: TSynSearchOptions;
+  end;
+
 var
-  gbSearchBackwards: Boolean;
-  gbSearchCaseSensitive: Boolean;
-  gbSearchFromCaret: Boolean;
-  gbSearchSelectionOnly: Boolean;
-  gbSearchTextAtCaret: Boolean;
-  gbSearchWholeWords: Boolean;
-  gbSearchRegex: Boolean;
-  gsSearchText: string;
-  gsSearchTextHistory: string;
-  gsReplaceText: string;
-  gsReplaceTextHistory: string;
+  SearchOptions: TSearchOptions;
+
 resourcestring
   STextNotFound = 'Text not found';
 
 { TSearchReplaceDemoForm }
 procedure TSearchReplaceDemoForm.FormCreate(Sender: TObject);
 begin
-  with TSearchTextHightlighterSynEditPlugin.Create(SynEditor) do
-  begin
-    Attribute.Background := $0078AAFF;
-  end;
+  RegisterSearchHighlightIndicatorSpec(SynEditor);
 end;
 
 procedure TSearchReplaceDemoForm.DoSearchReplaceText(AReplace: Boolean;
@@ -109,25 +117,16 @@ var
   Options: TSynSearchOptions;
 begin
   Statusbar.SimpleText := '';
-  if AReplace then
-    Options := [ssoPrompt, ssoReplace, ssoReplaceAll]
-  else
-    Options := [];
+  Options := SearchOptions.SetSynSearchOptions;
   if ABackwards then
-    Include(Options, ssoBackwards);
-  if gbSearchCaseSensitive then
-    Include(Options, ssoMatchCase);
-  if not FSearchFromCaret then
-    Include(Options, ssoEntireScope);
-  if gbSearchSelectionOnly then
-    Include(Options, ssoSelectedOnly);
-  if gbSearchWholeWords then
-    Include(Options, ssoWholeWord);
-  if gbSearchRegex then
-    SynEditor.SearchEngine := SynEditRegexSearch
+    Include(Options, ssoBackwards)
   else
-    SynEditor.SearchEngine := SynEditSearch;
-  if SynEditor.SearchReplace(gsSearchText, gsReplaceText, Options) = 0 then
+    Exclude(Options, ssoBackwards);
+
+  if AReplace then
+    Options := Options + [ssoPrompt, ssoReplace, ssoReplaceAll];
+
+  if SynEditor.SearchReplace(SearchOptions.SearchText, SearchOptions.ReplaceText, Options) = 0 then
   begin
     MessageBeep(MB_ICONASTERISK);
     Statusbar.SimpleText := STextNotFound;
@@ -144,6 +143,7 @@ end;
 procedure TSearchReplaceDemoForm.ShowSearchReplaceDialog(AReplace: Boolean);
 var
   dlg: TTextSearchDialog;
+  Options: TSynSearchOptions;
 begin
   Statusbar.SimpleText := '';
   if AReplace then
@@ -153,13 +153,13 @@ begin
   with dlg do
     try
       // assign search options
-      SearchBackwards := gbSearchBackwards;
-      SearchCaseSensitive := gbSearchCaseSensitive;
-      SearchFromCursor := gbSearchFromCaret;
-      SearchInSelectionOnly := gbSearchSelectionOnly;
+      SearchBackwards := SearchOptions.SearchBackwards;
+      SearchCaseSensitive := SearchOptions.SearchCaseSensitive;
+      SearchFromCursor := SearchOptions.SearchFromCaret;
+      SearchInSelectionOnly := SearchOptions.SearchSelectionOnly;
       // start with last search text
-      SearchText := gsSearchText;
-      if gbSearchTextAtCaret then
+      SearchText := SearchOptions.SearchText;
+      if SearchOptions.SearchTextAtCaret then
       begin
         // if something is selected search for that text
         if SynEditor.SelAvail and (SynEditor.BlockBegin.Line =
@@ -168,35 +168,43 @@ begin
         else
           SearchText := SynEditor.GetWordAtRowCol(SynEditor.CaretXY);
       end;
-      SearchTextHistory := gsSearchTextHistory;
+      SearchTextHistory := SearchOptions.SearchTextHistory;
       if AReplace then
         with dlg as TTextReplaceDialog do
         begin
-          ReplaceText := gsReplaceText;
-          ReplaceTextHistory := gsReplaceTextHistory;
+          ReplaceText := SearchOptions.ReplaceText;
+          ReplaceTextHistory := SearchOptions.ReplaceTextHistory;
         end;
-      SearchWholeWords := gbSearchWholeWords;
+      SearchWholeWords := SearchOptions.SearchWholeWords;
       if ShowModal = mrOK then
       begin
-        gbSearchBackwards := SearchBackwards;
-        gbSearchCaseSensitive := SearchCaseSensitive;
-        gbSearchFromCaret := SearchFromCursor;
-        gbSearchSelectionOnly := SearchInSelectionOnly;
-        gbSearchWholeWords := SearchWholeWords;
-        gbSearchRegex := SearchRegularExpression;
-        gsSearchText := SearchText;
-        gsSearchTextHistory := SearchTextHistory;
+        SearchOptions.SearchBackwards := SearchBackwards;
+        SearchOptions.SearchCaseSensitive := SearchCaseSensitive;
+        SearchOptions.SearchFromCaret := SearchFromCursor;
+        SearchOptions.SearchSelectionOnly := SearchInSelectionOnly;
+        SearchOptions.SearchWholeWords := SearchWholeWords;
+        SearchOptions.SearchRegex := SearchRegularExpression;
+
+        ClearSearchHighlight(SynEditor);
+        SearchOptions.SearchText := SearchText;
+        SearchOptions.SearchTextHistory := SearchTextHistory;
         if AReplace then
           with dlg as TTextReplaceDialog do
           begin
-            gsReplaceText := ReplaceText;
-            gsReplaceTextHistory := ReplaceTextHistory;
+            SearchOptions.ReplaceText := ReplaceText;
+            SearchOptions.ReplaceTextHistory := ReplaceTextHistory;
           end;
-        FSearchFromCaret := gbSearchFromCaret;
-        if gsSearchText <> '' then
+        SearchOptions.TempSearchFromCaret := SearchOptions.SearchFromCaret;
+        if SearchOptions.SearchText <> '' then
         begin
-          DoSearchReplaceText(AReplace, gbSearchBackwards);
-          FSearchFromCaret := TRUE;
+          if SearchOptions.SearchRegex then
+            SynEditor.SearchEngine := SynEditRegexSearch
+          else
+            SynEditor.SearchEngine := SynEditSearch;
+          Options := SearchOptions.SetSynSearchOptions;
+          HighligthtSearchTerm(SearchOptions.SearchText, SynEditor, SynEditor.SearchEngine, Options);
+          DoSearchReplaceText(AReplace, SearchOptions.SearchBackwards);
+          SearchOptions.TempSearchFromCaret := TRUE;
         end;
       end;
     finally
@@ -236,7 +244,7 @@ end;
 
 procedure TSearchReplaceDemoForm.actSearchUpdate(Sender: TObject);
 begin
-  (Sender as TAction).Enabled := gsSearchText <> '';
+  (Sender as TAction).Enabled := SearchOptions.SearchText <> '';
 end;
 
 procedure TSearchReplaceDemoForm.ActionSearchReplaceUpdate(Sender: TObject);
@@ -275,5 +283,22 @@ begin
     end;
   end;
 end;
+{ TSearchOptions }
+
+function TSearchOptions.SetSynSearchOptions: TSynSearchOptions;
+begin
+  Result := [];
+  if SearchOptions.SearchBackwards then
+    Include(Result, ssoBackwards);
+  if SearchOptions.SearchCaseSensitive then
+    Include(Result, ssoMatchCase);
+  if not SearchOptions.TempSearchFromCaret then
+    Include(Result, ssoEntireScope);
+  if SearchOptions.SearchSelectionOnly then
+    Include(Result, ssoSelectedOnly);
+  if SearchOptions.SearchWholeWords then
+    Include(Result, ssoWholeWord);
+end;
+
 end.
 

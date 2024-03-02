@@ -41,7 +41,8 @@ uses
   frmMain in 'frmMain.pas' {SearchReplaceDemoForm},
   dlgSearchText in 'dlgSearchText.pas' {TextSearchDialog},
   dlgReplaceText in 'dlgReplaceText.pas' {TextReplaceDialog},
-  dlgConfirmReplace in 'dlgConfirmReplace.pas' {ConfirmReplaceDialog};
+  dlgConfirmReplace in 'dlgConfirmReplace.pas' {ConfirmReplaceDialog},
+  uSearchHighlighter in 'uSearchHighlighter.pas';
 
 {$R *.RES}
 

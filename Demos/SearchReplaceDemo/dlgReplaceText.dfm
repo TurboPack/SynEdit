@@ -1,15 +1,20 @@
 inherited TextReplaceDialog: TTextReplaceDialog
   Caption = 'Replace text'
   ClientHeight = 210
-  OldCreateOrder = True
-  PixelsPerInch = 96
+  StyleElements = [seFont, seClient, seBorder]
   TextHeight = 13
+  inherited Label1: TLabel
+    StyleElements = [seFont, seClient, seBorder]
+  end
   object Label2: TLabel [1]
     Left = 8
     Top = 41
     Width = 65
     Height = 13
     Caption = '&Replace with:'
+  end
+  inherited cbSearchText: TComboBox
+    StyleElements = [seFont, seClient, seBorder]
   end
   inherited gbSearchOptions: TGroupBox
     Top = 70
@@ -32,7 +37,6 @@ inherited TextReplaceDialog: TTextReplaceDialog
     Top = 37
     Width = 228
     Height = 21
-    ItemHeight = 13
     TabOrder = 1
   end
 end

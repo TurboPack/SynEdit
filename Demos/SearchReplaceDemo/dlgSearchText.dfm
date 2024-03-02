@@ -11,9 +11,7 @@ object TextSearchDialog: TTextSearchDialog
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCloseQuery = FormCloseQuery
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8
@@ -27,7 +25,6 @@ object TextSearchDialog: TTextSearchDialog
     Top = 8
     Width = 228
     Height = 21
-    ItemHeight = 13
     TabOrder = 0
   end
   object gbSearchOptions: TGroupBox
