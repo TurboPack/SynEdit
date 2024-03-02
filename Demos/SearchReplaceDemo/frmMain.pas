@@ -78,7 +78,7 @@ implementation
 uses
   dlgSearchText, dlgReplaceText, dlgConfirmReplace, plgSearchHighlighter,
   SynEditTypes, SynEditMiscProcs;
-  // options - to be saved to the registry
+// options - to be saved to the registry
 var
   gbSearchBackwards: Boolean;
   gbSearchCaseSensitive: Boolean;
@@ -93,6 +93,7 @@ var
   gsReplaceTextHistory: string;
 resourcestring
   STextNotFound = 'Text not found';
+
 { TSearchReplaceDemoForm }
 procedure TSearchReplaceDemoForm.FormCreate(Sender: TObject);
 begin
@@ -101,6 +102,7 @@ begin
     Attribute.Background := $0078AAFF;
   end;
 end;
+
 procedure TSearchReplaceDemoForm.DoSearchReplaceText(AReplace: Boolean;
   ABackwards: Boolean);
 var
@@ -138,6 +140,7 @@ begin
   if ConfirmReplaceDialog <> nil then
     ConfirmReplaceDialog.Free;
 end;
+
 procedure TSearchReplaceDemoForm.ShowSearchReplaceDialog(AReplace: Boolean);
 var
   dlg: TTextSearchDialog;
@@ -147,98 +150,115 @@ begin
     dlg := TTextReplaceDialog.Create(Self)
   else
     dlg := TTextSearchDialog.Create(Self);
-  with dlg do try
-    // assign search options
-    SearchBackwards := gbSearchBackwards;
-    SearchCaseSensitive := gbSearchCaseSensitive;
-    SearchFromCursor := gbSearchFromCaret;
-    SearchInSelectionOnly := gbSearchSelectionOnly;
-    // start with last search text
-    SearchText := gsSearchText;
-    if gbSearchTextAtCaret then begin
-      // if something is selected search for that text
-      if SynEditor.SelAvail and (SynEditor.BlockBegin.Line = SynEditor.BlockEnd.Line)
-      then
-        SearchText := SynEditor.SelText
-      else
-        SearchText := SynEditor.GetWordAtRowCol(SynEditor.CaretXY);
-    end;
-    SearchTextHistory := gsSearchTextHistory;
-    if AReplace then with dlg as TTextReplaceDialog do begin
-      ReplaceText := gsReplaceText;
-      ReplaceTextHistory := gsReplaceTextHistory;
-    end;
-    SearchWholeWords := gbSearchWholeWords;
-    if ShowModal = mrOK then begin
-      gbSearchBackwards := SearchBackwards;
-      gbSearchCaseSensitive := SearchCaseSensitive;
-      gbSearchFromCaret := SearchFromCursor;
-      gbSearchSelectionOnly := SearchInSelectionOnly;
-      gbSearchWholeWords := SearchWholeWords;
-      gbSearchRegex := SearchRegularExpression;
-      gsSearchText := SearchText;
-      gsSearchTextHistory := SearchTextHistory;
-      if AReplace then with dlg as TTextReplaceDialog do begin
-        gsReplaceText := ReplaceText;
-        gsReplaceTextHistory := ReplaceTextHistory;
+  with dlg do
+    try
+      // assign search options
+      SearchBackwards := gbSearchBackwards;
+      SearchCaseSensitive := gbSearchCaseSensitive;
+      SearchFromCursor := gbSearchFromCaret;
+      SearchInSelectionOnly := gbSearchSelectionOnly;
+      // start with last search text
+      SearchText := gsSearchText;
+      if gbSearchTextAtCaret then
+      begin
+        // if something is selected search for that text
+        if SynEditor.SelAvail and (SynEditor.BlockBegin.Line =
+          SynEditor.BlockEnd.Line) then
+          SearchText := SynEditor.SelText
+        else
+          SearchText := SynEditor.GetWordAtRowCol(SynEditor.CaretXY);
       end;
-      FSearchFromCaret := gbSearchFromCaret;
-      if gsSearchText <> '' then begin
-        DoSearchReplaceText(AReplace, gbSearchBackwards);
-        FSearchFromCaret := TRUE;
+      SearchTextHistory := gsSearchTextHistory;
+      if AReplace then
+        with dlg as TTextReplaceDialog do
+        begin
+          ReplaceText := gsReplaceText;
+          ReplaceTextHistory := gsReplaceTextHistory;
+        end;
+      SearchWholeWords := gbSearchWholeWords;
+      if ShowModal = mrOK then
+      begin
+        gbSearchBackwards := SearchBackwards;
+        gbSearchCaseSensitive := SearchCaseSensitive;
+        gbSearchFromCaret := SearchFromCursor;
+        gbSearchSelectionOnly := SearchInSelectionOnly;
+        gbSearchWholeWords := SearchWholeWords;
+        gbSearchRegex := SearchRegularExpression;
+        gsSearchText := SearchText;
+        gsSearchTextHistory := SearchTextHistory;
+        if AReplace then
+          with dlg as TTextReplaceDialog do
+          begin
+            gsReplaceText := ReplaceText;
+            gsReplaceTextHistory := ReplaceTextHistory;
+          end;
+        FSearchFromCaret := gbSearchFromCaret;
+        if gsSearchText <> '' then
+        begin
+          DoSearchReplaceText(AReplace, gbSearchBackwards);
+          FSearchFromCaret := TRUE;
+        end;
       end;
+    finally
+      dlg.Free;
     end;
-  finally
-    dlg.Free;
-  end;
 end;
+
 { event handler }
 procedure TSearchReplaceDemoForm.ActionFileOpenExecute(Sender: TObject);
 begin
-  if OpenDialogFile.Execute then begin
+  if OpenDialogFile.Execute then
+  begin
     SynEditor.Lines.LoadFromFile(OpenDialogFile.FileName);
     SynEditor.ReadOnly := ofReadOnly in OpenDialogFile.Options;
   end;
 end;
+
 procedure TSearchReplaceDemoForm.ActionSearchExecute(Sender: TObject);
 begin
   ShowSearchReplaceDialog(FALSE);
 end;
+
 procedure TSearchReplaceDemoForm.ActionSearchNextExecute(Sender: TObject);
 begin
   DoSearchReplaceText(FALSE, FALSE);
 end;
+
 procedure TSearchReplaceDemoForm.ActionSearchPrevExecute(Sender: TObject);
 begin
   DoSearchReplaceText(FALSE, TRUE);
 end;
+
 procedure TSearchReplaceDemoForm.ActionSearchReplaceExecute(Sender: TObject);
 begin
   ShowSearchReplaceDialog(TRUE);
 end;
+
 procedure TSearchReplaceDemoForm.actSearchUpdate(Sender: TObject);
 begin
   (Sender as TAction).Enabled := gsSearchText <> '';
 end;
+
 procedure TSearchReplaceDemoForm.ActionSearchReplaceUpdate(Sender: TObject);
 begin
-  (Sender as TAction).Enabled := (gsSearchText <> '')
-    and not SynEditor.ReadOnly;
+  (Sender as TAction).Enabled := not SynEditor.ReadOnly;
 end;
+
 procedure TSearchReplaceDemoForm.SynEditorReplaceText(Sender: TObject; const
-    ASearch, AReplace: string; Line, Column: Integer; var Action:
-    TSynReplaceAction);
+  ASearch, AReplace: string; Line, Column: Integer; var Action:
+  TSynReplaceAction);
 var
   APos: TPoint;
   EditRect: TRect;
 begin
   if ASearch = AReplace then
     Action := raSkip
-  else begin
+  else
+  begin
     APos := SynEditor.ClientToScreen(
       SynEditor.RowColumnToPixels(
       SynEditor.BufferToDisplayPos(
-        BufferCoord(Column, Line) ) ) );
+      BufferCoord(Column, Line))));
     EditRect := ClientRect;
     EditRect.TopLeft := ClientToScreen(EditRect.TopLeft);
     EditRect.BottomRight := ClientToScreen(EditRect.BottomRight);
@@ -250,8 +270,10 @@ begin
       mrYes: Action := raReplace;
       mrYesToAll: Action := raReplaceAll;
       mrNo: Action := raSkip;
-      else Action := raCancel;
+    else
+      Action := raCancel;
     end;
   end;
 end;
 end.
+

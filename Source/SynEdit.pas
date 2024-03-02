@@ -7319,7 +7319,10 @@ begin
         begin
           nAction := DoOnReplaceText(ASearch, sReplace, ptCurrent.Line, nFound);
           if nAction = raCancel then
-            exit;
+          begin
+            Dec(Result);
+            Exit;
+          end;
         end
         else
           nAction := raReplace;

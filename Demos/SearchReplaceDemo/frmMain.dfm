@@ -11,7 +11,6 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object SynEditor: TSynEdit
     Left = 0
