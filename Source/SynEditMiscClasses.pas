@@ -528,8 +528,11 @@ type
   end;
   {$ENDREGION 'TSynHotKey'}
 
+  TSynIsWordBreakFunction = function(C: WideChar): Boolean of object;
+
   TSynEditSearchCustom = class(TComponent)
   protected
+    FIsWordBreakFunction: TSynIsWordBreakFunction;
     function GetPattern: string; virtual; abstract;
     procedure SetPattern(const Value: string); virtual; abstract;
     function GetLength(Index: Integer): Integer; virtual; abstract;
@@ -547,6 +550,7 @@ type
     property Results[Index: Integer]: Integer read GetResult;
     property Lengths[Index: Integer]: Integer read GetLength;
     property Options: TSynSearchOptions write SetOptions;
+    property IsWordBreakFunction: TSynIsWordBreakFunction write FIsWordBreakFunction;
   end;
 
   {$REGION 'Indicators'}

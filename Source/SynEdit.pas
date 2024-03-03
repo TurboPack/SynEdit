@@ -7252,6 +7252,7 @@ begin
   // initialize the search engine
   fSearchEngine.Options := AOptions;
   fSearchEngine.Pattern := ASearch;
+  fSearchEngine.IsWordBreakFunction := IsWordBreakChar;
   // search while the current search position is inside of the search range
   nReplaceLen := 0;
   DoOnPaintTransient(ttBefore);
@@ -7278,7 +7279,10 @@ begin
         lnEnd := Length(Line) + 1;
 
       if lnEnd <= lnStart then
+      begin
+        ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
         Continue;
+      end;
       nInLine := fSearchEngine.FindAll(Copy(Line, lnStart, lnEnd - lnStart));
       iResultOffset := lnStart - 1;
       if bBackward then
@@ -7364,10 +7368,7 @@ begin
           exit;
       end;
       // search next / previous line
-      if bBackward then
-        Dec(ptCurrent.Line)
-      else
-        Inc(ptCurrent.Line);
+      ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
     end;
   finally
     if bReplaceAll and not bPrompt then DecPaintLock;

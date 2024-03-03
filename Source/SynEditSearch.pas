@@ -68,6 +68,7 @@ type
     function GetFinished: Boolean;
     procedure InitShiftTable;
     procedure SetCaseSensitive(const Value: Boolean);
+    function IsWordBreakChar(C: WideChar): Boolean;
   protected
     function TestWholeWord: Boolean;
     procedure SetPattern(const Value: string); override;
@@ -153,13 +154,16 @@ begin
   fShiftInitialized := True;
 end;                                
 
-// TODO: would be more intelligent to use IsWordBreakChar for SynEdit
-function IsWordBreakChar(C: WideChar): Boolean;
+function TSynEditSearch.IsWordBreakChar(C: WideChar): Boolean;
 begin
+  if Assigned(FIsWordBreakFunction) then
+    Exit(FIsWordBreakFunction(C));
+
   case C of
-    #0..#32, '.', ',', ';', ':', '"', '''', '´', '`', '°', '^', '!', '?', '&',
-    '$', '@', '§', '%', '#', '~', '[', ']', '(', ')', '{', '}', '<', '>',
-    '-', '=', '+', '*', '/', '\', '|':
+      #0..#32, #160, '.', ',', ';', ':', '"', '''', WideChar(#$00B4), '`',
+      WideChar(#$00B0), '^', '!', '?', '&', '$', '@', WideChar(#$00A7), '%',
+      '#', '~', '[', ']', '(', ')', '{', '}', '<', '>', '-', '=', '+', '*',
+      '/', '\', '|':
       Result := True;
     else
       Result := False;
