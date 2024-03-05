@@ -28,11 +28,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditSearch.pas,v 1.12.2.6 2009/09/29 00:16:46 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 
@@ -60,6 +55,7 @@ type
     Look_At: Integer;
     PatLen, PatLenSucc: Integer;
     Shift: array[WideChar] of Integer;
+    fBackwards: Boolean;
     fCaseSensitive: Boolean;
     fWhole: Boolean;
     fResults: TList;
@@ -83,11 +79,14 @@ type
     function FindAll(const NewText: string): Integer; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
     function FindFirst(const NewText: string): Integer;
+    function FindLast(const NewText: string): Integer;
     procedure FixResults(First, Delta: Integer);
     function Next: Integer;
+    function Prev: Integer;
     property Count: Integer read fCount write fCount;
     property Finished: Boolean read GetFinished;
     property Pattern read CasedPat;
+    property Backwards: Boolean read fBackwards write fBackwards;
     property CaseSensitive: Boolean read fCaseSensitive write SetCaseSensitive;
     property Whole: Boolean read fWhole write fWhole;
   end;
@@ -215,6 +214,36 @@ begin
   end;
 end;
 
+function TSynEditSearch.Prev: Integer;
+// "Naive" backward search
+// Run points to the last char of the pattern in the search string
+// as in Next so that we can reuse TestWholeWord.
+var
+  I: Integer;
+  PTrial: PChar;
+begin
+  Result := 0;
+  while Run > Origin + PatLen do
+  begin
+    Dec(Run);
+    PTrial := Run - PatLen + 1;
+    I := PatLen;
+    while I >= 1 do
+    begin
+      if PTrial[I - 1] <> Pat[I] then
+        Break;
+      Dec(I);
+    end;
+    if (I = 0) and (not fWhole or TestWholeWord) then
+    begin
+      Result := PTrial - Origin + 1;
+      Run := PTrial;
+      Exit;
+    end;
+  end;
+  Run := Origin;
+end;
+
 destructor TSynEditSearch.Destroy;
 begin
   fResults.Free;
@@ -249,16 +278,30 @@ begin
 end;
 
 function TSynEditSearch.FindAll(const NewText: string): Integer;
+// Uses a Boyer-Moore algorithm for forward seach and a "naive" one
+// for backward search
 var
   Found: Integer;
 begin
   // never shrink Capacity
   fResults.Count := 0;
-  Found := FindFirst(NewText);
-  while Found > 0 do
+  if Backwards then
   begin
-    fResults.Add(Pointer(Found));
-    Found := Next;
+    Found := FindLast(NewText);
+    while Found > 0 do
+    begin
+      fResults.Insert(0, Pointer(Found));
+      Found := Prev;
+    end;
+  end
+  else
+  begin
+    Found := FindFirst(NewText);
+    while Found > 0 do
+    begin
+      fResults.Add(Pointer(Found));
+      Found := Next;
+    end;
   end;
   Result := fResults.Count;
 end;
@@ -266,7 +309,7 @@ end;
 function TSynEditSearch.Replace(const aOccurrence, aReplacement: string): string;
 begin
   Result := aReplacement;
-end;                     
+end;
 
 function TSynEditSearch.FindFirst(const NewText: string): Integer;
 begin
@@ -287,20 +330,41 @@ begin
   end;
 end;
 
+function TSynEditSearch.FindLast(const NewText: string): Integer;
+begin
+  PatLen := Length(Pat);
+  if Patlen = 0 then raise Exception.Create('Pattern is empty');
+
+  Result := 0;
+  fTextLen := Length(NewText);
+  if fTextLen >= PatLen then
+  begin
+    if CaseSensitive then
+      FTextToSearch := NewText
+    else
+      FTextToSearch := SysUtils.AnsiLowerCase(NewText);
+    Origin := PWideChar(FTextToSearch);
+    TheEnd := Origin + fTextLen;
+    Run := TheEnd;
+    Result := Prev;
+  end;
+end;
+
 function TSynEditSearch.GetLength(Index: Integer): Integer;
 begin
-  Result := PatLen;  
+  Result := PatLen;
 end;
 
 function TSynEditSearch.GetPattern: string;
 begin
-  Result := CasedPat; 
+  Result := CasedPat;
 end;
 
 procedure TSynEditSearch.SetOptions(const Value: TSynSearchOptions);
 begin
   CaseSensitive := ssoMatchCase in Value;
   Whole := ssoWholeWord in Value;
+  Backwards := ssoBackwards in Value;
 end;
 
 end.

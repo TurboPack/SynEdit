@@ -7297,7 +7297,6 @@ begin
         nSearchLen := fSearchEngine.Lengths[n];
         if bBackward then Dec(n) else Inc(n);
         Dec(nInLine);
-        // Is the search result entirely in the search range?
         Inc(Result);
         // Select the text, so the user can see it in the OnReplaceText event
         // handler or as the search result.
