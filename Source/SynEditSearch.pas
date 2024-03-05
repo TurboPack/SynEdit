@@ -223,7 +223,7 @@ var
   PTrial: PChar;
 begin
   Result := 0;
-  while Run > Origin + PatLen do
+  while Run >= Origin + PatLen do
   begin
     Dec(Run);
     PTrial := Run - PatLen + 1;
