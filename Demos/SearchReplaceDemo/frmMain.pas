@@ -32,7 +32,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, ToolWin, ImgList, ActnList, SynEdit, SynEditRegexSearch,
   SynEditMiscClasses, SynEditSearch, SynUnicode, System.Actions,
-  System.ImageList;
+  System.ImageList, Vcl.VirtualImageList, Vcl.BaseImageCollection,
+  Vcl.ImageCollection;
 type
   TSearchReplaceDemoForm = class(TForm)
     ActionFileOpen: TAction;
@@ -42,7 +43,6 @@ type
     ActionSearchPrev: TAction;
     ActionSearchReplace: TAction;
     OpenDialogFile: TOpenDialog;
-    ImageListMain: TImageList;
     Statusbar: TStatusBar;
     SynEditor: TSynEdit;
     SynEditRegexSearch: TSynEditRegexSearch;
@@ -55,6 +55,8 @@ type
     ToolButtonSeparator2: TToolButton;
     ToolButtonSearchPrev: TToolButton;
     ToolButtonSearchReplace: TToolButton;
+    ImageCollection: TImageCollection;
+    VirtualImageList: TVirtualImageList;
     procedure ActionFileOpenExecute(Sender: TObject);
     procedure ActionSearchExecute(Sender: TObject);
     procedure ActionSearchNextExecute(Sender: TObject);

@@ -7314,12 +7314,11 @@ begin
         Inc(Result);
         // Select the text, so the user can see it in the OnReplaceText event
         // handler or as the search result.
-
         ptCurrent.Char := nFound;
         BlockBegin := ptCurrent;
         // Be sure to use the Ex version of CursorPos so that it appears in the middle if necessary
         SetCaretXYEx(False, BufferCoord(1, ptCurrent.Line));
-        // there is no necessary to see changes without confirmation. It signicatntly slow down replace
+        // It is not necessary to see changes without confirmation. It signicatntly slow down replace
         if not (bReplaceAll) then
             EnsureCursorPosVisibleEx(True);
         Inc(ptCurrent.Char, nSearchLen);
