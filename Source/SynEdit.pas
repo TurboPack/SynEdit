@@ -7297,6 +7297,20 @@ begin
         nSearchLen := fSearchEngine.Lengths[n];
         if bBackward then Dec(n) else Inc(n);
         Dec(nInLine);
+        // Double check for whole word in case we trancated the line
+        if ssoWholeWord in AOptions then
+        begin
+          if (lnStart > 1) and (nFound = lnStart) and
+            not IsWordBreakChar(Line[lnStart - 1])
+          then
+            Continue;
+          if (lnEnd <= Line.Length) and (lnEnd = nFound + nSearchLen) and
+            not IsWordBreakChar(Line[lnEnd])
+          then
+            Continue;
+        end;
+
+        // We have a match
         Inc(Result);
         // Select the text, so the user can see it in the OnReplaceText event
         // handler or as the search result.
