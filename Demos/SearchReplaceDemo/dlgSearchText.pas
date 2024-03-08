@@ -52,6 +52,7 @@ type
     btnOK: TButton;
     btnCancel: TButton;
     cbRegularExpression: TCheckBox;
+    procedure cbRegularExpressionClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     function GetSearchBackwards: boolean;
@@ -91,6 +92,12 @@ type
 implementation
 
 {$R *.DFM}
+
+procedure TTextSearchDialog.cbRegularExpressionClick(Sender: TObject);
+begin
+  // The regexp search engine does not support the whole word option
+  cbSearchWholeWords.Enabled := not cbRegularExpression.Checked;
+end;
 
 { TTextSearchDialog }
 
@@ -140,7 +147,7 @@ end;
 
 function TTextSearchDialog.GetSearchWholeWords: boolean;
 begin
-  Result := cbSearchWholeWords.Checked;
+  Result := not cbRegularExpression.Checked and cbSearchWholeWords.Checked;
 end;
 
 procedure TTextSearchDialog.SetSearchBackwards(Value: boolean);

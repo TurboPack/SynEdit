@@ -73,6 +73,7 @@ object TextSearchDialog: TTextSearchDialog
       Height = 17
       Caption = '&Regular expression'
       TabOrder = 4
+      OnClick = cbRegularExpressionClick
     end
   end
   object rgSearchDirection: TRadioGroup
