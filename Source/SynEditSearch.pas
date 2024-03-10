@@ -52,6 +52,7 @@ type
     Pat, CasedPat: string;
     fCount: Integer;
     fTextLen: Integer;
+    FLineStart: PWideChar;
     Look_At: Integer;
     PatLen, PatLenSucc: Integer;
     Shift: array[WideChar] of Integer;
@@ -76,10 +77,11 @@ type
   public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
-    function FindAll(const NewText: string): Integer; override;
+    function FindAll(const NewText: string; StartChar: Integer = 1;
+      EndChar: Integer = 0): Integer; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
-    function FindFirst(const NewText: string): Integer;
-    function FindLast(const NewText: string): Integer;
+    function FindFirst(const NewText: string; StartChar, EndChar: Integer): Integer;
+    function FindLast(const NewText: string; StartChar, EndChar: Integer): Integer;
     procedure FixResults(First, Delta: Integer);
     function Next: Integer;
     function Prev: Integer;
@@ -139,8 +141,6 @@ var
   C: WideChar;
   I: Integer;
 begin
-  PatLen := Length(Pat);
-  if Patlen = 0 then raise Exception.Create('Pattern is empty');
   PatLenSucc := PatLen + 1;
   Look_At := 1;
   for C := Low(WideChar) to High(WideChar) do Shift[C] := PatLenSucc;
@@ -151,7 +151,7 @@ begin
     inc(Look_at);
   end;
   fShiftInitialized := True;
-end;                                
+end;
 
 function TSynEditSearch.IsWordBreakChar(C: WideChar): Boolean;
 begin
@@ -175,8 +175,8 @@ var
 begin
   Test := Run - PatLen;
 
-  Result := ((Test < Origin) or IsWordBreakChar(Test[0])) and
-    ((Run >= TheEnd) or IsWordBreakChar(Run[1]));
+  Result := ((Test < FLineStart) or IsWordBreakChar(Test[0])) and
+    ((Run >= FLineStart + fTextLen) or IsWordBreakChar(Run[1]));
 end;
 
 function TSynEditSearch.Next: Integer;
@@ -200,7 +200,7 @@ begin
         begin
           if fWhole and not TestWholeWord then break;
           inc(fCount);
-          Result := Run - Origin - Patlen + 2;
+          Result := Run - FLineStart - Patlen + 2;
           exit;
         end;
         inc(I);
@@ -236,7 +236,7 @@ begin
     end;
     if (I = 0) and (not fWhole or TestWholeWord) then
     begin
-      Result := PTrial - Origin + 1;
+      Result := PTrial - FLineStart + 1;
       Run := PTrial;
       Exit;
     end;
@@ -277,17 +277,38 @@ begin
   end;
 end;
 
-function TSynEditSearch.FindAll(const NewText: string): Integer;
+function TSynEditSearch.FindAll(const NewText: string; StartChar: Integer = 1;
+      EndChar: Integer = 0): Integer;
 // Uses a Boyer-Moore algorithm for forward seach and a "naive" one
 // for backward search
 var
   Found: Integer;
 begin
+  if EndChar = 0 then
+    EndChar := NewText.Length + 1;
+  fTextLen := Length(NewText);
+  PatLen := Length(Pat);
+
+  if Patlen = 0 then
+    raise Exception.Create('Pattern is empty');
+
   // never shrink Capacity
   fResults.Count := 0;
+
+  if (fTextLen = 0) or (EndChar <= StartChar) or (fTextLen < PatLen) or
+    (PatLen > EndChar - StartChar)
+  then
+    Exit(0);
+
+  if CaseSensitive then
+    FTextToSearch := NewText
+  else
+    FTextToSearch := SysUtils.AnsiLowerCase(NewText);
+  FLineStart := PWideChar(FTextToSearch);
+
   if Backwards then
   begin
-    Found := FindLast(NewText);
+    Found := FindLast(NewText, StartChar, EndChar);
     while Found > 0 do
     begin
       fResults.Insert(0, Pointer(Found));
@@ -296,7 +317,7 @@ begin
   end
   else
   begin
-    Found := FindFirst(NewText);
+    Found := FindFirst(NewText, StartChar, EndChar);
     while Found > 0 do
     begin
       fResults.Add(Pointer(Found));
@@ -311,43 +332,25 @@ begin
   Result := aReplacement;
 end;
 
-function TSynEditSearch.FindFirst(const NewText: string): Integer;
+function TSynEditSearch.FindFirst(const NewText: string;
+  StartChar, EndChar: Integer): Integer;
 begin
   if not fShiftInitialized then
     InitShiftTable;
-  Result := 0;
-  fTextLen := Length(NewText);
-  if fTextLen >= PatLen then
-  begin
-    if CaseSensitive then
-      FTextToSearch := NewText
-    else
-      FTextToSearch := SysUtils.AnsiLowerCase(NewText);
-    Origin := PWideChar(FTextToSearch);
-    TheEnd := Origin + fTextLen;
-    Run := (Origin - 1);
-    Result := Next;
-  end;
+
+  Origin := FLineStart + StartChar - 1;
+  TheEnd := Origin + (EndChar - StartChar);
+  Run := (Origin - 1);
+  Result := Next;
 end;
 
-function TSynEditSearch.FindLast(const NewText: string): Integer;
+function TSynEditSearch.FindLast(const NewText: string;
+  StartChar, EndChar: Integer): Integer;
 begin
-  PatLen := Length(Pat);
-  if Patlen = 0 then raise Exception.Create('Pattern is empty');
-
-  Result := 0;
-  fTextLen := Length(NewText);
-  if fTextLen >= PatLen then
-  begin
-    if CaseSensitive then
-      FTextToSearch := NewText
-    else
-      FTextToSearch := SysUtils.AnsiLowerCase(NewText);
-    Origin := PWideChar(FTextToSearch);
-    TheEnd := Origin + fTextLen;
-    Run := TheEnd;
-    Result := Prev;
-  end;
+  Origin := FLineStart + StartChar - 1;
+  TheEnd := Origin + EndChar - StartChar;
+  Run := TheEnd;
+  Result := Prev;
 end;
 
 function TSynEditSearch.GetLength(Index: Integer): Integer;

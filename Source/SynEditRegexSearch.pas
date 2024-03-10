@@ -26,12 +26,10 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditRegexSearch.pas,v 1.5.2.2 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
+  - ssoWholeWords is not used
+  - backward search may not work as expected if you start the search within a
+    match (e.g.  search for 'aa' in 'aaa^a' where ^ is the current position)
 -------------------------------------------------------------------------------}
 
 unit SynEditRegexSearch;
@@ -64,7 +62,8 @@ type
     function GetResultCount: Integer; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function FindAll(const NewText: string): Integer; override;
+    function FindAll(const NewText: string; StartChar: Integer = 1;
+      EndChar: Integer = 0): Integer; override;
     function PreprocessReplaceExpression(const AReplace: string): string; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
@@ -111,9 +110,17 @@ begin
   fOptions := [];
 end;
 
-function TSynEditRegexSearch.FindAll(const NewText: string): Integer;
+function TSynEditRegexSearch.FindAll(const NewText: string;
+  StartChar: Integer = 1; EndChar: Integer = 0): Integer;
+var
+  Subject: string;
 begin
-  fMatchCollection :=  RegEx.Matches(NewText);
+  if (EndChar = 0) or (EndChar >= NewText.Length + 1) then
+    Subject := NewText
+  else
+    Subject := Copy(NewText, 1, EndChar - 1);
+
+  fMatchCollection :=  RegEx.Matches(Subject, StartChar);
   Result := fMatchCollection.Count;
 end;
 

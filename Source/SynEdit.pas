@@ -7283,8 +7283,8 @@ begin
         ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
         Continue;
       end;
-      nInLine := fSearchEngine.FindAll(Copy(Line, lnStart, lnEnd - lnStart));
-      iResultOffset := lnStart - 1;
+      nInLine := fSearchEngine.FindAll(Line, lnStart, lnEnd);
+      iResultOffset := 0;
       if bBackward then
         n := Pred(fSearchEngine.ResultCount)
       else
@@ -7297,18 +7297,6 @@ begin
         nSearchLen := fSearchEngine.Lengths[n];
         if bBackward then Dec(n) else Inc(n);
         Dec(nInLine);
-        // Double check for whole word in case we trancated the line
-        if ssoWholeWord in AOptions then
-        begin
-          if (lnStart > 1) and (nFound = lnStart) and
-            not IsWordBreakChar(Line[lnStart - 1])
-          then
-            Continue;
-          if (lnEnd <= Line.Length) and (lnEnd = nFound + nSearchLen) and
-            not IsWordBreakChar(Line[lnEnd])
-          then
-            Continue;
-        end;
 
         // We have a match
         Inc(Result);

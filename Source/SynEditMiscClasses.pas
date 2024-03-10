@@ -540,7 +540,12 @@ type
     function GetResultCount: Integer; virtual; abstract;
     procedure SetOptions(const Value: TSynSearchOptions); virtual; abstract;
   public
-    function FindAll(const NewText: string): Integer; virtual; abstract;
+    // This is the main public routine of search engines.
+    // Given a NewText (typically a line) it calculates all matches from
+    // StartChar to EndChar.  The matches are stored left-to right.
+    // EndChar = 0 is equivalent to EndChar = Length(NewText) + 1
+    function FindAll(const NewText: string; StartChar: Integer = 1;
+      EndChar: Integer = 0): Integer; virtual; abstract;
     function PreprocessReplaceExpression(const AReplace: string)
       : string; virtual;
     function Replace(const aOccurrence, aReplacement: string): string;
