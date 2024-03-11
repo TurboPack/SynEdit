@@ -52,7 +52,8 @@ type
     RegEx : TRegEx;
     fMatchCollection: TMatchCollection;
     fOptions : TRegExOptions;
-    fPattern: String;
+    fPattern: string;
+    fResultCount: Integer;
   protected
     function GetPattern: string; override;
     procedure SetPattern(const Value: string); override;
@@ -112,16 +113,15 @@ end;
 
 function TSynEditRegexSearch.FindAll(const NewText: string;
   StartChar: Integer = 1; EndChar: Integer = 0): Integer;
-var
-  Subject: string;
 begin
-  if (EndChar = 0) or (EndChar >= NewText.Length + 1) then
-    Subject := NewText
-  else
-    Subject := Copy(NewText, 1, EndChar - 1);
+  fMatchCollection :=  RegEx.Matches(NewText, StartChar);
 
-  fMatchCollection :=  RegEx.Matches(Subject, StartChar);
   Result := fMatchCollection.Count;
+  if (EndChar > 0) and (EndChar < NewText.Length + 1) then
+    // Exclude results beyond EndChar
+    while (Result > 0) and ((fMatchCollection[Result - 1].Index + fMatchCollection[Result - 1].Length) > EndChar) do
+      Dec(Result);
+  fResultCount := Result;
 end;
 
 // replace new line and tab symbol to real chars
@@ -154,7 +154,7 @@ end;
 
 function TSynEditRegexSearch.GetResultCount: Integer;
 begin
-  Result := fMatchCollection.Count;
+  Result := fResultCount;
 end;
 
 procedure TSynEditRegexSearch.SetOptions(const Value: TSynSearchOptions);
