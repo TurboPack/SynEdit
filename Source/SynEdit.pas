@@ -3656,7 +3656,6 @@ begin
   if fGutterWidth <> Value then
   begin
     fGutterWidth := Value;
-    fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
     if HandleAllocated then
     begin
       CalcTextAreaWidth;
@@ -7123,6 +7122,7 @@ begin
   if ComponentState * [csLoading, csDestroying]  = [] then
   begin
     nW := fGutter.RealGutterWidth;
+    fTextOffset := nw + fTextMargin - (LeftChar - 1) * fCharWidth;
     if nW = fGutterWidth then
       InvalidateGutter
     else
