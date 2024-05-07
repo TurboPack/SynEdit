@@ -1261,7 +1261,7 @@ begin
     if P2 < PCol then
     begin
       P := P2;
-      Inc(Result, Round(Layout.TextMetrics.width));
+      Inc(Result, Round(Layout.TextMetrics.widthIncludingTrailingWhitespace));
     end
     else
     begin
@@ -6053,7 +6053,7 @@ begin
       if Word(P2^) in [9, 32..126] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
-    Inc(Result, Round(Layout.TextMetrics.width));
+    Inc(Result, Round(Layout.TextMetrics.widthIncludingTrailingWhitespace));
     P := P2;
   end;
 end;
