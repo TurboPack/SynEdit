@@ -5809,6 +5809,25 @@ begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126: Inc(Result, FCharWidth);
+         { TSynTextLayout gets the width with trailing whitespace removed.
+           As a countermeasure, manually obtain the width of blank characters. }
+         #$00A0: Inc(Result, FCharWidth); // No-Break Space
+         #$1680: Inc(Result, FCharWidth); // Ogham Space mark
+         #$180E: Inc(Result, FCharWidth * 0); // Mongolian Vowel Separator
+         #$2000: Inc(Result, FCharWidth); // En Quad
+         #$2001: Inc(Result, FCharWidth * 2); // Em Quad
+         #$2002: Inc(Result, FCharWidth); // En Space
+         #$2003: Inc(Result, FCharWidth * 2); // Em Space
+         #$2004: Inc(Result, FCharWidth); // Three-Per-Em Space
+         #$2005: Inc(Result, FCharWidth); // Four-Per-Em Space
+         #$2006: Inc(Result, FCharWidth); // Six-Per-Em Space
+         #$2007: Inc(Result, FCharWidth); // Figure Space(No-Break)
+         #$2008: Inc(Result, FCharWidth); // Punctuation Space
+         #$2009: Inc(Result, FCharWidth); // Thin Space
+         #$200A: Inc(Result, FCharWidth); // Hair Space
+         #$202F: Inc(Result, FCharWidth); // Narrow No-Break Space
+         #$205F: Inc(Result, FCharWidth); // Medium Mathematical Space
+         #$3000: Inc(Result, FCharWidth * 2); // Idepgraphic Space
        else
          break;
        end;
@@ -5829,6 +5848,13 @@ begin
     begin
       Inc(P2);
       if Word(P2^) in [9, 32..126] then Break;
+      if Word(P2^) = $00A0 then Break; // No-Break Space
+      if Word(P2^) = $1680 then Break; // Ogham Space mark
+      if Word(P2^) = $180E then Break; // Mongolian Vowel Separator
+      if ($2000 <= Word(P2^)) and (Word(P2^) <= $200A) then Break; // En Quad - Hair Space
+      if Word(P2^) = $202F then Break; // Narrow No-Break Space
+      if Word(P2^) = $205F then Break; // Medium Mathematical Space
+      if Word(P2^) = $3000 then Break; // Idepgraphic Space
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     Inc(Result, Round(Layout.TextMetrics.width));
