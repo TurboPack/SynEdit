@@ -743,6 +743,7 @@ end;
 
 procedure TfmEditorOptionsDialog.btnFontClick(Sender: TObject);
 begin
+  labFont.Font.PixelsPerInch := FCurrentPPI;
   FontDialog.Font.Assign(labFont.Font);
   {$IF CompilerVersion >= 36}
   // See https://quality.embarcadero.com/browse/RSP-43261
@@ -755,6 +756,9 @@ begin
     labFont.Caption:= labFont.Font.Name;
     labFont.Caption:= labFont.Font.Name + ' ' + IntToStr(labFont.Font.Size) + 'pt';    
   end;
+  {$IF CompilerVersion < 36}
+  labFont.Font.PixelsPerInch := Screen.PixelsPerInch;
+  {$ENDIF}
 end;
 
 procedure TfmEditorOptionsDialog.KeyListSelectItem(Sender: TObject;
@@ -851,11 +855,6 @@ begin
   end;
 
   PageControl1.ActivePage := PageControl1.Pages[0];
-
-  labFont.Font.PixelsPerInch := FCurrentPPI;
-  labFont.Canvas.Font.PixelsPerInch := FCurrentPPI;
-  lblGutterFont.Font.PixelsPerInch := FCurrentPPI;
-  lblGutterFont.Canvas.Font.PixelsPerInch := FCurrentPPI;
 end;
 
 procedure TfmEditorOptionsDialog.KeyListEditing(Sender: TObject;
@@ -873,16 +872,20 @@ end;
 
 procedure TfmEditorOptionsDialog.btnGutterFontClick(Sender: TObject);
 begin
+  lblGutterFont.Font.PixelsPerInch := FCurrentPPI;
   FontDialog.Font.Assign(lblGutterFont.Font);
   {$IF CompilerVersion >= 36}
   FontDialog.Font.IsScreenFont := True;
   FontDialog.Font.ScaleForDPI(Screen.PixelsPerInch);
   {$IFEND CompilerVersion >= 36}
- if FontDialog.Execute then
+  if FontDialog.Execute then
   begin
     lblGutterFont.Font.Assign(FontDialog.Font);
     lblGutterFont.Caption:= lblGutterFont.Font.Name + ' ' + IntToStr(lblGutterFont.Font.Size) + 'pt';
   end;
+  {$IF CompilerVersion < 36}
+  lblGutterFont.Font.PixelsPerInch := Screen.PixelsPerInch;
+  {$ENDIF}
 end;
 
 procedure TfmEditorOptionsDialog.cbGutterFontClick(Sender: TObject);
