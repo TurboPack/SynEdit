@@ -330,6 +330,7 @@ type
     FScrollBars: TScrollStyle;
     FSynEditScrollBars: ISynEditScrollBars;
     FTextAreaWidth: Integer;
+    FTextHint: string;
     fTextHeight: Integer;
     fTextMargin: Integer;
     fTextOffset: Integer;
@@ -864,6 +865,7 @@ type
     property SelText: string read GetSelText write SetSelText;
     property StateFlags: TSynStateFlags read fStateFlags;
     property Text: string read SynGetText write SynSetText;
+    property TextHint: string read FTextHint write FTextHint;
     property TopLine: Integer read fTopLine write SetTopLine;
     property TextAreaWidth: Integer read FTextAreaWidth;
     property WrapAreaWidth: Integer read GetWrapAreaWidth;
@@ -996,6 +998,7 @@ type
     property ShowHint;
     property TabOrder;
     property TabStop default True;
+    property TextHint;
     property Visible;
     property Width;
     // inherited events
@@ -2996,6 +2999,7 @@ var
   FullRowFG, FullRowBG: TColor;
   SelFirst, SelLast: Integer;
   SelBG, SelFG: TColor;
+  HintColor: TColor;
   RangeCount: Cardinal;
   BGAlpha: TD2D1ColorF;
   HavePartialSelection: Boolean;
@@ -3019,6 +3023,10 @@ begin
     SRow := Rows[Row];
     CharOffset := DisplayToBufferPos(DisplayCoord(1, Row)).Char;
     DoTabPainting := False;
+
+    // TextHint
+    if (Lines.Count <= 1) and (SLine = '') then
+      SRow := FTextHint;
 
     // Restrict the text to what can/should be displayed
     TextRangeToDisplay(SRow, FirstChar, LastChar);
@@ -3049,6 +3057,19 @@ begin
       if not (eoShowLigatures in FOptions) or (Line = CaretY) then
         // No ligatures for current line
         Layout.SetTypography(typNoLigatures, 1, SRow.Length);
+    end;
+
+    // TextHint
+    if (Lines.Count <= 1) and (SLine = '') and (FTextHint <> '') then
+    begin
+      if Assigned(fHighlighter) and
+        Assigned(fHighlighter.WhitespaceAttribute) and
+        (fHighlighter.WhitespaceAttribute.Foreground <> clNone)
+      then
+        HintColor := fHighlighter.WhitespaceAttribute.Foreground
+      else
+        HintColor := clGray;
+      Layout.SetFontColor(HintColor, FirstChar, LastChar - FirstChar + 1);
     end;
 
     // Special colors, full line selection and ActiveLineColor
