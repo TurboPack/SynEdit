@@ -43,12 +43,12 @@ unit SynHighlighterMulti;
 interface
 
 uses
-  Windows,
-  Registry,
+  Winapi.Windows,
+  System.Win.Registry,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-  Classes;
+  System.Classes;
 
 type
   TOnCheckMarker = procedure (Sender: TObject; var StartPos, MarkerLen: Integer;
@@ -210,7 +210,6 @@ type
     destructor Destroy; override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
-    function GetToken: string; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
     procedure Next; override;
@@ -234,11 +233,11 @@ type
 implementation
 
 uses
-  Graphics,
+  System.SysUtils,
+  Vcl.Graphics,
   SynEditMiscProcs,
   SynEditStrConst,
-  RegularExpressions,
-  SysUtils;
+  System.RegularExpressions;
 
 procedure CheckExpression(const Expr: string);
 var
@@ -363,7 +362,7 @@ begin
   else if DefaultHighlighter <> nil then
     Result := DefaultHighlighter.GetEol
   else
-    Result := Run > fLineLen + 1;
+    Result := Run > fLineLen;
 end;
 
 class function TSynMultiSyn.GetLanguageName: string;
@@ -427,14 +426,6 @@ begin
   end;
 end;
 
-function TSynMultiSyn.GetToken: string;
-begin
-  if DefaultHighlighter = nil then
-    Result := fLineStr
-  else
-    Result := inherited GetToken;
-end;
-
 function TSynMultiSyn.GetTokenAttribute: TSynHighlighterAttributes;
 begin
   if fMarker <> nil then
@@ -470,23 +461,16 @@ var
   iToken, TmpLine: string;
   iHL: TSynCustomHighlighter;
 begin
-  if DefaultHighlighter = nil then
-  begin
-    if Run > 0 then
-      Inc(Run)
-    else
-      Run := Length(fLineStr) + 1;
-    inherited;
-    Exit;
-  end;
-
   if (fNextMarker < fMarkers.Count) and (Run + 1 >= Markers[fNextMarker].fStartPos) then
   begin
     fMarker := Markers[fNextMarker];
     if fMarker.fIsOpenMarker then
     begin
       fCurrScheme := fMarker.fScheme;
-      fTmpRange := DefaultHighlighter.GetRange;
+      if DefaultHighlighter = nil then
+        fTmpRange := nil
+      else
+        fTmpRange := DefaultHighlighter.GetRange;
       Schemes[CurrScheme].Highlighter.ResetRange;
     end;
     Inc(fNextMarker);
@@ -507,15 +491,22 @@ begin
       TmpLine := fLineStr
     else
       TmpLine := Copy(fLineStr, 1, Markers[fNextMarker].fStartPos - 1);
-      
-    iHL.SetLine(TmpLine, fLineNumber);
+
+    if iHL = nil then
+    begin
+      FTokenPos := Run;
+      Run := Length(TmpLine) + 1
+    end
+    else
+      iHL.SetLine(TmpLine, fLineNumber);
   end
   else if fMarker <> nil then
   begin
     if not fMarker.fIsOpenMarker then
     begin
       fCurrScheme := -1;
-      DefaultHighlighter.SetRange(fTmpRange);
+      if Assigned(DefaultHighlighter) then
+        DefaultHighlighter.SetRange(fTmpRange);
     end;
     fMarker := nil;
 
@@ -527,9 +518,15 @@ begin
     if fNextMarker < fMarkers.Count then
       TmpLine := Copy(fLineStr, Run + 1, Markers[fNextMarker].fStartPos - Run - 1)
     else
-      TmpLine := Copy(fLineStr, Run + 1, MaxInt);
+      TmpLine := Copy(fLineStr, Run + 1);
 
-    iHL.SetLine(TmpLine, fLineNumber);
+    if iHL = nil then
+    begin
+      FTokenPos := Run;
+      Inc(Run, Length(TmpLine) + 1)
+    end
+    else
+      iHL.SetLine(TmpLine, fLineNumber);
   end
   else
   begin
@@ -537,11 +534,22 @@ begin
       iHL := Schemes[CurrScheme].Highlighter
     else
       iHL := DefaultHighlighter;
-    iHL.Next;
+    if iHL = nil then
+    begin
+      FTokenPos := Run;
+      Run := Length(fLineStr) + 1
+    end
+    else
+      iHL.Next;
   end;
 
-  fTokenPos := iHL.GetTokenPos;
-  iToken := iHL.GetToken;
+  if Assigned(iHL) then
+  begin
+    fTokenPos := iHL.GetTokenPos;
+    iToken := iHL.GetToken;
+  end
+  else
+    iToken := inherited GetToken;
   if fNextMarker > 0 then
     with Markers[fNextMarker - 1] do
       Inc(fTokenPos, fStartPos + fMarkerLen - 1);
@@ -927,7 +935,7 @@ end;
 function TScheme.ConvertExpression(const Value: string): string;
 begin
   if not CaseSensitive then
-    Result := SysUtils.AnsiUpperCase(Value)
+    Result := Value.ToUpper
   else
     Result := Value;
 end;

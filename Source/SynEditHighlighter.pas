@@ -1055,8 +1055,8 @@ end;
 
 procedure TSynCustomHighlighter.Next;
 begin
-  if fOldRun = Run then Exit;
-  fOldRun := Run;
+  if fOldRun <> Run then
+    fOldRun := Run;
 end;
 
 procedure TSynCustomHighlighter.NextToEol;
