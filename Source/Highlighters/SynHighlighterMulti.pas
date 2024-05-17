@@ -234,10 +234,11 @@ implementation
 
 uses
   System.SysUtils,
+  System.RegularExpressions,
+  System.Math,
   Vcl.Graphics,
   SynEditMiscProcs,
-  SynEditStrConst,
-  System.RegularExpressions;
+  SynEditStrConst;
 
 procedure CheckExpression(const Expr: string);
 var
@@ -495,7 +496,8 @@ begin
     if iHL = nil then
     begin
       FTokenPos := Run;
-      Run := Length(TmpLine) + 1
+      //Run := Length(TmpLine) + 1;
+      Run := Max(Length(TmpLine), 1);
     end
     else
       iHL.SetLine(TmpLine, fLineNumber);
@@ -523,7 +525,7 @@ begin
     if iHL = nil then
     begin
       FTokenPos := Run;
-      Inc(Run, Length(TmpLine) + 1)
+      Inc(Run, Max(Length(TmpLine), 1))
     end
     else
       iHL.SetLine(TmpLine, fLineNumber);
@@ -537,7 +539,7 @@ begin
     if iHL = nil then
     begin
       FTokenPos := Run;
-      Run := Length(fLineStr) + 1
+      Run := Max(FLineLen, Run + 1);
     end
     else
       iHL.Next;
@@ -887,6 +889,7 @@ begin
     end; {else}
 
   fLineStr := Value;
+  fLineLen := Value.Length;
   fLine := PWideChar(fLineStr);
   fCasedLineStr := '';
   fCasedLine := PWideChar(fLineStr);
