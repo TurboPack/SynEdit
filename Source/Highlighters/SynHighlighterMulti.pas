@@ -496,7 +496,6 @@ begin
     if iHL = nil then
     begin
       FTokenPos := Run;
-      //Run := Length(TmpLine) + 1;
       Run := Max(Length(TmpLine), 1);
     end
     else
