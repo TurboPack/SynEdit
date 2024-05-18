@@ -2773,19 +2773,24 @@ var
            TSynDWrite.SolidBrush(AColor));
   end;
 
-  procedure DrawTab(Layout: TSynTextLayout; const Row, TabPos: Integer;
-    TabColor: TColor);
+  procedure DrawSpecialChars(Layout: TSynTextLayout; const Row, Pos: Integer;
+    Ch: Char; SpecialCharsColor: TColor);
   var
     TabLayout: TSynTextLayout;
     X1, Y1, X2, Y2: Single;
     HitMetrics: TDwriteHitTestMetrics;
+    PrintGlyph: Char;
   begin
-    Layout.IDW.HitTestTextPosition(TabPos-1, False, X1, Y1, HitMetrics);
-    Layout.IDW.HitTestTextPosition(TabPos-1, True, X2, Y2, HitMetrics);
-    TabLayout.Create(FTextFormat, @SynTabGlyph, 1, Round(X2 - X1), fTextHeight);
+    if (Ch = #9) then // Tab
+      PrintGlyph := SynTabGlyph
+    else  // Space, No-break space
+      PrintGlyph := SynSpaceGlyph;
+    Layout.IDW.HitTestTextPosition(Pos-1, False, X1, Y1, HitMetrics);
+    Layout.IDW.HitTestTextPosition(Pos-1, True, X2, Y2, HitMetrics);
+    TabLayout.Create(FTextFormat, @PrintGlyph, 1, Round(X2 - X1), fTextHeight);
     TabLayout.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-    TabLayout.SetFontColor(TabColor, 1, 1);
-    TabLayout.Draw(RT, FTextOffset + XRowOffset + Round(X1), YRowOffset(Row), TabColor);
+    TabLayout.SetFontColor(SpecialCharsColor, 1, 1);
+    TabLayout.Draw(RT, FTextOffset + XRowOffset + Round(X1), YRowOffset(Row), SpecialCharsColor);
   end;
 
   procedure DrawIndentGuides;
@@ -2986,9 +2991,9 @@ var
   LayoutWidth: Integer;
   SLine, SRow: string;
   FirstChar, LastChar: Integer;
-  DoTabPainting: Boolean;
+  ExistedNoprintChars: Boolean;
   Layout: TSynTextLayout;
-  BGColor, FGColor, TabColor: TColor;
+  BGColor, FGColor, SpecialCharsColor: TColor;
   TokenPos, TokenLen: Integer;
   Attr: TSynHighlighterAttributes;
   LineIndicators: TArray<TSynIndicator>;
@@ -3022,7 +3027,7 @@ begin
 
     SRow := Rows[Row];
     CharOffset := DisplayToBufferPos(DisplayCoord(1, Row)).Char;
-    DoTabPainting := False;
+    ExistedNoprintChars := False;
 
     // TextHint
     if (Lines.Count <= 1) and (SLine = '') then
@@ -3035,10 +3040,11 @@ begin
     if (eoShowSpecialChars in fOptions) and (LastChar >= 0) then
     begin
       for I := FirstChar to LastChar do
-        if (SRow[I] = #32) or (SRow[I] = #160) then
-          SRow[I] := SynSpaceGlyph
-        else if SRow[I] = #9 then
-          DoTabPainting := True;
+        if CharInSet(SRow[I], [#$9, #$20, #$A0]) then
+        begin
+          ExistedNoprintChars := True;
+          break;
+        end;
       // Add LineBreak Glyph
       if (CharOffset + LastChar = SLine.Length + 1)
         {and (LastChar = SRow.Length)} and (Line < Lines.Count) then
@@ -3239,21 +3245,21 @@ begin
     end;
 
     // Paint tab control characters
-    if DoTabPainting then
+    if ExistedNoprintChars then
     begin
       if FullRowFG <> clNone then
-        TabColor := FullRowFG
+        SpecialCharsColor := FullRowFG
       else
-        TabColor := WhitespaceColor(False);
+        SpecialCharsColor := WhitespaceColor(False);
       for I := FirstChar to LastChar do
-        if (SRow[I] = #9) then
+        if CharInSet(SRow[I], [#$9, #$20, #$A0]) then
         begin
           if InRange(I, SelFirst, SelLast) and
             SameValue(fSelectedColor.Alpha, 1)
           then
-            DrawTab(Layout, Row, I - FirstChar + 1, SelFG)
+            DrawSpecialChars(Layout, Row, I - FirstChar + 1, SRow[I], SelFG)
           else
-            DrawTab(Layout, Row, I - FirstChar + 1, TabColor);
+            DrawSpecialChars(Layout, Row, I - FirstChar + 1, SRow[I], SpecialCharsColor);
         end;
     end;
 
