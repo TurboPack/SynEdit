@@ -9074,9 +9074,8 @@ begin
   if Assigned(Highlighter) then
     Result := Highlighter.IsIdentChar(AChar)
   else
-    Result := (AChar = '_') or  AChar.IsLetterOrDigit or
-      CharInSet(AChar, FAdditionalIdentChars) and
-      not IsWordBreakChar(AChar);
+    Result := (AChar = '_') or AChar.IsLetterOrDigit or
+      CharInSet(AChar, FAdditionalIdentChars);
 end;
 
 function TCustomSynEdit.IsNonWhiteChar(AChar: WideChar): Boolean;
@@ -9088,10 +9087,8 @@ function TCustomSynEdit.IsWhiteChar(AChar: WideChar): Boolean;
 begin
   if Assigned(Highlighter) then
     Result := Highlighter.IsWhiteChar(AChar)
-  else if AChar.IsWhiteSpace then
-    Result := True
   else
-    Result := not (IsIdentChar(AChar) or IsWordBreakChar(AChar));
+    Result := AChar.IsWhiteSpace and not IsIdentChar(AChar);
 end;
 
 function TCustomSynEdit.IsWordBreakChar(AChar: WideChar): Boolean;
@@ -9111,7 +9108,7 @@ begin
     end;
 
     Result := Result or CharInSet(AChar, FAdditionalWordBreakChars);
-    Result := Result and not CharInSet(AChar, FAdditionalIdentChars);
+    Result := Result and not IsIdentChar(AChar);
   end;
 end;
 
