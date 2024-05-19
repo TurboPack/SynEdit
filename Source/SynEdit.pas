@@ -2991,7 +2991,7 @@ var
   LayoutWidth: Integer;
   SLine, SRow: string;
   FirstChar, LastChar: Integer;
-  ExistedNoprintChars: Boolean;
+  DoSpecialCharPainting: Boolean;
   Layout: TSynTextLayout;
   BGColor, FGColor, SpecialCharsColor: TColor;
   TokenPos, TokenLen: Integer;
@@ -3027,7 +3027,7 @@ begin
 
     SRow := Rows[Row];
     CharOffset := DisplayToBufferPos(DisplayCoord(1, Row)).Char;
-    ExistedNoprintChars := False;
+    DoSpecialCharPainting := False;
 
     // TextHint
     if (Lines.Count <= 1) and (SLine = '') then
@@ -3040,9 +3040,9 @@ begin
     if (eoShowSpecialChars in fOptions) and (LastChar >= 0) then
     begin
       for I := FirstChar to LastChar do
-        if CharInSet(SRow[I], [#$9, #$20, #$A0]) then
+        if IsWhiteSpace(SRow[I]) then
         begin
-          ExistedNoprintChars := True;
+          DoSpecialCharPainting := True;
           break;
         end;
       // Add LineBreak Glyph
@@ -3245,7 +3245,7 @@ begin
     end;
 
     // Paint tab control characters
-    if ExistedNoprintChars then
+    if DoSpecialCharPainting then
     begin
       if FullRowFG <> clNone then
         SpecialCharsColor := FullRowFG
