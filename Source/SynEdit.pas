@@ -3040,7 +3040,7 @@ begin
     if (eoShowSpecialChars in fOptions) and (LastChar >= 0) then
     begin
       for I := FirstChar to LastChar do
-        if IsWhiteSpace(SRow[I]) then
+        if IsWhiteChar(SRow[I]) then
         begin
           DoSpecialCharPainting := True;
           break;
@@ -3244,7 +3244,7 @@ begin
       Layout.Draw(RT, FTextOffset + XRowOffset, YRowOffset(Row), FGColor);
     end;
 
-    // Paint tab control characters
+    // Paint special characters (whitespace)
     if DoSpecialCharPainting then
     begin
       if FullRowFG <> clNone then
@@ -3252,7 +3252,7 @@ begin
       else
         SpecialCharsColor := WhitespaceColor(False);
       for I := FirstChar to LastChar do
-        if CharInSet(SRow[I], [#$9, #$20, #$A0]) then
+        if IsWhiteChar(SRow[I]) then
         begin
           if InRange(I, SelFirst, SelLast) and
             SameValue(fSelectedColor.Alpha, 1)
