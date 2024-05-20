@@ -477,8 +477,6 @@ type
     procedure LinesChanging(Sender: TObject);
     procedure MoveCaretAndSelection(const NewPos: TBufferCoord; SelectionCmd:
         Boolean);
-    procedure MoveDisplayPosAndSelection(const NewPos: TDisplayCoord;
-      SelectionCmd: Boolean);
     procedure MoveCaretHorz(DX: Integer; SelectionCommand: Boolean);
     procedure MoveCaretVert(DY: Integer; SelectionCommand: Boolean);
     procedure PluginsAfterPaint(ACanvas: TCanvas; const AClip: TRect;
@@ -737,6 +735,8 @@ type
     function IsBookmark(BookMark: Integer): Boolean;
     function IsPointInSelection(const Value: TBufferCoord): Boolean;
     procedure LockUndo;
+    procedure MoveDisplayPosAndSelection(const NewPos: TDisplayCoord;
+      SelectionCmd: Boolean);
     function BufferToDisplayPos(const p: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const p: TDisplayCoord): TBufferCoord;
     function LineToRow(aLine: Integer): Integer;
