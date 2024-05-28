@@ -1165,6 +1165,9 @@ begin
         case P^ of
            #9: Inc(W, fTabWidth * fCharWidth - W mod (fTabWidth * fCharWidth));
            #32..#126, #160: Inc(W, FCharWidth);
+           #1..#8, #10..#31, #127:
+             if eoShowSpecialChars in fOptions then
+               Inc(W, FCharWidth);
          else
            break;
          end;
@@ -1187,7 +1190,7 @@ begin
       while P2 < PEnd do
       begin
         Inc(P2);
-        if Word(P2^) in [9, 32..126] then Break;
+        if Word(P2^) in [1..127, 160] then Break;
       end;
 
       Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
@@ -1239,7 +1242,10 @@ begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126, #160: Inc(Result, FCharWidth);
-       else
+         #1..#8, #10..#31, #127:
+           if eoShowSpecialChars in fOptions then
+             Inc(Result, FCharWidth);
+     else
          break;
        end;
        Inc(P);
@@ -1258,7 +1264,7 @@ begin
     while P2 < PEnd do
     begin
       Inc(P2);
-      if Word(P2^) in [9, 32..126] then Break;
+      if Word(P2^) in [1..127, 160] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     if P2 < PCol then
@@ -3045,6 +3051,8 @@ begin
           DoSpecialCharPainting := True;
           break;
         end;
+      // Show Control graphics instead of control chars.
+      SubstituteControlChars(SRow);
       // Add LineBreak Glyph
       if (CharOffset + LastChar = SLine.Length + 1)
         {and (LastChar = SRow.Length)} and (Line < Lines.Count) then
@@ -6057,6 +6065,9 @@ begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126, #160: Inc(Result, FCharWidth);
+         #1..#8, #10..#31, #127:
+           if eoShowSpecialChars in fOptions then
+             Inc(Result, FCharWidth);
        else
          break;
        end;
@@ -6076,7 +6087,7 @@ begin
     while P2 < PEnd do
     begin
       Inc(P2);
-      if Word(P2^) in [9, 32..126] then Break;
+      if Word(P2^) in [1..127, 160] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     Inc(Result, Round(Layout.TextMetrics.widthIncludingTrailingWhitespace));
