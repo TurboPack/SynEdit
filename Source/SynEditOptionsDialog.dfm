@@ -3,8 +3,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   Top = 154
   BorderStyle = bsDialog
   Caption = 'Editor Options'
-  ClientHeight = 395
-  ClientWidth = 363
+  ClientHeight = 397
+  ClientWidth = 388
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,16 +18,17 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   object PageControl1: TPageControl
     Left = 6
     Top = 8
-    Width = 355
+    Width = 380
     Height = 345
     ActivePage = Display
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
     object Display: TTabSheet
       Caption = 'Display'
       object gbRightEdge: TGroupBox
         Left = 8
-        Top = 136
-        Width = 159
+        Top = 134
+        Width = 170
         Height = 88
         Caption = 'Right Edge'
         TabOrder = 1
@@ -46,7 +47,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Caption = 'Edge Column:'
         end
         object pRightEdgeBack: TPanel
-          Left = 80
+          Left = 97
           Top = 54
           Width = 52
           Height = 21
@@ -89,7 +90,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           end
         end
         object eRightEdge: TEdit
-          Left = 80
+          Left = 98
           Top = 23
           Width = 51
           Height = 23
@@ -99,14 +100,15 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
       end
       object gbGutter: TGroupBox
         Left = 8
-        Top = 8
-        Width = 330
+        Top = 4
+        Width = 355
         Height = 121
+        Anchors = [akLeft, akTop, akRight]
         Caption = 'Gutter'
         TabOrder = 0
         object Label1: TLabel
           Left = 176
-          Top = 89
+          Top = 96
           Width = 66
           Height = 15
           Caption = 'Gutter color:'
@@ -163,8 +165,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           OnClick = cbGutterFontClick
         end
         object btnGutterFont: TButton
-          Left = 282
-          Top = 13
+          Left = 292
+          Top = 14
           Width = 40
           Height = 25
           Caption = 'Font'
@@ -172,8 +174,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           OnClick = btnGutterFontClick
         end
         object pGutterBack: TPanel
-          Left = 252
-          Top = 85
+          Left = 261
+          Top = 92
           Width = 52
           Height = 21
           BorderWidth = 1
@@ -217,14 +219,14 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object pnlGutterFontDisplay: TPanel
           Left = 176
           Top = 40
-          Width = 145
+          Width = 156
           Height = 33
           BevelOuter = bvNone
           TabOrder = 7
           object lblGutterFont: TLabel
             Left = 0
             Top = 0
-            Width = 145
+            Width = 156
             Height = 33
             Align = alClient
             Alignment = taCenter
@@ -242,21 +244,21 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
       object gbBookmarks: TGroupBox
         Left = 8
         Top = 232
-        Width = 159
+        Width = 170
         Height = 79
         Caption = 'Bookmarks'
         TabOrder = 3
         object ckBookmarkKeys: TCheckBox
           Left = 9
-          Top = 24
-          Width = 97
+          Top = 25
+          Width = 101
           Height = 17
           Caption = 'Bookmark keys'
           TabOrder = 0
         end
         object ckBookmarkVisible: TCheckBox
           Left = 9
-          Top = 48
+          Top = 51
           Width = 121
           Height = 17
           Caption = 'Bookmarks visible'
@@ -264,14 +266,14 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         end
       end
       object gbEditorFont: TGroupBox
-        Left = 180
+        Left = 193
         Top = 232
-        Width = 159
+        Width = 170
         Height = 79
         Caption = 'Editor Font'
         TabOrder = 4
         object btnFont: TButton
-          Left = 64
+          Left = 67
           Top = 49
           Width = 84
           Height = 25
@@ -305,9 +307,9 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         end
       end
       object gbLineSpacing: TGroupBox
-        Left = 180
-        Top = 136
-        Width = 159
+        Left = 193
+        Top = 134
+        Width = 170
         Height = 88
         Caption = 'Line spacing / Tab spacing'
         TabOrder = 2
@@ -347,15 +349,16 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
       Caption = 'Options'
       object gbOptions: TGroupBox
         Left = 8
-        Top = 0
-        Width = 330
-        Height = 247
+        Top = 4
+        Width = 355
+        Height = 232
+        Anchors = [akLeft, akTop, akRight]
         Caption = 'Options'
         TabOrder = 0
         object ckAutoIndent: TCheckBox
           Left = 9
           Top = 15
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'Will indent the caret on new lines with the same amount of leadi' +
@@ -366,7 +369,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckDragAndDropEditing: TCheckBox
           Left = 9
           Top = 34
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'Allows you to select a block of text and drag it within the docu' +
@@ -375,9 +378,9 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           TabOrder = 1
         end
         object ckHalfPageScroll: TCheckBox
-          Left = 176
+          Left = 182
           Top = 15
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'When scrolling with page-up and page-down commands, only scroll ' +
@@ -388,34 +391,34 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckEnhanceEndKey: TCheckBox
           Left = 9
           Top = 167
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 'Makes it so the caret is never visible'
           Caption = 'Enhance End Key'
           TabOrder = 8
         end
         object ckScrollByOneLess: TCheckBox
-          Left = 176
+          Left = 182
           Top = 34
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 'Forces scrolling to be one less'
           Caption = 'Scroll by one less'
           TabOrder = 12
         end
         object ckScrollPastEOF: TCheckBox
-          Left = 176
+          Left = 182
           Top = 53
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 'Allows the cursor to go past the end of file marker'
           Caption = 'Scroll past end of file'
           TabOrder = 13
         end
         object ckScrollPastEOL: TCheckBox
-          Left = 176
+          Left = 182
           Top = 72
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'Allows the cursor to go past the last character into the white s' +
@@ -424,9 +427,9 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           TabOrder = 14
         end
         object ckShowScrollHint: TCheckBox
-          Left = 176
+          Left = 182
           Top = 91
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'Shows a hint of the visible line numbers when scrolling vertical' +
@@ -437,7 +440,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckSmartTabs: TCheckBox
           Left = 9
           Top = 110
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'When tabbing, the cursor will go to the next non-white space cha' +
@@ -446,18 +449,18 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           TabOrder = 5
         end
         object ckTabsToSpaces: TCheckBox
-          Left = 176
+          Left = 182
           Top = 129
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 'Converts a tab character to the number of spaces in Tab Width'
           Caption = 'Tabs to spaces'
           TabOrder = 17
         end
         object ckTrimTrailingSpaces: TCheckBox
-          Left = 176
+          Left = 182
           Top = 148
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 'Spaces at the end of lines will be trimmed and not saved'
           Caption = 'Trim trailing spaces'
@@ -466,7 +469,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckWantTabs: TCheckBox
           Left = 9
           Top = 91
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'Let the editor accept tab characters instead of going to the nex' +
@@ -477,7 +480,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckAltSetsColumnMode: TCheckBox
           Left = 9
           Top = 53
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'Holding down the Alt Key will put the selection mode into column' +
@@ -488,7 +491,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckKeepCaretX: TCheckBox
           Left = 9
           Top = 72
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'When moving through lines the X position will always stay the sa' +
@@ -497,18 +500,18 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           TabOrder = 3
         end
         object ckScrollHintFollows: TCheckBox
-          Left = 176
+          Left = 182
           Top = 110
-          Width = 152
+          Width = 170
           Height = 17
           Hint = 'The scroll hint follows the mouse when scrolling vertically'
           Caption = 'Scroll hint follows mouse'
           TabOrder = 16
         end
         object ckGroupUndo: TCheckBox
-          Left = 177
+          Left = 182
           Top = 167
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'When undoing/redoing actions, handle all continous changes of th' +
@@ -520,16 +523,16 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckSmartTabDelete: TCheckBox
           Left = 9
           Top = 129
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 'similar to Smart Tabs, but when you delete characters'
           Caption = 'Smart tab delete'
           TabOrder = 6
         end
         object ckRightMouseMoves: TCheckBox
-          Left = 177
+          Left = 182
           Top = 186
-          Width = 146
+          Width = 170
           Height = 17
           Hint = 
             'When clicking with the right mouse for a popup menu, move the cu' +
@@ -540,7 +543,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckEnhanceHomeKey: TCheckBox
           Left = 9
           Top = 148
-          Width = 146
+          Width = 170
           Height = 17
           Hint = 'enhances home key positioning, similar to visual studio'
           Caption = 'Enhance Home Key'
@@ -549,7 +552,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckHideShowScrollbars: TCheckBox
           Left = 9
           Top = 186
-          Width = 156
+          Width = 170
           Height = 17
           Hint = 
             'if enabled, then the scrollbars will only show when necessary.  ' +
@@ -561,7 +564,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object ckDisableScrollArrows: TCheckBox
           Left = 9
           Top = 205
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 
             'Disables the scroll bar arrow buttons when you can'#39't scroll in t' +
@@ -570,9 +573,9 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           TabOrder = 10
         end
         object ckShowSpecialChars: TCheckBox
-          Left = 177
+          Left = 182
           Top = 205
-          Width = 130
+          Width = 170
           Height = 17
           Hint = 'Shows linebreaks, spaces and tabs using special symbols'
           Caption = 'Show special chars'
@@ -581,29 +584,29 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
       end
       object gbCaret: TGroupBox
         Left = 8
-        Top = 249
-        Width = 330
-        Height = 62
+        Top = 240
+        Width = 355
+        Height = 71
         Caption = 'Caret'
         TabOrder = 1
         object Label2: TLabel
           Left = 16
-          Top = 17
+          Top = 18
           Width = 61
           Height = 15
           Caption = 'Insert caret:'
         end
         object Label4: TLabel
           Left = 16
-          Top = 41
+          Top = 45
           Width = 83
           Height = 15
           Caption = 'Overwrite caret:'
         end
         object cInsertCaret: TComboBox
           Left = 120
-          Top = 13
-          Width = 186
+          Top = 14
+          Width = 219
           Height = 23
           Style = csDropDownList
           TabOrder = 0
@@ -615,8 +618,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         end
         object cOverwriteCaret: TComboBox
           Left = 120
-          Top = 37
-          Width = 186
+          Top = 41
+          Width = 219
           Height = 23
           Style = csDropDownList
           TabOrder = 1
@@ -631,7 +634,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     object Keystrokes: TTabSheet
       Caption = 'Keystrokes'
       object btnAddKey: TButton
-        Left = 96
+        Left = 88
         Top = 152
         Width = 75
         Height = 25
@@ -640,7 +643,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         OnClick = btnAddKeyClick
       end
       object btnRemKey: TButton
-        Left = 176
+        Left = 168
         Top = 152
         Width = 75
         Height = 25
@@ -651,8 +654,9 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
       object gbKeyStrokes: TGroupBox
         Left = 8
         Top = 192
-        Width = 330
-        Height = 119
+        Width = 355
+        Height = 118
+        Anchors = [akLeft, akTop, akRight]
         Caption = 'Keystroke Options'
         TabOrder = 4
         object Label5: TLabel
@@ -680,14 +684,14 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Left = 120
           Top = 23
           Width = 186
-          Height = 28
+          Height = 23
           Style = csDropDownList
           TabOrder = 0
           OnKeyUp = cKeyCommandKeyUp
         end
       end
       object btnUpdateKey: TButton
-        Left = 16
+        Left = 8
         Top = 152
         Width = 75
         Height = 25
@@ -697,8 +701,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
       end
       object pnlCommands: TPanel
         Left = 8
-        Top = 13
-        Width = 330
+        Top = 12
+        Width = 356
         Height = 132
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -707,7 +711,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object KeyList: TListView
           Left = 2
           Top = 2
-          Width = 326
+          Width = 352
           Height = 128
           Align = alClient
           BorderStyle = bsNone
@@ -732,7 +736,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     end
   end
   object btnOk: TButton
-    Left = 200
+    Left = 226
     Top = 362
     Width = 75
     Height = 25
@@ -743,7 +747,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     OnClick = btnOkClick
   end
   object btnCancel: TButton
-    Left = 280
+    Left = 306
     Top = 362
     Width = 75
     Height = 25
@@ -753,12 +757,12 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     TabOrder = 2
   end
   object ColorDialog: TColorDialog
-    Left = 8
-    Top = 368
+    Left = 20
+    Top = 351
   end
   object ColorPopup: TPopupMenu
-    Left = 40
-    Top = 368
+    Left = 52
+    Top = 351
     object None1: TMenuItem
       Tag = -1
       Caption = 'None'
@@ -890,8 +894,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     end
   end
   object ImageList1: TImageList
-    Left = 72
-    Top = 368
+    Left = 84
+    Top = 351
   end
   object FontDialog: TFontDialog
     Font.Charset = DEFAULT_CHARSET
@@ -900,7 +904,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     Options = [fdEffects, fdFixedPitchOnly]
-    Left = 104
-    Top = 368
+    Left = 116
+    Top = 351
   end
 end
