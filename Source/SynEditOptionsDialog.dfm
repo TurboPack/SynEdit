@@ -3,7 +3,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   Top = 154
   BorderStyle = bsDialog
   Caption = 'Editor Options'
-  ClientHeight = 361
+  ClientHeight = 395
   ClientWidth = 363
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -604,7 +604,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Left = 120
           Top = 13
           Width = 186
-          Height = 28
+          Height = 23
           Style = csDropDownList
           TabOrder = 0
           Items.Strings = (
@@ -617,7 +617,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Left = 120
           Top = 37
           Width = 186
-          Height = 28
+          Height = 23
           Style = csDropDownList
           TabOrder = 1
           Items.Strings = (
