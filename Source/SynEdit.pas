@@ -1154,11 +1154,19 @@ var
   IsTrailing, IsInside: LongBool;
   P2, PStart, PEnd: PChar;
   W : Integer;
+  CopyS: string;
 begin
   if (Len = 0) or (aX <= 0) then
     Result := Max((ax div fCharWidth) + 1, 1)
   else
   begin
+    if scControlChars in FVisibleSpecialChars then
+    begin
+      SetString(CopyS, P, Len);
+      SubstituteControlChars(CopyS);
+      P := PChar(CopyS);
+    end;
+
     PStart := P;
     PEnd := P + Len;
     W := 0;
@@ -1170,9 +1178,6 @@ begin
         case P^ of
            #9: Inc(W, fTabWidth * fCharWidth - W mod (fTabWidth * fCharWidth));
            #32..#126, #160: Inc(W, FCharWidth);
-           #1..#8, #10..#31, #127:
-             if scControlChars in FVisibleSpecialChars then
-               Inc(W, FCharWidth);
          else
            break;
          end;
@@ -1195,7 +1200,7 @@ begin
       while P2 < PEnd do
       begin
         Inc(P2);
-        if Word(P2^) in [1..127, 160] then Break;
+        if Word(P2^) in [9, 32..126, 160] then Break;
       end;
 
       Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
@@ -1233,10 +1238,23 @@ var
   HTM: TDwriteHitTestMetrics;
   P, P2, PStart, PEnd, PCol: PChar;
   X, Y: Single;
+  CopyS: string;
 begin
-  P := PChar(S);
+  if scControlChars in FVisibleSpecialChars then
+  begin
+    CopyS := S;
+    SubstituteControlChars(CopyS);
+    P := PChar(CopyS);
+    PEnd := P + CopyS.Length;
+  end
+  else
+  begin
+    P := PChar(S);
+    PEnd := P + S.Length;
+  end;
+
+
   PStart := P;
-  PEnd := P + S.Length;
   PCol := P + Col - 1;
   Result := 0;
 
@@ -1247,9 +1265,6 @@ begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126, #160: Inc(Result, FCharWidth);
-         #1..#8, #10..#31, #127:
-           if scControlChars in FVisibleSpecialChars then
-             Inc(Result, FCharWidth);
      else
          break;
        end;
@@ -1269,7 +1284,7 @@ begin
     while P2 < PEnd do
     begin
       Inc(P2);
-      if Word(P2^) in [1..127, 160] then Break;
+      if Word(P2^) in [9, 32..126, 160] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     if P2 < PCol then
@@ -6058,8 +6073,16 @@ function TCustomSynEdit.TextWidth(P: PChar; Len: Integer): Integer;
 var
   Layout: TSynTextLayout;
   P2, PStart, PEnd: PChar;
+  CopyS: string;
 begin
   if P^ = #0 then Exit(0);
+
+  if scControlChars in FVisibleSpecialChars then
+  begin
+    SetString(CopyS, P, Len);
+    SubstituteControlChars(CopyS);
+    P := PChar(CopyS);
+  end;
 
   PStart := P;
   PEnd:= P + Len;
@@ -6072,9 +6095,6 @@ begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126, #160: Inc(Result, FCharWidth);
-         #1..#8, #10..#31, #127:
-           if scControlChars in FVisibleSpecialChars then
-             Inc(Result, FCharWidth);
        else
          break;
        end;
@@ -6094,7 +6114,7 @@ begin
     while P2 < PEnd do
     begin
       Inc(P2);
-      if Word(P2^) in [1..127, 160] then Break;
+      if Word(P2^) in [9, 32..126, 160] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     Inc(Result, Round(Layout.TextMetrics.widthIncludingTrailingWhitespace));
