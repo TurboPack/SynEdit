@@ -283,10 +283,10 @@ type
     FOptions: TSynEditorOptions;
     FSynGutter: TSynGutter;
     FColor: TColor;
+    FVisibleSpecialChars: TSynVisibleSpecialChars;
     procedure SetBookMarks(const Value: TSynBookMarkOpt);
     procedure SetFont(const Value: TFont);
     procedure SetKeystrokes(const Value: TSynEditKeyStrokes);
-    procedure SetOptions(const Value: TSynEditorOptions);
     procedure SetSynGutter(const Value: TSynGutter);
   public
     constructor Create(AOwner: TComponent); override;
@@ -294,7 +294,7 @@ type
     procedure Assign(Source : TPersistent); override;
     procedure AssignTo(Dest : TPersistent); override;
   published
-    property Options: TSynEditorOptions read FOptions write SetOptions;
+    property Options: TSynEditorOptions read FOptions write FOptions;
     property BookMarkOptions: TSynBookMarkOpt read FBookmarks write SetBookMarks;
     property Color: TColor read FColor write FColor;
     property Font: TFont read FFont write SetFont;
@@ -312,6 +312,8 @@ type
     property IndentGuides: TSynIndentGuides read FIndentGuides;
     property TabWidth: Integer read FTabWidth write FTabWidth;
     property Keystrokes: TSynEditKeyStrokes read FKeystrokes write SetKeystrokes;
+    property VisibleSpecialChars: TSynVisibleSpecialChars
+      read FVisibleSpecialChars write FVisibleSpecialChars;
   end;
 
 implementation
@@ -397,6 +399,7 @@ begin
     Self.RightEdgeColor := TCustomSynEdit(Source).RightEdgeColor;
     Self.TabWidth := TCustomSynEdit(Source).TabWidth;
     Self.WantTabs := TCustomSynEdit(Source).WantTabs;
+    Self.VisibleSpecialChars := TCustomSynEdit(Source).VisibleSpecialChars;
   end else
     inherited;
 end;
@@ -422,6 +425,7 @@ begin
     TCustomSynEdit(Dest).RightEdgeColor := Self.RightEdgeColor;
     TCustomSynEdit(Dest).TabWidth := Self.TabWidth;
     TCustomSynEdit(Dest).WantTabs := Self.WantTabs;
+    TCustomSynEdit(Dest).VisibleSpecialChars := Self.VisibleSpecialChars;
   end else
     inherited;
 end;
@@ -482,12 +486,6 @@ procedure TSynEditorOptionsContainer.SetKeystrokes(
   const Value: TSynEditKeyStrokes);
 begin
   FKeystrokes.Assign(Value);
-end;
-
-procedure TSynEditorOptionsContainer.SetOptions(
-  const Value: TSynEditorOptions);
-begin
-  FOptions:= Value;
 end;
 
 procedure TSynEditorOptionsContainer.SetSynGutter(const Value: TSynGutter);
@@ -562,8 +560,7 @@ begin
   ckGroupUndo.Checked := eoGroupUndo in FSynEdit.Options;
   ckDisableScrollArrows.Checked := eoDisableScrollArrows in FSynEdit.Options;
   ckHideShowScrollbars.Checked := eoHideShowScrollbars in FSynEdit.Options;
-  ckShowSpecialChars.Checked := eoShowSpecialChars in FSynEdit.Options;
-
+  ckShowSpecialChars.Checked := FSynEdit.VisibleSpecialChars <> [];
   //Caret
   cInsertCaret.ItemIndex:= ord(FSynEdit.InsertCaret);
   cOverwriteCaret.ItemIndex:= ord(FSynEdit.OverwriteCaret);
@@ -639,8 +636,11 @@ begin
   SetFlag(eoGroupUndo, ckGroupUndo.Checked);
   SetFlag(eoDisableScrollArrows, ckDisableScrollArrows.Checked);
   SetFlag(eoHideShowScrollbars, ckHideShowScrollbars.Checked);
-  SetFlag(eoShowSpecialChars, ckShowSpecialChars.Checked);
   FSynEdit.Options := vOptions;
+  if ckShowSpecialChars.Checked then
+    FSynEdit.VisibleSpecialChars := [scWhitespace, scControlChars, scEOL]
+  else
+    FSynEdit.VisibleSpecialChars := [];
   //Caret
   FSynEdit.InsertCaret:= TSynEditCaretType(cInsertCaret.ItemIndex);
   FSynEdit.OverwriteCaret:= TSynEditCaretType(cOverwriteCaret.ItemIndex);
