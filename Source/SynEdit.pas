@@ -7895,7 +7895,7 @@ begin
           // scan over whitespaces
           if p^ <> #0 then
             repeat
-              if (p^ <> #9) and (p^ <> #32) or (p^ <> #160) then break;
+              if (p^ <> #9) and (p^ <> #32) and (p^ <> #160) then break;
               Inc(i);
               Inc(p);
             until p^ = #0;
