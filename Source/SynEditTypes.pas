@@ -56,6 +56,7 @@ var
   SynSoftBreakGlyph: WideChar = #$00AC; //'¬'
   SynLineBreakGlyph: WideChar = #$21B2;
   SynSpaceGlyph: WideChar = #$2219;     //'·'
+  SynTabAlignment: TAlignment = taCenter;
 
 type
   ESynError = class(Exception);

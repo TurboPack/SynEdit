@@ -2806,6 +2806,7 @@ var
     X1, Y1, X2, Y2: Single;
     HitMetrics: TDwriteHitTestMetrics;
     PrintGlyph: Char;
+    Alignment: DWRITE_TEXT_ALIGNMENT;
   begin
     if (Ch = #9) then // Tab
       PrintGlyph := SynTabGlyph
@@ -2816,7 +2817,17 @@ var
     Layout.IDW.HitTestTextPosition(Pos-1, False, X1, Y1, HitMetrics);
     Layout.IDW.HitTestTextPosition(Pos-1, True, X2, Y2, HitMetrics);
     TabLayout.Create(FTextFormat, @PrintGlyph, 1, Round(X2 - X1), fTextHeight);
-    TabLayout.IDW.SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+
+    Alignment := DWRITE_TEXT_ALIGNMENT_CENTER;
+    if Ch = #9 then
+    begin
+      case SynTabAlignment of
+        taLeftJustify: Alignment := DWRITE_TEXT_ALIGNMENT_LEADING;
+        taRightJustify: Alignment := DWRITE_TEXT_ALIGNMENT_TRAILING;
+      end;
+    end;
+
+    TabLayout.IDW.SetTextAlignment(Alignment);
     TabLayout.SetFontColor(SpecialCharsColor, 1, 1);
     TabLayout.Draw(RT, FTextOffset + XRowOffset + Round(X1), YRowOffset(Row), SpecialCharsColor);
   end;
