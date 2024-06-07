@@ -8063,7 +8063,7 @@ begin
           p := @PrevLine[MaxLen];
           // scan over whitespaces
           repeat
-            if (p^ <> #32) or (p^ <> #160) then break;
+            if (p^ <> #32) and (p^ <> #160) then break;
             Inc(SpaceCount2);
             Dec(p);
           until SpaceCount2 = SpaceCount1;
