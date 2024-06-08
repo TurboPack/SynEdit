@@ -1395,8 +1395,6 @@ Const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_Asm = 12;
-  FT_HereDocDouble = 13;
-  FT_HereDocSingle = 14;
   FT_ConditionalDirective = 15;
   FT_CodeDeclaration = 16;
   FT_CodeDeclarationWithBody = 17;
