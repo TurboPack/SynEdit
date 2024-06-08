@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterUNIXShellScript.pas, released 2001-11-13.
 The Initial Author of this file is Stefan Ascher.
 Portions by Jan Verhoeven (http://jansfreeware.com/jfdelphi.htm)
 "Heredoc" syntax highlighting implementation by Marko Njezic.
-Unicode translation by MaÎl Hˆrz.
+Unicode translation by MaÅE Hˆrz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -565,7 +565,7 @@ begin
   fTokenID := tkString;
 
   if fRange = rsIndentedHeredoc then
-    while FLine[Run] in [WideChar(#9), WideChar(#32)] do Inc(Run);
+    while FLine[Run] in [#$0009, #$0020] do Inc(Run);
 
   if ((Run = 0) and (fRange = rsHeredoc)) or (fRange = rsIndentedHeredoc) then
   begin

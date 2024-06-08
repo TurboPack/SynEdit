@@ -12,7 +12,7 @@
   The Original Code is based on the mwSupportProcs.pas file from the
   mwEdit component suite by Martin Waldenburg and other developers, the Initial
   Author of this file is Michael Hieke.
-  Unicode translation by Maël Hörz.
+  Unicode translation by MaÃ«l HÃ¶rz.
   All Rights Reserved.
 
   Contributors to the SynEdit and mwEdit projects are listed in the
@@ -284,7 +284,7 @@ var
 begin
   Result := 0;
   P := PChar(Line);
-  while (P^ >= #1) and ((P^ <= #32) or (P^ = #160)) do
+  while (P^ >= #1) and ((P^ <= #32) or (P^ = #$00A0)) do
   begin
     if (P^ = #9) and ExpandTabs then
       Inc(Result, TabWidth - (Result mod TabWidth))
