@@ -32,11 +32,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynGenUnit.pas,v 1.18.2.11 2008/10/25 23:30:31 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Todo:
   - Remember the last opened MSG file
   - Double-click a MSG file opens SynGen
@@ -497,7 +492,7 @@ begin
   { Move form off the screen, but show already, to activate it correctly when
     OpenFileDialog is closed with OK. }
   Left := -10000;
-  Show;          
+  Show;
   if PerformFileOpen then
   begin
     MakeHashTable;
