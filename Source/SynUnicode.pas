@@ -53,7 +53,7 @@ const
 
 const
   WideNull = #$0000;
-  WideTabulator = #0009;
+  WideTab = #$0009;
   WideSpace = #$0020;
 
   // logical line breaks
