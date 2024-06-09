@@ -2802,7 +2802,7 @@ var
   procedure DrawWhitespace(Layout: TSynTextLayout; const Row, Pos: Integer;
     Ch: Char; SpecialCharsColor: TColor);
   var
-    TabLayout: TSynTextLayout;
+    WSLayout: TSynTextLayout;
     X1, Y1, X2, Y2: Single;
     HitMetrics: TDwriteHitTestMetrics;
     PrintGlyph: Char;
@@ -2816,7 +2816,7 @@ var
       Exit;
     Layout.IDW.HitTestTextPosition(Pos-1, False, X1, Y1, HitMetrics);
     Layout.IDW.HitTestTextPosition(Pos-1, True, X2, Y2, HitMetrics);
-    TabLayout.Create(FTextFormat, @PrintGlyph, 1, Round(X2 - X1), fTextHeight);
+    WSLayout.Create(FTextFormat, @PrintGlyph, 1, Round(X2 - X1), fTextHeight);
 
     Alignment := DWRITE_TEXT_ALIGNMENT_CENTER;
     if Ch = #9 then
@@ -2825,11 +2825,13 @@ var
         taLeftJustify: Alignment := DWRITE_TEXT_ALIGNMENT_LEADING;
         taRightJustify: Alignment := DWRITE_TEXT_ALIGNMENT_TRAILING;
       end;
-    end;
+    end
+    else if Ch <> #32 then
+      WSLayout.SetFontStyle([TFontStyle.fsUnderline], 1, 1);
 
-    TabLayout.IDW.SetTextAlignment(Alignment);
-    TabLayout.SetFontColor(SpecialCharsColor, 1, 1);
-    TabLayout.Draw(RT, FTextOffset + XRowOffset + Round(X1), YRowOffset(Row), SpecialCharsColor);
+    WSLayout.IDW.SetTextAlignment(Alignment);
+    WSLayout.SetFontColor(SpecialCharsColor, 1, 1);
+    WSLayout.Draw(RT, FTextOffset + XRowOffset + Round(X1), YRowOffset(Row), SpecialCharsColor);
   end;
 
   procedure DrawIndentGuides;
