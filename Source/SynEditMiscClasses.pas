@@ -680,7 +680,11 @@ type
     function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
     property BaseSelectionIndex: Integer read FBaseSelIndex;
+    // The last selection entered
+    // Non-multicursor commands operate on the active selection
     property ActiveSelection: TSynSelection read GetActiveSelection write SetActiveSelection;
+    // The selection that is kept when you clear multiple cursors
+    // It the first one as in VS Code
     property BaseSelection: TSynSelection read GetBaseSelection write SetBaseSelection;
     property Count: Integer read GetCount;
     property Selection[Index: Integer]: TSynSelection read GetSelection; default;
@@ -2976,7 +2980,7 @@ end;
 
 procedure TSynSelections.AddCaret(const ACaret: TBufferCoord; IsBase: Boolean);
 // If a selection has the same caret or contains the caret then remove it.
-// Otherwise and a new selection
+// Otherwise add a new selection
 var
   Sel: TSynSelection;
   Index: Integer;
@@ -3048,10 +3052,7 @@ begin
   if FSelections.Count <= 1 then Exit;
 
   Sel := FSelections[Index];
-  if Sel.IsEmpty then
-    TSynEdit(FOwner).InvalidateLine(Sel.Caret.Line)
-  else
-    TSynEdit(FOwner).InvalidateSelection(FSelections[Index]);
+  TSynEdit(FOwner).InvalidateSelection(Sel);
   FSelections.Delete(Index);
 
   if Index = FActiveSelIndex then
@@ -3134,7 +3135,7 @@ var
   ActiveSel: TSynSelection;
   NeedToMove: Boolean;
 begin
-  if FSelections.Count = 0 then Exit;
+  if FSelections.Count = 1 then Exit;
 
   ActiveSel := FSelections[FActiveSelIndex].Normalized;
   // Is it in the correct position?

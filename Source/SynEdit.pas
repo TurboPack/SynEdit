@@ -1896,7 +1896,10 @@ end;
 
 procedure TCustomSynEdit.InvalidateSelection(const Sel: TSynSelection);
 begin
-  InvalidateRange(Sel.Start, Sel.Stop);
+  if Sel.IsEmpty then
+    InvalidateLine(Sel.Caret.Line)
+  else
+    InvalidateRange(Sel.Start, Sel.Stop);
 end;
 
 procedure TCustomSynEdit.KeyUp(var Key: Word; Shift: TShiftState);
