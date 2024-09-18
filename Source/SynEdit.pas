@@ -41,6 +41,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.Contnrs,
+  System.Generics.Collections,
   System.Diagnostics,
   Winapi.Windows,
   Winapi.Messages,
@@ -218,26 +219,16 @@ type
   TSynEditMarks = array[1..MAX_MARKS] of TSynEditMark;
 
   { A list of mark objects. Each object cause a litle picture to be drawn in the gutter. }
-  TSynEditMarkList = class(TObjectList)            // It makes more sence to derive from TObjectList,
-  protected                                        // as it automatically frees its members
+  TSynEditMarkList = class(TObjectList<TSynEditMark>)
+  protected
     fEdit: TCustomSynEdit;
-    fOnChange: TNotifyEvent;
-    procedure Notify(Ptr: Pointer; Action: TListNotification); override;
-    function GetItem(Index: Integer): TSynEditMark;
-    procedure SetItem(Index: Integer; Item: TSynEditMark);
-    property OwnsObjects;                          // This is to hide the inherited property,
-  public                                           // because TSynEditMarkList always owns the marks
+  public
     constructor Create(AOwner: TCustomSynEdit);
-    function First: TSynEditMark;
-    function Last: TSynEditMark;
-    function Extract(Item: TSynEditMark): TSynEditMark;
     procedure ClearLine(line: Integer);
     procedure GetMarksForLine(line: Integer; var Marks: TSynEditMarks);
-    procedure Place(mark: TSynEditMark);
+    procedure Place(Mark: TSynEditMark);
   public
-    property Items[Index: Integer]: TSynEditMark read GetItem write SetItem; default;
     property Edit: TCustomSynEdit read fEdit;
-    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
   TGutterClickEvent = procedure(Sender: TObject; Button: TMouseButton;
@@ -593,7 +584,8 @@ type
     procedure ChainModifiedChanged(Sender: TObject);
     procedure ScanRanges;
     procedure Loaded; override;
-    procedure MarkListChange(Sender: TObject);
+    procedure MarkListNotify(Sender: TObject; const Mark: TSynEditMark;
+      Action: TCollectionNotification);
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y:
       Integer); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
@@ -1474,7 +1466,7 @@ begin
   fKbdHandler := TSynEditKbdHandler.Create;
   fKeystrokes := TSynEditKeyStrokes.Create(Self);
   fMarkList := TSynEditMarkList.Create(Self);
-  fMarkList.OnChange := MarkListChange;
+  fMarkList.OnNotify := MarkListNotify;
   SetDefaultKeystrokes;
   fRightEdgeColor := clSilver;
   fWantReturns := True;
@@ -6569,9 +6561,13 @@ begin
 end;
 
 { Called by FMarkList if change }
-procedure TCustomSynEdit.MarkListChange(Sender: TObject);
+procedure TCustomSynEdit.MarkListNotify(Sender: TObject; const Mark: TSynEditMark;
+  Action: TCollectionNotification);
 begin
-  InvalidateGutter;
+  if ([csDestroying, csLoading] * ComponentState = []) and
+    (Action in [cnAdded, cnRemoved]) and Assigned(Mark)
+  then
+    InvalidateGutterLines(Mark.fLine, Mark.fLine);
 end;
 
 procedure TCustomSynEdit.MarkSaved;
@@ -9296,42 +9292,10 @@ end;
 
 { TSynEditMarkList }
 
-procedure TSynEditMarkList.Notify(Ptr: Pointer; Action: TListNotification);
-begin
-  inherited;
-  if Assigned(FOnChange) then
-    FOnChange(Self);
-end;
-
-function TSynEditMarkList.GetItem(Index: Integer): TSynEditMark;
-begin
-  Result := TSynEditMark(inherited GetItem(Index));
-end;
-
-procedure TSynEditMarkList.SetItem(Index: Integer; Item: TSynEditMark);
-begin
-  inherited SetItem(Index, Item);
-end;
-
 constructor TSynEditMarkList.Create(AOwner: TCustomSynEdit);
 begin
   inherited Create;
   fEdit := AOwner;
-end;
-
-function TSynEditMarkList.First: TSynEditMark;
-begin
-  Result := TSynEditMark(inherited First);
-end;
-
-function TSynEditMarkList.Last: TSynEditMark;
-begin
-  result := TSynEditMark(inherited Last);
-end;
-
-function TSynEditMarkList.Extract(Item: TSynEditMark): TSynEditMark;
-begin
-  Result := TSynEditMark(inherited Extract(Item));
 end;
 
 procedure TSynEditMarkList.ClearLine(Line: Integer);
@@ -9362,13 +9326,13 @@ begin
   end;
 end;
 
-procedure TSynEditMarkList.Place(mark: TSynEditMark);
+procedure TSynEditMarkList.Place(Mark: TSynEditMark);
 begin
   if assigned(fEdit) then
     if Assigned(fEdit.OnPlaceBookmark) then
-      fEdit.OnPlaceBookmark(fEdit, mark);
-  if assigned(mark) then
-    Add(mark);
+      fEdit.OnPlaceBookmark(fEdit, Mark);
+  if assigned(Mark) then
+    Add(Mark);
 end;
 
 { TSynEditPlugin }
