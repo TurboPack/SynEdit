@@ -197,6 +197,7 @@ type
     property Attribute[Index: Integer]: TSynHighlighterAttributes
       read GetAttribute;
     property Capabilities: TSynHighlighterCapabilities read GetCapabilities;
+    property CaseSensitive: Boolean read fCaseSensitive;
     property SampleSource: string read GetSampleSource write SetSampleSource;
     property CommentAttribute: TSynHighlighterAttributes
       index SYN_ATTR_COMMENT read GetDefaultAttribute;
