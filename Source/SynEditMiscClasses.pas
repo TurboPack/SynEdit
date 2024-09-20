@@ -676,6 +676,7 @@ type
     procedure DeleteSelection(Index: Integer);
     function FindCaret(const ACaret: TBufferCoord): Integer;
     function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
+    procedure MouseSelection(Sel: TSynSelection);
     procedure Merge;
     function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
@@ -3146,15 +3147,32 @@ begin
 
 end;
 
+procedure TSynSelections.MouseSelection(Sel: TSynSelection);
+// Mouse selection works differently than selection with the keyboard
+// All other selections overlapping with the active selection get removed
+// as in VS Code and Visual Studio.
+begin
+  // Exit if there are no other selections
+  if FSelections.Count <= 1 then Exit;
+
+  for var Index := FSelections.Count - 1 downto 0 do
+  begin
+    // Sel will become the active selection
+    if Index = FActiveSelIndex then
+      Continue;
+    if Sel.Intersects(fSelections.List[Index]) then
+      DeleteSelection(Index);
+  end;
+end;
+
 function TSynSelections.PartSelectionsForRow(
   const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
 // Provides a list of canditates for partial selection of a Row
 var
-  Index: Integer;
   Sel: TSynSelection;
 begin
   Result := [];
-  for Index := 0 to FSelections.Count - 1  do
+  for var Index := 0 to FSelections.Count - 1  do
   begin
     Sel := FSelections.List[Index].Normalized;
     if Sel.Stop < RowStart then

@@ -2044,7 +2044,7 @@ begin
   //remember selection state, as it will be cleared later
   bWasSel := SelAvail;
 
-  if (Button = mbLeft) and ((Shift + [ssDouble]) = [ssLeft, ssDouble]) then
+  if (Button = mbLeft) {and ((Shift + [ssDouble]) = [ssLeft, ssDouble])} then
   begin
     if (FClickCount > 0)
        and (Abs(fMouseDownX - X) < GetSystemMetrics(SM_CXDRAG))
@@ -2062,7 +2062,12 @@ begin
   end else
     fClickCount := 0;
 
-  if (Button = mbLeft) and (fClickCount > 1) then Exit;
+  if (Button = mbLeft) and (fClickCount > 1) then
+  begin
+    // Deal with overlapping selections
+    Selections.MouseSelection(FSelection);
+    Exit;
+  end;
 
   fKbdHandler.ExecuteMouseDown(Self, Button, Shift, X, Y);
 
@@ -2165,6 +2170,8 @@ begin
       DoMouseSelectLineRange(BC)
     else
       MoveDisplayPosAndSelection(P, True);
+    // Deal with overlapping selections
+    Selections.MouseSelection(FSelection);
 
     if (sfPossibleGutterClick in fStateFlags) and (FSelection.Start.Line <> CaretXY.Line) then
       Include(fStateFlags, sfGutterDragging);
@@ -2216,7 +2223,10 @@ begin
         DoMouseSelectLineRange(BC)
       else
         // if MouseCapture is True we're changing selection. otherwise we're dragging
-        MoveDisplayPosAndSelection(DC, MouseCapture)
+        MoveDisplayPosAndSelection(DC, MouseCapture);
+
+      // Deal with overlapping selections
+      Selections.MouseSelection(FSelection);
     finally
       DecPaintLock;
     end;
