@@ -693,6 +693,8 @@ type
     function ExecuteAction(Action: TBasicAction): Boolean; override;
     procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
+    procedure ExecuteMultiCaretCommand(Command: TSynEditorCommand; AChar: WideChar;
+      Data: pointer; CommandInfo: TSynCommandInfo); virtual;
     function GetBookMark(BookMark: Integer; var X, Y: Integer): Boolean;
     function GetHighlighterAttriAtRowCol(const XY: TBufferCoord; var Token: string;
       var Attri: TSynHighlighterAttributes): Boolean;
@@ -5731,6 +5733,8 @@ end;
 
 procedure TCustomSynEdit.CommandProcessor(Command: TSynEditorCommand;
   AChar: WideChar; Data: pointer);
+var
+  CommandInfo: TSynCommandInfo;
 begin
   fUndoRedo.CommandProcessed := Command;
   // first the program event handler gets a chance to process the command
@@ -5742,7 +5746,19 @@ begin
     NotifyHookedCommandHandlers(False, Command, AChar, Data);
     // internal command handler
     if (Command <> ecNone) and (Command < ecUserFirst) then
-      ExecuteCommand(Command, AChar, Data);
+    begin
+      CommandInfo := SynCommandsInfo[Command];
+      if (CommandInfo.CommandKind in [ckStandard, ckSingleCaret])
+        or (FSelections.Count = 1)
+      then
+      begin
+        if (CommandInfo.CommandKind = ckSingleCaret) and (FSelections.Count > 1) then
+          FSelections.Clear(TSynSelections.TKeepSelection.ksKeepBase);
+        ExecuteCommand(Command, AChar, Data);
+      end
+      else
+        ExecuteMultiCaretCommand(Command, Achar, Data, CommandInfo);
+    end;
     // notify hooked command handlers after the command was executed inside of
     // the class
     if Command <> ecNone then
@@ -6317,6 +6333,37 @@ begin
       ecFoldRegions: begin CollapseFoldType(FoldRegionType) end;
       ecUnfoldRegions: begin UnCollapseFoldType(FoldRegionType) end;
     end;
+  finally
+    DecPaintLock;
+  end;
+end;
+
+procedure TCustomSynEdit.ExecuteMultiCaretCommand(Command: TSynEditorCommand;
+  AChar: WideChar; Data: pointer; CommandInfo: TSynCommandInfo);
+var
+  Sel: TSynSelection;
+  I: Integer;
+begin
+  IncPaintLock;
+  try
+    if CommandInfo.StoreMultiCaret then
+      BeginUndoBlock;
+
+    // Backward loop
+    for I := FSelections.Count -1 downto 0 do
+    begin
+      // Make the current selection active
+      FSelection := FSelections[I];
+      ExecuteCommand(Command, AChar, Data);
+
+    end;
+
+    // Merge Selections
+
+    // Restore Active Selection
+
+    if CommandInfo.StoreMultiCaret then
+      EndUndoBlock;
   finally
     DecPaintLock;
   end;

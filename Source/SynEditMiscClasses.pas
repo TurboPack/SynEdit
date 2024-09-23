@@ -680,6 +680,19 @@ type
     procedure Merge;
     function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
+    // Invalidate
+    procedure InvalidateSelection(Index: Integer);
+    procedure InvalidateAll;
+    //Storing and Restoring
+    procedure Store(out Selections: TArray<TSynSelection>; out BaseIndex, ActiveIndex: Integer);
+    procedure Restore(const Selections: TArray<TSynSelection>; const BaseIndex, ActiveIndex: Integer);
+    // Adjust selections in response to editing events
+    // Should only used by Synedit
+    procedure LinesInserted(FirstLine, Count: Integer);
+    procedure LinesDeleted(FirstLine, Count: Integer);
+    procedure LinePut(aIndex: Integer; const OldLine: string);
+
+    // properties
     property BaseSelectionIndex: Integer read FBaseSelIndex;
     // The last selection entered
     // Non-multicursor commands operate on the active selection
@@ -3130,6 +3143,37 @@ begin
   Result := FSelections[Index];
 end;
 
+procedure TSynSelections.InvalidateAll;
+var
+  Index: Integer;
+begin
+  for Index := 0 to FSelections.Count - 1 do
+    InvalidateSelection(Index);
+end;
+
+procedure TSynSelections.InvalidateSelection(Index: Integer);
+begin
+  TSynEdit(FOwner).InvalidateSelection(FSelections[Index]);
+end;
+
+procedure TSynSelections.LinePut(aIndex: Integer; const OldLine: string);
+begin
+  if FSelections.Count <= 1 then Exit;
+
+end;
+
+procedure TSynSelections.LinesDeleted(FirstLine, Count: Integer);
+begin
+  if FSelections.Count <= 1 then Exit;
+
+end;
+
+procedure TSynSelections.LinesInserted(FirstLine, Count: Integer);
+begin
+  if FSelections.Count <= 1 then Exit;
+
+end;
+
 procedure TSynSelections.Merge;
 // It is executed after selection with the mouse
 var
@@ -3184,6 +3228,18 @@ begin
   end;
 end;
 
+procedure TSynSelections.Restore(const Selections: TArray<TSynSelection>;
+  const BaseIndex, ActiveIndex: Integer);
+begin
+  InvalidateAll;
+  FSelections.Clear;
+  FSelections.AddRange(Selections);
+  FActiveSelIndex := ActiveIndex;
+  FBaseSelIndex := BaseIndex;
+  InvalidateAll;
+  TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection);
+end;
+
 function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;
 // Used to paint the active line
 // Result is True only if selection is empty as in Delphi and VS Code.
@@ -3229,6 +3285,14 @@ end;
 procedure TSynSelections.SetBaseSelection(const Value: TSynSelection);
 begin
   FSelections[FBaseSelIndex] := Value;
+end;
+
+procedure TSynSelections.Store(out Selections: TArray<TSynSelection>;
+  out BaseIndex, ActiveIndex: Integer);
+begin
+  Selections := FSelections.ToArray;
+  BaseIndex := FBaseSelIndex;
+  ActiveIndex := FActiveSelIndex;
 end;
 
 {$ENDREGION 'TSynSelections'}
