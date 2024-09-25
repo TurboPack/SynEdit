@@ -783,6 +783,7 @@ begin
   AddKey(ecSelRight, SYNEDIT_RIGHT, [ssShift]);
   AddKey(ecWordRight, SYNEDIT_RIGHT, [ssCtrl]);
   AddKey(ecSelWordRight, SYNEDIT_RIGHT, [ssShift,ssCtrl]);
+  AddKey(ecSelWord, Ord('W'), [ssCtrl]);
   AddKey(ecPageDown, SYNEDIT_NEXT, []);
   AddKey(ecSelPageDown, SYNEDIT_NEXT, [ssShift]);
   AddKey(ecPageBottom, SYNEDIT_NEXT, [ssCtrl]);

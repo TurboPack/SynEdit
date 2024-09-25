@@ -665,6 +665,7 @@ type
     procedure SetActiveSelection(const Value: TSynSelection);
     procedure SetBaseSelection(const Value: TSynSelection);
     function GetSelection(Index: Integer): TSynSelection;
+    procedure SetActiveSelIndex(const Index: Integer);
   public
     type
       TKeepSelection = (ksKeepBase, ksKeepActive);
@@ -688,10 +689,9 @@ type
     procedure Restore(const Selections: TArray<TSynSelection>; const BaseIndex, ActiveIndex: Integer);
     // Adjust selections in response to editing events
     // Should only used by Synedit
-    procedure LinesInserted(FirstLine, Count: Integer);
-    procedure LinesDeleted(FirstLine, Count: Integer);
+    procedure LinesInserted(FirstLine, aCount: Integer);
+    procedure LinesDeleted(FirstLine, aCount: Integer);
     procedure LinePut(aIndex: Integer; const OldLine: string);
-
     // properties
     property BaseSelectionIndex: Integer read FBaseSelIndex;
     // The last selection entered
@@ -701,6 +701,7 @@ type
     // It the first one as in VS Code
     property BaseSelection: TSynSelection read GetBaseSelection write SetBaseSelection;
     property Count: Integer read GetCount;
+    property ActiveSelIndex: Integer read FActiveSelIndex write SetActiveSelIndex;
     property Selection[Index: Integer]: TSynSelection read GetSelection; default;
   end;
 
@@ -2807,7 +2808,7 @@ end;
 
 procedure TSynIndicators.LinesInserted(FirstLine, Count: Integer);
 { Adjust Indicator lines for insertion -
-  FirstLine 0-based Indicator lines 1-based}
+  FirstLine 0-based. Indicator lines 1-based.}
 var
   Keys: TArray<Integer>;
   I, Line: Integer;
@@ -3157,38 +3158,137 @@ begin
 end;
 
 procedure TSynSelections.LinePut(aIndex: Integer; const OldLine: string);
+var
+  I: Integer;
+  Line: string;
+  OldLen, NewLen: Integer;
+  StartPos: Integer;
+  Delta: Integer;
 begin
   if FSelections.Count <= 1 then Exit;
 
+  Line := TSynEdit(FOwner).Lines[aIndex];
+  LineDiff(Line, OldLine, StartPos, OldLen, NewLen);
+  Delta := NewLen - OldLen;
+
+  for I := FActiveSelIndex + 1 to Count - 1 do
+  begin
+    with FSelections.List[I] do
+    begin
+      if (Start.Line > aIndex + 1) and (Stop.Line > aIndex + 1) then
+          Exit;
+
+      if Caret.Line = aIndex + 1 then Inc(Caret.Char, Delta);
+      if Start.Line = aIndex + 1 then Inc(Start.Char, Delta);
+      if Stop.Line = aIndex + 1 then Inc(Stop.Char, Delta);
+    end;
+  end;
 end;
 
-procedure TSynSelections.LinesDeleted(FirstLine, Count: Integer);
+procedure TSynSelections.LinesDeleted(FirstLine, aCount: Integer);
+var
+  I: Integer;
+  MinBC: TBufferCoord;
 begin
   if FSelections.Count <= 1 then Exit;
 
+  for I := FActiveSelIndex + 1 to Count - 1 do
+    with FSelections.List[I] do
+    begin
+      if Caret.Line >= FirstLine + 1 then Dec(Caret.Line, aCount);
+      if Start.Line >= FirstLine + 1 then Dec(Start.Line, aCount);
+      if Stop.Line >= FirstLine + 1 then Dec(Stop.Line, aCount);
+
+      if (Start.Line < FirstLine + 1) and (Stop.Line < FirstLine + 1) then
+      begin
+        FSelections.List[I] := TSynSelection.Invalid;
+        Continue;
+      end;
+
+      MinBC := BufferCoord(FirstLine + 1, 1);
+      Caret := TBufferCoord.Max(Caret, MinBC);
+      Start := TBufferCoord.Max(Start, MinBC);
+      Stop := TBufferCoord.Max(Stop, MinBC);
+    end;
 end;
 
-procedure TSynSelections.LinesInserted(FirstLine, Count: Integer);
+procedure TSynSelections.LinesInserted(FirstLine, aCount: Integer);
+var
+  I: Integer;
 begin
   if FSelections.Count <= 1 then Exit;
 
+  for I := FActiveSelIndex + 1 to Count - 1 do
+    with FSelections.List[I] do
+    begin
+      // FirstLine is 0-based
+      if Caret.Line >= FirstLine + 1 then Inc(Caret.Line, aCount);
+      if Start.Line >= FirstLine + 1 then Inc(Start.Line, aCount);
+      if Stop.Line >= FirstLine + 1 then Inc(Stop.Line, aCount);
+    end;
 end;
 
 procedure TSynSelections.Merge;
-// It is executed after selection with the mouse
+// It is executed after the execution of a multi-selection command
+// It removes invalid selections and merges overllapping selections
+
+  function DoMerge(const Sel, NextSel: TSynSelection): TSynSelection;
+  var
+    Caret, Start, Stop: TBufferCoord;
+  begin
+    Start := TBufferCoord.Min(
+      TBufferCoord.Min(Sel.Start, Sel.Stop),
+      TBufferCoord.Min(NextSel.Start, NextSel.Stop));
+    Stop := TBufferCoord.Max(
+      TBufferCoord.Max(Sel.Start, Sel.Stop),
+      TBufferCoord.Max(NextSel.Start, NextSel.Stop));
+
+    if NextSel.Caret = TBufferCoord.Min(NextSel.Start, NextSel.Stop) then
+      Caret := Start
+    else
+      Caret := Stop;
+
+    Result := TSynSelection.Create(Caret, Start, Stop);
+  end;
+
 var
-  ActiveSel: TSynSelection;
-  NeedToMove: Boolean;
+  Sel, NextSel: TSynSelection;
+  I: Integer;
+  BC: TBufferCoord;
 begin
   if FSelections.Count = 1 then Exit;
 
-  ActiveSel := FSelections[FActiveSelIndex].Normalized;
-  // Is it in the correct position?
-  NeedToMove := ((FActiveSelIndex > 0) and
-    (FSelections[FActiveSelIndex - 1].Normalized.Start > ActiveSel.Start)) or
-   ((FActiveSelIndex < FSelections.Count - 1) and
-      (FSelections[FActiveSelIndex + 1].Normalized.Start < ActiveSel.Start));
+  // Remove Invalid
+  for I := Count - 1 downto 0 do
+    if not FSelections.List[I].IsValid then
+      DeleteSelection(I);
 
+  // Selections should be sorted in increasing order of the normalized Start.
+  // Merge is concequtive selections overlap.
+
+  NextSel := FSelections.List[Count - 1];  // last selection
+  for I := Count - 2 downto 0 do
+  begin
+    Sel := FSelections.List[I];
+
+    if Sel.Intersects(NextSel) then
+    begin
+      Sel := DoMerge(Sel, NextSel);
+      FSelections.List[I] := Sel;
+      DeleteSelection(I + 1);
+    end;
+    NextSel := Sel;
+  end;
+
+  // Process the case of one invalid selection
+  if (FSelections.Count = 1) and not FSelections.List[0].IsValid then
+  begin
+    BC := BufferCoord(1, 1);
+    FSelections.List[0] := TSynSelection.Create(BC, BC, BC);
+  end;
+
+  // Activate the current selection
+  TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection);
 end;
 
 procedure TSynSelections.MouseSelection(Sel: TSynSelection);
@@ -3280,6 +3380,20 @@ procedure TSynSelections.SetActiveSelection(const Value: TSynSelection);
 begin
 //  Assert(Value.Contains(Value.Caret) or (Value.Caret = Value.Normalized.Stop));
   FSelections[FActiveSelIndex] := Value;
+end;
+
+procedure TSynSelections.SetActiveSelIndex(const Index: Integer);
+var
+  Sel: TSynSelection;
+begin
+  Assert(InRange(Index, 0, Count - 1));
+  if Index <> FActiveSelIndex then
+  begin
+    FActiveSelIndex := Index;
+    Sel := ActiveSelection;
+    if Sel.IsValid then
+      TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection, False);
+  end;
 end;
 
 procedure TSynSelections.SetBaseSelection(const Value: TSynSelection);

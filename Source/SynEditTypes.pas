@@ -78,6 +78,7 @@ type
   TSynInfoLossEvent = procedure (var Encoding: TEncoding; Cancel: Boolean) of object;
 
   TBufferCoord = record
+    // Char and Line are 1-based
     Char: integer;
     Line: integer;
     function ToString(ShortForm: Boolean = True): string;
@@ -89,6 +90,8 @@ type
     class operator GreaterThanOrEqual(a, b: TBufferCoord): Boolean;
     class function Min(a, b: TBufferCoord): TBufferCoord; static;
     class function Max(a, b: TBufferCoord): TBufferCoord; static;
+    class function Invalid: TBufferCoord; static;
+    function IsValid: Boolean;
   end;
 
   TDisplayCoord = record
@@ -118,6 +121,8 @@ type
     constructor Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL: Boolean = False);
     class operator Equal(a, b: TSynSelection): Boolean;
     class operator NotEqual(a, b: TSynSelection): Boolean;
+    class function Invalid: TSynSelection; static;
+    function IsValid: Boolean;
   end;
 
   TSynSelectionArray = TArray<TSynSelection>;
@@ -212,6 +217,7 @@ end;
     function GetCanRedo: Boolean;
     function GetFullUndoImposible: Boolean;
     function GetOnModifiedChanged: TNotifyEvent;
+    function GetInsideUndoRedo: Boolean;
     procedure SetModified(const Value: Boolean);
     procedure SetMaxUndoActions(const Value: Integer);
     procedure SetGroupUndo(const Value: Boolean);
@@ -253,6 +259,7 @@ end;
     property FullUndoImpossible: Boolean read GetFullUndoImposible;
     property OnModifiedChanged: TNotifyEvent read GetOnModifiedChanged
       write SetOnModifiedChanged;
+    property InsideUndoRedo: Boolean read GetInsideUndoRedo;
   end;
 
 implementation
@@ -292,6 +299,17 @@ class operator TBufferCoord.GreaterThanOrEqual(a, b: TBufferCoord): Boolean;
 begin
   Result :=  (b.Line < a.Line)
     or ((b.Line = a.Line) and (b.Char <= a.Char))
+end;
+
+class function TBufferCoord.Invalid: TBufferCoord;
+begin
+  Result.Char := 0;
+  Result.Line := 0;
+end;
+
+function TBufferCoord.IsValid: Boolean;
+begin
+  Result := (Char > 0) and (Line > 0);
 end;
 
 class operator TBufferCoord.LessThan(a, b: TBufferCoord): Boolean;
@@ -435,12 +453,23 @@ end;
 function TSynSelection.Intersects(const Other: TSynSelection): Boolean;
 begin
   Result := Self.Contains(Other.Start) or Self.Contains(Other.Stop) or
-    Other.Contains(Self.Start);
+    Other.Contains(TBufferCoord.Min(Self.Start, Self.Stop));
+end;
+
+class function TSynSelection.Invalid: TSynSelection;
+begin
+  Result := TSynSelection.Create(TBufferCoord.Invalid, TBufferCoord.Invalid,
+    TBufferCoord.Invalid);
 end;
 
 function TSynSelection.IsEmpty: Boolean;
 begin
   Result := Start = Stop
+end;
+
+function TSynSelection.IsValid: Boolean;
+begin
+  Result := Caret.IsValid and Start.IsValid and Stop.IsValid;
 end;
 
 procedure TSynSelection.Join(const Sel: TSynSelection);

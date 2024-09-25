@@ -160,6 +160,7 @@ type
     function GetCanRedo: Boolean;
     function GetFullUndoImposible: Boolean;
     function GetOnModifiedChanged: TNotifyEvent;
+    function GetInsideUndoRedo: Boolean;
     procedure SetModified(const Value: Boolean);
     procedure SetCommandProcessed(const Command: TSynEditorCommand);
     procedure SetMaxUndoActions(const Value: Integer);
@@ -425,6 +426,11 @@ end;
 function TSynEditUndo.GetFullUndoImposible: Boolean;
 begin
   Result := FUndoList.FFullUndoImposible;
+end;
+
+function TSynEditUndo.GetInsideUndoRedo: Boolean;
+begin
+  Result := FInsideUndoRedo;
 end;
 
 function TSynEditUndo.GetMaxUndoActions: Integer;

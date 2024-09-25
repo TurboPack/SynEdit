@@ -2961,6 +2961,9 @@ begin
   BGColor := WhitespaceColor(True, True);  // Resets highlighter
   RT.FillRectangle(LinesRect, TSynDWrite.SolidBrush(BGColor));
 
+  if Lines.Count = 0 then
+    Exit;
+
   Inc(LinesRect.Left, FTextMargin);
 
   RT.PushAxisAlignedClip(LinesRect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
@@ -5965,8 +5968,8 @@ begin
                   BeginUndoBlock;
                   try
                     CaretXNew := Lines[CaretY - 2].Length + 1;
-                    Lines[CaretY - 2] := Lines[CaretY - 2] + Temp;
-                    Lines.Delete(CaretY - 1);
+                    Lines[CaretY - 1] := Lines[CaretY - 2] + Temp;
+                    Lines.Delete(CaretY - 2);
                     CaretXY := BufferCoord(CaretXNew, CaretY - 1);
                   finally
                     EndUndoBlock;
@@ -6054,8 +6057,8 @@ begin
                 BeginUndoBlock;
                 try
                   Helper := StringofChar(#32, CaretX - 1 - Len);
-                  Lines[CaretY - 1] := Temp + Helper + Lines[CaretY];
-                  Lines.Delete(CaretY);
+                  Lines[CaretY] := Temp + Helper + Lines[CaretY];
+                  Lines.Delete(CaretY - 1);
                 finally
                   EndUndoBlock;
                   Lines.EndUpdate;
@@ -6163,8 +6166,8 @@ begin
                   SpaceCount1 := 0;
                 Delete(Temp2, 1, CaretX - 1);
                 SpaceBuffer := GetLeftSpacing(SpaceCount1, True);
-                Lines.Insert(CaretY, SpaceBuffer + Temp2);
-                Lines[CaretY - 1] := Temp;
+                Lines.Insert(CaretY - 1, Temp);
+                Lines[CaretY] := SpaceBuffer + Temp2;
                 if Command = ecLineBreak then
                   CaretXY := BufferCoord(SpaceBuffer.Length + 1, CaretY + 1);
               end
@@ -6175,11 +6178,11 @@ begin
               end;
             end // (Len > 0) and (CaretX < Len)
             else begin
-              // either emtpy or at the end of line: insert new line below
+              // either empty or at the end of line: insert new line below
               if fLines.Count = 0 then
                 fLines.Add('');
               SpaceCount2 := 0;
-              { Autoindent only in case we are not on the line begin }
+              // Autoindent only in case we are not at the start of the line
               if (eoAutoIndent in Options) and (CaretX > 1)  then
               begin
                 BackCounter := CaretY;
@@ -6342,6 +6345,7 @@ procedure TCustomSynEdit.ExecuteMultiCaretCommand(Command: TSynEditorCommand;
   AChar: WideChar; Data: pointer; CommandInfo: TSynCommandInfo);
 var
   Sel: TSynSelection;
+  OldActiveSelIndex: Integer;
   I: Integer;
 begin
   IncPaintLock;
@@ -6349,18 +6353,24 @@ begin
     if CommandInfo.StoreMultiCaret then
       BeginUndoBlock;
 
-    // Backward loop
-    for I := FSelections.Count -1 downto 0 do
+    OldActiveSelIndex := Selections.ActiveSelIndex;
+
+    for I := 0 to FSelections.Count -1 do
     begin
       // Make the current selection active
-      FSelection := FSelections[I];
-      ExecuteCommand(Command, AChar, Data);
+      Selections.ActiveSelIndex := I;
 
+      if not FSelection.IsValid then Continue;
+
+      ExecuteCommand(Command, AChar, Data);
+      Selections.ActiveSelection := FSelection;
     end;
 
-    // Merge Selections
-
     // Restore Active Selection
+    Selections.ActiveSelIndex := OldActiveSelIndex;
+
+    // Merge Selections
+    FSelections.Merge;
 
     if CommandInfo.StoreMultiCaret then
       EndUndoBlock;
@@ -8530,6 +8540,10 @@ begin
   // SynIndicators
   FIndicators.LinesDeleted(FirstLine, Count);
 
+  // Selections
+  if not fUndoRedo.InsideUndoRedo then
+    FSelections.LinesDeleted(FirstLine, Count);
+
   // plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
@@ -8554,6 +8568,10 @@ begin
   // SynIndicators
   FIndicators.LinesInserted(FirstLine, Count);
 
+  // Selections
+  if not fUndoRedo.InsideUndoRedo then
+    FSelections.LinesInserted(FirstLine, Count);
+
   // Plugins
   if fPlugins <> nil then
     for i := 0 to fPlugins.Count - 1 do
@@ -8571,6 +8589,10 @@ var
 begin
   // SynIndicators
   FIndicators.LinePut(Index);
+
+  // Selections
+  if not fUndoRedo.InsideUndoRedo then
+    FSelections.LinePut(Index, OldLine);
 
   // plugins
   if fPlugins <> nil then
