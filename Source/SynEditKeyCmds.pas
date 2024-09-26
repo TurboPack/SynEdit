@@ -199,7 +199,7 @@ const
   ecMoveLineUp      = 663;
   ecMoveLineDown    = 664;
 
-  //++ CodeFolding
+  // CodeFolding
   ecFoldAll         = 701;
   ecUnfoldAll       = 702;
   ecFoldNearest     = 705;
@@ -212,9 +212,11 @@ const
   ecUnfoldLevel3    = 723;
   ecFoldRegions     = 731;
   ecUnfoldRegions   = 732;
-  //-- CodeFolding
 
+  // Multi-caret
   ecEscape          = 800;
+  ecAddCaretAbove   = 801;
+  ecAddCaretBelow   = 802;
 
   ecUserFirst       = 1001; // Start of user-defined commands
 
@@ -323,7 +325,7 @@ uses
 
 const
 //++ CodeFolding
-  EditorCommandStrs: array[0..111] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..113] of TIdentMapEntry = (
 //-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
@@ -424,7 +426,7 @@ const
     (Value: ecMoveLineUp; Name:'ecMoveLineUp'),
     (Value: ecMoveLineDown; Name:'ecMoveLineDown'),
     (Value: ecString; Name:'ecString'),
-//++ CodeFolding
+    // CodeFolding
     (Value: ecFoldAll; Name:'ecFoldAll'),
     (Value: ecUnfoldAll; Name:'ecUnfoldAll'),
     (Value: ecFoldNearest; Name:'ecFoldNearest'),
@@ -437,8 +439,11 @@ const
     (Value: ecUnfoldLevel3; Name:'ecUnfoldLevel3'),
     (Value: ecFoldRegions; Name:'ecFoldRanges'),
     (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
-//-- CodeFolding
-    (Value: ecEscape; Name:'ecEscape'));
+    // CodeFolding
+    (Value: ecEscape; Name:'ecEscape'),
+    (Value: ecAddCaretAbove; Name:'ecAddCaretAbove'),
+    (Value: ecAddCaretBelow; Name:'ecAddCaretBelo')
+    );
 
 // GetEditorCommandValues and GetEditorCommandExtended for editing key assignments
 procedure GetEditorCommandValues(Proc: TGetStrProc);
@@ -858,7 +863,7 @@ begin
   AddKey(ecCopyLineDown, SYNEDIT_DOWN, [ssShift, ssAlt]);
   AddKey(ecMoveLineUp, SYNEDIT_UP, [ssAlt]);
   AddKey(ecMoveLineDown, SYNEDIT_DOWN, [ssAlt]);
-//++ CodeFolding
+  // CodeFolding
   AddKey(ecFoldAll, VK_OEM_MINUS, [ssCtrl, ssShift]);   {- _}
   AddKey(ecUnfoldAll,  VK_OEM_PLUS, [ssCtrl, ssShift]); {= +}
   AddKey(ecFoldNearest, VK_OEM_2, [ssCtrl]);  // Divide {'/'}
@@ -869,8 +874,10 @@ begin
   AddKey(ecUnfoldLevel1, Ord('K'), [ssCtrl, ssShift], Ord('1'), [ssCtrl, ssShift]);
   AddKey(ecUnfoldLevel2, Ord('K'), [ssCtrl, ssShift], Ord('2'), [ssCtrl, ssShift]);
   AddKey(ecUnfoldLevel3, Ord('K'), [ssCtrl, ssShift], Ord('3'), [ssCtrl, ssShift]);
-//-- CodeFolding
+  // Multi-caret
   AddKey(ecEscape, SYNEDIT_ESCAPE, []);
+  AddKey(ecAddCaretAbove, SYNEDIT_UP, [ssCtrl, ssAlt]);
+  AddKey(ecAddCaretBelow, SYNEDIT_DOWN, [ssCtrl, ssAlt]);
 end;
 
 procedure TSynEditKeyStrokes.SetItem(Index: Integer; Value: TSynEditKeyStroke);
@@ -1115,6 +1122,8 @@ begin
   SynCommandsInfo.Add(ecFoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecUnfoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecEscape, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecAddCaretAbove, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecAddCaretBelow, TSynCommandInfo.Create(ckStandard, False));
 end;
 
 { TSynCommandInfo }
