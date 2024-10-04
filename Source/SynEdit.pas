@@ -2122,7 +2122,12 @@ begin
     MoveDisplayPosAndSelection(PixelsToNearestRowColumn(X,Y),
       [ssAlt, ssShift] * Shift = [ssShift]);
 
-    if ssAlt in Shift then
+    if [ssAlt, ssShift] * Shift = [ssAlt, ssShift] then
+    begin
+      InvalidateSelection(FSelection);
+      FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY)
+    end
+    else if ssAlt in Shift then
       FSelections.Add(FSelection)
     else
     begin
@@ -2166,14 +2171,29 @@ begin
 
     if BC = CaretXY then Exit;  // no movement
 
-    if fClickCount = 2 then
-      DoMouseSelectWordRange(BC)
-    else if fClickCount = 3 then
-      DoMouseSelectLineRange(BC)
+    if [ssAlt, ssShift] * Shift = [ssAlt, ssShift] then
+    begin
+      // Column selection
+      IncPaintLock;
+      try
+        MoveDisplayPosAndSelection(P, True);
+        InvalidateSelection(FSelection);
+        FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY);
+      finally
+        DecPaintLock;
+      end;
+    end
     else
-      MoveDisplayPosAndSelection(P, True);
-    // Deal with overlapping selections
-    Selections.MouseSelection(FSelection);
+    begin
+      if fClickCount = 2 then
+        DoMouseSelectWordRange(BC)
+      else if fClickCount = 3 then
+        DoMouseSelectLineRange(BC)
+      else
+        MoveDisplayPosAndSelection(P, True);
+      // Deal with overlapping selections
+      Selections.MouseSelection(FSelection);
+    end;
 
     if (sfPossibleGutterClick in fStateFlags) and (FSelection.Start.Line <> CaretXY.Line) then
       Include(fStateFlags, sfGutterDragging);
@@ -6344,7 +6364,6 @@ end;
 procedure TCustomSynEdit.ExecuteMultiCaretCommand(Command: TSynEditorCommand;
   AChar: WideChar; Data: pointer; CommandInfo: TSynCommandInfo);
 var
-  Sel: TSynSelection;
   OldActiveSelIndex: Integer;
   I: Integer;
 begin

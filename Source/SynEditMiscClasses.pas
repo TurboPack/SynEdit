@@ -677,7 +677,8 @@ type
     procedure DeleteSelection(Index: Integer);
     function FindCaret(const ACaret: TBufferCoord): Integer;
     function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
-    procedure MouseSelection(Sel: TSynSelection);
+    procedure MouseSelection(const Sel: TSynSelection);
+    procedure ColumnSelection(Anchor, ACaret: TBufferCoord);
     procedure Merge;
     function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
@@ -3043,6 +3044,65 @@ begin
   FActiveSelIndex := 0;
 end;
 
+procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord);
+
+  procedure SetSelection(Index, Line, FromChar, ToChar: Integer);
+  var
+    LineString: string;
+    Len: Integer;
+  begin
+    LineString := TCustomSynEdit(FOwner).Lines[Line - 1];
+    Len := LineString.Length;
+    FromChar := EnsureRange(FromChar, 1, Len + 1);
+    ToChar :=  EnsureRange(ToChar, 1, Len + 1);
+    FSelections.List[Index].Caret := BufferCoord(ToChar, Line);
+    FSelections.List[Index].Start := BufferCoord(FromChar, Line);
+    FSelections.List[Index].Stop := FSelections.List[Index].Caret;
+    InvalidateSelection(Index);
+  end;
+
+var
+  FromChar, ToChar: Integer;
+  Line: Integer;
+  Index: Integer;
+  Increment: Integer;
+begin
+  Clear(ksKeepBase);
+
+  FromChar := Anchor.Char;
+  ToChar := ACaret.Char;
+  InvalidateSelection(0);
+  SetSelection(0, Anchor.Line, FromChar, ToChar);
+
+  Increment := Sign(ACaret.Line - Anchor.Line);
+
+  Line := Anchor.Line;
+  while Line <> ACaret.Line do
+  begin
+    Line := Line + Increment;
+    if Increment > 0 then
+      Index := FSelections.Add(TSynSelection.Invalid)
+    else
+    begin
+      FSelections.Insert(0, TSynSelection.Invalid);
+      Index := 0;
+    end;
+    SetSelection(Index, Line, FromChar, ToChar);
+  end;
+
+  if Increment >= 0 then
+  begin
+    FBaseSelIndex := 0;
+    FActiveSelIndex := FSelections.Count - 1
+  end
+  else
+  begin
+    FBaseSelIndex := FSelections.Count -1;
+    FActiveSelIndex := 0;
+  end;
+  TCustomSynEdit(FOwner).SetCaretAndSelection(ActiveSelection, False);
+end;
+
 constructor TSynSelections.Create(Owner: TPersistent);
 begin
   inherited Create;
@@ -3271,7 +3331,7 @@ begin
   begin
     Sel := FSelections.List[I];
 
-    if Sel.Intersects(NextSel) then
+    if (Sel = NextSel) or Sel.Intersects(NextSel) then
     begin
       Sel := DoMerge(Sel, NextSel);
       FSelections.List[I] := Sel;
@@ -3291,7 +3351,7 @@ begin
   TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection);
 end;
 
-procedure TSynSelections.MouseSelection(Sel: TSynSelection);
+procedure TSynSelections.MouseSelection(const Sel: TSynSelection);
 // Mouse selection works differently than selection with the keyboard
 // All other selections overlapping with the active selection get removed
 // as in VS Code and Visual Studio.
@@ -3378,7 +3438,6 @@ end;
 
 procedure TSynSelections.SetActiveSelection(const Value: TSynSelection);
 begin
-//  Assert(Value.Contains(Value.Caret) or (Value.Caret = Value.Normalized.Stop));
   FSelections[FActiveSelIndex] := Value;
 end;
 
