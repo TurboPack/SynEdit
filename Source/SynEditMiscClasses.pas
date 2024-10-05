@@ -3084,7 +3084,7 @@ var
   Index: Integer;
   Increment: Integer;
 begin
-  Clear(ksKeepBase);
+  Clear;
   InvalidateSelection(0);
 
   if TCustomSynEdit(FOwner).WordWrap then
@@ -3136,7 +3136,6 @@ begin
       SetLineSelection(Index, Line, FromChar, ToChar);
     end;
   end;
-
 
   if Increment >= 0 then
   begin

@@ -5824,10 +5824,20 @@ begin
         UpdateCarets;
       end;
 // horizontal caret movement or selection
-      ecLeft, ecSelLeft:
-        MoveCaretHorz(-1, Command = ecSelLeft);
-      ecRight, ecSelRight:
-        MoveCaretHorz(1, Command = ecSelRight);
+      ecLeft, ecSelLeft, ecSelColumnLeft:
+        begin
+          Caret := FSelections.BaseSelection.Start;
+          MoveCaretHorz(-1, Command = ecSelLeft);
+          if Command = ecSelColumnLeft then
+            FSelections.ColumnSelection(Caret, CaretXY);
+        end;
+      ecRight, ecSelRight, ecSelColumnRight:
+        begin
+          Caret := FSelections.BaseSelection.Start;
+          MoveCaretHorz(1, Command = ecSelRight);
+          if Command = ecSelColumnRight then
+            FSelections.ColumnSelection(Caret, CaretXY);
+        end;
       ecPageLeft, ecSelPageLeft:
         MoveCaretHorz(-(FTextAreaWidth div FCharWidth), Command = ecSelPageLeft);
       ecPageRight, ecSelPageRight:
@@ -5839,8 +5849,9 @@ begin
       ecLineEnd, ecSelLineEnd:
         DoEndKey(Command = ecSelLineEnd);
 // vertical caret movement or selection
-      ecUp, ecSelUp:
+      ecUp, ecSelUp, ecSelColumnUp:
         begin
+          Caret := FSelections.BaseSelection.Start;
           { on the first line we select first line too }
           if DisplayY = 1 then
           begin
@@ -5850,9 +5861,13 @@ begin
           end
           else
             MoveCaretVert(-1, Command = ecSelUp);
+
+          if Command = ecSelColumnUp then
+            FSelections.ColumnSelection(Caret, CaretXY);
         end;
-      ecDown, ecSelDown:
+      ecDown, ecSelDown, ecSelColumnDown:
         begin
+          Caret := FSelections.BaseSelection.Start;
           { on the last line we will select last line too }
           if ((not Wordwrap and (CaretY = Lines.Count)) or
               (WordWrap and (DisplayY = fWordWrapPlugin.RowCount))) then
@@ -5863,17 +5878,21 @@ begin
           end
           else
             MoveCaretVert(1, Command = ecSelDown);
+
+          if Command = ecSelColumnDown then
+            FSelections.ColumnSelection(Caret, CaretXY);
         end;
-      ecPageUp, ecSelPageUp, ecPageDown, ecSelPageDown:
+      ecPageUp, ecSelPageUp, ecPageDown, ecSelPageDown, ecSelColumnPageUp, ecSelColumnPageDown:
         begin
+          Caret := FSelections.BaseSelection.Start;
           counter := fLinesInWindow shr Ord(eoHalfPageScroll in fOptions);
           if eoScrollByOneLess in fOptions then
             Dec(counter);
-          if (Command in [ecPageUp, ecSelPageUp]) then
+          if (Command in [ecPageUp, ecSelPageUp, ecSelColumnPageUp]) then
             counter := -counter;
           TopLine := TopLine + counter;
           { on the first line we will select first line too }
-          if (Command in [ecPageUp, ecSelPageUp]) and (DisplayY = 1) then
+          if (Command in [ecPageUp, ecSelPageUp, ecSelColumnPageUp]) and (DisplayY = 1) then
           begin
             SaveLastPosX := FLastPosX;
             DoHomeKey(Command = ecSelPageUp);
@@ -5881,7 +5900,7 @@ begin
           end
           else
           { on the last line we will select last line too }
-          if (Command in [ecPageDown, ecSelPageDown]) and
+          if (Command in [ecPageDown, ecSelPageDown, ecSelColumnPageDown]) and
              ((not Wordwrap and (CaretY = Lines.Count)) or
               (WordWrap and (DisplayY = fWordWrapPlugin.RowCount))) then
           begin
@@ -5891,6 +5910,9 @@ begin
           end
           else
             MoveCaretVert(counter, Command in [ecSelPageUp, ecSelPageDown]);
+
+          if Command in [ecSelColumnPageUp, ecSelColumnPageDown] then
+            FSelections.ColumnSelection(Caret, CaretXY);
         end;
       ecPageTop, ecSelPageTop:
         begin

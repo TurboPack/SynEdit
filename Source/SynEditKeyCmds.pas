@@ -214,9 +214,15 @@ const
   ecUnfoldRegions   = 732;
 
   // Multi-caret
-  ecEscape          = 800;
-  ecAddCaretAbove   = 801;
-  ecAddCaretBelow   = 802;
+  ecSelectColumn       = 150;
+
+  ecEscape             = 800;
+  ecSelColumnLeft      = ecLeft + ecSelectColumn;
+  ecSelColumnRight     = ecRight + ecSelectColumn;
+  ecSelColumnUp        = ecUp + ecSelectColumn;
+  ecSelColumnDown      = ecDown + ecSelectColumn;
+  ecSelColumnPageUp    = ecPageUp + ecSelectColumn;
+  ecSelColumnPageDown  = ecPageDown + ecSelectColumn;
 
   ecUserFirst       = 1001; // Start of user-defined commands
 
@@ -325,7 +331,7 @@ uses
 
 const
 //++ CodeFolding
-  EditorCommandStrs: array[0..113] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..117] of TIdentMapEntry = (
 //-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
@@ -441,8 +447,12 @@ const
     (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
     // CodeFolding
     (Value: ecEscape; Name:'ecEscape'),
-    (Value: ecAddCaretAbove; Name:'ecAddCaretAbove'),
-    (Value: ecAddCaretBelow; Name:'ecAddCaretBelo')
+    (Value: ecSelColumnLeft; Name:'ecSelColumnLeft'),
+    (Value: ecSelColumnRight; Name:'ecSelColumnRight'),
+    (Value: ecSelColumnUp; Name:'ecSelColumnUp'),
+    (Value: ecSelColumnDown; Name:'ecSelColumnDown'),
+    (Value: ecSelColumnPageUp; Name:'ecSelColumnPageUp'),
+    (Value: ecSelColumnPageDown; Name:'ecSelColumnPageDown')
     );
 
 // GetEditorCommandValues and GetEditorCommandExtended for editing key assignments
@@ -859,8 +869,7 @@ begin
   AddKey(ecLowerCase, Ord('K'), [ssCtrl], Ord('L'), [ssCtrl]);
   AddKey(ecUpperCase, Ord('K'), [ssCtrl], Ord('U'), [ssCtrl]);
   AddKey(ecTitleCase, Ord('K'), [ssCtrl], Ord('T'), [ssCtrl]);
-  AddKey(ecCopyLineUp, SYNEDIT_UP, [ssShift, ssAlt]);
-  AddKey(ecCopyLineDown, SYNEDIT_DOWN, [ssShift, ssAlt]);
+  AddKey(ecCopyLineDown, Ord('D'), [ssCtrl]);
   AddKey(ecMoveLineUp, SYNEDIT_UP, [ssAlt]);
   AddKey(ecMoveLineDown, SYNEDIT_DOWN, [ssAlt]);
   // CodeFolding
@@ -876,8 +885,12 @@ begin
   AddKey(ecUnfoldLevel3, Ord('K'), [ssCtrl, ssShift], Ord('3'), [ssCtrl, ssShift]);
   // Multi-caret
   AddKey(ecEscape, SYNEDIT_ESCAPE, []);
-  AddKey(ecAddCaretAbove, SYNEDIT_UP, [ssCtrl, ssAlt]);
-  AddKey(ecAddCaretBelow, SYNEDIT_DOWN, [ssCtrl, ssAlt]);
+  AddKey(ecSelColumnLeft, SYNEDIT_LEFT, [ssShift, ssAlt]);
+  AddKey(ecSelColumnRight, SYNEDIT_RIGHT, [ssShift, ssAlt]);
+  AddKey(ecSelColumnUp, SYNEDIT_UP, [ssShift, ssAlt]);
+  AddKey(ecSelColumnDown, SYNEDIT_DOWN, [ssShift, ssAlt]);
+  AddKey(ecSelColumnPageUp, SYNEDIT_PRIOR, [ssShift, ssAlt]);
+  AddKey(ecSelColumnPageDown, SYNEDIT_NEXT, [ssShift, ssAlt]);
 end;
 
 procedure TSynEditKeyStrokes.SetItem(Index: Integer; Value: TSynEditKeyStroke);
@@ -1122,8 +1135,12 @@ begin
   SynCommandsInfo.Add(ecFoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecUnfoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecEscape, TSynCommandInfo.Create(ckStandard, False));
-  SynCommandsInfo.Add(ecAddCaretAbove, TSynCommandInfo.Create(ckStandard, False));
-  SynCommandsInfo.Add(ecAddCaretBelow, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnLeft, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnRight, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnUp, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnDown, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnPageUp, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnPageDown, TSynCommandInfo.Create(ckStandard, False));
 end;
 
 { TSynCommandInfo }
