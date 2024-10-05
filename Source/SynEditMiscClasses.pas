@@ -3046,7 +3046,7 @@ end;
 
 procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord);
 
-  procedure SetSelection(Index, Line, FromChar, ToChar: Integer);
+  procedure SetLineSelection(Index, Line, FromChar, ToChar: Integer);
   var
     LineString: string;
     Len: Integer;
@@ -3061,34 +3061,82 @@ procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord);
     InvalidateSelection(Index);
   end;
 
+  procedure SetRowSelection(Index, Row, FromChar, ToChar: Integer);
+  var
+    Len: Integer;
+  begin
+    Len := TCustomSynEdit(FOwner).RowLength[Row];
+    FromChar := EnsureRange(FromChar, 1, Len + 1);
+    ToChar :=  EnsureRange(ToChar, 1, Len + 1);
+    FSelections.List[Index].Caret :=
+      TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(ToChar, Row));
+    FSelections.List[Index].Start :=
+      TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(FromChar, Row));
+    FSelections.List[Index].Stop := FSelections.List[Index].Caret;
+    InvalidateSelection(Index);
+  end;
+
 var
+  DC: TDisplayCoord;
   FromChar, ToChar: Integer;
-  Line: Integer;
+  FromRow, ToRow: Integer;
+  Line, Row: Integer;
   Index: Integer;
   Increment: Integer;
 begin
   Clear(ksKeepBase);
-
-  FromChar := Anchor.Char;
-  ToChar := ACaret.Char;
   InvalidateSelection(0);
-  SetSelection(0, Anchor.Line, FromChar, ToChar);
 
-  Increment := Sign(ACaret.Line - Anchor.Line);
-
-  Line := Anchor.Line;
-  while Line <> ACaret.Line do
+  if TCustomSynEdit(FOwner).WordWrap then
   begin
-    Line := Line + Increment;
-    if Increment > 0 then
-      Index := FSelections.Add(TSynSelection.Invalid)
-    else
+    DC := TCustomSynEdit(FOwner).BufferToDisplayPos(Anchor);
+    FromChar := DC.Column;
+    FromRow := DC.Row;
+    DC := TCustomSynEdit(FOwner).BufferToDisplayPos(ACaret);
+    ToChar := DC.Column;
+    ToRow := DC.Row;
+
+    SetRowSelection(0, FromRow, FromChar, ToChar);
+
+    Increment := Sign(ToRow - FromRow);
+
+    Row := FromRow;
+    while Row <> ToRow do
     begin
-      FSelections.Insert(0, TSynSelection.Invalid);
-      Index := 0;
+      Row := Row + Increment;
+      if Increment > 0 then
+        Index := FSelections.Add(TSynSelection.Invalid)
+      else
+      begin
+        FSelections.Insert(0, TSynSelection.Invalid);
+        Index := 0;
+      end;
+      SetRowSelection(Index, Row, FromChar, ToChar);
     end;
-    SetSelection(Index, Line, FromChar, ToChar);
+  end
+  else
+  begin
+    FromChar := Anchor.Char;
+    ToChar := ACaret.Char;
+    SetLineSelection(0, Anchor.Line, FromChar, ToChar);
+
+    Increment := Sign(ACaret.Line - Anchor.Line);
+
+    Line := Anchor.Line;
+    while Line <> ACaret.Line do
+    begin
+      Line := Line + Increment;
+      if Increment > 0 then
+        Index := FSelections.Add(TSynSelection.Invalid)
+      else
+      begin
+        FSelections.Insert(0, TSynSelection.Invalid);
+        Index := 0;
+      end;
+      SetLineSelection(Index, Line, FromChar, ToChar);
+    end;
   end;
+
 
   if Increment >= 0 then
   begin

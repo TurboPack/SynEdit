@@ -446,6 +446,7 @@ type
     function GetModified: Boolean;
     function GetOptions: TSynEditorOptions;
     function GetRow(RowIndex: Integer): string;
+    function GetRowLength(RowIndex: Integer): Integer;
     function GetSelAvail: Boolean;
     function GetSelText: string;
     function SynGetText: string;
@@ -845,6 +846,7 @@ type
     property LineText: string read GetLineText write SetLineText;
     property Lines: TStrings read fLines write SetLines;
     property Rows[RowIndex: integer]: string read GetRow;
+    property RowLength[RowIndex: integer]: Integer read GetRowLength;
     property Marks: TSynEditMarkList read fMarkList;
     property Modified: Boolean read GetModified write SetModified;
     property PaintLock: Integer read fPaintLock;
@@ -8034,25 +8036,35 @@ var
   BC: TBufferCoord;
   Len: Integer;
 begin
-  if Wordwrap then
+  BC := DisplayToBufferPos(DisplayCoord(1, RowIndex));
+  if InRange(BC.Line, 1, Lines.Count) then
   begin
-    BC := fWordWrapPlugin.DisplayToBufferPos(DisplayCoord(1, RowIndex));
-    if InRange(BC.Line, 1, Lines.Count) then
+    if WordWrap then
     begin
       Len := fWordWrapPlugin.RowLength[RowIndex];
       Result := Copy(Lines[BC.Line - 1], BC.Char, Len);
     end
     else
-      Result := '';
+      Result := Lines[BC.Line - 1];
   end
   else
+    Result := '';
+end;
+
+function TCustomSynEdit.GetRowLength(RowIndex: Integer): Integer;
+var
+  BC: TBufferCoord;
+begin
+  BC := DisplayToBufferPos(DisplayCoord(1, RowIndex));
+  if InRange(BC.Line, 1, Lines.Count) then
   begin
-    BC := DisplayToBufferPos(DisplayCoord(1, RowIndex));
-    if InRange(BC.Line, 1, Lines.Count) then
-      Result := Lines[BC.Line - 1]
+    if WordWrap then
+      Result := fWordWrapPlugin.RowLength[RowIndex]
     else
-      Result := '';
-  end;
+      Result := Lines[BC.Line - 1].Length;
+  end
+  else
+    Result := 0;
 end;
 
 procedure TCustomSynEdit.SetReadOnly(Value: Boolean);
