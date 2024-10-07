@@ -666,14 +666,14 @@ type
     procedure SetBaseSelection(const Value: TSynSelection);
     function GetSelection(Index: Integer): TSynSelection;
     procedure SetActiveSelIndex(const Index: Integer);
+    procedure CaretsChanged;
   public
     type
       TKeepSelection = (ksKeepBase, ksKeepActive);
     constructor Create(Owner: TPersistent);
     destructor Destroy; override;
     procedure Clear(KeepSelection: TKeepSelection = ksKeepActive);
-    procedure Add(const Sel: TSynSelection; IsBase: Boolean = False);
-    procedure AddCaret(const ACaret: TBufferCoord; IsBase: Boolean = False);
+    function AddCaret(const ACaret: TBufferCoord; IsBase: Boolean = False): Boolean;
     procedure DeleteSelection(Index: Integer);
     function FindCaret(const ACaret: TBufferCoord): Integer;
     function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
@@ -2987,20 +2987,15 @@ end;
 
 {$REGION 'TSynSelections'}
 
-procedure TSynSelections.Add(const Sel: TSynSelection; IsBase: Boolean);
-// TODO deal with overlapping ranges and normalization
-begin
-  if Sel.IsEmpty then
-    AddCaret(Sel.Caret, IsBase);
-end;
-
-procedure TSynSelections.AddCaret(const ACaret: TBufferCoord; IsBase: Boolean);
+function TSynSelections.AddCaret(const ACaret: TBufferCoord; IsBase: Boolean): Boolean;
 // If a selection has the same caret or contains the caret then remove it.
 // Otherwise add a new selection
+// Returns True if a new selection was added
 var
   Sel: TSynSelection;
   Index: Integer;
 begin
+  Result := False;
   if FindSelection(ACaret, Index) then
   begin
     DeleteSelection(Index);
@@ -3021,7 +3016,14 @@ begin
       FBaseSelIndex := Index
     else if FBaseSelIndex >= Index then
       Inc(FBaseSelIndex);
+    Result := True;
   end;
+end;
+
+procedure TSynSelections.CaretsChanged;
+begin
+  TCustomSynEdit(FOwner).StateFlags :=
+    TCustomSynEdit(FOwner).StateFlags + [sfCaretChanged];
 end;
 
 procedure TSynSelections.Clear(KeepSelection: TKeepSelection);
@@ -3042,6 +3044,7 @@ begin
   Assert (FSelections.Count = 1);
   FBaseSelIndex := 0;
   FActiveSelIndex := 0;
+  CaretsChanged;
 end;
 
 procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord);
@@ -3147,7 +3150,9 @@ begin
     FBaseSelIndex := FSelections.Count -1;
     FActiveSelIndex := 0;
   end;
+
   TCustomSynEdit(FOwner).SetCaretAndSelection(ActiveSelection, False);
+  CaretsChanged;
 end;
 
 constructor TSynSelections.Create(Owner: TPersistent);
@@ -3190,6 +3195,8 @@ begin
     FBaseSelIndex := FSelections.Count - 1
   else if FBaseSelIndex > Index then
     Dec(FBaseSelIndex);
+
+  CaretsChanged;
 end;
 
 destructor TSynSelections.Destroy;
@@ -3445,6 +3452,7 @@ begin
   FBaseSelIndex := BaseIndex;
   InvalidateAll;
   TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection);
+  CaretsChanged;
 end;
 
 function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;

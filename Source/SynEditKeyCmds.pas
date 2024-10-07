@@ -223,6 +223,7 @@ const
   ecSelColumnDown      = ecDown + ecSelectColumn;
   ecSelColumnPageUp    = ecPageUp + ecSelectColumn;
   ecSelColumnPageDown  = ecPageDown + ecSelectColumn;
+  ecSelectMatchingText = 801;
 
   ecUserFirst       = 1001; // Start of user-defined commands
 
@@ -331,7 +332,7 @@ uses
 
 const
 //++ CodeFolding
-  EditorCommandStrs: array[0..117] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..118] of TIdentMapEntry = (
 //-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
@@ -445,14 +446,15 @@ const
     (Value: ecUnfoldLevel3; Name:'ecUnfoldLevel3'),
     (Value: ecFoldRegions; Name:'ecFoldRanges'),
     (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
-    // CodeFolding
+    // Multi-cursor
     (Value: ecEscape; Name:'ecEscape'),
     (Value: ecSelColumnLeft; Name:'ecSelColumnLeft'),
     (Value: ecSelColumnRight; Name:'ecSelColumnRight'),
     (Value: ecSelColumnUp; Name:'ecSelColumnUp'),
     (Value: ecSelColumnDown; Name:'ecSelColumnDown'),
     (Value: ecSelColumnPageUp; Name:'ecSelColumnPageUp'),
-    (Value: ecSelColumnPageDown; Name:'ecSelColumnPageDown')
+    (Value: ecSelColumnPageDown; Name:'ecSelColumnPageDown'),
+    (Value: ecSelectMatchingText; Name:'ecSelectAllMatching')
     );
 
 // GetEditorCommandValues and GetEditorCommandExtended for editing key assignments
@@ -891,6 +893,7 @@ begin
   AddKey(ecSelColumnDown, SYNEDIT_DOWN, [ssShift, ssAlt]);
   AddKey(ecSelColumnPageUp, SYNEDIT_PRIOR, [ssShift, ssAlt]);
   AddKey(ecSelColumnPageDown, SYNEDIT_NEXT, [ssShift, ssAlt]);
+  AddKey(ecSelectMatchingText, Ord('W'), [ssShift, ssCtrl]);
 end;
 
 procedure TSynEditKeyStrokes.SetItem(Index: Integer; Value: TSynEditKeyStroke);
@@ -1141,6 +1144,7 @@ begin
   SynCommandsInfo.Add(ecSelColumnDown, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnPageUp, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnPageDown, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelectMatchingText, TSynCommandInfo.Create(ckStandard, False));
 end;
 
 { TSynCommandInfo }

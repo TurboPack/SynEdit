@@ -300,6 +300,7 @@ type
 //-- CodeFolding
     fAlwaysShowCaret: Boolean;
     FCarets: TSynCarets;
+    FCaseSensitive: Boolean;
     FSelection: TSynSelection;
     FSelections: TSynSelections;
     FLastPosX: integer;
@@ -528,12 +529,16 @@ type
     procedure FindDialogClose(Sender: TObject);
     procedure DoMouseSelectLineRange(NewPos: TBufferCoord);
     procedure DoMouseSelectWordRange(NewPos: TBufferCoord);
+    procedure InternalCommandHook(Sender: TObject; AfterProcessing: Boolean;
+      var Handled: Boolean; var Command: TSynEditorCommand; var AChar: WideChar;
+      Data: pointer; HandlerData: pointer);
 //++ CodeFolding
     procedure SetUseCodeFolding(const Value: Boolean);
     procedure OnCodeFoldingChange(Sender: TObject);
     function GetCollapseMarkRect(Row: Integer; Line: Integer = -1): TRect;
     function GetWrapAreaWidth: Integer;
     function GetIsScrolling: Boolean;
+    function GetCaseSensitive: Boolean;
 //-- CodeFolding
   protected
     FIgnoreNextChar: Boolean;
@@ -704,6 +709,7 @@ type
       var Attri: TSynHighlighterAttributes): boolean;
     function GetPositionOfMouse(out aPos: TBufferCoord): Boolean;
     function GetWordAtRowCol(XY: TBufferCoord): string;
+    procedure GetWordBoundaries(XY: TBufferCoord; var BB, BE: TBufferCoord);
     procedure GotoBookMark(BookMark: Integer); virtual;
     procedure GotoLineAndCenter(ALine: Integer); virtual;
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
@@ -759,6 +765,9 @@ type
     function SearchReplace(const ASearch, AReplace: string;
       AOptions: TSynSearchOptions): Integer;
     procedure SelectAll;
+    procedure SelectMatchingText;
+    function SelectSameWord(const AWord: string; Start: TBufferCoord;
+      BackwardSearch: Boolean = False; AddSelection: Boolean = False): Boolean;
     procedure SetBookMark(BookMark: Integer; X: Integer; Y: Integer);
     procedure SetCaretAndSelection(const ptCaret, ptBefore,
       ptAfter: TBufferCoord; EnsureVisible: Boolean= True;
@@ -826,6 +835,7 @@ type
     property CaretX: Integer read FSelection.Caret.Char write SetCaretX;
     property CaretY: Integer read FSelection.Caret.Line write SetCaretY;
     property CaretXY: TBufferCoord read FSelection.Caret write SetCaretXY;
+    property CaseSensitive: Boolean read GetCaseSensitive write FCaseSensitive;
     property ActiveLineColor: TColor read fActiveLineColor
       write SetActiveLineColor default clNone;
     property DisplayX: Integer read GetDisplayX;
@@ -856,7 +866,7 @@ type
     property SelLength: Integer read GetSelLength write SetSelLength;
     property SelText: string read GetSelText write SetSelText;
     property Selections: TSynSelections read FSelections;
-    property StateFlags: TSynStateFlags read fStateFlags;
+    property StateFlags: TSynStateFlags read fStateFlags write fStateFlags;
     property Text: string read SynGetText write SynSetText;
     property TopLine: Integer read fTopLine write SetTopLine;
     property TextAreaWidth: Integer read FTextAreaWidth;
@@ -968,6 +978,7 @@ type
     property Align;
     property Anchors;
     property DoubleBuffered;
+    property CaseSensitive;
     property Constraints;
     property Color;
     property ActiveLineColor;
@@ -1087,7 +1098,8 @@ uses
   SynEditWordWrap,
   SynEditStrConst,
   SynEditDataObject,
-  SynEditDragDrop;
+  SynEditDragDrop,
+  SynEditSearch;
 
 { THookedCommandHandlerEntry }
 
@@ -1483,7 +1495,7 @@ begin
   var BC := BufferCoord(1, 1);
   FSelection := TSynSelection.Create(BC, BC, BC);
   FSelections := TSynSelections.Create(Self);
-  FSelections.Add(FSelection, True);
+  FSelections.AddCaret(BC, True);
 
   fOptions := SYNEDIT_DEFAULT_OPTIONS;
 
@@ -1504,6 +1516,7 @@ begin
 //-- CodeFolding
   SynFontChanged(nil);
   GutterChanged(nil); // to caclulate fGutterWidth also updates fTextOffset
+  RegisterCommandHandler(InternalCommandHook, nil);
 end;
 
 procedure TCustomSynEdit.CreateParams(var Params: TCreateParams);
@@ -1557,6 +1570,7 @@ begin
   Highlighter := nil;
   if (fChainedEditor <> nil) or (fLines <> fOrigLines) then
     RemoveLinesPointer;
+  UnregisterCommandHandler(InternalCommandHook);
 
   inherited Destroy;
   // free listeners while other fields are still valid
@@ -2130,7 +2144,7 @@ begin
       FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY)
     end
     else if ssAlt in Shift then
-      FSelections.Add(FSelection)
+      FSelections.AddCaret(FSelection.Caret)
     else
     begin
       FSelections.ActiveSelection := FSelection;
@@ -3261,6 +3275,81 @@ begin
   SetCaretAndSelection(LastPt, BufferCoord(1, 1), LastPt);
 end;
 
+procedure TCustomSynEdit.SelectMatchingText;
+var
+  Engine: TSynEditSearchCustom;
+  SearchOptions: TSynSearchOptions;
+  Line: Integer;
+  ResNo: Integer;
+  SelList: TList<TSynSelection>;
+  Sel: TSynSelection;
+  BaseIndex, ActiveIndex: Integer;
+  LineText: string;
+  CaretAtStart: Boolean;
+begin
+  if FSelection.IsEmpty then
+    SetSelWord;
+
+  if (SelText = '') or (FSelection.Start.Line <> FSelection.Stop.Line) then
+    Exit;  // Only match single line text
+
+
+  Engine := TSynEditSearch.Create(Self);
+  SelList := TList<TSynSelection>.Create;
+  try
+    BaseIndex := 0;    // to avoid compiler warnings
+    ActiveIndex := 0;
+
+    Engine.Pattern := SelText;
+    SearchOptions := [];
+    if CaseSensitive then
+      Include(SearchOptions, ssoMatchCase);
+    if Engine.Pattern = WordAtCursor then
+      Include(SearchOptions, ssoWholeWord);
+    CaretAtStart := FSelection.Start > FSelection.Stop;
+
+    Engine.Options := SearchOptions;
+
+    for Line := 0 to Lines.Count - 1 do
+    begin
+      LineText := Lines[Line];
+      if LineText.Length < Engine.Pattern.Length then Continue;
+
+      Engine.FindAll(LineText);
+      for ResNo := 0 to Engine.ResultCount - 1 do
+      begin
+        if CaretAtStart then
+        begin
+          Sel.Stop := BufferCoord(Engine.Results[ResNo], Line + 1);
+          Sel.Start := BufferCoord(Sel.Stop.Char + Engine.Lengths[ResNo], Line + 1)
+        end
+        else
+        begin
+          Sel.Start := BufferCoord(Engine.Results[ResNo], Line + 1);
+          Sel.Stop := BufferCoord(Sel.Start.Char + Engine.Lengths[ResNo], Line + 1)
+        end;
+        Sel.Caret := Sel.Stop;
+        Sel.CaretAtEOL := False;
+
+        SelList.Add(Sel);
+
+        if Sel = FSelection then
+        begin
+          BaseIndex := SelList.Count - 1;
+          ActiveIndex := SelList.Count - 1;
+        end;
+      end;
+    end;
+
+    Assert(SelList.Count > 0);
+
+    FSelections.Restore(SelList.ToArray, BaseIndex, ActiveIndex);
+  finally
+    SelList.Free;
+    Engine.Free;
+  end;
+end;
+
 function TCustomSynEdit.ValidBC(const Value: TBufferCoord): TBufferCoord;
 begin
   Result := Value;
@@ -3353,6 +3442,70 @@ begin
       //text change (it's only valid when Column = 1).
       Sel.CaretAtEOL := False;
     end;
+  end;
+end;
+
+function TCustomSynEdit.SelectSameWord(const AWord: string; Start: TBufferCoord;
+  BackwardSearch: Boolean; AddSelection: Boolean): Boolean;
+var
+  Engine, OldEngine: TSynEditSearchCustom;
+  SearchOptions: TSynSearchOptions;
+begin
+  if AWord = '' then Exit(False);
+
+  OldEngine := SearchEngine;
+  Engine := TSynEditSearch.Create(Self);
+  SearchEngine := Engine;
+  try
+    IncPaintLock;
+    try
+      SearchOptions := [];
+      Include(SearchOptions, ssoWholeWord);
+      if CaseSensitive then
+        Include(SearchOptions, ssoMatchCase);
+      if BackwardSearch  then
+        Include(SearchOptions, ssoBackwards);
+
+      Result := SearchReplace(AWord, '', SearchOptions) > 0;
+      if Result then
+        FSelection.Normalize;
+
+      if Result and AddSelection then
+      begin
+        if not FSelections.AddCaret(FSelection.Start) then
+          // Try again. This time it will not fail
+          FSelections.AddCaret(FSelection.Start);
+        // Deal with overlapping selections as if the range was mouse selected
+        FSelections.MouseSelection(FSelection);
+      end;
+    finally
+      DecPaintLock;
+    end;
+  finally
+    Engine.Free;
+    SearchEngine := OldEngine;
+  end;
+end;
+
+procedure TCustomSynEdit.InternalCommandHook(Sender: TObject;
+  AfterProcessing: Boolean; var Handled: Boolean;
+  var Command: TSynEditorCommand; var AChar: WideChar; Data,
+  HandlerData: pointer);
+var
+  BB, BE: TBufferCoord;
+begin
+  if not AfterProcessing and (Command = ecSelWord) then
+  begin
+    GetWordBoundaries(CaretXY, BB, BE);
+    if not FSelection.IsEmpty and (BB = BlockBegin) and (BE = BlockEnd) then
+    begin
+      // A Word is alredy selected. Add to selections the next
+      // occurance of the that Word
+      Inc(BE.Char);
+      SelectSameWord(WordAtCursor, BE, False, True);
+      Handled := True;
+      Command := ecNone;
+    end
   end;
 end;
 
@@ -4570,47 +4723,11 @@ end;
 
 procedure TCustomSynEdit.SetWordBlock(Value: TBufferCoord);
 var
-  vBlockBegin: TBufferCoord;
-  vBlockEnd: TBufferCoord;
-  TempString: string;
-
-  procedure CharScan;
-  var
-    cRun: Integer;
-  begin
-    { search BlockEnd }
-    vBlockEnd.Char := Length(TempString);
-    for cRun := Value.Char to Length(TempString) do
-      if not IsIdentChar(TempString[cRun]) then
-      begin
-        vBlockEnd.Char := cRun;
-        Break;
-      end;
-    { search BlockBegin }
-    vBlockBegin.Char := 1;
-    for cRun := Value.Char - 1 downto 1 do
-      if not IsIdentChar(TempString[cRun]) then
-      begin
-        vBlockBegin.Char := cRun + 1;
-        Break;
-      end;
-  end;
-
+  BB: TBufferCoord;
+  BE: TBufferCoord;
 begin
-  Value.Char := Max(Value.Char, 1);
-  Value.Line := MinMax(Value.Line, 1, Lines.Count);
-  TempString := Lines[Value.Line - 1] + #0; //needed for CaretX = LineLength + 1
-  if Value.Char > Length(TempString) then
-  begin
-    CaretXY := BufferCoord(Length(TempString), Value.Line);
-    Exit;
-  end;
-
-  CharScan;
-
-  vBlockBegin.Line := Value.Line;
-  vBlockEnd.Line := Value.Line;
-  SetCaretAndSelection(vBlockEnd, vBlockBegin, vBlockEnd);
+  GetWordBoundaries(Value, BB, BE);
+  SetCaretAndSelection(BE, BB, BE);
 end;
 
 procedure TCustomSynEdit.DblClick;
@@ -4632,6 +4749,14 @@ end;
 function TCustomSynEdit.GetCanUndo: Boolean;
 begin
   Result := not ReadOnly and fUndoRedo.CanUndo;
+end;
+
+function TCustomSynEdit.GetCaseSensitive: Boolean;
+begin
+  if Assigned(fHighlighter) then
+    Result := fHighlighter.CaseSensitive
+  else
+    Result := FCaseSensitive;
 end;
 
 function TCustomSynEdit.GetCanRedo: Boolean;
@@ -5820,8 +5945,10 @@ begin
     case Command of
       ecEscape:
       begin
-        FSelections.Clear(ksKeepBase);
-        UpdateCarets;
+        if FSelections.Count = 1 then
+          CaretXY := CaretXY // clears selection
+        else
+          FSelections.Clear(ksKeepBase);
       end;
 // horizontal caret movement or selection
       ecLeft, ecSelLeft, ecSelColumnLeft:
@@ -6255,7 +6382,8 @@ begin
       ecSelMatchBracket:
         begin
           CaretNew := GetMatchingBracket;
-          MoveCaretAndSelection(CaretNew, Command = ecSelMatchBracket);
+          if CaretNew.IsValid then
+            MoveCaretAndSelection(CaretNew, Command = ecSelMatchBracket);
         end;
       ecChar:
         InsertCharAtCursor(AChar);
@@ -6379,6 +6507,10 @@ begin
       ecUnfoldLevel3: begin UncollapseLevel(3); end;
       ecFoldRegions: begin CollapseFoldType(FoldRegionType) end;
       ecUnfoldRegions: begin UnCollapseFoldType(FoldRegionType) end;
+      ecSelectMatchingText:
+        begin
+          SelectMatchingText;
+        end;
     end;
   finally
     DecPaintLock;
@@ -8521,6 +8653,49 @@ begin
       Result := Copy(Line, Start, Stop - Start);
     end;
   end;
+end;
+
+procedure TCustomSynEdit.GetWordBoundaries(XY: TBufferCoord; var BB,
+  BE: TBufferCoord);
+var
+  TempString: string;
+
+  procedure CharScan;
+  var
+    cRun: Integer;
+  begin
+    { search BlockEnd }
+    BE.Char := Length(TempString);
+    for cRun := XY.Char to Length(TempString) do
+      if not IsIdentChar(TempString[cRun]) then
+      begin
+        BE.Char := cRun;
+        Break;
+      end;
+    { search BlockBegin }
+    BB.Char := 1;
+    for cRun := XY.Char - 1 downto 1 do
+      if not IsIdentChar(TempString[cRun]) then
+      begin
+        BB.Char := cRun + 1;
+        Break;
+      end;
+  end;
+
+begin
+  XY.Char := Max(XY.Char, 1);
+  XY.Line := MinMax(XY.Line, 1, Lines.Count);
+  TempString := Lines[XY.Line - 1] + #0; //needed for CaretX = LineLength + 1
+  if XY.Char > Length(TempString) then
+  begin
+    BB.Char := TempString.Length;
+    BE.Char := BB.Char;
+  end
+  else
+    CharScan;
+
+  BB.Line := XY.Line;
+  BE.Line := XY.Line;
 end;
 
 function TCustomSynEdit.BufferToDisplayPos(const p: TBufferCoord): TDisplayCoord;

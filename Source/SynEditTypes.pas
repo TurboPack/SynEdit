@@ -494,15 +494,14 @@ begin
     var Temp := Start;
     Start := Stop;
     Stop := Temp;
+    Caret := Stop;
   end;
 end;
 
 function TSynSelection.Normalized: TSynSelection;
 begin
-  if Start <= Stop then
-    Result := Self
-  else
-    Result := TSynSelection.Create(Caret, Stop, Start);
+  Result := Self;
+  Result.Normalize;
 end;
 
 class operator TSynSelection.NotEqual(a, b: TSynSelection): Boolean;
