@@ -151,8 +151,8 @@ begin
   FFormatEtc.Add(CF_UNICODETEXT);
   FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
   fText := (ASynEdit as TCustomSynEdit).SelText;
-  MemoryStream.Write((ASynEdit as TCustomSynEdit).ActiveSelectionMode,
-    SizeOf(TCustomSynEdit(ASynEdit).ActiveSelectionMode));
+  // TODO multicaret
+  MemoryStream.WriteData(1000);
   if not (eoCopyPlainText in TCustomSynEdit(ASynEdit).Options) and
     Assigned(TCustomSynEdit(ASynEdit).Highlighter)
   then

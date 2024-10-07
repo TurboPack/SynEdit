@@ -53,9 +53,9 @@ uses
 type
 
   TSynUndoItem = class abstract(TObject)
-    ChangeNumber: Integer;
+    ChangeNumber: Integer; // Undo items with the same change number are grouped
     FCaret: TBufferCoord;
-    GroupBreak: Boolean;
+    GroupBreak: Boolean; // Singnals not to group items together
   public
     procedure Undo(Editor: TCustomSynEdit); virtual; abstract;
     procedure Redo(Editor: TCustomSynEdit); virtual; abstract;
@@ -104,6 +104,8 @@ type
   private
     FBlockBegin: TBufferCoord;
     FBlockEnd: TBufferCoord;
+    FSelections: TArray<TSynSelection>;
+    FBaseIndex, FActiveIndex: Integer;
   public
     procedure Undo(Editor: TCustomSynEdit); override;
     procedure Redo(Editor: TCustomSynEdit); override;
@@ -158,6 +160,7 @@ type
     function GetCanRedo: Boolean;
     function GetFullUndoImposible: Boolean;
     function GetOnModifiedChanged: TNotifyEvent;
+    function GetInsideUndoRedo: Boolean;
     procedure SetModified(const Value: Boolean);
     procedure SetCommandProcessed(const Command: TSynEditorCommand);
     procedure SetMaxUndoActions(const Value: Integer);
@@ -251,11 +254,16 @@ begin
   if FBlockCount = 1 then // it was 0
   begin
     FBlockStartModified := GetModified;
+    // All undo items added until the matching EndBlock is called
+    // will get the same change number and will be grouped together
     FBlockChangeNumber := NextChangeNumber;
-    // So that position is restored after Redo
-    FBlockSelRestoreItem := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
-    FBlockSelRestoreItem.ChangeNumber := FBlockChangeNumber;
-    FUndoList.Push(FBlockSelRestoreItem);
+    if not IsLocked then
+    begin
+      // So that position is restored after Redo
+      FBlockSelRestoreItem := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+      FBlockSelRestoreItem.ChangeNumber := FBlockChangeNumber;
+      FUndoList.Push(FBlockSelRestoreItem);
+    end;
   end;
 end;
 
@@ -394,7 +402,7 @@ begin
       if (FUndoList.Count > 0) and (FUndoList.Peek = FBlockSelRestoreItem) then
         // No undo items added from BlockBegin to BlockEnd
         FUndoList.Pop
-      else
+      else if not IsLocked then
       begin
         // So that position is restored after Redo
         Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
@@ -418,6 +426,11 @@ end;
 function TSynEditUndo.GetFullUndoImposible: Boolean;
 begin
   Result := FUndoList.FFullUndoImposible;
+end;
+
+function TSynEditUndo.GetInsideUndoRedo: Boolean;
+begin
+  Result := FInsideUndoRedo;
 end;
 
 function TSynEditUndo.GetMaxUndoActions: Integer;
@@ -627,20 +640,30 @@ end;
 constructor TSynCaretAndSelectionUndoItem.Create(Editor: TCustomSynEdit);
 begin
   inherited Create;
-  FCaret := Editor.CaretXY;
-  FBlockBegin := Editor.BlockBegin;
-  FBlockEnd := Editor.BlockEnd;
+  if Editor.Selections.Count = 1 then
+  begin
+    FCaret := Editor.CaretXY;
+    FBlockBegin := Editor.BlockBegin;
+    FBlockEnd := Editor.BlockEnd;
+  end
+  else
+  begin
+    Editor.Selections.Store(FSelections, FBaseIndex, FActiveIndex);
+  end;
 end;
 
 procedure TSynCaretAndSelectionUndoItem.Redo(Editor: TCustomSynEdit);
 begin
   // Same as Undo
-  Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
+  Undo(Editor);
 end;
 
 procedure TSynCaretAndSelectionUndoItem.Undo(Editor: TCustomSynEdit);
 begin
-  Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
+  if Length(FSelections) > 0 then
+    Editor.Selections.Restore(FSelections, FBaseIndex, FActiveIndex)
+  else
+    Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
 end;
 
 { TSynLinesDeletedUndoItem }
@@ -820,7 +843,7 @@ begin
   case FCommandProcessed of
     ecChar:
       if (FOldValue.Length = 1) and (FNewValue.Length = 1) then
-        Char := FStartPos   // Typing in Insert Mode
+        Char := FStartPos   // Typing in Overwrite Mode
       else
         Char := FStartPos + FOldValue.Length;
     ecDeleteChar,

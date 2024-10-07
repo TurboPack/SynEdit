@@ -163,7 +163,6 @@ type
     property ScrollBars;
     property SearchEngine;
     property SelectedColor;
-    property SelectionMode;
     property TabWidth;
     property WantTabs;
     // TCustomSynEdit events

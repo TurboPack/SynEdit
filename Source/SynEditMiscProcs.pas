@@ -834,7 +834,6 @@ begin
                  1.14 * GetBValue(ACol)) < $400);
 end;
 
-
 procedure SubstituteControlChars(var Input: string);
 const
   ControlChars: set of Byte = [1..31, 127];

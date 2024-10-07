@@ -10,10 +10,8 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object ActionMainMenuBar1: TActionMainMenuBar
     Left = 0
@@ -24,7 +22,7 @@ object Form1: TForm1
     ActionManager = ActionManager1
     Caption = 'ActionMainMenuBar1'
     Color = clMenuBar
-    ColorMap.DisabledFontColor = 7171437
+    ColorMap.DisabledFontColor = 10461087
     ColorMap.HighlightColor = clWhite
     ColorMap.BtnSelectedFont = clBlack
     ColorMap.UnusedColor = clWhite
@@ -51,12 +49,30 @@ object Form1: TForm1
     PopupMenu = PopupActionBar1
     TabOrder = 1
     UseCodeFolding = False
-    Gutter.AutoSize = True
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -13
     Gutter.Font.Name = 'Consolas'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
+    Gutter.Bands = <
+      item
+        Kind = gbkMarks
+        Width = 13
+      end
+      item
+        Kind = gbkLineNumbers
+      end
+      item
+        Kind = gbkFold
+      end
+      item
+        Kind = gbkTrackChanges
+      end
+      item
+        Kind = gbkMargin
+        Width = 3
+      end>
     Lines.Strings = (
       
         'This project demonstrates the code folding capabilities of Syned' +
@@ -103,6 +119,7 @@ object Form1: TForm1
         'ode folding'
       'in the unit SynEditCodeFolding.pas.')
     Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabIndent, eoTabsToSpaces, eoTrimTrailingSpaces]
+    SelectedColor.Alpha = 0.400000005960464500
     TabWidth = 4
   end
   object ActionManager1: TActionManager
@@ -632,23 +649,14 @@ object Form1: TForm1
     Top = 176
   end
   object SynCppSyn1: TSynCppSyn
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     Left = 524
     Top = 80
   end
   object SynJScriptSyn1: TSynJScriptSyn
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     Left = 472
     Top = 80
   end
   object SynPythonSyn1: TSynPythonSyn
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     Left = 480
     Top = 128
   end
