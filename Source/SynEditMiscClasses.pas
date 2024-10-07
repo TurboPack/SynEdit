@@ -676,6 +676,7 @@ type
     function GetSelection(Index: Integer): TSynSelection;
     procedure SetActiveSelIndex(const Index: Integer);
     procedure CaretsChanged;
+    function GetIsEmpty: Boolean;
   public
     type
       TKeepSelection = (ksKeepBase, ksKeepActive);
@@ -712,6 +713,7 @@ type
     property BaseSelection: TSynSelection read GetBaseSelection write SetBaseSelection;
     property Count: Integer read GetCount;
     property ActiveSelIndex: Integer read FActiveSelIndex write SetActiveSelIndex;
+    property IsEmpty: Boolean read GetIsEmpty;
     property Selection[Index: Integer]: TSynSelection read GetSelection; default;
   end;
 
@@ -3260,6 +3262,16 @@ end;
 function TSynSelections.GetCount: Integer;
 begin
   Result := FSelections.Count;
+end;
+
+function TSynSelections.GetIsEmpty: Boolean;
+var
+  Index: Integer;
+begin
+  Result := True;
+  for Index := 0 to FSelections.Count - 1 do
+    if not FSelections.List[Index].IsEmpty then
+      Exit(False);
 end;
 
 function TSynSelections.GetSelection(Index: Integer): TSynSelection;

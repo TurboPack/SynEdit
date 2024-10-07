@@ -451,6 +451,7 @@ type
     function GetRow(RowIndex: Integer): string;
     function GetRowLength(RowIndex: Integer): Integer;
     function GetSelAvail: Boolean;
+    function GetSelectionText(Sel: TSynSelection): string;
     function GetSelText: string;
     function SynGetText: string;
     function GetWordAtCursor: string;
@@ -1679,31 +1680,32 @@ end;
 
 function TCustomSynEdit.GetSelAvail: Boolean;
 begin
-  Result := not FSelection.IsEmpty;
+  Result := not FSelections.IsEmpty;
 end;
 
 function TCustomSynEdit.GetSelText: string;
-
-  function CopyPadded(const S: string; Index, Count: Integer): string;
-  var
-    SrcLen: Integer;
-    DstLen: Integer;
-    i: Integer;
-    P: PWideChar;
+var
+  Index: Integer;
+  TempS: string;
+begin
+  Result := '';
+  if not SelAvail then
+    Exit
+  else
   begin
-    SrcLen := Length(S);
-    DstLen := Index + Count;
-    if SrcLen >= DstLen then
-      Result := Copy(S, Index, Count)
-    else begin
-      SetLength(Result, DstLen);
-      P := PWideChar(Result);
-      StrCopy(P, PWideChar(Copy(S, Index, Count)));
-      Inc(P, Length(S));
-      for i := 0 to DstLen - Srclen - 1 do
-        P[i] := #32;
+    for Index := 0 to FSelections.Count - 1 do
+    begin
+      TempS := GetSelectionText(FSelections[Index]);
+      if TempS = '' then
+        Continue;
+      Result := Result + TempS;
+      if Index < FSelections.Count - 1 then
+        Result := Result + SLineBreak;
     end;
   end;
+end;
+
+function TCustomSynEdit.GetSelectionText(Sel: TSynSelection): string;
 
   procedure CopyAndForward(const S: string; Index, Count: Integer; var P:
     PWideChar);
@@ -1724,40 +1726,21 @@ function TCustomSynEdit.GetSelText: string;
     end;
   end;
 
-  function CopyPaddedAndForward(const S: string; Index, Count: Integer;
-    var P: PWideChar): Integer;
-  var
-    OldP: PWideChar;
-    Len, i: Integer;
-  begin
-    Result := 0;
-    OldP := P;
-    CopyAndForward(S, Index, Count, P);
-    Len := Count - (P - OldP);
-    if not (eoTrimTrailingSpaces in Options) then
-    begin
-      for i := 0 to Len - 1 do
-        P[i] := #32;
-      Inc(P, Len);
-    end
-    else
-      Result:= Len;
-  end;
-
 var
   First, Last, TotalLen: Integer;
   ColFrom, ColTo: Integer;
   I: Integer;
   P: PWideChar;
 begin
-  if not SelAvail then
+  if Sel.IsEmpty then
     Result := ''
   else begin
-    ColFrom := BlockBegin.Char;
-    First := BlockBegin.Line - 1;
+    Sel.Normalize;
+    ColFrom := Sel.Start.Char;
+    First := Sel.Start.Line - 1;
     //
-    ColTo := BlockEnd.Char;
-    Last := BlockEnd.Line - 1;
+    ColTo := Sel.Stop.Char;
+    Last := Sel.Stop.Line - 1;
 
     if (First = Last) then
       Result := Copy(Lines[First], ColFrom, ColTo - ColFrom)
