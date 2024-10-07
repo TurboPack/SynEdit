@@ -3253,13 +3253,10 @@ begin
       for I := FirstChar to LastChar do
         if IsWhiteChar(SRow[I]) then
         begin
-          if FullRowFG <> clNone then
-            // not alpha blended full row selection or special line
-            DrawTab(Layout, Row, I - FirstChar + 1, FullRowFG)
-          else if IsPointInSelection(DisplayToBufferPos(DisplayCoord(I, Row))) and
+          if IsPointInSelection(DisplayToBufferPos(DisplayCoord(I, Row))) and
             SameValue(fSelectedColor.Alpha, 1)
           then
-            DrawWhitespace(Layout, Row, I - FirstChar + 1, SRow[I], SelFG)
+            DrawWhitespace(Layout, Row, I - FirstChar + 1, SRow[I], fSelectedColor.Foreground)
           else
             DrawWhitespace(Layout, Row, I - FirstChar + 1, SRow[I], SpecialCharsColor);
         end;
@@ -7158,12 +7155,12 @@ begin
     while (ptCurrent.Line >= ptStart.Line) and (ptCurrent.Line <= ptEnd.Line) do
     begin
       Line := Lines[ptCurrent.Line - 1];
-      if (ptCurrent.Line = ptStart.Line) or (SelectionMode = smColumn) then
+      if ptCurrent.Line = ptStart.Line then
         lnStart := ptStart.Char
       else
         lnStart := 1;
 
-      if (ptCurrent.Line = ptEnd.Line) or (SelectionMode = smColumn) then
+      if ptCurrent.Line = ptEnd.Line then
         lnEnd := ptEnd.Char
       else
         lnEnd := Length(Line) + 1;
