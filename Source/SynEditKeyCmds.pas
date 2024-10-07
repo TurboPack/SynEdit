@@ -224,6 +224,7 @@ const
   ecSelColumnPageUp    = ecPageUp + ecSelectColumn;
   ecSelColumnPageDown  = ecPageDown + ecSelectColumn;
   ecSelectMatchingText = 801;
+  ecCaretsAtLineEnds   = 802;
 
   ecUserFirst       = 1001; // Start of user-defined commands
 
@@ -332,7 +333,7 @@ uses
 
 const
 //++ CodeFolding
-  EditorCommandStrs: array[0..118] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..119] of TIdentMapEntry = (
 //-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
@@ -454,7 +455,8 @@ const
     (Value: ecSelColumnDown; Name:'ecSelColumnDown'),
     (Value: ecSelColumnPageUp; Name:'ecSelColumnPageUp'),
     (Value: ecSelColumnPageDown; Name:'ecSelColumnPageDown'),
-    (Value: ecSelectMatchingText; Name:'ecSelectAllMatching')
+    (Value: ecSelectMatchingText; Name:'ecSelectAllMatching'),
+    (Value: ecCaretsAtLineEnds; Name:'ecCaretsAtLineEnds')
     );
 
 // GetEditorCommandValues and GetEditorCommandExtended for editing key assignments
@@ -894,6 +896,7 @@ begin
   AddKey(ecSelColumnPageUp, SYNEDIT_PRIOR, [ssShift, ssAlt]);
   AddKey(ecSelColumnPageDown, SYNEDIT_NEXT, [ssShift, ssAlt]);
   AddKey(ecSelectMatchingText, Ord('W'), [ssShift, ssCtrl]);
+  AddKey(ecCaretsAtLineEnds, SYNEDIT_END, [ssAlt]);
 end;
 
 procedure TSynEditKeyStrokes.SetItem(Index: Integer; Value: TSynEditKeyStroke);
@@ -1145,6 +1148,7 @@ begin
   SynCommandsInfo.Add(ecSelColumnPageUp, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnPageDown, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelectMatchingText, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecCaretsAtLineEnds, TSynCommandInfo.Create(ckStandard, False));
 end;
 
 { TSynCommandInfo }

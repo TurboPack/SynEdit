@@ -671,6 +671,7 @@ type
     procedure BeginUndoBlock;
     procedure BeginUpdate;
     function CaretInView: Boolean;
+    procedure CaretsAtLineEnds;
     function CharIndexToRowCol(Index: Integer; LineBreak: string = SLineBreak): TBufferCoord;
     procedure Clear;
     procedure ClearAll;
@@ -3711,6 +3712,33 @@ begin
   Result := RowColumnInView(DisplayXY);
 end;
 
+procedure TCustomSynEdit.CaretsAtLineEnds;
+var
+  SelList: TList<TSynSelection>;
+  Sel: TSynSelection;
+  Line: Integer;
+  LineText: string;
+begin
+  FSelections.Clear; // Operates on Active Selection only
+
+  SelList := TList<TSynSelection>.Create;
+  try
+    for Line := BlockBegin.Line to BlockEnd.Line do
+    begin
+      LineText := Lines[Line - 1];
+      Sel.Caret := BufferCoord(LineText.Length + 1, Line);
+      Sel.Start := Sel.Caret;
+      Sel.Stop := Sel.Caret;
+      Sel.CaretAtEOL := False;
+      SelList.Add(Sel);
+
+      FSelections.Restore(SelList.ToArray, SelList.Count - 1, SelList.Count - 1);
+    end;
+  finally
+    SelList.Free;
+  end;
+end;
+
 procedure TCustomSynEdit.SetActiveLineColor(Value: TColor);
 begin
   if (fActiveLineColor<>Value) then
@@ -6585,6 +6613,10 @@ begin
       ecSelectMatchingText:
         begin
           SelectMatchingText;
+        end;
+      ecCaretsAtLineEnds:
+        begin
+          CaretsAtLineEnds;
         end;
     end;
   finally
