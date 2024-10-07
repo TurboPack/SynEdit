@@ -356,9 +356,10 @@ begin
   fCaseSensitive := True;
 
   FKeywords := TStringList.Create;
-  FKeywords.Sorted := True;
   FKeywords.Duplicates := dupError;
   FKeywords.Assign (GetKeywordIdentifiers);
+  FKeywords.CaseSensitive := True;
+  FKeywords.Sorted := True;
 
 //++ CodeFolding
   BlockOpenerRE.Create(

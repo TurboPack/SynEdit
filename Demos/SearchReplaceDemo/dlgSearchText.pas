@@ -26,11 +26,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: dlgSearchText.pas,v 1.3 2002/08/01 05:44:05 etrusco Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 
@@ -57,6 +52,7 @@ type
     btnOK: TButton;
     btnCancel: TButton;
     cbRegularExpression: TCheckBox;
+    procedure cbRegularExpressionClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     function GetSearchBackwards: boolean;
@@ -96,6 +92,12 @@ type
 implementation
 
 {$R *.DFM}
+
+procedure TTextSearchDialog.cbRegularExpressionClick(Sender: TObject);
+begin
+  // The regexp search engine does not support the whole word option
+  cbSearchWholeWords.Enabled := not cbRegularExpression.Checked;
+end;
 
 { TTextSearchDialog }
 
@@ -145,7 +147,7 @@ end;
 
 function TTextSearchDialog.GetSearchWholeWords: boolean;
 begin
-  Result := cbSearchWholeWords.Checked;
+  Result := not cbRegularExpression.Checked and cbSearchWholeWords.Checked;
 end;
 
 procedure TTextSearchDialog.SetSearchBackwards(Value: boolean);

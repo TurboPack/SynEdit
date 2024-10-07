@@ -49,13 +49,14 @@ uses
   System.SysUtils,
   System.Classes;
 
-const
+var
 // These might need to be localized depending on the characterset because they might be
 // interpreted as valid ident characters.
   SynTabGlyph: WideChar = #$2192;       //'->'
   SynSoftBreakGlyph: WideChar = #$00AC; //'¬'
-  SynLineBreakGlyph: WideChar = #$00B6; //'¶'
+  SynLineBreakGlyph: WideChar = #$21B2;
   SynSpaceGlyph: WideChar = #$2219;     //'·'
+  SynTabAlignment: TAlignment = taCenter;
 
 type
   ESynError = class(Exception);

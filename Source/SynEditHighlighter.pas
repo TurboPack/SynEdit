@@ -235,6 +235,7 @@ type
 implementation
 
 uses
+  System.Character,
   SynEditMiscProcs,
   SynEditStrConst;
 
@@ -986,7 +987,6 @@ begin
       Result := False;
   end;
   Result := Result or CharInSet(AChar, FAdditionalIdentChars);
-  Result := Result and not IsWordBreakChar(AChar);
 end;
 
 function TSynCustomHighlighter.IsKeyword(const AKeyword: string): Boolean;
@@ -1005,7 +1005,7 @@ begin
     0..32:
       Result := True;
     else
-      Result := not (IsIdentChar(AChar) or IsWordBreakChar(AChar))
+      Result := AChar.IsWhiteSpace and not IsIdentChar(AChar);
   end
 end;
 
@@ -1019,14 +1019,14 @@ begin
     else
     begin
       case Ord(AChar) of
-      0..32: Result := True;
+        0..32: Result := True;
       else
        Result := False;
       end;
     end;
   end;
   Result := Result or CharInSet(AChar, FAdditionalWordBreakChars);
-  Result := Result and not CharInSet(AChar, FAdditionalIdentChars);
+  Result := Result and not IsIdentChar(AChar);
 end;
 
 function TSynCustomHighlighter.SaveToIniFile(AIni: TCustomIniFile): Boolean;
@@ -1056,8 +1056,8 @@ end;
 
 procedure TSynCustomHighlighter.Next;
 begin
-  if fOldRun = Run then Exit;
-  fOldRun := Run;
+  if fOldRun <> Run then
+    fOldRun := Run;
 end;
 
 procedure TSynCustomHighlighter.NextToEol;

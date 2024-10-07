@@ -399,7 +399,7 @@ begin
     Dec(FBlockCount);
     if FBlockCount = 0 then
     begin
-      if FUndoList.Peek = FBlockSelRestoreItem then
+      if (FUndoList.Count > 0) and (FUndoList.Peek = FBlockSelRestoreItem) then
         // No undo items added from BlockBegin to BlockEnd
         FUndoList.Pop
       else if not IsLocked then

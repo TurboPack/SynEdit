@@ -28,13 +28,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: GenLex.pas,v 1.4.2.4 2008/10/25 23:30:31 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit GenLex;
@@ -42,7 +35,13 @@ unit GenLex;
 interface
 
 uses
-  SysUtils, Windows, Messages, Classes, Controls, LongIntList, SynUnicode;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Collections,
+  Vcl.Controls,
+  SynUnicode;
 
 var
   Identifiers: array[#0..#255] of ByteBool;
@@ -84,8 +83,8 @@ type
     fStringLen: Integer;
     fToIdent: PWideChar;
     fTokenizing: Boolean;
-    FLinePosList: TLongIntList;
-    FTokenPositionsList: TLongIntList;
+    FLinePosList: TList<Integer>;
+    FTokenPositionsList: TList<Integer>;
     fIdentFuncTable: array[0..150] of function: TIdTokenKind of object;
     function KeyHash(ToHash: PWideChar): Integer;
     function KeyComp(aKey: string): Boolean;
@@ -377,8 +376,8 @@ begin
   InitIdent;
   MakeMethodTables;
   fIgnoreComments := False;
-  FTokenPositionsList := TLongIntList.Create;
-  FLinePosList := TLongIntList.Create;
+  FTokenPositionsList := TList<Integer>.Create;
+  FLinePosList := TList<Integer>.Create;
 end; { Create }
 
 destructor TGenLex.Destroy;

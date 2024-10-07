@@ -11,10 +11,8 @@ object ConfirmReplaceDialog: TConfirmReplaceDialog
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object lblConfirmation: TLabel
     Left = 60
@@ -65,7 +63,7 @@ object ConfirmReplaceDialog: TConfirmReplaceDialog
     Width = 75
     Height = 23
     Caption = 'Yes to &all'
-    ModalResult = 10
+    ModalResult = 14
     TabOrder = 3
   end
 end

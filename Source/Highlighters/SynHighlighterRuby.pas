@@ -518,7 +518,7 @@ begin
   fTokenID := tkString;
 
   if fRange = rsIndentedHeredoc then
-    while FLine[Run] in [WideChar(#9), WideChar(#32)] do Inc(Run);
+    while FLine[Run] in [#$0009, #$0020] do Inc(Run);
 
   if ((Run = 0) and (fRange = rsHeredoc)) or (fRange = rsIndentedHeredoc) then
   begin

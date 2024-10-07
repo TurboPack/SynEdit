@@ -12,7 +12,7 @@
   The Original Code is based on the mwSupportProcs.pas file from the
   mwEdit component suite by Martin Waldenburg and other developers, the Initial
   Author of this file is Michael Hieke.
-  Unicode translation by Maël Hörz.
+  Unicode translation by MaÃ«l HÃ¶rz.
   All Rights Reserved.
 
   Contributors to the SynEdit and mwEdit projects are listed in the
@@ -137,6 +137,9 @@ procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen:
 
 // Tests whether a color is dark
 function IsColorDark(AColor : TColor) : boolean;
+
+// Substitutes control characters with Unicode control pictures
+procedure SubstituteControlChars(var Input: string);
 
 
 {$IF CompilerVersion <= 32}
@@ -281,7 +284,7 @@ var
 begin
   Result := 0;
   P := PChar(Line);
-  while (P^ >= #1) and ((P^ <= #32) or (P^ = #160)) do
+  while (P^ >= #1) and ((P^ <= #32) or (P^ = #$00A0)) do
   begin
     if (P^ = #9) and ExpandTabs then
       Inc(Result, TabWidth - (Result mod TabWidth))
@@ -829,6 +832,26 @@ begin
   ACol := ColorToRGB(AColor) and $00FFFFFF;
   Result := ((2.99 * GetRValue(ACol) + 5.87 * GetGValue(ACol) +
                  1.14 * GetBValue(ACol)) < $400);
+end;
+
+procedure SubstituteControlChars(var Input: string);
+const
+  ControlChars: set of Byte = [1..31, 127];
+  GraphicChars: array[1..31] of Char = (
+      #$02401, #$02402, #$02403, #$02404, #$02405, #$02406, #$02407, #$02408,
+      #$02409, #$0240A, #$0240B, #$0240C, #$0240D, #$0240E, #$0240F, #$02410,
+      #$02411, #$02412, #$02413, #$02414, #$02415, #$02416, #$02417, #$02418,
+      #$02419, #$0241A, #$0241B, #$0241C, #$0241D, #$0241E, #$0241F);
+  DeleteChar  = #$02421;
+var
+  I: Integer;
+begin
+  UniqueString(Input);
+  for I := 1 to Input.Length do
+    case Ord(Input[I]) of
+      1..8, 10..31: Input[I] := GraphicChars[Byte(Ord(Input[I]))];
+      127: Input[I] := DeleteChar;
+    end;
 end;
 
 end.

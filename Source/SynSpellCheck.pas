@@ -411,7 +411,7 @@ begin
 
   ClearErrors(False);
 
-  for Line := 0 to FEditor.Lines.Count - 1 do
+  for Line := 1 to FEditor.Lines.Count do
     SpellCheckLine(FEditor, Line);
   Editor.Invalidate;
 end;
@@ -728,8 +728,8 @@ begin
       if TokenPos + Token.Length < StartChar then Continue;
 
       Attri := Editor.HighLighter.GetTokenAttribute;
-      if (Token <> '') and Assigned(Attri) and
-        (FAttributesChecked.IndexOf(Attri.Name) >= 0)
+      if (Token <> '') and (not Assigned(Attri) or
+        (FAttributesChecked.IndexOf(Attri.Name) >= 0))
       then
         FWorkList.Add(TWorkItem.Create(Token,TokenPos));
 

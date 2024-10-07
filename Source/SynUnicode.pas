@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+ï»¿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -8,7 +8,7 @@ Software distributed under the License is distributed on an "AS IS" basis,
 WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
 the specific language governing rights and limitations under the License.
 
-The Original Code is SynUnicode.pas by Maël Hörz, released 2004-05-30.
+The Original Code is SynUnicode.pas by MaÃ«l HÃ¶rz, released 2004-05-30.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -52,20 +52,20 @@ const
   UTF32BOMBE: array[0..3] of Byte = ($00, $00, $FE, $FF);
 
 const
-  WideNull = WideChar(#0);
-  WideTabulator = WideChar(#9);
-  WideSpace = WideChar(#32);
+  WideNull = #$0000;
+  WideTab = #$0009;
+  WideSpace = #$0020;
 
   // logical line breaks
-  WideLF = WideChar(#10);
-  WideLineFeed = WideChar(#10);
-  WideVerticalTab = WideChar(#11);
-  WideFormFeed = WideChar(#12);
-  WideCR = WideChar(#13);
-  WideCarriageReturn = WideChar(#13);
+  WideLF = #$000A;
+  WideLineFeed = #$000A;
+  WideVerticalTab = #$000B;
+  WideFormFeed = #$000C;
+  WideCR = #$000D;
+  WideCarriageReturn = #$000D;
   WideCRLF = string(#13#10);
-  WideLineSeparator = WideChar($2028);
-  WideParagraphSeparator = WideChar($2029);
+  WideLineSeparator = #$2028;
+  WideParagraphSeparator = #$2029;
 
 { functions taken from JCLUnicode.pas }
 procedure StrSwapByteOrder(Str: PWideChar);

@@ -342,8 +342,8 @@ type
       Data: Pointer; HandlerData: Pointer); virtual;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure Execute(s: string; x, y: Integer);
-    procedure ExecuteEx(s: string; x, y: Integer; Kind: SynCompletionType = ctCode); virtual;
+    procedure Execute(CurrentInput: string; x, y: Integer);
+    procedure ExecuteEx(CurrentInput: string; x, y: Integer; Kind: SynCompletionType = ctCode); virtual;
     procedure Activate;
     procedure Deactivate;
 
@@ -1756,11 +1756,11 @@ end;
 
 procedure TSynBaseCompletionProposalForm.SetCurrentString(const Value: string);
 
-  function MatchItem(AIndex: Integer; UseItemList: Boolean): Boolean;
+  function MatchItem(AIndex: Integer): Boolean;
   var
     CompareString: string;
   begin
-{    if UseInsertList then
+    if UseInsertList then
       CompareString := FInsertList[AIndex]
     else
     begin
@@ -1768,28 +1768,9 @@ procedure TSynBaseCompletionProposalForm.SetCurrentString(const Value: string);
 
       if UsePrettyText then
         CompareString := StripFormatCommands(CompareString);
-    end;}
-
-    if UseInsertList then
-      CompareString := FInsertList[aIndex]
-    else
-    begin
-      if (FMatchText) and (not UseItemList) then
-        CompareString := FAssignedList[aIndex]
-      else
-        CompareString := FItemList[aIndex];   //GBN 29/08/2002 Fix for when match text is not active
-
-      if UsePrettyText then
-        CompareString := StripFormatCommands(CompareString);
     end;
 
-
-    CompareString := Copy(CompareString, 1, Length(Value));
-
-    if FCase then
-      Result := AnsiCompareStr(CompareString, Value) = 0
-    else
-      Result := AnsiCompareText(CompareString, Value) = 0;
+    Result := CompareString.StartsWith(Value, not FCase);
   end;
 
   procedure RecalcList;
@@ -1799,7 +1780,7 @@ procedure TSynBaseCompletionProposalForm.SetCurrentString(const Value: string);
     FAssignedList.Clear;
     for i := 0 to FItemList.Count -1 do
     begin
-      if MatchItem(i, True) then
+      if MatchItem(i) then
         FAssignedList.AddObject(FItemList[i], TObject(i));
     end;
   end;
@@ -1810,13 +1791,21 @@ begin
   FCurrentString := Value;
   if DisplayType <> ctCode then
     exit;
+
+  if not Visible then
+  begin
+    if FMatchText then
+      RecalcList;
+    Exit;
+  end;
+
   if FMatchText then
   begin
     RecalcList;
     AdjustScrollBarPosition;
     Position := 0;
 
-    if Visible and Assigned(FOnChangePosition) and (DisplayType = ctCode) then
+    if Assigned(FOnChangePosition) and (DisplayType = ctCode) then
       FOnChangePosition(Owner as TSynBaseCompletionProposal,
         LogicalToPhysicalIndex(FPosition));
 
@@ -1825,7 +1814,7 @@ begin
   else
   begin
     i := 0;
-    while (i < ItemList.Count) and (not MatchItem(i, True)) do
+    while (i < ItemList.Count) and (not MatchItem(i)) do
       inc(i);
 
     if i < ItemList.Count then
@@ -2205,12 +2194,12 @@ begin
   FPaintFormShadow := True;
 end;
 
-procedure TSynBaseCompletionProposal.Execute(s: string; x, y: integer);
+procedure TSynBaseCompletionProposal.Execute(CurrentInput: string; x, y: integer);
 begin
-  ExecuteEx(s, x, y, DefaultType);
+  ExecuteEx(CurrentInput, x, y, DefaultType);
 end;
 
-procedure TSynBaseCompletionProposal.ExecuteEx(s: string; x, y: integer; Kind : SynCompletionType);
+procedure TSynBaseCompletionProposal.ExecuteEx(CurrentInput: string; x, y: integer; Kind : SynCompletionType);
 Var
   WorkArea : TRect;
   Monitor: TMonitor;
@@ -2346,7 +2335,7 @@ begin
 
   FCanExecute := True;
   if Assigned(OnExecute) then
-    OnExecute(Kind, Self, s, x, y, FCanExecute);
+    OnExecute(Kind, Self, CurrentInput, x, y, FCanExecute);
 
   if (not FCanExecute) or (ItemList.Count = 0) then
   begin
@@ -2372,7 +2361,7 @@ begin
 
   if Assigned(Form.CurrentEditor) then
   begin
-    TmpOffset := (Form.CurrentEditor as TCustomSynEdit).Canvas.TextWidth(Copy(s, 1, DotOffset));
+    TmpOffset := (Form.CurrentEditor as TCustomSynEdit).Canvas.TextWidth(Copy(CurrentInput, 1, DotOffset));
     if DotOffset > 1 then
       TmpOffset := TmpOffset + (3 * (DotOffset -1));
     Form.PopupParent := GetParentForm(Form.CurrentEditor);
@@ -2396,7 +2385,7 @@ begin
 
       Form.Show;
 
-      CurrentString := s;  // bug id 1496148
+      CurrentString := CurrentInput;
     end;
   ctParams, ctHint:
     begin

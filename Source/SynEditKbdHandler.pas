@@ -53,15 +53,6 @@ uses
   Classes;
 
 type
-  { This class provides a TWinControl-Object which supports only the
-    needed Methods }
-  TKeyboardControl = class(TWinControl)
-  public
-    property OnKeyDown;
-    property OnKeyPress;
-    property OnMouseDown;
-  end;
-
   TMouseCursorEvent =  procedure(Sender: TObject; const aLineCharPos: TBufferCoord;
     var aCursor: TCursor) of object;
 

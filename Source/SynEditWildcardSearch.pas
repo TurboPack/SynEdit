@@ -26,12 +26,8 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditWildcardSearch.pas,v 1.2.2.2 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
+  - Same limitations as TSynEditRegexSearch
 -------------------------------------------------------------------------------}
 
 unit SynEditWildcardSearch;
@@ -62,8 +58,9 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function FindAll(const NewText: UnicodeString): Integer; override;
-    function Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString; override;        //slm 11/29/02
+    function FindAll(const NewText: string; StartChar: Integer = 1;
+      EndChar: Integer = 0): Integer; override;
+    function Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString; override;
   end;
 
 implementation
@@ -84,9 +81,10 @@ begin
   inherited;
 end;
 
-function TSynEditWildcardSearch.FindAll(const NewText: UnicodeString): integer;
+function TSynEditWildcardSearch.FindAll(const NewText: string;
+  StartChar: Integer = 1; EndChar: Integer = 0): Integer;
 begin
-  Result := inherited FindAll(NewText);
+  Result := inherited FindAll(NewText, StartChar, EndChar);
 end;
 
 function TSynEditWildcardSearch.Replace(const aOccurrence, aReplacement: UnicodeString): UnicodeString;

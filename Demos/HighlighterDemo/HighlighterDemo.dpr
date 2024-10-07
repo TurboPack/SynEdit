@@ -8,10 +8,10 @@ Software distributed under the License is distributed on an "AS IS" basis,
 WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
 the specific language governing rights and limitations under the License.
 
-The Original Code is: SearchReplaceDemo.dpr, released 2000-06-23.
+The Original Code is: HighlighterDemo.dpr, released 2001-08-28.
 
-The Original Code is part of the SearchReplaceDemo project, written by
-Michael Hieke for the SynEdit component suite.
+The Original Code is part of the HighlighterDemo project, written by Pieter Polak
+for the SynEdit component suite.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -26,7 +26,7 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SearchReplaceDemo.dpr,v 1.1.1.1 2000/07/08 15:54:07 mghie Exp $
+$Id: HighlighterDemo.dpr,v 1.2 2004/01/22 03:37:47 etrusco Exp $
 
 You may retrieve the latest version of this file at the SynEdit home page,
 located at http://SynEdit.SourceForge.net
@@ -34,21 +34,14 @@ located at http://SynEdit.SourceForge.net
 Known Issues:
 -------------------------------------------------------------------------------}
 
-program SearchReplaceDemo;
+program HighlighterDemo;
 
 uses
   Forms,
-  frmMain in 'frmMain.pas' {SearchReplaceDemoForm},
-  dlgSearchText in 'dlgSearchText.pas' {TextSearchDialog},
-  dlgReplaceText in 'dlgReplaceText.pas' {TextReplaceDialog},
-  dlgConfirmReplace in 'dlgConfirmReplace.pas' {ConfirmReplaceDialog},
-  uSearchHighlighter in 'uSearchHighlighter.pas';
-
-{$R *.RES}
+  uMain in 'uMain.pas' {Form1};
 
 begin
   Application.Initialize;
-  Application.CreateForm(TSearchReplaceDemoForm, SearchReplaceDemoForm);
+  Application.CreateForm(TForm1, Form1);
   Application.Run;
 end.
-

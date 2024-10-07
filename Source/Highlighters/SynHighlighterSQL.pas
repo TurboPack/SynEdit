@@ -1731,7 +1731,9 @@ begin
           repeat
             Inc(Run);
           until IsLineEnd(Run);
-        end;
+        end
+        else
+          fTokenID := tkSymbol;
       end
     else
       fTokenID := tkSymbol;
