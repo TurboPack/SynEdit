@@ -27,14 +27,8 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditKeyCmds.pas,v 1.23.2.4 2008/09/14 16:24:58 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
-// TODO: introduce friendly Names for the Commands (EditorCommandStrs is not good enough for end-users)
+// TODO: introduce friendly names for the Commands (EditorCommandStrs is not good enough for end-users)
 
 unit SynEditKeyCmds;
 
@@ -216,15 +210,16 @@ const
   // Multi-caret
   ecSelectColumn       = 150;
 
-  ecEscape             = 800;
+  ecClearSelections    = 800;
+  ecDeleteSelection   = 801; // Internal command
   ecSelColumnLeft      = ecLeft + ecSelectColumn;
   ecSelColumnRight     = ecRight + ecSelectColumn;
   ecSelColumnUp        = ecUp + ecSelectColumn;
   ecSelColumnDown      = ecDown + ecSelectColumn;
   ecSelColumnPageUp    = ecPageUp + ecSelectColumn;
   ecSelColumnPageDown  = ecPageDown + ecSelectColumn;
-  ecSelectMatchingText = 801;
-  ecCaretsAtLineEnds   = 802;
+  ecSelectMatchingText = 802;
+  ecCaretsAtLineEnds   = 803;
 
   ecUserFirst       = 1001; // Start of user-defined commands
 
@@ -448,7 +443,7 @@ const
     (Value: ecFoldRegions; Name:'ecFoldRanges'),
     (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
     // Multi-cursor
-    (Value: ecEscape; Name:'ecEscape'),
+    (Value: ecClearSelections; Name:'ecClearSelections'),
     (Value: ecSelColumnLeft; Name:'ecSelColumnLeft'),
     (Value: ecSelColumnRight; Name:'ecSelColumnRight'),
     (Value: ecSelColumnUp; Name:'ecSelColumnUp'),
@@ -888,7 +883,7 @@ begin
   AddKey(ecUnfoldLevel2, Ord('K'), [ssCtrl, ssShift], Ord('2'), [ssCtrl, ssShift]);
   AddKey(ecUnfoldLevel3, Ord('K'), [ssCtrl, ssShift], Ord('3'), [ssCtrl, ssShift]);
   // Multi-caret
-  AddKey(ecEscape, SYNEDIT_ESCAPE, []);
+  AddKey(ecClearSelections, SYNEDIT_ESCAPE, []);
   AddKey(ecSelColumnLeft, SYNEDIT_LEFT, [ssShift, ssAlt]);
   AddKey(ecSelColumnRight, SYNEDIT_RIGHT, [ssShift, ssAlt]);
   AddKey(ecSelColumnUp, SYNEDIT_UP, [ssShift, ssAlt]);
@@ -1112,7 +1107,7 @@ begin
   SynCommandsInfo.Add(ecImeStr, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecUndo, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecRedo, TSynCommandInfo.Create(ckStandard, False));
-  SynCommandsInfo.Add(ecCut, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecCut, TSynCommandInfo.Create(ckStandard, True));
   SynCommandsInfo.Add(ecPaste, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecBlockIndent, TSynCommandInfo.Create(ckSingleCaret, False));
   SynCommandsInfo.Add(ecBlockUnindent, TSynCommandInfo.Create(ckSingleCaret, False));
@@ -1140,7 +1135,8 @@ begin
   SynCommandsInfo.Add(ecUnfoldLevel3, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecFoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecUnfoldRegions, TSynCommandInfo.Create(ckStandard, False));
-  SynCommandsInfo.Add(ecEscape, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecClearSelections, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecDeleteSelection, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecSelColumnLeft, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnRight, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnUp, TSynCommandInfo.Create(ckStandard, False));

@@ -373,6 +373,7 @@ type
     SelStartBeforeSearch: integer;
     SelLengthBeforeSearch: integer;
     FBracketsHighlight: TSynBracketsHighlight;
+    FPasteArray: TArray<string>;
 
     // Accessibility
     FUIAutomationProvider: IInterface;  // IRawElementProviderSimple
@@ -451,7 +452,6 @@ type
     function GetRow(RowIndex: Integer): string;
     function GetRowLength(RowIndex: Integer): Integer;
     function GetSelAvail: Boolean;
-    function GetSelectionText(Sel: TSynSelection): string;
     function GetSelText: string;
     function SynGetText: string;
     function GetWordAtCursor: string;
@@ -614,8 +614,7 @@ type
     procedure SetReadOnly(Value: boolean); virtual;
     procedure SetWantReturns(Value: Boolean);
     procedure SetSelText(const Value: string);
-    procedure SetSelTextPrimitiveEx(Value: string;
-        AddToUndoList: Boolean = True; SilentDelete: Boolean = False);
+    procedure SetSelTextPrimitiveEx(Value: string; AddToUndoList: Boolean = True);
     procedure SetWantTabs(Value: Boolean);
     procedure StatusChanged(AChanges: TSynStatusChanges);
     // If the translations requires Data, memory will be allocated for it via a
@@ -685,7 +684,6 @@ type
     procedure MarkSaved;
     procedure CopyToClipboard;
     procedure CutToClipboard;
-    procedure DoCopyToClipboard(const SText: string);
     procedure EndUndoBlock;
     procedure EndUpdate;
     procedure EnsureCaretInView;
@@ -770,6 +768,7 @@ type
     function SearchReplace(const ASearch, AReplace: string;
       AOptions: TSynSearchOptions): Integer;
     procedure SelectAll;
+    function SelectionText(Sel: TSynSelection): string;
     procedure SelectMatchingText;
     function SelectSameWord(const AWord: string; Start: TBufferCoord;
       BackwardSearch: Boolean = False; AddSelection: Boolean = False): Boolean;
@@ -1414,15 +1413,9 @@ begin
   fScrollTimer.Enabled := (fScrollDeltaX <> 0) or (fScrollDeltaY <> 0);
 end;
 
-procedure TCustomSynEdit.DoCopyToClipboard(const SText: string);
-begin
-  OleSetClipboard(TSynEditDataObject.Create(Self));
-end;
-
 procedure TCustomSynEdit.CopyToClipboard;
 begin
-  if SelAvail then
-    DoCopyToClipboard(SelText);
+  OleSetClipboard(TSynEditDataObject.Create(Self));
 end;
 
 procedure TCustomSynEdit.CutToClipboard;
@@ -1431,8 +1424,8 @@ begin
   begin
     BeginUndoBlock;
     try
-      DoCopyToClipboard(SelText);
-      SelText := '';
+      CopyToClipboard;
+      ClearSelection;
     finally
       EndUndoBlock;
     end;
@@ -1684,28 +1677,13 @@ begin
 end;
 
 function TCustomSynEdit.GetSelText: string;
-var
-  Index: Integer;
-  TempS: string;
 begin
   Result := '';
-  if not SelAvail then
-    Exit
-  else
-  begin
-    for Index := 0 to FSelections.Count - 1 do
-    begin
-      TempS := GetSelectionText(FSelections[Index]);
-      if TempS = '' then
-        Continue;
-      Result := Result + TempS;
-      if Index < FSelections.Count - 1 then
-        Result := Result + SLineBreak;
-    end;
-  end;
+  if not FSelection.IsEmpty then
+    Result := SelectionText(FSelection);
 end;
 
-function TCustomSynEdit.GetSelectionText(Sel: TSynSelection): string;
+function TCustomSynEdit.SelectionText(Sel: TSynSelection): string;
 
   procedure CopyAndForward(const S: string; Index, Count: Integer; var P:
     PWideChar);
@@ -3293,24 +3271,8 @@ begin
 end;
 
 procedure TCustomSynEdit.PasteFromClipboard;
-// TODO multicaret
-var
-  ClipText, Spaces: string;
 begin
-  if not CanPaste then
-    exit;
-  DoOnPaintTransient(ttBefore);
-
-  ClipText := GetClipboardText;
-  if eoTabsToSpaces in Options then
-  begin
-    Spaces := StringOfChar(#32, TabWidth);
-    ClipText := StringReplace(ClipText, #9, Spaces, [rfReplaceAll]);
-  end;
-  SetSelTextPrimitiveEx(ClipText, True);
-
-  EnsureCursorPosVisible;
-  DoOnPaintTransient(ttAfter);
+  CommandProcessor(ecPaste, ' ', nil);
 end;
 
 procedure TCustomSynEdit.SelectAll;
@@ -3341,7 +3303,7 @@ begin
   if FSelection.IsEmpty then
     SetSelWord;
 
-  if (SelText = '') or (FSelection.Start.Line <> FSelection.Stop.Line) then
+  if (FSelection.IsEmpty) or (FSelection.Start.Line <> FSelection.Stop.Line) then
     Exit;  // Only match single line text
 
 
@@ -3351,7 +3313,7 @@ begin
     BaseIndex := 0;    // to avoid compiler warnings
     ActiveIndex := 0;
 
-    Engine.Pattern := SelText;
+    Engine.Pattern := SelectionText(FSelection);
     SearchOptions := [];
     if CaseSensitive then
       Include(SearchOptions, ssoMatchCase);
@@ -3544,6 +3506,8 @@ procedure TCustomSynEdit.InternalCommandHook(Sender: TObject;
   HandlerData: pointer);
 var
   BB, BE: TBufferCoord;
+  ClipText, Spaces: string;
+  I: Integer;
 begin
   if not AfterProcessing and (Command = ecSelWord) then
   begin
@@ -3557,6 +3521,40 @@ begin
       Handled := True;
       Command := ecNone;
     end
+  end
+  else if not AfterProcessing and (Command = ecPaste) then
+  begin
+    if not CanPaste then
+    begin
+      Handled := True;
+      Command := ecNone;
+      Exit;
+    end;
+    DoOnPaintTransient(ttBefore);
+
+    FPasteArray := [];
+    if (FSelections.Count > 1) and Clipboard.HasFormat(SynEditClipboardFormat) then
+    begin
+      FPasteArray := GetInternalClipText;
+      if Length(FPasteArray) <> FSelections.Count then
+        FPasteArray := [];
+    end;
+
+    if Length(FPasteArray) = 0 then
+      FPasteArray := [GetClipboardText];
+
+    if eoTabsToSpaces in Options then
+    begin
+      Spaces := StringOfChar(#32, TabWidth);
+      for I := 0 to Length(FPasteArray) - 1 do
+        FPasteArray[I] := StringReplace(FPasteArray[I], #9, Spaces, [rfReplaceAll]);
+    end;
+  end
+  else if AfterProcessing and (Command = ecPaste) then
+  begin
+    FPasteArray := [];
+    EnsureCursorPosVisible;
+    DoOnPaintTransient(ttAfter);
   end;
 end;
 
@@ -3844,7 +3842,7 @@ end;
 // To fix this (in the absence of a better idea), I changed the code in
 // DeleteSelection not to trim the string if eoScrollPastEol is not set.
 procedure TCustomSynEdit.SetSelTextPrimitiveEx(Value: string;
-  AddToUndoList: Boolean = True; SilentDelete: Boolean = False);
+  AddToUndoList: Boolean = True);
 {
    Works in two stages:
      -  First deletes selection.
@@ -3896,6 +3894,8 @@ var
         CaretX - 1 - Length(sLeftSide));
     end;
     sRightSide := Copy(LineText, CaretX, Length(LineText) - (CaretX - 1));
+    if eoTrimTrailingSpaces in Options then
+      sRightSide := sRightSide.TrimRight;
 
     // step1: insert the first line of Value into current line
     NewLines[0] := sLeftSide + NewLines[0];
@@ -3914,10 +3914,7 @@ var
       Include(fStatusChanges, scCaretY);
     end;
 
-    if eoTrimTrailingSpaces in Options then
-      FSelection.Caret.Char := 1 + Length(Lines[CaretY - 1]) - Length(sRightSide.TrimRight)
-    else
-      FSelection.Caret.Char := 1 + Length(Lines[CaretY - 1]) - Length(sRightSide);
+    FSelection.Caret.Char := 1 + Length(Lines[CaretY - 1]) - Length(sRightSide);
     StatusChanged([scCaretX]);
 
     // Force caret reset
@@ -3934,7 +3931,7 @@ begin
   IncPaintLock;
   if AddToUndoList then BeginUndoBlock else fUndoRedo.Lock;
   try
-    SelectedText := SelText;
+    SelectedText := SelectionText(FSelection);
 
     if SelectedText <> '' then
       DeleteSelection;
@@ -6029,14 +6026,18 @@ begin
   IncPaintLock;
   try
     case Command of
-      ecEscape:
-      begin
-        if FSelections.Count = 1 then
-          CaretXY := CaretXY // clears selection
-        else
-          FSelections.Clear(ksKeepBase);
-      end;
-// horizontal caret movement or selection
+      ecClearSelections:
+        begin
+          if FSelections.Count = 1 then
+            CaretXY := CaretXY // clears selection
+          else
+            FSelections.Clear(ksKeepBase);
+        end;
+      ecDeleteSelection:
+        begin
+          SelText := '';
+        end;
+      // horizontal caret movement or selection
       ecLeft, ecSelLeft, ecSelColumnLeft:
         begin
           Caret := FSelections.BaseSelection.Start;
@@ -6522,7 +6523,10 @@ begin
         end;
       ecPaste:
         begin
-          if not ReadOnly then PasteFromClipboard;
+          if Length(FPasteArray) > 1 then
+            SelText := FPasteArray[FSelections.ActiveSelIndex]
+          else
+            SelText := FPasteArray[0];
         end;
       ecScrollUp, ecScrollDown:
         begin
@@ -6667,6 +6671,7 @@ end;
 
 procedure TCustomSynEdit.ClearAll;
 begin
+  FSelections.Clear;
   Lines.Clear;
   fMarkList.Clear; // fMarkList.Clear also frees all bookmarks,
   FillChar(fBookMarks, sizeof(fBookMarks), 0); // so fBookMarks should be cleared too
@@ -6677,9 +6682,8 @@ end;
 
 procedure TCustomSynEdit.ClearSelection;
 begin
-  // TODO: MultiCaret
   if SelAvail then
-    SelText := '';
+    CommandProcessor(ecDeleteSelection, ' ', nil);
 end;
 
 procedure TCustomSynEdit.ClearTrackChanges;
@@ -8165,12 +8169,7 @@ begin
       else if Action is TEditPaste then
         CommandProcessor(ecPaste, ' ', nil)
       else if Action is TEditDelete then
-      begin
-        if SelAvail then
-          ClearSelection
-        else
-          CommandProcessor(ecDeleteChar, ' ', nil)
-      end
+        CommandProcessor(ecDeleteChar, ' ', nil)
       else if Action is TEditUndo then
         CommandProcessor(ecUndo, ' ', nil)
       else if Action is TEditSelectAll then

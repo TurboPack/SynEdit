@@ -30,11 +30,11 @@ unit SynEditDataObject;
 
 interface
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  ActiveX,
-  Generics.Collections;
+  Winapi.Windows,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Collections;
 
 Type
 
@@ -55,9 +55,9 @@ Type
 
   TSynEditDataObject = class (TInterfacedObject, IDataObject)
   private
-    fText : string;
+    FText : string;
+    FInternalText: string;
     FFormatEtc : TList<TClipFormat>;
-    MemoryStream : TMemoryStream;
     HtmlStream : TMemoryStream;
     procedure StreamHTML(Editor: TObject; Stream: TStream);
   protected
@@ -75,10 +75,13 @@ Type
     destructor Destroy; override;
   end;
 
-function MakeGlobal (Value : integer) : hGlobal; overload;
 function MakeGlobal (const S: string): hGlobal; overload;
 function MakeGlobal (var P; Size : integer) : hGlobal; overload;
 function HasFormat(DataObject : IDataObject; Format : TClipFormat): Boolean;
+function GetInternalClipText: TArray<string>;
+
+const
+  IntClipFormatDelimiter = #$EEFF;   // from private unicode area
 
 var
   SynEditClipboardFormat: UINT;
@@ -87,7 +90,9 @@ var
 implementation
 
 uses
+  Vcl.Clipbrd,
   SynEdit,
+  SynEditTypes,
   SynExportHTML;
 
 function MakeGlobal (const S: string): hGlobal;
@@ -105,11 +110,6 @@ begin
   finally
     GlobalUnlock (Result)
   end
-end;
-
-function MakeGlobal (Value : integer) : hGlobal;
-begin
-  Result := MakeGlobal (Value, sizeof (integer))
 end;
 
 function MakeGlobal (var P; Size : integer) : hGlobal;
@@ -142,22 +142,70 @@ begin
   end;
 end;
 
+function GetInternalClipText: TArray<string>;
+var
+  Data: THandle;
+  TempS: string;
+begin
+  Result := [];
+  if not Clipboard.HasFormat(SynEditClipboardFormat) then Exit;
+  Data := Clipboard.GetAsHandle(SynEditClipboardFormat);
+
+  if Data <> 0 then
+    try
+      TempS := PChar(GlobalLock(Data));
+      Result := TempS.Split([IntClipFormatDelimiter]);
+    finally
+      GlobalUnlock(Data);
+    end;
+end;
+
+
 constructor TSynEditDataObject.Create(ASynEdit : TObject);
+var
+  Ed: TCustomSynEdit;
+
+  function DelimitedText(Delimiter: string): string;
+  var
+    Index: Integer;
+    Sel: TSynSelection;
+  begin
+    Result := '';
+    for Index := 0 to Ed.Selections.Count - 1 do
+    begin
+      Sel := Ed.Selections[Index];
+      if Sel.IsEmpty then
+        Result := Result + Ed.Lines[Sel.Caret.Line - 1]
+      else
+        Result := Result + Ed.SelectionText(Sel);
+
+      if Index < Ed.Selections.Count - 1 then
+        Result := Result + Delimiter;
+    end;
+  end;
+
 begin
   inherited Create;
-  MemoryStream := TMemoryStream.Create;
-  HtmlStream := TMemoryStream.Create;
+
+  Ed := ASynEdit as TCustomSynEdit;
+
   FFormatEtc := TList<TClipFormat>.Create;
+
   FFormatEtc.Add(CF_UNICODETEXT);
-  FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
-  fText := (ASynEdit as TCustomSynEdit).SelText;
-  // TODO multicaret
-  MemoryStream.WriteData(1000);
+  FText := DelimitedText(SLineBreak);
+
+  if Ed.Selections.Count > 1 then
+  begin
+    FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
+    FInternalText := DelimitedText(IntClipFormatDelimiter);
+  end;
+
   if not (eoCopyPlainText in TCustomSynEdit(ASynEdit).Options) and
-    Assigned(TCustomSynEdit(ASynEdit).Highlighter)
+    Assigned(TCustomSynEdit(ASynEdit).Highlighter) and (FText <> '')
   then
   begin
     FFormatEtc.Add(HTMLClipboardFormat); // HTMLFormat
+    HtmlStream := TMemoryStream.Create;
     StreamHtml(ASynEdit, HtmlStream);
   end;
 end;
@@ -165,7 +213,6 @@ end;
 destructor TSynEditDataObject.Destroy;
 begin
   FFormatEtc.Free;
-  MemoryStream.Free;
   HtmlStream.Free;
   inherited Destroy
 end;
@@ -180,7 +227,7 @@ begin
     if FormatEtcIn.cfFormat = CF_UNICODETEXT then
       Medium.hGlobal := MakeGlobal(FText)
     else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
-      Medium.hGlobal := MakeGlobal(MemoryStream.Memory^, MemoryStream.Position)
+      Medium.hGlobal := MakeGlobal(FInternalText)
     else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) then
       Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position);
   except
@@ -196,6 +243,7 @@ end;
 procedure TSynEditDataObject.StreamHTML(Editor: TObject; Stream: TStream);
 var
   HTMLExport: TSynExporterHTML;
+  SL: TStringList;
   Ed: TCustomSynEdit;
 begin
   Ed := Editor as TCustomSynEdit;
@@ -205,8 +253,14 @@ begin
     HTMLExport.CreateHTMLFragment := True;
     HTMLExport.UseBackground := not (eoNoHTMLBackground in TCustomSynEdit(Editor).Options);
     HTMLExport.Highlighter := Ed.Highlighter;
-    HTMLExport.ExportRange(Ed.Lines, Ed.BlockBegin, Ed.BlockEnd);
-    HTMLExport.SaveToStream(Stream);
+    SL := TStringList.Create;
+    try
+      SL.Text := FText;
+      HTMLExport.ExportAll(SL);
+      HTMLExport.SaveToStream(Stream);
+    finally
+      SL.Free;
+    end;
     // Adding a terminating null byte to the Stream.
     Stream.WriteData(0, 1);
   finally

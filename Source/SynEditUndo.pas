@@ -250,6 +250,8 @@ end;
 
 procedure TSynEditUndo.BeginBlock(Editor: TControl);
 begin
+  if IsLocked then Exit;
+
   Inc(FBlockCount);
   if FBlockCount = 1 then // it was 0
   begin
@@ -257,13 +259,11 @@ begin
     // All undo items added until the matching EndBlock is called
     // will get the same change number and will be grouped together
     FBlockChangeNumber := NextChangeNumber;
-    if not IsLocked then
-    begin
-      // So that position is restored after Redo
-      FBlockSelRestoreItem := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
-      FBlockSelRestoreItem.ChangeNumber := FBlockChangeNumber;
-      FUndoList.Push(FBlockSelRestoreItem);
-    end;
+
+    // So that position is restored after Redo
+    FBlockSelRestoreItem := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
+    FBlockSelRestoreItem.ChangeNumber := FBlockChangeNumber;
+    FUndoList.Push(FBlockSelRestoreItem);
   end;
 end;
 
@@ -393,6 +393,8 @@ procedure TSynEditUndo.EndBlock(Editor: TControl);
 var
   Item: TSynCaretAndSelectionUndoItem;
 begin
+  if IsLocked then Exit;
+
   Assert(FBlockCount > 0);
   if FBlockCount > 0 then
   begin
@@ -402,7 +404,7 @@ begin
       if (FUndoList.Count > 0) and (FUndoList.Peek = FBlockSelRestoreItem) then
         // No undo items added from BlockBegin to BlockEnd
         FUndoList.Pop
-      else if not IsLocked then
+      else
       begin
         // So that position is restored after Redo
         Item := TSynCaretAndSelectionUndoItem.Create(Editor as TCustomSynEdit);
@@ -663,7 +665,10 @@ begin
   if Length(FSelections) > 0 then
     Editor.Selections.Restore(FSelections, FBaseIndex, FActiveIndex)
   else
+  begin
+    Editor.Selections.Clear;
     Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
+  end;
 end;
 
 { TSynLinesDeletedUndoItem }
