@@ -206,7 +206,7 @@ begin
           Options := SearchOptions.SetSynSearchOptions;
           HighligthtSearchTerm(SearchOptions.SearchText, SynEditor, SynEditor.SearchEngine, Options);
           DoSearchReplaceText(AReplace, SearchOptions.SearchBackwards);
-          SearchOptions.TempSearchFromCaret := TRUE;
+          SearchOptions.TempSearchFromCaret := True;
         end;
       end;
     finally
@@ -219,8 +219,15 @@ procedure TSearchReplaceDemoForm.ActionFileOpenExecute(Sender: TObject);
 begin
   if OpenDialogFile.Execute then
   begin
-    SynEditor.Lines.LoadFromFile(OpenDialogFile.FileName);
+    SynEditor.LockUndo;
+    try
+      SynEditor.Lines.LoadFromFile(OpenDialogFile.FileName);
+    finally
+      SynEditor.UnlockUndo;
+    end;
     SynEditor.ReadOnly := ofReadOnly in OpenDialogFile.Options;
+    SynEditor.ClearUndo;
+    SynEditor.Modified := False;
   end;
 end;
 

@@ -664,6 +664,7 @@ type
   TSynSelStorage = record
     Selections: TArray<TSynSelection>;
     BaseIndex, ActiveIndex :Integer;
+    procedure Clear;
   end;
 
   // Keeps the selections and is responsible for showing the carets
@@ -3603,5 +3604,12 @@ begin
 end;
 
 {$ENDREGION 'TSynCarets'}
+
+{ TSynSelStorage }
+
+procedure TSynSelStorage.Clear;
+begin
+  Selections := [];
+end;
 
 end.

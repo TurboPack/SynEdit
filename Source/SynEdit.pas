@@ -370,8 +370,7 @@ type
     FAdditionalWordBreakChars: TSysCharSet;
     FAdditionalIdentChars: TSysCharSet;
     FTextFormat: TSynTextFormat;
-    SelStartBeforeSearch: integer;
-    SelLengthBeforeSearch: integer;
+    FSelStorage: TSynSelStorage;
     FBracketsHighlight: TSynBracketsHighlight;
     FPasteArray: TArray<string>;
 
@@ -7112,6 +7111,7 @@ var
   Line: string;
   Sel: TSynSelection;
   Index: Integer;
+  SelStorage: TSynSelStorage;
 
 begin
   if not Assigned(fSearchEngine) then
@@ -7158,10 +7158,13 @@ begin
   else
     bEndUndoBlock := False;
   try
-    for Index := 0 to FSelections.Count - 1 do
+    FSelections.Store(SelStorage);
+    for Index := 0 to Length(SelStorage.Selections) - 1 do
     begin
       if ssoSelectedOnly in AOptions then begin
-        Sel := FSelections[Index].Normalized;
+        Sel := SelStorage.Selections[Index].Normalized;
+        if Sel.IsEmpty then Continue;
+
         ptStart := Sel.Start;
         ptEnd := Sel.Stop;
         // ignore the cursor position when searching in the selection
@@ -7218,21 +7221,18 @@ begin
           Inc(Result);
           // Select the text, so the user can see it in the OnReplaceText event
           // handler or as the search result.
-          ptCurrent.Char := nFound;
-          BlockBegin := ptCurrent;
-          // Be sure to use the Ex version of CursorPos so that it appears in the middle if necessary
-          SetCaretXYEx(False, BufferCoord(1, ptCurrent.Line));
-          // It is not necessary to see changes without confirmation. It signicatntly slow down replace
-          if not (bReplaceAll) then
-              EnsureCursorPosVisibleEx(True);
-          Inc(ptCurrent.Char, nSearchLen);
-          BlockEnd := ptCurrent;
+          // It is not necessary to see changes if replacing without confirmation.
+          // It signicatntly slow down replace
+          ptCurrent.Char := nFound + nSearchLen;
+          FSelections.Clear;
           if bBackward then
-            InternalCaretXY := BlockBegin
+            SetCaretAndSelection(BufferCoord(nFound, ptCurrent.Line), ptCurrent,
+            BufferCoord(nFound, ptCurrent.Line), not bReplaceAll, not bReplaceAll)
           else
-            InternalCaretXY := ptCurrent;
+            SetCaretAndSelection(ptCurrent, BufferCoord(nFound , ptCurrent.Line),
+            ptCurrent, not bReplaceAll, not bReplaceAll);
           // If it's a search only we can leave the procedure now.
-          if not (bReplace or bReplaceAll) then exit;
+          if not (bReplace or bReplaceAll) then Exit;
           // Prompt and replace or replace all.  If user chooses to replace
           // all after prompting, turn off prompting.
           if bPrompt and Assigned(fOnReplaceText) then
@@ -7275,7 +7275,7 @@ begin
               if CaretY = ptEnd.Line then
               begin
                 Inc(ptEnd.Char, nReplaceLen - nSearchLen);
-                BlockEnd := ptEnd;
+                //BlockEnd := ptEnd;  // not sure what was the purpose of this
               end;
             end;
             //Fix new line ends
@@ -7283,7 +7283,7 @@ begin
               Inc(ptEnd.Line, nEOLCount);
           end;
           if not bReplaceAll then
-            exit;
+            Exit;
         end;
         // search next / previous line
         ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
@@ -7293,7 +7293,7 @@ begin
   finally
     if bReplaceAll and not bPrompt then DecPaintLock;
     if bEndUndoBlock then EndUndoBlock;
-    DoOnPaintTransient( ttAfter );
+    DoOnPaintTransient(ttAfter);
   end;
 end;
 
@@ -8228,17 +8228,17 @@ begin
     if Result then
     begin
       if Action is TSearchFindFirst then
-        TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine)
+        TSearchAction(Action).Enabled := not Lines.IsEmpty and assigned(fSearchEngine)
       else if Action is TSearchFind then
-        TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine)
+        TSearchAction(Action).Enabled := not Lines.IsEmpty and assigned(fSearchEngine)
       else if Action is TSearchReplace then
-        TSearchAction(Action).Enabled := (Text<>'') and assigned(fSearchEngine);
+        TSearchAction(Action).Enabled := not Lines.IsEmpty and assigned(fSearchEngine);
     end;
   end else if Action is TSearchFindNext then
   begin
     Result := Focused;
     if Result then
-      TSearchAction(Action).Enabled := (Text<>'')
+      TSearchAction(Action).Enabled := not Lines.IsEmpty
         and (TSearchFindNext(Action).SearchFind <> nil)
         and (TSearchFindNext(Action).SearchFind.Dialog.FindText <> '');
   end
@@ -9406,7 +9406,7 @@ procedure TCustomSynEdit.DoSearchFindFirstExecute(Action: TSearchFindFirst);
 begin
   OnFindBeforeSearch := Action.Dialog.OnFind;
   OnCloseBeforeSearch := Action.Dialog.OnClose;
-  SelStartBeforeSearch := SelStart; SelLengthBeforeSearch := SelLength;
+  FSelections.Store(FSelStorage);
 
   Action.Dialog.OnFind := FindDialogFindFirst;
   Action.Dialog.OnClose := FindDialogClose;
@@ -9444,17 +9444,13 @@ procedure TCustomSynEdit.FindDialogFindFirst(Sender: TObject);
 begin
   TFindDialog(Sender).CloseDialog;
 
-  if (SelStart = SelStartBeforeSearch) and (SelLength = SelLengthBeforeSearch) then
-  begin
-    SelStart := 0;
-    SelLength := 0;
-  end;
+  CaretXY := BufferCoord(1, 1);
 
   if Sender is TFindDialog then
-    if not SearchByFindDialog(TFindDialog(Sender)) and (SelStart = 0) and (SelLength = 0) then
+    if not SearchByFindDialog(TFindDialog(Sender)) then
     begin
-      SelStart := SelStartBeforeSearch;
-      SelLength := SelLengthBeforeSearch;
+      FSelections.Restore(FSelStorage);
+      FSelStorage.Clear;
     end;
 end;
 
@@ -9468,30 +9464,28 @@ function TCustomSynEdit.SearchByFindDialog(FindDialog: TFindDialog) : bool;
 var
   Options :TSynSearchOptions;
   ReplaceText, MessageText :String;
-  OldSelStart, OldSelLength: integer;
 begin
-  if (frReplaceAll in FindDialog.Options) then Options := [ssoReplaceAll]
-  else if (frReplace in FindDialog.Options) then Options := [ssoReplace]
-  else Options := [ssoSelectedOnly];
-
+  // If there is a selection apply to the selection only
+  Options := [ssoSelectedOnly];
+  if (frReplaceAll in FindDialog.Options) then Options := Options + [ssoReplaceAll]
+  else if (frReplace in FindDialog.Options) then Options := Options + [ssoReplace];
   if (frMatchCase in FindDialog.Options) then Options := Options + [ssoMatchCase];
   if (frWholeWord in FindDialog.Options) then Options := Options + [ssoWholeWord];
   if (not (frDown in FindDialog.Options)) then Options := Options + [ssoBackwards];
 
-  if (ssoSelectedOnly in Options)
-    then ReplaceText := ''
-    else ReplaceText := TReplaceDialog(FindDialog).ReplaceText;
+  ReplaceText := TReplaceDialog(FindDialog).ReplaceText;
 
-  OldSelStart := SelStart; OldSelLength := SelLength;
-  if (UpperCase(SelText) = UpperCase(FindDialog.FindText)) and not (frReplace in FindDialog.Options) then
-    SelStart := SelStart + SelLength
-  else
-    SelLength := 0;
+  if (UpperCase(SelText) = UpperCase(FindDialog.FindText)) and not (frReplace in FindDialog.Options)
+    or not (ssoSelectedOnly in Options)
+  then
+  begin
+    FSelections.Clear;
+    CaretXY := CaretXY;
+  end;
 
   Result := SearchReplace(FindDialog.FindText, ReplaceText, Options) > 0;
   if not Result then
   begin
-    SelStart := OldSelStart; SelLength := OldSelLength;
     if Assigned(OnSearchNotFound) then
       OnSearchNotFound(self, FindDialog.FindText)
     else
@@ -9499,11 +9493,6 @@ begin
       MessageText := Format(STextNotFound, [FindDialog.FindText]);
       ShowMessage(MessageText);
     end;
-  end
-  else if (frReplace in FindDialog.Options) then
-  begin
-    SelStart := SelStart - Length(FindDialog.FindText) - 1;
-    SelLength := Length(FindDialog.FindText) + 1;
   end;
 end;
 
