@@ -48,6 +48,7 @@ uses
   System.Generics.Collections,
   Vcl.Controls,
   SynEditMiscProcs,
+  SynEditMiscClasses,
   SynEditTextBuffer;
 
 type
@@ -104,8 +105,7 @@ type
   private
     FBlockBegin: TBufferCoord;
     FBlockEnd: TBufferCoord;
-    FSelections: TArray<TSynSelection>;
-    FBaseIndex, FActiveIndex: Integer;
+    SelStorage: TSynSelStorage;
   public
     procedure Undo(Editor: TCustomSynEdit); override;
     procedure Redo(Editor: TCustomSynEdit); override;
@@ -650,7 +650,7 @@ begin
   end
   else
   begin
-    Editor.Selections.Store(FSelections, FBaseIndex, FActiveIndex);
+    Editor.Selections.Store(SelStorage);
   end;
 end;
 
@@ -662,8 +662,8 @@ end;
 
 procedure TSynCaretAndSelectionUndoItem.Undo(Editor: TCustomSynEdit);
 begin
-  if Length(FSelections) > 0 then
-    Editor.Selections.Restore(FSelections, FBaseIndex, FActiveIndex)
+  if Length(SelStorage.Selections) > 0 then
+    Editor.Selections.Restore(SelStorage)
   else
   begin
     Editor.Selections.Clear;

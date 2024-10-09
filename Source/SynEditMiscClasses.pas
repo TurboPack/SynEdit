@@ -661,6 +661,11 @@ type
 
   {$REGION 'TSynSelections'}
 
+  TSynSelStorage = record
+    Selections: TArray<TSynSelection>;
+    BaseIndex, ActiveIndex :Integer;
+  end;
+
   // Keeps the selections and is responsible for showing the carets
   TSynSelections = class
   private
@@ -696,8 +701,8 @@ type
     procedure InvalidateSelection(Index: Integer);
     procedure InvalidateAll;
     //Storing and Restoring
-    procedure Store(out Selections: TArray<TSynSelection>; out BaseIndex, ActiveIndex: Integer);
-    procedure Restore(const Selections: TArray<TSynSelection>; const BaseIndex, ActiveIndex: Integer);
+    procedure Store(out SelStorage: TSynSelStorage);
+    procedure Restore(const [Ref] SelStorage: TSynSelStorage);
     // Adjust selections in response to editing events
     // Should only used by Synedit
     procedure LinesInserted(FirstLine, aCount: Integer);
@@ -3463,14 +3468,13 @@ begin
   end;
 end;
 
-procedure TSynSelections.Restore(const Selections: TArray<TSynSelection>;
-  const BaseIndex, ActiveIndex: Integer);
+procedure TSynSelections.Restore(const [Ref] SelStorage: TSynSelStorage);
 begin
   InvalidateAll;
   FSelections.Clear;
-  FSelections.AddRange(Selections);
-  FActiveSelIndex := ActiveIndex;
-  FBaseSelIndex := BaseIndex;
+  FSelections.AddRange(SelStorage.Selections);
+  FActiveSelIndex := SelStorage.ActiveIndex;
+  FBaseSelIndex := SelStorage.BaseIndex;
   InvalidateAll;
   TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection);
   CaretsChanged;
@@ -3536,12 +3540,11 @@ begin
   FSelections[FBaseSelIndex] := Value;
 end;
 
-procedure TSynSelections.Store(out Selections: TArray<TSynSelection>;
-  out BaseIndex, ActiveIndex: Integer);
+procedure TSynSelections.Store(out SelStorage: TSynSelStorage);
 begin
-  Selections := FSelections.ToArray;
-  BaseIndex := FBaseSelIndex;
-  ActiveIndex := FActiveSelIndex;
+  SelStorage.Selections := FSelections.ToArray;
+  SelStorage.BaseIndex := FBaseSelIndex;
+  SelStorage.ActiveIndex := FActiveSelIndex;
 end;
 
 {$ENDREGION 'TSynSelections'}
