@@ -8092,7 +8092,7 @@ begin
     for I := BB.Line to EndLine do
     begin
       Line := Lines[I - 1];
-      if Line <> '' then
+      if (Line <> '') or (I = EndLine) then
         Lines[I - 1] := Spaces + Line;
     end;
 
@@ -8102,6 +8102,7 @@ begin
       Inc(BB.Char, Spaces.Length);
     if (BE.Char > 1) or (BB.Line = BE.Line) then
       Inc(BE.Char, Spaces.Length);
+
     SetCaretAndSelection(OrgCaretPos, BB, BE);
   finally
     EndUndoBlock;
