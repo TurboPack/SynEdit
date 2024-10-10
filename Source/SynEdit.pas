@@ -731,8 +731,8 @@ type
     procedure LockUndo;
     procedure MoveDisplayPosAndSelection(const NewPos: TDisplayCoord;
       SelectionCmd: Boolean);
-    function BufferToDisplayPos(const p: TBufferCoord): TDisplayCoord;
-    function DisplayToBufferPos(const p: TDisplayCoord): TBufferCoord;
+    function BufferToDisplayPos(const BC: TBufferCoord): TDisplayCoord;
+    function DisplayToBufferPos(const DC: TDisplayCoord): TBufferCoord;
     function LineToRow(aLine: Integer): Integer;
     function RowToLine(aRow: Integer): Integer;
     function SelectionToDisplayCoord(var Sel: TSynSelection): TDisplayCoord;
@@ -3368,8 +3368,8 @@ begin
   Result := Value;
   Result.Char := Max(Result.Char, 1);
   Result.Line := MinMax(Result.Line, 1, Lines.Count);
-  if (Result.Line >= 1) and (Result.Line <= Lines.Count) then
-    Result.Char := Min(Result.Char, Length(Lines[Result.Line - 1]) + 1)
+  if Lines.Count > 0 then
+    Result.Char := Min(Result.Char, Lines[Result.Line - 1].Length + 1)
   else
     Result.Char := 1;
 end;
@@ -3954,8 +3954,18 @@ end;
 
 procedure TCustomSynEdit.SynSetText(const Value: string);
 begin
-  Lines.Text := Value;
-  UpdateScrollBars;
+  FSelections.Clear();
+  BeginUndoBlock;
+  try
+    IncPaintLock;
+    try
+      Lines.Text := Value;
+    finally
+      DecPaintLock;
+    end;
+  finally
+    EndUndoBlock;
+  end;
 end;
 
 procedure TCustomSynEdit.SetTopLine(Value: Integer);
@@ -6150,9 +6160,9 @@ begin
         end;
       ecEditorBottom, ecSelEditorBottom:
         begin
-          CaretNew := BufferCoord(1, Lines.Count);
-          if (CaretNew.Line > 0) then
-            CaretNew.Char := Length(Lines[CaretNew.Line - 1]) + 1;
+          CaretNew := BufferCoord(1, Max(1, Lines.Count));
+          if (Lines.Count > 0) then
+            CaretNew.Char := Lines[CaretNew.Line - 1].Length + 1;
           MoveCaretAndSelection(CaretNew, Command = ecSelEditorBottom);
         end;
       ecGotoXY, ecSelGotoXY:
@@ -8804,27 +8814,27 @@ begin
   BE.Line := XY.Line;
 end;
 
-function TCustomSynEdit.BufferToDisplayPos(const p: TBufferCoord): TDisplayCoord;
+function TCustomSynEdit.BufferToDisplayPos(const BC: TBufferCoord): TDisplayCoord;
 // BufferToDisplayPos takes a position in the text and transforms it into
 // the row and column it appears to be on the screen
 begin
-  Result := TDisplayCoord(p);
+  Result := TDisplayCoord(BC);
   if WordWrap then
     Result := fWordWrapPlugin.BufferToDisplayPos(TBufferCoord(Result));
   if UseCodeFolding then
     Result.Row := fAllFoldRanges.FoldLineToRow(Result.Row)
 end;
 
-function TCustomSynEdit.DisplayToBufferPos(const p: TDisplayCoord): TBufferCoord;
+function TCustomSynEdit.DisplayToBufferPos(const DC: TDisplayCoord): TBufferCoord;
 // DisplayToBufferPos takes a position on screen and transfrom it
-// into position of text
+// into a position of text
 begin
   if WordWrap then
-    Result := fWordWrapPlugin.DisplayToBufferPos(p)
+    Result := fWordWrapPlugin.DisplayToBufferPos(DC)
   else
-    Result := TBufferCoord(p);
+    Result := TBufferCoord(DC);
   if UseCodeFolding then
-    Result.Line := fAllFoldRanges.FoldRowToLine(p.Row);
+    Result.Line := fAllFoldRanges.FoldRowToLine(DC.Row);
 end;
 
 procedure TCustomSynEdit.DoLinesBeforeDeleted(FirstLine, Count: Integer);
