@@ -3463,6 +3463,8 @@ function TCustomSynEdit.SelectSameWord(const AWord: string; Start: TBufferCoord;
 var
   Engine, OldEngine: TSynEditSearchCustom;
   SearchOptions: TSynSearchOptions;
+  SelStorage: TSynSelStorage;
+  NewSel: TSynSelection;
 begin
   if AWord = '' then Exit(False);
 
@@ -3472,22 +3474,29 @@ begin
   try
     IncPaintLock;
     try
-      SearchOptions := [];
-      Include(SearchOptions, ssoWholeWord);
+      SearchOptions := [ssoWholeWord];
       if CaseSensitive then
         Include(SearchOptions, ssoMatchCase);
       if BackwardSearch  then
         Include(SearchOptions, ssoBackwards);
 
+      // SearchReplace will clear existing selections if successful
+      // So we need to store and restore
+      FSelections.Store(SelStorage);
       Result := SearchReplace(AWord, '', SearchOptions) > 0;
+
       if Result then
         FSelection.Normalize;
 
       if Result and AddSelection then
       begin
+        NewSel := FSelection;
+        FSelections.Restore(SelStorage);
+        FSelection := NewSel;
         if not FSelections.AddCaret(FSelection.Start) then
           // Try again. This time it will not fail
           FSelections.AddCaret(FSelection.Start);
+        FSelections.ActiveSelection := FSelection;
         // Deal with overlapping selections as if the range was mouse selected
         FSelections.MouseSelection(FSelection);
       end;
