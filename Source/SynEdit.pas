@@ -6053,6 +6053,9 @@ begin
         end;
       // horizontal caret movement or selection
       ecLeft, ecSelLeft, ecSelColumnLeft:
+        if not FSelection.IsEmpty and (Command = ecLeft) then
+          CaretXY := FSelection.Normalized.Start
+        else
         begin
           Caret := FSelections.BaseSelection.Start;
           MoveCaretHorz(-1, Command = ecSelLeft);
@@ -6060,6 +6063,9 @@ begin
             FSelections.ColumnSelection(Caret, CaretXY);
         end;
       ecRight, ecSelRight, ecSelColumnRight:
+        if not FSelection.IsEmpty and (Command = ecRight) then
+          CaretXY := FSelection.Normalized.Stop
+        else
         begin
           Caret := FSelections.BaseSelection.Start;
           MoveCaretHorz(1, Command = ecSelRight);
