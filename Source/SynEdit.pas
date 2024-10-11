@@ -8228,7 +8228,10 @@ begin
 end;
 
 function TCustomSynEdit.UpdateAction(Action: TBasicAction): Boolean;
+var
+  IsEmpty: Boolean;
 begin
+  IsEmpty := (Lines.Count = 0) or (Lines.Count = 1) and (Lines[0] = '');
   if Action is TEditAction then
   begin
     Result := Focused;
@@ -8247,25 +8250,22 @@ begin
       else if Action is TEditSelectAll then
         TEditAction(Action).Enabled := True;
     end;
-  end else if Action is TSearchAction then
+  end else if (Action is TSearchAction) or (Action is TSearchFindNext) then
   begin
     Result := Focused;
     if Result then
     begin
       if Action is TSearchFindFirst then
-        TSearchAction(Action).Enabled := not Lines.IsEmpty and assigned(fSearchEngine)
+        TSearchAction(Action).Enabled := not IsEmpty and Assigned(fSearchEngine)
       else if Action is TSearchFind then
-        TSearchAction(Action).Enabled := not Lines.IsEmpty and assigned(fSearchEngine)
+        TSearchAction(Action).Enabled := not IsEmpty and Assigned(fSearchEngine)
       else if Action is TSearchReplace then
-        TSearchAction(Action).Enabled := not Lines.IsEmpty and assigned(fSearchEngine);
+        TSearchAction(Action).Enabled := not IsEmpty and Assigned(fSearchEngine)
+      else if Action is TSearchFindNext then
+        TSearchAction(Action).Enabled := not IsEmpty and Assigned(fSearchEngine)
+          and (TSearchFindNext(Action).SearchFind <> nil)
+          and (TSearchFindNext(Action).SearchFind.Dialog.FindText <> '');
     end;
-  end else if Action is TSearchFindNext then
-  begin
-    Result := Focused;
-    if Result then
-      TSearchAction(Action).Enabled := not Lines.IsEmpty
-        and (TSearchFindNext(Action).SearchFind <> nil)
-        and (TSearchFindNext(Action).SearchFind.Dialog.FindText <> '');
   end
   else
     Result := inherited UpdateAction(Action);
