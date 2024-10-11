@@ -675,7 +675,7 @@ type
     procedure Clear;
     procedure ClearAll;
     procedure ClearBookMark(BookMark: Integer);
-    procedure ClearSelection;
+    procedure DeleteSelections;
     procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
     procedure ClearUndo;
@@ -1424,7 +1424,7 @@ begin
     BeginUndoBlock;
     try
       CopyToClipboard;
-      ClearSelection;
+      DeleteSelections;
     finally
       EndUndoBlock;
     end;
@@ -2104,7 +2104,7 @@ begin
         finally
           Exclude(fStateFlags, sfOleDragSource);
           if dwEffect = DROPEFFECT_MOVE then
-            ClearSelection;
+            SelText := '';
         end;
         Exit;
       end else begin
@@ -6055,7 +6055,7 @@ begin
           else
             FSelections.Clear(ksKeepBase);
         end;
-      ecDeleteSelection:
+      ecDeleteSelections:
         begin
           SelText := '';
         end;
@@ -6708,10 +6708,10 @@ begin
   UpdateScrollBars;
 end;
 
-procedure TCustomSynEdit.ClearSelection;
+procedure TCustomSynEdit.DeleteSelections;
 begin
   if not FSelections.IsEmpty then
-    CommandProcessor(ecDeleteSelection, ' ', nil);
+    CommandProcessor(ecDeleteSelections, ' ', nil);
 end;
 
 procedure TCustomSynEdit.ClearTrackChanges;
@@ -8201,7 +8201,7 @@ begin
       else if Action is TEditPaste then
         CommandProcessor(ecPaste, ' ', nil)
       else if Action is TEditDelete then
-        ClearSelection
+        DeleteSelections
       else if Action is TEditUndo then
         CommandProcessor(ecUndo, ' ', nil)
       else if Action is TEditSelectAll then

@@ -207,7 +207,7 @@ const
   ecSelectColumn       = 150;
 
   ecClearSelections    = 800;
-  ecDeleteSelection   = 801; // Internal command
+  ecDeleteSelections  = 801; // Internal command
   ecSelColumnLeft      = ecLeft + ecSelectColumn;
   ecSelColumnRight     = ecRight + ecSelectColumn;
   ecSelColumnUp        = ecUp + ecSelectColumn;
@@ -1128,7 +1128,7 @@ begin
   SynCommandsInfo.Add(ecFoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecUnfoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecClearSelections, TSynCommandInfo.Create(ckStandard, False));
-  SynCommandsInfo.Add(ecDeleteSelection, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecDeleteSelections, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecSelColumnLeft, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnRight, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnUp, TSynCommandInfo.Create(ckStandard, False));
