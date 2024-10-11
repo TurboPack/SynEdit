@@ -1105,10 +1105,10 @@ begin
   SynCommandsInfo.Add(ecBlockUnindent, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecTab, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecShiftTab, TSynCommandInfo.Create(ckMultiCaret, True));
-  SynCommandsInfo.Add(ecUpperCase, TSynCommandInfo.Create(ckMultiCaret, False));
-  SynCommandsInfo.Add(ecLowerCase, TSynCommandInfo.Create(ckMultiCaret, False));
-  SynCommandsInfo.Add(ecToggleCase, TSynCommandInfo.Create(ckMultiCaret, False));
-  SynCommandsInfo.Add(ecTitleCase, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecUpperCase, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecLowerCase, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecToggleCase, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecTitleCase, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecString, TSynCommandInfo.Create(ckMultiCaret, False));
   SynCommandsInfo.Add(ecAutoCompletion, TSynCommandInfo.Create(ckSingleCaret, False));
   SynCommandsInfo.Add(ecCopyLineUp, TSynCommandInfo.Create(ckMultiCaret, True));

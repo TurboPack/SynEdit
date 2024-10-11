@@ -1419,7 +1419,7 @@ end;
 
 procedure TCustomSynEdit.CutToClipboard;
 begin
-  if not ReadOnly and SelAvail then
+  if not ReadOnly then
   begin
     BeginUndoBlock;
     try
@@ -1672,7 +1672,7 @@ end;
 
 function TCustomSynEdit.GetSelAvail: Boolean;
 begin
-  Result := not FSelections.IsEmpty;
+  Result := not FSelection.IsEmpty;
 end;
 
 function TCustomSynEdit.GetSelText: string;
@@ -4587,7 +4587,7 @@ begin
   //Added check for focused to prevent caret disappearing problem
   if not (Focused or FAlwaysShowCaret) then
     FCarets.HideCarets;
-  if FHideSelection and SelAvail then
+  if FHideSelection and not FSelections.IsEmpty then
     InvalidateSelection;
 end;
 
@@ -4624,7 +4624,7 @@ begin
   CommandProcessor(ecGotFocus, #0, nil);
 
   InitializeCaret;
-  if FHideSelection and SelAvail then
+  if FHideSelection and not FSelections.IsEmpty then
     InvalidateSelection;
 end;
 
@@ -6542,7 +6542,7 @@ begin
         end;
       ecCut:
         begin
-          if (not ReadOnly) and SelAvail then
+          if not ReadOnly then
             CutToClipboard;
         end;
       ecCopy:
@@ -6710,7 +6710,7 @@ end;
 
 procedure TCustomSynEdit.ClearSelection;
 begin
-  if SelAvail then
+  if not FSelections.IsEmpty then
     CommandProcessor(ecDeleteSelection, ' ', nil);
 end;
 
@@ -7151,7 +7151,7 @@ begin
   bReplace := (ssoReplace in AOptions);
   bReplaceAll := (ssoReplaceAll in AOptions);
   bFromCursor := not (ssoEntireScope in AOptions);
-  if not SelAvail then Exclude(AOptions, ssoSelectedOnly);
+  if FSelections.IsEmpty then Exclude(AOptions, ssoSelectedOnly);
   //  translate \n and \t to real chars for regular expressions
   sReplace := fSearchEngine.PreprocessReplaceExpression(AReplace);
 
@@ -8201,7 +8201,7 @@ begin
       else if Action is TEditPaste then
         CommandProcessor(ecPaste, ' ', nil)
       else if Action is TEditDelete then
-        CommandProcessor(ecDeleteChar, ' ', nil)
+        ClearSelection
       else if Action is TEditUndo then
         CommandProcessor(ecUndo, ' ', nil)
       else if Action is TEditSelectAll then
@@ -8238,13 +8238,13 @@ begin
     if Result then
     begin
       if Action is TEditCut then
-        TEditAction(Action).Enabled := SelAvail and not ReadOnly
+        TEditAction(Action).Enabled := not (IsEmpty or ReadOnly)
       else if Action is TEditCopy then
-        TEditAction(Action).Enabled := SelAvail
+        TEditAction(Action).Enabled := not IsEmpty
       else if Action is TEditPaste then
         TEditAction(Action).Enabled := CanPaste
       else if Action is TEditDelete then
-        TEditAction(Action).Enabled := not ReadOnly
+        TEditAction(Action).Enabled := not (FSelections.IsEmpty or ReadOnly)
       else if Action is TEditUndo then
         TEditAction(Action).Enabled := CanUndo
       else if Action is TEditSelectAll then
