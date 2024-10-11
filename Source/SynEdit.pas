@@ -3496,7 +3496,6 @@ begin
         if not FSelections.AddCaret(FSelection.Start) then
           // Try again. This time it will not fail
           FSelections.AddCaret(FSelection.Start);
-        FSelections.ActiveSelection := FSelection;
         // Deal with overlapping selections as if the range was mouse selected
         FSelections.MouseSelection(FSelection);
       end;
@@ -6626,7 +6625,7 @@ begin
       ecUnfoldLevel3: begin UncollapseLevel(3); end;
       ecFoldRegions: begin CollapseFoldType(FoldRegionType) end;
       ecUnfoldRegions: begin UnCollapseFoldType(FoldRegionType) end;
-      ecSelectMatchingText:
+      ecSelMatchingText:
         begin
           SelectMatchingText;
         end;

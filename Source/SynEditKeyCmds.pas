@@ -49,6 +49,7 @@ const
   // NOTE!  If you add an editor command, you must also update the
   //    EditorCommandStrs constant array in implementation section below, or the
   //    command will not show up in the IDE.
+  //
   //****************************************************************************
 
   // "Editor Commands".  Key strokes are translated from a table into these
@@ -82,11 +83,6 @@ const
   ecEditorTop       = 15;   // Move cursor to absolute beginning
   ecEditorBottom    = 16;   // Move cursor to absolute end
   ecGotoXY          = 17;   // Move cursor to specific coordinates, Data = PPoint
-
-//******************************************************************************
-// Maybe the command processor should just take a boolean that signifies if
-// selection is affected or not?
-//******************************************************************************
 
   ecSelection       = 100;  // Add this to ecXXX command to get equivalent
                             // command, but with selection enabled. This is not
@@ -218,7 +214,7 @@ const
   ecSelColumnDown      = ecDown + ecSelectColumn;
   ecSelColumnPageUp    = ecPageUp + ecSelectColumn;
   ecSelColumnPageDown  = ecPageDown + ecSelectColumn;
-  ecSelectMatchingText = 802;
+  ecSelMatchingText    = 802;
   ecCaretsAtLineEnds   = 803;
 
   ecUserFirst       = 1001; // Start of user-defined commands
@@ -279,11 +275,9 @@ type
   public
     constructor Create(AOwner: TPersistent);
     function Add: TSynEditKeyStroke;
-//++ CodeFolding
     procedure AddKey(const ACmd: TSynEditorCommand; const AKey: word;
        const AShift: TShiftState; const AKey2: word = 0;
        const AShift2: TShiftState = []);
-//-- CodeFolding
     procedure Assign(Source: TPersistent); override;
     function FindCommand(Cmd: TSynEditorCommand): integer;
     function FindKeycode(Code: word; SS: TShiftState): integer;
@@ -327,9 +321,7 @@ uses
 { Command mapping routines }
 
 const
-//++ CodeFolding
   EditorCommandStrs: array[0..119] of TIdentMapEntry = (
-//-- CodeFolding
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
     (Value: ecRight; Name: 'ecRight'),
@@ -442,7 +434,7 @@ const
     (Value: ecUnfoldLevel3; Name:'ecUnfoldLevel3'),
     (Value: ecFoldRegions; Name:'ecFoldRanges'),
     (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
-    // Multi-cursor
+    // Multi-caret
     (Value: ecClearSelections; Name:'ecClearSelections'),
     (Value: ecSelColumnLeft; Name:'ecSelColumnLeft'),
     (Value: ecSelColumnRight; Name:'ecSelColumnRight'),
@@ -450,7 +442,7 @@ const
     (Value: ecSelColumnDown; Name:'ecSelColumnDown'),
     (Value: ecSelColumnPageUp; Name:'ecSelColumnPageUp'),
     (Value: ecSelColumnPageDown; Name:'ecSelColumnPageDown'),
-    (Value: ecSelectMatchingText; Name:'ecSelectAllMatching'),
+    (Value: ecSelMatchingText; Name:'ecSelMatchingText'),
     (Value: ecCaretsAtLineEnds; Name:'ecCaretsAtLineEnds')
     );
 
@@ -890,7 +882,7 @@ begin
   AddKey(ecSelColumnDown, SYNEDIT_DOWN, [ssShift, ssAlt]);
   AddKey(ecSelColumnPageUp, SYNEDIT_PRIOR, [ssShift, ssAlt]);
   AddKey(ecSelColumnPageDown, SYNEDIT_NEXT, [ssShift, ssAlt]);
-  AddKey(ecSelectMatchingText, Ord('W'), [ssShift, ssCtrl]);
+  AddKey(ecSelMatchingText, Ord('W'), [ssShift, ssCtrl]);
   AddKey(ecCaretsAtLineEnds, SYNEDIT_END, [ssAlt]);
 end;
 
@@ -1143,7 +1135,7 @@ begin
   SynCommandsInfo.Add(ecSelColumnDown, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnPageUp, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnPageDown, TSynCommandInfo.Create(ckStandard, False));
-  SynCommandsInfo.Add(ecSelectMatchingText, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelMatchingText, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecCaretsAtLineEnds, TSynCommandInfo.Create(ckStandard, False));
 end;
 
