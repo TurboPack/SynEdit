@@ -987,7 +987,7 @@ type
     property Align;
     property Anchors;
     property DoubleBuffered;
-    property CaseSensitive;
+    property CaseSensitive default False;
     property Constraints;
     property Color;
     property ActiveLineColor;
