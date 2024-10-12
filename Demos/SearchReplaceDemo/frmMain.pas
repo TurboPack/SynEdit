@@ -283,17 +283,11 @@ end;
 
 procedure TSearchReplaceDemoForm.ActionSearchNextExecute(Sender: TObject);
 begin
-  if SearchOptions.SearchSelectionOnly and (SynEditor.SelText = SearchOptions.SearchText) then
-    SynEditor.CaretXY := SynEditor.BlockEnd;
-
   DoSearchReplaceText(False, False);
 end;
 
 procedure TSearchReplaceDemoForm.ActionSearchPrevExecute(Sender: TObject);
 begin
-  if SearchOptions.SearchSelectionOnly and (SynEditor.SelText = SearchOptions.SearchText) then
-    SynEditor.CaretXY := SynEditor.BlockBegin;
-
   DoSearchReplaceText(False, True);
 end;
 
