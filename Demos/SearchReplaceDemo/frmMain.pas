@@ -317,7 +317,7 @@ procedure TSearchReplaceDemoForm.SynEditorProcessCommand(Sender: TObject; var
 begin
   if (Command <> ecLostFocus) and (Command <> ecGotFocus) then
     SearchOptions.InitSearch;
-  if Command = ecClearSelections then
+  if Command = ecCancelSelections then
      ClearSearchHighlight(SynEditor);
 end;
 

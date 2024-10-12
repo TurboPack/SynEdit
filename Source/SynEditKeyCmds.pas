@@ -206,8 +206,8 @@ const
   // Multi-caret
   ecSelectColumn       = 150;
 
-  ecClearSelections    = 800;
-  ecDeleteSelections  = 801; // Internal command
+  ecCancelSelections   = 800;
+  ecDeleteSelections   = 801; // Internal command
   ecSelColumnLeft      = ecLeft + ecSelectColumn;
   ecSelColumnRight     = ecRight + ecSelectColumn;
   ecSelColumnUp        = ecUp + ecSelectColumn;
@@ -435,7 +435,7 @@ const
     (Value: ecFoldRegions; Name:'ecFoldRanges'),
     (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
     // Multi-caret
-    (Value: ecClearSelections; Name:'ecClearSelections'),
+    (Value: ecCancelSelections; Name:'ecCancelSelections'),
     (Value: ecSelColumnLeft; Name:'ecSelColumnLeft'),
     (Value: ecSelColumnRight; Name:'ecSelColumnRight'),
     (Value: ecSelColumnUp; Name:'ecSelColumnUp'),
@@ -875,7 +875,7 @@ begin
   AddKey(ecUnfoldLevel2, Ord('K'), [ssCtrl, ssShift], Ord('2'), [ssCtrl, ssShift]);
   AddKey(ecUnfoldLevel3, Ord('K'), [ssCtrl, ssShift], Ord('3'), [ssCtrl, ssShift]);
   // Multi-caret
-  AddKey(ecClearSelections, SYNEDIT_ESCAPE, []);
+  AddKey(ecCancelSelections, SYNEDIT_ESCAPE, []);
   AddKey(ecSelColumnLeft, SYNEDIT_LEFT, [ssShift, ssAlt]);
   AddKey(ecSelColumnRight, SYNEDIT_RIGHT, [ssShift, ssAlt]);
   AddKey(ecSelColumnUp, SYNEDIT_UP, [ssShift, ssAlt]);
@@ -1127,7 +1127,7 @@ begin
   SynCommandsInfo.Add(ecUnfoldLevel3, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecFoldRegions, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecUnfoldRegions, TSynCommandInfo.Create(ckStandard, False));
-  SynCommandsInfo.Add(ecClearSelections, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecCancelSelections, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecDeleteSelections, TSynCommandInfo.Create(ckMultiCaret, True));
   SynCommandsInfo.Add(ecSelColumnLeft, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSelColumnRight, TSynCommandInfo.Create(ckStandard, False));

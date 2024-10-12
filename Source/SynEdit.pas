@@ -6051,10 +6051,10 @@ begin
   IncPaintLock;
   try
     case Command of
-      ecClearSelections:
+      ecCancelSelections:
         begin
           if FSelections.Count = 1 then
-            CaretXY := CaretXY // clears selection
+            CaretXY := CaretXY // removes selection
           else
             FSelections.Clear(ksKeepBase);
         end;
