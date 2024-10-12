@@ -90,12 +90,12 @@ Each internal command has information attached of the following type:
 ```pascal
   TSynCommandKind = (ckStandard, ckSingleCaret, ckMultiCaret);
 ```
-Multi-caret commands are executing once per caret/selection.  Single caret commands cancel
-multiple carets before executing keeping the base selection.  Standard commands are executed 
+Multi-caret commands are executed once per caret/selection.  Single caret commands cancel
+multiple carets before executing, keeping the base selection.  Standard commands are executed 
 once as before.
 
 TCustomSynEdit.CommandProcessor is responsible for executing the commands according to 
-their kind. Note thoug, that executing commands with TCustomSynEdit.ExecuteCommand only affects
+their kind. Note though, that executing commands with TCustomSynEdit.ExecuteCommand only affects
 the active selection.
 
 ## Compatibility with earlier versions
@@ -125,9 +125,9 @@ var
 ### Search and replace
 
 TCustomSynEdit.SearchReplace works with multiple selections correctly, but if you have 
-developed search and replace code that uses this routine, you may need to make adjustments to 
-account for  multiple selections.  The SearchReplaceDemo has been updated and enhanced to serve
-as a guide.
+developed complex search and replace code that uses this routine, you may need to make
+adjustments to account for  multiple selections.  The SearchReplaceDemo has been updated
+and enhanced to serveas a guide.
 
 TCustomSynEdit.SearchReplace has been significantly refactored and now an overload is 
 available:
@@ -145,3 +145,8 @@ With the second overload:
 - if Options include  ssoSelection and you provide a valid Start parameter and 
   Stop = TBufferCoord.Invalid then search/replace take place within the multiple selections, but 
   after/before the Start depending on the option ssoBackwards.
+
+  ### Printing and previewing 
+
+  Printing and previewing does not yet support multiple selections, but they should work with
+  the active selection as before.
