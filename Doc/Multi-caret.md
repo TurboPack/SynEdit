@@ -146,7 +146,7 @@ With the second overload:
   Stop = TBufferCoord.Invalid then search/replace take place within the multiple selections, but 
   after/before the Start depending on the option ssoBackwards.
 
-  ### Printing and previewing 
+### Printing and previewing 
 
-  Printing and previewing does not yet support multiple selections, but they should work with
-  the active selection as before.
+Printing and previewing does not yet support multiple selections, but they should work with
+the active selection as before.
