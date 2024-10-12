@@ -7121,22 +7121,147 @@ function TCustomSynEdit.SearchReplace(const ASearch, AReplace: string;
   AOptions: TSynSearchOptions): Integer;
 var
   ptStart, ptEnd: TBufferCoord; // start and end of the search range
-  lnStart, lnEnd: Integer;  // the part of the line that is searched
   ptCurrent: TBufferCoord; // current search position
-  nSearchLen, nReplaceLen, n, nFound: integer;
-  nInLine, nEOLCount, i: integer;
+  nEOLCount, i: integer;
   bBackward, bFromCursor: boolean;
   bPrompt: boolean;
   bReplace, bReplaceAll: boolean;
   bEndUndoBlock: boolean;
-  nAction: TSynReplaceAction;
-  iResultOffset: Integer;
   sReplace: string;
-  Line: string;
-  Sel: TSynSelection;
-  Index: Integer;
-  SelStorage: TSynSelStorage;
 
+  function ProcessTextRange(const ptStart: TBufferCoord; ptCurrent: TBufferCoord;
+    var ptEnd: TBufferCoord): Integer;
+  var
+    lnStart, lnEnd: Integer;  // the part of the line that is searched
+    nSearchLen, nReplaceLen, n, nFound: integer;
+    nInLine: integer;
+    nAction: TSynReplaceAction;
+    iResultOffset: Integer;
+    Line: string;
+  begin
+    Result := 0;
+    nReplaceLen := 0;
+    while (ptCurrent.Line >= ptStart.Line) and (ptCurrent.Line <= ptEnd.Line) do
+    begin
+      Line := Lines[ptCurrent.Line - 1];
+      if ptCurrent.Line = ptStart.Line then
+        lnStart := ptStart.Char
+      else
+        lnStart := 1;
+
+      if ptCurrent.Line = ptEnd.Line then
+        lnEnd := ptEnd.Char
+      else
+        lnEnd := Length(Line) + 1;
+
+      if lnEnd <= lnStart then
+      begin
+        ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
+        Continue;
+      end;
+      nInLine := fSearchEngine.FindAll(Line, lnStart, lnEnd);
+      iResultOffset := 0;
+      if bBackward then
+        n := Pred(fSearchEngine.ResultCount)
+      else
+        n := 0;
+      // Operate on all results in this line.
+      while nInLine > 0 do
+      begin
+        // An occurrence may have been replaced with a text of different length
+        nFound := fSearchEngine.Results[n] + iResultOffset;
+        nSearchLen := fSearchEngine.Lengths[n];
+        if bBackward then Dec(n) else Inc(n);
+        Dec(nInLine);
+
+        // We have a match
+        Inc(Result);
+        // Select the text, so the user can see it in the OnReplaceText event
+        // handler or as the search result.
+        // It is not necessary to see changes if replacing without confirmation.
+        // It signicatntly slow down replace
+        FSelections.Clear;
+        if bBackward then
+          SetCaretAndSelection(
+            BufferCoord(nFound, ptCurrent.Line),
+            BufferCoord(nFound + nSearchLen, ptCurrent.Line),
+            BufferCoord(nFound, ptCurrent.Line),
+            not bReplaceAll or bPrompt, not bReplaceAll or bPrompt)
+        else
+          SetCaretAndSelection(
+            BufferCoord(nFound + nSearchLen, ptCurrent.Line),
+            BufferCoord(nFound , ptCurrent.Line),
+            BufferCoord(nFound + nSearchLen, ptCurrent.Line),
+            not bReplaceAll or bPrompt, not bReplaceAll or bPrompt);
+        // If it's a search only we can leave the procedure now.
+        if not (bReplace or bReplaceAll) then Exit;
+        // Prompt and replace or replace all.  If user chooses to replace
+        // all after prompting, turn off prompting.
+        if bPrompt and Assigned(fOnReplaceText) then
+        begin
+          nAction := DoOnReplaceText(ASearch, sReplace, ptCurrent.Line, nFound);
+          if nAction = raCancel then
+          begin
+            Dec(Result);
+            Exit;
+          end;
+        end
+        else
+          nAction := raReplace;
+        if nAction = raSkip then
+          Dec(Result)
+        else begin
+          // user has been prompted and has requested to silently replace all
+          // so turn off prompting
+          if nAction = raReplaceAll then begin
+            if not bReplaceAll or bPrompt then
+            begin
+              bReplaceAll := True;
+              IncPaintLock;
+            end;
+            bPrompt := False;
+            if not bEndUndoBlock then
+              BeginUndoBlock;
+            bEndUndoBlock:= true;
+          end;
+          // Allow advanced substition in the search engine
+          SelText := fSearchEngine.Replace(SelText, sReplace);
+          nReplaceLen := CaretX - nFound;
+        end;
+        // fix the caret position and the remaining results
+        if not bBackward then begin
+          InternalCaretX := nFound + nReplaceLen;
+          if (nSearchLen <> nReplaceLen) and (nAction <> raSkip) then
+          begin
+            Inc(iResultOffset, nReplaceLen - nSearchLen);
+            if CaretY = ptEnd.Line then
+            begin
+              Inc(ptEnd.Char, nReplaceLen - nSearchLen);
+              //BlockEnd := ptEnd;  // not sure what was the purpose of this
+            end;
+          end;
+          //Fix new line ends
+          if nEOLCount > 0 then
+          begin
+            Inc(ptEnd.Line, nEOLCount);
+            if not bBackward then
+              // New lines have been entered, so the remaining matches will not
+              // be vaild and will be matched on the following line
+              Break;
+          end;
+        end;
+        if not bReplaceAll then
+          Exit;
+      end;
+      // search next / previous line
+      ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
+    end;
+  end;
+
+var
+  Sel: TSynSelection;
+  Index, J, LineAdjustment: Integer;
+  SelStorage: TSynSelStorage;
 begin
   if not Assigned(fSearchEngine) then
     raise ESynEditError.Create('No search engine has been assigned');
@@ -7157,21 +7282,20 @@ begin
 
   //count line ends
   nEOLCount := 0;
-  i := 1;
+  I := 1;
   repeat
-    i := Pos(WideCrLf, sReplace, i);
-    if i <> 0 then
+    I := Pos(WideCrLf, sReplace, I);
+    if I <> 0 then
     begin
-      i := i + Length(WideCrLf);
+      I := I + Length(WideCrLf);
       Inc(nEolCount);
     end;
-  until i = 0;
+  until I = 0;
   // initialize the search engine
   fSearchEngine.Options := AOptions;
   fSearchEngine.Pattern := ASearch;
   fSearchEngine.IsWordBreakFunction := IsWordBreakChar;
   // search while the current search position is inside of the search range
-  nReplaceLen := 0;
   DoOnPaintTransient(ttBefore);
   if bReplaceAll and not bPrompt then
   begin
@@ -7183,9 +7307,25 @@ begin
     bEndUndoBlock := False;
   try
     FSelections.Store(SelStorage);
-    for Index := 0 to Length(SelStorage.Selections) - 1 do
+    if not (ssoSelectedOnly in AOptions) then
     begin
-      if ssoSelectedOnly in AOptions then begin
+      ptStart.Char := 1;
+      ptStart.Line := 1;
+      ptEnd.Line := Lines.Count;
+      ptEnd.Char := Length(Lines[ptEnd.Line - 1]) + 1;
+      if bFromCursor then
+        if bBackward then ptEnd := CaretXY else ptStart := CaretXY;
+      if bBackward then ptCurrent := ptEnd else ptCurrent := ptStart;
+      Result := ProcessTextRange(ptStart, ptCurrent, ptEnd);
+    end
+    else
+    begin
+      for I := 0 to Length(SelStorage.Selections) - 1 do
+      begin
+        if bBackward then
+          Index := Length(SelStorage.Selections) - 1 - I
+        else
+          Index := I;
         Sel := SelStorage.Selections[Index].Normalized;
         if Sel.IsEmpty then Continue;
 
@@ -7196,123 +7336,22 @@ begin
           ptCurrent := ptEnd
         else
           ptCurrent := ptStart;
-      end
-      else
-      begin
-        ptStart.Char := 1;
-        ptStart.Line := 1;
-        ptEnd.Line := Lines.Count;
-        ptEnd.Char := Length(Lines[ptEnd.Line - 1]) + 1;
-        if bFromCursor then
-          if bBackward then ptEnd := CaretXY else ptStart := CaretXY;
-        if bBackward then ptCurrent := ptEnd else ptCurrent := ptStart;
-      end;
 
-      while (ptCurrent.Line >= ptStart.Line) and (ptCurrent.Line <= ptEnd.Line) do
-      begin
-        Line := Lines[ptCurrent.Line - 1];
-        if ptCurrent.Line = ptStart.Line then
-          lnStart := ptStart.Char
-        else
-          lnStart := 1;
+        Inc(Result, ProcessTextRange(ptStart, ptCurrent, ptEnd));
 
-        if ptCurrent.Line = ptEnd.Line then
-          lnEnd := ptEnd.Char
-        else
-          lnEnd := Length(Line) + 1;
-
-        if lnEnd <= lnStart then
+        LineAdjustment := ptEnd.Line - Sel.Stop.Line;
+        for J := Index + 1 to Length(SelStorage.Selections) - 1 do
         begin
-          ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
-          Continue;
+          // Adjust lines
+          Inc(SelStorage.Selections[J].Start.Line, LineAdjustment);
+          Inc(SelStorage.Selections[J].Stop.Line, LineAdjustment);
         end;
-        nInLine := fSearchEngine.FindAll(Line, lnStart, lnEnd);
-        iResultOffset := 0;
-        if bBackward then
-          n := Pred(fSearchEngine.ResultCount)
-        else
-          n := 0;
-        // Operate on all results in this line.
-        while nInLine > 0 do
-        begin
-          // An occurrence may have been replaced with a text of different length
-          nFound := fSearchEngine.Results[n] + iResultOffset;
-          nSearchLen := fSearchEngine.Lengths[n];
-          if bBackward then Dec(n) else Inc(n);
-          Dec(nInLine);
 
-          // We have a match
-          Inc(Result);
-          // Select the text, so the user can see it in the OnReplaceText event
-          // handler or as the search result.
-          // It is not necessary to see changes if replacing without confirmation.
-          // It signicatntly slow down replace
-          ptCurrent.Char := nFound + nSearchLen;
-          FSelections.Clear;
-          if bBackward then
-            SetCaretAndSelection(BufferCoord(nFound, ptCurrent.Line), ptCurrent,
-            BufferCoord(nFound, ptCurrent.Line), not bReplaceAll, not bReplaceAll)
-          else
-            SetCaretAndSelection(ptCurrent, BufferCoord(nFound , ptCurrent.Line),
-            ptCurrent, not bReplaceAll, not bReplaceAll);
-          // If it's a search only we can leave the procedure now.
-          if not (bReplace or bReplaceAll) then Exit;
-          // Prompt and replace or replace all.  If user chooses to replace
-          // all after prompting, turn off prompting.
-          if bPrompt and Assigned(fOnReplaceText) then
-          begin
-            nAction := DoOnReplaceText(ASearch, sReplace, ptCurrent.Line, nFound);
-            if nAction = raCancel then
-            begin
-              Dec(Result);
-              Exit;
-            end;
-          end
-          else
-            nAction := raReplace;
-          if nAction = raSkip then
-            Dec(Result)
-          else begin
-            // user has been prompted and has requested to silently replace all
-            // so turn off prompting
-            if nAction = raReplaceAll then begin
-              if not bReplaceAll or bPrompt then
-              begin
-                bReplaceAll := True;
-                IncPaintLock;
-              end;
-              bPrompt := False;
-              if bEndUndoBlock = false then
-                BeginUndoBlock;
-              bEndUndoBlock:= true;
-            end;
-            // Allow advanced substition in the search engine
-            SelText := fSearchEngine.Replace(SelText, sReplace);
-            nReplaceLen := CaretX - nFound;
-          end;
-          // fix the caret position and the remaining results
-          if not bBackward then begin
-            InternalCaretX := nFound + nReplaceLen;
-            if (nSearchLen <> nReplaceLen) and (nAction <> raSkip) then
-            begin
-              Inc(iResultOffset, nReplaceLen - nSearchLen);
-              if CaretY = ptEnd.Line then
-              begin
-                Inc(ptEnd.Char, nReplaceLen - nSearchLen);
-                //BlockEnd := ptEnd;  // not sure what was the purpose of this
-              end;
-            end;
-            //Fix new line ends
-            if nEOLCount > 0 then
-              Inc(ptEnd.Line, nEOLCount);
-          end;
-          if not bReplaceAll then
-            Exit;
-        end;
-        // search next / previous line
-        ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
+        if SelStorage.Selections[Index] = Sel then
+          SelStorage.Selections[Index].Stop := ptEnd
+        else
+          SelStorage.Selections[Index].Start := ptEnd
       end;
-      if not (ssoSelectedOnly in AOptions) then Break;
     end;
   finally
     if bReplaceAll and not bPrompt then DecPaintLock;

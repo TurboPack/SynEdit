@@ -114,6 +114,9 @@ end;
 function TSynEditRegexSearch.FindAll(const NewText: string;
   StartChar: Integer = 1; EndChar: Integer = 0): Integer;
 begin
+  if NewText = '' then
+    Exit(0);
+
   fMatchCollection :=  RegEx.Matches(NewText, StartChar);
 
   Result := fMatchCollection.Count;
