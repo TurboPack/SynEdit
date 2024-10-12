@@ -127,7 +127,7 @@ var
 TCustomSynEdit.SearchReplace works with multiple selections correctly, but if you have 
 developed complex search and replace code that uses this routine, you may need to make
 adjustments to account for  multiple selections.  The SearchReplaceDemo has been updated
-and enhanced to serveas a guide.
+and enhanced to serve as a guide.
 
 TCustomSynEdit.SearchReplace has been significantly refactored and now an overload is 
 available:
