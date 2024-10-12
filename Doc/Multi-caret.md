@@ -102,7 +102,8 @@ the active selection.
 
 There should be no major compatibility issues.   Your code using SynEdit should most likely
 compile with no changes or just minor changes.  The main incompatibility relates to the 
-removal of the old selection mode properties and commands.
+removal of the old selection mode properties and commands.  Also, the UpdateCaret method
+has been renamed to UpdateCarets.
 
 However if you need to account for multiple selections you need to bear the following in
 mind.
