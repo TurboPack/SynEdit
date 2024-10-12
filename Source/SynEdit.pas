@@ -765,7 +765,9 @@ type
     function RowColumnToPixels(const RowCol: TDisplayCoord): TPoint;
     function RowColToCharIndex(RowCol: TBufferCoord; LineBreak: string = SLineBreak): Integer;
     function SearchReplace(const ASearch, AReplace: string;
-      AOptions: TSynSearchOptions): Integer;
+      AOptions: TSynSearchOptions): Integer; overload;
+    function SearchReplace(const ASearch, AReplace: string;
+      AOptions: TSynSearchOptions; const Start, Stop: TBufferCoord): Integer; overload;
     procedure SelectAll;
     function SelectionText(Sel: TSynSelection): string;
     procedure SelectMatchingText;
@@ -868,6 +870,7 @@ type
     property SelAvail: Boolean read GetSelAvail;
     property SelLength: Integer read GetSelLength write SetSelLength;
     property SelText: string read GetSelText write SetSelText;
+    property Selection: TSynSelection read FSelection;
     property Selections: TSynSelections read FSelections;
     property StateFlags: TSynStateFlags read fStateFlags write fStateFlags;
     property Text: string read SynGetText write SynSetText;
@@ -7119,9 +7122,15 @@ end;
 
 function TCustomSynEdit.SearchReplace(const ASearch, AReplace: string;
   AOptions: TSynSearchOptions): Integer;
+begin
+  Result := SearchReplace(ASearch, AReplace, AOptions,
+    TBufferCoord.Invalid, TBufferCoord.Invalid);
+end;
+
+function TCustomSynEdit.SearchReplace(const ASearch, AReplace: string;
+  AOptions: TSynSearchOptions; const Start, Stop: TBufferCoord): Integer;
 var
   ptStart, ptEnd: TBufferCoord; // start and end of the search range
-  ptCurrent: TBufferCoord; // current search position
   nEOLCount, i: integer;
   bBackward, bFromCursor: boolean;
   bPrompt: boolean;
@@ -7129,7 +7138,7 @@ var
   bEndUndoBlock: boolean;
   sReplace: string;
 
-  function ProcessTextRange(const ptStart: TBufferCoord; ptCurrent: TBufferCoord;
+  function ProcessTextRange(const ptStart: TBufferCoord;
     var ptEnd: TBufferCoord): Integer;
   var
     lnStart, lnEnd: Integer;  // the part of the line that is searched
@@ -7137,26 +7146,32 @@ var
     nInLine: integer;
     nAction: TSynReplaceAction;
     iResultOffset: Integer;
+    CurrentLine: Integer;
     Line: string;
   begin
     Result := 0;
     nReplaceLen := 0;
-    while (ptCurrent.Line >= ptStart.Line) and (ptCurrent.Line <= ptEnd.Line) do
+    if bBackward then
+      CurrentLine := ptEnd.Line
+    else
+      CurrentLine := ptStart.Line;
+
+    while (CurrentLine >= ptStart.Line) and (CurrentLine <= ptEnd.Line) do
     begin
-      Line := Lines[ptCurrent.Line - 1];
-      if ptCurrent.Line = ptStart.Line then
+      Line := Lines[CurrentLine - 1];
+      if CurrentLine = ptStart.Line then
         lnStart := ptStart.Char
       else
         lnStart := 1;
 
-      if ptCurrent.Line = ptEnd.Line then
+      if CurrentLine = ptEnd.Line then
         lnEnd := ptEnd.Char
       else
         lnEnd := Length(Line) + 1;
 
       if lnEnd <= lnStart then
       begin
-        ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
+        CurrentLine := CurrentLine + IfThen(bBackward, -1, 1);
         Continue;
       end;
       nInLine := fSearchEngine.FindAll(Line, lnStart, lnEnd);
@@ -7183,15 +7198,15 @@ var
         FSelections.Clear;
         if bBackward then
           SetCaretAndSelection(
-            BufferCoord(nFound, ptCurrent.Line),
-            BufferCoord(nFound + nSearchLen, ptCurrent.Line),
-            BufferCoord(nFound, ptCurrent.Line),
+            BufferCoord(nFound, CurrentLine),
+            BufferCoord(nFound + nSearchLen, CurrentLine),
+            BufferCoord(nFound, CurrentLine),
             not bReplaceAll or bPrompt, not bReplaceAll or bPrompt)
         else
           SetCaretAndSelection(
-            BufferCoord(nFound + nSearchLen, ptCurrent.Line),
-            BufferCoord(nFound , ptCurrent.Line),
-            BufferCoord(nFound + nSearchLen, ptCurrent.Line),
+            BufferCoord(nFound + nSearchLen, CurrentLine),
+            BufferCoord(nFound , CurrentLine),
+            BufferCoord(nFound + nSearchLen, CurrentLine),
             not bReplaceAll or bPrompt, not bReplaceAll or bPrompt);
         // If it's a search only we can leave the procedure now.
         if not (bReplace or bReplaceAll) then Exit;
@@ -7199,7 +7214,7 @@ var
         // all after prompting, turn off prompting.
         if bPrompt and Assigned(fOnReplaceText) then
         begin
-          nAction := DoOnReplaceText(ASearch, sReplace, ptCurrent.Line, nFound);
+          nAction := DoOnReplaceText(ASearch, sReplace, CurrentLine, nFound);
           if nAction = raCancel then
           begin
             Dec(Result);
@@ -7224,7 +7239,7 @@ var
               BeginUndoBlock;
             bEndUndoBlock:= true;
           end;
-          // Allow advanced substition in the search engine
+          // Allow advanced substitution in the search engine
           SelText := fSearchEngine.Replace(SelText, sReplace);
           nReplaceLen := CaretX - nFound;
         end;
@@ -7254,7 +7269,7 @@ var
           Exit;
       end;
       // search next / previous line
-      ptCurrent.Line := ptCurrent.Line + IfThen(bBackward, -1, 1);
+      CurrentLine := CurrentLine + IfThen(bBackward, -1, 1);
     end;
   end;
 
@@ -7306,20 +7321,36 @@ begin
   else
     bEndUndoBlock := False;
   try
-    FSelections.Store(SelStorage);
-    if not (ssoSelectedOnly in AOptions) then
+    if Start.IsValid and Stop.IsValid then
+    begin
+      if Start > Stop then
+      begin
+        ptStart := Stop;
+        ptEnd :=  Start;
+      end
+      else
+      begin
+        ptStart := Start;
+        ptEnd :=  Stop;
+      end;
+      Result := ProcessTextRange(ptStart, ptEnd);
+    end
+    else if not (ssoSelectedOnly in AOptions) then
     begin
       ptStart.Char := 1;
       ptStart.Line := 1;
       ptEnd.Line := Lines.Count;
       ptEnd.Char := Length(Lines[ptEnd.Line - 1]) + 1;
       if bFromCursor then
-        if bBackward then ptEnd := CaretXY else ptStart := CaretXY;
-      if bBackward then ptCurrent := ptEnd else ptCurrent := ptStart;
-      Result := ProcessTextRange(ptStart, ptCurrent, ptEnd);
+        if bBackward then
+          ptEnd := CaretXY
+        else
+          ptStart := CaretXY;
+      Result := ProcessTextRange(ptStart, ptEnd);
     end
     else
     begin
+      FSelections.Store(SelStorage);
       for I := 0 to Length(SelStorage.Selections) - 1 do
       begin
         if bBackward then
@@ -7327,17 +7358,32 @@ begin
         else
           Index := I;
         Sel := SelStorage.Selections[Index].Normalized;
-        if Sel.IsEmpty then Continue;
 
         ptStart := Sel.Start;
         ptEnd := Sel.Stop;
-        // ignore the cursor position when searching in the selection
-        if bBackward then
-          ptCurrent := ptEnd
-        else
-          ptCurrent := ptStart;
+        // Ignore the cursor position when searching in the selection
+        // but take account of a valid Start
+        if Start.IsValid then
+        begin
+          // if you pass a valid start search from there
+          if bBackward then
+          begin
+            if Start <= Sel.Start then Continue;
+            ptEnd := TBufferCoord.Min(Start, ptEnd);
+          end
+          else
+          begin
+            if Start >= ptEnd then Continue;
+            ptStart := TBufferCoord.Max(Start, ptStart);
+          end;
+        end;
 
-        Inc(Result, ProcessTextRange(ptStart, ptCurrent, ptEnd));
+        if ptStart >= ptEnd then Continue;
+
+        Inc(Result, ProcessTextRange(ptStart, ptEnd));
+
+        if (Result > 0) and not bReplaceAll then
+          Break;
 
         LineAdjustment := ptEnd.Line - Sel.Stop.Line;
         for J := Index + 1 to Length(SelStorage.Selections) - 1 do
