@@ -7242,27 +7242,27 @@ var
           // Allow advanced substitution in the search engine
           SelText := fSearchEngine.Replace(SelText, sReplace);
           nReplaceLen := CaretX - nFound;
-        end;
-        // fix the caret position and the remaining results
-        if not bBackward then begin
-          InternalCaretX := nFound + nReplaceLen;
-          if (nSearchLen <> nReplaceLen) and (nAction <> raSkip) then
-          begin
-            Inc(iResultOffset, nReplaceLen - nSearchLen);
-            if CaretY = ptEnd.Line then
+          // fix the caret position and the remaining results
+          if not bBackward then begin
+            InternalCaretX := nFound + nReplaceLen;
+            if nSearchLen <> nReplaceLen then
             begin
-              Inc(ptEnd.Char, nReplaceLen - nSearchLen);
-              //BlockEnd := ptEnd;  // not sure what was the purpose of this
+              Inc(iResultOffset, nReplaceLen - nSearchLen);
+              if CaretY = ptEnd.Line then
+              begin
+                Inc(ptEnd.Char, nReplaceLen - nSearchLen);
+                //BlockEnd := ptEnd;  // not sure what was the purpose of this
+              end;
             end;
-          end;
-          //Fix new line ends
-          if nEOLCount > 0 then
-          begin
-            Inc(ptEnd.Line, nEOLCount);
-            if not bBackward then
-              // New lines have been entered, so the remaining matches will not
-              // be vaild and will be matched on the following line
-              Break;
+            //Fix new line ends
+            if nEOLCount > 0 then
+            begin
+              Inc(ptEnd.Line, nEOLCount);
+              if not bBackward then
+                // New lines have been entered, so the remaining matches will not
+                // be vaild and will be matched on the following line
+                Break;
+            end;
           end;
         end;
         if not bReplaceAll then
