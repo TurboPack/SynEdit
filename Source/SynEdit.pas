@@ -7150,7 +7150,6 @@ var
     Line: string;
   begin
     Result := 0;
-    nReplaceLen := 0;
     if bBackward then
       CurrentLine := ptEnd.Line
     else
