@@ -287,6 +287,7 @@ type
     procedure WMImeNotify(var Msg: TMessage); message WM_IME_NOTIFY;
     procedure WMImeRequest(var Message: TMessage); message WM_IME_REQUEST;
     procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
+    procedure WMPaint(var Message: TWMPaint); message WM_PAINT;
     procedure WMSetCursor(var Msg: TWMSetCursor); message WM_SETCURSOR;
     procedure WMSetFocus(var Msg: TWMSetFocus); message WM_SETFOCUS;
     procedure WMSize(var Msg: TWMSize); message WM_SIZE;
@@ -2358,41 +2359,39 @@ begin
     1, DisplayRowCount);
 
   // Now paint everything while the caret is hidden.
+  // UpdateCarets will be called by the overwritten WM_PAINT event handler;
   FCarets.HideCarets;
-  try
-    //Create the RenderTarget
-    RT := TSynDWrite.RenderTarget;
-    RT.BindDC(Canvas.Handle, rcClip);
-    RT.BeginDraw;
-    RT.SetTransform(TD2DMatrix3X2F.Translation(-rcClip.Left, -rcClip.Top));
 
-    // First paint the gutter area if it was (partly) invalidated.
-    if (rcClip.Left < fGutterWidth) then
-    begin
-      rcDraw := rcClip;
-      rcDraw.Right := fGutterWidth;
-      PaintGutter(RT, rcDraw, nL1, nL2);
-    end;
+  //Create the RenderTarget
+  RT := TSynDWrite.RenderTarget;
+  RT.BindDC(Canvas.Handle, rcClip);
+  RT.BeginDraw;
+  RT.SetTransform(TD2DMatrix3X2F.Translation(-rcClip.Left, -rcClip.Top));
 
-    // Then paint the text area if it was (partly) invalidated.
-    if (rcClip.Right > fGutterWidth) then
-    begin
-      rcDraw := rcClip;
-      rcDraw.Left := Max(rcDraw.Left, fGutterWidth);
-      PaintTextLines(RT, rcDraw, nL1, nL2);
-    end;
-
-    // If there was a problem rectreate the RenderTarget
-    if RT.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
-
-    PluginsAfterPaint(Canvas, rcClip, nL1, nL2);
-
-    // If there is a custom paint handler call it.
-    DoOnPaint;
-    DoOnPaintTransient(ttAfter);
-  finally
-    UpdateCarets;
+  // First paint the gutter area if it was (partly) invalidated.
+  if (rcClip.Left < fGutterWidth) then
+  begin
+    rcDraw := rcClip;
+    rcDraw.Right := fGutterWidth;
+    PaintGutter(RT, rcDraw, nL1, nL2);
   end;
+
+  // Then paint the text area if it was (partly) invalidated.
+  if (rcClip.Right > fGutterWidth) then
+  begin
+    rcDraw := rcClip;
+    rcDraw.Left := Max(rcDraw.Left, fGutterWidth);
+    PaintTextLines(RT, rcDraw, nL1, nL2);
+  end;
+
+  // If there was a problem rectreate the RenderTarget
+  if RT.EndDraw <> S_OK then TSynDWrite.ResetRenderTarget;
+
+  PluginsAfterPaint(Canvas, rcClip, nL1, nL2);
+
+  // If there is a custom paint handler call it.
+  DoOnPaint;
+  DoOnPaintTransient(ttAfter);
 end;
 
 procedure TCustomSynEdit.PaintGutter(RT: ID2D1RenderTarget; const AClip: TRect;
@@ -3792,6 +3791,7 @@ begin
 
   if Value <> fLeftChar then
   begin
+    FCarets.HideCarets;
     iDelta := fLeftChar - Value;
     fLeftChar := Value;
     fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
@@ -3990,15 +3990,21 @@ begin
   Value := Max(Value, 1);
   if Value <> TopLine then
   begin
-    Delta := TopLine - Value;
-    fTopLine := Value;
-    if Abs(Delta) < fLinesInWindow then
-      ScrollWindow(Handle, 0, fTextHeight * Delta, nil, nil)
-    else
-      Invalidate;
+    IncPaintLock;
+    try
+      FCarets.HideCarets;
+      Delta := TopLine - Value;
+      fTopLine := Value;
+      if Abs(Delta) < fLinesInWindow then
+        ScrollWindow(Handle, 0, fTextHeight * Delta, nil, nil)
+      else
+        Invalidate;
 
-    UpdateScrollBars;
-    StatusChanged([scTopLine]);
+      Include(fStateFlags, sfScrollbarChanged);
+      StatusChanged([scTopLine]);
+    finally
+      DecPaintLock;
+    end;
   end;
 end;
 
@@ -4591,7 +4597,7 @@ begin
   if not (Focused or FAlwaysShowCaret) then
     FCarets.HideCarets;
   if FHideSelection and not FSelections.IsEmpty then
-    InvalidateSelection;
+    FSelections.InvalidateAll;
 end;
 
 procedure TCustomSynEdit.WMMouseHWheel(var Message: TWMMouseWheel);
@@ -4608,6 +4614,12 @@ begin
   // cause issues with handlers that don't support ssHorizontal
   FSynEditScrollBars.DoMouseWheel(Shift, WheelDelta, MousePos);
   Message.Result := 1;
+end;
+
+procedure TCustomSynEdit.WMPaint(var Message: TWMPaint);
+begin
+  inherited;
+  UpdateCarets;
 end;
 
 procedure TCustomSynEdit.WMPaste(var Message: TMessage);
@@ -4628,7 +4640,7 @@ begin
 
   InitializeCaret;
   if FHideSelection and not FSelections.IsEmpty then
-    InvalidateSelection;
+    FSelections.InvalidateAll;
 end;
 
 procedure TCustomSynEdit.WMSetText(var Msg: TWMSetText);
@@ -8786,7 +8798,7 @@ begin
       try
         fOnPaintTransient(Self, Canvas, TransientType);
       finally
-        FCarets.ShowCarets;
+        UpdateCarets;
       end;
     end;
   end;

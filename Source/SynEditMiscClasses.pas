@@ -3596,11 +3596,13 @@ end;
 
 procedure TSynCarets.ShowCarets;
 begin
+  Assert(not FCaretsShown);
   if CaretRects.Count > 0 then
   begin
     InvertCarets; // show immediately
     FBlinkTimer.Enabled := True;
   end;
+  FCaretsShown := True;
 end;
 
 {$ENDREGION 'TSynCarets'}
