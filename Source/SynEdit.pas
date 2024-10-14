@@ -2358,10 +2358,6 @@ begin
   nL2 := MinMax(TopLine + (rcClip.Bottom + fTextHeight - 1) div fTextHeight,
     1, DisplayRowCount);
 
-  // Now paint everything while the caret is hidden.
-  // UpdateCarets will be called by the overwritten WM_PAINT event handler;
-  FCarets.HideCarets;
-
   //Create the RenderTarget
   RT := TSynDWrite.RenderTarget;
   RT.BindDC(Canvas.Handle, rcClip);
@@ -4618,6 +4614,8 @@ end;
 
 procedure TCustomSynEdit.WMPaint(var Message: TWMPaint);
 begin
+  // Paint everything while the caret is hidden.
+  FCarets.HideCarets;
   inherited;
   UpdateCarets;
 end;
