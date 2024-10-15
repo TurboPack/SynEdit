@@ -2863,7 +2863,7 @@ var
         PartSel.First := BB.Char - RowStart.Char + 1;
         PartSel.Last := IfThen((BE > BufferCoord(RowStart.Char + Len, RowStart.Line)) or
           (WordWrap and (BE = BufferCoord(RowStart.Char + Len, RowStart.Line)) and
-          (RowtoLine(Row + 1) = Line) and not CaretAtEOL), MaxInt, BE.Char - RowStart.Char);
+          (RowtoLine(Row + 1) = Line) and not Sel.CaretAtEOL), MaxInt, BE.Char - RowStart.Char);
       end
       else
       begin
@@ -3339,8 +3339,7 @@ begin
           Sel.Start := BufferCoord(Engine.Results[ResNo], Line + 1);
           Sel.Stop := BufferCoord(Sel.Start.Char + Engine.Lengths[ResNo], Line + 1)
         end;
-        Sel.Caret := Sel.Stop;
-        Sel.CaretAtEOL := False;
+        Sel := TSynSelection.Create(Sel.Stop, Sel.Start, Sel.Stop);
 
         SelList.Add(Sel);
 
@@ -3719,6 +3718,8 @@ begin
       Sel.Start := Sel.Caret;
       Sel.Stop := Sel.Caret;
       Sel.CaretAtEOL := False;
+      Sel.LastPosX := RowColumnToPixels(BufferToDisplayPos(Sel.Caret)).X - fTextOffset;
+
       SelList.Add(Sel);
 
       SelStorage.Selections := SelList.ToArray;
@@ -7673,6 +7674,7 @@ begin
   SetCaretAndSelection(Sel.Caret, Sel.Start, Sel.Stop,
     EnsureVisible, ForceToMiddle);
   CaretAtEOL := Sel.CaretAtEOL;
+  FLastPosX := Sel.LastPosX;
 end;
 
 procedure TCustomSynEdit.SetCaretAndSelection(const ptCaret, ptBefore,

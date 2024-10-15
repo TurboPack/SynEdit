@@ -3487,15 +3487,10 @@ begin
   CaretsChanged;
 end;
 
-type
-  TCrackSynEdit = class(TCustomSynEdit);
-
 procedure TSynSelections.Restore(const [Ref] Sel: TSynSelection;
   EnsureVisible: Boolean);
 begin
   TCustomSynEdit(FOwner).SetCaretAndSelection(Sel, EnsureVisible);
-  TCrackSynEdit(FOwner).FLastPosX := Sel.LastPosX;
-  TCrackSynEdit(FOwner).CaretAtEOL := Sel.CaretAtEOL;
 end;
 
 function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;
