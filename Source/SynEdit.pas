@@ -373,6 +373,7 @@ type
     FSelStorage: TSynSelStorage;
     FBracketsHighlight: TSynBracketsHighlight;
     FPasteArray: TArray<string>;
+    FPaintTransientPlugins: Boolean;
 
     // Accessibility
     FUIAutomationProvider: IInterface;  // IRawElementProviderSimple
@@ -633,7 +634,6 @@ type
       Data: pointer); virtual;
     procedure DoOnGutterClick(Button: TMouseButton; X, Y: Integer); virtual;
     procedure DoOnPaint; virtual;
-    procedure DoOnPaintTransientEx(TransientType: TTransientType; Lock: Boolean); virtual;
     procedure DoOnPaintTransient(TransientType: TTransientType); virtual;
     procedure DoOnPlaceMark(var Mark: TSynEditMark); virtual;
     procedure DoOnProcessCommand(var Command: TSynEditorCommand;
@@ -653,6 +653,11 @@ type
     procedure SetSelLength(const Value: integer);
     procedure SetAlwaysShowCaret(const Value: Boolean);
     procedure LinesHookChanged;
+    // Command implementations
+    procedure ExecCmdDeleteLine;
+    procedure ExecCmdCopyOrMoveLine(const Command: TSynEditorCommand);
+    procedure ExecCmdCaseChange(const Cmd : TSynEditorCommand);
+
     property InternalCaretX: Integer write InternalSetCaretX;
     property InternalCaretY: Integer write InternalSetCaretY;
     property InternalCaretXY: TBufferCoord write InternalSetCaretXY;
@@ -814,10 +819,6 @@ type
     function IsChained: Boolean;
     procedure HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo: ISynEditUndo);
     procedure UnHookTextBuffer;
-    {Command implementations}
-    procedure ExecCmdDeleteLine;
-    procedure ExecCmdCopyOrMoveLine(const Command: TSynEditorCommand);
-    procedure ExecCmdCaseChange(const Cmd : TSynEditorCommand);
 //++ CodeFolding
     procedure CollapseAll;
     procedure UncollapseAll;
@@ -2388,7 +2389,6 @@ begin
 
   // If there is a custom paint handler call it.
   DoOnPaint;
-  DoOnPaintTransient(ttAfter);
 end;
 
 procedure TCustomSynEdit.PaintGutter(RT: ID2D1RenderTarget; const AClip: TRect;
@@ -3536,8 +3536,6 @@ begin
       Command := ecNone;
       Exit;
     end;
-    DoOnPaintTransient(ttBefore);
-
     FPasteArray := [];
     if (FSelections.Count > 1) and Clipboard.HasFormat(SynEditClipboardFormat) then
     begin
@@ -3560,7 +3558,6 @@ begin
   begin
     FPasteArray := [];
     EnsureCursorPosVisible;
-    DoOnPaintTransient(ttAfter);
   end;
 end;
 
@@ -3590,12 +3587,10 @@ end;
 procedure TCustomSynEdit.SetCaretXYEx(EnsureVisible: Boolean; Value: TBufferCoord);
 var
   nMaxX: Integer;
-  vTriggerPaint: boolean;
   S, TS : string;
 begin
   CaretAtEOL := False;
-  vTriggerPaint := HandleAllocated;
-  if vTriggerPaint then
+  if HandleAllocated then
     DoOnPaintTransient(ttBefore);
   nMaxX := MaxInt;
   if Value.Line > Lines.Count then
@@ -3673,7 +3668,7 @@ begin
     // restore it afterward as appropriate.
     UpdateLastPosX;
   end;
-  if vTriggerPaint then
+  if HandleAllocated then
     DoOnPaintTransient(ttAfter);
 end;
 
@@ -4625,10 +4620,15 @@ end;
 
 procedure TCustomSynEdit.WMPaint(var Message: TWMPaint);
 begin
-  // Paint everything while the caret is hidden.
-  FCarets.HideCarets;
-  inherited;
-  UpdateCarets;
+  DoOnPaintTransient(ttBefore);
+  try
+    // Paint everything while the caret is hidden.
+    FCarets.HideCarets;
+    inherited;
+    UpdateCarets;
+  finally
+    DoOnPaintTransient(ttAfter);
+  end;
 end;
 
 procedure TCustomSynEdit.WMPaste(var Message: TMessage);
@@ -4900,7 +4900,7 @@ begin
   if ReadOnly then
     exit;
 
-  DoOnPaintTransientEx(ttBefore,true);
+  DoOnPaintTransient(ttBefore);
   IncPaintLock;
   Lines.BeginUpdate;
   try
@@ -4908,7 +4908,7 @@ begin
   finally
     Lines.EndUpdate;
     DecPaintLock;
-    DoOnPaintTransientEx(ttAfter,true);
+    DoOnPaintTransient(ttAfter);
   end;
 end;
 
@@ -5213,7 +5213,6 @@ begin
       Text := Text + Lines[BB.Line-1];
 
     // group undo redo actions and reduce transient painting
-    DoOnPaintTransientEx(ttBefore, true);
     BeginUndoBlock;
     try
       // Insert/replace text at selection BB-BE
@@ -5230,7 +5229,6 @@ begin
       SetCaretAndSelection(Caret, StartBC, EndBC);
     finally
       EndUndoBlock;
-      DoOnPaintTransientEx(ttAfter, true);
     end;
   end;
 end;
@@ -5242,7 +5240,6 @@ begin
   if not ReadOnly and (Lines.Count > 0) and not
     ((BlockBegin.Line = Lines.Count) and (Length(Lines[BlockBegin.Line - 1]) = 0)) then
   begin
-    DoOnPaintTransient(ttBefore);
     BeginUndoBlock;
     try
       // Normalize selection
@@ -5286,7 +5283,7 @@ begin
   if ReadOnly then
     exit;
 
-  DoOnPaintTransientEx(ttBefore,true);
+  DoOnPaintTransient(ttBefore);
   IncPaintLock;
   Lines.BeginUpdate;
   try
@@ -5294,7 +5291,7 @@ begin
   finally
     Lines.EndUpdate;
     DecPaintLock;
-    DoOnPaintTransientEx(ttAfter,true);
+    DoOnPaintTransient(ttAfter);
   end;
 end;
 
@@ -5742,7 +5739,6 @@ begin
   then
     Exit;
 
-  DoOnPaintTransient(ttBefore);
   if SelAvail then
     SetSelText(AChar)
   else
@@ -5781,7 +5777,6 @@ begin
     if not CaretInView then
       LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
   end;
-  DoOnPaintTransient(ttAfter);
 end;
 
 procedure TCustomSynEdit.SetIndentGuides(const Value: TSynIndentGuides);
@@ -6074,6 +6069,7 @@ var
   SaveLastPosX: Integer;
 
 begin
+  DoOnPaintTransient(ttBefore);
   IncPaintLock;
   try
     case Command of
@@ -6231,121 +6227,115 @@ begin
         end;
       ecDeleteLastChar:
         if not ReadOnly then begin
-          DoOnPaintTransientEx(ttBefore,true);
-          try
-            if SelAvail then
-              SetSelText('')
-            else begin
-              Temp := LineText;
-              Len := Length(Temp);
-              Caret := CaretXY;
-              if CaretX > Len + 1 then
+          if SelAvail then
+            SetSelText('')
+          else begin
+            Temp := LineText;
+            Len := Length(Temp);
+            Caret := CaretXY;
+            if CaretX > Len + 1 then
+            begin
+              if eoSmartTabDelete in fOptions then
               begin
-                if eoSmartTabDelete in fOptions then
-                begin
-                  //It's at the end of the line, move it to the length
-                  if Len > 0 then
-                    CaretX := Len + 1
-                  else begin
-                    //move it as if there were normal spaces there
-                    SpaceCount1 := CaretX - 1;
-                    SpaceCount2 := 0;
-                    // unindent
-                    if SpaceCount1 > 0 then
-                    begin
-                      BackCounter := CaretY - 2;
-                      while BackCounter >= 0 do
-                      begin
-                        SpaceCount2 := LeftSpaces(Lines[BackCounter], False);
-                        if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
-                          break;
-                        Dec(BackCounter);
-                      end;
-                      if (BackCounter = -1) and (SpaceCount2 > SpaceCount1) then
-                        SpaceCount2 := 0;
-                    end;
-                    if SpaceCount2 = SpaceCount1 then
-                      SpaceCount2 := 0;
-                    CaretX := CaretX - (SpaceCount1 - SpaceCount2);
-                  end;
-                end
+                //It's at the end of the line, move it to the length
+                if Len > 0 then
+                  CaretX := Len + 1
                 else begin
-                  // only move caret one column
-                  CaretX := CaretX - 1;
-                end;
-              end // CaretX > Len + 1
-              else if CaretX = 1 then
-              begin
-                // join this line with the last line if possible
-                if CaretY > 1 then
-                begin
-                  Lines.BeginUpdate;
-                  BeginUndoBlock;
-                  try
-                    CaretXNew := Lines[CaretY - 2].Length + 1;
-                    Lines[CaretY - 1] := Lines[CaretY - 2] + Temp;
-                    Lines.Delete(CaretY - 2);
-                    CaretXY := BufferCoord(CaretXNew, CaretY - 1);
-                  finally
-                    EndUndoBlock;
-                    Lines.EndUpdate;
-                  end;
-                end;
-              end
-              else begin
-                // delete text before the caret
-                if ((Temp[CaretX - 1] <= #32) or (Temp[CaretX - 1] = #$00A0))
-                   and (LeftSpaces(Temp, False) = CaretX - 1) then
-                begin
-                  SpaceCount1 := LeftSpaces(Temp, True, FTabWidth);
-                  Assert(SpaceCount1 > 0);
-                  // only spaces - special treatment
-                  if eoSmartTabDelete in fOptions then
+                  //move it as if there were normal spaces there
+                  SpaceCount1 := CaretX - 1;
+                  SpaceCount2 := 0;
+                  // unindent
+                  if SpaceCount1 > 0 then
                   begin
-                    // unindent
-                    SpaceCount2 := 0;
                     BackCounter := CaretY - 2;
                     while BackCounter >= 0 do
                     begin
-                      Temp2 := Lines[BackCounter];
-                      SpaceCount2 := LeftSpaces(Temp2, True, FTabWidth);
-                      if (Temp2.Length > 0) and (SpaceCount2 < SpaceCount1) then
+                      SpaceCount2 := LeftSpaces(Lines[BackCounter], False);
+                      if (SpaceCount2 > 0) and (SpaceCount2 < SpaceCount1) then
                         break;
                       Dec(BackCounter);
                     end;
-                    if (BackCounter = -1) and (SpaceCount2 >= SpaceCount1) then
+                    if (BackCounter = -1) and (SpaceCount2 > SpaceCount1) then
                       SpaceCount2 := 0;
-                  end
-                  else
-                    SpaceCount2 := SpaceCount1 - (SpaceCount1 - 1) mod TabWidth - 1;
-                  Delete(Temp, 1, LeftSpaces(Temp, False));
-                  Temp2 := GetLeftSpacing(SpaceCount2, True);
-                  Temp := Temp2 + Temp;
-                  CaretXNew := Temp2.Length + 1;
-                  Lines[CaretY - 1] :=  Temp;
-                  CaretX := CaretXNew;
-                end
-                else begin
-                  // delete char accounting for surrogate pairs
-                  CaretXNew := CaretX - 1;
-                  if (CaretXNew > 1) and Temp[CaretXNew].IsLowSurrogate then
-                    Dec(CaretXNew);
-                  Delete(Temp, CaretXNew, CaretX - CaretXNew);
-                  CaretNew := BufferCoord(CaretXNew, CaretY);
-                  vCaretRow := BufferToDisplayPos(CaretNew).Row;
-                  Lines[CaretY - 1] := Temp;
-                  SetCaretInRow(CaretNew, vCaretRow); // to deal with FCaretEOL
+                  end;
+                  if SpaceCount2 = SpaceCount1 then
+                    SpaceCount2 := 0;
+                  CaretX := CaretX - (SpaceCount1 - SpaceCount2);
+                end;
+              end
+              else begin
+                // only move caret one column
+                CaretX := CaretX - 1;
+              end;
+            end // CaretX > Len + 1
+            else if CaretX = 1 then
+            begin
+              // join this line with the last line if possible
+              if CaretY > 1 then
+              begin
+                Lines.BeginUpdate;
+                BeginUndoBlock;
+                try
+                  CaretXNew := Lines[CaretY - 2].Length + 1;
+                  Lines[CaretY - 1] := Lines[CaretY - 2] + Temp;
+                  Lines.Delete(CaretY - 2);
+                  CaretXY := BufferCoord(CaretXNew, CaretY - 1);
+                finally
+                  EndUndoBlock;
+                  Lines.EndUpdate;
                 end;
               end;
+            end
+            else begin
+              // delete text before the caret
+              if ((Temp[CaretX - 1] <= #32) or (Temp[CaretX - 1] = #$00A0))
+                 and (LeftSpaces(Temp, False) = CaretX - 1) then
+              begin
+                SpaceCount1 := LeftSpaces(Temp, True, FTabWidth);
+                Assert(SpaceCount1 > 0);
+                // only spaces - special treatment
+                if eoSmartTabDelete in fOptions then
+                begin
+                  // unindent
+                  SpaceCount2 := 0;
+                  BackCounter := CaretY - 2;
+                  while BackCounter >= 0 do
+                  begin
+                    Temp2 := Lines[BackCounter];
+                    SpaceCount2 := LeftSpaces(Temp2, True, FTabWidth);
+                    if (Temp2.Length > 0) and (SpaceCount2 < SpaceCount1) then
+                      break;
+                    Dec(BackCounter);
+                  end;
+                  if (BackCounter = -1) and (SpaceCount2 >= SpaceCount1) then
+                    SpaceCount2 := 0;
+                end
+                else
+                  SpaceCount2 := SpaceCount1 - (SpaceCount1 - 1) mod TabWidth - 1;
+                Delete(Temp, 1, LeftSpaces(Temp, False));
+                Temp2 := GetLeftSpacing(SpaceCount2, True);
+                Temp := Temp2 + Temp;
+                CaretXNew := Temp2.Length + 1;
+                Lines[CaretY - 1] :=  Temp;
+                CaretX := CaretXNew;
+              end
+              else begin
+                // delete char accounting for surrogate pairs
+                CaretXNew := CaretX - 1;
+                if (CaretXNew > 1) and Temp[CaretXNew].IsLowSurrogate then
+                  Dec(CaretXNew);
+                Delete(Temp, CaretXNew, CaretX - CaretXNew);
+                CaretNew := BufferCoord(CaretXNew, CaretY);
+                vCaretRow := BufferToDisplayPos(CaretNew).Row;
+                Lines[CaretY - 1] := Temp;
+                SetCaretInRow(CaretNew, vCaretRow); // to deal with FCaretEOL
+              end;
             end;
-            EnsureCursorPosVisible;
-          finally
-            DoOnPaintTransientEx(ttAfter,true);
           end;
+          EnsureCursorPosVisible;
         end;
       ecDeleteChar:
         if not ReadOnly then begin
-          DoOnPaintTransient(ttBefore);
 
           if SelAvail then
             SetSelText('')
@@ -6381,7 +6371,6 @@ begin
               end;
             end;
           end;
-          DoOnPaintTransient(ttAfter);
         end;
       ecDeleteWord, ecDeleteEOL:
         if not ReadOnly then
@@ -6419,11 +6408,9 @@ begin
 
           if (WP > CaretXY) and (WP.Line = CaretY) then
           begin
-            DoOnPaintTransient(ttBefore);
             Temp := Lines[CaretY - 1];
             Delete(Temp, CaretX, WP.Char - CaretX);
             Lines[CaretY - 1] := Temp;
-            DoOnPaintTransient(ttAfter);
           end;
         end;
       ecDeleteLastWord, ecDeleteBOL:
@@ -6445,12 +6432,10 @@ begin
           end;
           if (WP < CaretXY) and (WP.Line = CaretY) then
           begin
-            DoOnPaintTransient(ttBefore);
             Temp := Lines[CaretY - 1];
             Delete(Temp, WP.Char, CaretX - WP.Char);
             Lines[CaretY - 1] := Temp;
             CaretXY := WP;
-            DoOnPaintTransient(ttAfter);
           end;
         end;
       ecDeleteLine:
@@ -6665,6 +6650,7 @@ begin
     end;
   finally
     DecPaintLock;
+    DoOnPaintTransient(ttBefore);
   end;
 end;
 
@@ -6675,6 +6661,7 @@ var
   I: Integer;
   OldTopLine, OldLeftChar: Integer;
 begin
+  DoOnPaintTransient(ttBefore);
   IncPaintLock;
   try
     if CommandInfo.StoreMultiCaret then
@@ -6716,6 +6703,7 @@ begin
     end;
   finally
     DecPaintLock;
+    DoOnPaintTransient(ttAfter);
   end;
 end;
 
@@ -8788,51 +8776,43 @@ begin
     fOnClearMark(Self, Mark);
 end;
 
-procedure TCustomSynEdit.DoOnPaintTransientEx(TransientType: TTransientType; Lock: Boolean);
+procedure TCustomSynEdit.DoOnPaintTransient(TransientType: TTransientType);
 var
   DoTransient: Boolean;
   i: Integer;
   Plugin: TSynEditPlugin;
 begin
-  DoTransient:=(FPaintTransientLock=0);
-  if Lock then
-  begin
-    if (TransientType=ttBefore) then Inc(FPaintTransientLock)
-    else
-    begin
-      Dec(FPaintTransientLock);
-      DoTransient:= FPaintTransientLock = 0;
-    end;
-  end;
+  if (TransientType=ttBefore) then
+    Inc(FPaintTransientLock)
+  else
+    Dec(FPaintTransientLock);
+
+  DoTransient := (FPaintTransientLock = 0) or (fPaintLock = 0) and
+    (FPaintTransientPlugins or Assigned(fOnPaintTransient));
 
   if DoTransient then
   begin
-  // plugins
-  if fPlugins <> nil then
-    for i := 0 to fPlugins.Count - 1 do
-    begin
-      PlugIn := TSynEditPlugin(fPlugins[i]);
-      if phPaintTransient in Plugin.Handlers then
-        PlugIn.PaintTransient(Canvas, TransientType);
-    end;
-    // event
-    if Assigned(fOnPaintTransient) then
-    begin
-      Canvas.Font.Assign(Font);
-      Canvas.Brush.Color := Color;
-      FCarets.HideCarets;
-      try
+    FCarets.HideCarets;
+    Canvas.Font.Assign(Font);
+    Canvas.Brush.Color := Color;
+    try
+      // plugins
+      if fPlugins <> nil then
+        for i := 0 to fPlugins.Count - 1 do
+        begin
+          PlugIn := TSynEditPlugin(fPlugins[i]);
+          if phPaintTransient in Plugin.Handlers then
+            PlugIn.PaintTransient(Canvas, TransientType);
+        end;
+      // event
+      if Assigned(fOnPaintTransient) then
+      begin
         fOnPaintTransient(Self, Canvas, TransientType);
-      finally
-        UpdateCarets;
       end;
+    finally
+      UpdateCarets;
     end;
   end;
-end;
-
-procedure TCustomSynEdit.DoOnPaintTransient(TransientType: TTransientType);
-begin
-  DoOnPaintTransientEx(TransientType, False);
 end;
 
 procedure TCustomSynEdit.DoOnPaint;
@@ -9889,6 +9869,12 @@ const
     phLinePut, phLinesChanged, phPaintTransient, phAfterPaint];
 
 begin
+  Create(AOwner, AllPlugInHandlers); // for backward compatibility
+end;
+
+constructor TSynEditPlugin.Create(AOwner: TCustomSynEdit;
+  AHandlers: TPlugInHandlers);
+begin
   inherited Create;
   if AOwner <> nil then
   begin
@@ -9897,14 +9883,10 @@ begin
       fOwner.fPlugins := TObjectList.Create;
     fOwner.fPlugins.Add(Self);
   end;
-  FHandlers := AllPlugInHandlers;  // for backward compatibility
-end;
-
-constructor TSynEditPlugin.Create(AOwner: TCustomSynEdit;
-  AHandlers: TPlugInHandlers);
-begin
-  Create(AOwner);
   FHandlers := AHandlers;
+
+  if phPaintTransient in Handlers then
+    FOwner.FPaintTransientPlugins := True;
 end;
 
 destructor TSynEditPlugin.Destroy;
