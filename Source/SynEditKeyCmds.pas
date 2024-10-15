@@ -1023,8 +1023,8 @@ begin
   SynCommandsInfo.Add(ecWordRight, TSynCommandInfo.Create(ckMultiCaret, False));
   SynCommandsInfo.Add(ecLineStart, TSynCommandInfo.Create(ckMultiCaret, False));
   SynCommandsInfo.Add(ecLineEnd, TSynCommandInfo.Create(ckMultiCaret, False));
-  SynCommandsInfo.Add(ecPageUp, TSynCommandInfo.Create(ckSingleCaret, False));
-  SynCommandsInfo.Add(ecPageDown, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecPageUp, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecPageDown, TSynCommandInfo.Create(ckMultiCaret, False));
   SynCommandsInfo.Add(ecPageLeft, TSynCommandInfo.Create(ckSingleCaret, False));
   SynCommandsInfo.Add(ecPageRight, TSynCommandInfo.Create(ckSingleCaret, False));
   SynCommandsInfo.Add(ecPageTop, TSynCommandInfo.Create(ckSingleCaret, False));

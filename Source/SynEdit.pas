@@ -3789,20 +3789,27 @@ begin
 
   if Value <> fLeftChar then
   begin
-    FCarets.HideCarets;
-    iDelta := fLeftChar - Value;
-    fLeftChar := Value;
-    fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
-    if Abs(iDelta) * FCharWidth < ClientWidth - GutterWidth - TextMargin then
-    begin
-      iTextArea := ClientRect;
-      Inc(iTextArea.Left, fGutterWidth + fTextMargin);
-      ScrollWindow(Handle, iDelta * CharWidth, 0, @iTextArea, @iTextArea);
-    end
-    else
-      InvalidateLines(-1, -1);
-    UpdateScrollBars;
-    StatusChanged([scLeftChar]);
+    IncPaintLock;
+    try
+      FCarets.HideCarets;
+      iDelta := fLeftChar - Value;
+      fLeftChar := Value;
+      fTextOffset := fGutterWidth + fTextMargin - (LeftChar - 1) * fCharWidth;
+      if (Abs(iDelta) * FCharWidth < ClientWidth - GutterWidth - TextMargin) and
+        (FSelections.Count = 1)
+      then
+      begin
+        iTextArea := ClientRect;
+        Inc(iTextArea.Left, fGutterWidth + fTextMargin);
+        ScrollWindow(Handle, iDelta * CharWidth, 0, @iTextArea, @iTextArea);
+      end
+      else
+        InvalidateLines(-1, -1);
+      Include(fStateFlags, sfScrollbarChanged);
+      StatusChanged([scLeftChar]);
+    finally
+      DecPaintLock;
+    end;
   end;
 end;
 
@@ -3993,7 +4000,7 @@ begin
       FCarets.HideCarets;
       Delta := TopLine - Value;
       fTopLine := Value;
-      if Abs(Delta) < fLinesInWindow then
+      if (Abs(Delta) < fLinesInWindow) and (FSelections.Count = 1) then
         ScrollWindow(Handle, 0, fTextHeight * Delta, nil, nil)
       else
         Invalidate;
@@ -4218,6 +4225,8 @@ begin
     for Index := 0 to FSelections.Count - 1 do
     begin
       Sel  := FSelections[Index];
+      if not Sel.Caret.IsValid then
+        Continue;
       // The last space of a wrapped line may be out of view
       vCaretDisplay := SelectionToDisplayCoord(Sel);
       if WordWrap and not (eoWrapWithRightEdge in FOptions) and
@@ -4694,6 +4703,8 @@ end;
 
 procedure TCustomSynEdit.ListCleared(Sender: TObject);
 begin
+  FSelections.Clear;
+
   if WordWrap then
     fWordWrapPlugin.Reset;
 
@@ -4701,6 +4712,9 @@ begin
   if UseCodeFolding then
     AllFoldRanges.Reset;
 //-- CodeFolding
+
+  fMarkList.Clear; // fMarkList.Clear also frees all bookmarks,
+  FillChar(fBookMarks, sizeof(fBookMarks), 0); // so fBookMarks should be cleared too
 
   ClearUndo;
   // invalidate the *whole* client area
@@ -6659,13 +6673,19 @@ procedure TCustomSynEdit.ExecuteMultiCaretCommand(Command: TSynEditorCommand;
 var
   OldActiveSelIndex: Integer;
   I: Integer;
+  OldTopLine, OldLeftChar: Integer;
 begin
   IncPaintLock;
   try
     if CommandInfo.StoreMultiCaret then
+    begin
+      Lines.BeginUpdate;
       BeginUndoBlock;
+    end;
 
     OldActiveSelIndex := Selections.ActiveSelIndex;
+    OldLeftChar := LeftChar;
+    OldTopLine := TopLine;
 
     for I := 0 to FSelections.Count -1 do
     begin
@@ -6684,8 +6704,16 @@ begin
     // Merge Selections
     FSelections.Merge;
 
+    TopLine := OldTopLine;
+    LeftChar := OldLeftChar;
+
+    EnsureCursorPosVisible;
+
     if CommandInfo.StoreMultiCaret then
+    begin
       EndUndoBlock;
+      Lines.EndUpdate;
+    end;
   finally
     DecPaintLock;
   end;
@@ -6714,10 +6742,7 @@ end;
 
 procedure TCustomSynEdit.ClearAll;
 begin
-  FSelections.Clear;
-  Lines.Clear;
-  fMarkList.Clear; // fMarkList.Clear also frees all bookmarks,
-  FillChar(fBookMarks, sizeof(fBookMarks), 0); // so fBookMarks should be cleared too
+  Lines.Clear; // triggers ListCleared
   fUndoRedo.Clear;
   Modified := False;
   UpdateScrollBars;

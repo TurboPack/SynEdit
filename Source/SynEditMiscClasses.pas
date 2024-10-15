@@ -3435,7 +3435,7 @@ begin
   end;
 
   // Activate the current selection
-  Restore(ActiveSelection);
+  Restore(ActiveSelection, False);
 end;
 
 procedure TSynSelections.MouseSelection(const Sel: TSynSelection);

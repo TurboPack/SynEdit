@@ -522,7 +522,10 @@ begin
     until not(FKeepGoing);
 
     if not (Item is TSynCaretAndSelectionUndoItem) then
+    begin
+      (Editor as TCustomSynEdit).Selections.Clear;
       (Editor as TCustomSynEdit).CaretXY := Item.FCaret;  // removes selection
+    end;
     if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
       FOnModifiedChanged(Self);
   end;
@@ -617,8 +620,11 @@ begin
     until not(FKeepGoing);
 
     if not (LastItem is TSynCaretAndSelectionUndoItem) then
+    begin
+      (Editor as TCustomSynEdit).Selections.Clear;
       (Editor as TCustomSynEdit).SetCaretAndSelection(LastItem.FCaret, LastItem.FCaret,
         LastItem.FCaret);
+    end;
     if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
       FOnModifiedChanged(Self);
   end;
