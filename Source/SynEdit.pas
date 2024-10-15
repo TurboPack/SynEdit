@@ -305,7 +305,6 @@ type
     FCaseSensitive: Boolean;
     FSelection: TSynSelection;
     FSelections: TSynSelections;
-    FLastPosX: integer;
     fCharWidth: Integer;
     fFontQuality: TFontQuality;
     fInserting: Boolean;
@@ -622,6 +621,8 @@ type
     function TranslateKeyCode(Code: word; Shift: TShiftState;
       var Data: pointer): TSynEditorCommand;
     procedure UpdateMouseCursor; virtual;
+    property FLastPosX: integer read FSelection.LastPosX write FSelection.LastPosX;
+    property CaretAtEOL: Boolean read FSelection.CaretAtEOL write FSelection.CaretAtEOL;
   protected
     fGutterWidth: Integer;
     procedure CalcTextAreaWidth;
@@ -2135,7 +2136,7 @@ begin
     if [ssAlt, ssShift] * Shift = [ssAlt, ssShift] then
     begin
       InvalidateSelection(FSelection);
-      FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY)
+      FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY, FLastPosX)
     end
     else if ssAlt in Shift then
       FSelections.AddCaret(FSelection.Caret)
@@ -2188,7 +2189,7 @@ begin
       try
         MoveDisplayPosAndSelection(P, True);
         InvalidateSelection(FSelection);
-        FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY);
+        FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY, FLastPosX);
       finally
         DecPaintLock;
       end;
@@ -2862,7 +2863,7 @@ var
         PartSel.First := BB.Char - RowStart.Char + 1;
         PartSel.Last := IfThen((BE > BufferCoord(RowStart.Char + Len, RowStart.Line)) or
           (WordWrap and (BE = BufferCoord(RowStart.Char + Len, RowStart.Line)) and
-          (RowtoLine(Row + 1) = Line) and not FSelection.CaretAtEOL), MaxInt, BE.Char - RowStart.Char);
+          (RowtoLine(Row + 1) = Line) and not CaretAtEOL), MaxInt, BE.Char - RowStart.Char);
       end
       else
       begin
@@ -3593,7 +3594,7 @@ var
   vTriggerPaint: boolean;
   S, TS : string;
 begin
-  FSelection.CaretAtEOL := False;
+  CaretAtEOL := False;
   vTriggerPaint := HandleAllocated;
   if vTriggerPaint then
     DoOnPaintTransient(ttBefore);
@@ -6081,7 +6082,7 @@ begin
           Caret := FSelections.BaseSelection.Start;
           MoveCaretHorz(-1, Command = ecSelLeft);
           if Command = ecSelColumnLeft then
-            FSelections.ColumnSelection(Caret, CaretXY);
+            FSelections.ColumnSelection(Caret, CaretXY, FLastPosX);
         end;
       ecRight, ecSelRight, ecSelColumnRight:
         if not FSelection.IsEmpty and (Command = ecRight) then
@@ -6091,7 +6092,7 @@ begin
           Caret := FSelections.BaseSelection.Start;
           MoveCaretHorz(1, Command = ecSelRight);
           if Command = ecSelColumnRight then
-            FSelections.ColumnSelection(Caret, CaretXY);
+            FSelections.ColumnSelection(Caret, CaretXY, FLastPosX);
         end;
       ecPageLeft, ecSelPageLeft:
         MoveCaretHorz(-(FTextAreaWidth div FCharWidth), Command = ecSelPageLeft);
@@ -6118,7 +6119,7 @@ begin
             MoveCaretVert(-1, Command = ecSelUp);
 
           if Command = ecSelColumnUp then
-            FSelections.ColumnSelection(Caret, CaretXY);
+            FSelections.ColumnSelection(Caret, CaretXY, FLastPosX);
         end;
       ecDown, ecSelDown, ecSelColumnDown:
         begin
@@ -6135,7 +6136,7 @@ begin
             MoveCaretVert(1, Command = ecSelDown);
 
           if Command = ecSelColumnDown then
-            FSelections.ColumnSelection(Caret, CaretXY);
+            FSelections.ColumnSelection(Caret, CaretXY, FLastPosX);
         end;
       ecPageUp, ecSelPageUp, ecPageDown, ecSelPageDown, ecSelColumnPageUp, ecSelColumnPageDown:
         begin
@@ -6167,7 +6168,7 @@ begin
             MoveCaretVert(counter, Command in [ecSelPageUp, ecSelPageDown]);
 
           if Command in [ecSelColumnPageUp, ecSelColumnPageDown] then
-            FSelections.ColumnSelection(Caret, CaretXY);
+            FSelections.ColumnSelection(Caret, CaretXY, FLastPosX);
         end;
       ecPageTop, ecSelPageTop:
         begin
@@ -7671,7 +7672,7 @@ procedure TCustomSynEdit.SetCaretAndSelection(const Sel: TSynSelection;
 begin
   SetCaretAndSelection(Sel.Caret, Sel.Start, Sel.Stop,
     EnsureVisible, ForceToMiddle);
-  FSelection.CaretAtEOL := Sel.CaretAtEOL;
+  CaretAtEOL := Sel.CaretAtEOL;
 end;
 
 procedure TCustomSynEdit.SetCaretAndSelection(const ptCaret, ptBefore,
@@ -9698,16 +9699,16 @@ procedure TCustomSynEdit.SetDisplayXY(const aPos: TDisplayCoord);
 var
   OldCaretAtEOL: Boolean;
 begin
-  OldCaretAtEOL := FSelection.CaretAtEOL;
+  OldCaretAtEOL := CaretAtEOL;
   IncPaintLock;
   try
     SetCaretXYEx(False, DisplayToBufferPos(aPos));
 
     // fCaretEOL is set if we are at the end of wrapped row
-    FSelection.CaretAtEOL := WordWrap and (aPos.Row <= fWordWrapPlugin.RowCount) and
+    CaretAtEOL := WordWrap and (aPos.Row <= fWordWrapPlugin.RowCount) and
       (aPos.Column > fWordWrapPlugin.GetRowLength(aPos.Row)) and
       (DisplayY <> aPos.Row);
-    if FSelection.CaretAtEOL <> OldCaretAtEOL then
+    if CaretAtEOL <> OldCaretAtEOL then
     begin
       InvalidateLine(CaretY);
       Include(fStateFlags, sfCaretChanged);

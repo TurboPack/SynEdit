@@ -113,13 +113,15 @@ type
     Start: TBufferCoord;
     Stop: TBufferCoord;
     CaretAtEOL: Boolean;  // used by wordwrap
+    LastPosX: Integer;    // in pixels. Used in vertical movements
     procedure Normalize;
     function Normalized: TSynSelection;
     function IsEmpty: Boolean;
     procedure Join(const Sel: TSynSelection);
     function Intersects(const Other: TSynSelection): Boolean;
     function Contains(const BC: TBufferCoord): Boolean;
-    constructor Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL: Boolean = False);
+    constructor Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL:
+        Boolean = False; ALastPosX: Integer = 0);
     class operator Equal(a, b: TSynSelection): Boolean;
     class operator NotEqual(a, b: TSynSelection): Boolean;
     class function Invalid: TSynSelection; static;
@@ -438,12 +440,14 @@ begin
     (BC < TBufferCoord.Max(Start, Stop));
 end;
 
-constructor TSynSelection.Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL: Boolean);
+constructor TSynSelection.Create(const ACaret, AStart, AStop: TBufferCoord;
+    ACaretAtEOL: Boolean = False; ALastPosX: Integer = 0);
 begin
   Caret := ACaret;
   Start := AStart;
   Stop := AStop;
   CaretAtEOL := ACaretAtEOL;
+  LastPosX := ALastPosX;
 end;
 
 class operator TSynSelection.Equal(a, b: TSynSelection): Boolean;

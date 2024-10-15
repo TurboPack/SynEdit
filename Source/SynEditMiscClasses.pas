@@ -694,7 +694,7 @@ type
     function FindCaret(const ACaret: TBufferCoord): Integer;
     function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
     procedure MouseSelection(const Sel: TSynSelection);
-    procedure ColumnSelection(Anchor, ACaret: TBufferCoord);
+    procedure ColumnSelection(Anchor, ACaret: TBufferCoord; LastPosX: Integer = 0);
     procedure Merge;
     function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
@@ -703,7 +703,8 @@ type
     procedure InvalidateAll;
     //Storing and Restoring
     procedure Store(out SelStorage: TSynSelStorage);
-    procedure Restore(const [Ref] SelStorage: TSynSelStorage);
+    procedure Restore(const [Ref] SelStorage: TSynSelStorage); overload;
+    procedure Restore(const [Ref] Sel: TSynSelection; EnsureVisible: Boolean = True); overload;
     // Adjust selections in response to editing events
     // Should only used by Synedit
     procedure LinesInserted(FirstLine, aCount: Integer);
@@ -3016,12 +3017,12 @@ begin
   if FindSelection(ACaret, Index) then
   begin
     DeleteSelection(Index);
-    TSynEdit(FOwner).SetCaretAndSelection(FSelections[FActiveSelIndex], False);
+    Restore(FSelections[FActiveSelIndex], False);
   end
   else if (Index > 0) and (FSelections[Index - 1].Caret = ACaret) then
   begin
     DeleteSelection(Index - 1);
-    TSynEdit(FOwner).SetCaretAndSelection(FSelections[FActiveSelIndex], False);
+    Restore(FSelections[FActiveSelIndex], False);
   end
   else
   begin
@@ -3050,7 +3051,7 @@ begin
   if FSelections.Count = 1 then Exit;
 
   if (KeepSelection = ksKeepBase) and (FActiveSelIndex <> FBaseSelIndex) then
-    TSynEdit(FOwner).SetCaretAndSelection(BaseSelection);
+    Restore(BaseSelection);
 
   for Index := FSelections.Count - 1 downto 0 do
     if not (((KeepSelection = ksKeepBase) and (Index = FBaseSelIndex)) or
@@ -3064,7 +3065,8 @@ begin
   CaretsChanged;
 end;
 
-procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord);
+procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord;
+    LastPosX: Integer);
 
   procedure SetLineSelection(Index, Line, FromChar, ToChar: Integer);
   var
@@ -3078,6 +3080,7 @@ procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord);
     FSelections.List[Index].Caret := BufferCoord(ToChar, Line);
     FSelections.List[Index].Start := BufferCoord(FromChar, Line);
     FSelections.List[Index].Stop := FSelections.List[Index].Caret;
+    FSelections.List[Index].LastPosX := LastPosX;
     InvalidateSelection(Index);
   end;
 
@@ -3093,6 +3096,7 @@ procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord);
     FSelections.List[Index].Start :=
       TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(FromChar, Row));
     FSelections.List[Index].Stop := FSelections.List[Index].Caret;
+    FSelections.List[Index].LastPosX := LastPosX;
     InvalidateSelection(Index);
   end;
 
@@ -3168,7 +3172,7 @@ begin
     FActiveSelIndex := 0;
   end;
 
-  TCustomSynEdit(FOwner).SetCaretAndSelection(ActiveSelection, False);
+  Restore(ActiveSelection, False);
   CaretsChanged;
 end;
 
@@ -3196,7 +3200,7 @@ begin
   if FSelections.Count <= 1 then Exit;
 
   Sel := FSelections[Index];
-  TSynEdit(FOwner).InvalidateSelection(Sel);
+  TCustomSynEdit(FOwner).InvalidateSelection(Sel);
   FSelections.Delete(Index);
 
   if Index = FActiveSelIndex then
@@ -3295,7 +3299,7 @@ end;
 
 procedure TSynSelections.InvalidateSelection(Index: Integer);
 begin
-  TSynEdit(FOwner).InvalidateSelection(FSelections[Index]);
+  TCustomSynEdit(FOwner).InvalidateSelection(FSelections[Index]);
 end;
 
 procedure TSynSelections.LinePut(aIndex: Integer; const OldLine: string);
@@ -3308,7 +3312,7 @@ var
 begin
   if FSelections.Count <= 1 then Exit;
 
-  Line := TSynEdit(FOwner).Lines[aIndex];
+  Line := TCustomSynEdit(FOwner).Lines[aIndex];
   LineDiff(Line, OldLine, StartPos, OldLen, NewLen);
   Delta := NewLen - OldLen;
 
@@ -3390,6 +3394,8 @@ procedure TSynSelections.Merge;
       Caret := Stop;
 
     Result := TSynSelection.Create(Caret, Start, Stop);
+    Result.LastPosX := Sel.LastPosX;
+    Result.CaretAtEOL := Sel.CaretAtEOL
   end;
 
 var
@@ -3429,7 +3435,7 @@ begin
   end;
 
   // Activate the current selection
-  TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection);
+  Restore(ActiveSelection);
 end;
 
 procedure TSynSelections.MouseSelection(const Sel: TSynSelection);
@@ -3477,8 +3483,19 @@ begin
   FActiveSelIndex := SelStorage.ActiveIndex;
   FBaseSelIndex := SelStorage.BaseIndex;
   InvalidateAll;
-  TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection);
+  Restore(ActiveSelection);
   CaretsChanged;
+end;
+
+type
+  TCrackSynEdit = class(TCustomSynEdit);
+
+procedure TSynSelections.Restore(const [Ref] Sel: TSynSelection;
+  EnsureVisible: Boolean);
+begin
+  TCustomSynEdit(FOwner).SetCaretAndSelection(Sel, EnsureVisible);
+  TCrackSynEdit(FOwner).FLastPosX := Sel.LastPosX;
+  TCrackSynEdit(FOwner).CaretAtEOL := Sel.CaretAtEOL;
 end;
 
 function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;
@@ -3487,7 +3504,7 @@ function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;
 
   function IsCaretOnRow(Sel: TSynSelection): Boolean;
   begin
-    if TSynEdit(FOwner).WordWrap then
+    if TCustomSynEdit(FOwner).WordWrap then
       Result := TCustomSynEdit(FOwner).SelectionToDisplayCoord(Sel).Row = ARow
     else
       Result := Sel.Caret.Line = ALine;
@@ -3532,7 +3549,7 @@ begin
     FActiveSelIndex := Index;
     Sel := ActiveSelection;
     if Sel.IsValid then
-      TSynEdit(FOwner).SetCaretAndSelection(ActiveSelection, False);
+      Restore(ActiveSelection, False);
   end;
 end;
 
