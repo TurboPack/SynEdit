@@ -4,7 +4,7 @@
 
 ### New data structures
 
-The two new data strarctures introduces are TSynSelection (single selection):
+The two new data structures introduces are TSynSelection (single selection):
 
 ```pascal
   TSynSelection = record
