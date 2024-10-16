@@ -131,7 +131,7 @@ type
     eoEnhanceEndKey,           //enhances End key positioning, similar to JDeveloper
     eoGroupUndo,               //When undoing/redoing actions, handle all continous changes of the same kind in one call instead undoing/redoing each command separately
     eoHalfPageScroll,          //When scrolling with page-up and page-down commands, only scroll a half page at a time
-    eoHideShowScrollbars,      //if enabled, then the scrollbars will only show when necessary.  If you have ScrollPastEOL, then it the horizontal bar will always be there (it uses MaxLength instead)
+    eoHideShowScrollbars,      //if enabled, then the scrollbars will only show when necessary.
     eoKeepCaretX,              //When moving through lines w/o Cursor Past EOL, keeps the X position of the cursor
     eoNoCaret,                 //Makes it so the caret is never visible
     eoNoSelection,             //Disables selecting text
@@ -7704,20 +7704,25 @@ begin
 
   IncPaintLock;
   try
+    InvalidateSelection;
     SetCaretXYEx(False, ptCaret);
     if EnsureVisible then
       EnsureCursorPosVisibleEx(ForceToMiddle);
-    InvalidateSelection;
-    ValidBB := ValidBC(ptBefore);
-    ValidBE := ValidBC(ptAfter);
-    if (FSelection.Start <> ValidBB) or (FSelection.Stop <> ValidBE) then
-      Include(fStatusChanges, scSelection);
-    FSelection.Start := ValidBB;
     if eoNoSelection in fOptions then
-      FSelection.Stop := ValidBB
+    begin
+      FSelection.Start := ptCaret;
+      FSelection.Stop := ptCaret;
+    end
     else
+    begin
+      ValidBB := ValidBC(ptBefore);
+      ValidBE := ValidBC(ptAfter);
+      if (FSelection.Start <> ValidBB) or (FSelection.Stop <> ValidBE) then
+        Include(fStatusChanges, scSelection);
+      FSelection.Start := ValidBB;
       FSelection.Stop := ValidBE;
-    InvalidateSelection;
+      InvalidateSelection;
+    end;
   finally
     DecPaintLock;
   end;
