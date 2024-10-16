@@ -271,7 +271,6 @@ type
     FMaxUndo: Integer;
     FExtraLineSpacing: Integer;
     FTabWidth: Integer;
-    FMaxScrollWidth: Integer;
     FRightEdge: Integer;
     FSelectedColor: TSynSelectedColor;
     FIndentGuides: TSynIndentGuides;
@@ -309,7 +308,6 @@ type
     property InsertCaret: TSynEditCaretType read FInsertCaret write FInsertCaret;
     property OverwriteCaret: TSynEditCaretType read FOverwriteCaret write FOverwriteCaret;
     property HideSelection: Boolean read FHideSelection write FHideSelection;
-    property MaxScrollWidth: Integer read FMaxScrollWidth write FMaxScrollWidth;
     property MaxUndo: Integer read FMaxUndo write FMaxUndo;
     property SelectedColor: TSynSelectedColor read FSelectedColor;
     property IndentGuides: TSynIndentGuides read FIndentGuides;
@@ -501,7 +499,6 @@ begin
   HideSelection := False;
   InsertCaret := ctVerticalLine;
   OverwriteCaret := ctBlock;
-  MaxScrollWidth := 1024;
   MaxUndo := 0;
   RightEdge := 80;
   RightEdgeColor := clSilver;
