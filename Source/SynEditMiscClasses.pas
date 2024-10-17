@@ -3509,24 +3509,18 @@ var
   Sel: TSynSelection;
   Index: Integer;
 begin
-  if FindSelection(BufferCoord(1, ALine), Index) then
-  begin
-    Sel := FSelections[Index];
-    Exit(Sel.IsEmpty and IsCaretOnRow(Sel));
-  end;
+  // Find first selection that may contain the caret
+  FindSelection(BufferCoord(1, ALine), Index);
 
+  Result := False;
   while Index < FSelections.Count do
   begin
-    Sel := FSelections[Index];
-    if Sel.IsEmpty and IsCaretOnRow(Sel) then
-      Exit(True)
-    else if not Sel.IsEmpty then
-      Break
-    else if Sel.Start.Line > ALine then
-      Break;
+    Sel := FSelections[Index].Normalized;
+    if Sel.Start.Line > ALine then Break;
+    Result := IsCaretOnRow(Sel) and Sel.IsEmpty;
+    if not Result then Break;
     Inc(Index);
   end;
-  Result := False;
 end;
 
 procedure TSynSelections.SetActiveSelection(const Value: TSynSelection);

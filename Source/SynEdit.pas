@@ -2826,8 +2826,7 @@ var
 
     TPartSelArray = TArray<TPartialSelection>;
 
-  function PartialSelection(Row, Line: Integer; const RowStart: TBufferCoord): TPartSelArray;
-
+  function PartialSelections(Row, Line: Integer; const RowStart: TBufferCoord): TPartSelArray;
   var
     Len: Integer;
     IsFullySelected: Boolean;
@@ -2847,15 +2846,12 @@ var
 
       if BB = BE then Exit(False);
 
-      if IsFullySelected then
-        Result := True
-      else
-        Result :=
-          ((Line = BB.Line) and
-           ((InRange(BB.Char, RowStart.Char, RowStart.Char + Len)) and
-           not (WordWrap and (BB.Char = RowStart.Char + Len) and
-           (RowtoLine(Row + 1) = Line) and not Sel.CaretAtEOL))) or
-          ((Line = BE.Line) and InRange(BE.Char, RowStart.Char + 1, RowStart.Char + Len));
+      Result :=
+        ((Line = BB.Line) and
+         ((InRange(BB.Char, RowStart.Char, RowStart.Char + Len)) and
+         not (WordWrap and (BB.Char = RowStart.Char + Len) and
+         (RowtoLine(Row + 1) = Line) and not Sel.CaretAtEOL))) or
+        ((Line = BE.Line) and InRange(BE.Char, RowStart.Char + 1, RowStart.Char + Len));
       if not Result then Exit;
 
       if BB >= RowStart then
@@ -2868,10 +2864,7 @@ var
       else
       begin
         PartSel.First := 1;
-        if IsFullySelected then
-          PartSel.Last := MaxInt
-        else
-          PartSel.Last := BE.Char - RowStart.Char;
+        PartSel.Last := BE.Char - RowStart.Char;
       end;
 
       if DoOnSpecialLineColors(Line, FG, BG) and
@@ -2899,8 +2892,18 @@ var
       Exit;
 
     IsFullySelected := IsRowFullySelected(Row, RowStart);
-    if IsFullySelected and fSelectedColor.FillWholeLines then
+    if IsFullySelected then
+    begin
+      if not fSelectedColor.FillWholeLines then
+      begin
+        PartSel.First := 1;
+        PartSel.Last := MaxInt;
+        PartSel.SelBG := fSelectedColor.Background;
+        PartSel.SelFG := fSelectedColor.Foreground;
+      end;
+      Result := [PartSel];
       Exit;
+    end;
 
     if WordWrap then
       Len := fWordWrapPlugin.RowLength[Row]
@@ -2931,7 +2934,7 @@ var
     Index, I: Integer;
     PartSelArr: TPartSelArray;
   begin
-    PartSelArr := PartialSelection(ARow, ALine, RowStart);
+    PartSelArr := PartialSelections(ARow, ALine, RowStart);
     if Length(PartSelArr) = 0 then Exit;
 
     for Index := 0 to High(PartSelArr) do
@@ -4203,12 +4206,8 @@ var
   Index: Integer;
 begin
   if eoNoCaret in FOptions then
-  begin
-    Exclude(fStateFlags, sfCaretChanged);
-    Exit;
-  end;
-
-  if (PaintLock <> 0) or not (Focused or FAlwaysShowCaret) then
+    Exclude(fStateFlags, sfCaretChanged)
+  else if (PaintLock <> 0) or not (Focused or FAlwaysShowCaret) then
     Include(fStateFlags, sfCaretChanged)
   else
   begin
