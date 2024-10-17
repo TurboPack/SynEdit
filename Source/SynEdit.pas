@@ -2554,7 +2554,9 @@ var
       FullRowFG := fSelectedColor.Foreground;
       FullRowBG := fSelectedColor.Background;
     end
-    else if (ActiveLineColor <> clNone) and  FSelections.RowHasCaret(Row, Line) then
+    else if (ActiveLineColor <> clNone) and  FSelections.RowHasCaret(Row, Line)
+      and FSelections.IsEmpty
+    then
     begin
       FullRowFG := clNone;
       FullRowBG := ActiveLineColor;

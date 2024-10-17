@@ -3494,8 +3494,7 @@ begin
 end;
 
 function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;
-// Used to paint the active line
-// Result is True only if selection is empty as in Delphi and VS Code.
+// Used in painting the active line
 
   function IsCaretOnRow(Sel: TSynSelection): Boolean;
   begin
@@ -3517,8 +3516,8 @@ begin
   begin
     Sel := FSelections[Index].Normalized;
     if Sel.Start.Line > ALine then Break;
-    Result := IsCaretOnRow(Sel) and Sel.IsEmpty;
-    if not Result then Break;
+    Result := IsCaretOnRow(Sel);
+    if Result then Break;
     Inc(Index);
   end;
 end;
