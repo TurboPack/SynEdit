@@ -1660,7 +1660,7 @@ begin
   fCharWidth := FTextFormat.CharWidth;
 
   // We need to recalculate line widths
-  TSynEditStringList(fLines).FontChanged;
+  TSynEditStringList(fLines).ResetMaxWidth;
   if fGutter.ShowLineNumbers and not fGutter.UseFontStyle then
     GutterChanged(Self);
 
@@ -5957,7 +5957,7 @@ begin
     while P2 < PEnd do
     begin
       Inc(P2);
-      if Word(P2^) in [9, 32..126, 160] then Break;
+      if Word(P2^) in [65..90, 97..122] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     Inc(Result, Round(Layout.TextMetrics.widthIncludingTrailingWhitespace));
@@ -7535,6 +7535,7 @@ begin
   if Value <> FVisibleSpecialChars then
   begin
     FVisibleSpecialChars := Value;
+    TSynEditStringList(fLines).ResetMaxWidth;
     Invalidate;
   end;
 end;
