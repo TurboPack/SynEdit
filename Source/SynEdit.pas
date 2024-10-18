@@ -1207,7 +1207,7 @@ begin
       while P2 < PEnd do
       begin
         Inc(P2);
-        if Word(P2^) in [65..90, 97..122] then Break;
+        if Word(P2^) in [9, 65..90, 97..122] then Break;
       end;
 
       Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
@@ -1291,7 +1291,7 @@ begin
     while P2 < PEnd do
     begin
       Inc(P2);
-      if Word(P2^) in [65..90, 97..122] then Break;
+      if Word(P2^) in [9, 65..90, 97..122] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     if P2 < PCol then
@@ -2796,7 +2796,7 @@ var
         HasTabs := True;
         Break;
       end;
-    if HasTabs and (LeftChar mod TabWidth <> 0) then
+    if HasTabs and (XRowOffset mod (fTabWidth * fCharWidth) <> 0) then
     begin
       // Unfortunately this case cannot be readily optimized
       FirstChar := 1;
@@ -5957,7 +5957,7 @@ begin
     while P2 < PEnd do
     begin
       Inc(P2);
-      if Word(P2^) in [65..90, 97..122] then Break;
+      if Word(P2^) in [9, 65..90, 97..122] then Break;
     end;
     Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
     Inc(Result, Round(Layout.TextMetrics.widthIncludingTrailingWhitespace));
