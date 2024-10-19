@@ -146,6 +146,10 @@ const
   ecSetMarker8      = 359;  // Set marker, Data = PPoint - X, Y Pos
   ecSetMarker9      = 360;  // Set marker, Data = PPoint - X, Y Pos
 
+  ecZoomIn          = 401;
+  ecZoomOut         = 402;
+  ecZoomReset       = 403;
+
   ecGotFocus        = 480;
   ecLostFocus       = 481;
 
@@ -321,7 +325,7 @@ uses
 { Command mapping routines }
 
 const
-  EditorCommandStrs: array[0..119] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..122] of TIdentMapEntry = (
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
     (Value: ecRight; Name: 'ecRight'),
@@ -412,6 +416,9 @@ const
     (Value: ecSetMarker7; Name: 'ecSetMarker7'),
     (Value: ecSetMarker8; Name: 'ecSetMarker8'),
     (Value: ecSetMarker9; Name: 'ecSetMarker9'),
+    (Value: ecZoomIn; Name: 'ecZoomIn'),
+    (Value: ecZoomOut; Name: 'ecZoomOut'),
+    (Value: ecZoomReset; Name: 'ecZoomReset'),
     (Value: ecUpperCase; Name: 'ecUpperCase'),
     (Value: ecLowerCase; Name: 'ecLowerCase'),
     (Value: ecToggleCase; Name: 'ecToggleCase'),
@@ -855,6 +862,9 @@ begin
   AddKey(ecSetMarker7, Ord('7'), [ssCtrl,ssShift]);
   AddKey(ecSetMarker8, Ord('8'), [ssCtrl,ssShift]);
   AddKey(ecSetMarker9, Ord('9'), [ssCtrl,ssShift]);
+  AddKey(ecZoomIn, SYNEDIT_ADD, [ssAlt]);
+  AddKey(ecZoomOut, SYNEDIT_SUBTRACT, [ssAlt]);
+  AddKey(ecZoomReset, VK_NUMPAD0, [ssAlt]);
   AddKey(ecMatchBracket, VK_OEM_6, [ssCtrl]); // VK_OEM_6 is ']' in US keyboards
   AddKey(ecSelMatchBracket, VK_OEM_6, [ssCtrl,ssShift]);
   AddKey(ecLowerCase, Ord('K'), [ssCtrl], Ord('L'), [ssCtrl]);
@@ -1082,6 +1092,9 @@ begin
   SynCommandsInfo.Add(ecSetMarker7, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSetMarker8, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecSetMarker9, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecZoomIn, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecZoomOut, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecZoomReset, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecGotFocus, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecLostFocus, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecContextHelp, TSynCommandInfo.Create(ckSingleCaret, False));

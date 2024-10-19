@@ -374,6 +374,8 @@ type
     FBracketsHighlight: TSynBracketsHighlight;
     FPasteArray: TArray<string>;
     FPaintTransientPlugins: Boolean;
+    FOrigFontSize: Integer;
+    FOrigGutterFontSize: Integer;
 
     // Accessibility
     FUIAutomationProvider: IInterface;  // IRawElementProviderSimple
@@ -819,6 +821,9 @@ type
     function IsChained: Boolean;
     procedure HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo: ISynEditUndo);
     procedure UnHookTextBuffer;
+
+    procedure Zoom(ExtraSize: Integer);
+    procedure ZoomReset;
 //++ CodeFolding
     procedure CollapseAll;
     procedure UncollapseAll;
@@ -1666,6 +1671,9 @@ begin
 
   // Invalidate and handle the changes
   SizeOrFontChanged(True);
+
+  // Used in Zoom
+  FOrigFontSize := Font.Size;
 end;
 
 function TCustomSynEdit.GetLineText: string;
@@ -2801,6 +2809,16 @@ var
       // Unfortunately this case cannot be readily optimized
       FirstChar := 1;
       XRowOffset := 0;
+    end
+    else begin
+      // Check for RTL characters which are not safe to optimize
+      for I := FirstChar to LastChar do
+        if (S[I] >= #$0590) and (S[I] <= #$08FF) then
+        begin
+          FirstChar := 1;
+          XRowOffset := 0;
+          Exit;
+        end;
     end;
   end;
 
@@ -4609,7 +4627,8 @@ Var
   WheelDelta: SmallInt;
   MousePos: TSmallPoint;
 begin
-  Shift := KeysToShiftState(Message.Keys);
+  // Message.Keys does not always contain correct shift state
+  Shift := KeyboardStateToShiftState;
   Include(Shift, System.Classes.ssHorizontal);
   WheelDelta := - Message.WheelDelta; // HWheel directions are reversed from Wheel
   MousePos := Message.Pos;
@@ -5362,9 +5381,9 @@ procedure TCustomSynEdit.WndProc(var Msg: TMessage);
 const
   ALT_KEY_DOWN = $20000000;
 begin
-  // Prevent Alt-Backspace from beeping
-  if (Msg.Msg = WM_SYSCHAR) and (Msg.wParam = VK_BACK) and
-    (Msg.lParam and ALT_KEY_DOWN <> 0)
+  // Prevent Alt+ from beeping
+  if (Msg.Msg = WM_SYSCHAR) and (Msg.lParam and ALT_KEY_DOWN <> 0) and
+    (Msg.wParam in [VK_BACK, Ord('+'), Ord('-')])
   then
     Msg.Msg := 0;
 
@@ -6648,6 +6667,9 @@ begin
         begin
           CaretsAtLineEnds;
         end;
+      ecZoomIn: Zoom(1);
+      ecZoomOut: Zoom(-1);
+      ecZoomReset: ZoomReset;
     end;
   finally
     DecPaintLock;
@@ -7100,6 +7122,9 @@ begin
     else
       SetGutterWidth(nW);
   end;
+
+  // Used in Zoom
+  FOrigGutterFontSize := Font.Size;
 end;
 
 procedure TCustomSynEdit.LockUndo;
@@ -9754,6 +9779,26 @@ procedure TCustomSynEdit.WordWrapGlyphChange(Sender: TObject);
 begin
   if not (csLoading in ComponentState) then
     InvalidateGutter;
+end;
+
+procedure TCustomSynEdit.Zoom(ExtraSize: Integer);
+var
+  OldFontSize: Integer;
+  OldGutterFontSize: Integer;
+begin
+  OldFontSize := FOrigFontSize;
+  OldGutterFontSize := FOrigGutterFontSize;
+  Font.Size := EnsureRange(Font.Size + ExtraSize, 3, 50);
+  Gutter.Font.Size := EnsureRange(Gutter.Font.Size + ExtraSize, 2, 49);
+  FOrigFontSize := OldFontSize;
+  FOrigGutterFontSize := OldGutterFontSize;
+end;
+
+
+procedure TCustomSynEdit.ZoomReset;
+begin
+  Font.Size := FOrigFontSize;
+  Gutter.Font.Size := FOrigGutterFontSize;
 end;
 
 { TSynEditMark }

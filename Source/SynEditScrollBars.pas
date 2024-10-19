@@ -433,15 +433,17 @@ var
   LinesToScroll: Integer;
   CharsToScroll: Integer;
 begin
-  // We are hard setting these but we could use Mouse.WheelScrollLines and
-  // SPI_GETWHEELSCROLLCHARS to get user settings.
-  LinesToScroll := 3;
-  CharsToScroll := 3;
-  if not (ssShift in Shift) and not (ssHorizontal in Shift) then
+  if [ssCtrl, ssAlt, ssShift, ssHorizontal] * Shift = [ssCtrl] then
+  begin
+    FMouseWheelVertAccumulator := 0;
+    FOwner.Zoom(Sign(WheelDelta));
+  end
+  else if ([ssShift, ssCtrl] * Shift <> [ssShift]) and not (ssHorizontal in Shift) then
   begin
     // Vertical wheel scrolling
-    if GetKeyState(SYNEDIT_CONTROL) < 0 then
-      LinesToScroll := FOwner.LinesInWindow shr Ord(eoHalfPageScroll in FOwner.Options);
+    LinesToScroll := Mouse.WheelScrollLines;
+    if [ssShift, ssCtrl] * Shift = [ssShift, ssCtrl] then
+      LinesToScroll := FOwner.LinesInWindow div 2;
     Inc(FMouseWheelVertAccumulator, WheelDelta);
     WheelClicks := FMouseWheelVertAccumulator div WHEEL_DELTA;
     FMouseWheelVertAccumulator := FMouseWheelVertAccumulator mod WHEEL_DELTA;
@@ -451,8 +453,9 @@ begin
   else
   begin
     // Horizontal wheel or tilt scrolling
-    if GetKeyState(SYNEDIT_CONTROL) < 0 then
-      CharsToScroll := GetHorzPageInChars shr Ord(eoHalfPageScroll in FOwner.Options);
+    SystemParametersInfo(SPI_GETWHEELSCROLLCHARS, 0, CharsToScroll, 0);
+    if [ssShift, ssCtrl] * Shift = [ssShift, ssCtrl] then
+      CharsToScroll := GetHorzPageInChars div 2;
     Inc(FMouseWheelHorzAccumulator, WheelDelta);
     WheelClicks := FMouseWheelHorzAccumulator div WHEEL_DELTA;
     FMouseWheelHorzAccumulator := FMouseWheelHorzAccumulator mod WHEEL_DELTA;
