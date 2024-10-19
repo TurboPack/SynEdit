@@ -203,7 +203,6 @@ begin
   ScrollInfo.fMask := SIF_ALL;
   if AState.Active then
   begin
-
     if not HideEnabled then
       ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
 
@@ -304,6 +303,8 @@ begin
     FPrevVertSBState := FNewVertSBState;
     Result := True;
   end;
+  if Result then
+    SendMessage(FOwner.Handle, WM_NCPAINT, 0, 0);
 end;
 
 procedure TSynEditScrollBars.WMHScroll(var AMsg: TWMScroll);
