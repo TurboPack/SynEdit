@@ -122,7 +122,6 @@ type
   TScrollHintFormat = (shfTopLineOnly, shfTopToBottom);
 
   TSynEditorOption = (
-    eoAltSetsColumnMode,       //Holding down the Alt Key will put the selection mode into columnar format
     eoAutoIndent,              //Will indent the caret on new lines with the same amount of leading white space as the preceding line
     eoDisableScrollArrows,     //Disables the scroll bar arrow buttons when you can't scroll in that direction any more
     eoDragDropEditing,         //Allows you to select a block of text and drag it within the document to another location

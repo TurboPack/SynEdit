@@ -477,7 +477,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Caption = 'Want tabs'
           TabOrder = 4
         end
-        object ckAltSetsColumnMode: TCheckBox
+        object ckBracketsHiglight: TCheckBox
           Left = 9
           Top = 53
           Width = 170
@@ -485,7 +485,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Hint = 
             'Holding down the Alt Key will put the selection mode into column' +
             'ar format'
-          Caption = 'Alt sets column mode'
+          Caption = 'Higlight matching brackets'
           TabOrder = 2
         end
         object ckKeepCaretX: TCheckBox

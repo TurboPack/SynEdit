@@ -157,7 +157,7 @@ type
     Label7: TLabel;
     cKeyCommand: TComboBox;
     btnUpdateKey: TButton;
-    ckAltSetsColumnMode: TCheckBox;
+    ckBracketsHiglight: TCheckBox;
     ckKeepCaretX: TCheckBox;
     eTabWidth: TEdit;
     pRightEdgeColor: TPanel;
@@ -590,7 +590,7 @@ begin
   ckDragAndDropEditing.Checked:= eoDragDropEditing in FSynEdit.Options;
   ckWantTabs.Checked:= FSynEdit.WantTabs;
   ckSmartTabs.Checked:= eoSmartTabs in FSynEdit.Options;
-  ckAltSetsColumnMode.Checked:= eoAltSetsColumnMode in FSynEdit.Options;
+  ckBracketsHiglight.Checked:= eoBracketsHighlight in FSynEdit.Options;
   ckHalfPageScroll.Checked:= eoHalfPageScroll in FSynEdit.Options;
   ckScrollByOneLess.Checked:= eoScrollByOneLess in FSynEdit.Options;
   ckScrollPastEOF.Checked:= eoScrollPastEof in FSynEdit.Options;
@@ -666,7 +666,7 @@ begin
   SetFlag(eoAutoIndent, ckAutoIndent.Checked);
   SetFlag(eoDragDropEditing, ckDragAndDropEditing.Checked);
   SetFlag(eoSmartTabs, ckSmartTabs.Checked);
-  SetFlag(eoAltSetsColumnMode, ckAltSetsColumnMode.Checked);
+  SetFlag(eoBracketsHighlight, ckBracketsHiglight.Checked);
   SetFlag(eoHalfPageScroll, ckHalfPageScroll.Checked);
   SetFlag(eoScrollByOneLess, ckScrollByOneLess.Checked);
   SetFlag(eoScrollPastEof, ckScrollPastEOF.Checked);

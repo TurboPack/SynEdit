@@ -56,10 +56,10 @@ on the active selection only and reflected on the Selection property.
 Changes to the active selection are synched with the Selections object in DecPaintLock when
 FPaintLock drops to 0.
 
-### New and removed commands
+### New and removed options and commands
 
-Everything that relates to the old selection mode has been removed including the commands
-ecSelectNormal, ecSelectLine and ecSelectColumn.
+Everything that relates to the old selection mode has been removed including the option 
+eoAltSetsColumnMode and the commands ecSelectNormal, ecSelectLine and ecSelectColumn.
 
 The Following new commands have been added:
 ```pascal
@@ -102,8 +102,8 @@ the active selection.
 
 There should be no major compatibility issues.   Your code using SynEdit should most likely
 compile with no changes or just minor changes.  The main incompatibility relates to the 
-removal of the old selection mode properties and commands.  Also, the UpdateCaret method
-has been renamed to UpdateCarets.
+removal of the old selection mode options, properties and commands.  Also, the UpdateCaret 
+method has been renamed to UpdateCarets.
 
 However if you need to account for multiple selections you need to bear the following in
 mind.
