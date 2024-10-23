@@ -603,7 +603,10 @@ begin
                  sbpSecondRight: AnnRect.Left := R.Width - 2 * AnnWidth;
                  sbpRight: AnnRect.Left := R.Width - AnnWidth;
                end;
-               AnnRect.Right := AnnRect.Left + AnnWidth;
+               if Ann.AnnPos = sbpFullWidth then
+                 AnnRect.Right := R.Width
+               else
+                 AnnRect.Right := AnnRect.Left + AnnWidth;
                LBitmap.Canvas.FillRect(AnnRect);
              end;
           end;
