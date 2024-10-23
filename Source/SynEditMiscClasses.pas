@@ -529,6 +529,8 @@ type
   end;
   {$ENDREGION 'TSynHotKey'}
 
+  {$REGION 'TSynEditSearchCustom'}
+
   TSynIsWordBreakFunction = function(C: WideChar): Boolean of object;
 
   TSynEditSearchCustom = class(TComponent)
@@ -558,6 +560,8 @@ type
     property Options: TSynSearchOptions write SetOptions;
     property IsWordBreakFunction: TSynIsWordBreakFunction write FIsWordBreakFunction;
   end;
+
+  {$ENDREGION 'TSynEditSearchCustom'}
 
   {$REGION 'Indicators'}
 
@@ -621,6 +625,8 @@ type
   end;
   {$ENDREGION 'TSynIndicators'}
 
+  {$REGION 'TSynBracketsHighlight'}
+
   TSynBracketsHighlight = class
   public
     const MatchingBracketsIndicatorID: TGUID = '{EC19D246-8F03-42FE-BDFB-A11F3E60B00B}';
@@ -635,6 +641,8 @@ type
     procedure SetIndicatorSpecs(const MatchingBracketsSpec,
       UnbalancedBracketSpec: TSynIndicatorSpec);
   end;
+
+  {$ENDREGION 'TSynBracketsHighlight'}
 
   {$REGION 'TSynCarets'}
 
@@ -726,12 +734,56 @@ type
 
   {$ENDREGION 'TSynSelections'}
 
+  {$REGION 'Scrollbar Annotations'}
+  TSynScrollbarAnnType = (sbaSelection, sbaBookmark, sbaTrackChanges,
+     sbaCustom1, sbaCustom2, sbaCustom3);
+
+  TSynScrollbarAnnPos = (sbpLeft, sbpSecondLeft, sbpMiddle,
+    sbpSecondRight, sbpRight, sbpFullWidth);
+
+  TScrollbarAnnotationInfoEvent = procedure(Sender: TObject;
+    AnnType: TSynScrollbarAnnType; var Rows: TArray<Integer>;
+    var Colors: TArray<TColor>) of object;
+
+  TSynScrollbarAnnItem = class(TCollectionItem)
+  private
+    FAnnType: TSynScrollbarAnnType;
+    FAnnPos: TSynScrollbarAnnPos;
+    FOnGetInfo: TScrollbarAnnotationInfoEvent;
+    FSelectionColor: TColor;
+    FBookmarkColor: TColor;
+  public
+    constructor Create(Collection: TCollection); override;
+    procedure GetInfo(out Rows: TArray<Integer>; out Colors: TArray<TColor>);
+  published
+    property AnnType: TSynScrollbarAnnType read FAnnType write FAnnType;
+    property AnnPos: TSynScrollbarAnnPos read FAnnPos write FAnnPos;
+    property SelectionColor: TColor read FSelectionColor write FSelectionColor
+      default clDefault;
+    property BookmarkColor: TColor read FBookmarkColor write FBookmarkColor
+      default clDefault;
+    property OnGetInfo: TScrollbarAnnotationInfoEvent read FOnGetInfo
+      write FOnGetInfo;
+  end;
+
+  TSynScrollbarAnnotations = class(TOwnedCollection)
+  private
+    function GetAnnotations(Index: Integer): TSynScrollbarAnnItem;
+  public
+    procedure SetDefaultAnnotations;
+    property Annotations[Index: Integer]: TSynScrollbarAnnItem
+      read GetAnnotations; default;
+  end;
+
+  {$ENDREGION 'Scrollbar Annotations'}
+
 implementation
 
 uses
   System.Rtti,
   System.Generics.Defaults,
   Vcl.GraphUtil,
+  Vcl.Themes,
   SynEditMiscProcs,
   SynEditCodeFolding,
   SynEdit,
@@ -3617,6 +3669,138 @@ end;
 procedure TSynSelStorage.Clear;
 begin
   Selections := [];
+end;
+
+{$REGION 'Scrollbar Annotations'}
+
+{ TSynScrollbarAnnItem }
+
+constructor TSynScrollbarAnnItem.Create(Collection: TCollection);
+begin
+  inherited;
+  FSelectionColor := clDefault;
+  FBookmarkColor := clDefault;
+end;
+
+procedure TSynScrollbarAnnItem.GetInfo(out Rows: TArray<Integer>;
+  out Colors: TArray<TColor>);
+var
+  Editor: TCustomSynEdit;
+  I, J, Line, Row, LastRow: Integer;
+  Sel: TSynSelection;
+  RowList: TList<Integer>;
+  ColorList: TList<TColor>;
+  Color: TColor;
+  Mark: TSynEditMark;
+  Flags: TSynLineChangeFlags;
+begin
+  Editor := TCustomSynEdit(Collection.Owner);
+
+  if Assigned(FOnGetInfo) then
+     FOnGetInfo(Editor, FAnnType, Rows, Colors)
+  else
+  begin
+    RowList := TList<Integer>.Create;
+    try
+      case FAnnType of
+        sbaSelection:
+          begin
+            LastRow := 0;
+            for I := 0 to Editor.Selections.Count - 1 do
+            begin
+              Sel := Editor.Selections[I].Normalized;
+              for J := Editor.BufferToDisplayPos(Sel.Start).Row to
+                Editor.BufferToDisplayPos(Sel.Stop).Row do
+              begin
+                if J > LastRow then
+                begin
+                  RowList.Add(J);
+                  LastRow := J;
+                end;
+              end;
+            end;
+            if FSelectionColor <> clDefault then
+              Color := FSelectionColor
+            else
+              Color := StyleServices.GetSystemColor(clHighlight);
+            Colors := [Color];
+          end;
+        sbaBookmark:
+          begin
+            for Mark in Editor.Marks do
+              if Mark.IsBookmark then
+                RowList.Add(Editor.LineToRow(Mark.Line));
+            if FBookmarkColor <> clDefault then
+              Color := FBookmarkColor
+            else
+              Color := StyleServices.GetSystemColor(clWebSienna);
+            Colors := [Color];
+          end;
+        sbaTrackChanges:
+          begin
+            ColorList := TList<TColor>.Create;
+            try
+              for Row := 1 to Editor.DisplayRowCount do
+              begin
+                Line := Editor.RowToLine(Row);
+                Color := clNone;
+                Flags := TSynEditStringList(Editor.Lines).ChangeFlags[Line - 1];
+                if Flags = [sfModified] then
+                  Color := Editor.Gutter.TrackChanges.ModifiedColor
+                else if Flags = [sfSaved, sfAsSaved] then
+                  Color := Editor.Gutter.TrackChanges.SavedColor
+                else if Flags = [sfSaved] then
+                  Color := Editor.Gutter.TrackChanges.OriginalColor
+                else if Flags = [sfSaved, sfModified] then
+                  Color := Editor.Gutter.TrackChanges.SavedModifiedColor;
+
+                if Color <> clNone then
+                begin
+                  RowList.Add(Row);
+                  ColorList.Add(Color);
+                end;
+              end;
+              Colors := ColorList.ToArray;
+            finally
+              ColorList.Free;
+            end;
+          end;
+      end;
+      Rows := RowList.ToArray;
+    finally
+      RowList.Free;
+    end;
+  end;
+end;
+
+{ TScrollbarAnnotations }
+
+function TSynScrollbarAnnotations.GetAnnotations(
+  Index: Integer): TSynScrollbarAnnItem;
+begin
+  Result := TSynScrollbarAnnItem(Items[Index]);
+end;
+
+{$ENDREGION 'Scrollbar Annotations'}
+
+procedure TSynScrollbarAnnotations.SetDefaultAnnotations;
+begin
+  Clear;
+  with Add as TSynScrollbarAnnItem do
+  begin
+    AnnPos := sbpLeft;
+    AnnType := sbaSelection;
+  end;
+  with Add as TSynScrollbarAnnItem do
+  begin
+    AnnPos := sbpSecondLeft;
+    AnnType := sbaBookmark;
+  end;
+  with Add as TSynScrollbarAnnItem do
+  begin
+    AnnPos := sbpRight;
+    AnnType := sbaTrackChanges;
+  end;
 end;
 
 end.

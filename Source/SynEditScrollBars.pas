@@ -29,26 +29,37 @@ unit SynEditScrollBars;
 interface
 
 uses
+  Winapi.Windows,
   System.SysUtils,
   System.UITypes,
   Vcl.Controls,
+  Vcl.Forms,
   SynEditTypes;
 
 { Factory Method }
 function CreateSynEditScrollBars(Editor: TCustomControl): ISynEditScrollBars;
 
+// Scrolling style hook
+type
+  TSynScrollingStyleHook = class(TScrollingStyleHook)
+  strict protected
+    procedure DrawVertScroll(DC: HDC); override;
+  end;
+
+
 implementation
 
 uses
-  Winapi.Windows,
   Winapi.Messages,
   System.Classes,
   System.Types,
   System.Math,
-  Vcl.Forms,
+  Vcl.Themes,
+  Vcl.Graphics,
   SynEdit,
   SynEditTextBuffer,
   SynEditMiscProcs,
+  SynEditMiscClasses,
   SynEditStrConst,
   SynEditKeyConst;
 
@@ -491,6 +502,120 @@ begin
     Result := TSynEditScrollBars.Create(TCustomSynEdit(Editor))
   else
     raise Exception.Create('SynEditScrollBars will only work with SynEdit.');
+end;
+
+{ TSynScrollingStyleHook }
+
+procedure TSynScrollingStyleHook.DrawVertScroll(DC: HDC);
+var
+  LBitmap: TBitmap;
+  Details: TThemedElementDetails;
+  R, AnnRect: TRect;
+  LPPI: Integer;
+  LStyle: TCustomStyleServices;
+  LVertScrollRect, LVertSliderRect: TRect;
+  Editor: TCustomSynEdit;
+  Ann: TSynScrollbarAnnItem;
+  I, J, Row, RowCount: Integer;
+  Rows: TArray<Integer>;
+  Colors: TArray<TColor>;
+  Color: TColor;
+  AnnHeight: Integer;
+  AnnWidth: Integer;
+begin
+  if Handle = 0 then Exit;
+  if DC = 0 then Exit;
+  LPPI := Control.CurrentPPI;
+  LStyle := StyleServices;
+  LVertScrollRect := VertScrollRect;
+  LVertSliderRect := VertSliderRect;
+  if (LVertScrollRect.Width > 0) and (LVertScrollRect.Height > 0) then
+  begin
+    LBitmap := TBitmap.Create;
+    try
+      LBitmap.Width := LVertScrollRect.Width;
+      LBitmap.Height := LVertScrollRect.Height;
+      if LStyle.Available then
+      begin
+        MoveWindowOrg(LBitmap.Canvas.Handle, -LVertScrollRect.Left, -LVertScrollRect.Top);
+        R := LVertScrollRect;
+        R.Top := VertUpButtonRect.Bottom;
+        R.Bottom := VertDownButtonRect.Top;
+        if (R.Height > 0) and (R.Width > 0) then
+        begin
+          Details := LStyle.GetElementDetails(tsUpperTrackVertNormal);
+          LStyle.DrawElement(LBitmap.Canvas.Handle, Details, R, nil, LPPI);
+        end;
+
+        if (LVertSliderRect.Height > 0) and (LVertSliderRect.Width > 0) then
+        begin
+          Details := LStyle.GetElementDetails(VertSliderState);
+          LStyle.DrawElement(LBitmap.Canvas.Handle, Details, LVertSliderRect, nil, LPPI);
+        end;
+
+        if LVertSliderRect.Height <> 0 then
+          Details := LStyle.GetElementDetails(VertUpState)
+        else
+          Details := LStyle.GetElementDetails(tsArrowBtnUpDisabled);
+        LStyle.DrawElement(LBitmap.Canvas.Handle, Details, VertUpButtonRect, nil, LPPI);
+
+        if LVertSliderRect.Height <> 0 then
+          Details := LStyle.GetElementDetails(VertDownState)
+        else
+          Details := LStyle.GetElementDetails(tsArrowBtnDownDisabled);
+        LStyle.DrawElement(LBitmap.Canvas.Handle, Details, VertDownButtonRect, nil, LPPI);
+
+        MoveWindowOrg(LBitmap.Canvas.Handle, LVertScrollRect.Left, LVertScrollRect.Top + VertUpButtonRect.Height);
+
+        // Scrollbar Annotations
+        Editor := Control as TCustomSynEdit;
+        RowCount := Editor.DisplayRowCount;
+        if (RowCount > Editor.LinesInWindow) and (LVertSliderRect.Height > 0)
+          and (R.Height > 0) and (R.Width > 0)
+        then
+        begin
+          RowCount := Editor.DisplayRowCount;
+
+          AnnHeight := Max(R.Height div Editor.DisplayRowCount, 2);
+          AnnWidth :=  Max(R.Width div 5, 1);  // Allow 5 annotations per row
+          for I := 0 to Editor.ScrollbarAnnotations.Count - 1 do
+          begin
+             Ann := Editor.ScrollbarAnnotations[I];
+             Ann.GetInfo(Rows, Colors);
+             LBitmap.Canvas.Brush.Style := bsSolid;
+             For J := Low(Rows) to High(Rows) do
+             begin
+               Row := Rows[J];
+               if Length(Colors) = 1 then
+                 Color := Colors[0]
+               else
+                 Color := Colors[J];
+               LBitmap.Canvas.Brush.Color := Color;
+               AnnRect.Top := Muldiv(R.Height, Row - 1, RowCount);
+               AnnRect.Bottom := AnnRect.Top + AnnHeight;
+               if Row > 1 then
+                 AnnRect.Top := Min(AnnRect.Top,
+                   Muldiv(R.Height, Row - 2, RowCount) + AnnHeight);
+               case Ann.AnnPos of
+                 sbpLeft, sbpFullWidth: AnnRect.Left := 0;
+                 sbpSecondLeft: AnnRect.Left := AnnWidth;
+                 sbpMiddle: AnnRect.Left := 2 * AnnWidth;
+                 sbpSecondRight: AnnRect.Left := R.Width - 2 * AnnWidth;
+                 sbpRight: AnnRect.Left := R.Width - AnnWidth;
+               end;
+               AnnRect.Right := AnnRect.Left + AnnWidth;
+               LBitmap.Canvas.FillRect(AnnRect);
+             end;
+          end;
+        end;
+        MoveWindowOrg(LBitmap.Canvas.Handle, 0, -VertUpButtonRect.Height);
+      end;
+      BitBlt(DC, LVertScrollRect.Left, LVertScrollRect.Top, LBitmap.Width,
+        LBitmap.Height, LBitmap.Canvas.Handle, 0, 0, SRCCOPY);
+    finally
+      LBitmap.Free;
+    end;
+  end;
 end;
 
 end.

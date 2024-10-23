@@ -371,6 +371,7 @@ type
     FTextFormat: TSynTextFormat;
     FSelStorage: TSynSelStorage;
     FBracketsHighlight: TSynBracketsHighlight;
+    FScrollbarAnnotations: TSynScrollbarAnnotations;
     FPasteArray: TArray<string>;
     FPaintTransientPlugins: Boolean;
     FOrigFontSize: Integer;
@@ -860,6 +861,7 @@ type
     property Font;
     property Indicators: TSynIndicators read FIndicators;
     property BracketsHighlight: TSynBracketsHighlight read FBracketsHighlight;
+    property ScrollbarAnnotations: TSynScrollbarAnnotations read FScrollbarAnnotations;
     property Highlighter: TSynCustomHighlighter read fHighlighter
       write SetHighlighter;
     property LeftChar: Integer read fLeftChar write SetLeftChar;
@@ -1064,6 +1066,7 @@ type
     property ScrollHintColor;
     property ScrollHintFormat;
     property ScrollBars;
+    property ScrollbarAnnotations;
     property SearchEngine;
     property SelectedColor;
     property TabWidth;
@@ -1478,7 +1481,11 @@ begin
   fWordWrapGlyph := TSynGlyph.Create(HINSTANCE, 'SynEditWrapped');
   fWordWrapGlyph.OnChange := WordWrapGlyphChange;
   FIndicators := TSynIndicators.Create(Self);
+  // Brackets Highlight
   FBracketsHighlight := TSynBracketsHighlight.Create(Self);
+  // Scrollbar Annotations
+  FScrollbarAnnotations := TSynScrollbarAnnotations.Create(Self, TSynScrollbarAnnItem);
+  FScrollbarAnnotations.SetDefaultAnnotations;
 
   ControlStyle := ControlStyle + [csOpaque, csSetCaption, csNeedsBorderPaint];
   Height := 150;
@@ -1627,6 +1634,7 @@ begin
   fOrigUndoRedo := nil;
   fGutter.Free;
   fWordWrapGlyph.Free;
+  FScrollbarAnnotations.Free;
   FBracketsHighlight.Free;
   FIndicators.Free;
   fOrigLines.Free;
@@ -9985,9 +9993,9 @@ end;
 
 
 initialization
- TCustomStyleEngine.RegisterStyleHook(TCustomSynEdit, TScrollingStyleHook);
+ TCustomStyleEngine.RegisterStyleHook(TCustomSynEdit, TSynScrollingStyleHook);
 
 finalization
- TCustomStyleEngine.UnRegisterStyleHook(TCustomSynEdit, TScrollingStyleHook);
+ TCustomStyleEngine.UnRegisterStyleHook(TCustomSynEdit, TSynScrollingStyleHook);
 
 end.
