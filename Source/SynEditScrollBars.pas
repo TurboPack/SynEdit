@@ -56,6 +56,7 @@ uses
   System.Math,
   Vcl.Themes,
   Vcl.Graphics,
+  Vcl.GraphUtil,
   SynEdit,
   SynEditTextBuffer,
   SynEditMiscProcs,
@@ -522,6 +523,7 @@ var
   Color: TColor;
   AnnHeight: Integer;
   AnnWidth: Integer;
+  SliderBitmap: TBitmap;
 begin
   if Handle = 0 then Exit;
   if DC = 0 then Exit;
@@ -529,6 +531,7 @@ begin
   LStyle := StyleServices;
   LVertScrollRect := VertScrollRect;
   LVertSliderRect := VertSliderRect;
+  Editor := Control as TCustomSynEdit;
   if (LVertScrollRect.Width > 0) and (LVertScrollRect.Height > 0) then
   begin
     LBitmap := TBitmap.Create;
@@ -547,10 +550,13 @@ begin
           LStyle.DrawElement(LBitmap.Canvas.Handle, Details, R, nil, LPPI);
         end;
 
-        if (LVertSliderRect.Height > 0) and (LVertSliderRect.Width > 0) then
+        if Editor.ScrollbarAnnotations.Count = 0 then
         begin
-          Details := LStyle.GetElementDetails(VertSliderState);
-          LStyle.DrawElement(LBitmap.Canvas.Handle, Details, LVertSliderRect, nil, LPPI);
+          if (LVertSliderRect.Height > 0) and (LVertSliderRect.Width > 0) then
+          begin
+            Details := LStyle.GetElementDetails(VertSliderState);
+            LStyle.DrawElement(LBitmap.Canvas.Handle, Details, LVertSliderRect, nil, LPPI);
+          end;
         end;
 
         if LVertSliderRect.Height <> 0 then
@@ -568,7 +574,6 @@ begin
         MoveWindowOrg(LBitmap.Canvas.Handle, LVertScrollRect.Left, LVertScrollRect.Top + VertUpButtonRect.Height);
 
         // Scrollbar Annotations
-        Editor := Control as TCustomSynEdit;
         RowCount := Editor.DisplayRowCount;
         if (RowCount > Editor.LinesInWindow) and (LVertSliderRect.Height > 0)
           and (R.Height > 0) and (R.Width > 0)
@@ -576,11 +581,15 @@ begin
         begin
           RowCount := Editor.DisplayRowCount;
 
-          AnnHeight := Max(R.Height div Editor.DisplayRowCount, 2);
           AnnWidth :=  Max(R.Width div 5, 1);  // Allow 5 annotations per row
           for I := 0 to Editor.ScrollbarAnnotations.Count - 1 do
           begin
              Ann := Editor.ScrollbarAnnotations[I];
+             if Ann.FullRow then
+               AnnHeight := Max(R.Height div Editor.DisplayRowCount, MulDiv(1, LPPI, 96))
+             else
+               AnnHeight := MulDiv(1, LPPI, 96);
+
              Ann.GetInfo(Rows, Colors);
              LBitmap.Canvas.Brush.Style := bsSolid;
              For J := Low(Rows) to High(Rows) do
@@ -593,7 +602,7 @@ begin
                LBitmap.Canvas.Brush.Color := Color;
                AnnRect.Top := Muldiv(R.Height, Row - 1, RowCount);
                AnnRect.Bottom := AnnRect.Top + AnnHeight;
-               if Row > 1 then
+               if Ann.FullRow and (Row > 1) then
                  AnnRect.Top := Min(AnnRect.Top,
                    Muldiv(R.Height, Row - 2, RowCount) + AnnHeight);
                case Ann.AnnPos of
@@ -611,7 +620,31 @@ begin
              end;
           end;
         end;
+
         MoveWindowOrg(LBitmap.Canvas.Handle, 0, -VertUpButtonRect.Height);
+
+        // Alpha blend the slider
+        if (Editor.ScrollbarAnnotations.Count > 0) and
+          (LVertSliderRect.Height > 0) and (LVertSliderRect.Width > 0)
+        then
+        begin
+          SliderBitmap := TBitmap.Create;
+          try
+            SliderBitmap.PixelFormat := pf32bit;
+            SliderBitmap.Canvas.Brush.Color := clFuchsia;
+            SliderBitmap.TransparentColor := clFuchsia;
+            SliderBitmap.TransparentMode := tmFixed;
+            SliderBitmap.SetSize(LVertSliderRect.Width, LVertSliderRect.Height);
+            Details := LStyle.GetElementDetails(VertSliderState);
+            LStyle.DrawElement(SliderBitmap.Canvas.Handle, Details,
+              Rect(0, 0, LVertSliderRect.Width, LVertSliderRect.Height), nil, LPPI);
+            LBitmap.Canvas.Draw(0, LVertSliderRect.Top - LVertScrollRect.Top,
+              SliderBitmap, 80 * 255 div 100);
+          finally
+            SliderBitmap.Free;
+          end;
+        end;
+
       end;
       BitBlt(DC, LVertScrollRect.Left, LVertScrollRect.Top, LBitmap.Width,
         LBitmap.Height, LBitmap.Canvas.Handle, 0, 0, SRCCOPY);

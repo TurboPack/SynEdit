@@ -735,7 +735,7 @@ type
   {$ENDREGION 'TSynSelections'}
 
   {$REGION 'Scrollbar Annotations'}
-  TSynScrollbarAnnType = (sbaSelection, sbaBookmark, sbaTrackChanges,
+  TSynScrollbarAnnType = (sbaCarets, sbaBookmark, sbaTrackChanges,
      sbaCustom1, sbaCustom2, sbaCustom3);
 
   TSynScrollbarAnnPos = (sbpLeft, sbpSecondLeft, sbpMiddle,
@@ -752,6 +752,7 @@ type
     FOnGetInfo: TScrollbarAnnotationInfoEvent;
     FSelectionColor: TColor;
     FBookmarkColor: TColor;
+    FFullRow: Boolean;
   public
     constructor Create(Collection: TCollection); override;
     procedure GetInfo(out Rows: TArray<Integer>; out Colors: TArray<TColor>);
@@ -762,6 +763,7 @@ type
       default clDefault;
     property BookmarkColor: TColor read FBookmarkColor write FBookmarkColor
       default clDefault;
+    property FullRow: Boolean read FFullRow write FFullRow;
     property OnGetInfo: TScrollbarAnnotationInfoEvent read FOnGetInfo
       write FOnGetInfo;
   end;
@@ -3686,8 +3688,8 @@ procedure TSynScrollbarAnnItem.GetInfo(out Rows: TArray<Integer>;
   out Colors: TArray<TColor>);
 var
   Editor: TCustomSynEdit;
-  I, J, Line, Row, LastRow: Integer;
-  Sel: TSynSelection;
+  I, Line, Row: Integer;
+  Caret: TBufferCoord;
   RowList: TList<Integer>;
   ColorList: TList<TColor>;
   Color: TColor;
@@ -3703,21 +3705,12 @@ begin
     RowList := TList<Integer>.Create;
     try
       case FAnnType of
-        sbaSelection:
+        sbaCarets:
           begin
-            LastRow := 0;
             for I := 0 to Editor.Selections.Count - 1 do
             begin
-              Sel := Editor.Selections[I].Normalized;
-              for J := Editor.BufferToDisplayPos(Sel.Start).Row to
-                Editor.BufferToDisplayPos(Sel.Stop).Row do
-              begin
-                if J > LastRow then
-                begin
-                  RowList.Add(J);
-                  LastRow := J;
-                end;
-              end;
+              Caret := Editor.Selections[I].Caret;
+              RowList.Add(Editor.BufferToDisplayPos(Caret).Row);
             end;
             if FSelectionColor <> clDefault then
               Color := FSelectionColor
@@ -3733,7 +3726,7 @@ begin
             if FBookmarkColor <> clDefault then
               Color := FBookmarkColor
             else
-              Color := StyleServices.GetSystemColor(clWebSienna);
+              Color := $AAB220;
             Colors := [Color];
           end;
         sbaTrackChanges:
@@ -3788,18 +3781,20 @@ begin
   Clear;
   with Add as TSynScrollbarAnnItem do
   begin
-    AnnPos := sbpLeft;
-    AnnType := sbaSelection;
+    AnnPos := sbpFullWidth;
+    AnnType := sbaCarets;
   end;
   with Add as TSynScrollbarAnnItem do
   begin
-    AnnPos := sbpSecondLeft;
+    AnnPos := sbpLeft;
     AnnType := sbaBookmark;
+    FullRow := True;
   end;
   with Add as TSynScrollbarAnnItem do
   begin
     AnnPos := sbpRight;
     AnnType := sbaTrackChanges;
+    FullRow := True;
   end;
 end;
 
