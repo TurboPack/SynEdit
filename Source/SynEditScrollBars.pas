@@ -574,13 +574,15 @@ begin
         MoveWindowOrg(LBitmap.Canvas.Handle, LVertScrollRect.Left, LVertScrollRect.Top + VertUpButtonRect.Height);
 
         // Scrollbar Annotations
+
         RowCount := Editor.DisplayRowCount;
         if (RowCount > Editor.LinesInWindow) and (LVertSliderRect.Height > 0)
           and (R.Height > 0) and (R.Width > 0)
         then
         begin
-          RowCount := Editor.DisplayRowCount;
+          LBitmap.Canvas.Brush.Style := bsSolid;
 
+          RowCount := Editor.DisplayRowCount;
           AnnWidth :=  Max(R.Width div 5, 1);  // Allow 5 annotations per row
           for I := 0 to Editor.ScrollbarAnnotations.Count - 1 do
           begin
@@ -591,7 +593,7 @@ begin
                AnnHeight := MulDiv(1, LPPI, 96);
 
              Ann.GetInfo(Rows, Colors);
-             LBitmap.Canvas.Brush.Style := bsSolid;
+
              For J := Low(Rows) to High(Rows) do
              begin
                Row := Rows[J];
