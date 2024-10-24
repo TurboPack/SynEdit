@@ -3710,7 +3710,9 @@ begin
             for I := 0 to Editor.Selections.Count - 1 do
             begin
               Caret := Editor.Selections[I].Caret;
-              RowList.Add(Editor.BufferToDisplayPos(Caret).Row);
+              Row := Editor.BufferToDisplayPos(Caret).Row;
+              if (I > 0) and (Row = RowList.Last) then Continue;
+              RowList.Add(Row);
             end;
             if FSelectionColor <> clDefault then
               Color := FSelectionColor
