@@ -28,11 +28,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterDWS.pas,v 1.11 2011/12/28 09:24:20 Egg Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 {
@@ -310,9 +305,9 @@ begin
   FDefaultFilter := SYNS_FilterDWS;
 
 //++ CodeFolding
-  RE_BlockBegin.Create('\b(begin|record|class)\b', [roNotEmpty, roIgnoreCase]);
+  RE_BlockBegin.Create('\b(begin|record|class|case|try)\b', [roNotEmpty, roIgnoreCase]);
   RE_BlockEnd.Create('\bend\b', [roNotEmpty, roIgnoreCase]);
-  RE_Code.Create('^\s*(function|procedure)\b', [roNotEmpty, roIgnoreCase]);
+  RE_Code.Create('^\s*(function|procedure|constructor|destructor)\b', [roNotEmpty, roIgnoreCase]);
 //-- CodeFolding
 end;
 
@@ -327,12 +322,15 @@ begin
   FKeywordsTypeScoped.Free;
 end;
 
-{$Q-}
+{$IFOPT Q+}
+  {$OVERFLOWCHECKS OFF}
+  {$DEFINE OVERFLOWCHECK_ON}
+{$ENDIF}
 function TSynDWSSyn.HashKey(Str: PWideChar): Cardinal;
 var
-   c : Word;
+  c : Word;
 begin
-   Result:=0;
+  Result:=0;
   while IsIdentChar(Str^) do
   begin
       c:=Ord(Str^);
@@ -344,7 +342,10 @@ begin
    fStringLen := Str - fToIdent;
    Result := Result mod Cardinal(Length(fIdentFuncTable));
 end;
-{$Q+}
+{$IFDEF OVERFLOWCHECK_ON}
+  {$OVERFLOWCHECKS ON}
+  {$UNDEF OVERFLOWCHECK_ON}
+{$ENDIF}
 
 function TSynDWSSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
@@ -1041,37 +1042,42 @@ var
 
   function BlockDelimiter(Line: Integer): Boolean;
   var
-    Index: Integer;
+    BeginIndex: Integer;
+    EndIndex: Integer;
     Match : TMatch;
   begin
-    Result := False;
+    BeginIndex := 0;
+    EndIndex := 0;
 
     Match := RE_BlockBegin.Match(CurLine);
     if Match.Success then
     begin
       // Char must have proper highlighting (ignore stuff inside comments...)
-      Index :=  Match.Index;
-      if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
+      BeginIndex :=  Match.Index;
+      if GetHighlighterAttriAtRowCol(LinesToScan, Line, BeginIndex) <> fKeyAttri then
+        BeginIndex := -1;
+    end;
+
+    Match := RE_BlockEnd.Match(CurLine);
+    if Match.Success then begin
       begin
-        // And ignore lines with both opening and closing chars in them
-        if not RE_BlockEnd.IsMatch(CurLine, Index + 1) then begin
-          FoldRanges.StartFoldRange(Line + 1, FT_Standard);
-          Result := True;
-        end;
-      end;
-    end else begin
-      Match := RE_BlockEnd.Match(CurLine);
-      if Match.Success then begin
-        begin
-          Index :=  Match.Index;
-          if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
-          begin
-            FoldRanges.StopFoldRange(Line + 1, FT_Standard);
-            Result := True;
-          end;
-        end;
+        EndIndex :=  Match.Index;
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, EndIndex) <> fKeyAttri then
+          EndIndex := -1;
       end;
     end;
+
+    Result := True;
+    if (BeginIndex <= 0) and (EndIndex <= 0) then
+      Result := False
+    else if (BeginIndex > 0) and (EndIndex <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, FT_Standard)
+    else if (BeginIndex <= 0) and (EndIndex > 0) then
+      FoldRanges.StopFoldRange(Line + 1, FT_Standard)
+    else if EndIndex >= BeginIndex then
+      Result := False  // begin end on the same line - ignore
+    else // end begin  as in "end else begin"
+      FoldRanges.StopStartFoldRange(Line + 1, FT_Standard);
   end;
 
   function FoldRegion(Line: Integer): Boolean;
@@ -1104,6 +1110,11 @@ var
       Result := True;
     end
     else if Uppercase(Copy(S, 1, 7)) = '{$ENDIF' then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
+      Result := True;
+    end
+    else if Uppercase(Copy(S, 1, 7)) = '{$IFEND' then
     begin
       FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
       Result := True;

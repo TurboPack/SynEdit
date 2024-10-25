@@ -151,7 +151,7 @@ type
   }
   private
     type
-      TFoldOpenClose = (focOpen, focClose);
+      TFoldOpenClose = (focOpen, focClose, focCloseOpen);
 
       TLineFoldInfo = record
         Line : Integer;
@@ -203,6 +203,7 @@ type
       AFoldOpenClose: TFoldOpenClose;  AIndent : Integer);
     procedure StartFoldRange(ALine : Integer; AFoldType : integer; AIndent : Integer = -1);
     procedure StopFoldRange(ALine : Integer; AFoldType : integer;  AIndent : Integer = -1);
+    procedure StopStartFoldRange(ALine : Integer; AFoldType : integer;  AIndent : Integer = -1);
     procedure NoFoldInfo(ALine : Integer);
     function  GetIndentLevel(Line : Integer) : Integer;
     procedure RecreateFoldRanges(Lines : TStrings);
@@ -583,13 +584,11 @@ begin
   // Insert keeping the list sorted
   if fFoldInfoList.BinarySearch(LineFoldInfo, Index) then
   begin
-    if (fFoldInfoList.List[Index].FoldOpenClose <> AFoldOpenClose) or
-       (fFoldInfoList.List[Index].FoldType <> AFoldType) or
-       (fFoldInfoList.List[Index].Indent <> AIndent) then
+    if not CompareMem(@LineFoldInfo, @fFoldInfoList.List[Index],
+      SizeOf(TLineFoldInfo))
+    then
     begin
-      fFoldInfoList.List[Index].FoldOpenClose := AFoldOpenClose;
-      fFoldInfoList.List[Index].FoldType := AFoldType;
-      fFoldInfoList.List[Index].Indent := AIndent;
+      fFoldInfoList.List[Index] := LineFoldInfo;
       fRangesNeedFixing := True;
     end;
   end
@@ -705,7 +704,12 @@ begin
     // we have deleted an existing fold open or close mark
     fRangesNeedFixing := True;
     fFoldInfoList.Delete(Index);
-  end;
+  end
+  else if (Index < fFoldInfoList.Count) and
+    (fFoldInfoList.List[Index].Line = ALine + 1) and
+    (fFoldInfoList.List[Index].FoldOpenClose = focCloseOpen)
+  then
+    fRangesNeedFixing := True;
 end;
 
 procedure TSynFoldRanges.RecreateFoldRanges(Lines : TStrings);
@@ -723,26 +727,7 @@ begin
   try
     for LFI in fFoldInfoList do
     begin
-      if LFI.FoldOpenClose = focOpen then
-      begin
-        if LFI.Indent >= 0 then begin
-          for i := OpenFoldStack.Count - 1 downto  0 do
-          begin
-            // Close all Fold Ranges with less Indent
-            PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
-            if (PFoldRange^.Indent >= LFI.Indent) then begin
-              PFoldRange^.ToLine := LFI.Line - 1; // Do not include Line
-              OpenFoldStack.Delete(i);
-              if PFoldRange^.FromLine = PFoldRange^.ToLine then
-                fRanges.Remove(PFoldRange^);
-            end;
-          end;
-        end;
-        fRanges.Add(TSynFoldRange.Create(LFI.Line, LFI.Line, LFI.FoldType, LFI.Indent));
-        OpenFoldStack.Add(FRanges.Count -1);
-      end
-      else
-      // foClose
+      if LFI.FoldOpenClose in [focClose, focCloseOpen] then
       begin
         if LFI.Indent >= 0 then begin
           for i := OpenFoldStack.Count - 1 downto  0 do
@@ -762,11 +747,31 @@ begin
           begin
             PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
             if (PFoldRange^.FoldType = LFI.FoldType) then begin
-              PFoldRange^.ToLine := LFI.Line;
+              PFoldRange^.ToLine := IfThen(LFI.FoldOpenClose = focClose,
+                LFI.Line, LFI.Line - 1);
               OpenFoldStack.Delete(i);
               break;
             end;
           end;
+      end;
+
+      if LFI.FoldOpenClose in [focOpen, focCloseOpen] then
+      begin
+        if LFI.Indent >= 0 then begin
+          for i := OpenFoldStack.Count - 1 downto  0 do
+          begin
+            // Close all Fold Ranges with less Indent
+            PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
+            if (PFoldRange^.Indent >= LFI.Indent) then begin
+              PFoldRange^.ToLine := LFI.Line - 1; // Do not include Line
+              OpenFoldStack.Delete(i);
+              if PFoldRange^.FromLine = PFoldRange^.ToLine then
+                fRanges.Remove(PFoldRange^);
+            end;
+          end;
+        end;
+        fRanges.Add(TSynFoldRange.Create(LFI.Line, LFI.Line, LFI.FoldType, LFI.Indent));
+        OpenFoldStack.Add(FRanges.Count -1);
       end;
     end;
 
@@ -847,6 +852,11 @@ end;
 procedure TSynFoldRanges.StopFoldRange(ALine, AFoldType: integer; AIndent : Integer);
 begin
   AddLineInfo(ALine, AFoldType, focClose, AIndent);
+end;
+
+procedure TSynFoldRanges.StopStartFoldRange(ALine, AFoldType: integer; AIndent : Integer);
+begin
+  AddLineInfo(ALine, AFoldType, focCloseOpen, AIndent);
 end;
 
 function TSynFoldRanges.StopScanning(Lines : TStrings) : Boolean;
