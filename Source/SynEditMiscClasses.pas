@@ -91,6 +91,8 @@ type
   TSynStructureColor = class(TCollectionItem)
   private
     FColor: TColor;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property Color: TColor read FColor write FColor;
   end;
@@ -801,6 +803,20 @@ type
   end;
 
   {$ENDREGION 'Scrollbar Annotations'}
+
+ {$REGION 'TSynDisplayFlowControl'}
+
+ TSynDisplayFlowControl = class(TPersistent)
+ private
+   FEnabled: Boolean;
+   FColor: TColor;
+ published
+   constructor Create;
+   property Enabled: Boolean read FEnabled write FEnabled default True;
+   property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed
+ end;
+
+ {$ENDREGION 'TSynDisplayFlowControl'}
 
 implementation
 
@@ -2677,6 +2693,16 @@ end;
 
 {$REGION 'TSynIndentGuides'}
 
+{ TSynStructureColor }
+
+procedure TSynStructureColor.Assign(Source: TPersistent);
+begin
+  if Source is TSynStructureColor then
+    Self.FColor := TSynStructureColor(Source).Color
+  else
+    inherited;
+end;
+
 { TSynStructureColors }
 
 function TSynStructureColors.GetColors(Index: Integer): TSynStructureColor;
@@ -2695,6 +2721,7 @@ begin
     FVisible := Src.FVisible;
     FStyle := Src.FStyle;
     FColor := Src.FColor;
+    FStructureColors.Assign(Src.StructureColors);
     if Assigned(FOnChange) then
       FOnChange(Self);
   end
@@ -2712,10 +2739,10 @@ begin
   FUseStructureColors := True;
   FStructureColors := TSynStructureColors.Create(Self, TSynStructureColor);
   // Initialize structure colors
-  with TSynStructureColor(FStructureColors.Add) do Color := $DA3B01; // Windows Rust
-  with TSynStructureColor(FStructureColors.Add) do Color := $BF0077; // Windows Plum
-  with TSynStructureColor(FStructureColors.Add) do Color := $B146C2; // Windows Violet red light
-  with TSynStructureColor(FStructureColors.Add) do Color := $10893E; // Windows Sport green
+  with TSynStructureColor(FStructureColors.Add) do Color := $FF901E;  // clWebDodgerBlue;
+  with TSynStructureColor(FStructureColors.Add) do Color := $008CFF;  // clWebDarkOrange;
+  with TSynStructureColor(FStructureColors.Add) do Color := $20A5DA;  // clWebGoldenRod;
+  with TSynStructureColor(FStructureColors.Add) do Color := $008080;  // clWebOlive
 end;
 
 destructor TSynIndentGuides.Destroy;
@@ -3844,5 +3871,19 @@ begin
     FullRow := True;
   end;
 end;
+
+{$REGION 'TSynDisplayFlowControl'}
+
+ { TSynDisplayFlowControl }
+
+constructor TSynDisplayFlowControl.Create;
+begin
+  inherited;
+  FEnabled := True;
+  FColor := $0045FF;  // clWebOrangeRed
+end;
+
+{$ENDREGION 'TSynDisplayFlowControl'}
+
 
 end.

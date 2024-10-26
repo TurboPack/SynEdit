@@ -190,6 +190,12 @@ type
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
+    function GetHighlighterAttriAtRowCol(const Lines : TStrings;
+      const Line: Integer; const Char: Integer): TSynHighlighterAttributes;
+    function GetHighlighterAttriAtRowColEx(const Lines : TStrings;
+      const Line, Char: Integer;  var Token: string;
+      var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): boolean;
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; virtual;
     property FriendlyLanguageName: string read GetFriendlyLanguageName;
     property LanguageName: string read GetLanguageName;
   public
@@ -239,7 +245,8 @@ implementation
 uses
   System.Character,
   SynEditMiscProcs,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditTextBuffer;
 
 { THighlighterList }
 function TSynHighlighterList.FindByClass(Comp: TComponent): Integer;
@@ -727,6 +734,12 @@ begin
   end;
 end;
 
+function TSynCustomHighlighter.FlowControlAtLine(Lines: TStrings; Line:
+    Integer): TSynFlowControl;
+begin
+  Result := fcNone;
+end;
+
 procedure TSynCustomHighlighter.FreeHighlighterAttributes;
 var
   i: Integer;
@@ -907,6 +920,50 @@ begin
   if FExportName = '' then
     FExportName := SynEditMiscProcs.DeleteTypePrefixAndSynSuffix(ClassName);
   Result := FExportName;
+end;
+
+function TSynCustomHighlighter.GetHighlighterAttriAtRowCol(
+  const Lines: TStrings; const Line, Char: Integer): TSynHighlighterAttributes;
+var
+  Token: string;
+  TokenType, Start: Integer;
+begin
+  GetHighlighterAttriAtRowColEx(Lines, Line, Char, Token, TokenType,
+    Start, Result);
+end;
+
+function TSynCustomHighlighter.GetHighlighterAttriAtRowColEx(
+  const Lines: TStrings; const Line, Char: Integer; var Token: string;
+  var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): boolean;
+var
+  LineText: string;
+begin
+  if  (Line >= 0) and (Line < Lines.Count) then
+  begin
+    LineText := Lines[Line];
+    if Line = 0 then
+      ResetRange
+    else
+      SetRange(TSynEditStringList(Lines).Ranges[Line - 1]);
+    SetLine(LineText, Line);
+    if (Char > 0) and (Char <= Length(LineText)) then
+      while not GetEol do
+      begin
+        Start := GetTokenPos + 1;
+        Token := GetToken;
+        if (Char >= Start) and (Char < Start + Length(Token)) then
+        begin
+          Attri := GetTokenAttribute;
+          TokenType := GetTokenKind;
+          Result := True;
+          exit;
+        end;
+        Next;
+      end;
+  end;
+  Token := '';
+  Attri := nil;
+  Result := False;
 end;
 
 function TSynCustomHighlighter.GetRange: Pointer;

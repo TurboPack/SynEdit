@@ -190,12 +190,11 @@ type
     procedure SetRange(Value: Pointer); override;
     function UseUserSettings(VersionIndex: Integer): Boolean; override;
     procedure EnumUserSettings(DelphiVersions: TStrings); override;
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -409,6 +408,39 @@ begin
     Result := tkKey
   else
     Result := tkIdentifier
+end;
+
+function TSynPasSyn.FlowControlAtLine(Lines: TStrings; Line: Integer):
+    TSynFlowControl;
+var
+  SLine: string;
+  Index: Integer;
+begin
+  Result := fcNone;
+
+  SLine := LowerCase(Lines[Line - 1]);
+
+  Index :=  SLine.IndexOf('continue');
+  if Index >= 0 then
+    Result := fcContinue
+  else
+  begin
+    Index :=  SLine.IndexOf('break');
+    if Index >= 0 then
+      Result := fcBreak
+    else
+    begin
+      Index :=  SLine.IndexOf('exit');
+      if Index >= 0 then
+        Result := fcExit;
+    end;
+  end;
+
+  // Index is 0-based
+  if (Index >= 0) and
+    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = IdentifierAttri)
+  then
+    Result := fcNone;
 end;
 
 function TSynPasSyn.FuncAsm(Index: Integer): TtkTokenKind;
@@ -749,13 +781,11 @@ begin
   fAsmStart := False;
   fDefaultFilter := SYNS_FilterPascal;
 
-//++ CodeFolding
   RE_BlockBegin := TRegEx.Create('\b(begin|record|class|case|try)\b', [roIgnoreCase]);
 
   RE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
 
   RE_Code := TRegEx.Create('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
-//-- CodeFolding
 end;
 
 procedure TSynPasSyn.AddressOpProc;
@@ -1395,7 +1425,6 @@ begin
   Result := SYNS_FriendlyLangPascal;
 end;
 
-//++ CodeFolding
 type
   TRangeStates = set of TRangeState;
 
@@ -1645,8 +1674,6 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
-
 
 
 initialization

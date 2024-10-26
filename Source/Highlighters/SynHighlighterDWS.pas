@@ -47,10 +47,8 @@ uses
   SynEditHighlighter,
   System.SysUtils,
   System.Classes,
-//++ CodeFolding
   SynEditCodeFolding,
   System.RegularExpressions,
-//-- CodeFolding
   System.Character;
 
 type
@@ -70,9 +68,7 @@ type
    end;
 
 type
-//++ CodeFolding
   TSynDWSSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
@@ -95,11 +91,9 @@ type
     fDirecAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
-//++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
     RE_Code: TRegEx;
-//-- CodeFolding
     function AltFunc: TtkTokenKind;
     function KeyWordFunc: TtkTokenKind;
     function FuncAsm: TtkTokenKind;
@@ -167,12 +161,11 @@ type
     // and highlighting. It modifies the basic TSynDWSSyn to reproduce
     // the most recent Delphi editor highlighting.
 
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -306,11 +299,9 @@ begin
   FAsmStart := False;
   FDefaultFilter := SYNS_FilterDWS;
 
-//++ CodeFolding
   RE_BlockBegin.Create('\b(begin|record|class|case|try)\b', [roNotEmpty, roIgnoreCase]);
   RE_BlockEnd.Create('\bend\b', [roNotEmpty, roIgnoreCase]);
   RE_Code.Create('^\s*(function|procedure|constructor|destructor)\b', [roNotEmpty, roIgnoreCase]);
-//-- CodeFolding
 end;
 
 // Destroy
@@ -417,6 +408,39 @@ begin
    if (fKeyWords.IndexOf(buf)>=0) and (FLine[Run - 1] <> '&') then
       Result := tkKey
    else Result := tkIdentifier
+end;
+
+function TSynDWSSyn.FlowControlAtLine(Lines: TStrings;
+  Line: Integer): TSynFlowControl;
+var
+  SLine: string;
+  Index: Integer;
+begin
+  Result := fcNone;
+
+  SLine := LowerCase(Lines[Line - 1]);
+
+  Index :=  SLine.IndexOf('continue');
+  if Index >= 0 then
+    Result := fcContinue
+  else
+  begin
+    Index :=  SLine.IndexOf('break');
+    if Index >= 0 then
+      Result := fcBreak
+    else
+    begin
+      Index :=  SLine.IndexOf('exit');
+      if Index >= 0 then
+        Result := fcExit;
+    end;
+  end;
+
+  // Index is 0-based
+  if (Index >= 0) and
+    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = KeyAttri)
+  then
+    Result := fcNone;
 end;
 
 function TSynDWSSyn.FuncAsm: TtkTokenKind;
@@ -1021,7 +1045,6 @@ begin
   Result := Pointer(fRange);
 end;
 
-//++ CodeFolding
 type
   TRangeStates = set of TRangeState;
 
@@ -1275,7 +1298,6 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
 
 procedure TSynDWSSyn.SetRange(Value: Pointer);
 begin

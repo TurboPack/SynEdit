@@ -42,7 +42,8 @@ uses
   Types,
   Classes,
   SysUtils,
-  TypInfo;
+  TypInfo,
+  SynEditTypes;
 
 const
   UTF8BOM: array[0..2] of Byte = ($EF, $BB, $BF);
@@ -66,6 +67,14 @@ const
   WideCRLF = string(#13#10);
   WideLineSeparator = #$2028;
   WideParagraphSeparator = #$2029;
+
+var
+  SynTabGlyph: WideChar = #$2192;       //'->'
+  SynLineBreakGlyph: WideChar = #$21B2;
+  SynSpaceGlyph: WideChar = #$2219;     //'·'
+
+  FlowControlChars: array[TSynFlowControl] of Char =
+    (WideNull, #$2BAD, #$2BAF, #$27A5);
 
 { functions taken from JCLUnicode.pas }
 procedure StrSwapByteOrder(Str: PWideChar);

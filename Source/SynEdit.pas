@@ -376,6 +376,7 @@ type
     FPaintTransientPlugins: Boolean;
     FOrigFontSize: Integer;
     FOrigGutterFontSize: Integer;
+    FDisplayFlowControl: TSynDisplayFlowControl;
 
     // Accessibility
     FUIAutomationProvider: IInterface;  // IRawElementProviderSimple
@@ -945,6 +946,8 @@ type
     property WordWrap: boolean read GetWordWrap write SetWordWrap default False;
     property WordWrapGlyph: TSynGlyph read fWordWrapGlyph write SetWordWrapGlyph;
     property AccessibleName: string read FAccessibleName write FAccessibleName;
+    property DisplayFlowControl: TSynDisplayFlowControl read FDisplayFlowControl
+      write FDisplayFlowControl;
 
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnClearBookmark: TPlaceMarkEvent read fOnClearMark
@@ -1046,6 +1049,7 @@ type
     property BookMarkOptions;
     property BorderStyle;
     property ExtraLineSpacing;
+    property DisplayFlowControl;
     property FontQuality default fqClearTypeNatural;
     property Gutter;
     property HideSelection;
@@ -1549,6 +1553,8 @@ begin
 
   FSynEditScrollBars := CreateSynEditScrollBars(Self);
 
+  FDisplayFlowControl := TSynDisplayFlowControl.Create;
+
 //++ CodeFolding
   fCodeFolding := TSynCodeFolding.Create;
   fCodeFolding.OnChange := OnCodeFoldingChange;
@@ -1642,6 +1648,7 @@ begin
   fAllFoldRanges.Free;
   FSelections.Free;
   FCarets.Free;
+  FDisplayFlowControl.Free;
 end;
 
 function TCustomSynEdit.GetBlockBegin: TBufferCoord;
@@ -3112,6 +3119,7 @@ var
   FullRowFG, FullRowBG: TColor;
   HintColor: TColor;
   BGAlpha: TD2D1ColorF;
+  FlowControl: TSynFlowControl;
 begin
   // Paint background
   LinesRect := Rect(FGutterWidth, AClip.Top, AClip.Right, AClip.Bottom);
@@ -3141,6 +3149,17 @@ begin
     // TextHint
     if (Lines.Count <= 1) and (SLine = '') then
       SRow := FTextHint;
+
+    // Flow control symbols
+    FlowControl := fcNone;
+    if FDisplayFlowControl.Enabled and Assigned(fHighlighter) and
+      not WordWrap and not (scEOL in FVisibleSpecialChars)
+    then
+    begin
+      FlowControl := fHighlighter.FlowControlAtLine(Lines, Line);
+      if FlowControl <> fcNone then
+        SRow := SRow + FlowControlChars[FlowControl];
+    end;
 
     // Restrict the text to what can/should be displayed
     TextRangeToDisplay(SRow, FirstChar, LastChar);
@@ -3270,6 +3289,11 @@ begin
           (fHighlighter.WhitespaceAttribute.Foreground <> clNone)
         then
           Layout.SetFontColor(fHighlighter.WhitespaceAttribute.Foreground, LastChar - FirstChar + 1, 1);
+
+        if (FlowControl <> fcNone) and (FullRowFG = clNone) and
+          (CharOffset + LastChar = SLine.Length + 2)
+        then
+          Layout.SetFontColor(FDisplayFlowControl.Color, LastChar - FirstChar + 1, 1);
       end;
     end;
 
@@ -8776,47 +8800,22 @@ end;
 
 function TCustomSynEdit.GetHighlighterAttriAtRowCol(const XY: TBufferCoord;
   var Token: string; var Attri: TSynHighlighterAttributes): Boolean;
-var
-  TmpType, TmpStart: Integer;
 begin
-  Result := GetHighlighterAttriAtRowColEx(XY, Token, TmpType, TmpStart, Attri);
+  Attri := nil;
+  if Assigned(fHighlighter) then
+    Attri := fHighlighter.GetHighlighterAttriAtRowCol(Lines, XY.Line, XY.Char);
+  Result := Attri <> nil;
 end;
 
 function TCustomSynEdit.GetHighlighterAttriAtRowColEx(const XY: TBufferCoord;
   var Token: string; var TokenType, Start: Integer;
   var Attri: TSynHighlighterAttributes): boolean;
-var
-  PosX, PosY: Integer;
-  Line: string;
 begin
-  PosY := XY.Line - 1;
-  if Assigned(Highlighter) and (PosY >= 0) and (PosY < Lines.Count) then
-  begin
-    Line := Lines[PosY];
-    if PosY = 0 then
-      Highlighter.ResetRange
-    else
-      Highlighter.SetRange(TSynEditStringList(Lines).Ranges[PosY - 1]);
-    Highlighter.SetLine(Line, PosY);
-    PosX := XY.Char;
-    if (PosX > 0) and (PosX <= Length(Line)) then
-      while not Highlighter.GetEol do
-      begin
-        Start := Highlighter.GetTokenPos + 1;
-        Token := Highlighter.GetToken;
-        if (PosX >= Start) and (PosX < Start + Length(Token)) then
-        begin
-          Attri := Highlighter.GetTokenAttribute;
-          TokenType := Highlighter.GetTokenKind;
-          Result := True;
-          exit;
-        end;
-        Highlighter.Next;
-      end;
-  end;
-  Token := '';
-  Attri := nil;
-  Result := False;
+  if Assigned(fHighlighter) then
+    Result := fHighlighter.GetHighlighterAttriAtRowColEx(Lines, XY.Line,
+      XY.Char, Token, TokenType, Start, Attri)
+  else
+    Result := False;
 end;
 
 function TCustomSynEdit.FindHookedCmdEvent(AHandlerProc: THookedCommandEvent): Integer;

@@ -266,11 +266,6 @@ type
   protected
     // Utility functions
     function GetLineRange(Lines: TStrings; Line : Integer) : Pointer;
-    function GetHighlighterAttriAtRowCol(const Lines : TStrings;
-      const Line: Integer; const Char: Integer): TSynHighlighterAttributes;
-    function GetHighlighterAttriAtRowColEx(const Lines : TStrings;
-      const Line, Char: Integer;  var Token: string;
-      var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): boolean;
     function TabWidth(LinesToScan: TStrings) : integer;
   public
     // Called when a Highlighter is assigned to Synedit;
@@ -961,51 +956,6 @@ end;
 class function TSynCustomCodeFoldingHighlighter.GetCapabilities: TSynHighlighterCapabilities;
 begin
   Result := inherited GetCapabilities + [hcCodeFolding];
-end;
-
-function TSynCustomCodeFoldingHighlighter.GetHighlighterAttriAtRowCol(
-  const Lines: TStrings; const Line: Integer;
-  const Char: Integer): TSynHighlighterAttributes;
-var
-  Token: string;
-  TokenType, Start: Integer;
-begin
-  GetHighlighterAttriAtRowColEx(Lines, Line, Char, Token, TokenType,
-    Start, Result);
-end;
-
-function TSynCustomCodeFoldingHighlighter.GetHighlighterAttriAtRowColEx(
-  const Lines: TStrings; const Line, Char: Integer; var Token: string;
-  var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): boolean;
-var
-  LineText: string;
-begin
-  if  (Line >= 0) and (Line < Lines.Count) then
-  begin
-    LineText := Lines[Line];
-    if Line = 0 then
-      ResetRange
-    else
-      SetRange(TSynEditStringList(Lines).Ranges[Line - 1]);
-    SetLine(LineText, Line);
-    if (Char > 0) and (Char <= Length(LineText)) then
-      while not GetEol do
-      begin
-        Start := GetTokenPos + 1;
-        Token := GetToken;
-        if (Char >= Start) and (Char < Start + Length(Token)) then
-        begin
-          Attri := GetTokenAttribute;
-          TokenType := GetTokenKind;
-          Result := True;
-          exit;
-        end;
-        Next;
-      end;
-  end;
-  Token := '';
-  Attri := nil;
-  Result := False;
 end;
 
 function TSynCustomCodeFoldingHighlighter.GetLineRange(Lines: TStrings;

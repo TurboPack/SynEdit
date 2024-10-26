@@ -49,14 +49,17 @@ uses
   System.SysUtils,
   System.Classes;
 
+
+type
+  TSynAlignment = TAlignment;
+
 var
-  SynTabGlyph: WideChar = #$2192;       //'->'
-  SynLineBreakGlyph: WideChar = #$21B2;
-  SynSpaceGlyph: WideChar = #$2219;     //'·'
-  SynTabAlignment: TAlignment = taCenter;
+  SynTabAlignment: TSynAlignment = taCenter;
 
 type
   ESynError = class(Exception);
+
+  TSynFlowControl = (fcNone, fcContinue, fcBreak, fcExit);
 
   // DOS: CRLF, UNIX: LF, Mac: CR, Unicode: LINE SEPARATOR
   TSynEditFileFormat = (sffDos, sffUnix, sffMac, sffUnicode);

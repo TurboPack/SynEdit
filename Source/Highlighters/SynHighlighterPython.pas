@@ -136,6 +136,7 @@ type
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
     write fCommentAttri;
@@ -410,6 +411,45 @@ begin
   inherited;
 end;
 
+function TSynPythonSyn.FlowControlAtLine(Lines: TStrings;
+  Line: Integer): TSynFlowControl;
+var
+  SLine: string;
+  Index: Integer;
+begin
+  Result := fcNone;
+
+  SLine := Lines[Line - 1];
+
+  Index :=  SLine.IndexOf('continue');
+  if Index >= 0 then
+    Result := fcContinue
+  else
+  begin
+    Index :=  SLine.IndexOf('break');
+    if Index >= 0 then
+      Result := fcBreak
+    else
+    begin
+      Index :=  SLine.IndexOf('return');
+      if Index >= 0 then
+        Result := fcExit
+      else
+      begin
+        Index :=  SLine.IndexOf('yield');
+        if Index >= 0 then
+          Result := fcExit
+      end;
+    end;
+  end;
+
+  // Index is 0-based
+  if (Index >= 0) and
+    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = KeyAttri)
+  then
+    Result := fcNone;
+end;
+
 procedure TSynPythonSyn.SymbolProc;
 begin
   inc(Run);
@@ -430,7 +470,6 @@ procedure TSynPythonSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings);
 var
   I: Integer;
-  Range: TSynFoldRange;
 begin
   inherited;
   for I := 0 to FoldRanges.Count - 1 do
