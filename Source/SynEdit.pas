@@ -9623,7 +9623,9 @@ begin
       TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
         fLines);
     InvalidateGutterBand(gbkFold);
-    if FIndentGuides.Visible and FIndentGuides.StructureHighlight then
+    if FIndentGuides.Visible and FIndentGuides.StructureHighlight and
+      Assigned(fHighlighter) and (hcStructureHighlight in fHighlighter.Capabilities)
+    then
       InvalidateLines(-1, -1);
     Include(fStateFlags, sfScrollbarChanged);
   end;
