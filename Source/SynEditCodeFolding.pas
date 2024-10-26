@@ -751,7 +751,7 @@ begin
         if LFI.Indent >= 0 then begin
           for i := OpenFoldStack.Count - 1 downto 0 do
           begin
-            // Close all Fold Ranges with less Indent
+            // Close all Fold Ranges with greater Indent
             PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
             if (PFoldRange^.Indent >= LFI.Indent) then begin
               PFoldRange^.ToLine := LFI.Line - 1; // Do not include Line
