@@ -4377,6 +4377,9 @@ begin
   if not HandleAllocated or (PaintLock <> 0) then
     Include(fStateFlags, sfScrollbarChanged)
   else begin
+    // In case TopLine is not valid when not eoScollPastEOF in Options
+    TopLine := TopLine;
+
     Exclude(fStateFlags, sfScrollbarChanged);
     if FSynEditScrollBars.UpdateScrollBars then
       Update;
