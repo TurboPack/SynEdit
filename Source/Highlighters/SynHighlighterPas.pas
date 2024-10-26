@@ -48,14 +48,14 @@ unit SynHighlighterPas;
 interface
 
 uses
-  Windows,
-  Registry,
-  Graphics,
+  Winapi.Windows,
+  System.Win.Registry,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-  SysUtils,
-  Classes,
+  System.SysUtils,
+  System.Classes,
   System.RegularExpressions,
   SynEditCodeFolding;
 
@@ -229,7 +229,9 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Math,
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 const
   // if the language is case-insensitive keywords *must* be in lowercase
@@ -1358,7 +1360,7 @@ end;
 
 class function TSynPasSyn.GetCapabilities: TSynHighlighterCapabilities;
 begin
-  Result := inherited GetCapabilities + [hcUserSettings];
+  Result := inherited GetCapabilities + [hcUserSettings, hcStructureHighlight];
 end;
 
 function TSynPasSyn.IsFilterStored: Boolean;
@@ -1417,9 +1419,12 @@ var
     BeginIndex: Integer;
     EndIndex: Integer;
     Match : TMatch;
+    MatchValue: string;
+    StructureHighlight: Boolean;
   begin
     BeginIndex := 0;
     EndIndex := 0;
+    StructureHighlight := False;
 
     Match := RE_BlockBegin.Match(CurLine);
     if Match.Success then
@@ -1427,7 +1432,13 @@ var
       // Char must have proper highlighting (ignore stuff inside comments...)
       BeginIndex :=  Match.Index;
       if GetHighlighterAttriAtRowCol(LinesToScan, Line, BeginIndex) <> fKeyAttri then
-        BeginIndex := -1;
+        BeginIndex := -1
+      else
+      begin
+        MatchValue := LowerCase(Match.Value);
+        StructureHighlight := (MatchValue = 'begin') or
+          (MatchValue = 'case') or (MatchValue = 'try');
+      end;
     end;
 
     Match := RE_BlockEnd.Match(CurLine);
@@ -1443,7 +1454,9 @@ var
     if (BeginIndex <= 0) and (EndIndex <= 0) then
       Result := False
     else if (BeginIndex > 0) and (EndIndex <= 0) then
-      FoldRanges.StartFoldRange(Line + 1, FT_Standard)
+      FoldRanges.StartFoldRange(Line + 1, FT_Standard,
+      IfThen(StructureHighlight,
+      LeftSpaces(CurLine, True, TabWidth(LinesToScan)), 0))
     else if (BeginIndex <= 0) and (EndIndex > 0) then
       FoldRanges.StopFoldRange(Line + 1, FT_Standard)
     else if EndIndex >= BeginIndex then

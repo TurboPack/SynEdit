@@ -88,17 +88,35 @@ type
   {$REGION 'Indentation Guides'}
   TSynIdentGuidesStyle = (igsSolid, igsDotted);
 
+  TSynStructureColor = class(TCollectionItem)
+  private
+    FColor: TColor;
+  published
+    property Color: TColor read FColor write FColor;
+  end;
+
+  TSynStructureColors = class(TOwnedCollection)
+  private
+    function GetColors(Index: Integer): TSynStructureColor;
+  public
+    property Colors[Index: Integer]: TSynStructureColor read GetColors; default;
+  end;
+
   TSynIndentGuides = class(TPersistent)
   private
     FColor: TColor;
     FVisible: Boolean;
     FStyle: TSynIdentGuidesStyle;
     FOnChange: TNotifyEvent;
+    FStructureColors: TSynStructureColors;
+    FStructureHighlight: Boolean;
+    FUseStructureColors: Boolean;
     procedure SetColor(const Value: TColor);
     procedure SetVisible(const Value: Boolean);
     procedure SetStyle(const Value: TSynIdentGuidesStyle);
   public
     constructor Create;
+    destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
@@ -107,6 +125,11 @@ type
       default igsSolid;
     property Color: TColor read FColor write SetColor
       default clMedGray;
+    property UseStructureColors: Boolean read FUseStructureColors
+      write FUseStructureColors default True;
+    property StructureHighlight: Boolean read FStructureHighlight
+      write FStructureHighlight default True;
+    property StructureColors: TSynStructureColors read FStructureColors;
   end;
   {$ENDREGION 'Indentation Guides'}
 
@@ -2654,6 +2677,14 @@ end;
 
 {$REGION 'TSynIndentGuides'}
 
+{ TSynStructureColors }
+
+function TSynStructureColors.GetColors(Index: Integer): TSynStructureColor;
+begin
+  Result := TSynStructureColor(Items[Index]);
+end;
+
+{ TSynStructureColors }
 procedure TSynIndentGuides.Assign(Source: TPersistent);
 var
   Src: TSynIndentGuides;
@@ -2677,6 +2708,20 @@ begin
   FVisible := True;
   FStyle := igsSolid;
   FColor := clMedGray;
+  FStructureHighlight := True;
+  FUseStructureColors := True;
+  FStructureColors := TSynStructureColors.Create(Self, TSynStructureColor);
+  // Initialize structure colors
+  with TSynStructureColor(FStructureColors.Add) do Color := $DA3B01; // Windows Rust
+  with TSynStructureColor(FStructureColors.Add) do Color := $BF0077; // Windows Plum
+  with TSynStructureColor(FStructureColors.Add) do Color := $B146C2; // Windows Violet red light
+  with TSynStructureColor(FStructureColors.Add) do Color := $10893E; // Windows Sport green
+end;
+
+destructor TSynIndentGuides.Destroy;
+begin
+  FStructureColors.Free;
+  inherited;
 end;
 
 procedure TSynIndentGuides.SetColor(const Value: TColor);

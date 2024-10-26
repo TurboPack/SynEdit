@@ -41,17 +41,17 @@ unit SynHighlighterDWS;
 interface
 
 uses
-  Windows,
-  Graphics,
+  Winapi.Windows,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SysUtils,
-  Classes,
+  System.SysUtils,
+  System.Classes,
 //++ CodeFolding
   SynEditCodeFolding,
-  RegularExpressions,
+  System.RegularExpressions,
 //-- CodeFolding
-  Character;
+  System.Character;
 
 type
   TtkTokenKind = (tkAsm, tkComment, tkIdentifier, tkKey, tkNull, tkNumber,
@@ -201,7 +201,9 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Math,
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 const
    // if the language is case-insensitive keywords *must* be in lowercase
@@ -1045,9 +1047,12 @@ var
     BeginIndex: Integer;
     EndIndex: Integer;
     Match : TMatch;
+    MatchValue: string;
+    StructureHighlight: Boolean;
   begin
     BeginIndex := 0;
     EndIndex := 0;
+    StructureHighlight := False;
 
     Match := RE_BlockBegin.Match(CurLine);
     if Match.Success then
@@ -1055,7 +1060,13 @@ var
       // Char must have proper highlighting (ignore stuff inside comments...)
       BeginIndex :=  Match.Index;
       if GetHighlighterAttriAtRowCol(LinesToScan, Line, BeginIndex) <> fKeyAttri then
-        BeginIndex := -1;
+        BeginIndex := -1
+      else
+      begin
+        MatchValue := LowerCase(Match.Value);
+        StructureHighlight := (MatchValue = 'begin') or
+          (MatchValue = 'case') or (MatchValue = 'try');
+      end;
     end;
 
     Match := RE_BlockEnd.Match(CurLine);
@@ -1071,7 +1082,9 @@ var
     if (BeginIndex <= 0) and (EndIndex <= 0) then
       Result := False
     else if (BeginIndex > 0) and (EndIndex <= 0) then
-      FoldRanges.StartFoldRange(Line + 1, FT_Standard)
+      FoldRanges.StartFoldRange(Line + 1, FT_Standard,
+      IfThen(StructureHighlight,
+      LeftSpaces(CurLine, True, TabWidth(LinesToScan)), 0))
     else if (BeginIndex <= 0) and (EndIndex > 0) then
       FoldRanges.StopFoldRange(Line + 1, FT_Standard)
     else if EndIndex >= BeginIndex then
@@ -1307,7 +1320,7 @@ end;
 
 class function TSynDWSSyn.GetCapabilities: TSynHighlighterCapabilities;
 begin
-  Result := inherited GetCapabilities + [hcUserSettings];
+  Result := inherited GetCapabilities + [hcUserSettings, hcStructureHighlight];
 end;
 
 function TSynDWSSyn.IsFilterStored: Boolean;

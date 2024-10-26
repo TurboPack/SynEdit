@@ -2642,6 +2642,80 @@ var
     WSLayout.Draw(RT, FTextOffset + XRowOffset + Round(Min(X1, X2)), YRowOffset(Row), SpecialCharsColor);
   end;
 
+  procedure DrawStructureHighlight;
+  var
+    Row, Line: Integer;
+    XPos: Integer;
+    LColor: TColor;
+    Range: TSynFoldRange;
+    RangeArr: TArray<TSynFoldRange>;
+    Start, Stop: TPoint;
+    StrokeStyle: ID2D1StrokeStyle;
+    Brush: ID2D1SolidColorBrush;
+  begin
+    if not Assigned(fHighlighter) then Exit;
+    if not (fHighlighter.Capabilities >= [hcCodeFolding, hcStructureHighlight]) then Exit;
+    if not UseCodeFolding or not Assigned(fAllFoldRanges) then Exit;
+
+    if FIndentGuides.Style = igsDotted then
+      StrokeStyle := TSynDWrite.DottedStrokeStyle
+    else
+      StrokeStyle := nil;
+
+    RangeArr := fAllFoldRanges.FoldRangesForTextRange(RowToLine(aFirstRow), RowToLine(aLastRow));
+
+    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+    for Range in RangeArr do
+    begin
+      if Range.Indent <= 0 then Continue;
+
+      XPos := Range.Indent * CharWidth + fTextOffset;
+      if XPos <= 0 then Continue;
+
+      // Choose LColor and brush
+      if FIndentGuides.UseStructureColors and
+        (FIndentGuides.StructureColors.Count > 0)
+      then
+        LColor := FIndentGuides.StructureColors[(Range.Indent div fTabWidth)
+        mod FIndentGuides.StructureColors.Count].Color
+      else
+        LColor := FIndentGuides.Color;
+      Brush := TSynDWrite.SolidBrush(LColor);
+
+      for Row := aFirstRow to aLastRow do
+      begin
+        Line := RowToLine(Row);
+
+        Start := TPoint.Create(Xpos, YRowOffset(Row));
+        Stop := Start;
+        Stop.Offset(0, fTextHeight);
+
+        // Paint vertical part
+        if InRange(Line, Range.FromLine, Range.ToLine) then
+          //RT.DrawLine(Start, Stop, Brush, FCurrentPPI / 96.0, StrokeStyle);
+          RT.DrawLine(Start, Stop, Brush, Round(FCurrentPPI / 96), StrokeStyle);
+
+        if Range.FromLine = Line then
+        begin
+          // Paint top
+          Start.Offset(0, 1);
+          Stop := Start;
+          Stop.Offset(fCharWidth, 0);
+          RT.DrawLine(Start, Stop, Brush, Round(FCurrentPPI / 96), StrokeStyle);
+        end
+        else if Range.ToLine = Line then
+        begin
+          // paint bottom
+          Start.Offset(0, fTextHeight);
+          Stop := Start;
+          Stop.Offset(fCharWidth, 0);
+          RT.DrawLine(Start, Stop, Brush, Round(FCurrentPPI / 96), StrokeStyle);
+        end;
+      end;
+    end;
+    RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+  end;
+
   procedure DrawIndentGuides;
   { Only used when WordWrap is False, so rows correspond to full lines }
 
@@ -2663,6 +2737,14 @@ var
     StrokeStyle: ID2D1StrokeStyle;
     BMSize: TD2D1SizeF;
   begin
+    if UseCodeFolding and
+      FIndentGuides.StructureHighlight and Assigned(fHighlighter) and
+     (fHighlighter.Capabilities >= [hcCodeFolding, hcStructureHighlight]) then
+    begin
+      DrawStructureHighlight;
+      Exit;
+    end;
+
     BMWidth := Round(FCurrentPPI / 96) + 2;
     BMSize := D2D1SizeF(BMWidth, FTextHeight);
 
@@ -4776,7 +4858,6 @@ begin
     AllFoldRanges.LinesDeleted(aIndex, aCount);
     // Scan the same lines the highlighter has scanned
     ReScanForFoldRanges(aIndex, vLastScan);
-    InvalidateGutterBand(gbkFold);
   end;
 
   DoLinesDeleted(aIndex, aCount);
@@ -9536,12 +9617,14 @@ begin
   {  StopScanning recreates AllFoldRanges.
      Normally at this point (sfLinesChanging in fStateFlags) = True
      and StopScanning will be called when LinesChanged is executed }
-  if not (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
+  if {not (sfLinesChanging in fStateFlags) and} fAllFoldRanges.StopScanning(fLines) then
   begin
     if fHighlighter is TSynCustomCodeFoldingHighlighter then
       TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
         fLines);
-    InvalidateGutter;
+    InvalidateGutterBand(gbkFold);
+    if FIndentGuides.Visible and FIndentGuides.StructureHighlight then
+      InvalidateLines(-1, -1);
     Include(fStateFlags, sfScrollbarChanged);
   end;
 end;

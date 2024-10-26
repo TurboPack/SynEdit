@@ -191,6 +191,7 @@ type
     function FoldHidesLine(Line: Integer; out Index: Integer) : Boolean; overload;
     function FoldsAtLevel(Level : integer) : TArray<Integer>;
     function FoldsOfType(aType : integer) : TArray<Integer>;
+    function FoldRangesForTextRange(FromLine, ToLine: Integer): TArray<TSynFoldRange>;
 
     {Scanning support}
     procedure StoreCollapsedState; overload;
@@ -282,6 +283,7 @@ type
     // Override only if some finetuning of the FoldRanges is need.
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); virtual;
+    class function GetCapabilities: TSynHighlighterCapabilities; override;
   end;
 
   Const
@@ -457,6 +459,23 @@ begin
         end;
       end;
     end;
+end;
+
+function TSynFoldRanges.FoldRangesForTextRange(FromLine,
+  ToLine: Integer): TArray<TSynFoldRange>;
+// Used for structure highlight
+var
+  Range: TSynFoldRange;
+begin
+  Result := [];
+  for Range in fRanges do
+  begin
+    if Range.ToLine < FromLine then Continue;
+    if Range.FromLine > ToLine then Break;
+    // Only add if indent > 0
+    if Range.Indent > 0 then
+      Result := Result + [Range];
+  end;
 end;
 
 function TSynFoldRanges.FoldRowToLine(Row: Integer): Integer;
@@ -730,7 +749,7 @@ begin
       if LFI.FoldOpenClose in [focClose, focCloseOpen] then
       begin
         if LFI.Indent >= 0 then begin
-          for i := OpenFoldStack.Count - 1 downto  0 do
+          for i := OpenFoldStack.Count - 1 downto 0 do
           begin
             // Close all Fold Ranges with less Indent
             PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
@@ -743,7 +762,7 @@ begin
           end;
         end
         else
-          for i := OpenFoldStack.Count - 1 downto  0 do
+          for i := OpenFoldStack.Count - 1 downto 0 do
           begin
             PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
             if (PFoldRange^.FoldType = LFI.FoldType) then begin
@@ -758,7 +777,7 @@ begin
       if LFI.FoldOpenClose in [focOpen, focCloseOpen] then
       begin
         if LFI.Indent >= 0 then begin
-          for i := OpenFoldStack.Count - 1 downto  0 do
+          for i := OpenFoldStack.Count - 1 downto 0 do
           begin
             // Close all Fold Ranges with less Indent
             PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
@@ -778,7 +797,7 @@ begin
     if CodeFoldingMode = cfmIndentation then
     begin
       // close all open indent based folds
-      for i := OpenFoldStack.Count - 1 downto  0 do
+      for i := OpenFoldStack.Count - 1 downto 0 do
       begin
         // Close all Fold Ranges with less Indent
         PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
@@ -937,6 +956,11 @@ procedure TSynCustomCodeFoldingHighlighter.AdjustFoldRanges(
   FoldRanges: TSynFoldRanges; LinesToScan: TStrings);
 begin
   // Do nothing
+end;
+
+class function TSynCustomCodeFoldingHighlighter.GetCapabilities: TSynHighlighterCapabilities;
+begin
+  Result := inherited GetCapabilities + [hcCodeFolding];
 end;
 
 function TSynCustomCodeFoldingHighlighter.GetHighlighterAttriAtRowCol(

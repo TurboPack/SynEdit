@@ -85,8 +85,10 @@ type
   end;
 
   TSynHighlighterCapability = (
-    hcUserSettings, // supports Enum/UseUserSettings
-    hcRegistry      // supports LoadFrom/SaveToRegistry
+    hcUserSettings,            // supports Enum/UseUserSettings
+    hcRegistry,                // supports LoadFrom/SaveToRegistry
+    hcCodeFolding,             // supports code folding
+    hcStructureHighlight       // supports structure highlighting
   );
 
   TSynHighlighterCapabilities = set of TSynHighlighterCapability;
