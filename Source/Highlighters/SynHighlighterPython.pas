@@ -542,9 +542,9 @@ type
     (
     nsStart,
     nsDotFound,
-    nsFloatNeeded,
     nsHex,
     nsOct,
+    nsBinary,
     nsExpFound
     );
 
@@ -560,7 +560,7 @@ var
         // .45
         if CharInSet(FLine[Run], ['0'..'9']) then
         begin
-          Inc (Run);
+          Inc(Run);
           fTokenID := tkFloat;
           State := nsDotFound;
 
@@ -583,22 +583,21 @@ var
           Inc (Run);
           fTokenID := tkHex;
           State := nsHex;
+        // 0o123
+        end else if CharInSet(temp, ['o', 'O']) then begin
+          Inc (Run);
+          fTokenID := tkOct;
+          State := nsOct;
+        // 0b1010
+        end else if CharInSet(temp, ['b', 'B']) then begin
+          Inc (Run);
+          fTokenID := tkOct; //paint same as octal
+          State := nsBinary;
         // 0.45
         end else if temp = '.' then begin
           Inc (Run);
           State := nsDotFound;
           fTokenID := tkFloat;
-        end else if CharInSet(temp, ['0'..'9']) then begin
-          Inc (Run);
-          // 0123 or 0123.45
-          if CharInSet(temp, ['0'..'7']) then begin
-            fTokenID := tkOct;
-            State := nsOct;
-          // 0899.45
-          end else begin
-            fTokenID := tkFloat;
-            State := nsFloatNeeded;
-          end; // if
         end; // if
       end; // ZERO
     end; // case
@@ -644,8 +643,14 @@ var
 
   function CheckStart: Boolean;
   begin
+    // Allow underscores inside the number
+    if temp = '_' then begin
+      if CharInSet(FLine[Run + 1], ['0'..'9']) then
+        Result := True
+      else
+        Result := HandleBadNumber;
     // 1234
-    if CharInSet(temp, ['0'..'9']) then begin
+    end else if CharInSet(temp, ['0'..'9']) then begin
       Result := True;
     //123e4
     end else if CharInSet(temp, ['e', 'E']) then begin
@@ -669,8 +674,16 @@ var
 
   function CheckDotFound: Boolean;
   begin
+    // Allow underscores inside the number
+    if temp = '_' then begin
+      if CharInSet(FLine[Run - 1], ['0'..'9']) and
+        CharInSet(FLine[Run + 1], ['0'..'9'])
+      then
+        Result := True
+      else
+        Result := HandleBadNumber;
     // 1.0e4
-    if CharInSet(temp, ['e', 'E']) then begin
+    end else if CharInSet(temp, ['e', 'E']) then begin
       Result := HandleExponent;
     // 123.45
     end else if CharInSet(temp, ['0'..'9']) then begin
@@ -693,88 +706,45 @@ var
     end; // if
   end; // CheckDotFound
 
-  function CheckFloatNeeded: Boolean;
+  function CheckSpecialInt(ValidChars: TSysCharSet): Boolean;
   begin
-    // 091.0e4
-    if CharInSet(temp, ['e', 'E']) then begin
-      Result := HandleExponent;
-    // 0912345
-    end else if CharInSet(temp, ['0'..'9']) then begin
-      Result := True;
-    // 09123.45
-    end else if temp = '.' then begin
-      Result := HandleDot or HandleBadNumber; // Bad octal
-    // 09123.45j
-    end else if CharInSet(temp, ['j', 'J']) then begin
-      Inc (Run);
-      Result := False;
-    // End of number (error: Bad oct number) 0912345
-    end else begin
-      Result := HandleBadNumber;
-    end;
-  end; // CheckFloatNeeded
-
-  function CheckHex: Boolean;
-  begin
-    // 0x123ABC
-    if CharInSet(temp, ['a'..'f', 'A'..'F', '0'..'9']) then
+    // Allow underscores inside the number
+    if temp = '_' then begin
+      if CharInSet(FLine[Run - 1], ValidChars) and
+        CharInSet(FLine[Run + 1], ValidChars)
+      then
+        Result := True
+      else
+        Result := HandleBadNumber;
+    end else if CharInSet(temp, ValidChars) then
     begin
       Result := True;
-    // 0x123ABCL
     end else if CharInSet(temp, ['l', 'L']) then begin
       Inc (Run);
       Result := False;
-    // 0x123.45: Error!
     end else if temp = '.' then begin
       Result := False;
       if HandleDot then
         HandleBadNumber;
-    // Error!
     end else if IsIdentChar(temp) then begin
       Result := HandleBadNumber;
-    // End of number
     end else begin
       Result := False;
     end; // if
   end; // CheckHex
 
-  function CheckOct: Boolean;
-  begin
-    // 012345
-    if CharInSet(temp, ['0'..'9']) then begin
-      if not CharInSet(temp, ['0'..'7']) then begin
-        State := nsFloatNeeded;
-        fTokenID := tkFloat;
-      end; // if
-      Result := True;
-    // 012345L
-    end else if CharInSet(temp, ['l', 'L']) then begin
-      Inc (Run);
-      Result := False;
-    // 0123e4
-    end else if CharInSet(temp, ['e', 'E']) then begin
-      Result := HandleExponent;
-    // 0123j
-    end else if CharInSet(temp, ['j', 'J']) then begin
-      Inc (Run);
-      fTokenID := tkFloat;
-      Result := False;
-    // 0123.45
-    end else if temp = '.' then begin
-      Result := HandleDot;
-    // Error!
-    end else if IsIdentChar(temp) then begin
-      Result := HandleBadNumber;
-    // End of number
-    end else begin
-      Result := False;
-    end; // if
-  end; // CheckOct
-
   function CheckExpFound: Boolean;
   begin
+    // Allow underscores inside the number
+    if temp = '_' then begin
+      if CharInSet(FLine[Run - 1], ['0'..'9']) and
+        CharInSet(FLine[Run + 1], ['0'..'9'])
+      then
+        Result := True
+      else
+        Result := HandleBadNumber;
     // 1e+123
-    if CharInSet(temp, ['0'..'9']) then begin
+    end else if CharInSet(temp, ['0'..'9']) then begin
       Result := True;
     // 1e+123j
     end else if CharInSet(temp, ['j', 'J']) then begin
@@ -814,12 +784,12 @@ begin
         if not CheckStart then Exit;
       nsDotFound:
         if not CheckDotFound then Exit;
-      nsFloatNeeded:
-        if not CheckFloatNeeded then Exit;
       nsHex:
-        if not CheckHex then Exit;
+        if not CheckSpecialInt(['a'..'f', 'A'..'F', '0'..'9']) then Exit;
       nsOct:
-        if not CheckOct then Exit;
+        if not CheckSpecialInt(['0'..'7']) then Exit;
+      nsBinary:
+        if not CheckSpecialInt(['0'..'1']) then Exit;
       nsExpFound:
         if not CheckExpFound then Exit;
     end; // case

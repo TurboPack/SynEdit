@@ -7575,7 +7575,8 @@ function TCustomSynEdit.IsPointInSelection(const Value: TBufferCoord): boolean;
 var
   Index: Integer;
 begin
-  Result := FSelections.FindSelection(Value, Index);
+  Result := FSelections.FindSelection(Value, Index) and
+    not FSelections[Index].IsEmpty;
 end;
 
 procedure TCustomSynEdit.SetFocus;
@@ -8803,7 +8804,7 @@ function TCustomSynEdit.GetHighlighterAttriAtRowCol(const XY: TBufferCoord;
 begin
   Attri := nil;
   if Assigned(fHighlighter) then
-    Attri := fHighlighter.GetHighlighterAttriAtRowCol(Lines, XY.Line, XY.Char);
+    Attri := fHighlighter.GetHighlighterAttriAtRowCol(Lines, XY.Line - 1, XY.Char);
   Result := Attri <> nil;
 end;
 
@@ -8812,7 +8813,7 @@ function TCustomSynEdit.GetHighlighterAttriAtRowColEx(const XY: TBufferCoord;
   var Attri: TSynHighlighterAttributes): boolean;
 begin
   if Assigned(fHighlighter) then
-    Result := fHighlighter.GetHighlighterAttriAtRowColEx(Lines, XY.Line,
+    Result := fHighlighter.GetHighlighterAttriAtRowColEx(Lines, XY.Line - 1,
       XY.Char, Token, TokenType, Start, Attri)
   else
     Result := False;
