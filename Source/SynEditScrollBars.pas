@@ -29,26 +29,38 @@ unit SynEditScrollBars;
 interface
 
 uses
+  Winapi.Windows,
   System.SysUtils,
   System.UITypes,
   Vcl.Controls,
+  Vcl.Forms,
   SynEditTypes;
 
 { Factory Method }
 function CreateSynEditScrollBars(Editor: TCustomControl): ISynEditScrollBars;
 
+// Scrolling style hook
+type
+  TSynScrollingStyleHook = class(TScrollingStyleHook)
+  strict protected
+    procedure DrawVertScroll(DC: HDC); override;
+  end;
+
+
 implementation
 
 uses
-  Winapi.Windows,
   Winapi.Messages,
   System.Classes,
   System.Types,
   System.Math,
-  Vcl.Forms,
+  Vcl.Themes,
+  Vcl.Graphics,
+  Vcl.GraphUtil,
   SynEdit,
   SynEditTextBuffer,
   SynEditMiscProcs,
+  SynEditMiscClasses,
   SynEditStrConst,
   SynEditKeyConst;
 
@@ -203,7 +215,6 @@ begin
   ScrollInfo.fMask := SIF_ALL;
   if AState.Active then
   begin
-
     if not HideEnabled then
       ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
 
@@ -304,6 +315,8 @@ begin
     FPrevVertSBState := FNewVertSBState;
     Result := True;
   end;
+  if Result then
+    SendMessage(FOwner.Handle, WM_NCPAINT, 0, 0);
 end;
 
 procedure TSynEditScrollBars.WMHScroll(var AMsg: TWMScroll);
@@ -433,15 +446,17 @@ var
   LinesToScroll: Integer;
   CharsToScroll: Integer;
 begin
-  // We are hard setting these but we could use Mouse.WheelScrollLines and
-  // SPI_GETWHEELSCROLLCHARS to get user settings.
-  LinesToScroll := 3;
-  CharsToScroll := 3;
-  if not (ssShift in Shift) and not (ssHorizontal in Shift) then
+  if [ssCtrl, ssAlt, ssShift, ssHorizontal] * Shift = [ssCtrl] then
+  begin
+    FMouseWheelVertAccumulator := 0;
+    FOwner.Zoom(Sign(WheelDelta));
+  end
+  else if ([ssShift, ssCtrl] * Shift <> [ssShift]) and not (ssHorizontal in Shift) then
   begin
     // Vertical wheel scrolling
-    if GetKeyState(SYNEDIT_CONTROL) < 0 then
-      LinesToScroll := FOwner.LinesInWindow shr Ord(eoHalfPageScroll in FOwner.Options);
+    LinesToScroll := Mouse.WheelScrollLines;
+    if [ssShift, ssCtrl] * Shift = [ssShift, ssCtrl] then
+      LinesToScroll := FOwner.LinesInWindow div 2;
     Inc(FMouseWheelVertAccumulator, WheelDelta);
     WheelClicks := FMouseWheelVertAccumulator div WHEEL_DELTA;
     FMouseWheelVertAccumulator := FMouseWheelVertAccumulator mod WHEEL_DELTA;
@@ -451,8 +466,9 @@ begin
   else
   begin
     // Horizontal wheel or tilt scrolling
-    if GetKeyState(SYNEDIT_CONTROL) < 0 then
-      CharsToScroll := GetHorzPageInChars shr Ord(eoHalfPageScroll in FOwner.Options);
+    SystemParametersInfo(SPI_GETWHEELSCROLLCHARS, 0, CharsToScroll, 0);
+    if [ssShift, ssCtrl] * Shift = [ssShift, ssCtrl] then
+      CharsToScroll := GetHorzPageInChars div 2;
     Inc(FMouseWheelHorzAccumulator, WheelDelta);
     WheelClicks := FMouseWheelHorzAccumulator div WHEEL_DELTA;
     FMouseWheelHorzAccumulator := FMouseWheelHorzAccumulator mod WHEEL_DELTA;
@@ -487,6 +503,157 @@ begin
     Result := TSynEditScrollBars.Create(TCustomSynEdit(Editor))
   else
     raise Exception.Create('SynEditScrollBars will only work with SynEdit.');
+end;
+
+{ TSynScrollingStyleHook }
+
+procedure TSynScrollingStyleHook.DrawVertScroll(DC: HDC);
+var
+  LBitmap: TBitmap;
+  Details: TThemedElementDetails;
+  R, AnnRect: TRect;
+  LPPI: Integer;
+  LStyle: TCustomStyleServices;
+  LVertScrollRect, LVertSliderRect: TRect;
+  Editor: TCustomSynEdit;
+  Ann: TSynScrollbarAnnItem;
+  I, J, Row, RowCount: Integer;
+  Rows: TArray<Integer>;
+  Colors: TArray<TColor>;
+  Color: TColor;
+  AnnHeight: Integer;
+  AnnWidth: Integer;
+  SliderBitmap: TBitmap;
+begin
+  if Handle = 0 then Exit;
+  if DC = 0 then Exit;
+  LPPI := Control.CurrentPPI;
+  LStyle := StyleServices;
+  LVertScrollRect := VertScrollRect;
+  LVertSliderRect := VertSliderRect;
+  Editor := Control as TCustomSynEdit;
+  if (LVertScrollRect.Width > 0) and (LVertScrollRect.Height > 0) then
+  begin
+    LBitmap := TBitmap.Create;
+    try
+      LBitmap.Width := LVertScrollRect.Width;
+      LBitmap.Height := LVertScrollRect.Height;
+      if LStyle.Available then
+      begin
+        MoveWindowOrg(LBitmap.Canvas.Handle, -LVertScrollRect.Left, -LVertScrollRect.Top);
+        R := LVertScrollRect;
+        R.Top := VertUpButtonRect.Bottom;
+        R.Bottom := VertDownButtonRect.Top;
+        if (R.Height > 0) and (R.Width > 0) then
+        begin
+          Details := LStyle.GetElementDetails(tsUpperTrackVertNormal);
+          LStyle.DrawElement(LBitmap.Canvas.Handle, Details, R, nil, LPPI);
+        end;
+
+        if Editor.ScrollbarAnnotations.Count = 0 then
+        begin
+          if (LVertSliderRect.Height > 0) and (LVertSliderRect.Width > 0) then
+          begin
+            Details := LStyle.GetElementDetails(VertSliderState);
+            LStyle.DrawElement(LBitmap.Canvas.Handle, Details, LVertSliderRect, nil, LPPI);
+          end;
+        end;
+
+        if LVertSliderRect.Height <> 0 then
+          Details := LStyle.GetElementDetails(VertUpState)
+        else
+          Details := LStyle.GetElementDetails(tsArrowBtnUpDisabled);
+        LStyle.DrawElement(LBitmap.Canvas.Handle, Details, VertUpButtonRect, nil, LPPI);
+
+        if LVertSliderRect.Height <> 0 then
+          Details := LStyle.GetElementDetails(VertDownState)
+        else
+          Details := LStyle.GetElementDetails(tsArrowBtnDownDisabled);
+        LStyle.DrawElement(LBitmap.Canvas.Handle, Details, VertDownButtonRect, nil, LPPI);
+
+        MoveWindowOrg(LBitmap.Canvas.Handle, LVertScrollRect.Left, LVertScrollRect.Top + VertUpButtonRect.Height);
+
+        // Scrollbar Annotations
+
+        RowCount := Editor.DisplayRowCount;
+        if (RowCount > Editor.LinesInWindow) and (LVertSliderRect.Height > 0)
+          and (R.Height > 0) and (R.Width > 0)
+        then
+        begin
+          LBitmap.Canvas.Brush.Style := bsSolid;
+
+          RowCount := Editor.DisplayRowCount;
+          AnnWidth :=  Max(R.Width div 5, 1);  // Allow 5 annotations per row
+          for I := 0 to Editor.ScrollbarAnnotations.Count - 1 do
+          begin
+             Ann := Editor.ScrollbarAnnotations[I];
+             if Ann.FullRow then
+               AnnHeight := Max(R.Height div Editor.DisplayRowCount, MulDiv(1, LPPI, 96))
+             else
+               AnnHeight := MulDiv(1, LPPI, 96);
+
+             Ann.GetInfo(Rows, Colors);
+
+             For J := Low(Rows) to High(Rows) do
+             begin
+               Row := Rows[J];
+               if Length(Colors) = 1 then
+                 Color := Colors[0]
+               else
+                 Color := Colors[J];
+               LBitmap.Canvas.Brush.Color := Color;
+               AnnRect.Top := Muldiv(R.Height, Row - 1, RowCount);
+               AnnRect.Bottom := AnnRect.Top + AnnHeight;
+               if Ann.FullRow and (Row > 1) then
+                 AnnRect.Top := Min(AnnRect.Top,
+                   Muldiv(R.Height, Row - 2, RowCount) + AnnHeight);
+               case Ann.AnnPos of
+                 sbpLeft, sbpFullWidth: AnnRect.Left := 0;
+                 sbpSecondLeft: AnnRect.Left := AnnWidth;
+                 sbpMiddle: AnnRect.Left := 2 * AnnWidth;
+                 sbpSecondRight: AnnRect.Left := R.Width - 2 * AnnWidth;
+                 sbpRight: AnnRect.Left := R.Width - AnnWidth;
+               end;
+               if Ann.AnnPos = sbpFullWidth then
+                 AnnRect.Right := R.Width
+               else
+                 AnnRect.Right := AnnRect.Left + AnnWidth;
+               LBitmap.Canvas.FillRect(AnnRect);
+             end;
+          end;
+        end;
+
+        MoveWindowOrg(LBitmap.Canvas.Handle, 0, -VertUpButtonRect.Height);
+
+        // Alpha blend the slider
+        if (Editor.ScrollbarAnnotations.Count > 0) and
+          (LVertSliderRect.Height > 0) and (LVertSliderRect.Width > 0)
+        then
+        begin
+          SliderBitmap := TBitmap.Create;
+          try
+            SliderBitmap.PixelFormat := pf32bit;
+            SliderBitmap.Canvas.Brush.Color := clFuchsia;
+            SliderBitmap.TransparentColor := clFuchsia;
+            SliderBitmap.TransparentMode := tmFixed;
+            SliderBitmap.SetSize(LVertSliderRect.Width, LVertSliderRect.Height);
+            Details := LStyle.GetElementDetails(VertSliderState);
+            LStyle.DrawElement(SliderBitmap.Canvas.Handle, Details,
+              Rect(0, 0, LVertSliderRect.Width, LVertSliderRect.Height), nil, LPPI);
+            LBitmap.Canvas.Draw(0, LVertSliderRect.Top - LVertScrollRect.Top,
+              SliderBitmap, 80 * 255 div 100);
+          finally
+            SliderBitmap.Free;
+          end;
+        end;
+
+      end;
+      BitBlt(DC, LVertScrollRect.Left, LVertScrollRect.Top, LBitmap.Width,
+        LBitmap.Height, LBitmap.Canvas.Handle, 0, 0, SRCCOPY);
+    finally
+      LBitmap.Free;
+    end;
+  end;
 end;
 
 end.

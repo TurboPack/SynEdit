@@ -25,6 +25,7 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 0
+    OnMouseDown = SynEditorMouseDown
     UseCodeFolding = False
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
@@ -32,6 +33,7 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
     Gutter.Font.Name = 'Consolas'
     Gutter.Font.Style = []
     Gutter.Font.Quality = fqClearTypeNatural
+    Gutter.ShowLineNumbers = True
     Gutter.Bands = <
       item
         Kind = gbkMarks
@@ -49,6 +51,7 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
       end>
     Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
     SelectedColor.Alpha = 0.400000005960464500
+    OnProcessCommand = SynEditorProcessCommand
     OnReplaceText = SynEditorReplaceText
     RemovedKeystrokes = <
       item

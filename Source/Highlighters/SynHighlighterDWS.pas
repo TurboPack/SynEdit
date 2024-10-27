@@ -28,11 +28,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterDWS.pas,v 1.11 2011/12/28 09:24:20 Egg Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 {
@@ -46,17 +41,15 @@ unit SynHighlighterDWS;
 interface
 
 uses
-  Windows,
-  Graphics,
+  Winapi.Windows,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SysUtils,
-  Classes,
-//++ CodeFolding
+  System.SysUtils,
+  System.Classes,
   SynEditCodeFolding,
-  RegularExpressions,
-//-- CodeFolding
-  Character;
+  System.RegularExpressions,
+  System.Character;
 
 type
   TtkTokenKind = (tkAsm, tkComment, tkIdentifier, tkKey, tkNull, tkNumber,
@@ -75,9 +68,7 @@ type
    end;
 
 type
-//++ CodeFolding
   TSynDWSSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
@@ -100,11 +91,9 @@ type
     fDirecAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
-//++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
     RE_Code: TRegEx;
-//-- CodeFolding
     function AltFunc: TtkTokenKind;
     function KeyWordFunc: TtkTokenKind;
     function FuncAsm: TtkTokenKind;
@@ -172,12 +161,11 @@ type
     // and highlighting. It modifies the basic TSynDWSSyn to reproduce
     // the most recent Delphi editor highlighting.
 
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -206,7 +194,9 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Math,
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 const
    // if the language is case-insensitive keywords *must* be in lowercase
@@ -309,11 +299,9 @@ begin
   FAsmStart := False;
   FDefaultFilter := SYNS_FilterDWS;
 
-//++ CodeFolding
-  RE_BlockBegin.Create('\b(begin|record|class)\b', [roNotEmpty, roIgnoreCase]);
+  RE_BlockBegin.Create('\b(begin|record|class|case|try)\b', [roNotEmpty, roIgnoreCase]);
   RE_BlockEnd.Create('\bend\b', [roNotEmpty, roIgnoreCase]);
-  RE_Code.Create('^\s*(function|procedure)\b', [roNotEmpty, roIgnoreCase]);
-//-- CodeFolding
+  RE_Code.Create('^\s*(function|procedure|constructor|destructor)\b', [roNotEmpty, roIgnoreCase]);
 end;
 
 // Destroy
@@ -327,12 +315,15 @@ begin
   FKeywordsTypeScoped.Free;
 end;
 
-{$Q-}
+{$IFOPT Q+}
+  {$OVERFLOWCHECKS OFF}
+  {$DEFINE OVERFLOWCHECK_ON}
+{$ENDIF}
 function TSynDWSSyn.HashKey(Str: PWideChar): Cardinal;
 var
-   c : Word;
+  c : Word;
 begin
-   Result:=0;
+  Result:=0;
   while IsIdentChar(Str^) do
   begin
       c:=Ord(Str^);
@@ -344,7 +335,10 @@ begin
    fStringLen := Str - fToIdent;
    Result := Result mod Cardinal(Length(fIdentFuncTable));
 end;
-{$Q+}
+{$IFDEF OVERFLOWCHECK_ON}
+  {$OVERFLOWCHECKS ON}
+  {$UNDEF OVERFLOWCHECK_ON}
+{$ENDIF}
 
 function TSynDWSSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
@@ -414,6 +408,39 @@ begin
    if (fKeyWords.IndexOf(buf)>=0) and (FLine[Run - 1] <> '&') then
       Result := tkKey
    else Result := tkIdentifier
+end;
+
+function TSynDWSSyn.FlowControlAtLine(Lines: TStrings;
+  Line: Integer): TSynFlowControl;
+var
+  SLine: string;
+  Index: Integer;
+begin
+  Result := fcNone;
+
+  SLine := LowerCase(Lines[Line - 1]);
+
+  Index :=  SLine.IndexOf('continue');
+  if Index >= 0 then
+    Result := fcContinue
+  else
+  begin
+    Index :=  SLine.IndexOf('break');
+    if Index >= 0 then
+      Result := fcBreak
+    else
+    begin
+      Index :=  SLine.IndexOf('exit');
+      if Index >= 0 then
+        Result := fcExit;
+    end;
+  end;
+
+  // Index is 0-based
+  if (Index >= 0) and
+    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = KeyAttri)
+  then
+    Result := fcNone;
 end;
 
 function TSynDWSSyn.FuncAsm: TtkTokenKind;
@@ -1018,7 +1045,6 @@ begin
   Result := Pointer(fRange);
 end;
 
-//++ CodeFolding
 type
   TRangeStates = set of TRangeState;
 
@@ -1041,37 +1067,53 @@ var
 
   function BlockDelimiter(Line: Integer): Boolean;
   var
-    Index: Integer;
+    BeginIndex: Integer;
+    EndIndex: Integer;
     Match : TMatch;
+    MatchValue: string;
+    StructureHighlight: Boolean;
   begin
-    Result := False;
+    BeginIndex := 0;
+    EndIndex := 0;
+    StructureHighlight := False;
 
     Match := RE_BlockBegin.Match(CurLine);
     if Match.Success then
     begin
       // Char must have proper highlighting (ignore stuff inside comments...)
-      Index :=  Match.Index;
-      if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
+      BeginIndex :=  Match.Index;
+      if GetHighlighterAttriAtRowCol(LinesToScan, Line, BeginIndex) <> fKeyAttri then
+        BeginIndex := -1
+      else
       begin
-        // And ignore lines with both opening and closing chars in them
-        if not RE_BlockEnd.IsMatch(CurLine, Index + 1) then begin
-          FoldRanges.StartFoldRange(Line + 1, FT_Standard);
-          Result := True;
-        end;
-      end;
-    end else begin
-      Match := RE_BlockEnd.Match(CurLine);
-      if Match.Success then begin
-        begin
-          Index :=  Match.Index;
-          if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
-          begin
-            FoldRanges.StopFoldRange(Line + 1, FT_Standard);
-            Result := True;
-          end;
-        end;
+        MatchValue := LowerCase(Match.Value);
+        StructureHighlight := (MatchValue = 'begin') or
+          (MatchValue = 'case') or (MatchValue = 'try');
       end;
     end;
+
+    Match := RE_BlockEnd.Match(CurLine);
+    if Match.Success then begin
+      begin
+        EndIndex :=  Match.Index;
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, EndIndex) <> fKeyAttri then
+          EndIndex := -1;
+      end;
+    end;
+
+    Result := True;
+    if (BeginIndex <= 0) and (EndIndex <= 0) then
+      Result := False
+    else if (BeginIndex > 0) and (EndIndex <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, FT_Standard,
+      IfThen(StructureHighlight,
+      LeftSpaces(CurLine, True, TabWidth(LinesToScan)), 0))
+    else if (BeginIndex <= 0) and (EndIndex > 0) then
+      FoldRanges.StopFoldRange(Line + 1, FT_Standard)
+    else if EndIndex >= BeginIndex then
+      Result := False  // begin end on the same line - ignore
+    else // end begin  as in "end else begin"
+      FoldRanges.StopStartFoldRange(Line + 1, FT_Standard);
   end;
 
   function FoldRegion(Line: Integer): Boolean;
@@ -1104,6 +1146,11 @@ var
       Result := True;
     end
     else if Uppercase(Copy(S, 1, 7)) = '{$ENDIF' then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
+      Result := True;
+    end
+    else if Uppercase(Copy(S, 1, 7)) = '{$IFEND' then
     begin
       FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
       Result := True;
@@ -1251,7 +1298,6 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
 
 procedure TSynDWSSyn.SetRange(Value: Pointer);
 begin
@@ -1296,7 +1342,7 @@ end;
 
 class function TSynDWSSyn.GetCapabilities: TSynHighlighterCapabilities;
 begin
-  Result := inherited GetCapabilities + [hcUserSettings];
+  Result := inherited GetCapabilities + [hcUserSettings, hcStructureHighlight];
 end;
 
 function TSynDWSSyn.IsFilterStored: Boolean;

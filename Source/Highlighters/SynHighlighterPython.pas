@@ -28,13 +28,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterPython.pas,v 1.18.2.7 2008/09/14 16:25:02 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(A Python language highlighter for SynEdit)
@@ -51,16 +44,14 @@ unit SynHighlighterPython;
 interface
 
 uses
-  Graphics,
-  SynEditHighlighter,
+  System.SysUtils,
+  System.Classes,
+  SynEditCodeFolding,
+  System.RegularExpressions,
+  Vcl.Graphics,
   SynEditTypes,
   SynUnicode,
-  SysUtils,
-//++ CodeFolding
-  Classes,
-  SynEditCodeFolding, 
-  RegularExpressions;
-//-- CodeFolding
+  SynEditHighlighter;
 
 const
   ALPHA_CHARS = ['_', 'a'..'z', 'A'..'Z'];
@@ -74,10 +65,10 @@ type
                  rsMultilineString3 //this is to indicate if a string is made multiline by backslash char at line end (as in C++ highlighter)
                 );
 
-type
-//++ CodeFolding
+  TPyFoldType = (pftCodeBlock, pftMultiLineStringFoldType, pftClassDefType, pftFunctionDefType);
+
+
   TSynPythonSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fStringStarter: WideChar;  // used only for rsMultilineString3 stuff
     fRange: TRangeState;
@@ -124,6 +115,7 @@ type
     property Keywords: TStringList read FKeywords;
     property TokenID: TtkTokenKind read FTokenID;
   public
+    class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
   public
@@ -139,11 +131,12 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
-//++ CodeFolding
     procedure InitFoldRanges(FoldRanges : TSynFoldRanges); override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
-//-- CodeFolding
+    procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings); override;
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
     write fCommentAttri;
@@ -182,6 +175,7 @@ uses
 
 var
   GlobalKeywords: TStringList;
+
 
 function TSynPythonSyn.GetKeywordIdentifiers: TStringList;
 const
@@ -361,11 +355,9 @@ begin
   FKeywords.CaseSensitive := True;
   FKeywords.Sorted := True;
 
-//++ CodeFolding
   BlockOpenerRE.Create(
      '^(def|class|while|for|if|else|elif|try|except|with'+
      '|(async[ \t]+def)|(async[ \t]+with)|(async[ \t]+for))\b');
-//-- CodeFolding
 
   fRange := rsUnknown;
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
@@ -419,6 +411,45 @@ begin
   inherited;
 end;
 
+function TSynPythonSyn.FlowControlAtLine(Lines: TStrings;
+  Line: Integer): TSynFlowControl;
+var
+  SLine: string;
+  Index: Integer;
+begin
+  Result := fcNone;
+
+  SLine := Lines[Line - 1];
+
+  Index :=  SLine.IndexOf('continue');
+  if Index >= 0 then
+    Result := fcContinue
+  else
+  begin
+    Index :=  SLine.IndexOf('break');
+    if Index >= 0 then
+      Result := fcBreak
+    else
+    begin
+      Index :=  SLine.IndexOf('return');
+      if Index >= 0 then
+        Result := fcExit
+      else
+      begin
+        Index :=  SLine.IndexOf('yield');
+        if Index >= 0 then
+          Result := fcExit
+      end;
+    end;
+  end;
+
+  // Index is 0-based
+  if (Index >= 0) and
+    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = KeyAttri)
+  then
+    Result := fcNone;
+end;
+
 procedure TSynPythonSyn.SymbolProc;
 begin
   inc(Run);
@@ -433,6 +464,18 @@ begin
   else
     inc(Run);
   end;
+end;
+
+procedure TSynPythonSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings);
+var
+  I: Integer;
+begin
+  inherited;
+  for I := 0 to FoldRanges.Count - 1 do
+    with FoldRanges.Ranges.List[I] do
+      if FoldType <> Integer(pftCodeBlock) then
+        Indent := 0;
 end;
 
 procedure TSynPythonSyn.CommentProc;
@@ -1100,6 +1143,11 @@ begin
   inherited;
 end;
 
+class function TSynPythonSyn.GetCapabilities: TSynHighlighterCapabilities;
+begin
+  Result := inherited GetCapabilities + [hcStructureHighlight];
+end;
+
 function TSynPythonSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
 begin
   case Index of
@@ -1159,7 +1207,6 @@ begin
   fRange := rsUnknown;
 end;
 
-//++ CodeFolding
 procedure TSynPythonSyn.InitFoldRanges(FoldRanges: TSynFoldRanges);
 begin
   inherited;
@@ -1175,11 +1222,6 @@ var
   Indent : Integer;
   TabW : integer;
   FoldType : integer;
-const
-  MultiLineStringFoldType = 2;
-  ClassDefType = 3;
-  FunctionDefType = 4;
-
 
   function IsMultiLineString(Line : integer; Range : TRangeState; Fold : Boolean): Boolean;
   begin
@@ -1187,13 +1229,13 @@ const
     if TRangeState(GetLineRange(LinesToScan, Line)) = Range then
     begin
       if (TRangeState(GetLineRange(LinesToScan, Line - 1)) <> Range) and Fold then
-        FoldRanges.StartFoldRange(Line + 1, MultiLineStringFoldType)
+        FoldRanges.StartFoldRange(Line + 1, Integer(pftMultiLineStringFoldType))
       else
         FoldRanges.NoFoldInfo(Line + 1);
     end
     else if (TRangeState(GetLineRange(LinesToScan, Line - 1)) = Range) and Fold then
     begin
-      FoldRanges.StopFoldRange(Line + 1, MultiLineStringFoldType);
+      FoldRanges.StopFoldRange(Line + 1, Integer(pftMultiLineStringFoldType));
     end else
       Result := False;
   end;
@@ -1244,11 +1286,11 @@ begin
       if Success then
       begin
         if Groups[1].Value = 'class' then
-          FoldType := ClassDefType
+          FoldType := Integer(pftClassDefType)
         else if Pos('def', Groups[1].Value) >= 1 then
-          FoldType := FunctionDefType
+          FoldType := Integer(pftFunctionDefType)
         else
-          FoldType := 1;
+          FoldType := Integer(pftCodeBlock);
 
         FoldRanges.StartFoldRange(Line + 1, FoldType, Indent);
         Continue;
@@ -1257,7 +1299,6 @@ begin
     FoldRanges.StopFoldRange(Line + 1, 1, Indent)
   end;
 end;
-//-- CodeFolding
 
 procedure TSynPythonSyn.SetRange(Value: Pointer);
 begin

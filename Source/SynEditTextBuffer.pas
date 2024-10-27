@@ -149,7 +149,7 @@ type
       FromIndex: Integer = 0);
     procedure InsertText(Index: Integer; NewText: string);
     function GetSeparatedText(Separators: string): string;
-    procedure FontChanged;
+    procedure ResetMaxWidth;
     function LineCharLength(Index: Integer): Integer;
     function LineCharIndex(Index: Integer): Integer;
     procedure SetTextAndFileFormat(const Value: string);
@@ -730,7 +730,7 @@ begin
   if Value <> FTabWidth then
   begin
     FTabWidth := Value;
-    FontChanged;
+    ResetMaxWidth;
   end;
 end;
 
@@ -823,7 +823,7 @@ begin
   end;
 end;
 
-procedure TSynEditStringList.FontChanged;
+procedure TSynEditStringList.ResetMaxWidth;
 var
   I: Integer;
 begin

@@ -48,14 +48,14 @@ unit SynHighlighterPas;
 interface
 
 uses
-  Windows,
-  Registry,
-  Graphics,
+  Winapi.Windows,
+  System.Win.Registry,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-  SysUtils,
-  Classes,
+  System.SysUtils,
+  System.Classes,
   System.RegularExpressions,
   SynEditCodeFolding;
 
@@ -190,12 +190,11 @@ type
     procedure SetRange(Value: Pointer); override;
     function UseUserSettings(VersionIndex: Integer): Boolean; override;
     procedure EnumUserSettings(DelphiVersions: TStrings); override;
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -229,7 +228,9 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Math,
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 const
   // if the language is case-insensitive keywords *must* be in lowercase
@@ -293,7 +294,10 @@ const
     -1, 80
   );
 
-{$Q-}
+{$IFOPT Q+}
+  {$OVERFLOWCHECKS OFF}
+  {$DEFINE OVERFLOWCHECK_ON}
+{$ENDIF}
 function TSynPasSyn.HashKey(Str: PWideChar): Cardinal;
 begin
   Result := 0;
@@ -305,7 +309,10 @@ begin
   Result := Result mod 641;
   fStringLen := Str - fToIdent;
 end;
-{$Q+}
+{$IFDEF OVERFLOWCHECK_ON}
+  {$OVERFLOWCHECKS ON}
+  {$UNDEF OVERFLOWCHECK_ON}
+{$ENDIF}
 
 function TSynPasSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
@@ -401,6 +408,39 @@ begin
     Result := tkKey
   else
     Result := tkIdentifier
+end;
+
+function TSynPasSyn.FlowControlAtLine(Lines: TStrings; Line: Integer):
+    TSynFlowControl;
+var
+  SLine: string;
+  Index: Integer;
+begin
+  Result := fcNone;
+
+  SLine := LowerCase(Lines[Line - 1]);
+
+  Index :=  SLine.IndexOf('continue');
+  if Index >= 0 then
+    Result := fcContinue
+  else
+  begin
+    Index :=  SLine.IndexOf('break');
+    if Index >= 0 then
+      Result := fcBreak
+    else
+    begin
+      Index :=  SLine.IndexOf('exit');
+      if Index >= 0 then
+        Result := fcExit;
+    end;
+  end;
+
+  // Index is 0-based
+  if (Index >= 0) and
+    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = IdentifierAttri)
+  then
+    Result := fcNone;
 end;
 
 function TSynPasSyn.FuncAsm(Index: Integer): TtkTokenKind;
@@ -741,13 +781,11 @@ begin
   fAsmStart := False;
   fDefaultFilter := SYNS_FilterPascal;
 
-//++ CodeFolding
-  RE_BlockBegin := TRegEx.Create('\b(begin|record|class)\b', [roIgnoreCase]);
+  RE_BlockBegin := TRegEx.Create('\b(begin|record|class|case|try)\b', [roIgnoreCase]);
 
   RE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
 
-  RE_Code := TRegEx.Create('^\s*(function|procedure)\b', [roIgnoreCase]);
-//-- CodeFolding
+  RE_Code := TRegEx.Create('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
 end;
 
 procedure TSynPasSyn.AddressOpProc;
@@ -1352,7 +1390,7 @@ end;
 
 class function TSynPasSyn.GetCapabilities: TSynHighlighterCapabilities;
 begin
-  Result := inherited GetCapabilities + [hcUserSettings];
+  Result := inherited GetCapabilities + [hcUserSettings, hcStructureHighlight];
 end;
 
 function TSynPasSyn.IsFilterStored: Boolean;
@@ -1387,7 +1425,6 @@ begin
   Result := SYNS_FriendlyLangPascal;
 end;
 
-//++ CodeFolding
 type
   TRangeStates = set of TRangeState;
 
@@ -1405,51 +1442,56 @@ procedure TSynPasSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
 var
   CurLine: String;
   Line: Integer;
-  ok: Boolean;
 
   function BlockDelimiter(Line: Integer): Boolean;
   var
-    Index: Integer;
-    mcb: TMatchCollection;
-    mce: TMatchCollection;
-    match: TMatch;
+    BeginIndex: Integer;
+    EndIndex: Integer;
+    Match : TMatch;
+    MatchValue: string;
+    StructureHighlight: Boolean;
   begin
-    Result := False;
+    BeginIndex := 0;
+    EndIndex := 0;
+    StructureHighlight := False;
 
-    mcb := RE_BlockBegin.Matches(CurLine);
-    if mcb.Count > 0 then
+    Match := RE_BlockBegin.Match(CurLine);
+    if Match.Success then
     begin
       // Char must have proper highlighting (ignore stuff inside comments...)
-      Index :=  mcb.Item[0].Index;
-      if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
+      BeginIndex :=  Match.Index;
+      if GetHighlighterAttriAtRowCol(LinesToScan, Line, BeginIndex) <> fKeyAttri then
+        BeginIndex := -1
+      else
       begin
-        ok := False;
-        // And ignore lines with both opening and closing chars in them
-        for match in Re_BlockEnd.Matches(CurLine) do
-          if match.Index > Index then
-          begin
-            OK := True;
-            Break;
-          end;
-        if not OK then begin
-          FoldRanges.StartFoldRange(Line + 1, FT_Standard);
-          Result := True;
-        end;
-      end;
-    end
-    else
-    begin
-      mce := RE_BlockEnd.Matches(CurLine);
-      if mce.Count > 0 then
-      begin
-        Index :=  mce.Item[0].Index;
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
-        begin
-          FoldRanges.StopFoldRange(Line + 1, FT_Standard);
-          Result := True;
-        end;
+        MatchValue := LowerCase(Match.Value);
+        StructureHighlight := (MatchValue = 'begin') or
+          (MatchValue = 'case') or (MatchValue = 'try');
       end;
     end;
+
+    Match := RE_BlockEnd.Match(CurLine);
+    if Match.Success then begin
+      begin
+        EndIndex :=  Match.Index;
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, EndIndex) <> fKeyAttri then
+          EndIndex := -1;
+      end;
+    end;
+
+    Result := True;
+    if (BeginIndex <= 0) and (EndIndex <= 0) then
+      Result := False
+    else if (BeginIndex > 0) and (EndIndex <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, FT_Standard,
+      IfThen(StructureHighlight,
+      LeftSpaces(CurLine, True, TabWidth(LinesToScan)), 0))
+    else if (BeginIndex <= 0) and (EndIndex > 0) then
+      FoldRanges.StopFoldRange(Line + 1, FT_Standard)
+    else if EndIndex >= BeginIndex then
+      Result := False  // begin end on the same line - ignore
+    else // end begin  as in "end else begin"
+      FoldRanges.StopStartFoldRange(Line + 1, FT_Standard);
   end;
 
   function FoldRegion(Line: Integer): Boolean;
@@ -1482,6 +1524,11 @@ var
       Result := True;
     end
     else if Uppercase(Copy(S, 1, 7)) = '{$ENDIF' then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
+      Result := True;
+    end
+    else if Uppercase(Copy(S, 1, 7)) = '{$IFEND' then
     begin
       FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
       Result := True;
@@ -1627,8 +1674,6 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
-
 
 
 initialization
