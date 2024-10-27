@@ -274,6 +274,7 @@ type
     FRightEdge: Integer;
     FSelectedColor: TSynSelectedColor;
     FIndentGuides: TSynIndentGuides;
+    FDisplayFlowControl: TSynDisplayFlowControl;
     FRightEdgeColor: TColor;
     FFont: TFont;
     FBookmarks: TSynBookMarkOpt;
@@ -311,6 +312,7 @@ type
     property MaxUndo: Integer read FMaxUndo write FMaxUndo;
     property SelectedColor: TSynSelectedColor read FSelectedColor;
     property IndentGuides: TSynIndentGuides read FIndentGuides;
+    property DisplayFlowControl: TSynDisplayFlowControl read FDisplayFlowControl;
     property TabWidth: Integer read FTabWidth write FTabWidth;
     property Keystrokes: TSynEditKeyStrokes read FKeystrokes write SetKeystrokes;
     property ActiveLineColor : TColor read FActiveLineColor write FActiveLineColor;
@@ -384,7 +386,7 @@ procedure TSynEditorOptionsContainer.Assign(Source: TPersistent);
 var
   PPI: Integer;
 begin
-  if Assigned(Source) and (Source is TCustomSynEdit) then
+  if Source is TCustomSynEdit then
   begin
     Self.Font.Assign(TCustomSynEdit(Source).Font);
     Self.BookmarkOptions.Assign(TCustomSynEdit(Source).BookmarkOptions);
@@ -392,6 +394,7 @@ begin
     Self.Keystrokes.Assign(TCustomSynEdit(Source).Keystrokes);
     Self.SelectedColor.Assign(TCustomSynEdit(Source).SelectedColor);
     Self.IndentGuides.Assign(TCustomSynEdit(Source).IndentGuides);
+    Self.DisplayFlowControl.Assign(TCustomSynEdit(Source).DisplayFlowControl);
 
     Self.Color := TCustomSynEdit(Source).Color;
     Self.Options := TCustomSynEdit(Source).Options;
@@ -411,7 +414,7 @@ begin
     PPI := TCustomSynEdit(Source).CurrentPPI;
     Self.BookMarkOptions.ChangeScale(96, PPI);
     Self.ExtraLineSpacing := MulDiv(Self.ExtraLineSpacing, 96, PPI);
-  end else if Assigned(Source) and (Source is TSynEditorOptionsContainer) then
+  end else if Source is TSynEditorOptionsContainer then
   begin
     Self.Font.Assign(TSynEditorOptionsContainer(Source).Font);
     Self.BookmarkOptions.Assign(TSynEditorOptionsContainer(Source).BookmarkOptions);
@@ -419,6 +422,7 @@ begin
     Self.Keystrokes.Assign(TSynEditorOptionsContainer(Source).Keystrokes);
     Self.SelectedColor.Assign(TSynEditorOptionsContainer(Source).SelectedColor);
     Self.IndentGuides.Assign(TSynEditorOptionsContainer(Source).IndentGuides);
+    Self.DisplayFlowControl.Assign(TSynEditorOptionsContainer(Source).DisplayFlowControl);
     Self.Color := TSynEditorOptionsContainer(Source).Color;
     Self.Options := TSynEditorOptionsContainer(Source).Options;
     Self.ExtraLineSpacing := TSynEditorOptionsContainer(Source).ExtraLineSpacing;
@@ -441,7 +445,7 @@ procedure TSynEditorOptionsContainer.AssignTo(Dest: TPersistent);
 var
   PPI: Integer;
 begin
-  if Assigned(Dest) and (Dest is TCustomSynEdit) then
+  if Dest is TCustomSynEdit then
   begin
     TCustomSynEdit(Dest).BeginUpdate;
     try
@@ -450,6 +454,8 @@ begin
       TCustomSynEdit(Dest).Gutter.Assign(Self.Gutter);
       TCustomSynEdit(Dest).Keystrokes.Assign(Self.Keystrokes);
       TCustomSynEdit(Dest).SelectedColor.Assign(Self.SelectedColor);
+      TCustomSynEdit(Dest).IndentGuides.Assign(Self.IndentGuides);
+      TCustomSynEdit(Dest).DisplayFlowControl.Assign(Self.DisplayFlowControl);
       TCustomSynEdit(Dest).Color := Self.Color;
       TCustomSynEdit(Dest).Options := Self.Options;
       TCustomSynEdit(Dest).ExtraLineSpacing := Self.ExtraLineSpacing;

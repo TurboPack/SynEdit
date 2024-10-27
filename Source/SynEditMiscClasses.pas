@@ -812,6 +812,7 @@ type
    FColor: TColor;
  published
    constructor Create;
+   procedure Assign(aSource: TPersistent); override;
    property Enabled: Boolean read FEnabled write FEnabled default True;
    property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed
  end;
@@ -2721,6 +2722,8 @@ begin
     FVisible := Src.FVisible;
     FStyle := Src.FStyle;
     FColor := Src.FColor;
+    FUseStructureColors := Src.UseStructureColors;
+    FStructureHighlight := Src.StructureHighlight;
     FStructureColors.Assign(Src.StructureColors);
     if Assigned(FOnChange) then
       FOnChange(Self);
@@ -3875,6 +3878,17 @@ end;
 {$REGION 'TSynDisplayFlowControl'}
 
  { TSynDisplayFlowControl }
+
+procedure TSynDisplayFlowControl.Assign(aSource: TPersistent);
+begin
+  if aSource is TSynDisplayFlowControl then
+  begin
+    FEnabled := TSynDisplayFlowControl(aSource).Enabled;
+    FColor := TSynDisplayFlowControl(aSource).Color;
+  end
+  else
+    inherited;
+end;
 
 constructor TSynDisplayFlowControl.Create;
 begin
