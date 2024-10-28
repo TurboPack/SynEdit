@@ -43,11 +43,13 @@ unit SynHighlighterIni;
 interface
 
 uses
-  Graphics,
+  System.Classes,
+  System.RegularExpressions,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
-  Classes;
+  SynEditCodeFolding,
+  SynUnicode;
 
 type
   TtkTokenKind = (tkComment, tkText, tkSection, tkKey, tkNull, tkNumber,
@@ -64,7 +66,7 @@ const
   rsOpenBracketsBase = 1000;
 
 type
-  TSynIniSyn = class(TSynCustomHighlighter)
+  TSynIniSyn = class(TSynCustomCodeFoldingHighlighter)
   private
     FTokenID: TtkTokenKind;
     fRange: TRangeState;
@@ -110,6 +112,10 @@ type
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+    procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings); override;
   published
     property IniHighlightType: TIniHighlightType read fIniHighlightType
       write fIniHighlightType default typeIni;
@@ -136,7 +142,7 @@ type
 implementation
 
 uses
-  SysUtils,
+  System.SysUtils,
   SynEditStrConst;
 
 constructor TSynIniSyn.Create(AOwner: TComponent);
@@ -172,7 +178,28 @@ begin
   SetAttributesOnChange(DefHighlightChange);
 
   fDefaultFilter := SYNS_FilterINI;
-end; { Create }
+end;
+
+procedure TSynIniSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+var
+  Line: Integer;
+  SLine: string;
+begin
+  for Line := FromLine to ToLine do
+  begin
+    SLine := LinesToScan[Line];
+
+    if (SLine <> '') and
+      (GetHighlighterAttriAtRowCol(LinesToScan, Line, 1) = SectionAttri)
+    then
+      FoldRanges.StopStartFoldRange(Line + 1, 0)
+    else
+      FoldRanges.NoFoldInfo(Line + 1)
+  end;
+end;
+
+{ Create }
 
 procedure TSynIniSyn.SectionOpenProc;
 begin
@@ -552,6 +579,21 @@ end;
 procedure TSynIniSyn.ResetRange;
 begin
   fRange := rsUnknown;
+end;
+
+procedure TSynIniSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings);
+var
+  I, J: Integer;
+begin
+  // Remove empty lines at the bottom
+  for I := 0 to FoldRanges.Count - 1 do
+    with FoldRanges.Ranges.List[I] do
+      for J := ToLine downto FromLine + 1 do
+        if LinesToScan[J - 1] = '' then
+          Dec(ToLine)
+        else
+          Break;
 end;
 
 // ;
