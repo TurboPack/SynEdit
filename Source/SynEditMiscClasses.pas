@@ -839,7 +839,7 @@ begin
   FBG := clHighLight;
   FFG := clHighLightText;
   FFillWholeLines := True;
-  Alpha := 0.4;
+  Alpha := 0.45;
 end;
 
 procedure TSynSelectedColor.Assign(Source: TPersistent);

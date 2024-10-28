@@ -2945,7 +2945,6 @@ var
   function PartialSelections(Row, Line: Integer; const RowStart: TBufferCoord): TPartSelArray;
   var
     Len: Integer;
-    IsFullySelected: Boolean;
 
     function HavePartialSelection(const Sel: TSynSelection; var PartSel: TPartialSelection): Boolean;
     var
@@ -2999,6 +2998,7 @@ var
     end;
 
   var
+    IsFullySelected: Boolean;
     PartSel: TPartialSelection;
     SelArray: TSynSelectionArray;
     Sel: TSynSelection;
@@ -3016,8 +3016,10 @@ var
         PartSel.Last := MaxInt;
         PartSel.SelBG := fSelectedColor.Background;
         PartSel.SelFG := fSelectedColor.Foreground;
-      end;
-      Result := [PartSel];
+        Result := [PartSel];
+      end
+      else
+        Result := [];
       Exit;
     end;
 
