@@ -479,7 +479,7 @@ resourcestring
   SYNS_FilterDFM                =  'Borland Form Files (*.dfm;*.xfm)|*.dfm;*.xfm';
   SYNS_FilterX86Assembly        =  'x86 Assembly Files (*.asm)|*.asm';
   SYNS_FilterGembase            =  'GEMBASE Files (*.dml;*.gem)|*.dml;*.gem';
-  SYNS_FilterINI                =  'INI Files (*.ini)|*.ini';
+  SYNS_FilterINI                =  'INI/TOML Files (*.ini;*.toml)|*.ini;*.toml';
   SYNS_FilterSML                =  'Standard ML Files (*.sml)|*.sml';
   SYNS_FilterVisualBASIC        =  'Visual Basic Files (*.bas)|*.bas';
   SYNS_FilterADSP21xx           =  'DSP Files (*.dsp;*.inc)|*.dsp;*.inc';
