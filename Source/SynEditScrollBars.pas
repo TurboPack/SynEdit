@@ -30,6 +30,7 @@ interface
 
 uses
   Winapi.Windows,
+  Winapi.Messages,
   System.SysUtils,
   System.UITypes,
   Vcl.Controls,
@@ -43,6 +44,9 @@ function CreateSynEditScrollBars(Editor: TCustomControl): ISynEditScrollBars;
 type
   TSynScrollingStyleHook = class(TScrollingStyleHook)
   strict protected
+    procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
+    procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
+    procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
     procedure DrawVertScroll(DC: HDC); override;
   end;
 
@@ -50,7 +54,6 @@ type
 implementation
 
 uses
-  Winapi.Messages,
   System.Classes,
   System.Types,
   System.Math,
@@ -505,6 +508,8 @@ begin
     raise Exception.Create('SynEditScrollBars will only work with SynEdit.');
 end;
 
+{$REGION 'TSynScrollingStyleHook'}
+
 { TSynScrollingStyleHook }
 
 procedure TSynScrollingStyleHook.DrawVertScroll(DC: HDC);
@@ -521,7 +526,6 @@ var
   Rows: TArray<Integer>;
   Colors: TArray<TColor>;
   Color: TColor;
-  AnnHeight: Integer;
   AnnWidth: Integer;
   SliderBitmap: TBitmap;
 begin
@@ -587,39 +591,52 @@ begin
           for I := 0 to Editor.ScrollbarAnnotations.Count - 1 do
           begin
              Ann := Editor.ScrollbarAnnotations[I];
-             if Ann.FullRow then
-               AnnHeight := Max(R.Height div Editor.DisplayRowCount, MulDiv(1, LPPI, 96))
+
+             case Ann.AnnPos of
+               sbpLeft, sbpFullWidth: AnnRect.Left := 0;
+               sbpSecondLeft: AnnRect.Left := AnnWidth;
+               sbpMiddle: AnnRect.Left := 2 * AnnWidth;
+               sbpSecondRight: AnnRect.Left := R.Width - 2 * AnnWidth;
+               sbpRight: AnnRect.Left := R.Width - AnnWidth;
+             end;
+             if Ann.AnnPos = sbpFullWidth then
+               AnnRect.Right := R.Width
              else
-               AnnHeight := MulDiv(1, LPPI, 96);
+               AnnRect.Right := AnnRect.Left + AnnWidth;
 
              Ann.GetInfo(Rows, Colors);
 
-             For J := Low(Rows) to High(Rows) do
+             J := Low(Rows);
+             while J <= High(Rows) do
              begin
                Row := Rows[J];
+               AnnRect.Top := Muldiv(R.Height, Row - 1, RowCount);
+               if Ann.FullRow then
+                 AnnRect.Bottom := Max(Muldiv(R.Height, Row, RowCount),
+                   AnnRect.Top + MulDiv(1, LPPI, 96))
+               else
+                 AnnRect.Bottom := AnnRect.Top  + MulDiv(1, LPPI, 96);
+
                if Length(Colors) = 1 then
                  Color := Colors[0]
                else
                  Color := Colors[J];
-               LBitmap.Canvas.Brush.Color := Color;
-               AnnRect.Top := Muldiv(R.Height, Row - 1, RowCount);
-               AnnRect.Bottom := AnnRect.Top + AnnHeight;
-               if Ann.FullRow and (Row > 1) then
-                 AnnRect.Top := Min(AnnRect.Top,
-                   Muldiv(R.Height, Row - 2, RowCount) + AnnHeight);
-               case Ann.AnnPos of
-                 sbpLeft, sbpFullWidth: AnnRect.Left := 0;
-                 sbpSecondLeft: AnnRect.Left := AnnWidth;
-                 sbpMiddle: AnnRect.Left := 2 * AnnWidth;
-                 sbpSecondRight: AnnRect.Left := R.Width - 2 * AnnWidth;
-                 sbpRight: AnnRect.Left := R.Width - AnnWidth;
+
+               // Merge same annotations
+               while Ann.FullRow and (J < High(Rows)) and
+                 (Rows[J + 1] = Row + 1) and
+                  ((Length(Colors) = 1) or (Colors[J] = Colors[J + 1]))  do
+               begin
+                 Inc(J);
+                 Row := Rows[J];
+                 AnnRect.Bottom := Muldiv(R.Height, Row, RowCount);
                end;
-               if Ann.AnnPos = sbpFullWidth then
-                 AnnRect.Right := R.Width
-               else
-                 AnnRect.Right := AnnRect.Left + AnnWidth;
+
+               LBitmap.Canvas.Brush.Color := Color;
                LBitmap.Canvas.FillRect(AnnRect);
-             end;
+
+               Inc(J);
+             end;;
           end;
         end;
 
@@ -646,7 +663,6 @@ begin
             SliderBitmap.Free;
           end;
         end;
-
       end;
       BitBlt(DC, LVertScrollRect.Left, LVertScrollRect.Top, LBitmap.Width,
         LBitmap.Height, LBitmap.Canvas.Handle, 0, 0, SRCCOPY);
@@ -655,5 +671,41 @@ begin
     end;
   end;
 end;
+
+// Workaround for https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-2252
+
+{ TScrollingStyleHookHelper }
+type
+  TScrollingStyleHookHelper = class helper for TScrollingStyleHook
+    procedure SetLeftButtonDownToFalse;
+  end;
+
+procedure TScrollingStyleHookHelper.SetLeftButtonDownToFalse;
+begin
+  with Self do
+    FLeftButtonDown := False;
+end;
+
+procedure TSynScrollingStyleHook.WMKeyDown(var Msg: TMessage);
+begin
+  CallDefaultProc(TMessage(Msg));
+  Handled := True;
+end;
+
+procedure TSynScrollingStyleHook.WMKeyUp(var Msg: TMessage);
+begin
+  CallDefaultProc(TMessage(Msg));
+  Handled := True;
+end;
+
+procedure TSynScrollingStyleHook.WMMouseMove(var Msg: TWMMouse);
+begin
+ if not (ssLeft in KeysToShiftState(Msg.Keys)) then
+   SetLeftButtonDownToFalse;
+ inherited;
+end;
+
+{$ENDREGION 'TSynScrollingStyleHook'}
+
 
 end.

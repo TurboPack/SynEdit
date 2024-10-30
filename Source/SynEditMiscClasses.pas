@@ -3770,6 +3770,7 @@ var
   Color: TColor;
   Mark: TSynEditMark;
   Flags: TSynLineChangeFlags;
+  RowCount: Integer;
 begin
   Editor := TCustomSynEdit(Collection.Owner);
 
@@ -3808,9 +3809,12 @@ begin
           end;
         sbaTrackChanges:
           begin
+            RowCount := Editor.DisplayRowCount;
+            RowList.Capacity := RowCount;
             ColorList := TList<TColor>.Create;
+            ColorList.Capacity := RowCount;
             try
-              for Row := 1 to Editor.DisplayRowCount do
+              for Row := 1 to RowCount do
               begin
                 Line := Editor.RowToLine(Row);
                 Color := clNone;
