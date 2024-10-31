@@ -2659,6 +2659,7 @@ var
     Start, Stop: TPoint;
     StrokeStyle: ID2D1StrokeStyle;
     Brush: ID2D1SolidColorBrush;
+    StartRow, EndRow: Integer;
   begin
     if not Assigned(fHighlighter) then Exit;
     if not (fHighlighter.Capabilities >= [hcCodeFolding, hcStructureHighlight]) then Exit;
@@ -2689,7 +2690,9 @@ var
         LColor := FIndentGuides.Color;
       Brush := TSynDWrite.SolidBrush(LColor);
 
-      for Row := aFirstRow to aLastRow do
+      StartRow := Max(aFirstRow, LineToRow(Range.FromLine));
+      EndRow := Min(aLastRow,  LineToRow(Range.ToLine));
+      for Row := StartRow to EndRow do
       begin
         Line := RowToLine(Row);
 

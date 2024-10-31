@@ -191,7 +191,8 @@ type
     function FoldHidesLine(Line: Integer; out Index: Integer) : Boolean; overload;
     function FoldsAtLevel(Level : integer) : TArray<Integer>;
     function FoldsOfType(aType : integer) : TArray<Integer>;
-    function FoldRangesForTextRange(FromLine, ToLine: Integer): TArray<TSynFoldRange>;
+    function FoldRangesForTextRange(FromLine, ToLine: Integer):
+        TArray<TSynFoldRange>;
 
     {Scanning support}
     procedure StoreCollapsedState; overload;
@@ -468,7 +469,7 @@ begin
     if Range.ToLine < FromLine then Continue;
     if Range.FromLine > ToLine then Break;
     // Only add if indent > 0
-    if Range.Indent > 0 then
+    if not Range.Collapsed and (Range.Indent > 0) then
       Result := Result + [Range];
   end;
 end;
