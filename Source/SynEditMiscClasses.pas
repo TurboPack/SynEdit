@@ -3618,8 +3618,17 @@ end;
 
 procedure TSynSelections.Restore(const [Ref] Sel: TSynSelection;
   EnsureVisible: Boolean);
+var
+  TrimTrailingActive: Boolean;
 begin
+  TrimTrailingActive := eoTrimTrailingSpaces in TCustomSynEdit(FOwner).Options;
+  if TrimTrailingActive then
+    TCustomSynEdit(FOwner).Options := TCustomSynEdit(FOwner).Options -
+      [eoTrimTrailingSpaces];
   TCustomSynEdit(FOwner).SetCaretAndSelection(Sel, EnsureVisible);
+  if TrimTrailingActive then
+    TCustomSynEdit(FOwner).Options := TCustomSynEdit(FOwner).Options +
+      [eoTrimTrailingSpaces];
 end;
 
 function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;

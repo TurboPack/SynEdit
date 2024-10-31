@@ -7644,8 +7644,8 @@ end;
 
 procedure TCustomSynEdit.SetOptions(Value: TSynEditorOptions);
 const
-  ScrollOptions = [eoDisableScrollArrows,eoHideShowScrollbars,
-    eoScrollPastEof,eoScrollPastEol];
+  ScrollOptions = [eoDisableScrollArrows, eoHideShowScrollbars,
+    eoScrollPastEof, eoScrollPastEol];
 var
   bSetDrag: Boolean;
   bUpdateScroll: Boolean;
@@ -7662,16 +7662,19 @@ begin
     begin
       CalcTextAreaWidth;  // in case eoWrapWithRightEdge changed
 
-      if not (eoScrollPastEol in Options) then
-        LeftChar := LeftChar;
-      if not (eoScrollPastEof in Options) then
-        TopLine := TopLine;
-
       // (un)register HWND as drop target
       if bSetDrag and not (csDesigning in ComponentState) then
         DragAcceptFiles(Handle, (eoDropFiles in fOptions));
+
       if bUpdateScroll then
+      begin
+        if not (eoScrollPastEol in Options) then
+          LeftChar := LeftChar;
+        if not (eoScrollPastEof in Options) then
+          TopLine := TopLine;
+
         UpdateScrollBars;
+      end;
     end;
   end;
 end;
@@ -8030,7 +8033,7 @@ var
   vIgnoreSmartTabs, TrimTrailingActive: Boolean;
 begin
   // Provide Visual Studio like block indenting
-  if (eoTabIndent in Options) then
+  if (eoTabIndent in Options) and not FSelection.IsEmpty then
   begin
     DoBlockIndent;
     Exit;
