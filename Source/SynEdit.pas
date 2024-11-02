@@ -833,10 +833,11 @@ type
     procedure UncollapseAroundLine(Line: Integer);
     procedure CollapseNearest;
     procedure UncollapseNearest;
-    procedure CollapseLevel(Level : integer);
-    procedure UnCollapseLevel(Level : integer);
+    procedure CollapseLevel(Level : Integer);
+    procedure UnCollapseLevel(Level : Integer);
     procedure CollapseFoldType(FoldType : Integer);
     procedure UnCollapseFoldType(FoldType : Integer);
+    procedure SurfaceCaretFromHiddenFolds;
 //-- CodeFolding
   public
     property AdditionalIdentChars: TSysCharSet read FAdditionalIdentChars write SetAdditionalIdentChars;
@@ -2029,13 +2030,14 @@ procedure TCustomSynEdit.LinesChanged(Sender: TObject);
 begin
   DoLinesChanged;
 
-  if (sfLinesChanging in fStateFlags) and
-    (not UseCodeFolding or fAllFoldRanges.StopScanning(fLines)) then
+  if (sfLinesChanging in fStateFlags) and UseCodeFolding and
+    fAllFoldRanges.StopScanning(fLines)
+  then
   begin
     if Assigned(fHighlighter) and (fHighlighter is TSynCustomCodeFoldingHighlighter) then
       TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
       fLines);
-    InvalidateGutter;
+    InvalidateGutterBand(gbkFold);
     Include(fStateFlags, sfScrollbarChanged);
   end;
 
@@ -3784,6 +3786,9 @@ begin
         Include(fStatusChanges, scCaretY);
         // CodeFolding
         UncollapseAroundLine(CaretY);
+        // Annotated Scrollbars
+        if FScrollbarAnnotations.Count > 0 then
+          Include(fStateFlags, sfScrollbarChanged);
       end;
       // Call UpdateLastPosX before DecPaintLock because the event handler it
       // calls could raise an exception, and we don't want FLastPosX to be
@@ -3792,9 +3797,6 @@ begin
       if EnsureVisible then
         EnsureCursorPosVisible;
       Include(fStateFlags, sfCaretChanged);
-//++ Flicker Reduction
-//      Include(fStateFlags, sfScrollbarChanged);
-//-- Flicker Reduction
     finally
       DecPaintLock;
     end;
@@ -4410,8 +4412,11 @@ begin
     TopLine := TopLine;
 
     Exclude(fStateFlags, sfScrollbarChanged);
+
     if FSynEditScrollBars.UpdateScrollBars then
-      Update;
+      Update
+    else if FScrollbarAnnotations.Count > 0 then
+      SendMessage(Handle, WM_NCPAINT, 0, 0);
   end;
 end;
 
@@ -5053,24 +5058,25 @@ begin
 end;
 
 procedure TCustomSynEdit.Collapse(FoldRangeIndex: Integer; Invalidate:Boolean);
+var
+  Range: TSynFoldRange;
 begin
-  with AllFoldRanges.Ranges.List[FoldRangeIndex] do
-  begin
-    if ToLine <= FromLine then
-      Exit;
+  if not fUseCodeFolding then Exit;
 
-    Collapsed := True;
+  if AllFoldRanges.Collapse(FoldRangeIndex) then
+  begin
+    Range := AllFoldRanges[FoldRangeIndex];
 
     // Extract caret from fold
-    if (CaretY > FromLine) and (CaretY <= ToLine) then
-      CaretXY := BufferCoord(Length(Lines[FromLine - 1]) + 1, FromLine);
+    if (CaretY > Range.FromLine) and (CaretY <= Range.ToLine) then
+      CaretXY := BufferCoord(Length(Lines[Range.FromLine - 1]) + 1, Range.FromLine);
 
     if Invalidate then begin
       // Redraw the collapsed line and below
-      InvalidateLines(FromLine, MaxInt);
+      InvalidateLines(Range.FromLine, MaxInt);
 
       // Redraw fold mark
-      InvalidateGutterLines(FromLine, MaxInt);
+      InvalidateGutterLines(Range.FromLine, MaxInt);
 
       UpdateScrollBars;
     end else
@@ -5080,66 +5086,63 @@ begin
 end;
 
 procedure TCustomSynEdit.CollapseAll;
-var
-  i: Integer;
 begin
   if not fUseCodeFolding then Exit;
-    for i := fAllFoldRanges.Count - 1 downto 0 do
-      Collapse(i, False);
+
+  fAllFoldRanges.CollapseAll;
+  SurfaceCaretFromHiddenFolds;
 
   InvalidateLines(-1, -1);
   InvalidateGutterLines(-1, -1);
 
   EnsureCursorPosVisible;
+  UpdateScrollBars;
 end;
 
 
-procedure TCustomSynEdit.CollapseLevel(Level: integer);
-Var
-  i : integer;
-  RangeIndices : TArray<Integer>;
+procedure TCustomSynEdit.CollapseLevel(Level: Integer);
 begin
   if not fUseCodeFolding then Exit;
-  RangeIndices := AllFoldRanges.FoldsAtLevel(Level);
-  for i := Low(RangeIndices) to High(RangeIndices) do
-    Collapse(RangeIndices[i], False);
+
+  AllFoldRanges.CollapseLevel(Level);
+  SurfaceCaretFromHiddenFolds;
 
   InvalidateLines(-1, -1);
   InvalidateGutterLines(-1, -1);
 
   EnsureCursorPosVisible;
+  UpdateScrollBars;
 end;
 
 procedure TCustomSynEdit.CollapseNearest;
-Var
+var
   Index : integer;
 begin
   if not fUseCodeFolding then Exit;
+
   if AllFoldRanges.FoldAroundLineEx(CaretY, False, True, True, Index) then
     Collapse(Index);
 
-    EnsureCursorPosVisible;
+  EnsureCursorPosVisible;
 end;
 
 procedure TCustomSynEdit.CollapseFoldType(FoldType : Integer);
-Var
-  i : integer;
-  RangeIndices : TArray<Integer>;
 begin
   if not fUseCodeFolding then Exit;
-  RangeIndices := AllFoldRanges.FoldsOfType(FoldType);
-  for i := Low(RangeIndices) to High(RangeIndices) do
-    Collapse(RangeIndices[i],False);
+
+  AllFoldRanges.CollapseFoldType(FoldType);
+  SurfaceCaretFromHiddenFolds;
 
   InvalidateLines(-1, -1);
   InvalidateGutterLines(-1, -1);
 
   EnsureCursorPosVisible;
+  UpdateScrollBars;
 end;
 
 procedure TCustomSynEdit.Uncollapse(FoldRangeIndex: Integer; Invalidate:Boolean);
 begin
-    AllFoldRanges.Ranges.List[FoldRangeIndex].Collapsed := False;
+  AllFoldRanges.UnCollapse(FoldRangeIndex);
 
   if Invalidate then with AllFoldRanges.Ranges[FoldRangeIndex] do
   begin
@@ -5164,24 +5167,21 @@ var
 begin
   if not fUseCodeFolding then Exit;
   // Open up the closed folds around the focused line until we can see the line we're looking for
-  while AllFoldRanges.FoldHidesLine(line, Index) do
+  while AllFoldRanges.FoldHidesLine(Line, Index) do
     Uncollapse(Index);
 end;
 
-procedure TCustomSynEdit.UnCollapseLevel(Level: integer);
-Var
-  i : integer;
-  RangeIndices : TArray<Integer>;
+procedure TCustomSynEdit.UnCollapseLevel(Level: Integer);
 begin
   if not fUseCodeFolding then Exit;
-  RangeIndices := AllFoldRanges.FoldsAtLevel(Level);
-  for i := Low(RangeIndices) to High(RangeIndices) do
-    Uncollapse(RangeIndices[i], False);
+
+  AllFoldRanges.UnCollapseLevel(Level);
 
   InvalidateLines(-1, -1);
   InvalidateGutterLines(-1, -1);
 
   EnsureCursorPosVisible;
+  UpdateScrollBars;
 end;
 
 procedure TCustomSynEdit.UncollapseNearest;
@@ -5196,19 +5196,16 @@ begin
 end;
 
 procedure TCustomSynEdit.UnCollapseFoldType(FoldType : Integer);
-Var
-  i : integer;
-  RangeIndices : TArray<Integer>;
 begin
   if not fUseCodeFolding then Exit;
-  RangeIndices := AllFoldRanges.FoldsOfType(FoldType);
-  for i := Low(RangeIndices) to High(RangeIndices) do
-    Uncollapse(RangeIndices[i], False);
+
+  AllFoldRanges.UnCollapseFoldType(FoldType);
 
   InvalidateLines(-1, -1);
   InvalidateGutterLines(-1, -1);
 
   EnsureCursorPosVisible;
+  UpdateScrollBars;
 end;
 
 procedure TCustomSynEdit.DoMouseSelectLineRange(NewPos: TBufferCoord);
@@ -5413,6 +5410,7 @@ begin
   InvalidateLines(-1, -1);
   InvalidateGutterLines(-1, -1);
 
+  UpdateScrollBars;
   EnsureCursorPosVisible;
 end;
 
@@ -7958,6 +7956,24 @@ begin
   fStatusChanges := fStatusChanges + AChanges;
   if PaintLock = 0 then
     DoOnStatusChange(fStatusChanges);
+end;
+
+procedure TCustomSynEdit.SurfaceCaretFromHiddenFolds;
+var
+  Index: Integer;
+  BC: TBufferCoord;
+  Range: TSynFoldRange;
+begin
+  if not fUseCodeFolding then Exit;
+
+  BC := CaretXY;
+  while AllFoldRanges.FoldHidesLine(BC.Line, Index) do
+  begin
+    Range := AllFoldRanges[Index];
+    BC := BufferCoord(Length(Lines[Range.FromLine - 1]) + 1, Range.FromLine);
+  end;
+  if BC <> CaretXY then
+    CaretXY := BC;
 end;
 
 procedure TCustomSynEdit.ExecCmdCaseChange(const Cmd: TSynEditorCommand);
