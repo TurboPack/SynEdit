@@ -738,29 +738,6 @@ begin
         end;
       end;
     end;
-
-
-//  for i := 0 to fRanges.Count - 1 do
-//    with fRanges.List[i] do
-//    begin
-//      FFromRow := FromLine;
-//
-//      if Collapsed then
-//      begin
-//        // Line is found after fold
-//        if ToLine < FromLine then
-//        begin
-//          Dec(FFromRow, Max(ToLine - Max(FromLine, CollapsedTo), 0));
-//          CollapsedTo := Max(CollapsedTo, ToLine);
-//          // Inside fold
-//        end
-//        else
-//        begin
-//          Dec(FFromRow, FromLine - Max(FromLine, CollapsedTo));
-//          Break;
-//        end;
-//      end;
-//    end;
 end;
 
 function TSynFoldRanges.Get(Index: Integer): TSynFoldRange;
