@@ -221,11 +221,23 @@ begin
   // this is column 0 ok it is a Section
   fTokenID := tkSection;
   inc(Run);
+
+  if FLine[Run]  = '[' then
+  begin
+    // table array
+    Inc(Run);
+  end;
+
   while FLine[Run] <> #0 do
     case FLine[Run] of
       ']':
         begin
-          inc(Run);
+          Inc(Run);
+          if FLine[Run]  = ']' then
+          begin
+            // table array
+            Inc(Run);
+          end;
           break
         end;
       #10: break;
@@ -586,6 +598,10 @@ procedure TSynIniSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
 var
   I, J: Integer;
 begin
+  // Last section
+  if FoldRanges.Count > 0 then
+    FoldRanges.Ranges.List[FoldRanges.Count - 1].ToLine := LinesToScan.Count;
+
   // Remove empty lines at the bottom
   for I := 0 to FoldRanges.Count - 1 do
     with FoldRanges.Ranges.List[I] do
