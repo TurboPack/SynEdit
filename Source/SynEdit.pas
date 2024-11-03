@@ -1984,8 +1984,16 @@ begin
 end;
 
 procedure TCustomSynEdit.Loaded;
+var
+  OldUseCodeFolding : Boolean;
 begin
   inherited Loaded;
+
+  // See SetUseCodeFolding
+  OldUseCodeFolding := fUseCodeFolding;
+  UseCodeFolding := False;
+  UseCodeFolding := OldUseCodeFolding;
+
   GutterChanged(Self);
   UpdateScrollBars;
 end;
@@ -2034,11 +2042,12 @@ begin
     fAllFoldRanges.StopScanning(fLines)
   then
   begin
-    if Assigned(fHighlighter) and (fHighlighter is TSynCustomCodeFoldingHighlighter) then
-      TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
-      fLines);
+    if FIndentGuides.Visible and FIndentGuides.StructureHighlight and
+      Assigned(fHighlighter) and (hcStructureHighlight in fHighlighter.Capabilities)
+    then
+      InvalidateLines(-1, -1);
     InvalidateGutterBand(gbkFold);
-    Include(fStateFlags, sfScrollbarChanged);
+    UpdateScrollbars;
   end;
 
   Exclude(fStateFlags, sfLinesChanging);
@@ -4156,6 +4165,14 @@ procedure TCustomSynEdit.SetUseCodeFolding(const Value: Boolean);
 Var
   ValidValue : Boolean;
 begin
+  if csLoading in ComponentState then
+  begin
+    // when loading the highlighter may not have been assigned
+    // this is taken care in Loaded.
+    fUseCodeFolding := Value;
+    Exit;
+  end;
+
   ValidValue := Value and ((Assigned(fHighlighter) and
       (fHighlighter is TSynCustomCodeFoldingHighlighter))
         or Assigned(fOnScanForFoldRanges));
@@ -4169,8 +4186,14 @@ begin
     begin
       // !!Mutually exclusive with WordWrap to reduce complexity
       WordWrap := False;
+      TSynCustomCodeFoldingHighlighter(fHighlighter).InitFoldRanges(fAllFoldRanges);
+      AllFoldRanges.AdjustRangesProc :=
+        TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges;
       FullFoldScan;
-    end;
+    end
+    else
+      AllFoldRanges.AdjustRangesProc := nil;
+
     OnCodeFoldingChange(Self);
     InvalidateGutter;
   end;
@@ -5765,7 +5788,7 @@ begin
 end;
 
 procedure TCustomSynEdit.SetHighlighter(const Value: TSynCustomHighlighter);
-Var
+var
   OldUseCodeFolding : Boolean;
 begin
   if Value <> fHighlighter then
@@ -5785,11 +5808,13 @@ begin
       HighlighterAttrChanged(fHighlighter);
 
     //  Disable Code Folding if not supported by highlighter
-    OldUseCodeFolding := fUseCodeFolding;
-    UseCodeFolding := False;
-    UseCodeFolding := OldUseCodeFolding;
-    if fHighlighter is TSynCustomCodeFoldingHighlighter then
-      TSynCustomCodeFoldingHighlighter(fHighlighter).InitFoldRanges(fAllFoldRanges);
+    //  If Loading then this is taken care of in Loaded
+    if not (csLoading  in ComponentState) then
+    begin
+      OldUseCodeFolding := fUseCodeFolding;
+      UseCodeFolding := False;
+      UseCodeFolding := OldUseCodeFolding;
+    end;
   end;
 end;
 
@@ -9644,17 +9669,14 @@ begin
   {  StopScanning recreates AllFoldRanges.
      Normally at this point (sfLinesChanging in fStateFlags) = True
      and StopScanning will be called when LinesChanged is executed }
-  if {not (sfLinesChanging in fStateFlags) and} fAllFoldRanges.StopScanning(fLines) then
+  if not (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
   begin
-    if fHighlighter is TSynCustomCodeFoldingHighlighter then
-      TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges(AllFoldRanges,
-        fLines);
     InvalidateGutterBand(gbkFold);
     if FIndentGuides.Visible and FIndentGuides.StructureHighlight and
       Assigned(fHighlighter) and (hcStructureHighlight in fHighlighter.Capabilities)
     then
       InvalidateLines(-1, -1);
-    Include(fStateFlags, sfScrollbarChanged);
+    UpdateScrollBars;
   end;
 end;
 

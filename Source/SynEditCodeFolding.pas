@@ -144,6 +144,10 @@ type
   {Support for indendation based code folding as in Python, F#}
   TSynCodeFoldingMode = (cfmStandard, cfmIndentation);
 
+  TSynFoldRanges = class;
+  TSynAdjustRangesProc = procedure(FoldRanges: TSynFoldRanges;
+    LinesToScan: TStrings) of object;
+
   TSynFoldRanges = class(TObject)
   {
     The main code folding data structure.
@@ -173,6 +177,7 @@ type
     fCollapsedState : TList<Integer>;
     fFoldInfoList : TList<TLineFoldInfo>;
     FRowComparer: IComparer<TSynFoldRange>;
+    FAdjustRangesProc: TSynAdjustRangesProc;
     function Get(Index: Integer): TSynFoldRange;
     function GetCount: Integer;
     procedure RecreateFoldRanges(Lines : TStrings);
@@ -237,6 +242,7 @@ type
     procedure AddFoldRange(FoldRange: TSynFoldRange);
     property  CodeFoldingMode : TSynCodeFoldingMode
               read fCodeFoldingMode write fCodeFoldingMode;
+    property AdjustRangesProc: TSynAdjustRangesProc write fAdjustRangesProc;
     property Count: Integer read GetCount;
     property FoldRange[Index : Integer] : TSynFoldRange read Get; default;
     property Ranges: TList<TSynFoldRange> read fRanges;
@@ -1017,6 +1023,9 @@ begin
   if Result then begin
     StoreCollapsedState;
     RecreateFoldRanges(Lines);
+    Assert(Assigned(FAdjustRangesProc));
+    FAdjustRangesProc(Self, Lines);
+    // RestoreCollapsedState calls AdjustRangeRows
     RestoreCollapsedState;
     fRangesNeedFixing := False;
   end;
