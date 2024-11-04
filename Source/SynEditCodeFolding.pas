@@ -447,8 +447,8 @@ begin
   begin
     with fRanges.List[i] do
     begin
-      if ((FromLine < Line) or ((FromLine <= Line) and AcceptFromLine)) and
-        ((ToLine > Line) or ((ToLine >= Line) and AcceptToLine)) and
+      if ((FromLine < Line) or ((FromLine = Line) and AcceptFromLine)) and
+        ((ToLine > Line) or ((ToLine = Line) and AcceptToLine)) and
         (Collapsed = WantCollapsed) then
       begin
         Index := i;
@@ -1023,9 +1023,11 @@ begin
   if Result then begin
     StoreCollapsedState;
     RecreateFoldRanges(Lines);
-    Assert(Assigned(FAdjustRangesProc));
-    FAdjustRangesProc(Self, Lines);
+    // Adjustment of ranges by highlighters
+    if Assigned(FAdjustRangesProc) then
+      FAdjustRangesProc(Self, Lines);
     // RestoreCollapsedState calls AdjustRangeRows
+    // which stores Row numbers for quick access
     RestoreCollapsedState;
     fRangesNeedFixing := False;
   end;

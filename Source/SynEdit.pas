@@ -4186,9 +4186,15 @@ begin
     begin
       // !!Mutually exclusive with WordWrap to reduce complexity
       WordWrap := False;
-      TSynCustomCodeFoldingHighlighter(fHighlighter).InitFoldRanges(fAllFoldRanges);
-      AllFoldRanges.AdjustRangesProc :=
-        TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges;
+      if fHighlighter is TSynCustomCodeFoldingHighlighter then
+      begin
+        TSynCustomCodeFoldingHighlighter(fHighlighter).InitFoldRanges(fAllFoldRanges);
+        AllFoldRanges.AdjustRangesProc :=
+          TSynCustomCodeFoldingHighlighter(fHighlighter).AdjustFoldRanges;
+      end
+      else
+        AllFoldRanges.AdjustRangesProc := nil;
+
       FullFoldScan;
     end
     else
