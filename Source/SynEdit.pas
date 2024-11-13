@@ -6012,7 +6012,7 @@ var
   TmpMiddle: Integer;
   SRow: String;
 begin
-  HandleNeeded;
+  if not HandleAllocated then Exit;
   IncPaintLock;
   try
     DC := DisplayXY;
