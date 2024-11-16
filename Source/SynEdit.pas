@@ -2076,17 +2076,14 @@ procedure TCustomSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Integer);
 var
   bWasSel: Boolean;
-  TmpBegin, TmpEnd: TBufferCoord;
   P : TPoint;
   // Ole drag drop
   DragSource : IDropSource;
   DataObject : IDataObject;
   dwEffect : integer;
 begin
+  // If Button = mbLeft MouseCapture is set by TControl.WMLButtonDown
   inherited MouseDown(Button, Shift, X, Y);
-
-  TmpBegin := FSelection.Start;
-  TmpEnd := FSelection.Stop;
 
   //remember selection state, as it will be cleared later
   bWasSel := SelAvail;
@@ -2121,13 +2118,6 @@ begin
   // Check for drag and drop
   if (Button = mbLeft) and (FSelections.Count = 1) then
   begin
-    //I couldn't track down why, but sometimes (and definitely not all the time)
-    //the block positioning is lost.  This makes sure that the block is
-    //maintained in case they started a drag operation on the block
-    FSelection.Start := TmpBegin;
-    FSelection.Stop := TmpEnd;
-
-    MouseCapture := True;
     //if mousedown occurred in selected block begin drag operation
     if bWasSel and (eoDragDropEditing in fOptions)
       and (X >= fGutterWidth + fTextMargin)
@@ -2288,9 +2278,12 @@ begin
       else if MouseCapture and (fClickCount = 3) then
         // Line selection
         DoMouseSelectLineRange(BC)
+      else if MouseCapture then
+        // if MouseCapture is True we're selecting with the mouse
+        MoveDisplayPosAndSelection(DC, True)
       else
-        // if MouseCapture is True we're changing selection. otherwise we're dragging
-        MoveDisplayPosAndSelection(DC, MouseCapture);
+        // Ole dragging
+        InternalCaretXY := DisplayToBufferPos(DC);
 
       // Deal with overlapping selections
       Selections.MouseSelection(FSelection);
@@ -2310,6 +2303,7 @@ Var
   Index: Integer;
   Rect: TRect;
 begin
+  // If Button = mbLeft MouseCapture is stopped by TControl.WMLButtonUp
   inherited MouseUp(Button, Shift, X, Y);
   fKbdHandler.ExecuteMouseUp(Self, Button, Shift, X, Y);
 
