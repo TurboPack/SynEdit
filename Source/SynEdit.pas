@@ -2130,6 +2130,7 @@ begin
         try
           Include(fStateFlags, sfOleDragSource);
           DoDragDrop(DataObject, DragSource, DROPEFFECT_COPY or DROPEFFECT_MOVE, dwEffect);
+          DataObject := nil;
         finally
           Exclude(fStateFlags, sfOleDragSource);
           if dwEffect = DROPEFFECT_MOVE then
@@ -3044,7 +3045,7 @@ var
         Result := Result + [PartSel];
   end;
 
-  procedure PaintPartialSelection(const Layout: TSynTextLayout;
+  procedure PaintPartialSelections(const Layout: TSynTextLayout;
     ARow, Aline: Integer; const RowStart: TBufferCoord;
     FirstChar, LastChar: Integer);
   {   Paint selection if ARow is partially selected - deals with bidi text
@@ -3092,9 +3093,12 @@ var
         PartSel.First := Max(PartSel.First - FirstChar + 1, 1);
         if PartSel.Last <> MaxInt then
           PartSel.Last := PartSel.Last - FirstChar + 1;
+       // Skip if selection is not visible
+       if PartSel.Last < 1 then Continue;
 
         Layout.IDW.HitTestTextRange(PartSel.First - 1, PartSel.Last - PartSel.First + 1,
           FTextOffset, YRowOffset(ARow), PDwriteHitTestMetrics(nil)^, 0, RangeCount);
+
         SetLength(HMArr, RangeCount);
         Layout.IDW.HitTestTextRange(PartSel.First - 1, PartSel.Last - PartSel.First + 1,
         FTextOffset + XRowOffset, YRowOffset(ARow), HMArr[0], RangeCount, RangeCount);
@@ -3309,7 +3313,7 @@ begin
 
     // Paint partial selection if not alpha blending the selection color
     if SameValue(fSelectedColor.Alpha, 1) then
-      PaintPartialSelection(Layout, Row, Line, RowStart, FirstChar, LastChar);
+      PaintPartialSelections(Layout, Row, Line, RowStart, FirstChar, LastChar);
 
     // Indicators
     LineIndicators := FIndicators.LineIndicators(Line);
@@ -3398,7 +3402,7 @@ begin
 
     // Paint partial selection if not alpha blending the selection color
     if not SameValue(fSelectedColor.Alpha, 1) then
-      PaintPartialSelection(Layout, Row, Line, RowStart, FirstChar, LastChar);
+      PaintPartialSelections(Layout, Row, Line, RowStart, FirstChar, LastChar);
 
     // Draw right edge
     if (fRightEdge > 0) then
