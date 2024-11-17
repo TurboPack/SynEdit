@@ -4214,8 +4214,7 @@ end;
 procedure TCustomSynEdit.OleDragLeave(Sender: TObject; var Result: HResult);
 begin
   fScrollTimer.Enabled := False;
-  if sfOleDragSource in fStateFlags then //internal dragging
-    ComputeCaret(FMouseDownX, FMouseDownY);
+  SetCaretAndSelection(FSelection.Stop, FSelection.Start, FSelection.Stop);
 end;
 
 procedure TCustomSynEdit.OleDragOver(Sender: TObject; DataObject: IDataObject;
