@@ -3170,7 +3170,7 @@ end;
 procedure TSynSelections.CaretsChanged;
 begin
   TCustomSynEdit(FOwner).StateFlags :=
-    TCustomSynEdit(FOwner).StateFlags + [sfCaretChanged];
+    TCustomSynEdit(FOwner).StateFlags + [sfCaretChanged, sfScrollbarChanged];
 end;
 
 procedure TSynSelections.Clear(KeepSelection: TKeepSelection);
