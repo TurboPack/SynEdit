@@ -3872,7 +3872,6 @@ begin
       SelStorage.BaseIndex := SelList.Count - 1;
       SelStorage.ActiveIndex := SelList.Count - 1;
       FSelections.Restore(SelStorage);
-      UpdateScrollBars;
     end;
   finally
     SelList.Free;
