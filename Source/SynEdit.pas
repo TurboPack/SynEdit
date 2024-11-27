@@ -4405,29 +4405,23 @@ begin
     end;
 
     FCarets.ShowCarets;
+    UpdateIME;
   end;
 end;
 
 procedure TCustomSynEdit.UpdateIME;
 var
-  cf: TCompositionForm;
-  vCaretDisplay: TDisplayCoord;
-  vCaretPix: TPoint;
-  vSelStartPix: TPoint;
+  BC: TBufferCoord;
+  PosPix: TPoint;
 begin
   if FSelection.IsEmpty then
-  begin
-    vCaretDisplay := DisplayXY;
-    vCaretPix := RowColumnToPixels(vCaretDisplay);
-    cf.dwStyle := CFS_POINT;
-    cf.ptCurrentPos := vCaretPix;
-    ImmSetCompositionWindow(ImmGetContext(Handle), @cf);
-  end
+    BC := CaretXY
   else
-  begin
-    vSelStartPix := Self.RowColumnToPixels(BufferToDisplayPos(Self.BlockBegin));
-    Self.SetImeCompositionWindow(Self.Font, vSelStartPix.X, vSelStartPix.Y);
-  end;
+    BC := BlockBegin;
+
+  PosPix := RowColumnToPixels(BufferToDisplayPos(BC));
+  // Font is set in WMIMENotify
+  SetImeCompositionWindow(nil, PosPix.X, PosPix.Y);
 end;
 
 procedure TCustomSynEdit.UpdateScrollBars;
