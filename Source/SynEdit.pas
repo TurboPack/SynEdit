@@ -8278,7 +8278,7 @@ begin
     MaxX := Length(S);
     while (FirstNonBlank <= MaxX) and IsWhiteChar(S[FirstNonBlank]) do
       Inc(FirstNonBlank);
-    if NewPos.Column > FirstNonBlank then
+    if (NewPos.Column > FirstNonBlank) or (NewPos.Column = 1) then
       NewPos.Column := FirstNonBlank
     else
       NewPos.Column := 1;
