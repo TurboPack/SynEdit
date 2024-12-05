@@ -1118,6 +1118,7 @@ uses
   Winapi.ShellAPI,
   Vcl.Consts,
   Vcl.Clipbrd,
+  Vcl.IMouse,
   SynAccessibility,
   SynEditScrollBars,
   SynEditUndo,
@@ -1400,6 +1401,9 @@ var
 const
   ScrollAreaDefaultSize = 4;
 begin
+  fScrollDeltaX := 0;
+  fScrollDeltaX := 0;
+
   iScrollBounds := Bounds(fGutterWidth, 0, FTextAreaWidth,
     fLinesInWindow * fTextHeight);
 
@@ -1416,16 +1420,12 @@ begin
   if (X < iScrollBounds.Left) and (LeftChar > 1) then
     fScrollDeltaX := (X - iScrollBounds.Left) div fCharWidth - 1
   else if X >= iScrollBounds.Right then
-    fScrollDeltaX := (X - iScrollBounds.Right) div fCharWidth + 1
-  else
-    fScrollDeltaX := 0;
+    fScrollDeltaX := (X - iScrollBounds.Right) div fCharWidth + 1;
 
   if (Y < iScrollBounds.Top) and (TopLine > 1) then
     fScrollDeltaY := (Y - iScrollBounds.Top) div fTextHeight - 1
   else if Y >= iScrollBounds.Bottom then
-    fScrollDeltaY := (Y - iScrollBounds.Bottom) div fTextHeight + 1
-  else
-    fScrollDeltaY := 0;
+    fScrollDeltaY := (Y - iScrollBounds.Bottom) div fTextHeight + 1;
 
   fScrollTimer.Enabled := (fScrollDeltaX <> 0) or (fScrollDeltaY <> 0);
 end;
@@ -1492,7 +1492,7 @@ begin
   FScrollbarAnnotations := TSynScrollbarAnnotations.Create(Self, TSynScrollbarAnnItem);
   FScrollbarAnnotations.SetDefaultAnnotations;
 
-  ControlStyle := ControlStyle + [csOpaque, csSetCaption, csNeedsBorderPaint];
+  ControlStyle := ControlStyle + [csOpaque, csSetCaption, csNeedsBorderPaint, csPannable];
   Height := 150;
   Width := 200;
   Cursor := crIBeam;
@@ -1650,6 +1650,7 @@ begin
   FSelections.Free;
   FCarets.Free;
   FDisplayFlowControl.Free;
+  Mouse.PanningWindow := nil;
 end;
 
 function TCustomSynEdit.GetBlockBegin: TBufferCoord;
@@ -2147,7 +2148,7 @@ begin
     end;
   end;
 
-  if (ssDouble in Shift) or ((Button = mbRight)
+  if (ssDouble in Shift) or (Button = mbMiddle) or ((Button = mbRight)
     and (not (eoRightMouseMovesCursor in Options) or (SelAvail and
     IsPointInSelection(DisplayToBufferPos(PixelsToRowColumn(X, Y))))))
   then
@@ -2248,31 +2249,30 @@ begin
   DC := PixelsToRowColumn( iMousePos.X, iMousePos.Y );
   DC.Row := MinMax(DC.Row, 1, DisplayRowCount);
 
-  if fScrollDeltaX <> 0 then
-  begin
-    LeftChar := LeftChar + fScrollDeltaX;
-    X := LeftChar;
-    if fScrollDeltaX > 0 then  // scrolling right?
-      Inc(X, FTextAreaWidth div FCharWidth);
-    DC.Column := X;
-  end;
-  if fScrollDeltaY <> 0 then
-  begin
-    if GetKeyState(SYNEDIT_SHIFT) < 0 then
-      Y := TopLine + fScrollDeltaY * LinesInWindow
-    else
-      Y := TopLine + fScrollDeltaY;
-    if fScrollDeltaY > 0 then  // scrolling down?
-      Inc(Y, LinesInWindow - 1);
-    DC.Row := MinMax(Y, 1, DisplayRowCount);
-  end;
+  IncPaintLock;
+  try
+    if fScrollDeltaX <> 0 then
+    begin
+      LeftChar := LeftChar + fScrollDeltaX;
+      X := LeftChar;
+      if fScrollDeltaX > 0 then  // scrolling right?
+        Inc(X, FTextAreaWidth div FCharWidth);
+      DC.Column := X;
+    end;
+    if fScrollDeltaY <> 0 then
+    begin
+      if GetKeyState(SYNEDIT_SHIFT) < 0 then
+        Y := TopLine + fScrollDeltaY * LinesInWindow
+      else
+        Y := TopLine + fScrollDeltaY;
+      if fScrollDeltaY > 0 then  // scrolling down?
+        Inc(Y, LinesInWindow - 1);
+      DC.Row := MinMax(Y, 1, DisplayRowCount);
+    end;
 
-  BC := DisplayToBufferPos(DC);
-  if CaretXY <> BC then
-  begin
-    // changes to line / column in one go
-    IncPaintLock;
-    try
+    BC := DisplayToBufferPos(DC);
+    if CaretXY <> BC then
+    begin
       if MouseCapture and (fClickCount = 2) then
         // Word selection
         DoMouseSelectWordRange(BC)
@@ -2280,18 +2280,19 @@ begin
         // Line selection
         DoMouseSelectLineRange(BC)
       else if MouseCapture then
-        // if MouseCapture is True we're selecting with the mouse
+        // if MouseCapture is True we are selecting with the mouse
         MoveDisplayPosAndSelection(DC, True)
       else
         // Ole dragging
-        InternalCaretXY := DisplayToBufferPos(DC);
+        InternalCaretXY := BC;
 
       // Deal with overlapping selections
       Selections.MouseSelection(FSelection);
-    finally
-      DecPaintLock;
     end;
+  finally
+    DecPaintLock;
   end;
+
   ComputeScroll(iMousePos.x, iMousePos.y);
 end;
 
@@ -6176,6 +6177,14 @@ procedure TCustomSynEdit.CommandProcessor(Command: TSynEditorCommand;
 var
   CommandInfo: TSynCommandInfo;
 begin
+  if csPanning in ControlState then
+  begin
+    // As in Word, Notepad stop panning and ignore the command
+    Assert(Assigned(Mouse.PanningWindow));
+    Mouse.PanningWindow.StopPanning;
+    Exit;
+  end;
+
   fUndoRedo.CommandProcessed := Command;
   // first the program event handler gets a chance to process the command
   DoOnProcessCommand(Command, AChar, Data);
