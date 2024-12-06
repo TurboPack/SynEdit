@@ -110,6 +110,8 @@ type
   TGetLineIndicatorsEvent = procedure(Sender: TObject; const Line: Integer;
     var LineIndicators: TArray<TSynIndicator>) of Object;
 
+  TZoomEvent = procedure(Sender: TObject; const NewFontSize,
+    OrigFontSize: Integer) of object;
 
   TSynEditCaretType = (ctVerticalLine, ctHorizontalLine, ctHalfBlock, ctBlock);
 
@@ -404,6 +406,7 @@ type
     fOnStatusChange: TStatusChangeEvent;
     fOnTripleClick: TNotifyEvent;
     fOnQudrupleClick: TNotifyEvent;
+    FOnZoom: TZoomEvent;
 
     fChainListCleared: TNotifyEvent;
     fChainListDeleted: TStringListChangeEvent;
@@ -823,7 +826,7 @@ type
     procedure HookTextBuffer(aBuffer: TSynEditStringList; aUndoRedo: ISynEditUndo);
     procedure UnHookTextBuffer;
 
-    procedure Zoom(ExtraSize: Integer);
+    procedure Zoom(ExtraFontSize: Integer);
     procedure ZoomReset;
 //++ CodeFolding
     procedure CollapseAll;
@@ -985,6 +988,7 @@ type
       read fOnTripleClick write fOnTripleClick;
     property OnQuadrupleClick: TNotifyEvent
       read fOnQudrupleClick write fOnQudrupleClick;
+    property OnZoom: TZoomEvent read FOnZoom write FOnZoom;
 //++ CodeFolding
     property OnScanForFoldRanges: TScanForFoldRangesEvent
       read fOnScanForFoldRanges write fOnScanForFoldRanges;
@@ -1103,6 +1107,7 @@ type
     property OnTripleClick;
     property OnQuadrupleClick;
     property OnSearchNotFound;
+    property OnZoom;
 //++ CodeFolding
     property OnScanForFoldRanges;
 //-- CodeFolding
@@ -9929,17 +9934,19 @@ begin
     InvalidateGutter;
 end;
 
-procedure TCustomSynEdit.Zoom(ExtraSize: Integer);
+procedure TCustomSynEdit.Zoom(ExtraFontSize: Integer);
 var
   OldFontSize: Integer;
   OldGutterFontSize: Integer;
 begin
   OldFontSize := FOrigFontSize;
   OldGutterFontSize := FOrigGutterFontSize;
-  Font.Size := EnsureRange(Font.Size + ExtraSize, 3, 50);
-  Gutter.Font.Size := EnsureRange(Gutter.Font.Size + ExtraSize, 2, 49);
+  Font.Size := EnsureRange(Font.Size + ExtraFontSize, 3, 50);
+  Gutter.Font.Size := EnsureRange(Gutter.Font.Size + ExtraFontSize, 2, 49);
   FOrigFontSize := OldFontSize;
   FOrigGutterFontSize := OldGutterFontSize;
+  if Assigned(FOnZoom) then
+    FOnZoom(Self, Font.Size, FOrigFontSize);
 end;
 
 
@@ -9947,6 +9954,8 @@ procedure TCustomSynEdit.ZoomReset;
 begin
   Font.Size := FOrigFontSize;
   Gutter.Font.Size := FOrigGutterFontSize;
+  if Assigned(FOnZoom) then
+    FOnZoom(Self, Font.Size, FOrigFontSize);
 end;
 
 { TSynEditMark }
