@@ -1407,7 +1407,7 @@ const
   ScrollAreaDefaultSize = 4;
 begin
   fScrollDeltaX := 0;
-  fScrollDeltaX := 0;
+  fScrollDeltaY := 0;
 
   iScrollBounds := Bounds(fGutterWidth, 0, FTextAreaWidth,
     fLinesInWindow * fTextHeight);
