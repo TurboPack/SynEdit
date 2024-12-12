@@ -416,11 +416,15 @@ begin
 end;
 
 procedure TSynUIAutomationProvider.NotifyBoundingRectangleChange;
+var
+  OldBR, NewBR: OleVariant;
 begin
+  OldBR := OldBoundingRectangle;
+  NewBR := BoundingRectangle;
   TThread.ForceQueue(nil, procedure
   begin
     UiaRaiseAutomationPropertyChangedEvent(IRawElementProviderSimple(Self),
-      UIA_BoundingRectanglePropertyId, OldBoundingRectangle, BoundingRectangle);
+      UIA_BoundingRectanglePropertyId, OldBR, NewBR);
   end);
 end;
 
