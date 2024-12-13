@@ -232,7 +232,7 @@ begin
   if FLine[Run] = '0' then
     if FLine[Run + 1] <> '.' then
     begin
-      if CharInSet(FLine[Run + 1], [',', #32]) then
+      if CharInSet(FLine[Run + 1], [#0, #32, ',', ']', '}']) then
       begin
         Inc(Run);
         Exit;
