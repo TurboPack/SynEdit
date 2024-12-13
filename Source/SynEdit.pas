@@ -2253,6 +2253,7 @@ begin
   iMousePos := ScreenToClient( iMousePos );
   DC := PixelsToRowColumn( iMousePos.X, iMousePos.Y );
   DC.Row := MinMax(DC.Row, 1, DisplayRowCount);
+  DC.Column := MinMax(DC.Column, 1, RowLength[DC.Row] + 1);
 
   IncPaintLock;
   try
