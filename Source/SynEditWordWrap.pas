@@ -375,17 +375,21 @@ begin
       begin
         while (P < PEnd) do
         begin
+          // Special case with space. Keep it on the row even if it does't fit.
           if (P > PStart) and Editor.IsWordBreakChar(P^) then
             PBreak := P + IfThen(P^ = #32, 1, 0);
           case P^ of
              #9: Inc(W, TW - W mod TW);
-             #32..#126: Inc(W, CW);
-           else
-             Break;
-           end;
-           if W > fMaxRowWidth then
-             Break;
-           Inc(P);
+             #32..#126, #$00A0: Inc(W, CW);
+          else
+            Break;
+          end;
+          if W > fMaxRowWidth then
+            Break;
+          if (P > PStart) and Editor.IsWordBreakChar(P^) then
+            // Keep opening brackets with the next line
+            PBreak := P + IfThen(Word(P^) in [40, 91], 0, 1);
+          Inc(P);
         end;
 
         if (P < PEnd) and (W <= fMaxRowWidth) then
@@ -402,7 +406,7 @@ begin
           while P2 < PEnd do
           begin
             Inc(P2);
-            if Word(P2^) in [9, 32..126] then Break;
+            if Word(P2^) in [9, 65..90, 97..122] then Break;
           end;
 
           Layout.Create(Editor.TextFormat, P, P2-P, MaxInt, Editor.LineHeight);
