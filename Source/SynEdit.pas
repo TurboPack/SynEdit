@@ -639,6 +639,8 @@ type
     procedure DoOnCommandProcessed(Command: TSynEditorCommand; AChar: WideChar;
       Data: pointer); virtual;
     procedure DoOnGutterClick(Button: TMouseButton; X, Y: Integer); virtual;
+    procedure DoOnMouserCursor(const aLineCharPos: TBufferCoord;
+      var aCursor: TCursor); virtual;
     procedure DoOnPaint; virtual;
     procedure DoOnPaintTransient(TransientType: TTransientType); virtual;
     procedure DoOnPlaceMark(var Mark: TSynEditMark); virtual;
@@ -2378,6 +2380,13 @@ begin
       fOnGutterClick(Self, Button, X, Y, Line, Mark);
     end;
   end;
+end;
+
+procedure TCustomSynEdit.DoOnMouserCursor(const aLineCharPos: TBufferCoord;
+  var aCursor: TCursor);
+begin
+  if Assigned(fOnMouseCursor) then
+    fOnMouseCursor(Self, aLineCharPos, aCursor);
 end;
 
 procedure TCustomSynEdit.Paint;
@@ -7666,8 +7675,8 @@ begin
         iNewCursor := crHandPoint;
     end else
       iNewCursor := Cursor;
-    if Assigned(OnMouseCursor) then
-      OnMouseCursor(Self, ptLineCol, iNewCursor);
+
+    DoOnMouserCursor(ptLineCol, iNewCursor);
     fKbdHandler.ExecuteMouseCursor(Self, ptLineCol, iNewCursor);
   end;
   SetCursor(Screen.Cursors[iNewCursor]);
