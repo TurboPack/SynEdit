@@ -9835,8 +9835,10 @@ function TCustomSynEdit.GetWrapAreaWidth: Integer;
 begin
   if (eoWrapWithRightEdge in FOptions) and (fRightEdge > 0) then
     Result := Max(fRightEdge * CharWidth - TextMargin, 0)
+  else if HandleAllocated then
+    Result := Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0)
   else
-    Result := Max(ClientWidth - fGutterWidth - 2 * TextMargin, 0);;
+    Result := 80 * fCharWidth; // will be set correctly when the Handle is created
 end;
 
 procedure TCustomSynEdit.SetWordWrap(const Value: Boolean);
@@ -9846,23 +9848,39 @@ var
 begin
   if WordWrap <> Value then
   begin
-    Invalidate; // better Invalidate before changing LeftChar and TopLine
-    vShowCaret := CaretInView;
-    vOldTopLine := RowToLine(TopLine);
-     // !!Mutually exclusive with CodeFolding to reduce complexity
-    if Value and not UseCodeFolding then
+    // !!Mutually exclusive with CodeFolding to reduce complexity
+    if Value and UseCodeFolding then Exit;
+
+    if HandleAllocated then
+    begin
+      Invalidate; // better Invalidate before changing LeftChar and TopLine
+      vShowCaret := CaretInView;
+      vOldTopLine := RowToLine(TopLine);
+    end
+    else
+    begin
+      // to keep compiler happy
+      vShowCaret := False;
+      vOldTopLine := 1;
+    end;
+
+    if Value then
     begin
       fWordWrapPlugin := TSynWordWrapPlugin.Create(Self);
       LeftChar := 1;
     end
     else
       fWordWrapPlugin := nil;
-    CalcTextAreaWidth;
-    TopLine := LineToRow(vOldTopLine);
-    UpdateScrollBars;
 
-    if vShowCaret then
-      EnsureCursorPosVisible;
+    if HandleAllocated then
+    begin
+      CalcTextAreaWidth;
+      TopLine := LineToRow(vOldTopLine);
+      UpdateScrollBars;
+
+      if vShowCaret then
+        EnsureCursorPosVisible;
+    end;
   end;
 end;
 

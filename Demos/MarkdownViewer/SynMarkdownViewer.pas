@@ -114,6 +114,7 @@ begin
   Gutter.Visible := False;
   ScrollbarAnnotations.Clear;
 
+  UseCodeFolding := False;
   WordWrap := True;
   LockUndo;
 
@@ -360,7 +361,6 @@ procedure TSynMarkdownViewer.SetMarkdown(Value: string);
     Matches: TMatchCollection;
     DeletedChars: Integer;
     Link: TLink;
-    SynIndicator: TSynIndicator;
   begin
     // Headers
     HeaderGuid := TGuid.Empty;
