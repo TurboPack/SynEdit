@@ -620,7 +620,8 @@ type
     procedure SetReadOnly(Value: boolean); virtual;
     procedure SetWantReturns(Value: Boolean);
     procedure SetSelText(const Value: string);
-    procedure SetSelTextPrimitiveEx(Value: string; AddToUndoList: Boolean = True);
+    procedure SetSelTextPrimitiveEx(const Value: string; AddToUndoList: Boolean = True);
+    procedure SetTextHint(const Value: string);
     procedure SetWantTabs(Value: Boolean);
     procedure StatusChanged(AChanges: TSynStatusChanges);
     // If the translations requires Data, memory will be allocated for it via a
@@ -890,7 +891,7 @@ type
     property Selections: TSynSelections read FSelections;
     property StateFlags: TSynStateFlags read fStateFlags write fStateFlags;
     property Text: string read SynGetText write SynSetText;
-    property TextHint: string read FTextHint write FTextHint;
+    property TextHint: string read FTextHint write SetTextHint;
     property TopLine: Integer read fTopLine write SetTopLine;
     property TextAreaWidth: Integer read FTextAreaWidth;
     property WrapAreaWidth: Integer read GetWrapAreaWidth;
@@ -4023,7 +4024,7 @@ end;
 // as we would typically want the cursor to stay where it is.
 // To fix this (in the absence of a better idea), I changed the code in
 // DeleteSelection not to trim the string if eoScrollPastEol is not set.
-procedure TCustomSynEdit.SetSelTextPrimitiveEx(Value: string;
+procedure TCustomSynEdit.SetSelTextPrimitiveEx(const Value: string;
   AddToUndoList: Boolean = True);
 {
    Works in two stages:
@@ -4128,6 +4129,16 @@ begin
     DecPaintLock;
     Lines.EndUpdate;
   end;
+end;
+
+procedure TCustomSynEdit.SetTextHint(const Value: string);
+begin
+  FTextHint := Value;
+  if (FTextHint <> '') and (FLines.Count = 0) then
+    // Add an empty line so that the hint will be shown
+    FLines.Add('');
+  if (FTextHint <> '') and (FLines.Count <= 1) and (FLines[0] = '') then
+    Invalidate;
 end;
 
 procedure TCustomSynEdit.SynSetText(const Value: string);
