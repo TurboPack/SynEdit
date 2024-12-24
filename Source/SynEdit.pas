@@ -3158,8 +3158,26 @@ begin
   BGColor := WhitespaceColor(True, True);  // Resets highlighter
   RT.FillRectangle(LinesRect, TSynDWrite.SolidBrush(BGColor));
 
-  if Lines.Count = 0 then
-    Exit;
+  if (Lines.Count = 0) or ((Lines.Count = 1) and (Lines[0] = '')) then
+  begin
+    // TextHint
+    if FTextHint <> '' then
+    begin
+      Layout.Create(FTextFormat, PChar(FTextHint), FTextHint.Length,
+        ClientWidth - fGutterWidth - fTextMargin, fTextHeight);
+
+      if Assigned(fHighlighter) and
+        Assigned(fHighlighter.WhitespaceAttribute) and
+        (fHighlighter.WhitespaceAttribute.Foreground <> clNone)
+      then
+        HintColor := fHighlighter.WhitespaceAttribute.Foreground
+      else
+        HintColor := clGray;
+      Layout.Draw(RT, fGutterWidth + fTextMargin, 0, HintColor);
+    end;
+    // Nothig else to do
+    Exit
+  end;
 
   Inc(LinesRect.Left, FTextMargin);
 
@@ -3176,10 +3194,6 @@ begin
       SRow := Copy(SLine, CharOffset, fWordWrapPlugin.RowLength[Row])
     else
       SRow := SLine;
-
-    // TextHint
-    if (Lines.Count <= 1) and (SLine = '') then
-      SRow := FTextHint;
 
     // Flow control symbols
     FlowControl := fcNone;
@@ -3225,19 +3239,6 @@ begin
       if not (eoShowLigatures in FOptions) or (Line = CaretY) then
         // No ligatures for current line
         Layout.SetTypography(typNoLigatures, 1, SRow.Length);
-    end;
-
-    // TextHint
-    if (Lines.Count <= 1) and (SLine = '') and (FTextHint <> '') then
-    begin
-      if Assigned(fHighlighter) and
-        Assigned(fHighlighter.WhitespaceAttribute) and
-        (fHighlighter.WhitespaceAttribute.Foreground <> clNone)
-      then
-        HintColor := fHighlighter.WhitespaceAttribute.Foreground
-      else
-        HintColor := clGray;
-      Layout.SetFontColor(HintColor, FirstChar, LastChar - FirstChar + 1);
     end;
 
     // Special colors, full line selection and ActiveLineColor
@@ -4134,9 +4135,6 @@ end;
 procedure TCustomSynEdit.SetTextHint(const Value: string);
 begin
   FTextHint := Value;
-  if (FTextHint <> '') and (FLines.Count = 0) then
-    // Add an empty line so that the hint will be shown
-    FLines.Add('');
   if (FTextHint <> '') and (FLines.Count <= 1) and (FLines[0] = '') then
     Invalidate;
 end;
