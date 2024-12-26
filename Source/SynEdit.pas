@@ -508,6 +508,7 @@ type
     procedure SetOverwriteCaret(const Value: TSynEditCaretType);
     procedure SetRightEdge(Value: Integer);
     procedure SetRightEdgeColor(Value: TColor);
+    procedure SetScrollBarAnnotations(const Value: TSynScrollbarAnnotations);
     procedure SetScrollBars(const Value: TScrollStyle);
     procedure SetSearchEngine(Value: TSynEditSearchCustom);
     procedure SetSelectedColor(const Value: TSynSelectedColor);
@@ -869,7 +870,8 @@ type
     property Font;
     property Indicators: TSynIndicators read FIndicators;
     property BracketsHighlight: TSynBracketsHighlight read FBracketsHighlight;
-    property ScrollbarAnnotations: TSynScrollbarAnnotations read FScrollbarAnnotations;
+    property ScrollbarAnnotations: TSynScrollbarAnnotations
+      read FScrollbarAnnotations write SetScrollBarAnnotations;
     property Highlighter: TSynCustomHighlighter read fHighlighter
       write SetHighlighter;
     property LeftChar: Integer read fLeftChar write SetLeftChar;
@@ -4002,6 +4004,12 @@ begin
   inherited SetName(Value);
   if TextToName then
     Text := Value;
+end;
+
+procedure TCustomSynEdit.SetScrollBarAnnotations(
+  const Value: TSynScrollbarAnnotations);
+begin
+  FScrollbarAnnotations.Assign(Value);
 end;
 
 procedure TCustomSynEdit.SetScrollBars(const Value: TScrollStyle);

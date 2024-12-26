@@ -1,4 +1,4 @@
-{ -------------------------------------------------------------------------------
+﻿{ -------------------------------------------------------------------------------
   The contents of this file are subject to the Mozilla Public License
   Version 1.1 (the "License"); you may not use this file except in compliance
   with the License. You may obtain a copy of the License at
@@ -27,13 +27,6 @@
   replace them with the notice and other provisions required by the GPL.
   If you do not delete the provisions above, a recipient may use your version
   of this file under either the MPL or the GPL.
-
-  $Id: SynEditMiscProcs.pas,v 1.35.2.8 2009/09/28 17:54:20 maelh Exp $
-
-  You may retrieve the latest version of this file at the SynEdit home page,
-  located at http://SynEdit.SourceForge.net
-
-  Known Issues:
   ------------------------------------------------------------------------------- }
 
 unit SynEditMiscProcs;

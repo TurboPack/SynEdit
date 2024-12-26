@@ -780,6 +780,7 @@ type
     FFullRow: Boolean;
   public
     constructor Create(Collection: TCollection); override;
+    procedure Assign(Source: TPersistent); override;
     procedure GetInfo(out Rows: TArray<Integer>; out Colors: TArray<TColor>);
   published
     property AnnType: TSynScrollbarAnnType read FAnnType write FAnnType;
@@ -3760,6 +3761,24 @@ end;
 {$REGION 'Scrollbar Annotations'}
 
 { TSynScrollbarAnnItem }
+
+procedure TSynScrollbarAnnItem.Assign(Source: TPersistent);
+var
+  Src: TSynScrollbarAnnItem;
+begin
+  if Assigned(Source) and (Source is TSynScrollbarAnnItem) then
+  begin
+    Src := TSynScrollbarAnnItem(Source);
+    FAnnType := Src.AnnType;
+    FAnnPos := Src.AnnPos;
+    FOnGetInfo := Src.OnGetInfo;
+    FSelectionColor := Src.SelectionColor;
+    FBookmarkColor := Src.BookmarkColor;
+    FFullRow := Src.FullRow;
+  end
+  else
+    inherited;
+end;
 
 constructor TSynScrollbarAnnItem.Create(Collection: TCollection);
 begin
