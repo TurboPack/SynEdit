@@ -8,6 +8,7 @@ The component supports the following Markdown syntax:
 - Emphasis tags (bold, italic and bold italic)
 - Links
 - Bullets
+- Code tags (backticks)
 - Paragraph formatting including the use of ```<br>```
 
 It is by no means a full-blown Markdown viewer, but it could be sufficient in many situations

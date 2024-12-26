@@ -51,6 +51,7 @@ object Form1: TForm1
         Width = 3
       end>
     SelectedColor.Alpha = 0.400000005960464500
+    VisibleSpecialChars = []
   end
   object btnRender: TButton
     Left = 377
@@ -87,14 +88,15 @@ object Form1: TForm1
       'See what happens when you hover over '
       'the link or click it.'
       ''
-      '### Emphasis'
-      'The component supports *italic*, '
+      '### Emphasis and code blocks'
+      'The `Component` supports *italic*, '
       '**bold** and ***bold italic*** text.'
       ''
       '#### Bullets'
       '- Bullet 1'
       '* Bullet 2'
-      '+ Bullet 3')
+      '+ Bullet 3'
+      '')
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 1
