@@ -650,15 +650,13 @@ begin
           SliderBitmap := TBitmap.Create;
           try
             SliderBitmap.PixelFormat := pf32bit;
-            SliderBitmap.Canvas.Brush.Color := clFuchsia;
-            SliderBitmap.TransparentColor := clFuchsia;
-            SliderBitmap.TransparentMode := tmFixed;
+            SliderBitmap.Canvas.Brush.Color := clBlack;  // 0 opacity
             SliderBitmap.SetSize(LVertSliderRect.Width, LVertSliderRect.Height);
             Details := LStyle.GetElementDetails(VertSliderState);
             LStyle.DrawElement(SliderBitmap.Canvas.Handle, Details,
               Rect(0, 0, LVertSliderRect.Width, LVertSliderRect.Height), nil, LPPI);
             LBitmap.Canvas.Draw(0, LVertSliderRect.Top - LVertScrollRect.Top,
-              SliderBitmap, 80 * 255 div 100);
+              SliderBitmap, 80 * 255 div 100);  // 80% opacity
           finally
             SliderBitmap.Free;
           end;
