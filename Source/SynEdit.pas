@@ -1621,8 +1621,8 @@ end;
 
 destructor TCustomSynEdit.Destroy;
 begin
-//  if Assigned(FUIAutomationProvider) then
-//    UiaDisconnectProvider(IRawElementProviderSimple(FUIAutomationProvider));
+  if Assigned(FUIAutomationProvider) then
+    (FUIAutomationProvider as TSynUIAutomationProvider).EditorDestroyed;
 
   Highlighter := nil;
   if (fChainedEditor <> nil) or (fLines <> fOrigLines) then
@@ -4863,7 +4863,7 @@ begin
   inherited;
   SizeOrFontChanged(False);
 
-  if Assigned(FUIAutomationProvider) and UiaClientsAreListening then
+  if Assigned(FUIAutomationProvider) then
     (FUIAutomationProvider as TSynUIAutomationProvider).NotifyBoundingRectangleChange;
 end;
 
@@ -9056,13 +9056,9 @@ begin
     HighlightBrackets;
 
   if (Changes * [scCaretX, scCaretY, scSelection] <> [])
-    and Assigned(FUIAutomationProvider) and UiaClientsAreListening
+    and Assigned(FUIAutomationProvider)
   then
-    TThread.ForceQueue(nil, procedure
-    begin
-      UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
-        UIA_Text_TextSelectionChangedEventId);
-    end);
+    (FUIAutomationProvider as TSynUIAutomationProvider).RaiseTextSelectionChangedEvent;
 
   if Assigned(fOnStatusChange) then
     fOnStatusChange(Self, fStatusChanges);

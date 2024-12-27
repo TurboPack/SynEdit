@@ -360,6 +360,8 @@ type
   public
     constructor Create(ASynEdit: TCustomSynEdit);
     procedure NotifyBoundingRectangleChange;
+    procedure RaiseTextSelectionChangedEvent;
+    procedure EditorDestroyed;
   end;
 
 implementation
@@ -381,6 +383,13 @@ constructor TSynUIAutomationProvider.Create(ASynEdit: TCustomSynEdit);
 begin
   inherited Create;
   FSynEdit := ASynEdit;
+end;
+
+procedure TSynUIAutomationProvider.EditorDestroyed;
+begin
+  //TODO: Check why it was disabled - Possibly call in ForceQueue
+  //UiaDisconnectProvider(IRawElementProviderSimple(Self));
+  FSynEdit := nil;
 end;
 
 function TSynUIAutomationProvider.BoundingRectangle: OleVariant;
@@ -416,16 +425,15 @@ begin
 end;
 
 procedure TSynUIAutomationProvider.NotifyBoundingRectangleChange;
-var
-  OldBR, NewBR: OleVariant;
 begin
-  OldBR := OldBoundingRectangle;
-  NewBR := BoundingRectangle;
-  TThread.ForceQueue(nil, procedure
-  begin
-    UiaRaiseAutomationPropertyChangedEvent(IRawElementProviderSimple(Self),
-      UIA_BoundingRectanglePropertyId, OldBR, NewBR);
-  end);
+  if UiaClientsAreListening then
+    TThread.ForceQueue(nil, procedure
+    begin
+      if FSynEdit = nil then Exit;
+
+      UiaRaiseAutomationPropertyChangedEvent(IRawElementProviderSimple(Self),
+        UIA_BoundingRectanglePropertyId, OldBoundingRectangle, BoundingRectangle);
+    end);
 end;
 
 function TSynUIAutomationProvider.GetCaretRange(out isActive: BOOL;
@@ -549,7 +557,7 @@ begin
 
   TThread.Synchronize(nil, procedure
   begin
-    if FSynEdit.Lines.Count = 0 then
+    if (FSynEdit = nil) or (FSynEdit.Lines.Count = 0) then
       BC := BufferCoord(1, 1)
     else
       BC := BufferCoord(FSynEdit.Lines[FSynEdit.Lines.Count -1].Length + 1,
@@ -603,6 +611,17 @@ begin
   RetVal := FSynEdit.Text;
 end;
 
+procedure TSynUIAutomationProvider.RaiseTextSelectionChangedEvent;
+begin
+  if UiaClientsAreListening then
+    TThread.ForceQueue(nil, procedure
+    begin
+      if Assigned(FSynEdit) then
+        UiaRaiseAutomationEvent(IRawElementProviderSimple(Self),
+          UIA_Text_TextSelectionChangedEventId);
+    end);
+end;
+
 function TSynUIAutomationProvider.RangeFromAnnotation(
   const annotationElement: IRawElementProviderSimple;
   out pRetVal: ITextRangeProvider): HResult;
@@ -633,7 +652,7 @@ begin
 
   TThread.Synchronize(nil, procedure
   begin
-    if FSynEdit.Lines.Count = 0 then
+    if (FSynEdit = nil) or (FSynEdit.Lines.Count = 0) then
       BC := BufferCoord(1, 1)
     else
     begin
@@ -656,7 +675,8 @@ begin
 
   TThread.Synchronize(nil, procedure
   begin
-    FSynEdit.Text := val;
+    if Assigned(FSynEdit) then
+      FSynEdit.Text := val;
   end);
 end;
 
@@ -730,6 +750,8 @@ begin
 
   TThread.Synchronize(nil, procedure
   begin
+    if FSynEdit = nil then Exit;
+
     if FSynEdit.Lines.Count = 0 then
     begin
       BB := BufferCoord(1, 1);
@@ -825,6 +847,12 @@ begin
     I: Integer;
     Index, StartIndex: Integer;
   begin
+    if FSynEdit = nil then
+    begin
+      TextRange := nil;
+      Exit;
+    end;
+
     BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
     BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line -1].Length + 1);
     BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
@@ -1000,6 +1028,12 @@ begin
   var
     I: Integer;
   begin
+    if FSynEdit = nil then
+    begin
+      S := '';
+      Exit;
+    end;
+
     if FSynEdit.Lines.Count = 0 then
       Exit;
 
@@ -1066,6 +1100,8 @@ begin
   begin
     IsDegenerate := BB = BE;
     NMoves := 0;
+    if FSynEdit = nil then Exit;
+
     case AUnit of
       TextUnit_Character:
         begin
@@ -1267,6 +1303,8 @@ begin
 
   TThread.Synchronize(nil, procedure
   begin
+    if FSynEdit = nil then Exit;
+
     if alignToTop then
     begin
       DC := FSynEdit.BufferToDisplayPos(BB);
