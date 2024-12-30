@@ -787,9 +787,9 @@ type
       AOptions: TSynSearchOptions; const Start, Stop: TBufferCoord): Integer; overload;
     procedure SelectAll;
     function SelectionText(Sel: TSynSelection): string;
-    procedure SelectMatchingText;
-    function SelectSameWord(const AWord: string; Start: TBufferCoord;
-      BackwardSearch: Boolean = False; AddSelection: Boolean = False): Boolean;
+    procedure SelectAllMatchingText;
+    function SelectMatchingText(BackwardSearch: Boolean = False;
+      AddSelection: Boolean = False): Boolean;
     procedure SetBookMark(BookMark: Integer; X: Integer; Y: Integer);
     procedure SetCaretAndSelection(const ptCaret, ptBefore,
       ptAfter: TBufferCoord; EnsureVisible: Boolean= True;
@@ -3456,7 +3456,7 @@ begin
   SetCaretAndSelection(LastPt, BufferCoord(1, 1), LastPt);
 end;
 
-procedure TCustomSynEdit.SelectMatchingText;
+procedure TCustomSynEdit.SelectAllMatchingText;
 var
   Engine: TSynEditSearchCustom;
   SearchOptions: TSynSearchOptions;
@@ -3473,7 +3473,6 @@ begin
 
   if (FSelection.IsEmpty) or (FSelection.Start.Line <> FSelection.Stop.Line) then
     Exit;  // Only match single line text
-
 
   Engine := TSynEditSearch.Create(Self);
   SelList := TList<TSynSelection>.Create;
@@ -3627,15 +3626,26 @@ begin
   end;
 end;
 
-function TCustomSynEdit.SelectSameWord(const AWord: string; Start: TBufferCoord;
-  BackwardSearch: Boolean; AddSelection: Boolean): Boolean;
+function TCustomSynEdit.SelectMatchingText(BackwardSearch: Boolean;
+  AddSelection: Boolean): Boolean;
 var
   Engine, OldEngine: TSynEditSearchCustom;
   SearchOptions: TSynSearchOptions;
   SelStorage: TSynSelStorage;
   NewSel: TSynSelection;
+  Pattern: string;
 begin
-  if AWord = '' then Exit(False);
+  if (FSelection.IsEmpty) or (FSelection.Start.Line <> FSelection.Stop.Line) then
+    Exit(False);  // Only match single line text
+
+  Pattern := SelText;
+
+  if Pattern = WordAtCursor then
+    SearchOptions := [ssoWholeWord];
+  if CaseSensitive then
+    Include(SearchOptions, ssoMatchCase);
+  if BackwardSearch  then
+    Include(SearchOptions, ssoBackwards);
 
   OldEngine := SearchEngine;
   Engine := TSynEditSearch.Create(Self);
@@ -3643,19 +3653,12 @@ begin
   try
     IncPaintLock;
     try
-      SearchOptions := [ssoWholeWord];
-      if CaseSensitive then
-        Include(SearchOptions, ssoMatchCase);
-      if BackwardSearch  then
-        Include(SearchOptions, ssoBackwards);
-
       // SearchReplace will clear existing selections if successful
       // So we need to store and restore
       FSelections.Store(SelStorage);
-      Result := SearchReplace(AWord, '', SearchOptions) > 0;
-
-      if Result then
-        FSelection.Normalize;
+      Result := SearchReplace(Pattern, '', SearchOptions,
+        FSelection.Normalized.Stop,
+        BufferCoord(Lines[Lines.Count -1].Length + 1, Lines.Count - 1)) > 0;
 
       if Result and AddSelection then
       begin
@@ -3682,19 +3685,14 @@ procedure TCustomSynEdit.InternalCommandHook(Sender: TObject;
   var Command: TSynEditorCommand; var AChar: WideChar; Data,
   HandlerData: pointer);
 var
-  BB, BE: TBufferCoord;
   Spaces: string;
   I: Integer;
 begin
   if not AfterProcessing and (Command = ecSelWord) then
   begin
-    GetWordBoundaries(CaretXY, BB, BE);
-    if not FSelection.IsEmpty and (BB = BlockBegin) and (BE = BlockEnd) then
+    if not FSelection.IsEmpty then
     begin
-      // A Word is alredy selected. Add to selections the next
-      // occurance of the that Word
-      Inc(BE.Char);
-      SelectSameWord(WordAtCursor, BE, False, True);
+      SelectMatchingText(False, True);
       Handled := True;
       Command := ecNone;
     end
@@ -6843,7 +6841,7 @@ begin
       ecUnfoldRegions: begin UnCollapseFoldType(FoldRegionType) end;
       ecSelMatchingText:
         begin
-          SelectMatchingText;
+          SelectAllMatchingText;
         end;
       ecCaretsAtLineEnds:
         begin
