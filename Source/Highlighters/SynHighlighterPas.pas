@@ -77,10 +77,7 @@ const
   BDSVersionPrefix = 'BDS';
 
 type
-//  TSynPasSyn = class(TSynCustomHighlighter)
-//++ CodeFolding
   TSynPasSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
@@ -101,11 +98,11 @@ type
     fDelphiVersion: TDelphiVersion;
     fPackageSource: Boolean;
     fTypeAttri: TSynHighlighterAttributes;
-//++ CodeFolding
+    // Regular Expressions
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
     RE_Code: TRegEx;
-//-- CodeFolding
+    RE_ControlFlow: TRegEx;
     function AltFunc(Index: Integer): TtkTokenKind;
     function KeyWordFunc(Index: Integer): TtkTokenKind;
     function FuncAsm(Index: Integer): TtkTokenKind;
@@ -413,34 +410,24 @@ end;
 function TSynPasSyn.FlowControlAtLine(Lines: TStrings; Line: Integer):
     TSynFlowControl;
 var
-  SLine: string;
-  Index: Integer;
+  Match: TMatch;
 begin
   Result := fcNone;
 
-  SLine := LowerCase(Lines[Line - 1]);
-
-  Index :=  SLine.IndexOf('continue');
-  if Index >= 0 then
-    Result := fcContinue
-  else
+  Match := RE_ControlFlow.Match(Lines[Line - 1]);
+  if Match.Success then
   begin
-    Index :=  SLine.IndexOf('break');
-    if Index >= 0 then
+    if Match.Groups[2].Length > 0 then
       Result := fcBreak
+    else if Match.Groups[3].Length > 0 then
+      Result := fcContinue
     else
-    begin
-      Index :=  SLine.IndexOf('exit');
-      if Index >= 0 then
-        Result := fcExit;
-    end;
-  end;
+      Result := fcExit;
 
-  // Index is 0-based
-  if (Index >= 0) and
-    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = IdentifierAttri)
-  then
-    Result := fcNone;
+    if GetHighlighterAttriAtRowCol(Lines, Line - 1, Match.Index) <> IdentifierAttri
+    then
+      Result := fcNone;
+  end;
 end;
 
 function TSynPasSyn.FuncAsm(Index: Integer): TtkTokenKind;
@@ -736,7 +723,6 @@ begin
     Result := tkIdentifier
 end;
 
-
 constructor TSynPasSyn.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -781,11 +767,10 @@ begin
   fAsmStart := False;
   fDefaultFilter := SYNS_FilterPascal;
 
-  RE_BlockBegin := TRegEx.Create('\b(begin|record|class|case|try)\b', [roIgnoreCase]);
-
-  RE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
-
-  RE_Code := TRegEx.Create('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
+  RE_BlockBegin := CompiledRegEx('\b(begin|record|class|case|try)\b', [roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('\bend\b', [roIgnoreCase]);
+  RE_Code := CompiledRegEx('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
+  RE_ControlFlow := CompiledRegEx('\b((break)|(continue)|(exit))\b', [roIgnoreCase]);
 end;
 
 procedure TSynPasSyn.AddressOpProc;

@@ -39,6 +39,7 @@ uses
   Winapi.Windows,
   System.Math,
   System.Classes,
+  System.RegularExpressions,
   Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
@@ -134,6 +135,8 @@ function IsColorDark(AColor : TColor) : boolean;
 // Substitutes control characters with Unicode control pictures
 procedure SubstituteControlChars(var Input: string);
 
+// Returns a compiled regular expression
+function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TRegEx;
 
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
@@ -144,6 +147,7 @@ implementation
 uses
   System.UITypes,
   System.SysUtils,
+  System.RegularExpressionsCore,
   SynHighlighterMulti,
   Winapi.D2D1,
   Vcl.Forms,
@@ -845,6 +849,14 @@ begin
       1..8, 10..31: Input[I] := GraphicChars[Byte(Ord(Input[I]))];
       127: Input[I] := DeleteChar;
     end;
+end;
+
+function CompiledRegEx(const Pattern: string; Options: TRegExOptions): TRegEx;
+begin
+  Result := TRegEx.Create(Pattern, Options + [roCompiled]);
+  {$IF (CompilerVersion > 35) or Declared(RTLVersion112)}
+  Result.Study([preJIT]);
+  {$ENDIF}
 end;
 
 end.
