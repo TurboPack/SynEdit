@@ -818,7 +818,7 @@ var
   iExpr: string;
   iLine: string;
   iEaten: Integer;
-  i: Integer;
+  Idx: Integer;
 begin
   ClearMarkers;
 
@@ -830,9 +830,12 @@ begin
   else
     iScheme := nil;
   while iLine <> '' do
-    if (iScheme <> nil) and (iScheme.EndExpr <> '') then
+    if iScheme <> nil then
     begin
-      Match := iScheme.fEndRE.Match(iLine);
+      if iScheme.EndExpr = '' then
+        break
+      else
+        Match := iScheme.fEndRE.Match(iLine);
 
       if Match.Success then
       begin
@@ -848,12 +851,14 @@ begin
     end
     else
     begin
-      for i := 0 to Schemes.Count - 1 do
+      Idx := 0;
+      while Idx < Schemes.Count do
       begin
-        iScheme := Schemes[i];
+        iScheme := Schemes[Idx];
         if (iScheme.StartExpr = '') or (iScheme.Highlighter = nil) or
           (not iScheme.Highlighter.Enabled) then
         begin
+          Inc(Idx);
           continue;
         end;
         Match := iScheme.fStartRE.Match(iLine);
@@ -867,8 +872,9 @@ begin
           Inc(iEaten, Match.Index - 1 + Match.Length);
           break;
         end;
+        Inc(Idx);
       end; {for}
-      if i >= Schemes.Count then
+      if Idx >= Schemes.Count then
         break;
     end; {else}
 
