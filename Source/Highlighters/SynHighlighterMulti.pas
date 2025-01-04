@@ -45,6 +45,7 @@ interface
 uses
   Winapi.Windows,
   System.Win.Registry,
+  System.RegularExpressions,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
@@ -58,6 +59,8 @@ type
   private
     fEndExpr: string;
     fStartExpr: string;
+    fEndRE: TRegEx;
+    fStartRE: TRegEx;
     fHighlighter: TSynCustomHighLighter;
     fMarkerAttri: TSynHighlighterAttributes;
     fSchemeName: TComponentName;
@@ -234,19 +237,10 @@ implementation
 
 uses
   System.SysUtils,
-  System.RegularExpressions,
   System.Math,
   Vcl.Graphics,
   SynEditMiscProcs,
   SynEditStrConst;
-
-procedure CheckExpression(const Expr: string);
-var
-  Parser: TRegEx;
-begin
-  // will raise an exception if the expression is incorrect
-  Parser := TRegEx.Create(Expr, [roNotEmpty, roCompiled]);
-end;
 
 { TMarker }
 
@@ -819,7 +813,6 @@ end;
 
 procedure TSynMultiSyn.DoSetLine(const Value: string; LineNumber: Integer);
 var
-  iParser: TRegEx;
   Match : TMatch;
   iScheme: TScheme;
   iExpr: string;
@@ -837,13 +830,9 @@ begin
   else
     iScheme := nil;
   while iLine <> '' do
-    if iScheme <> nil then
+    if (iScheme <> nil) and (iScheme.EndExpr <> '') then
     begin
-      if iScheme.CaseSensitive then
-        iParser.Create(iScheme.EndExpr, [roNotEmpty, roCompiled])
-      else
-        iParser.Create(iScheme.EndExpr, [roNotEmpty, roIgnoreCase, roCompiled]);
-      Match := iParser.Match(iLine);
+      Match := iScheme.fEndRE.Match(iLine);
 
       if Match.Success then
       begin
@@ -862,16 +851,12 @@ begin
       for i := 0 to Schemes.Count - 1 do
       begin
         iScheme := Schemes[i];
-        if (iScheme.StartExpr = '') or (iScheme.EndExpr = '') or
-          (iScheme.Highlighter = nil) or (not iScheme.Highlighter.Enabled) then
+        if (iScheme.StartExpr = '') or (iScheme.Highlighter = nil) or
+          (not iScheme.Highlighter.Enabled) then
         begin
           continue;
         end;
-        if iScheme.CaseSensitive then
-          iParser.Create(iScheme.StartExpr, [roNotEmpty, roCompiled])
-        else
-          iParser.Create(iScheme.StartExpr, [roNotEmpty, roIgnoreCase, roCompiled]);
-        Match := iParser.Match(iLine);
+        Match := iScheme.fStartRE.Match(iLine);
 
         if Match.Success then
         begin
@@ -984,6 +969,21 @@ begin
   if fCaseSensitive <> Value then
   begin
     fCaseSensitive := Value;
+    // recompile regular expressions
+    if fStartExpr <> '' then
+    begin
+      if fCaseSensitive then
+        fStartRE := CompiledRegEx(fStartExpr, [roNotEmpty])
+      else
+        fStartRE := CompiledRegEx(fStartExpr, [roNotEmpty, roIgnoreCase]);
+    end;
+    if fEndExpr <> '' then
+    begin
+      if fCaseSensitive then
+        fEndRE := CompiledRegEx(fEndExpr, [roNotEmpty])
+      else
+        fEndRE := CompiledRegEx(fEndExpr, [roNotEmpty, roIgnoreCase]);
+    end;
     Changed(True);
   end;
 end;
@@ -1000,7 +1000,13 @@ begin
   if fEndExpr <> Value then
   begin
     if Value <> '' then
-      CheckExpression(Value);
+    begin
+      // Raises an exception if invalid
+      if fCaseSensitive then
+        fEndRE := CompiledRegEx(Value, [roNotEmpty])
+      else
+        fEndRE := CompiledRegEx(Value, [roNotEmpty, roIgnoreCase]);
+    end;
     OldValue := fEndExpr;
     fEndExpr := Value;
     if ConvertExpression(OldValue) <> ConvertExpression(Value) then
@@ -1042,7 +1048,13 @@ begin
   if fStartExpr <> Value then
   begin
     if Value <> '' then
-      CheckExpression(Value);
+    begin
+      // Raises an exception if invalid
+      if fCaseSensitive then
+        fStartRE := CompiledRegEx(Value, [roNotEmpty])
+      else
+        fStartRE := CompiledRegEx(Value, [roNotEmpty, roIgnoreCase]);
+    end;
     OldValue := fStartExpr;
     fStartExpr := Value;
     if ConvertExpression(Value) <> ConvertExpression(OldValue) then
