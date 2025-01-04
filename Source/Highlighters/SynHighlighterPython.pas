@@ -88,9 +88,7 @@ type
     fIdentifierAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
     fErrorAttri: TSynHighlighterAttributes;
-//++ CodeFolding
     BlockOpenerRE : TRegEx;
-//-- CodeFolding
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymbolProc;
     procedure CRProc;
@@ -355,7 +353,7 @@ begin
   FKeywords.CaseSensitive := True;
   FKeywords.Sorted := True;
 
-  BlockOpenerRE.Create(
+  BlockOpenerRE := CompiledRegEx(
      '^(def|class|while|for|if|else|elif|try|except|with'+
      '|(async[ \t]+def)|(async[ \t]+with)|(async[ \t]+for))\b');
 

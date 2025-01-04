@@ -94,6 +94,7 @@ type
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
     RE_Code: TRegEx;
+    RE_ControlFlow: TRegEx;
     function AltFunc: TtkTokenKind;
     function KeyWordFunc: TtkTokenKind;
     function FuncAsm: TtkTokenKind;
@@ -299,9 +300,10 @@ begin
   FAsmStart := False;
   FDefaultFilter := SYNS_FilterDWS;
 
-  RE_BlockBegin.Create('\b(begin|record|class|case|try)\b', [roNotEmpty, roIgnoreCase]);
-  RE_BlockEnd.Create('\bend\b', [roNotEmpty, roIgnoreCase]);
-  RE_Code.Create('^\s*(function|procedure|constructor|destructor)\b', [roNotEmpty, roIgnoreCase]);
+  RE_BlockBegin := CompiledRegEx('\b(begin|record|class|case|try)\b', [roNotEmpty, roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('\bend\b', [roNotEmpty, roIgnoreCase]);
+  RE_Code := CompiledRegEx('^\s*(function|procedure|constructor|destructor)\b', [roNotEmpty, roIgnoreCase]);
+  RE_ControlFlow := CompiledRegEx('\b((break)|(continue)|(exit))\b', [roIgnoreCase]);
 end;
 
 // Destroy
@@ -413,34 +415,24 @@ end;
 function TSynDWSSyn.FlowControlAtLine(Lines: TStrings;
   Line: Integer): TSynFlowControl;
 var
-  SLine: string;
-  Index: Integer;
+  Match: TMatch;
 begin
   Result := fcNone;
 
-  SLine := LowerCase(Lines[Line - 1]);
-
-  Index :=  SLine.IndexOf('continue');
-  if Index >= 0 then
-    Result := fcContinue
-  else
+  Match := RE_ControlFlow.Match(Lines[Line - 1]);
+  if Match.Success then
   begin
-    Index :=  SLine.IndexOf('break');
-    if Index >= 0 then
+    if Match.Groups[2].Length > 0 then
       Result := fcBreak
+    else if Match.Groups[3].Length > 0 then
+      Result := fcContinue
     else
-    begin
-      Index :=  SLine.IndexOf('exit');
-      if Index >= 0 then
-        Result := fcExit;
-    end;
-  end;
+      Result := fcExit;
 
-  // Index is 0-based
-  if (Index >= 0) and
-    not (GetHighlighterAttriAtRowCol(Lines, Line - 1, Index + 1) = KeyAttri)
-  then
-    Result := fcNone;
+    if GetHighlighterAttriAtRowCol(Lines, Line - 1, Match.Index) <> KeyAttri
+    then
+      Result := fcNone;
+  end;
 end;
 
 function TSynDWSSyn.FuncAsm: TtkTokenKind;

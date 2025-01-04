@@ -79,10 +79,7 @@ type
                  rsComment, rsDebug);
 
 type
-//  TSynCobolSyn = class(TSynCustomHighlighter)
-//++ CodeFolding
   TSynCobolSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
@@ -107,10 +104,8 @@ type
     fDebugLinesAttri: TSynHighlighterAttributes;
     fBracketAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<String, TtkTokenKind>;
-//++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
-//-- CodeFolding
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure IdentProc;
@@ -754,13 +749,10 @@ begin
   EnumerateKeywords(Ord(tkString), StringWords, IsIdentChar, DoAddKeyword);
   EnumerateKeywords(Ord(tkUnknown), AmbigiousWords, IsIdentChar, DoAddKeyword);
 
-  //++ CodeFolding
-  RE_BlockBegin := TRegEx.Create('\b^(IF |EVALUATE |EXEC |READ |WRITE |PERFORM |STRING |ACCEPT )\b', [roIgnoreCase]);
-  RE_BlockEnd := TRegEx.Create('(END\-IF|END\-EVALUATE|END\-EXEC|END\-READ|END\-WRITE|END\-PERFORM|END\-STRING|END\-ACCEPT)', [roIgnoreCase]);
-//-- CodeFolding
+  RE_BlockBegin := CompiledRegEx('\b^(IF |EVALUATE |EXEC |READ |WRITE |PERFORM |STRING |ACCEPT )\b', [roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('(END\-IF|END\-EVALUATE|END\-EXEC|END\-READ|END\-WRITE|END\-PERFORM|END\-STRING|END\-ACCEPT)', [roIgnoreCase]);
 end;
 
-//++ CodeFolding
 Const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
@@ -862,7 +854,6 @@ begin
 
   iList.Free;
 end;
-//-- CodeFolding
 
 destructor TSynCobolSyn.Destroy;
 begin

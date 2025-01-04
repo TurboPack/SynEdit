@@ -28,11 +28,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterFoxpro.pas,v 1.12.2.10 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 {
@@ -58,10 +53,8 @@ uses
   Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-//++ CodeFolding
   System.RegularExpressions,
   SynEditCodeFolding;
-//++ CodeFolding
 
 type
   TtkTokenKind = (tkSymbol, tkKey, tkComment, tkIdentifier, tkNull, tkNumber, tkSpace,
@@ -71,10 +64,7 @@ type
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
 type
-//  TSynFoxproSyn = class(TSynCustomHighlighter)
-//++ CodeFolding
   TSynFoxproSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     FTokenID: TtkTokenKind;
     fCommentAttri: TSynHighlighterAttributes;
@@ -85,10 +75,8 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<String, TtkTokenKind>;
-//++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
-//-- CodeFolding
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AndSymbolProc;
@@ -140,12 +128,10 @@ type
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
     procedure Next; override;
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -311,14 +297,11 @@ begin
   fDefaultFilter := SYNS_FilterFoxpro;
 
   EnumerateKeywords(Ord(tkKey), KeyWords, IsIdentChar, DoAddKeyword);
-//++ CodeFolding
-  RE_BlockBegin := TRegEx.Create('\b(function |procedure )\b', [roIgnoreCase]);
-  RE_BlockEnd := TRegEx.Create('\b(endproc|endfunc)\b', [roIgnoreCase]);
-//-- CodeFolding
+  RE_BlockBegin := CompiledRegEx('\b(function |procedure )\b', [roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('\b(endproc|endfunc)\b', [roIgnoreCase]);
 end;
 
-//++ CodeFolding
-Const
+const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_CodeDeclaration = 16;
@@ -501,7 +484,6 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
 
 procedure TSynFoxproSyn.AndSymbolProc;
 begin

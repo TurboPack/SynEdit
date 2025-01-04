@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterVBScript.pas,v 1.14.2.6 2005/12/16 17:13:16 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a VBScript highlighter for SynEdit)
@@ -58,10 +51,8 @@ uses
   Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-//++ CodeFolding
   System.RegularExpressions,
   SynEditCodeFolding;
-//++ CodeFolding
 
 const
   SYNS_AttrConst = 'Constant';
@@ -74,10 +65,7 @@ type
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
 type
-//  TSynVBScriptSyn = class(TSynCustomHighLighter)
-//++ CodeFolding
   TSynVBScriptSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     FTokenID: TtkTokenKind;
     fCommentAttri: TSynHighlighterAttributes;
@@ -90,10 +78,8 @@ type
     fFunctionAttri: TSynHighlighterAttributes;
     fCOnstAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<String, TtkTokenKind>;
-//++ CodeFolding
     RE_BlockBegin : TRegEx;
     RE_BlockEnd : TRegEx;
-//-- CodeFolding
     procedure DoAddKeyword(AKeyword: string; AKind: integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure ApostropheProc;
@@ -126,12 +112,10 @@ type
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenKind: integer; override;
     procedure Next; override;
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -264,10 +248,8 @@ begin
   EnumerateKeywords(Ord(tkConst), FunctionConsts, IsIdentChar, DoAddKeyword);
   EnumerateKeywords(Ord(tkFunction), Functions, IsIdentChar, DoAddKeyword);
 
-//++ CodeFolding
-  RE_BlockBegin := TRegEx.Create('\b^(sub |function |private sub |private function |class )\b', [roIgnoreCase]);
-  RE_BlockEnd := TRegEx.Create('\b^(end sub|end function|end class)\b', [roIgnoreCase]);
-//-- CodeFolding
+  RE_BlockBegin := CompiledRegEx('\b^(sub |function |private sub |private function |class )\b', [roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('\b^(end sub|end function|end class)\b', [roIgnoreCase]);
 end;
 
 destructor TSynVBScriptSyn.Destroy;
@@ -276,8 +258,7 @@ begin
   inherited Destroy;
 end;
 
-//++ CodeFolding
-Const
+const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_CodeDeclaration = 16;
@@ -459,7 +440,6 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
 
 procedure TSynVBScriptSyn.ApostropheProc;
 begin
