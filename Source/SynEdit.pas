@@ -613,6 +613,7 @@ type
         aFirstRow, aLastRow: Integer); virtual;
     procedure PaintTextLines(RT: ID2D1RenderTarget; AClip: TRect; const aFirstRow,
         aLastRow: Integer); virtual;
+    procedure ReadState(Reader: TReader); override;
     procedure InternalSetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXY(const Value: TBufferCoord); virtual;
     procedure SetCaretXYEx(EnsureVisible: Boolean; Value: TBufferCoord); virtual;
@@ -9600,6 +9601,13 @@ begin
   finally
     iDelKeys.Free;
   end;
+end;
+
+procedure TCustomSynEdit.ReadState(Reader: TReader);
+begin
+  FScrollbarAnnotations.Clear;
+  FGutter.Bands.Clear;
+  inherited ReadState(Reader);
 end;
 
 procedure TCustomSynEdit.WriteAddedKeystrokes(Writer: TWriter);
