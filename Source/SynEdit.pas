@@ -552,6 +552,7 @@ type
   protected
     FIgnoreNextChar: Boolean;
     FCharCodeString: string;
+    FStateRead: Boolean;
     function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPoint): Boolean; override;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -9604,9 +9605,17 @@ begin
 end;
 
 procedure TCustomSynEdit.ReadState(Reader: TReader);
+// See https://en.delphipraxis.net/topic/12792-reading-empty-collections/
+// If the component is inherited from another form, ReadState will be called
+// more than once.  We only clear the collections if it is the first call
+// i.e. when reading the base form.
 begin
-  FScrollbarAnnotations.Clear;
-  FGutter.Bands.Clear;
+  if not FStateRead then
+  begin
+    FScrollbarAnnotations.Clear;
+    FGutter.Bands.Clear;
+    FStateRead := True;
+  end;
   inherited ReadState(Reader);
 end;
 
