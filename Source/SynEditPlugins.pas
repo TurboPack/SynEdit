@@ -26,13 +26,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditPlugins.pas,v 1.8.2.2 2008/09/14 16:24:58 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynEditPlugins;
@@ -276,15 +269,22 @@ end;
 procedure TAbstractSynHookerPlugin.HookEditor(aEditor: TCustomSynEdit;
   aCommandID: TSynEditorCommand; aOldShortCut, aNewShortCut: TShortCut);
 var
-  iIndex: integer;
+  iIndex: Integer;
   iKeystroke: TSynEditKeyStroke;
+  Dup: Integer;
+  DupCmd: string;
 begin
   Assert(aNewShortCut <> 0);
   { shortcurts aren't created while in design-time }
   if [csDesigning] * ComponentState = [csDesigning] then
   begin
-    if TSynEdit(aEditor).Keystrokes.FindShortcut(aNewShortCut) >= 0 then
-      raise ESynKeyError.Create(SYNS_EDuplicateShortCut)
+    Dup := TSynEdit(aEditor).Keystrokes.FindShortcut(aNewShortCut);
+    if Dup >= 0 then
+    begin
+      DupCmd := EditorCommandToExtendedCodeString(
+        TSynEdit(aEditor).Keystrokes[Dup].Command);
+      raise ESynKeyError.CreateFmt(SYNS_EDuplicateShortCut, ['Plugin', DupCmd])
+    end
     else
       Exit;
   end;

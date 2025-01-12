@@ -269,13 +269,10 @@ type
       default 0;
   end;
 
-  TSynEditKeyStrokes = class(TCollection)
+  TSynEditKeyStrokes = class(TOwnedCollection)
   private
-    FOwner: TPersistent;
     function GetItem(Index: Integer): TSynEditKeyStroke;
     procedure SetItem(Index: Integer; Value: TSynEditKeyStroke);
-  protected
-    function GetOwner: TPersistent; override;
   public
     constructor Create(AOwner: TPersistent);
     function Add: TSynEditKeyStroke;
@@ -301,6 +298,7 @@ type
 // useful elsewhere.
 function EditorCommandToDescrString(Cmd: TSynEditorCommand): string;
 function EditorCommandToCodeString(Cmd: TSynEditorCommand): string;
+function EditorCommandToExtendedCodeString(Cmd: TSynEditorCommand): string;
 procedure GetEditorCommandValues(Proc: TGetStrProc);
 procedure GetEditorCommandExtended(Proc: TGetStrProc);
 function IdentToEditorCommand(const Ident: string; var Cmd: Integer): Boolean;
@@ -502,6 +500,12 @@ begin
     Result := IntToStr(Cmd);
 end;
 
+function EditorCommandToExtendedCodeString(Cmd: TSynEditorCommand): string;
+begin
+  Result := ConvertCodeStringToExtended(EditorCommandToCodeString(Cmd));
+end;
+
+
 { TSynEditKeyStroke }
 
 procedure TSynEditKeyStroke.Assign(Source: TPersistent);
@@ -554,6 +558,7 @@ var
   NewKey: Word;
   NewShift: TShiftState;
   Dup: integer;
+  CurrCmd, DupCmd: string;
 begin
   // Duplicate values of no shortcut are OK.
   if Value <> 0 then
@@ -561,9 +566,13 @@ begin
     // Check for duplicate shortcut in the collection and disallow if there is.
     Dup := TSynEditKeyStrokes(Collection).FindShortcut2(Value, ShortCut2);
     if (Dup <> -1) and (Dup <> Self.Index) then
-      begin
-      raise ESynKeyError.Create(SYNS_EDuplicateShortCut);
-      end;
+    begin
+      CurrCmd := EditorCommandToExtendedCodeString(FCommand);
+      DupCmd := EditorCommandToExtendedCodeString(
+        TSynEditKeyStrokes(Collection)[Dup].Command);
+
+      raise ESynKeyError.CreateFmt(SYNS_EDuplicateShortCut, [CurrCmd, DupCmd]);
+    end;
   end;
 
   Vcl.Menus.ShortCutToKey(Value, NewKey, NewShift);
@@ -592,6 +601,7 @@ var
   NewKey: Word;
   NewShift: TShiftState;
   Dup: integer;
+  CurrCmd, DupCmd: string;
 begin
   // Duplicate values of no shortcut are OK.
   if Value <> 0 then
@@ -599,7 +609,13 @@ begin
     // Check for duplicate shortcut in the collection and disallow if there is.
     Dup := TSynEditKeyStrokes(Collection).FindShortcut2(ShortCut, Value);
     if (Dup <> -1) and (Dup <> Self.Index) then
-      raise ESynKeyError.Create(SYNS_EDuplicateShortCut);
+    begin
+      CurrCmd := EditorCommandToExtendedCodeString(FCommand);
+      DupCmd := EditorCommandToExtendedCodeString(
+        TSynEditKeyStrokes(Collection)[Dup].Command);
+
+      raise ESynKeyError.CreateFmt(SYNS_EDuplicateShortCut, [CurrCmd, DupCmd]);
+    end;
   end;
 
   Vcl.Menus.ShortCutToKey(Value, NewKey, NewShift);
@@ -684,8 +700,7 @@ end;
 
 constructor TSynEditKeyStrokes.Create(AOwner: TPersistent);
 begin
-  inherited Create(TSynEditKeyStroke);
-  FOwner := AOwner;
+  inherited Create(AOwner, TSynEditKeyStroke);
 end;
 
 function TSynEditKeyStrokes.FindCommand(Cmd: TSynEditorCommand): integer;
@@ -747,7 +762,7 @@ var
   x: integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
+  for x := 0 to Count - 1 do
     if (Items[x].Shortcut = SC) and (Items[x].Shortcut2 = SC2) then
     begin
       Result := x;
@@ -758,11 +773,6 @@ end;
 function TSynEditKeyStrokes.GetItem(Index: Integer): TSynEditKeyStroke;
 begin
  Result := TSynEditKeyStroke(inherited GetItem(Index));
-end;
-
-function TSynEditKeyStrokes.GetOwner: TPersistent;
-begin
-  Result := FOwner;
 end;
 
 procedure TSynEditKeyStrokes.LoadFromStream(AStream: TStream);
