@@ -279,7 +279,6 @@ type
     procedure AddKey(const ACmd: TSynEditorCommand; const AKey: word;
        const AShift: TShiftState; const AKey2: word = 0;
        const AShift2: TShiftState = []);
-    procedure Assign(Source: TPersistent); override;
     function FindCommand(Cmd: TSynEditorCommand): integer;
     function FindKeycode(Code: word; SS: TShiftState): integer;
     function FindKeycode2(Code1: word; SS1: TShiftState;
@@ -681,23 +680,6 @@ begin
 end;
 //-- CodeFolding
 
-procedure TSynEditKeyStrokes.Assign(Source: TPersistent);
-var
-  x: integer;
-begin
-  if Source is TSynEditKeyStrokes then
-  begin
-    Clear;
-    for x := 0 to TSynEditKeyStrokes(Source).Count-1 do
-    begin
-      with Add do
-        Assign(TSynEditKeyStrokes(Source)[x]);
-    end;
-  end
-  else
-    inherited Assign(Source);
-end;
-
 constructor TSynEditKeyStrokes.Create(AOwner: TPersistent);
 begin
   inherited Create(AOwner, TSynEditKeyStroke);
@@ -705,68 +687,68 @@ end;
 
 function TSynEditKeyStrokes.FindCommand(Cmd: TSynEditorCommand): integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if Items[x].Command = Cmd then
+  for Idx := 0 to Count-1 do
+    if Items[Idx].Command = Cmd then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
-function TSynEditKeyStrokes.FindKeycode(Code: word; SS: TShiftState): integer;
+function TSynEditKeyStrokes.FindKeycode(Code: word; SS: TShiftState): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if (Items[x].Key = Code) and (Items[x].Shift = SS) and (Items[x].Key2 = 0)
+  for Idx := 0 to Count-1 do
+    if (Items[Idx].Key = Code) and (Items[Idx].Shift = SS) and (Items[Idx].Key2 = 0)
     then begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
 function TSynEditKeyStrokes.FindKeycode2(Code1: word; SS1: TShiftState;
-  Code2: word; SS2: TShiftState): integer;
+  Code2: word; SS2: TShiftState): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if (Items[x].Key = Code1) and (Items[x].Shift = SS1) and
-       (Items[x].Key2 = Code2) and (Items[x].Shift2 = SS2) then
+  for Idx := 0 to Count-1 do
+    if (Items[Idx].Key = Code1) and (Items[Idx].Shift = SS1) and
+       (Items[Idx].Key2 = Code2) and (Items[Idx].Shift2 = SS2) then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
-function TSynEditKeyStrokes.FindShortcut(SC: TShortcut): integer;
+function TSynEditKeyStrokes.FindShortcut(SC: TShortcut): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if Items[x].Shortcut = SC then
+  for Idx := 0 to Count-1 do
+    if Items[Idx].Shortcut = SC then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
 function TSynEditKeyStrokes.FindShortcut2(SC, SC2: TShortcut): integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count - 1 do
-    if (Items[x].Shortcut = SC) and (Items[x].Shortcut2 = SC2) then
+  for Idx := 0 to Count - 1 do
+    if (Items[Idx].Shortcut = SC) and (Items[Idx].Shortcut2 = SC2) then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
