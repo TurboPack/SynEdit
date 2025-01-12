@@ -3198,15 +3198,18 @@ end;
 procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord;
     LastPosX: Integer);
 
-  procedure SetLineSelection(Index, Line, FromChar, ToChar: Integer);
+  procedure SetLineSelection(Index, Line, FromChar, ToChar: Integer; ScrollPastEOL: Boolean);
   var
     LineString: string;
     Len: Integer;
   begin
     LineString := TCustomSynEdit(FOwner).Lines[Line - 1];
     Len := LineString.Length;
-    FromChar := EnsureRange(FromChar, 1, Len + 1);
-    ToChar :=  EnsureRange(ToChar, 1, Len + 1);
+    if not ScrollPastEOL then
+    begin
+      FromChar := EnsureRange(FromChar, 1, Len + 1);
+      ToChar :=  EnsureRange(ToChar, 1, Len + 1);
+    end;
     FSelections.List[Index].Caret := BufferCoord(ToChar, Line);
     FSelections.List[Index].Start := BufferCoord(FromChar, Line);
     FSelections.List[Index].Stop := FSelections.List[Index].Caret;
@@ -3214,13 +3217,16 @@ procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord;
     InvalidateSelection(Index);
   end;
 
-  procedure SetRowSelection(Index, Row, FromChar, ToChar: Integer);
+  procedure SetRowSelection(Index, Row, FromChar, ToChar: Integer; ScrollPastEOL: Boolean);
   var
     Len: Integer;
   begin
     Len := TCustomSynEdit(FOwner).RowLength[Row];
-    FromChar := EnsureRange(FromChar, 1, Len + 1);
-    ToChar :=  EnsureRange(ToChar, 1, Len + 1);
+    if not ScrollPastEOL then
+    begin
+      FromChar := EnsureRange(FromChar, 1, Len + 1);
+      ToChar :=  EnsureRange(ToChar, 1, Len + 1);
+    end;
     FSelections.List[Index].Caret :=
       TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(ToChar, Row));
     FSelections.List[Index].Start :=
@@ -3237,9 +3243,13 @@ var
   Line, Row: Integer;
   Index: Integer;
   Increment: Integer;
+  ScrollPastEOL: Boolean;
 begin
   Clear;
   InvalidateSelection(0);
+
+
+  ScrollPastEOL := eoScrollPastEol in TCustomSynEdit(FOwner).Options;
 
   if TCustomSynEdit(FOwner).WordWrap then
   begin
@@ -3250,7 +3260,7 @@ begin
     ToChar := DC.Column;
     ToRow := DC.Row;
 
-    SetRowSelection(0, FromRow, FromChar, ToChar);
+    SetRowSelection(0, FromRow, FromChar, ToChar, ScrollPastEOL);
 
     Increment := Sign(ToRow - FromRow);
 
@@ -3265,14 +3275,14 @@ begin
         FSelections.Insert(0, TSynSelection.Invalid);
         Index := 0;
       end;
-      SetRowSelection(Index, Row, FromChar, ToChar);
+      SetRowSelection(Index, Row, FromChar, ToChar, ScrollPastEOL);
     end;
   end
   else
   begin
     FromChar := Anchor.Char;
     ToChar := ACaret.Char;
-    SetLineSelection(0, Anchor.Line, FromChar, ToChar);
+    SetLineSelection(0, Anchor.Line, FromChar, ToChar, ScrollPastEOL);
 
     Increment := Sign(ACaret.Line - Anchor.Line);
 
@@ -3287,7 +3297,7 @@ begin
         FSelections.Insert(0, TSynSelection.Invalid);
         Index := 0;
       end;
-      SetLineSelection(Index, Line, FromChar, ToChar);
+      SetLineSelection(Index, Line, FromChar, ToChar, ScrollPastEOL);
     end;
   end;
 

@@ -428,6 +428,7 @@ type
       LinesToScan: TStrings; FromLine : Integer; ToLine : Integer);
 //-- CodeFolding
     procedure BookMarkOptionsChanged(Sender: TObject);
+    function ColumnSelectionStart: TBufferCoord;
     procedure ComputeCaret(X, Y: Integer);
     procedure ComputeScroll(X, Y: Integer);
     procedure DoHomeKey(Selection:boolean);
@@ -1262,6 +1263,17 @@ begin
   Result.Row := MinMax(TopLine + (aY div fTextHeight), 1, DisplayRowCount);
   S := Rows[Result.Row];
   Result.Column := PixelsToColumn(PChar(S), S.Length, ax - fTextOffset);
+end;
+
+function TCustomSynEdit.ColumnSelectionStart: TBufferCoord;
+  // With eoScrollPastEol in an empty selection (Selection.Start = Selection.Stop)
+  // Selection.Caret may be different to both, if it is past eol.
+  // In that case prefer the Caret.
+begin
+  if Selections.BaseSelection.IsEmpty then
+    Result := Selections.BaseSelection.Caret
+  else
+    Result := Selections.BaseSelection.Start;
 end;
 
 function TCustomSynEdit.ColumnToPixels(const S: string; Col: Integer): Integer;
@@ -2174,7 +2186,7 @@ begin
     if [ssAlt, ssShift] * Shift = [ssAlt, ssShift] then
     begin
       InvalidateSelection(FSelection);
-      FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY, FLastPosX)
+      FSelections.ColumnSelection(ColumnSelectionStart, CaretXY, FLastPosX)
     end
     else if ssAlt in Shift then
       FSelections.AddCaret(FSelection.Caret)
@@ -2227,7 +2239,7 @@ begin
       try
         MoveDisplayPosAndSelection(P, True);
         InvalidateSelection(FSelection);
-        FSelections.ColumnSelection(FSelections.BaseSelection.Start, CaretXY, FLastPosX);
+        FSelections.ColumnSelection(ColumnSelectionStart, CaretXY, FLastPosX);
       finally
         DecPaintLock;
       end;
@@ -6292,7 +6304,7 @@ begin
           CaretXY := FSelection.Normalized.Start
         else
         begin
-          Caret := FSelections.BaseSelection.Start;
+          Caret := ColumnSelectionStart;
           MoveCaretHorz(-1, Command = ecSelLeft);
           if Command = ecSelColumnLeft then
             FSelections.ColumnSelection(Caret, CaretXY, FLastPosX);
@@ -6302,7 +6314,7 @@ begin
           CaretXY := FSelection.Normalized.Stop
         else
         begin
-          Caret := FSelections.BaseSelection.Start;
+          Caret := ColumnSelectionStart;
           MoveCaretHorz(1, Command = ecSelRight);
           if Command = ecSelColumnRight then
             FSelections.ColumnSelection(Caret, CaretXY, FLastPosX);
@@ -6320,7 +6332,7 @@ begin
 // vertical caret movement or selection
       ecUp, ecSelUp, ecSelColumnUp:
         begin
-          Caret := FSelections.BaseSelection.Start;
+          Caret := ColumnSelectionStart;
           { on the first line we select first line too }
           if DisplayY = 1 then
           begin
@@ -6336,7 +6348,7 @@ begin
         end;
       ecDown, ecSelDown, ecSelColumnDown:
         begin
-          Caret := FSelections.BaseSelection.Start;
+          Caret := ColumnSelectionStart;
           { on the last line we will select last line too }
           if ((not Wordwrap and (CaretY = Lines.Count)) or
               (WordWrap and (DisplayY = fWordWrapPlugin.RowCount))) then
@@ -6353,7 +6365,7 @@ begin
         end;
       ecPageUp, ecSelPageUp, ecPageDown, ecSelPageDown, ecSelColumnPageUp, ecSelColumnPageDown:
         begin
-          Caret := FSelections.BaseSelection.Start;
+          Caret := ColumnSelectionStart;
           counter := fLinesInWindow shr Ord(eoHalfPageScroll in fOptions);
           if eoScrollByOneLess in fOptions then
             Dec(counter);
