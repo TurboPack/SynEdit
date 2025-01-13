@@ -3206,13 +3206,11 @@ procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord;
     LineString := TCustomSynEdit(FOwner).Lines[Line - 1];
     Len := LineString.Length;
     if not ScrollPastEOL then
-    begin
-      FromChar := EnsureRange(FromChar, 1, Len + 1);
       ToChar :=  EnsureRange(ToChar, 1, Len + 1);
-    end;
+    FromChar := EnsureRange(FromChar, 1, Len + 1);
     FSelections.List[Index].Caret := BufferCoord(ToChar, Line);
     FSelections.List[Index].Start := BufferCoord(FromChar, Line);
-    FSelections.List[Index].Stop := FSelections.List[Index].Caret;
+    FSelections.List[Index].Stop := BufferCoord(Min(ToChar, Len + 1), Line);
     FSelections.List[Index].LastPosX := LastPosX;
     InvalidateSelection(Index);
   end;
@@ -3223,15 +3221,14 @@ procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord;
   begin
     Len := TCustomSynEdit(FOwner).RowLength[Row];
     if not ScrollPastEOL then
-    begin
-      FromChar := EnsureRange(FromChar, 1, Len + 1);
       ToChar :=  EnsureRange(ToChar, 1, Len + 1);
-    end;
+    FromChar := EnsureRange(FromChar, 1, Len + 1);
     FSelections.List[Index].Caret :=
       TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(ToChar, Row));
     FSelections.List[Index].Start :=
       TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(FromChar, Row));
-    FSelections.List[Index].Stop := FSelections.List[Index].Caret;
+    FSelections.List[Index].Stop :=
+      TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(Min(ToChar, Len + 1), Row));
     FSelections.List[Index].LastPosX := LastPosX;
     InvalidateSelection(Index);
   end;
