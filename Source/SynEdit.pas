@@ -7183,6 +7183,7 @@ procedure TCustomSynEdit.MarkSaved;
 begin
   fUndoRedo.BufferSaved(Lines);
   InvalidateGutter;
+  UpdateScrollBars;
 end;
 
 function TCustomSynEdit.GetSelStart: integer;
