@@ -779,8 +779,7 @@ begin
   fDefaultFilter := SYNS_FilterHTML;
   fAndCode := -1;
 
-  DefaultBrackets := '<>()[]{}';
-  fBrackets := DefaultBrackets;
+  fBrackets := '<>()[]{}';
 end;
 
 procedure TSynHTMLSyn.BraceCloseProc;
