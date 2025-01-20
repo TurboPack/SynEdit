@@ -8061,16 +8061,16 @@ begin
   if After = '' then
     After := Before;
 
-  BeginUndoBlock;
-  try
    OldLen := Sel.Length;
    Sel := Before + Sel + After;
    SetSelTextPrimitiveEx(Sel, True, True);
-   SelStart := SelStart + Before.Length;
-   SelLength := OldLen;
-  finally
-    EndUndoBlock;
-  end;
+   IncPaintLock;
+   try
+     SelStart := SelStart + Before.Length;
+     SelLength := OldLen;
+   finally
+     DecPaintLock;
+   end;
 end;
 
 procedure TCustomSynEdit.ExecCmdCaseChange(const Cmd: TSynEditorCommand);

@@ -120,6 +120,8 @@ type
     function GetFileFormat: TSynEditFileFormat;
     procedure SetFileFormat(const Value: TSynEditFileFormat);
   protected
+    procedure Changed; virtual;
+    procedure Changing; virtual;
     // TStrings overriden protected methods
     function Get(Index: Integer): string; override;
     function GetCapacity: Integer; override;
@@ -217,13 +219,26 @@ begin
   SetCapacity(0);
 end;
 
+procedure TSynEditStringList.Changed;
+begin
+  if not Updating and Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+procedure TSynEditStringList.Changing;
+begin
+  FCharIndexesAreValid := False;
+  if not Updating and Assigned(FOnChanging) then
+    FOnChanging(Self);
+end;
+
 procedure TSynEditStringList.Clear;
 var
   OldCount: Integer;
 begin
   if FCount <> 0 then
   begin
-    BeginUpdate;
+    Changing;
     OldCount := FCount;
     if Assigned(FOnBeforeDeleted) then
       FOnBeforeDeleted(Self, 0, OldCount);
@@ -234,7 +249,7 @@ begin
       FOnDeleted(Self, 0, OldCount);
     if Assigned(FOnCleared) then
       FOnCleared(Self);
-    EndUpdate;
+    Changed;
   end;
   FMaxWidth := -1;
 end;
@@ -243,7 +258,7 @@ procedure TSynEditStringList.Delete(Index: Integer);
 begin
   if (Index < 0) or (Index >= FCount) then
     ListIndexOutOfBounds(Index);
-  BeginUpdate;
+  Changing;
   if Assigned(FOnBeforeDeleted) then
     FOnBeforeDeleted(Self, Index, 1);
   Finalize(FList^[Index]);
@@ -256,7 +271,7 @@ begin
   FMaxWidth := -1;
   if Assigned(FOnDeleted) then
     FOnDeleted(Self, Index, 1);
-  EndUpdate;
+  Changed;
 end;
 
 procedure TSynEditStringList.DeleteLines(Index, NumLines: Integer);
@@ -268,25 +283,22 @@ begin
     if (Index < 0) or (Index >= FCount) then
       ListIndexOutOfBounds(Index);
 
-    BeginUpdate;
-    try
-      if Assigned(FOnBeforeDeleted) then
-        FOnBeforeDeleted(Self, Index, NumLines);
+    Changing;
+    if Assigned(FOnBeforeDeleted) then
+      FOnBeforeDeleted(Self, Index, NumLines);
 
-      LinesAfter := FCount - (Index + NumLines);
-      if LinesAfter < 0 then
-        NumLines := FCount - Index;
-      Finalize(FList^[Index], NumLines);
+    LinesAfter := FCount - (Index + NumLines);
+    if LinesAfter < 0 then
+      NumLines := FCount - Index;
+    Finalize(FList^[Index], NumLines);
 
-      if LinesAfter > 0 then
-        System.Move(FList^[Index + NumLines], FList^[Index],
-          LinesAfter * SynEditStringRecSize);
-      Dec(FCount, NumLines);
-      if Assigned(FOnDeleted) then
-        FOnDeleted(Self, Index, NumLines);
-    finally
-      EndUpdate;
-    end;
+    if LinesAfter > 0 then
+      System.Move(FList^[Index + NumLines], FList^[Index],
+        LinesAfter * SynEditStringRecSize);
+    Dec(FCount, NumLines);
+    if Assigned(FOnDeleted) then
+      FOnDeleted(Self, Index, NumLines);
+    Changed;
   end;
 end;
 
@@ -501,9 +513,10 @@ end;
 
 procedure TSynEditStringList.InsertItem(Index: Integer; const S: string);
 begin
-  BeginUpdate;
   if FCount = FCapacity then
     Grow;
+
+  Changing;
   if Index < FCount then
   begin
     System.Move(FList^[Index], FList^[Index + 1],
@@ -520,7 +533,7 @@ begin
     FFlags := [sfTextWidthUnknown];
   end;
   Inc(FCount);
-  EndUpdate;
+  Changed;
 end;
 
 procedure TSynEditStringList.InsertStrings(Index: Integer;
@@ -535,32 +548,30 @@ begin
   LineCount := Length(Strings) - FromIndex;
   if LineCount > 0 then
   begin
-    BeginUpdate;
-    try
-      if FCapacity < FCount + LineCount then
-        SetCapacity(GrowCollection(FCapacity, FCount + LineCount));
-      if Index < FCount then
-      begin
-        System.Move(FList^[Index], FList^[Index + LineCount],
-          (FCount - Index) * SynEditStringRecSize);
-      end;
-      for I := 0 to LineCount - 1 do
-        with FList^[Index + I] do
-        begin
-          Pointer(FString) := nil;
-          FString := Strings[FromIndex + I];
-          FObject := nil;
-          FRange := NullRange;
-          FTextWidth := -1;
-          FFlags := [sfTextWidthUnknown];
-        end;
-      Inc(FCount, LineCount);
-      FMaxWidth := -1;
-      if Assigned(OnInserted) then
-        OnInserted(Self, Index, LineCount);
-    finally
-      EndUpdate;
+    if FCapacity < FCount + LineCount then
+      SetCapacity(GrowCollection(FCapacity, FCount + LineCount));
+
+    Changing;
+    if Index < FCount then
+    begin
+      System.Move(FList^[Index], FList^[Index + LineCount],
+        (FCount - Index) * SynEditStringRecSize);
     end;
+    for I := 0 to LineCount - 1 do
+      with FList^[Index + I] do
+      begin
+        Pointer(FString) := nil;
+        FString := Strings[FromIndex + I];
+        FObject := nil;
+        FRange := NullRange;
+        FTextWidth := -1;
+        FFlags := [sfTextWidthUnknown];
+      end;
+    Inc(FCount, LineCount);
+    FMaxWidth := -1;
+    if Assigned(OnInserted) then
+      OnInserted(Self, Index, LineCount);
+    Changed;
   end;
 end;
 
@@ -587,23 +598,18 @@ var
   Buffer: TBytes;
   DecodedText: string;
 begin
-  BeginUpdate;
-  try
-    Size := Stream.Size - Stream.Position;
-    SetLength(Buffer, Size);
-    Stream.Read(Buffer, 0, Size);
-    Size := TEncoding.GetBufferEncoding(Buffer, Encoding, DefaultEncoding);
-    WriteBOM := Size > 0; // Keep WriteBom in case the stream is saved
-    // If the encoding is ANSI and DetectUtf8 is True try to Detect UTF8
-    if (Encoding = TEncoding.ANSI) and DetectUTF8 and IsUTF8(Buffer, Size) then
-      Encoding := TEncoding.UTF8;
-    SetEncoding(Encoding); // Keep Encoding in case the stream is saved
-    DecodedText := Encoding.GetString(Buffer, Size, Length(Buffer) - Size);
-    SetLength(Buffer, 0); // Free the buffer here to reduce memory footprint
-    SetTextAndFileFormat(DecodedText);
-  finally
-    EndUpdate;
-  end;
+  Size := Stream.Size - Stream.Position;
+  SetLength(Buffer, Size);
+  Stream.Read(Buffer, 0, Size);
+  Size := TEncoding.GetBufferEncoding(Buffer, Encoding, DefaultEncoding);
+  WriteBOM := Size > 0; // Keep WriteBom in case the stream is saved
+  // If the encoding is ANSI and DetectUtf8 is True try to Detect UTF8
+  if (Encoding = TEncoding.ANSI) and DetectUTF8 and IsUTF8(Buffer, Size) then
+    Encoding := TEncoding.UTF8;
+  SetEncoding(Encoding); // Keep Encoding in case the stream is saved
+  DecodedText := Encoding.GetString(Buffer, Size, Length(Buffer) - Size);
+  SetLength(Buffer, 0); // Free the buffer here to reduce memory footprint
+  SetTextAndFileFormat(DecodedText);
 end;
 
 procedure TSynEditStringList.SaveToStream(Stream: TStream; Encoding: TEncoding);
@@ -643,48 +649,45 @@ var
   OldLine: string;
   OldWidth: Integer;
 begin
-  BeginUpdate;
-  try
-    if (Index = 0) and (FCount = 0) or (FCount = Index) then
-      Add('');
+  if (Index = 0) and (FCount = 0) or (FCount = Index) then
+    Add('');
 
-    if (Index < 0) or (Index >= FCount) then
-      ListIndexOutOfBounds(Index);
+  if (Index < 0) or (Index >= FCount) then
+    ListIndexOutOfBounds(Index);
 
-    with FList^[Index] do
+  Changing;
+  with FList^[Index] do
+  begin
+    OldLine := FString;
+    FString := S;
+
+    if FMaxWidth >= 0 then
     begin
-      OldLine := FString;
-      FString := S;
-
-      if FMaxWidth >= 0 then
-      begin
-        // Optimization:  We calculate text width here, thus
-        // in most cases avoiding to recalc FMaxWidth the hard way
-        OldWidth := FTextWidth;
-        FTextWidth := FTextWidthFunc(FString);
-        Exclude(FFlags, sfTextWidthUnknown);
-        if (FMaxWidth = OldWidth) and (OldWidth > FTextWidth) then
-          FMaxWidth := -1
-        else if FTextWidth > FMaxWidth then
-          FMaxWidth := FTextWidth
-      end
-      else
-        Include(FFlags, sfTextWidthUnknown);
-    end;
-    if Assigned(FOnPut) then
-      FOnPut(Self, Index, OldLine);
-  finally
-    EndUpdate;
+      // Optimization:  We calculate text width here, thus
+      // in most cases avoiding to recalc FMaxWidth the hard way
+      OldWidth := FTextWidth;
+      FTextWidth := FTextWidthFunc(FString);
+      Exclude(FFlags, sfTextWidthUnknown);
+      if (FMaxWidth = OldWidth) and (OldWidth > FTextWidth) then
+        FMaxWidth := -1
+      else if FTextWidth > FMaxWidth then
+        FMaxWidth := FTextWidth
+    end
+    else
+      Include(FFlags, sfTextWidthUnknown);
   end;
+  if Assigned(FOnPut) then
+    FOnPut(Self, Index, OldLine);
+  Changed;
 end;
 
 procedure TSynEditStringList.PutObject(Index: Integer; AObject: TObject);
 begin
   if (Index < 0) or (Index >= FCount) then
     ListIndexOutOfBounds(Index);
-  BeginUpdate;
+  Changing;
   FList^[Index].FObject := AObject;
-  EndUpdate;
+  Changed;
 end;
 
 procedure TSynEditStringList.PutRange(Index: Integer; ARange: TSynEditRange);
@@ -810,17 +813,7 @@ end;
 
 procedure TSynEditStringList.SetUpdateState(Updating: Boolean);
 begin
-  FCharIndexesAreValid := False;
-  if Updating then
-  begin
-    if Assigned(FOnChanging) then
-      FOnChanging(Self);
-  end
-  else
-  begin
-    if Assigned(FOnChange) then
-      FOnChange(Self);
-  end;
+  if Updating then Changing else Changed;
 end;
 
 procedure TSynEditStringList.ResetMaxWidth;
