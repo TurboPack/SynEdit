@@ -626,7 +626,8 @@ type
     procedure SetReadOnly(Value: boolean); virtual;
     procedure SetWantReturns(Value: Boolean);
     procedure SetSelText(const Value: string);
-    procedure SetSelTextPrimitiveEx(const Value: string; AddToUndoList: Boolean = True);
+    procedure SetSelTextPrimitiveEx(const Value: string;
+      AddToUndoList: Boolean = True; SelectValue: Boolean = False);
     procedure SetTextHint(const Value: string);
     procedure SetWantTabs(Value: Boolean);
     procedure StatusChanged(AChanges: TSynStatusChanges);
@@ -4043,7 +4044,7 @@ end;
 // To fix this (in the absence of a better idea), I changed the code in
 // DeleteSelection not to trim the string if eoScrollPastEol is not set.
 procedure TCustomSynEdit.SetSelTextPrimitiveEx(const Value: string;
-  AddToUndoList: Boolean = True);
+  AddToUndoList: Boolean = True; SelectValue: Boolean = False);
 {
    Works in two stages:
      -  First deletes selection.
@@ -4140,7 +4141,7 @@ begin
     if Length(Value) > 0 then
     begin
       InsertText;
-      if SelectedText.Length > 0 then
+      if SelectValue then
         SetCaretAndSelection(CaretXY, BB, CaretXY);
     end;
   finally
@@ -5947,6 +5948,8 @@ begin
   begin
     if (AChar.Length = 1) and IsOpenningBracket(AChar[1], Brackets) then
       SurroundSelection(AChar, MatchingBracket(AChar[1], Brackets))
+    else if (AChar.Length = 1) and CharInSet(AChar[1], ['"', '''']) then
+      SurroundSelection(AChar)
     else
       SetSelText(AChar)
   end
@@ -8089,7 +8092,7 @@ begin
   try
    OldLen := Sel.Length;
    Sel := Before + Sel + After;
-   SelText := Sel;
+   SetSelTextPrimitiveEx(Sel, True, True);
    SelStart := SelStart + Before.Length;
    SelLength := OldLen;
   finally
