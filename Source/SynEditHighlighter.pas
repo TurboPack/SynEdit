@@ -130,7 +130,6 @@ type
     fTokenPos: Integer;
     fUpdateChange: Boolean;
     fBrackets: string;
-    DefaultBrackets: string;
     Run: Integer;
     fOldRun: Integer;
     // If FScanningToEOL is true then only ranges need to be scanned.
@@ -704,7 +703,6 @@ begin
   fAttrChangeHooks := TSynNotifyEventChain.CreateEx(Self);
   fDefaultFilter := '';
   fEnabled := True;
-  DefaultBrackets := '()[]{}';
   fBrackets := DefaultBrackets;
 end;
 

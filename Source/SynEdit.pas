@@ -304,6 +304,7 @@ type
     fAlwaysShowCaret: Boolean;
     FCarets: TSynCarets;
     FCaseSensitive: Boolean;
+    FBrackets: string;
     FSelection: TSynSelection;
     FSelections: TSynSelections;
     fCharWidth: Integer;
@@ -445,6 +446,7 @@ type
     procedure ForceCaretX(aCaretX: integer);
     function GetBlockBegin: TBufferCoord;
     function GetBlockEnd: TBufferCoord;
+    function GetBrackets: string;
     function GetCanPaste: Boolean;
     function GetCanRedo: Boolean;
     function GetCanUndo: Boolean;
@@ -802,6 +804,7 @@ type
     procedure SetDefaultKeystrokes; virtual;
     procedure SetSelWord;
     procedure SetWordBlock(Value: TBufferCoord);
+    procedure SurroundSelection(const Before: string; After: string = '');
     procedure Undo;
     procedure UnlockUndo;
     procedure UnregisterCommandHandler(AHandlerProc: THookedCommandEvent);
@@ -835,7 +838,8 @@ type
 
     procedure Zoom(ExtraFontSize: Integer);
     procedure ZoomReset;
-//++ CodeFolding
+
+    // CodeFolding procedures
     procedure CollapseAll;
     procedure UncollapseAll;
     procedure Collapse(FoldRangeIndex: Integer; Invalidate:Boolean = True);
@@ -848,12 +852,12 @@ type
     procedure CollapseFoldType(FoldType : Integer);
     procedure UnCollapseFoldType(FoldType : Integer);
     procedure SurfaceCaretFromHiddenFolds;
-//-- CodeFolding
   public
     property AdditionalIdentChars: TSysCharSet read FAdditionalIdentChars write SetAdditionalIdentChars;
     property AdditionalWordBreakChars: TSysCharSet read FAdditionalWordBreakChars write SetAdditionalWordBreakChars;
     property BlockBegin: TBufferCoord read GetBlockBegin write SetBlockBegin;
     property BlockEnd: TBufferCoord read GetBlockEnd write SetBlockEnd;
+    property Brackets: string read GetBrackets write FBrackets;
     property CanPaste: Boolean read GetCanPaste;
     property CanRedo: Boolean read GetCanRedo;
     property CanUndo: Boolean read GetCanUndo;
@@ -907,15 +911,11 @@ type
     property UndoRedo: ISynEditUndo read fUndoRedo;
     property TextFormat: TSynTextFormat read FTextFormat;
     property FontQuality: TFontQuality read fFontQuality write SetFontQuality;
-  public
-    property OnProcessCommand: TProcessCommandEvent
-      read FOnProcessCommand write FOnProcessCommand;
-
-//++ CodeFolding
+    // CodeFolding properties
     property CodeFolding: TSynCodeFolding read fCodeFolding write fCodeFolding;
     property UseCodeFolding: Boolean read fUseCodeFolding write SetUseCodeFolding;
     property AllFoldRanges: TSynFoldRanges read fAllFoldRanges;
-//-- CodeFolding
+    // End of CodeFolding
     property BookMarkOptions: TSynBookMarkOpt
       read fBookMarkOpt write fBookMarkOpt;
     property BorderStyle: TSynBorderStyle read FBorderStyle write SetBorderStyle
@@ -990,6 +990,8 @@ type
       read fOnStatusChange write fOnStatusChange;
     property OnPaintTransient: TPaintTransient
       read fOnPaintTransient write fOnPaintTransient;
+    property OnProcessCommand: TProcessCommandEvent
+      read FOnProcessCommand write FOnProcessCommand;
     property OnShowHint: TShowHintEvent read fOnShowHint write fOnShowHint;
     property OnScroll: TScrollEvent read fOnScroll write fOnScroll;
     property OnTripleClick: TNotifyEvent
@@ -997,10 +999,9 @@ type
     property OnQuadrupleClick: TNotifyEvent
       read fOnQudrupleClick write fOnQudrupleClick;
     property OnZoom: TZoomEvent read FOnZoom write FOnZoom;
-//++ CodeFolding
+    // Event handler used for CodeFolding
     property OnScanForFoldRanges: TScanForFoldRangesEvent
       read fOnScanForFoldRanges write fOnScanForFoldRanges;
-//-- CodeFolding
     property OnSearchNotFound: TCustomSynEditSearchNotFoundEvent
       read fSearchNotFound write fSearchNotFound;
   end;
@@ -1055,10 +1056,8 @@ type
     property OnMouseWheelUp;
     property OnStartDrag;
     // TCustomSynEdit properties
-//++ CodeFolding
     property CodeFolding;
     property UseCodeFolding;
-//-- CodeFolding
     property BookMarkOptions;
     property BorderStyle;
     property ExtraLineSpacing;
@@ -1116,9 +1115,7 @@ type
     property OnQuadrupleClick;
     property OnSearchNotFound;
     property OnZoom;
-//++ CodeFolding
     property OnScanForFoldRanges;
-//-- CodeFolding
   end;
 
 implementation
@@ -4141,10 +4138,11 @@ begin
       DeleteSelection;
 
     if Length(Value) > 0 then
+    begin
       InsertText;
-
-    if CaretY < 1 then
-      CaretY := 1;
+      if SelectedText.Length > 0 then
+        SetCaretAndSelection(CaretXY, BB, CaretXY);
+    end;
   finally
     if AddToUndoList then EndUndoBlock else fUndoRedo.UnLock;
     DecPaintLock;
@@ -5946,7 +5944,12 @@ begin
     Exit;
 
   if SelAvail then
-    SetSelText(AChar)
+  begin
+    if (AChar.Length = 1) and IsOpenningBracket(AChar[1], Brackets) then
+      SurroundSelection(AChar, MatchingBracket(AChar[1], Brackets))
+    else
+      SetSelText(AChar)
+  end
   else
   begin
     // This is to set fCaretXY correctly
@@ -7259,6 +7262,14 @@ begin
       end;
 end;
 
+function TCustomSynEdit.GetBrackets: string;
+begin
+  if Assigned(fHighlighter) then
+    Result := fHighlighter.Brackets
+  else
+    Result := FBrackets;
+end;
+
 function TCustomSynEdit.IsBookmark(BookMark: Integer): Boolean;
 var
   x, y: Integer;
@@ -7976,19 +7987,29 @@ end;
 
 procedure TCustomSynEdit.HighlightBrackets;
 var
+  Token: string;
+  Attri: TSynHighlighterAttributes;
   BracketPos,
   MatchingBracketPos: TBufferCoord;
   Indicator: TSynIndicator;
 begin
-  if HandleAllocated and (eoBracketsHighlight in FOptions) and Assigned(fHighlighter) then
+  if HandleAllocated and (eoBracketsHighlight in FOptions) then
   begin
+    BracketPos := CaretXY;
+
+    // Do not highlight inside comments and strings
+    if Assigned(fHighlighter) and GetHighlighterAttriAtRowCol(BracketPos, Token, Attri) and
+      ((Attri = fHighlighter.CommentAttribute) or (Attri = fHighlighter.StringAttribute))
+    then
+      Exit;
+
     Indicators.Clear(BracketsHighlight.MatchingBracketsIndicatorID);
     Indicators.Clear(BracketsHighlight.UnbalancedBracketIndicatorID);
 
     BracketPos := CaretXY;
-    MatchingBracketPos := GetMatchingBracketEnhanced(BracketPos, fHighlighter.Brackets, False);
+    MatchingBracketPos := GetMatchingBracketEnhanced(BracketPos, Brackets, False);
 
-    if MatchingBracketPos.Char >= 0 then
+    if MatchingBracketPos.IsValid then
     begin
       // We have a bracket at BracketPos
       if MatchingBracketPos.Char = 0 then
@@ -8051,6 +8072,29 @@ begin
   end;
   if BC <> CaretXY then
     CaretXY := BC;
+end;
+
+procedure TCustomSynEdit.SurroundSelection(const Before: string; After: string);
+var
+  Sel: string;
+  OldLen: Integer;
+begin
+  Sel := SelText;
+  if Sel = '' then Exit;
+
+  if After = '' then
+    After := Before;
+
+  BeginUndoBlock;
+  try
+   OldLen := Sel.Length;
+   Sel := Before + Sel + After;
+   SelText := Sel;
+   SelStart := SelStart + Before.Length;
+   SelLength := OldLen;
+  finally
+    EndUndoBlock;
+  end;
 end;
 
 procedure TCustomSynEdit.ExecCmdCaseChange(const Cmd: TSynEditorCommand);
@@ -8730,115 +8774,85 @@ var
   Pos: TBufferCoord;
 begin
   Pos := CaretXY;
-  if fHighlighter <> nil then
-    Result := GetMatchingBracketEnhanced(Pos, fHighlighter.Brackets)
-  else
-    Result := GetMatchingBracketEnhanced(Pos);
+  Result := GetMatchingBracketEnhanced(Pos, Brackets);
 end;
 
 function TCustomSynEdit.GetMatchingBracketEx(const APoint: TBufferCoord;
   Brackets: string): TBufferCoord;
 var
   Line: string;
-  Index, PosX, PosY, Len: Integer;
-  Test, BracketInc, BracketDec: WideChar;
+  Index, PosX, PosY, Len, Increment: Integer;
+  Test, BracketInc, BracketDec: Char;
   NumBrackets: Integer;
   SDummy: string;
   Attr: TSynHighlighterAttributes;
   P: TBufferCoord;
-  IsCommentOrString: Boolean;
 begin
-  Result.Char := 0;
-  Result.Line := 0;
-  // get char at caret
+  Result := TBufferCoord.Invalid;
+
+  // Get char at caret
   PosX := APoint.Char;
   PosY := APoint.Line;
-  Line := Lines[APoint.Line - 1];
-  if Length(Line) >= PosX then
-  begin
-    Test := Line[PosX];
-    // is it one of the recognized brackets?
-    Index := Brackets.IndexOf(Test);  // zero based
-    if Index >= 0 then
-    begin
-      // this is the bracket, get the matching one and the direction
-      BracketInc := Brackets.Chars[Index];
-      BracketDec := Brackets.Chars[Index xor 1]; // 0 -> 1, 1 -> 0, ...
-      // search for the matching bracket (that is until NumBrackets = 0)
-      NumBrackets := 1;
-      if Odd(Index) then
+
+  // Check position is valid
+  if not InRange(PosY, 1, Lines.Count) then Exit;
+  Line := Lines[PosY - 1];
+  if not BracketAtPos(PosX, Brackets, Line) then Exit;
+
+  Test := Line[PosX];
+  // is it one of the recognized brackets?
+  Index := Brackets.IndexOf(Test);  // zero based
+  // this is the bracket, get the matching one and the direction
+  BracketInc := Brackets.Chars[Index];
+  BracketDec := Brackets.Chars[Index xor 1]; // 0 -> 1, 1 -> 0, ...
+
+  // search for the matching bracket (that is until NumBrackets = 0)
+  NumBrackets := 1;
+  if Odd(Index) then
+    Increment := -1
+  else
+    Increment := + 1;
+
+  repeat
+    Len := Line.Length;
+    // search within the line
+    repeat
+      PosX := PosX + Increment;
+      if not InRange(PosX, 1, Len) then Break;
+
+      Test := Line[PosX];
+      P.Char := PosX;
+      P.Line := PosY;
+      if ((Test = BracketInc) or (Test = BracketDec)) and
+        // not inside strings and comments
+        not (GetHighlighterAttriAtRowCol(BufferCoord(PosX, PosY), SDummy, Attr)
+         and ((Attr = Highlighter.StringAttribute) or
+         (Attr = Highlighter.CommentAttribute)))
+      then
       begin
-        repeat
-          // search until start of line
-          while PosX > 1 do
+        if Test = BracketInc then
+          Inc(NumBrackets)
+        else if Test = BracketDec then
+        begin
+          Dec(NumBrackets);
+          if NumBrackets = 0 then
           begin
-            Dec(PosX);
-            Test := Line[PosX];
-            P.Char := PosX;
-            P.Line := PosY;
-            if (Test = BracketInc) or (Test = BracketDec) then
-            begin
-              IsCommentOrString := GetHighlighterAttriAtRowCol(P, SDummy, Attr) and
-                ((Attr = Highlighter.StringAttribute) or (Attr = Highlighter.CommentAttribute));
-              if (Test = BracketInc) and (not IsCommentOrString) then
-                Inc(NumBrackets)
-              else if (Test = BracketDec) and (not IsCommentOrString) then
-              begin
-                Dec(NumBrackets);
-                if NumBrackets = 0 then
-                begin
-                  // matching bracket found, set caret and bail out
-                  Result := P;
-                  Exit;
-                end;
-              end;
-            end;
+            // matching bracket found, set Result and exit
+            Result := P;
+            Exit;
           end;
-          // get previous line if possible
-          if PosY = 1 then break;
-          Dec(PosY);
-          Line := Lines[PosY - 1];
-          PosX := Length(Line) + 1;
-        until False;
-      end
-      else begin
-        repeat
-          // search until end of line
-          Len := Length(Line);
-          while PosX < Len do
-          begin
-            Inc(PosX);
-            Test := Line[PosX];
-            P.Char := PosX;
-            P.Line := PosY;
-            if (Test = BracketInc) or (Test = BracketDec) then
-            begin
-              IsCommentOrString := GetHighlighterAttriAtRowCol(P, SDummy, Attr) and
-                ((Attr = Highlighter.StringAttribute) or (Attr = Highlighter.CommentAttribute));
-              if (Test = BracketInc) and (not IsCommentOrString) then
-                Inc(NumBrackets)
-              else if (Test = BracketDec)and (not IsCommentOrString) then
-              begin
-                Dec(NumBrackets);
-                if NumBrackets = 0 then
-                begin
-                  // matching bracket found, set caret and bail out
-                  Result := P;
-                  Exit;
-                end;
-              end;
-            end;
-          end;
-          // get next line if possible
-          if PosY = Lines.Count then
-            Break;
-          Inc(PosY);
-          Line := Lines[PosY - 1];
-          PosX := 0;
-        until False;
+        end;
       end;
-    end;
-  end;
+    until False;
+    // get next/previous line if possible
+    PosY := PosY + Increment;
+    if not InRange(PosY, 1, Lines.Count) then Break;
+    Line := Lines[PosY - 1];
+    if Increment > 0 then
+      PosX := 0
+    else
+      PosX := Line.Length + 1;
+  until False;
 end;
 
 function TCustomSynEdit.GetMatchingBracketEnhanced(var BracketPos: TBufferCoord;
@@ -8852,20 +8866,6 @@ function TCustomSynEdit.GetMatchingBracketEnhanced(var BracketPos: TBufferCoord;
    will be both either inside or outside the brackets.
 }
 
-  function PosHasBracket(Pos: TBufferCoord; const Line: string): Boolean;
-  var
-    Token: string;
-    Attri: TSynHighlighterAttributes;
-  begin
-    Result :=
-     InRange(Pos.Char, 1, Line.Length) and
-     (Brackets.IndexOf(Line[Pos.Char]) >= 0) and
-     (not Assigned(fHighlighter) or
-     (GetHighlighterAttriAtRowCol(Pos, Token, Attri) and
-     (Attri <> fHighlighter.CommentAttribute) and
-     (Attri <> fHighlighter.StringAttribute)));
-  end;
-
 var
   Line: string;
   HasBracket, IsPreviousChar, IsOpenChar, IsOutside: Boolean;
@@ -8878,13 +8878,13 @@ begin
   IsPreviousChar := BracketPos.Char > 1;
   if IsPreviousChar  then
     Dec(BracketPos.Char);
-  HasBracket := PosHasBracket(BracketPos, Line);
+  HasBracket := BracketAtPos(BracketPos.Char, Brackets, Line);
   //if it is not a bracket then look at the next character;
   if not HasBracket and IsPreviousChar then
   begin
     Inc(BracketPos.Char);
     IsPreviousChar := False;
-    HasBracket := PosHasBracket(BracketPos, Line);
+    HasBracket := BracketAtPos(BracketPos.Char, Brackets, Line);
   end;
 
   if HasBracket then
@@ -8892,7 +8892,7 @@ begin
     Result := GetMatchingBracketEx(BracketPos, Brackets);
     if (Result.Char > 0) and AdjustMatchingPos then
     begin
-      IsOpenChar := not Odd(Brackets.IndexOf(Line[BracketPos.Char]));
+      IsOpenChar := IsOpenningBracket(Line[BracketPos.Char], Brackets);
       IsOutside := IsOpenChar xor IsPreviousChar;
       if IsOutside xor not IsOpenChar then
         Inc(Result.Char);

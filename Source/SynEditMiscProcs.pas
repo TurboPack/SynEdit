@@ -138,6 +138,12 @@ procedure SubstituteControlChars(var Input: string);
 // Returns a compiled regular expression
 function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TRegEx;
 
+// Bracket functions (Brackets have the form '()[]{}')
+function IsBracket(Chr: Char; const Brackets: string): Boolean;
+function IsOpenningBracket(Chr: Char; const Brackets: string): Boolean;
+function BracketAtPos(Idx: Integer; const Brackets, Line: string): Boolean;
+function MatchingBracket(Bracket: Char; const Brackets: string): Char;
+
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 {$ENDIF}
@@ -857,6 +863,36 @@ begin
   {$IF (CompilerVersion > 35) or Declared(RTLVersion112)}
   Result.Study([preJIT]);
   {$ENDIF}
+end;
+
+
+function IsBracket(Chr: Char; const Brackets: string): Boolean;
+begin
+  Result := Brackets.IndexOf(Chr) >= 0;
+end;
+
+function IsOpenningBracket(Chr: Char; const Brackets: string): Boolean;
+var
+  Idx: Integer;
+begin
+  Idx := Brackets.IndexOf(Chr);
+  Result := (Idx >= 0) and not Odd(Idx);
+end;
+
+function BracketAtPos(Idx: Integer; const Brackets, Line: string): Boolean;
+begin
+  Result := InRange(Idx, 1, Line.Length) and IsBracket(Line[Idx], Brackets);
+end;
+
+function MatchingBracket(Bracket: Char; const Brackets: string): Char;
+var
+  Idx: Integer; // zero based char index
+begin
+  Idx := Brackets.IndexOf(Bracket);
+  if Idx < 0 then
+    Result := #0
+  else
+    Result := Brackets.Chars[Idx xor 1];
 end;
 
 end.

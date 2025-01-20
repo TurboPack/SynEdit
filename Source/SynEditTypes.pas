@@ -49,6 +49,8 @@ uses
   System.SysUtils,
   System.Classes;
 
+const
+  DefaultBrackets = '()[]{}';
 
 type
   TSynAlignment = TAlignment;
