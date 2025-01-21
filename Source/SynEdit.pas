@@ -570,9 +570,8 @@ type
     procedure OleDragEnter(Sender : TObject; DataObject : IDataObject;
       State : TShiftState; MousePt : TPoint; var Effect: LongInt;
       var Result: HResult); virtual;
-    procedure OleDragOver(Sender : TObject; DataObject : IDataObject;
-      State : TShiftState; MousePt : TPoint; var Effect: LongInt;
-      var Result: HResult); virtual;
+    procedure OleDragOver(Sender : TObject; State : TShiftState;
+      MousePt : TPoint; var Effect: LongInt; var Result: HResult); virtual;
     procedure OleDrop(Sender : TObject; DataObject : IDataObject;
       State : TShiftState; MousePt : TPoint; var Effect: LongInt;
       var Result: HResult); virtual;
@@ -4235,9 +4234,8 @@ begin
   SetCaretAndSelection(FSelection.Stop, FSelection.Start, FSelection.Stop);
 end;
 
-procedure TCustomSynEdit.OleDragOver(Sender: TObject; DataObject: IDataObject;
-  State: TShiftState; MousePt: TPoint; var Effect: LongInt;
-  var Result: HResult);
+procedure TCustomSynEdit.OleDragOver(Sender: TObject; State: TShiftState;
+  MousePt: TPoint; var Effect: LongInt; var Result: HResult);
 var
   vNewPos: TDisplayCoord;
   Pt : TPoint;

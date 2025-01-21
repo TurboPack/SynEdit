@@ -40,46 +40,43 @@ const
   deLink   = DROPEFFECT_LINK;
   deScroll = DROPEFFECT_SCROLL;
 
-// Provides a translation of a IDropTarget interface into Delphi
 type
-  TOnDragEvent = procedure (Sender : TObject; DataObject : IDataObject; State : TShiftState; MousePt : TPoint; var Effect: LongInt; var Result: HResult) of Object;
-  TOnDragLeaveEvent = procedure (Sender : TObject; var Result : HResult) of Object;
+  TOnDragEvent = procedure(Sender: TObject; DataObject: IDataObject; State: TShiftState; MousePt: TPoint; var Effect: LongInt; var Result: HResult) of object;
+  TOnDragOverEvent = procedure(Sender: TObject; State: TShiftState; MousePt: TPoint; var Effect: LongInt; var Result: HResult) of object;
+  TOnDragLeaveEvent = procedure(Sender: TObject; var Result: HResult) of Object;
 
-  TSynDropTarget = class (TInterfacedObject, IDropTarget)
+  // Implementation of the IDropTarget interface
+  TSynDropTarget = class(TInterfacedObject, IDropTarget)
   private
-    FDataObject : IDataObject;
-    FOnDragEnter : TOnDragEvent;
-    FOnDragOver : TOnDragEvent;
-    FOnDragLeave : TOnDragLeaveEvent;
-    FOnDrop : TOnDragEvent;
+    FOnDragEnter: TOnDragEvent;
+    FOnDragOver: TOnDragOverEvent;
+    FOnDragLeave: TOnDragLeaveEvent;
+    FOnDrop: TOnDragEvent;
 // IDropTarget
-    function DragEnter (const DataObj: IDataObject; grfKeyState: Longint; pt: TPoint; var dwEffect: Longint): HResult; overload; stdcall;
-    function DragOver (grfKeyState: Longint; pt: TPoint; var dwEffect: Longint): HResult; overload; stdcall;
-    function DragLeave : HResult; overload; stdcall;
-    function Drop (const DataObj: IDataObject; grfKeyState: Longint; pt: TPoint; var dwEffect: Longint): HResult; overload; stdcall;
+    function DragEnter(const DataObj: IDataObject; grfKeyState: Longint; pt: TPoint; var dwEffect: Longint): HResult; overload; stdcall;
+    function DragOver(grfKeyState: Longint; pt: TPoint; var dwEffect: Longint): HResult; overload; stdcall;
+    function DragLeave: HResult; overload; stdcall;
+    function Drop(const DataObj: IDataObject; grfKeyState: Longint; pt: TPoint; var dwEffect: Longint): HResult; overload; stdcall;
   protected
-    procedure DragEnter (DataObject : IDataObject; State : TShiftState; Pt : TPoint; var Effect: LongInt; var Result : HResult);overload;
-    procedure DragOver (State : TShiftState; Pt : TPoint; var Effect: LongInt; var Result: HResult);overload;
-    procedure DragLeave (var Result : HResult);overload;
-    procedure Drop (DataObject : IDataObject; State : TShiftState; Pt : TPoint; var Effect: LongInt; var Result: HResult);overload;
+    procedure DragEnter(DataObject: IDataObject; State: TShiftState; Pt: TPoint; var Effect: LongInt; var Result: HResult); overload;
+    procedure DragOver(State: TShiftState; Pt: TPoint; var Effect: LongInt; var Result: HResult); overload;
+    procedure DragLeave(var Result: HResult);overload;
+    procedure Drop(DataObject: IDataObject; State: TShiftState; Pt: TPoint; var Effect: LongInt; var Result: HResult); overload;
   public
-    destructor Destroy; override;
-    property OnDragEnter : TOnDragEvent read FOnDragEnter write FOnDragEnter;
-    property OnDragOver : TOnDragEvent read FOnDragOver write FOnDragOver;
-    property OnDragLeave : TOnDragLeaveEvent read FOnDragLeave write FOnDragLeave;
-    property OnDrop : TOnDragEvent read FOnDrop write FOnDrop;
+    property OnDragEnter: TOnDragEvent read FOnDragEnter write FOnDragEnter;
+    property OnDragOver: TOnDragOverEvent read FOnDragOver write FOnDragOver;
+    property OnDragLeave: TOnDragLeaveEvent read FOnDragLeave write FOnDragLeave;
+    property OnDrop: TOnDragEvent read FOnDrop write FOnDrop;
   end;
 
-  TSynDragSource = class (TInterfacedObject, IDropSource)
+  // Implementation of the IDropSource interface
+  TSynDragSource = class(TInterfacedObject, IDropSource)
   private
-  // IDropSource
     // Called routinely by Windows to check that drag operations are to continue. See the
    // implementation below of QueryContinueDrag method for the default operation.
-    function QueryContinueDrag (fEscapePressed: BOOL; grfKeyState: Longint): HResult; overload; stdcall;
+    function QueryContinueDrag(fEscapePressed: BOOL; grfKeyState: Longint): HResult; overload; stdcall;
     // Called routinely to modify the displayed cursor.
-    function GiveFeedback (dwEffect: Longint): HResult; stdcall;
-  public
-    destructor Destroy; override;
+    function GiveFeedback(dwEffect: Longint): HResult; stdcall;
   end;
 
 implementation
@@ -88,7 +85,7 @@ implementation
 //  no keys       = "move"
 //  control only  = "copy"
 //  control/shift = "link" - ignored in this case
-function StandardEffect (Keys : TShiftState) : integer;
+function StandardEffect(Keys: TShiftState): Integer;
 begin
   Result := deMove;
   if ssCtrl in Keys then
@@ -125,7 +122,7 @@ function TSynDropTarget.DragOver(grfKeyState: Integer; pt: TPoint;
 begin
   Result := S_OK;
   try
-    DragOver (KeysToShiftState (grfKeyState), Pt, dwEffect, Result);
+    DragOver(KeysToShiftState(grfKeyState), Pt, dwEffect, Result);
   except
     Result := E_UNEXPECTED;
   end
@@ -136,7 +133,7 @@ function TSynDropTarget.Drop(const DataObj: IDataObject; grfKeyState: Integer;
 begin
   Result := S_OK;
   try
-    Drop (DataObj, KeysToShiftState (grfKeyState), Pt, dwEffect, Result);
+    Drop(DataObj, KeysToShiftState(grfKeyState), Pt, dwEffect, Result);
   except
     Result := E_UNEXPECTED;
   end
@@ -145,60 +142,31 @@ end;
 procedure TSynDropTarget.DragEnter(DataObject: IDataObject;
   State: TShiftState; Pt: TPoint; var Effect: LongInt; var Result: HResult);
 begin
-  Effect := StandardEffect (State);
-  if Assigned (FOnDragEnter) then
-    FOnDragEnter (Self, DataObject, State, Pt, Effect, Result);
-  if Effect = deNone then
-    FDataObject := nil
-  else
-    FDataObject := DataObject;
+  Effect := StandardEffect(State);
+  if Assigned(FOnDragEnter) then
+    FOnDragEnter(Self, DataObject, State, Pt, Effect, Result);
 end;
 
 procedure TSynDropTarget.DragLeave(var Result: HResult);
 begin
-  if Assigned(FDataObject) then
-    try
-      if Assigned (FOnDragLeave) then
-        FOnDragLeave (Self, Result)
-    finally
-      FDataObject := nil
-    end
+  if Assigned(FOnDragLeave) then
+    FOnDragLeave(Self, Result)
 end;
 
 procedure TSynDropTarget.DragOver(State: TShiftState;
   Pt: TPoint; var Effect: LongInt; var Result: HResult);
 begin
-  if FDataObject = nil then begin
-    Effect := deNone;
-    Exit;
-  end;
-
-  Effect := StandardEffect (State);
-  if Assigned (FOnDragOver) then
-    FOnDragOver (Self, FDataObject, State, Pt, Effect, Result)
+  Effect := StandardEffect(State);
+  if Assigned(FOnDragOver) then
+    FOnDragOver(Self, State, Pt, Effect, Result)
 end;
 
 procedure TSynDropTarget.Drop(DataObject: IDataObject; State: TShiftState;
   Pt: TPoint; var Effect: LongInt; var Result: HResult);
 begin
-  if FDataObject = nil then begin
-    Effect := deNone;
-    Exit;
-  end;
-
-  Effect := StandardEffect (State);
-  try
-    if Assigned (FOnDrop) then
-      FOnDrop (Self, DataObject, State, Pt, Effect, Result)
-  finally
-    FDataObject := nil
-  end
-end;
-
-destructor TSynDropTarget.Destroy;
-begin
-  FDataObject := nil;
-  inherited;
+  Effect := StandardEffect(State);
+  if Assigned(FOnDrop) then
+    FOnDrop(Self, DataObject, State, Pt, Effect, Result)
 end;
 
 //===  DRAG SOURCE CLASS ===================================================
@@ -207,7 +175,7 @@ function TSynDragSource.QueryContinueDrag(fEscapePressed: BOOL; grfKeyState: Lon
 begin
   if fEscapePressed then  // cancel the drop
     Result := DRAGDROP_S_CANCEL
-  else if (grfKeyState and MK_LBUTTON) = 0 then
+  else if(grfKeyState and MK_LBUTTON) = 0 then
     Result := DRAGDROP_S_DROP   // drop has occurred
   else
     Result := S_OK;
@@ -218,10 +186,5 @@ begin
   Result := DRAGDROP_S_USEDEFAULTCURSORS;
 end;
 
-destructor TSynDragSource.Destroy;
-begin
-  // for debugging purposes
-  inherited;
-end;
 
 end.
