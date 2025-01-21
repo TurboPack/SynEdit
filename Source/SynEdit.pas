@@ -8389,7 +8389,7 @@ begin
 end;
 
 procedure TCustomSynEdit.CreateWnd;
-Var
+var
   DropTarget : TSynDropTarget;
 begin
   inherited;
@@ -9395,41 +9395,39 @@ end;
 
 function TCustomSynEdit.CharIndexToRowCol(Index: Integer;
   LineBreak: string): TBufferCoord;
-{ Index is 0-based; Result.x and Result.y are 1-based }
+{ Index is 0-based; Result.Char and Result.Line are 1-based
+  A faster implementatin using Quick Search is possible}
 var
-  x, y, LBLength, Chars: Integer;
+  Line, PrevRowIndex, RowIndex, LBLen, LBTotalLen: Integer;
 begin
-  x := 0;
-  y := 0;
-  Chars := 0;
-  LBLength := LineBreak.Length;
-  while y < Lines.Count do
-  begin
-    x := Length(Lines[y]);
-    if Chars + x + LBLength > Index then
-    begin
-      x := Index - Chars;
-      Break;
-    end
-    else if (y = Lines.Count - 1) and (Index >= Chars + x) then
-      Break;
-    Inc(Chars, x + LBLength);
-    x := 0;
-    Inc(y);
+  LBLen := LineBreak.Length;
+
+  case Lines.Count of
+    0: Exit(BufferCoord(1, 1));
+    1: Exit(BufferCoord(Index + 1, 1));
   end;
-  Result.Char := x + 1;
-  Result.Line := y + 1;
+
+  LBTotalLen := 0;
+  PrevRowIndex := 0;
+  Line := 1;
+  repeat
+    RowIndex := TSynEditStringList(Lines).LineCharIndex(Line);  // zero based
+    if Index < RowIndex + LBTotalLen then
+      Exit(BufferCoord(Index + 1 - PrevRowIndex - LBTotalLen, Line));
+    PrevRowIndex := RowIndex;
+    Inc(LBTotalLen, LBLen);
+    Inc(Line);
+  until Line >= Lines.Count;
+   // If we reach this point Index points to the last line
+  Exit(BufferCoord(Index + 1 - RowIndex - LBTotalLen, Lines.Count));
 end;
 
 function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord;
   LineBreak: string): Integer;
 { Row and Col are 1-based; Result is 0-based }
-var
-  synEditStringList : TSynEditStringList;
 begin
   RowCol.Line := Max(0, Min(Lines.Count, RowCol.Line) - 1);
-  synEditStringList := (FLines as TSynEditStringList);
-  Result :=  synEditStringList.LineCharIndex(RowCol.Line)
+  Result :=  TSynEditStringList(Lines).LineCharIndex(RowCol.Line)
            + RowCol.Line * LineBreak.Length + (RowCol.Char -  1);
 end;
 
