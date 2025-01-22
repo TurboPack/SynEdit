@@ -244,7 +244,7 @@ type
 
   TSynEditPlugin = class(TObject)
   private
-    fOwner: TCustomSynEdit;
+    FOwner: TCustomSynEdit;
   protected
     FHandlers: TPlugInHandlers;
     procedure AfterPaint(ACanvas: TCanvas; const AClip: TRect;
@@ -256,7 +256,7 @@ type
     procedure LinePut(aIndex: Integer; const OldLine: string); virtual;
     procedure LinesChanged; virtual;
   protected
-    property Editor: TCustomSynEdit read fOwner;
+    property Editor: TCustomSynEdit read FOwner;
   public
     constructor Create(AOwner: TCustomSynEdit); overload;
     constructor Create(AOwner: TCustomSynEdit; AHandlers: TPlugInHandlers); overload;
@@ -364,7 +364,7 @@ type
     FHookedCommandHandlers: TDictionary<THookedCommandEvent, Pointer>;
     fKbdHandler: TSynEditKbdHandler;
     fFocusList: TList;
-    fPlugins: TObjectList;
+    FPlugins: TObjectList<TSynEditPlugin>;
     fScrollTimer: TTimer;
     fScrollDeltaX, fScrollDeltaY: Integer;
     fClickCountTimer: TStopWatch;
@@ -1620,9 +1620,9 @@ begin
   FHookedCommandHandlers.Free;
   FHookedCommandHandlers := nil;
   // do not use FreeAndNil, it first nils and then frees causing problems with
-  // code accessing fPlugins while destruction
-  fPlugins.Free;
-  fPlugins := nil;
+  // code accessing FPlugins while destruction
+  FPlugins.Free;
+  FPlugins := nil;
 
   fMarkList.Free;
   fBookMarkOpt.Free;
@@ -9015,7 +9015,6 @@ end;
 procedure TCustomSynEdit.DoOnPaintTransient(TransientType: TTransientType);
 var
   DoTransient: Boolean;
-  i: Integer;
   Plugin: TSynEditPlugin;
 begin
   if (TransientType=ttBefore) then
@@ -9033,13 +9032,10 @@ begin
     Canvas.Brush.Color := Color;
     try
       // plugins
-      if fPlugins <> nil then
-        for i := 0 to fPlugins.Count - 1 do
-        begin
-          PlugIn := TSynEditPlugin(fPlugins[i]);
+      if FPlugins <> nil then
+        for Plugin in FPlugins do
           if phPaintTransient in Plugin.Handlers then
             PlugIn.PaintTransient(Canvas, TransientType);
-        end;
       // event
       if Assigned(fOnPaintTransient) then
       begin
@@ -9188,47 +9184,39 @@ end;
 
 procedure TCustomSynEdit.DoLinesBeforeDeleted(FirstLine, Count: Integer);
 var
-  i: Integer;
   Plugin: TSynEditPlugin;
 begin
   // plugins
-  if fPlugins <> nil then
-    for i := 0 to fPlugins.Count - 1 do
-    begin
-      PlugIn := TSynEditPlugin(fPlugins[i]);
+  if FPlugins <> nil then
+    for Plugin in FPlugins do
       if phLinesBeforeDeleted in Plugin.Handlers then
         PlugIn.LinesBeforeDeleted(FirstLine, Count);
-    end;
 end;
 
 procedure TCustomSynEdit.DoLinesChanged;
 var
-  i: Integer;
   Plugin: TSynEditPlugin;
 begin
   // plugins
-  if fPlugins <> nil then
-    for i := 0 to fPlugins.Count - 1 do
-    begin
-      PlugIn := TSynEditPlugin(fPlugins[i]);
+  if FPlugins <> nil then
+    for Plugin in FPlugins do
       if phLinesChanged in Plugin.Handlers then
         PlugIn.LinesChanged;
-    end;
 end;
 
 procedure TCustomSynEdit.DoLinesDeleted(FirstLine, Count: Integer);
 var
-  i: Integer;
+  Mark: TSynEditMark;
   Plugin: TSynEditPlugin;
 begin
   fGutter.AutoSizeDigitCount;
 
   // gutter marks
-  for i := 0 to Marks.Count - 1 do
-    if Marks[i].Line >= FirstLine + Count then
-      Marks[i].Line := Marks[i].Line - Count
-    else if Marks[i].Line > FirstLine then
-      Marks[i].Line := FirstLine;
+  for Mark in Marks do
+    if Mark.Line >= FirstLine + Count then
+      Mark.Line := Mark.Line - Count
+    else if Mark.Line > FirstLine then
+      Mark.Line := FirstLine;
 
   // SynIndicators
   FIndicators.LinesDeleted(FirstLine, Count);
@@ -9238,25 +9226,22 @@ begin
     FSelections.LinesDeleted(FirstLine, Count);
 
   // plugins
-  if fPlugins <> nil then
-    for i := 0 to fPlugins.Count - 1 do
-    begin
-      PlugIn := TSynEditPlugin(fPlugins[i]);
+  if FPlugins <> nil then
+    for Plugin in FPlugins do
       if phLinesDeleted in Plugin.Handlers then
         Plugin.LinesDeleted(FirstLine, Count);
-    end;
 end;
 
 procedure TCustomSynEdit.DoLinesInserted(FirstLine, Count: Integer);
 var
-  i: Integer;
+  Mark: TSynEditMark;
   Plugin: TSynEditPlugin;
 begin
   fGutter.AutoSizeDigitCount;
   // Gutter marks
-  for i := 0 to Marks.Count - 1 do
-    if Marks[i].Line >= FirstLine then
-      Marks[i].Line := Marks[i].Line + Count;
+  for Mark in Marks do
+    if Mark.Line >= FirstLine then
+      Mark.Line := Mark.Line + Count;
 
   // SynIndicators
   FIndicators.LinesInserted(FirstLine, Count);
@@ -9266,18 +9251,14 @@ begin
     FSelections.LinesInserted(FirstLine, Count);
 
   // Plugins
-  if fPlugins <> nil then
-    for i := 0 to fPlugins.Count - 1 do
-    begin
-      PlugIn := TSynEditPlugin(fPlugins[i]);
+  if FPlugins <> nil then
+    for Plugin in FPlugins do
       if phLinesInserted in Plugin.Handlers then
         Plugin.LinesInserted(FirstLine, Count);
-    end;
 end;
 
 procedure TCustomSynEdit.DoLinePut(Index: Integer; const OldLine: string);
 var
-  i: Integer;
   Plugin: TSynEditPlugin;
 begin
   // SynIndicators
@@ -9288,28 +9269,21 @@ begin
     FSelections.LinePut(Index, OldLine);
 
   // plugins
-  if fPlugins <> nil then
-    for i := 0 to fPlugins.Count - 1 do
-    begin
-      PlugIn := TSynEditPlugin(fPlugins[i]);
+  if FPlugins <> nil then
+    for Plugin in FPlugins do
       if phLinePut in Plugin.Handlers then
         Plugin.LinePut(Index, OldLine);
-    end;
 end;
 
 procedure TCustomSynEdit.PluginsAfterPaint(ACanvas: TCanvas; const AClip: TRect;
   FirstLine, LastLine: Integer);
 var
-  i: Integer;
   Plugin: TSynEditPlugin;
 begin
-  if fPlugins <> nil then
-    for i := 0 to fPlugins.Count - 1 do
-    begin
-      PlugIn := TSynEditPlugin(fPlugins[i]);
+  if FPlugins <> nil then
+    for Plugin in FPlugins do
       if phAfterPaint in Plugin.Handlers then
         Plugin.AfterPaint(ACanvas, AClip, FirstLine, LastLine);
-    end;
 end;
 
 procedure TCustomSynEdit.QuadrupleClick;
@@ -10166,10 +10140,10 @@ begin
   inherited Create;
   if AOwner <> nil then
   begin
-    fOwner := AOwner;
-    if fOwner.fPlugins = nil then
-      fOwner.fPlugins := TObjectList.Create;
-    fOwner.fPlugins.Add(Self);
+    FOwner := AOwner;
+    if FOwner.FPlugins = nil then
+      FOwner.FPlugins := TObjectList<TSynEditPlugin>.Create;
+    FOwner.FPlugins.Add(Self);
   end;
   FHandlers := AHandlers;
 
@@ -10179,8 +10153,8 @@ end;
 
 destructor TSynEditPlugin.Destroy;
 begin
-  if fOwner <> nil then
-    fOwner.fPlugins.Extract(Self); // we are being destroyed, fOwner should not free us
+  if FOwner <> nil then
+    FOwner.FPlugins.Extract(Self); // we are being destroyed, fOwner should not free us
   inherited Destroy;
 end;
 
