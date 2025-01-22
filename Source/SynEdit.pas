@@ -5935,8 +5935,8 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
         CharRight := ' ';
         if CaretX <= Len then
           CharRight := Line[CaretX];
-        if IsOpenningBracket(Chr, Brackets) and
-          not IsOpenningBracket(CharRight, Brackets) then
+        if IsOpeningBracket(Chr, Brackets) and
+          not IsOpeningBracket(CharRight, Brackets) then
         begin
           // Auto-complete brackets if the next Char is not an
           // opening bracket as in VS code
@@ -5981,7 +5981,7 @@ begin
   if SelAvail then
   begin
     if (AChar.Length = 1) and (eoCompleteBrackets in fOptions) and
-      IsOpenningBracket(AChar[1], Brackets)
+      IsOpeningBracket(AChar[1], Brackets)
     then
       SurroundSelection(AChar, MatchingBracket(AChar[1], Brackets))
     else if (AChar.Length = 1) and (eoCompleteQuotes in fOptions) and
@@ -8937,7 +8937,7 @@ begin
     Result := GetMatchingBracketEx(BracketPos, Brackets);
     if (Result.Char > 0) and AdjustMatchingPos then
     begin
-      IsOpenChar := IsOpenningBracket(Line[BracketPos.Char], Brackets);
+      IsOpenChar := IsOpeningBracket(Line[BracketPos.Char], Brackets);
       IsOutside := IsOpenChar xor IsPreviousChar;
       if IsOutside xor not IsOpenChar then
         Inc(Result.Char);

@@ -140,7 +140,7 @@ function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TReg
 
 // Bracket functions (Brackets have the form '()[]{}')
 function IsBracket(Chr: Char; const Brackets: string): Boolean;
-function IsOpenningBracket(Chr: Char; const Brackets: string): Boolean;
+function IsOpeningBracket(Chr: Char; const Brackets: string): Boolean;
 function BracketAtPos(Idx: Integer; const Brackets, Line: string): Boolean;
 function MatchingBracket(Bracket: Char; const Brackets: string): Char;
 
@@ -871,7 +871,7 @@ begin
   Result := Brackets.IndexOf(Chr) >= 0;
 end;
 
-function IsOpenningBracket(Chr: Char; const Brackets: string): Boolean;
+function IsOpeningBracket(Chr: Char; const Brackets: string): Boolean;
 var
   Idx: Integer;
 begin
