@@ -153,7 +153,9 @@ type
     eoNoHTMLBackground,        //Ignore SynEdit background color when copying in HTML format
     eoWrapWithRightEdge,       //WordWrap with RightEdge position instead of the whole text area
     eoBracketsHighlight,       //Enable bracket highlighting
-    eoAccessibility            //Enable accessibility support
+    eoAccessibility,           //Enable accessibility support
+    eoCompleteBrackets,        //When an opening bracket is entered complete the matching one
+    eoCompleteQuotes           //When an quote char (" ') is entered add a second one
     );
   TSynEditorOptions = set of TSynEditorOption;
 
@@ -165,7 +167,7 @@ const
     eoEnhanceHomeKey, eoEnhanceEndKey, eoHideShowScrollbars,
     eoDisableScrollArrows, eoShowScrollHint, eoTabIndent, eoTabsToSpaces,
     eoSmartTabDelete, eoGroupUndo, eoDropFiles, eoShowLigatures,
-    eoBracketsHighlight, eoAccessibility];
+    eoBracketsHighlight, eoAccessibility, eoCompleteBrackets, eoCompleteQuotes];
 
 type
 // use scAll to update a statusbar when another TCustomSynEdit got the focus
@@ -296,12 +298,13 @@ type
     procedure WMVScroll(var Msg: TWMScroll); message WM_VSCROLL;
     procedure WMGetObject(var Message: TMessage); message WM_GETOBJECT;
   private
-//++ CodeFolding
+    // CodeFolding private fields
     fUseCodeFolding : Boolean;
     fCodeFolding: TSynCodeFolding;
     fAllFoldRanges: TSynFoldRanges;
-//-- CodeFolding
+    // End of CodeFolding private fields
     fAlwaysShowCaret: Boolean;
+    FAutoCompleteChar: Char;   // used in auto-complete of brackets and quotes
     FCarets: TSynCarets;
     FCaseSensitive: Boolean;
     FBrackets: string;
@@ -335,8 +338,7 @@ type
     fActiveLineColor: TColor;
     fUndoRedo: ISynEditUndo;
     fBookMarks: array[0..9] of TSynEditMark; // these are just references, fMarkList is the owner
-    fMouseDownX: Integer;
-    fMouseDownY: Integer;
+    FMouseDown: TPoint;
     fBookMarkOpt: TSynBookMarkOpt;
     fBorderStyle: TSynBorderStyle;
     fHideSelection: Boolean;
@@ -421,13 +423,16 @@ type
     OnFindBeforeSearch: TNotifyEvent;
     OnReplaceBeforeSearch: TNotifyEvent;
     OnCloseBeforeSearch: TNotifyEvent;
-//++ CodeFolding
+    // CodeFolding events and private procedures
     fOnScanForFoldRanges : TScanForFoldRangesEvent;
+    procedure OnCodeFoldingChange(Sender: TObject);
     procedure ReScanForFoldRanges(FromLine : Integer; ToLine : Integer);
     procedure FullFoldScan;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine : Integer; ToLine : Integer);
-//-- CodeFolding
+    procedure SetUseCodeFolding(const Value: Boolean);
+    function GetCollapseMarkRect(Row: Integer; Line: Integer = -1): TRect;
+    // End of CodeFolding events and private procedures
     procedure BookMarkOptionsChanged(Sender: TObject);
     function ColumnSelectionStart: TBufferCoord;
     procedure ComputeCaret(X, Y: Integer);
@@ -542,14 +547,9 @@ type
     procedure InternalCommandHook(Sender: TObject; AfterProcessing: Boolean;
       var Handled: Boolean; var Command: TSynEditorCommand; var AChar: WideChar;
       Data: Pointer; HandlerData: Pointer);
-//++ CodeFolding
-    procedure SetUseCodeFolding(const Value: Boolean);
-    procedure OnCodeFoldingChange(Sender: TObject);
-    function GetCollapseMarkRect(Row: Integer; Line: Integer = -1): TRect;
     function GetWrapAreaWidth: Integer;
     function GetIsScrolling: Boolean;
     function GetCaseSensitive: Boolean;
-//-- CodeFolding
   protected
     FIgnoreNextChar: Boolean;
     FCharCodeString: string;
@@ -2086,15 +2086,14 @@ begin
   if (Button = mbLeft) {and ((Shift + [ssDouble]) = [ssLeft, ssDouble])} then
   begin
     if (FClickCount > 0)
-       and (Abs(fMouseDownX - X) < GetSystemMetrics(SM_CXDRAG))
-       and (Abs(fMouseDownY - Y) < GetSystemMetrics(SM_CYDRAG))
+       and (Abs(FMouseDown.X - X) < GetSystemMetrics(SM_CXDRAG))
+       and (Abs(FMouseDown.Y - Y) < GetSystemMetrics(SM_CYDRAG))
        and (fClickCountTimer.ElapsedMilliseconds < GetDoubleClickTime )
     then
       Inc(fClickCount)
     else
       fClickCount:= 1;
-    fMouseDownX := X;
-    fMouseDownY := Y;
+    FMouseDown := Point(X, Y);
     if fClickCount = 3 then TripleClick;
     if fClickCount = 4 then QuadrupleClick;
     fClickCountTimer := TStopWatch.StartNew;
@@ -3672,6 +3671,9 @@ var
   Spaces: string;
   I: Integer;
 begin
+  if not AfterProcessing and (Command <> ecChar) then
+    FAutoCompleteChar := #0;
+
   if not AfterProcessing and (Command = ecSelWord) then
   begin
     if not FSelection.IsEmpty then
@@ -4175,7 +4177,6 @@ begin
   end;
 end;
 
-//++ CodeFolding
 procedure TCustomSynEdit.SetUseCodeFolding(const Value: Boolean);
 Var
   ValidValue : Boolean;
@@ -5887,7 +5888,12 @@ begin
 end;
 
 procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
-{ AChar can be a multi-codepoint character }
+{
+  This is a private routine that is used in processing the
+  ecChar and ecIMEStr commands.
+  Note: AChar can be a multi-codepoint character, hence it is a string and not
+        a WideChar.
+}
 
   function DeleteGrapheme(var S: string; Index: Integer): Boolean;
   var
@@ -5904,6 +5910,63 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
     Result := True;
   end;
 
+  procedure AutoCompleteBracketsAndQuotes(Chr: Char);
+  var
+    Len: Integer;
+    Line: string;
+    CharRight, CharLeft: WideChar;
+  begin
+    if (fOptions * [eoCompleteBrackets, eoCompleteQuotes] <> []) and
+      (FSelections.Count = 1) and (FSelection.IsEmpty) then
+    begin
+      Line := LineText;
+      Len := Line.Length;
+
+      if Chr = FAutoCompleteChar then
+      begin
+
+        if InsertMode and (CaretX <= Len) and
+          (Line[CaretX] = FAutoCompleteChar) then
+          ExecuteCommand(ecDeleteChar, WideNull, nil);
+        FAutoCompleteChar := #0;
+      end
+      else
+      begin
+        CharRight := ' ';
+        if CaretX <= Len then
+          CharRight := Line[CaretX];
+        if IsOpenningBracket(Chr, Brackets) and
+          not IsOpenningBracket(CharRight, Brackets) then
+        begin
+          // Auto-complete brackets if the next Char is not an
+          // opening bracket as in VS code
+          FAutoCompleteChar := MatchingBracket(Chr, Brackets);
+          ExecuteCommand(ecChar, FAutoCompleteChar, nil);
+          CaretX := CaretX - 1;
+        end
+        else if CharInSet(Chr, ['"', '''']) then
+        begin
+          // Auto-complete quotes
+          // Autocomplete if the previous char is word-bread and
+          // the next char is whitespace or eol
+          CharLeft := ' ';
+          if CaretX > 2 then
+            CharLeft := Line[CaretX - 2];
+
+          if not IsIdentChar(CharLeft) and
+            not CharInSet(CharLeft, ['"', '''']) and
+            not IsIdentChar(CharRight) and
+            not CharInSet(CharLeft, ['"', '''']) then
+          begin
+            FAutoCompleteChar := Chr;
+            ExecuteCommand(ecChar, Chr, nil);
+            CaretX := CaretX - 1;
+          end;
+        end;
+      end;
+    end;
+  end;
+
 var
   SLine, Grapheme: string;
   SpaceBuffer: string;
@@ -5917,9 +5980,13 @@ begin
 
   if SelAvail then
   begin
-    if (AChar.Length = 1) and IsOpenningBracket(AChar[1], Brackets) then
+    if (AChar.Length = 1) and (eoCompleteBrackets in fOptions) and
+      IsOpenningBracket(AChar[1], Brackets)
+    then
       SurroundSelection(AChar, MatchingBracket(AChar[1], Brackets))
-    else if (AChar.Length = 1) and CharInSet(AChar[1], ['"', '''']) then
+    else if (AChar.Length = 1) and (eoCompleteQuotes in fOptions) and
+      CharInSet(AChar[1], ['"', ''''])
+    then
       SurroundSelection(AChar)
     else
       SetSelText(AChar)
@@ -5946,7 +6013,8 @@ begin
       Insert(AChar, SLine, CaretXNew);
       Lines[CaretY - 1] := SLine;
     end
-    else begin
+    else
+    begin
       // Deal with multi-codepoint graphemes like emojis
       // Delete as many graphemes as in AChar
       for Grapheme in Graphemes(AChar) do
@@ -5956,6 +6024,9 @@ begin
       Lines[CaretY - 1] := SLine;
     end;
     SetCaretInRow(BufferCoord(CaretXNew + AChar.Length, CaretY), OldRow);
+
+    if AChar.Length = 1 then
+      AutoCompleteBracketsAndQuotes(AChar[1]);
 
     if not CaretInView then
       LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
