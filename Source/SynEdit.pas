@@ -5935,20 +5935,21 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
         CharRight := ' ';
         if CaretX <= Len then
           CharRight := Line[CaretX];
-        if IsOpeningBracket(Chr, Brackets) and
+        if (eoCompleteBrackets in fOptions) and
+          IsOpeningBracket(Chr, Brackets) and
           not IsOpeningBracket(CharRight, Brackets) then
         begin
           // Auto-complete brackets if the next Char is not an
-          // opening bracket as in VS code
+          // opening bracket
           FAutoCompleteChar := MatchingBracket(Chr, Brackets);
           ExecuteCommand(ecChar, FAutoCompleteChar, nil);
           CaretX := CaretX - 1;
         end
-        else if CharInSet(Chr, ['"', '''']) then
+        else if (eoCompleteQuotes in fOptions) and
+          CharInSet(Chr, ['"', '''']) then
         begin
-          // Auto-complete quotes
-          // Autocomplete if the previous char is word-bread and
-          // the next char is whitespace or eol
+          // Auto-complete quotes if the previous and the next chars are not
+          // identifier chars or quotes
           CharLeft := ' ';
           if CaretX > 2 then
             CharLeft := Line[CaretX - 2];
