@@ -55,7 +55,9 @@ object Form1: TForm1
         Width = 3
       end>
     Highlighter = SynPasSyn
+    ScrollbarAnnotations = <>
     SelectedColor.Alpha = 0.400000005960464500
+    VisibleSpecialChars = []
   end
   object ToolBar1: TToolBar
     Left = 0

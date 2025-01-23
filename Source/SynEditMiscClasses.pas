@@ -574,8 +574,7 @@ type
     // EndChar = 0 is equivalent to EndChar = Length(NewText) + 1
     function FindAll(const NewText: string; StartChar: Integer = 1;
       EndChar: Integer = 0): Integer; virtual; abstract;
-    function PreprocessReplaceExpression(const AReplace: string)
-      : string; virtual;
+    function PreprocessReplaceExpression(const AReplace: string): string; virtual;
     function Replace(const aOccurrence, aReplacement: string): string;
       virtual; abstract;
     property Pattern: string read GetPattern write SetPattern;
@@ -607,7 +606,7 @@ type
 
   TSynIndicator = record
     Id: TGUID;
-    CharStart, CharEnd : Integer;
+    CharStart, CharEnd: Integer;
     Tag: NativeInt;  // for storing user data
     constructor Create(aId: TGUID; aCharStart, aCharEnd: Integer; aTag: NativeInt = 0);
     class function New(aId: TGUID; aCharStart, aCharEnd: Integer; aTag: NativeInt = 0): TSynIndicator; static;
@@ -1105,7 +1104,7 @@ begin
     for I := 1 to FAutoSizeDigitCount - 1 do
     begin
       if (Result[I] <> ' ') then
-        break;
+        Break;
       Result[I] := '0';
     end;
 end;
@@ -1530,7 +1529,7 @@ procedure TSynMethodChain.Add(AEvent: TMethod);
 begin
   if not Assigned(@AEvent) then
     raise ESynMethodChain.CreateFmt
-      ('%s.Entry : the parameter `AEvent'' must be specified.', [ClassName]);
+      ('%s.Entry: the parameter `AEvent'' must be specified.', [ClassName]);
 
   with FNotifyProcs, AEvent do
   begin
@@ -1561,7 +1560,7 @@ begin
       FExceptionHandler(Self, E, Result);
     except
       raise ESynMethodChain.CreateFmt
-        ('%s.DoHandleException : MUST NOT occur any kind of exception in ' +
+        ('%s.DoHandleException: MUST NOT occur any kind of exception in ' +
         'ExceptionHandler', [ClassName]);
     end;
 end;
@@ -2034,7 +2033,7 @@ end;
 function TSynGutterBand.FoldShapeRect(Row, Line: Integer): TRect;
 // Given that WordWrap and CodeFolding are mutally exclusive Row = Line
 // But at some point this could be relaxed
-Var
+var
   SynEdit: TCustomSynEdit;
   L, Index: Integer;
   ShapeSize: Integer;
@@ -2172,7 +2171,7 @@ begin
       vLine := SynEdit.RowToLine(cRow);
       if (vLine > SynEdit.Lines.Count) { and not (SynEdit.Lines.Count = 0) }
       then
-        break;
+        Break;
 
       rcFold.TopLeft := Point(ClipR.Left + Margin, (cRow - SynEdit.TopLine) *
         SynEdit.LineHeight + (SynEdit.LineHeight - ShapeSize) div 2);
@@ -2339,7 +2338,7 @@ end;
 
 procedure TSynGutterBand.PaintMargin(RT: ID2D1RenderTarget; ClipR: TRect; const
     FirstRow, LastRow: Integer);
-Var
+var
   Offset: Integer;
 begin
   if (Gutter.BorderStyle <> gbsNone) then

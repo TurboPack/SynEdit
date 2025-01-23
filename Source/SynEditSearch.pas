@@ -124,14 +124,14 @@ end;
 
 procedure TSynEditSearch.FixResults(First, Delta: Integer);
 var
-  i: Integer;
+  I: Integer;
 begin
   if (Delta <> 0) and (fResults.Count > 0) then begin
-    i := Pred(fResults.Count);
-    while i >= 0 do begin
-      if Integer(fResults[i]) <= First then break;
-      fResults[i] := pointer(Integer(fResults[i]) - Delta);
-      Dec(i);
+    I := Pred(fResults.Count);
+    while I >= 0 do begin
+      if Integer(fResults[I]) <= First then Break;
+      fResults[I] := pointer(Integer(fResults[I]) - Delta);
+      Dec(I);
     end;
   end;
 end;
@@ -147,8 +147,8 @@ begin
   for I := 1 to PatLen do Shift[Pat[I]] := PatLenSucc - I;
   while Look_at < PatLen do
   begin
-    if Pat[PatLen] = Pat[PatLen - Look_at] then break;
-    inc(Look_at);
+    if Pat[PatLen] = Pat[PatLen - Look_at] then Break;
+    Inc(Look_at);
   end;
   fShiftInitialized := True;
 end;
@@ -185,11 +185,11 @@ var
   J: PWideChar;
 begin
   Result := 0;
-  inc(Run, PatLen);
+  Inc(Run, PatLen);
   while Run < TheEnd do
   begin
     if Pat[Patlen] <> Run^ then
-      inc(Run, Shift[(Run + 1)^])
+      Inc(Run, Shift[(Run + 1)^])
     else
     begin
       J := Run - PatLen + 1;
@@ -198,17 +198,17 @@ begin
       begin
         if I = PatLen then
         begin
-          if fWhole and not TestWholeWord then break;
-          inc(fCount);
+          if fWhole and not TestWholeWord then Break;
+          Inc(fCount);
           Result := Run - FLineStart - Patlen + 2;
-          exit;
+          Exit;
         end;
-        inc(I);
-        inc(J);
+        Inc(I);
+        Inc(J);
       end;
       Inc(Run, Look_At);
       if Run >= TheEnd then
-        break;
+        Break;
       Inc(Run, Shift[Run^] - 1);
     end;
   end;

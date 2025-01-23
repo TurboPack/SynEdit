@@ -1,9 +1,6 @@
 object CommandsDataModule: TCommandsDataModule
-  OldCreateOrder = False
   OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
-  Left = 108
-  Top = 115
   Height = 276
   Width = 420
   object dlgFileOpen: TOpenDialog

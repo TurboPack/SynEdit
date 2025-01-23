@@ -49,9 +49,9 @@ uses
 type
   TSynEditRegexSearch = class(TSynEditSearchCustom)
   private
-    RegEx : TRegEx;
+    RegEx: TRegEx;
     fMatchCollection: TMatchCollection;
-    fOptions : TRegExOptions;
+    fOptions: TRegExOptions;
     fPattern: string;
     fResultCount: Integer;
   protected
@@ -83,7 +83,7 @@ type
   { TPerlRegExHelper }
 
   TPerlRegExHelper = class helper for TPerlRegEx
-    procedure AddRawOptions(PCREOptions : Integer);
+    procedure AddRawOptions(PCREOptions: Integer);
   end;
 
 procedure TPerlRegExHelper.AddRawOptions(PCREOptions: Integer);
@@ -94,7 +94,7 @@ end;
 type
   TRegExHelper = record helper for TRegEx
   public
-    procedure AddRawOptions(PCREOptions : Integer);
+    procedure AddRawOptions(PCREOptions: Integer);
   end;
 
 procedure TRegExHelper.AddRawOptions(PCREOptions: Integer);

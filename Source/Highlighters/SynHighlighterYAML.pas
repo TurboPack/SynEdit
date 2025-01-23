@@ -37,7 +37,7 @@ uses
   SynEditHighlighter;
 
 //State constants
-Const
+const
   rsUnknown = 0;
   rsValue = 1;
   rsLiteralStart = 2;
@@ -85,7 +85,7 @@ type
     fDirectiveAttri: TSynHighlighterAttributes;
     fAnchorAttri: TSynHighlighterAttributes;
     fErrorAttri: TSynHighlighterAttributes;
-    fTempSpaceAttri : TSynHighlighterAttributes;
+    fTempSpaceAttri: TSynHighlighterAttributes;
     procedure KeyProc;
     procedure LiteralProc;
     procedure LiteralMarkProc;
@@ -149,9 +149,9 @@ uses
 
 procedure TSynYAMLSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynYAMLSyn.StringProc1;
@@ -188,22 +188,22 @@ end;
 procedure TSynYAMLSyn.TagProc;
 begin
   while not (IsLineEnd(Run) or (FLine[Run] <= #32)) do
-    inc(Run);
+    Inc(Run);
   fTokenID := tkTag;
 end;
 
 procedure TSynYAMLSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynYAMLSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
-    inc(Run);
+    Inc(Run);
 end;
 
 destructor TSynYAMLSyn.Destroy;
@@ -216,7 +216,7 @@ procedure TSynYAMLSyn.DirectiveProc;
 begin
   fTokenID := tkDirective;
   while not IsLineEnd(Run) do
-    inc(Run);
+    Inc(Run);
   LongRec(fRange).Lo := rsUnknown;
 end;
 
@@ -224,15 +224,15 @@ procedure TSynYAMLSyn.DocDelimiterProc;
 begin
   fTokenID := tkDocDelimiter;
   while not IsLineEnd(Run) do
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynYAMLSyn.DoSetLine(const Value: UnicodeString; LineNumber: Integer);
-Const
-  sDocStart : UnicodeString = '---';
-  sDocEnd : UnicodeString = '...';
-Var
-  NewIndent : integer;
+const
+  sDocStart: UnicodeString = '---';
+  sDocEnd: UnicodeString = '...';
+var
+  NewIndent: Integer;
 begin
   inherited;
   NewIndent := LeftSpaces(fLineStr, False);
@@ -272,7 +272,7 @@ end;
 procedure TSynYAMLSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynYAMLSyn.ListItemProc;
@@ -301,13 +301,13 @@ procedure TSynYAMLSyn.LiteralProc;
 begin
   fTokenID := tkLiteral;
   while (not IsLineEnd(Run)) and (FLine[Run] <> '#') do
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynYAMLSyn.AnchorProc;
 begin
   while not (IsLineEnd(Run) or (FLine[Run] <= #32)) do
-    inc(Run);
+    Inc(Run);
   fTokenID := tkAnchor;
 end;
 
@@ -315,7 +315,7 @@ procedure TSynYAMLSyn.CommentProc;
 begin
   fTokenID := tkComment;
   while not IsLineEnd(Run) do
-    inc(Run);
+    Inc(Run);
 end;
 
 constructor TSynYAMLSyn.Create(AOwner: TComponent);
@@ -394,7 +394,7 @@ begin
       if FLine[Run] = ' ' then
         Inc(Run);
       fTokenID := tkKey;
-      break;
+      Break;
     end else
       Inc(Run);
   end;
@@ -402,20 +402,20 @@ end;
 
 procedure TSynYAMLSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
 procedure TSynYAMLSyn.ValueProc;
-Var
-  Start : Integer;
-  Val : UnicodeString;
-  FloatVal : Extended;
+var
+  Start: Integer;
+  Val:  UnicodeString;
+  FloatVal: Extended;
 begin
   Start := Run;
   fTokenID := tkLiteral;
   while (not IsLineEnd(Run)) and (FLine[Run] <> '#') do
-    inc(Run);
+    Inc(Run);
   Val := Copy(FLineStr, Start, Run - Start + 1);
   if TryStrToFloat(Trim(Val), FloatVal) then
     fTokenId := tkNumericValue;
@@ -425,8 +425,8 @@ procedure TSynYAMLSyn.Next;
 begin
   fTokenPos := Run;
   case LongRec(fRange).Lo of
-    rsDirective : DirectiveProc;
-    rsString1 :
+    rsDirective: DirectiveProc;
+    rsString1:
       case fLine[Run] of
         #0: NullProc;
         #10: LFProc;
@@ -434,7 +434,7 @@ begin
       else
         StringProc1;
       end;
-    rsString2 :
+    rsString2:
       case fLine[Run] of
         #0: NullProc;
         #10: LFProc;
@@ -442,7 +442,7 @@ begin
       else
         StringProc2;
       end;
-    rsDocDelimiter :
+    rsDocDelimiter:
       case fLine[Run] of
         #0: NullProc;
         #10: LFProc;
@@ -450,7 +450,7 @@ begin
       else
         DocDelimiterProc;
       end;
-    rsLiteralStart :
+    rsLiteralStart:
       case fLine[Run] of
         #0: NullProc;
         #10: LFProc;
@@ -459,7 +459,7 @@ begin
       else
         UnknownProc;
       end;
-    rsLiteral :
+    rsLiteral:
       case fLine[Run] of
         #0: NullProc;
         #10: LFProc;
@@ -468,7 +468,7 @@ begin
       else
         LiteralProc;
       end;
-    rsValue :
+    rsValue:
       case fLine[Run] of
         #0: NullProc;
         #10: LFProc;
@@ -477,7 +477,7 @@ begin
         '|': LiteralMarkProc;
         '>': FoldedLiteralMarkProc;
         '-': ListItemProc;
-        '&', '*' : AnchorProc;
+        '&', '*': AnchorProc;
         '"':
           begin
             Inc(Run);

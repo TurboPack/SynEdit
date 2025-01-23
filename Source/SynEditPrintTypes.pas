@@ -27,11 +27,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditPrintTypes.pas,v 1.4.2.3 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
   Wrapping across page boundaries is not supported
 -------------------------------------------------------------------------------}

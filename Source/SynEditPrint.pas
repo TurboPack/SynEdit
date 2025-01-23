@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -56,7 +56,7 @@ CONTENTS:
     OnPrintStatus : Fired at Beginning, End and when a new page is started
     Highlighter   : The highlighter used for highlighting the text (see also the
                     SynEdit property below)
-    LineNumbersInMargin : If true line numbers are printed in the left margin,
+    LineNumbersInMargin : If True line numbers are printed in the left margin,
                           else left margin is increased by width of line
                           number text.
     SelectedOnly  : Print only the selected Area
@@ -140,10 +140,10 @@ type
     FPageOffset: Integer;
     FRangesOK: Boolean;
     FMaxRowCount: Integer;
-    FMaxWidth: integer;
+    FMaxWidth: Integer;
     FPagesCounted: Boolean;
     FLineNumbersInMargin: Boolean;
-    FTabWidth: integer;
+    FTabWidth: Integer;
     FSelectedOnly: Boolean;
     FSelAvail: Boolean;
     FBlockBegin: TBufferCoord;
@@ -168,8 +168,8 @@ type
   protected
     procedure DefineProperties(Filer: TFiler); override;
     property MaxLeftChar: Integer read FMaxLeftChar write SetMaxLeftChar;
-    procedure DoPrintStatus(Status: TSynPrintStatus; PageNumber: integer;
-      var Abort: boolean); virtual;
+    procedure DoPrintStatus(Status: TSynPrintStatus; PageNumber: Integer;
+      var Abort: Boolean); virtual;
     procedure DoPrintLine(LineNumber, PageNumber: Integer); virtual;
   public
     constructor Create(AOwner: TComponent); override;
@@ -186,7 +186,7 @@ type
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
   published
-    property Copies: integer read FCopies write FCopies;
+    property Copies: Integer read FCopies write FCopies;
     property Header: THeader read FHeader write SetHeader;
     property Footer: TFooter read FFooter write SetFooter;
     property Margins: TSynEditPrintMargins read FMargins write SetMargins;
@@ -210,7 +210,7 @@ type
       write SetHighlighter;
     property LineNumbersInMargin: Boolean read FLineNumbersInMargin
       write FLineNumbersInMargin default False;
-    property TabWidth: integer read fTabWidth write fTabWidth;
+    property TabWidth: Integer read fTabWidth write fTabWidth;
     property Color: TColor read fDefaultBG write fDefaultBG;
   end;
 
@@ -355,7 +355,7 @@ var
   ActualLineCount: Cardinal;
   LayoutRowCount: Integer;
   RowCount: Integer;
-  iStartLine, iEndLine: integer;
+  iStartLine, iEndLine: Integer;
 begin
   InitRanges;
   FPages.Clear;
@@ -440,7 +440,7 @@ var
   I: Integer;
   LineText: string;
   YPos: Integer;
-  iSelStart, iSelLen: integer;
+  iSelStart, iSelLen: Integer;
   TextLayout: TSynTextLayout;
   LineMetrics: TDwriteLineMetrics;
   ActualLineCount: Cardinal;
@@ -660,7 +660,7 @@ var
   ClipR: TRect;
 begin
   if fSelectedOnly and not fSelAvail then
-    exit;
+    Exit;
 
   FPrinting := True;
   FAbort := False;
@@ -747,7 +747,7 @@ begin
 end;
 
 procedure TSynEditPrint.DoPrintStatus(Status: TSynPrintStatus;
-  PageNumber: integer; var Abort: boolean);
+  PageNumber: Integer; var Abort: Boolean);
 //Fires the OnPrintStatus event
 begin
   Abort := False;

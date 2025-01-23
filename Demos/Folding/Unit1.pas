@@ -100,10 +100,10 @@ type
     procedure actFoldShapeSizeExecute(Sender: TObject);
   private
     { Private declarations }
-    Highlighters : TStringList;
+    Highlighters: TStringList;
   public
     { Public declarations }
-    FileName : String;
+    FileName: string;
   end;
 
 var
@@ -136,9 +136,9 @@ begin
 end;
 
 procedure TForm1.actFoldShapeSizeExecute(Sender: TObject);
-Var
-  S : String;
-  Size : Integer;
+var
+  S: string;
+  Size: Integer;
 begin
   Size := SynEdit1.CodeFolding.GutterShapeSize;
   S := InputBox('New Gutter Square Size', 'New size in pixels (odd number):', IntToStr(Size));
@@ -260,38 +260,38 @@ procedure TForm1.ScanForFoldRanges(Sender: TObject;
   TopFoldRanges: TSynFoldRanges; LinesToScan: TStrings; FromLine,
   ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
-  function InsideComment(Line : Integer; Col : Integer): Boolean;
+  function InsideComment(Line: Integer; Col: Integer): Boolean;
   var
-    Token : string;
-    Attr : TSynHighlighterAttributes;
+    Token: string;
+    Attr: TSynHighlighterAttributes;
   begin
     Result := SynEdit1.GetHighlighterAttriAtRowCol(BufferCoord(Col, Line + 1), Token, Attr) and
       (Attr = SynCppSyn1.CommentAttribute);
   end;
 
   function LineHasChar(Line: Integer; character: char;
-  StartCol : Integer): boolean; // faster than Pos!
+  StartCol: Integer): Boolean; // faster than Pos!
   var
-    i: Integer;
+    I: Integer;
   begin
-    result := false;
+    Result := False;
     for I := StartCol to Length(CurLine) do begin
       if CurLine[i] = character then begin
         // Char must have proper highlighting (ignore stuff inside comments...)
         if not InsideComment(Line, I) then begin
-          result := true;
-          break;
+          Result := True;
+          Break;
         end;
       end;
     end;
   end;
 
-  function FindBraces(Line: Integer) : Boolean;
-  Var
-    Col : Integer;
+  function FindBraces(Line: Integer): Boolean;
+  var
+    Col: Integer;
   begin
     Result := False;
 
@@ -309,7 +309,7 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end else if CurLine[col] = '}' then
       begin
@@ -322,15 +322,15 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end;
     end; // for Col
   end;
 
 function FoldRegion(Line: Integer): Boolean;
-Var
-  S : string;
+var
+  S: string;
 begin
   Result := False;
   S := TrimLeft(CurLine);

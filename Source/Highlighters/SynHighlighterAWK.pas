@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterAWK.pas,v 1.10.2.6 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a AWK Script highlighter for SynEdit)
@@ -101,12 +94,12 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -474,17 +467,17 @@ end;
 procedure TSynAWKSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynAWKSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
-function TSynAWKSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynAWKSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -523,7 +516,7 @@ begin
   end;
 end;
 
-function TSynAWKSyn.GetTokenKind: integer;
+function TSynAWKSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

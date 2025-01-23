@@ -123,7 +123,7 @@ type
     FromLine: Integer; // Beginning line
     ToLine: Integer; // End line
     FoldType: Integer;  // Could be used by some complex highlighters
-    Indent : Integer;   // Only used for Indent based folding (Python)
+    Indent: Integer;   // Only used for Indent based folding (Python)
   private
     FCollapsed: Boolean; // Is collapsed?
     // The following private variables are used for efficienct
@@ -134,9 +134,9 @@ type
   public
     procedure Move(Count: Integer);
     property Collapsed: Boolean read FCollapsed;
-    constructor Create(AFromLine : Integer; AToLine : Integer = -1;
-      AFoldType : Integer = 1; AIndent : Integer = -1;
-      ACollapsed : Boolean = False);
+    constructor Create(AFromLine: Integer; AToLine: Integer = -1;
+      AFoldType: Integer = 1; AIndent: Integer = -1;
+      ACollapsed: Boolean = False);
   end;
 
   PSynFoldRange = ^TSynFoldRange;
@@ -162,25 +162,25 @@ type
       TFoldOpenClose = (focOpen, focClose, focCloseOpen);
 
       TLineFoldInfo = record
-        Line : Integer;
-        FoldOpenClose : TFoldOpenClose;
-        FoldType : Integer;
-        Indent : Integer;
-        constructor Create(ALine : Integer;
-          AFoldOpenClose : TFoldOpenClose = focOpen;
-          AFoldType : Integer = 1; AIndent : Integer = -1);
+        Line: Integer;
+        FoldOpenClose: TFoldOpenClose;
+        FoldType: Integer;
+        Indent: Integer;
+        constructor Create(ALine: Integer;
+          AFoldOpenClose: TFoldOpenClose = focOpen;
+          AFoldType: Integer = 1; AIndent: Integer = -1);
       end;
   private
-    fCodeFoldingMode : TSynCodeFoldingMode;
-    fRangesNeedFixing : Boolean;
+    fCodeFoldingMode: TSynCodeFoldingMode;
+    fRangesNeedFixing: Boolean;
     fRanges: TList<TSynFoldRange>;
-    fCollapsedState : TList<Integer>;
-    fFoldInfoList : TList<TLineFoldInfo>;
+    fCollapsedState: TList<Integer>;
+    fFoldInfoList: TList<TLineFoldInfo>;
     FRowComparer: IComparer<TSynFoldRange>;
     FAdjustRangesProc: TSynAdjustRangesProc;
     function Get(Index: Integer): TSynFoldRange;
     function GetCount: Integer;
-    procedure RecreateFoldRanges(Lines : TStrings);
+    procedure RecreateFoldRanges(Lines: TStrings);
     procedure AdjustRangeRows;
   public
     constructor Create;
@@ -189,28 +189,28 @@ type
     {utility routines}
     procedure CollapseAll;
     function Collapse(RangeIndex: Integer): Boolean;
-    procedure CollapseLevel(Level : Integer);
-    procedure CollapseFoldType(FoldType : Integer);
+    procedure CollapseLevel(Level: Integer);
+    procedure CollapseFoldType(FoldType: Integer);
     procedure UnCollapseAll;
     procedure UnCollapse(RangeIndex: Integer);
-    procedure UnCollapseLevel(Level : Integer);
-    procedure UnCollapseFoldType(FoldType : Integer);
+    procedure UnCollapseLevel(Level: Integer);
+    procedure UnCollapseFoldType(FoldType: Integer);
     function FoldStartAtLine(Line: Integer): Boolean; overload;
     function FoldStartAtLine(Line: Integer; out Index: Integer): Boolean; overload;
     function CollapsedFoldStartAtLine(Line: Integer): Boolean; overload;
     function CollapsedFoldStartAtLine(Line: Integer; out Index: Integer): Boolean; overload;
-    function FoldEndAtLine(Line: Integer)  : Boolean; overload;
-    function FoldEndAtLine(Line: Integer; out Index: Integer)  : Boolean; overload;
+    function FoldEndAtLine(Line: Integer): Boolean; overload;
+    function FoldEndAtLine(Line: Integer; out Index: Integer): Boolean; overload;
     function FoldAroundLineEx(Line: Integer; WantCollapsed, AcceptFromLine,
       AcceptToLine: Boolean; out Index: Integer): Boolean;
     function CollapsedFoldAroundLine(Line: Integer): Boolean; overload;
     function CollapsedFoldAroundLine(Line: Integer; out Index: Integer): Boolean; overload;
-    function FoldAroundLine(Line: Integer) : Boolean; overload;
-    function FoldAroundLine(Line: Integer; out Index: Integer) : Boolean; overload;
-    function FoldHidesLine(Line: Integer) : Boolean; overload;
-    function FoldHidesLine(Line: Integer; out Index: Integer) : Boolean; overload;
-    function FoldsAtLevel(Level : integer) : TArray<Integer>;
-    function FoldsOfType(aType : integer) : TArray<Integer>;
+    function FoldAroundLine(Line: Integer): Boolean; overload;
+    function FoldAroundLine(Line: Integer; out Index: Integer): Boolean; overload;
+    function FoldHidesLine(Line: Integer): Boolean; overload;
+    function FoldHidesLine(Line: Integer; out Index: Integer): Boolean; overload;
+    function FoldsAtLevel(Level: Integer): TArray<Integer>;
+    function FoldsOfType(aType: Integer): TArray<Integer>;
     function FoldRangesForTextRange(FromLine, ToLine: Integer):
         TArray<TSynFoldRange>;
 
@@ -220,14 +220,14 @@ type
     procedure StoreCollapsedState(Stream: TStream); overload;
     procedure RestoreCollapsedState(Stream: TStream); overload;
     procedure StartScanning;
-    function  StopScanning(Lines : TStrings) : Boolean; // Returns True of Ranges were updated
+    function  StopScanning(Lines: TStrings): Boolean; // Returns True of Ranges were updated
     procedure AddLineInfo(ALine: Integer; AFoldType: Integer;
-      AFoldOpenClose: TFoldOpenClose;  AIndent : Integer);
-    procedure StartFoldRange(ALine : Integer; AFoldType : integer; AIndent : Integer = -1);
-    procedure StopFoldRange(ALine : Integer; AFoldType : integer;  AIndent : Integer = -1);
-    procedure StopStartFoldRange(ALine : Integer; AFoldType : integer;  AIndent : Integer = -1);
-    procedure NoFoldInfo(ALine : Integer);
-    function  GetIndentLevel(Line : Integer) : Integer;
+      AFoldOpenClose: TFoldOpenClose;  AIndent: Integer);
+    procedure StartFoldRange(ALine: Integer; AFoldType: Integer; AIndent: Integer = -1);
+    procedure StopFoldRange(ALine: Integer; AFoldType: Integer;  AIndent: Integer = -1);
+    procedure StopStartFoldRange(ALine: Integer; AFoldType: Integer;  AIndent: Integer = -1);
+    procedure NoFoldInfo(ALine: Integer);
+    function  GetIndentLevel(Line: Integer): Integer;
 
     // plugin notifications and support routines
     function FoldLineToRow(Line: Integer): Integer;
@@ -240,11 +240,11 @@ type
     {Access to the internal FoldRange list routines}
     procedure AddByParts(AFoldType: Integer; AFromLine: Integer; AToLine: Integer = -1);
     procedure AddFoldRange(FoldRange: TSynFoldRange);
-    property  CodeFoldingMode : TSynCodeFoldingMode
+    property  CodeFoldingMode: TSynCodeFoldingMode
               read fCodeFoldingMode write fCodeFoldingMode;
     property AdjustRangesProc: TSynAdjustRangesProc write fAdjustRangesProc;
     property Count: Integer read GetCount;
-    property FoldRange[Index : Integer] : TSynFoldRange read Get; default;
+    property FoldRange[Index: Integer]: TSynFoldRange read Get; default;
     property Ranges: TList<TSynFoldRange> read fRanges;
   end;
 
@@ -256,9 +256,9 @@ type
     fCollapsedLineColor: TColor;
     fFolderBarLinesColor: TColor;
     fShowCollapsedLine: Boolean;
-    fShowHintMark : Boolean;
-    fGutterShapeSize :  Integer;
-    fOnChange : TSynCodeFoldingChangeEvent;
+    fShowHintMark: Boolean;
+    fGutterShapeSize:  Integer;
+    fOnChange: TSynCodeFoldingChangeEvent;
     procedure SetCollapsedLineColor(const Value: TColor);
     procedure SetFolderBarLinesColor(const Value: TColor);
     procedure SetShowCollapsedLine(const Value: Boolean);
@@ -286,12 +286,12 @@ type
   TSynCustomCodeFoldingHighlighter = class(TSynCustomHighlighter)
   protected
     // Utility functions
-    function GetLineRange(Lines: TStrings; Line : Integer) : Pointer;
-    function TabWidth(LinesToScan: TStrings) : integer;
+    function GetLineRange(Lines: TStrings; Line: Integer): Pointer;
+    function TabWidth(LinesToScan: TStrings): Integer;
   public
     // Called when a Highlighter is assigned to Synedit;
     // No need to override except to change the SynCodeFoldingMode
-    procedure InitFoldRanges(FoldRanges : TSynFoldRanges); virtual;
+    procedure InitFoldRanges(FoldRanges: TSynFoldRanges); virtual;
     // Called after Highlighter ranges have been set
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); virtual; abstract;
@@ -302,8 +302,8 @@ type
     class function GetCapabilities: TSynHighlighterCapabilities; override;
   end;
 
-  Const
-    FoldRegionType: Integer = 99;
+const
+  FoldRegionType: Integer = 99;
 
 implementation
 
@@ -315,7 +315,7 @@ Uses
 { TSynEditFoldRanges }
 
 function TSynFoldRanges.CollapsedFoldAroundLine(Line: Integer): Boolean;
-Var
+var
   Index: Integer;
 begin
   Result := CollapsedFoldAroundLine(Line, Index);
@@ -351,7 +351,7 @@ begin
 end;
 
 function TSynFoldRanges.CollapsedFoldStartAtLine(Line: Integer): Boolean;
-Var
+var
   Index: Integer;
 begin
   Result := CollapsedFoldStartAtLine(Line, Index);
@@ -367,7 +367,7 @@ end;
 
 procedure TSynFoldRanges.CollapseFoldType(FoldType: Integer);
 var
-  I : integer;
+  I: Integer;
 begin
   for I := 0 to Count - 1 do
     if fRanges.List[I].FoldType = FoldType then
@@ -378,8 +378,8 @@ end;
 
 procedure TSynFoldRanges.CollapseLevel(Level: Integer);
 var
-  I : integer;
-  RangeIndices : TArray<Integer>;
+  I: Integer;
+  RangeIndices: TArray<Integer>;
 begin
   RangeIndices := FoldsAtLevel(Level);
 
@@ -424,7 +424,7 @@ begin
 end;
 
 function TSynFoldRanges.FoldAroundLine(Line: Integer): Boolean;
-Var
+var
   Index: Integer;
 begin
   Result := FoldAroundLine(Line, Index);
@@ -479,14 +479,14 @@ begin
 end;
 
 function TSynFoldRanges.FoldEndAtLine(Line: Integer): Boolean;
-Var
+var
   Index: Integer;
 begin
    Result := FoldEndAtLine(Line, Index);
 end;
 
 function TSynFoldRanges.FoldHidesLine(Line: Integer): Boolean;
-Var
+var
   Index: Integer;
 begin
   Result := FoldHidesLine(Line, Index);
@@ -577,36 +577,36 @@ begin
    end;
 end;
 
-function TSynFoldRanges.FoldsAtLevel(Level: integer): TArray<Integer>;
+function TSynFoldRanges.FoldsAtLevel(Level: Integer): TArray<Integer>;
 {
    Returns an array of indices of folds with level = Level
    ignoring fold ranges of type FoldRegionType
 }
-Var
-  i : integer;
-  FRStack : TList<Integer>;
-  ResultList : TList<integer>;
+var
+  I: Integer;
+  FRStack: TList<Integer>;
+  ResultList: TList<Integer>;
 
-   procedure RemoveClosed(Line : integer);
-   Var
-     j : integer;
+   procedure RemoveClosed(Line: Integer);
+   var
+     J: Integer;
    begin
-     for j := FRStack.Count-1 downto 0 do
-       if fRanges.List[FRStack[j]].ToLine <= Line then
-         FRStack.Delete(j);
+     for J := FRStack.Count-1 downto 0 do
+       if fRanges.List[FRStack[J]].ToLine <= Line then
+         FRStack.Delete(J);
    end;
 begin
   FRStack := TList<Integer>.Create;
-  ResultList := TList<integer>.Create;
+  ResultList := TList<Integer>.Create;
   try
-    for i := 0 to fRanges.Count - 1 do
+    for I := 0 to fRanges.Count - 1 do
     begin
-      if fRanges.List[i].FoldType = FoldRegionType then
+      if fRanges.List[I].FoldType = FoldRegionType then
         Continue;
-      RemoveClosed(fRanges.List[i].FromLine);
-      FRStack.Add(i);
+      RemoveClosed(fRanges.List[I].FromLine);
+      FRStack.Add(I);
       if FRStack.Count = Level then
-        ResultList.Add(i);
+        ResultList.Add(I);
     end;
     Result := ResultList.ToArray;
   finally
@@ -615,20 +615,20 @@ begin
   end;
 end;
 
-function TSynFoldRanges.FoldsOfType(aType: integer): TArray<Integer>;
+function TSynFoldRanges.FoldsOfType(aType: Integer): TArray<Integer>;
 {
    Returns an array of indices of folds with FoldType = aType
 }
-Var
-  i : integer;
-  ResultList : TList<integer>;
+var
+  I: Integer;
+  ResultList: TList<Integer>;
 begin
   ResultList := TList<Integer>.Create;
   try
-    for i := 0 to fRanges.Count - 1 do
+    for I := 0 to fRanges.Count - 1 do
     begin
-      if fRanges.List[i].FoldType = aType then
-        ResultList.Add(i);
+      if fRanges.List[I].FoldType = aType then
+        ResultList.Add(I);
     end;
     Result := ResultList.ToArray;
   finally
@@ -637,7 +637,7 @@ begin
 end;
 
 function TSynFoldRanges.FoldStartAtLine(Line: Integer): Boolean;
-Var
+var
   Index: Integer;
 begin
   Result := FoldStartAtLine(Line, Index);
@@ -653,9 +653,9 @@ end;
 
 procedure TSynFoldRanges.AddByParts(AFoldType: Integer; AFromLine: Integer;
   AToLine: Integer);
-Var
-  Index : integer;
-  FR : TSynFoldRange;
+var
+  Index: Integer;
+  FR: TSynFoldRange;
 begin
   // Insert keeping the list sorted
   FR := TSynFoldRange.Create(AFromLine, AToLine, AFoldType);
@@ -671,7 +671,7 @@ begin
 end;
 
 procedure TSynFoldRanges.AddLineInfo(ALine: Integer; AFoldType: Integer;
-  AFoldOpenClose: TFoldOpenClose; AIndent : Integer);
+  AFoldOpenClose: TFoldOpenClose; AIndent: Integer);
 var
   LineFoldInfo: TLineFoldInfo;
   Index: Integer;
@@ -758,17 +758,17 @@ end;
 
 
 function TSynFoldRanges.GetIndentLevel(Line: Integer): Integer;
-Var
-  Index : Integer;
-  i : Integer;
+var
+  Index: Integer;
+  I: Integer;
 begin
   Result := -1;
   fFoldInfoList.BinarySearch(TLineFoldInfo.Create(Line), Index);
   // Search above Line
   for I := Index - 1 downto 0 do
-    if fFoldInfoList.List[i].Indent >= 0 then begin
-      Result := fFoldInfoList.List[i].Indent;
-      break
+    if fFoldInfoList.List[I].Indent >= 0 then begin
+      Result := fFoldInfoList.List[I].Indent;
+      Break
     end;
 end;
 
@@ -779,38 +779,38 @@ function TSynFoldRanges.LinesDeleted(aIndex, aCount: Integer): Integer;
   If needed recreate fRanges
 }
 var
-  i : Integer;
+  I: Integer;
 begin
   fRangesNeedFixing := False;
 
   Result := aCount;
   // Adjust fFoldInfoList
   // aIndex is 0-based fFoldInfoList is 1-based
-  for i := fFoldInfoList.Count - 1 downto 0 do
-    with fFoldInfoList.List[i] do
+  for I := fFoldInfoList.Count - 1 downto 0 do
+    with fFoldInfoList.List[I] do
       if Line > aIndex + aCount then
-         Dec(fFoldInfoList.List[i].Line, aCount)
+         Dec(fFoldInfoList.List[I].Line, aCount)
       else if Line > aIndex then begin
         fRangesNeedFixing := True;
-        fFoldInfoList.Delete(i);
+        fFoldInfoList.Delete(I);
       end else
-         break;
+         Break;
 
   if fRangesNeedFixing then Exit;
 
-  for i := fRanges.Count - 1 downto 0 do
-    with fRanges.List[i] do
+  for I := fRanges.Count - 1 downto 0 do
+    with fRanges.List[I] do
       if (FromLine > aIndex + aCount) then
         // Move after affected area
-        Ranges.List[i].Move(-aCount)
+        Ranges.List[I].Move(-aCount)
       else if FromLine > aIndex then
       begin
         fRangesNeedFixing := True;
-        fRanges.Delete(i);
+        fRanges.Delete(I);
       end else if ToLine > aIndex + aCount then
-        Dec(fRanges.List[i].ToLine, aCount)
+        Dec(fRanges.List[I].ToLine, aCount)
       else if ToLine > aIndex then
-        Dec(fRanges.List[i].ToLine, ToLine - aIndex)
+        Dec(fRanges.List[I].ToLine, ToLine - aIndex)
 end;
 
 function TSynFoldRanges.LinesInserted(aIndex, aCount: Integer): Integer;
@@ -819,23 +819,23 @@ function TSynFoldRanges.LinesInserted(aIndex, aCount: Integer): Integer;
   aIndex is 0-based fFoldInfoList and fRanges are 1-based
 }
 var
-  i: Integer;
+  I: Integer;
 begin
   Result := aCount;
-  for i := fFoldInfoList.Count - 1 downto 0 do
-    with fFoldInfoList.List[i] do
+  for I := fFoldInfoList.Count - 1 downto 0 do
+    with fFoldInfoList.List[I] do
       if Line > aIndex then
-         Inc(fFoldInfoList.List[i].Line, aCount)
+         Inc(fFoldInfoList.List[I].Line, aCount)
       else
-         break;
+         Break;
 
-  for i := fRanges.Count - 1 downto 0 do
-    with fRanges.List[i] do
+  for I := fRanges.Count - 1 downto 0 do
+    with fRanges.List[I] do
     begin
       if (FromLine > aIndex) then // insertion of count lines above FromLine
-        fRanges.List[i].Move(aCount)
+        fRanges.List[I].Move(aCount)
       else if (ToLine > aIndex) then
-        Inc(fRanges.List[i].ToLine,  aCount);
+        Inc(fRanges.List[I].ToLine,  aCount);
     end;
 end;
 
@@ -845,8 +845,8 @@ begin
 end;
 
 procedure TSynFoldRanges.NoFoldInfo(ALine: Integer);
-Var
-  Index : Integer;
+var
+  Index: Integer;
 begin
   if fFoldInfoList.BinarySearch(TLineFoldInfo.Create(ALine), Index)
   then
@@ -862,15 +862,15 @@ begin
     fRangesNeedFixing := True;
 end;
 
-procedure TSynFoldRanges.RecreateFoldRanges(Lines : TStrings);
+procedure TSynFoldRanges.RecreateFoldRanges(Lines: TStrings);
 var
-  OpenFoldStack : TList<Integer>;
-  LFI : TLineFoldInfo;
-  PFoldRange : PSynFoldRange;
-  i : Integer;
-  Line : integer;
+  OpenFoldStack: TList<Integer>;
+  LFI: TLineFoldInfo;
+  PFoldRange: PSynFoldRange;
+  I: Integer;
+  Line: Integer;
 begin
-   { TODO : Account for type }
+   { TODO: Account for type }
   fRanges.Clear;
 
   OpenFoldStack := TList<Integer>.Create;
@@ -880,27 +880,27 @@ begin
       if LFI.FoldOpenClose in [focClose, focCloseOpen] then
       begin
         if LFI.Indent >= 0 then begin
-          for i := OpenFoldStack.Count - 1 downto 0 do
+          for I := OpenFoldStack.Count - 1 downto 0 do
           begin
             // Close all Fold Ranges with greater Indent
-            PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
+            PFoldRange := @fRanges.List[OpenFoldStack.List[I]];
             if (PFoldRange^.Indent >= LFI.Indent) then begin
               PFoldRange^.ToLine := LFI.Line - 1; // Do not include Line
-              OpenFoldStack.Delete(i);
+              OpenFoldStack.Delete(I);
               if PFoldRange^.FromLine = PFoldRange^.ToLine then
                 fRanges.Remove(PFoldRange^);
             end;
           end;
         end
         else
-          for i := OpenFoldStack.Count - 1 downto 0 do
+          for I := OpenFoldStack.Count - 1 downto 0 do
           begin
-            PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
+            PFoldRange := @fRanges.List[OpenFoldStack.List[I]];
             if (PFoldRange^.FoldType = LFI.FoldType) then begin
               PFoldRange^.ToLine := IfThen(LFI.FoldOpenClose = focClose,
                 LFI.Line, LFI.Line - 1);
-              OpenFoldStack.Delete(i);
-              break;
+              OpenFoldStack.Delete(I);
+              Break;
             end;
           end;
       end;
@@ -908,13 +908,13 @@ begin
       if LFI.FoldOpenClose in [focOpen, focCloseOpen] then
       begin
         if LFI.Indent >= 0 then begin
-          for i := OpenFoldStack.Count - 1 downto 0 do
+          for I := OpenFoldStack.Count - 1 downto 0 do
           begin
             // Close all Fold Ranges with less Indent
-            PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
+            PFoldRange := @fRanges.List[OpenFoldStack.List[I]];
             if (PFoldRange^.Indent >= LFI.Indent) then begin
               PFoldRange^.ToLine := LFI.Line - 1; // Do not include Line
-              OpenFoldStack.Delete(i);
+              OpenFoldStack.Delete(I);
               if PFoldRange^.FromLine = PFoldRange^.ToLine then
                 fRanges.Remove(PFoldRange^);
             end;
@@ -928,18 +928,18 @@ begin
     if CodeFoldingMode = cfmIndentation then
     begin
       // close all open indent based folds
-      for i := OpenFoldStack.Count - 1 downto 0 do
+      for I := OpenFoldStack.Count - 1 downto 0 do
       begin
         // Close all Fold Ranges with less Indent
-        PFoldRange := @fRanges.List[OpenFoldStack.List[i]];
+        PFoldRange := @fRanges.List[OpenFoldStack.List[I]];
         if (PFoldRange^.Indent >= 0) then begin
           PFoldRange^.ToLine := Lines.Count; //
-          OpenFoldStack.Delete(i);
+          OpenFoldStack.Delete(I);
         end;
       end;
       // Adjust LineTo for Indent based folds with empty lines in the end
-      for i := fRanges.Count - 1 downto 0 do begin
-        PFoldRange := @fRanges.List[i];
+      for I := fRanges.Count - 1 downto 0 do begin
+        PFoldRange := @fRanges.List[I];
         if PFoldRange^.Indent >= 0 then
         begin
           Line := PFoldRange^.ToLine;
@@ -949,7 +949,7 @@ begin
             Dec(Line);
           end;
           if PFoldRange^.FromLine = PFoldRange^.ToLine then
-            fRanges.Delete(i);
+            fRanges.Delete(I);
         end;
       end;
     end;
@@ -967,8 +967,8 @@ begin
 end;
 
 procedure TSynFoldRanges.RestoreCollapsedState(Stream: TStream);
-Var
-  Size, Line, Index : integer;
+var
+  Size, Line, Index: Integer;
 begin
   Size := Stream.Size;
   while Stream.Position < Size do begin
@@ -981,11 +981,11 @@ begin
 end;
 
 procedure TSynFoldRanges.RestoreCollapsedState;
-Var
-  i, Index : integer;
+var
+  I, Index: Integer;
 begin
-  for i in fCollapsedState do begin
-    if FoldStartAtLine(i, Index) then
+  for I in fCollapsedState do begin
+    if FoldStartAtLine(I, Index) then
       fRanges.List[Index].FCollapsed := True;
   end;
   fCollapsedState.Clear;
@@ -993,7 +993,7 @@ begin
   AdjustRangeRows;
 end;
 
-procedure TSynFoldRanges.StartFoldRange(ALine, AFoldType: integer;  AIndent : Integer);
+procedure TSynFoldRanges.StartFoldRange(ALine, AFoldType: Integer;  AIndent: Integer);
 begin
   AddLineInfo(ALine, AFoldType, focOpen, AIndent);
 end;
@@ -1002,19 +1002,19 @@ procedure TSynFoldRanges.StartScanning;
 begin
 end;
 
-procedure TSynFoldRanges.StopFoldRange(ALine, AFoldType: integer; AIndent : Integer);
+procedure TSynFoldRanges.StopFoldRange(ALine, AFoldType: Integer; AIndent: Integer);
 begin
   AddLineInfo(ALine, AFoldType, focClose, AIndent);
 end;
 
-procedure TSynFoldRanges.StopStartFoldRange(ALine, AFoldType: integer; AIndent : Integer);
+procedure TSynFoldRanges.StopStartFoldRange(ALine, AFoldType: Integer; AIndent: Integer);
 begin
   AddLineInfo(ALine, AFoldType, focCloseOpen, AIndent);
 end;
 
-function TSynFoldRanges.StopScanning(Lines : TStrings) : Boolean;
+function TSynFoldRanges.StopScanning(Lines: TStrings): Boolean;
 {
-  Returns true if fold ranges changed
+  Returns True if fold ranges changed
   Recreates FoldRanges if needed
 }
 begin
@@ -1034,8 +1034,8 @@ begin
 end;
 
 procedure TSynFoldRanges.StoreCollapsedState(Stream: TStream);
-Var
-  FoldRange : TSynFoldRange;
+var
+  FoldRange: TSynFoldRange;
 begin
   for FoldRange in fRanges do
     if FoldRange.Collapsed then
@@ -1064,7 +1064,7 @@ end;
 
 procedure TSynFoldRanges.UnCollapseFoldType(FoldType: Integer);
 var
-  I : integer;
+  I: Integer;
 begin
   for I := 0 to Count - 1 do
     if fRanges.List[I].FoldType = FoldType then
@@ -1075,8 +1075,8 @@ end;
 
 procedure TSynFoldRanges.UnCollapseLevel(Level: Integer);
 var
-  I : integer;
-  RangeIndices : TArray<Integer>;
+  I: Integer;
+  RangeIndices: TArray<Integer>;
 begin
   RangeIndices := FoldsAtLevel(Level);
 
@@ -1087,8 +1087,8 @@ begin
 end;
 
 procedure TSynFoldRanges.StoreCollapsedState;
-Var
-  FoldRange : TSynFoldRange;
+var
+  FoldRange: TSynFoldRange;
 begin
   fCollapsedState.Clear;
   for FoldRange in fRanges do
@@ -1099,7 +1099,7 @@ end;
 { TSynEditFoldRange }
 
 constructor TSynFoldRange.Create(AFromLine, AToLine, AFoldType: Integer;
-  AIndent : Integer; ACollapsed: Boolean);
+  AIndent: Integer; ACollapsed: Boolean);
 begin
   FromLine := AFromLine;
   FFromRow := AFromLine;
@@ -1119,7 +1119,7 @@ end;
 { TSynFoldRanges.TLineFoldInfo }
 
 constructor TSynFoldRanges.TLineFoldInfo.Create(ALine: Integer;
-  AFoldOpenClose: TFoldOpenClose; AFoldType: Integer; AIndent : Integer);
+  AFoldOpenClose: TFoldOpenClose; AFoldType: Integer; AIndent: Integer);
 begin
     Line := ALine;
     FoldOpenClose := AFoldOpenClose;
@@ -1156,7 +1156,7 @@ begin
 end;
 
 function TSynCustomCodeFoldingHighlighter.TabWidth(
-  LinesToScan: TStrings): integer;
+  LinesToScan: TStrings): Integer;
 begin
   Result := TSynEditStringList(LinesToScan).TabWidth;
 end;

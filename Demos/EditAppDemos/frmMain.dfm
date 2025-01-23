@@ -1,8 +1,8 @@
 object MainForm: TMainForm
   Left = 186
   Top = 133
-  Width = 514
-  Height = 346
+  ClientHeight = 287
+  ClientWidth = 498
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -10,15 +10,13 @@ object MainForm: TMainForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Menu = mnuMain
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 273
-    Width = 506
+    Top = 268
+    Width = 498
     Height = 19
     Action = actUpdateStatusBarPanels
     Panels = <

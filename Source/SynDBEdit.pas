@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynDBEdit.pas,v 1.11.2.2 2009/06/14 13:33:38 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynDBEdit;
@@ -58,8 +51,8 @@ type
   TCustomDBSynEdit = class(TCustomSynEdit)
   private
     FDataLink: TFieldDataLink;
-    fEditing: boolean;
-    FBeginEdit: boolean;
+    fEditing: Boolean;
+    FBeginEdit: Boolean;
     FLoadData: TNotifyEvent;
     procedure DataChange(Sender: TObject);
     procedure EditingChange(Sender: TObject);
@@ -75,10 +68,10 @@ type
     procedure CMExit(var Msg: TCMExit); message CM_EXIT;
     procedure CMGetDataLink(var Msg: TMessage); message CM_GETDATALINK;
   protected
-    function GetReadOnly: boolean; override;
+    function GetReadOnly: Boolean; override;
     procedure Loaded; override;
     procedure DoChange; override;
-    procedure SetReadOnly(Value: boolean); override;
+    procedure SetReadOnly(Value: Boolean); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;

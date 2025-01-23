@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: TestPP.dpr,v 1.1.1.1 2000/07/08 15:54:07 mghie Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 program TestPP;

@@ -119,8 +119,10 @@ object Form1: TForm1
         'ode folding'
       'in the unit SynEditCodeFolding.pas.')
     Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabIndent, eoTabsToSpaces, eoTrimTrailingSpaces]
+    ScrollbarAnnotations = <>
     SelectedColor.Alpha = 0.400000005960464500
     TabWidth = 4
+    VisibleSpecialChars = []
   end
   object ActionManager1: TActionManager
     ActionBars = <

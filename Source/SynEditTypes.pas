@@ -82,8 +82,8 @@ type
 
   TBufferCoord = record
     // Char and Line are 1-based
-    Char: integer;
-    Line: integer;
+    Char: Integer;
+    Line: Integer;
     function ToString(ShortForm: Boolean = True): string;
     class operator Equal(a, b: TBufferCoord): Boolean;
     class operator NotEqual(a, b: TBufferCoord): Boolean;
@@ -98,8 +98,8 @@ type
   end;
 
   TDisplayCoord = record
-    Column: integer;
-    Row: integer;
+    Column: Integer;
+    Row: Integer;
     class operator Equal(a, b: TDisplayCoord): Boolean;
     class operator NotEqual(a, b: TDisplayCoord): Boolean;
     class operator LessThan(a, b: TDisplayCoord): Boolean;
@@ -185,7 +185,7 @@ end;
     procedure DisplayChanged;
     // pretty clear, heh?
     procedure Reset;
-    property RowLength[RowIndex: integer]: integer read GetRowLength;
+    property RowLength[RowIndex: Integer]: Integer read GetRowLength;
   end;
 
 { ************************* For Undo Redo ********************************}

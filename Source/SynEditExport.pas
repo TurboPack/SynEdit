@@ -29,13 +29,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditExport.pas,v 1.17.2.8 2008/09/17 13:59:12 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 { Base class for exporting a programming language source file or part of it to
@@ -128,7 +121,7 @@ type
     procedure FormatNewLine; virtual; abstract;
     { Returns the size of the formatted text in the output buffer, to be used
       in the format header or footer. }
-    function GetBufferSize: integer;
+    function GetBufferSize: Integer;
     { The clipboard format the exporter creates as native format. }
     function GetClipboardFormat: UINT; virtual;
     { Has to be overridden in descendant classes to return the correct output
@@ -445,7 +438,7 @@ begin
   AddData(Token);
 end;
 
-function TSynCustomExporter.GetBufferSize: integer;
+function TSynCustomExporter.GetBufferSize: Integer;
 begin
   Result := fBuffer.Size;
 end;
@@ -512,7 +505,7 @@ begin
         Result[IDest] := c;
         Inc(ISrc);
         Inc(IDest);
-        continue;
+        Continue;
       end;
       if IDest + Length(Replace) - 1 > DestLen then
       begin
@@ -561,7 +554,7 @@ end;
 procedure TSynCustomExporter.SetEncoding(const Value: TSynEncoding);
 begin
   // don't change encoding while streaming as this could corrupt output data
-  if FStreaming then exit;
+  if FStreaming then Exit;
 
   if not (Value in SupportedEncodings) then
     raise ESynEncoding.CreateFmt(SEncodingError, [EncodingStrs[Value],

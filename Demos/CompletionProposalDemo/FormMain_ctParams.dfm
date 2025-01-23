@@ -1,20 +1,18 @@
 object Form1: TForm1
   Left = 256
   Top = 122
-  Width = 754
-  Height = 541
   Caption = 'Form1'
+  ClientHeight = 502
+  ClientWidth = 738
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object SynTest: TSynEdit
     Left = 416
@@ -26,13 +24,17 @@ object Form1: TForm1
     Font.Height = -13
     Font.Name = 'Courier New'
     Font.Style = []
+    Font.Quality = fqClearTypeNatural
     TabOrder = 0
+    UseCodeFolding = False
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
-    Gutter.Font.Name = 'Terminal'
+    Gutter.Font.Name = 'Consolas'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
     Gutter.Visible = False
+    Gutter.Bands = <>
     Lines.Strings = (
       'This is a Demo to show you how the '
       'Code Completion component works '
@@ -46,6 +48,9 @@ object Form1: TForm1
       ''
       'See the source file execute event'
       'for more information.')
+    ScrollbarAnnotations = <>
+    SelectedColor.Alpha = 0.449999988079071000
+    VisibleSpecialChars = []
     RemovedKeystrokes = <
       item
         Command = ecContextHelp
@@ -67,12 +72,16 @@ object Form1: TForm1
     Font.Height = -13
     Font.Name = 'Courier New'
     Font.Style = []
+    Font.Quality = fqClearTypeNatural
     TabOrder = 1
+    UseCodeFolding = False
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
-    Gutter.Font.Name = 'Terminal'
+    Gutter.Font.Name = 'Consolas'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
+    Gutter.Bands = <>
     Lines.Strings = (
       'Use Shift+Ctrl+Space to activate Parameter'
       'completion, or type the function name'
@@ -91,6 +100,9 @@ object Form1: TForm1
       'Here is an example of embeded functions'
       ''
       'TestFunction(Min(a, b), SomeVar, Another)')
+    ScrollbarAnnotations = <>
+    SelectedColor.Alpha = 0.449999988079071000
+    VisibleSpecialChars = []
     RemovedKeystrokes = <
       item
         Command = ecContextHelp
@@ -128,6 +140,11 @@ object Form1: TForm1
     TitleFont.Height = -11
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = [fsBold]
+    GripperFont.Charset = DEFAULT_CHARSET
+    GripperFont.Color = clBtnText
+    GripperFont.Height = -12
+    GripperFont.Name = 'Segoe UI'
+    GripperFont.Style = []
     Columns = <>
     OnExecute = scpParamsExecute
     ShortCut = 24608

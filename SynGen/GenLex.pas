@@ -207,9 +207,9 @@ begin
       if mHashTable[Char(Temp^)] <> mHashTable[Char(aKey[i])] then
       begin
         Result := False;
-        break;
+        Break;
       end;
-      inc(Temp);
+      Inc(Temp);
     end;
   end
   else
@@ -447,12 +447,12 @@ end;
 procedure TGenLex.CRLFProc;
 begin
   case FOrigin[Walker] of
-    #10: inc(Walker);
+    #10: Inc(Walker);
     #13:
       case FOrigin[Walker + 1] of
-        #10: inc(Walker, 2);
+        #10: Inc(Walker, 2);
       else
-        inc(Walker);
+        Inc(Walker);
       end;
   end;
   if fTokenizing then
@@ -469,13 +469,13 @@ begin
   while FOrigin[Walker] <> #0 do
   begin
     case FOrigin[Walker] of
-      #10, #13: break;
+      #10, #13: Break;
       ':': if FOrigin[Walker + 1] = ':' then
-          break
+          Break
         else
-          inc(Walker);
+          Inc(Walker);
     else
-      inc(Walker);
+      Inc(Walker);
     end;
   end;
 end;
@@ -487,9 +487,9 @@ end;
 
 procedure TGenLex.IdentProc;
 begin
-  inc(Walker);
+  Inc(Walker);
   while Identifiers[Char(fOrigin[Walker])] do
-    inc(Walker);
+    Inc(Walker);
 end;
 
 function TGenLex.IdentFunc: TIdTokenKind;
@@ -512,7 +512,7 @@ end;
 procedure TGenLex.SpaceProc;
 begin
   while CharInSet(fOrigin[Walker], [#1..#9, #11, #12, #14..#32]) do
-    inc(Walker);
+    Inc(Walker);
 end;
 
 function TGenLex.SpaceFunc: TIdTokenKind;
@@ -522,16 +522,16 @@ end;
 
 procedure TGenLex.StopProc;
 begin
-  inc(Walker);
+  Inc(Walker);
   while FOrigin[Walker] <> #0 do
   begin
     case FOrigin[Walker] of
-      #10: break;
-      #13: break;
+      #10: Break;
+      #13: Break;
       '|':
         begin
           Inc(Walker);
-          break;
+          Break;
         end;
     else
       Inc(Walker);
@@ -550,7 +550,7 @@ end;
 
 procedure TGenLex.UnknownProc;
 begin
-  inc(Walker);
+  Inc(Walker);
 end;
 
 function TGenLex.UnknownFunc: TIdTokenKind;
@@ -602,7 +602,7 @@ begin
   EndPos := FTokenPositionsList[Run + 1];
   Len := EndPos - StartPos;
   SetString(Result, (FOrigin + StartPos), Len);
-  inc(Run);
+  Inc(Run);
 end;
 
 initialization

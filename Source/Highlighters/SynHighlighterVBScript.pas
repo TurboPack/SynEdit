@@ -77,10 +77,10 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fFunctionAttri: TSynHighlighterAttributes;
     fCOnstAttri: TSynHighlighterAttributes;
-    FKeywords: TDictionary<String, TtkTokenKind>;
-    RE_BlockBegin : TRegEx;
-    RE_BlockEnd : TRegEx;
-    procedure DoAddKeyword(AKeyword: string; AKind: integer);
+    FKeywords: TDictionary<string, TtkTokenKind>;
+    RE_BlockBegin: TRegEx;
+    RE_BlockEnd: TRegEx;
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure ApostropheProc;
     procedure CRProc;
@@ -105,12 +105,12 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
@@ -197,7 +197,7 @@ end;
 
 function TSynVBScriptSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
@@ -216,7 +216,7 @@ begin
 
   fCaseSensitive := False;
   // Create the keywords dictionary case-insensitive
-  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
+  FKeywords := TDictionary<string, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
@@ -268,7 +268,7 @@ const
 procedure TSynVBScriptSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
   ok: Boolean;
 
@@ -363,7 +363,7 @@ procedure TSynVBScriptSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
 {
    Provide folding for procedures and functions included nested ones.
 }
-Var
+var
   i, j, SkipTo: Integer;
   ImplementationIndex: Integer;
   FoldRange: TSynFoldRange;
@@ -380,7 +380,7 @@ begin
         // Code declaration in the Interface part of a unit
         FoldRanges.Ranges.Delete(i);
         Dec(ImplementationIndex);
-        continue;
+        Continue;
       end;
       // Examine the following ranges
       SkipTo := 0;
@@ -393,7 +393,7 @@ begin
           FT_CodeDeclarationWithBody:
             begin
               SkipTo := FoldRange.ToLine;
-              continue;
+              Continue;
             end;
           FT_Standard:
           // possibly begin end;
@@ -410,12 +410,12 @@ begin
                   // Adjust ToLine
                   FoldRanges.Ranges.List[i].ToLine := FoldRange.ToLine;
                   FoldRanges.Ranges.List[i].FoldType := FT_CodeDeclarationWithBody;
-                  break
+                  Break
                 end else
                 begin
                   // class or record declaration follows, so
                   FoldRanges.Ranges.Delete(i);
-                  break;
+                  Break;
                  end;
               end else
                 Assert(False, 'TSynVBSSyn.AdjustFoldRanges');
@@ -428,7 +428,7 @@ begin
               // Otherwise delete
               // eg. function definitions within a class definition
               FoldRanges.Ranges.Delete(i);
-              break
+              Break
             end;
           end;
         end;
@@ -445,25 +445,25 @@ procedure TSynVBScriptSyn.ApostropheProc;
 begin
   fTokenID := tkComment;
   repeat
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run);
 end;
 
 procedure TSynVBScriptSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
-  if fLine[Run] = #10 then inc(Run);
+  Inc(Run);
+  if fLine[Run] = #10 then Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.DateProc;
 begin
   fTokenID := tkString;
   repeat
-    if IsLineEnd(Run) then break;
-    inc(Run);
+    if IsLineEnd(Run) then Break;
+    Inc(Run);
   until FLine[Run] = '#';
-  if not IsLineEnd(Run) then inc(Run);
+  if not IsLineEnd(Run) then Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.GreaterProc;
@@ -476,15 +476,15 @@ end;
 procedure TSynVBScriptSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   while IsIdentChar(fLine[Run]) do
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.LowerProc;
@@ -497,7 +497,7 @@ end;
 procedure TSynVBScriptSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.NumberProc;
@@ -513,38 +513,38 @@ procedure TSynVBScriptSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
-  while IsNumberChar do inc(Run);
+  while IsNumberChar do Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.StringProc;
 begin
   fTokenID := tkString;
-  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then inc(Run, 2);
+  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then Inc(Run, 2);
   repeat
-    if IsLineEnd(Run) then break;
-    inc(Run);
+    if IsLineEnd(Run) then Break;
+    Inc(Run);
   until FLine[Run] = #34;
-  if not IsLineEnd(Run) then inc(Run);
+  if not IsLineEnd(Run) then Inc(Run);
 end;
 
 procedure TSynVBScriptSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynVBScriptSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkIdentifier;
 end;
 
@@ -571,7 +571,7 @@ begin
   inherited;
 end;
 
-function TSynVBScriptSyn.GetDefaultAttribute(Index: integer):
+function TSynVBScriptSyn.GetDefaultAttribute(Index: Integer):
   TSynHighlighterAttributes;
 begin
   case Index of
@@ -613,7 +613,7 @@ begin
   end;
 end;
 
-function TSynVBScriptSyn.GetTokenKind: integer;
+function TSynVBScriptSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

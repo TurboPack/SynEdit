@@ -50,7 +50,9 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
         Width = 2
       end>
     Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
+    ScrollbarAnnotations = <>
     SelectedColor.Alpha = 0.400000005960464500
+    VisibleSpecialChars = []
     OnProcessCommand = SynEditorProcessCommand
     OnReplaceText = SynEditorReplaceText
     RemovedKeystrokes = <

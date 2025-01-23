@@ -30,13 +30,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterSQL.pas,v 1.39.2.14 2008/09/14 16:25:03 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(SQL highlighter for SynEdit with support for different dialects.)
@@ -78,7 +71,7 @@ type
   private
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
-    FKeywords: TDictionary<String, TtkTokenKind>;
+    FKeywords: TDictionary<string, TtkTokenKind>;
     FProcNames: TStrings;
     fTableNames: TStrings;
     fFunctionNames: TStrings;
@@ -104,7 +97,7 @@ type
     fVariableAttri: TSynHighlighterAttributes;
 
     function IdentKind: TtkTokenKind;
-    procedure DoAddKeyword(AKeyword: string; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     procedure SetDialect(Value: TSQLDialect);
     procedure SetTableNames(const Value: TStrings);
     procedure SetFunctionNames(const Value: TStrings);
@@ -1533,7 +1526,7 @@ begin
           if (not IsEsc) and (FLine[Run + 1] = #39) then
           begin
             Inc(Run);
-            break;
+            Break;
           end;
           Inc(Run);
         until IsLineEnd(Run);
@@ -1573,7 +1566,7 @@ var
   FoundDoubleMinus: Boolean;
 begin
   fTokenID := IdentKind;
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   if FTokenID in [tkComment, tkConsoleOutput] then
   begin
     while not IsLineEnd(Run) do
@@ -1584,14 +1577,14 @@ begin
     begin
       FoundDoubleMinus := (fLine[Run] = '-') and (fLine[Run + 1] = '-');
       if FoundDoubleMinus then Break;
-      inc(Run);
+      Inc(Run);
     end;
 end;
 
 procedure TSynSQLSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynSQLSyn.LowerProc;
@@ -1640,7 +1633,7 @@ end;
 procedure TSynSQLSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynSQLSyn.NumberProc;
@@ -1656,7 +1649,7 @@ procedure TSynSQLSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
@@ -1665,7 +1658,7 @@ begin
         if FLine[Run + 1] = '.' then
           Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -1714,7 +1707,7 @@ begin
           if (fLine[Run] = '*') and (fLine[Run + 1] = '/') then begin
             fRange := rsUnknown;
             Inc(Run, 2);
-            break;
+            Break;
           end;
         until IsLineEnd(Run);
       end;
@@ -1742,9 +1735,9 @@ end;
 
 procedure TSynSQLSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynSQLSyn.QuoteProc;
@@ -1826,7 +1819,7 @@ end;
 
 procedure TSynSQLSyn.VariableProc;
 var
-  i: integer;
+  I: Integer;
   FoundDoubleMinus: Boolean;
 begin
   // MS SQL Server uses @@ to indicate system functions/variables
@@ -1841,13 +1834,13 @@ begin
   else
   begin
     fTokenID := tkVariable;
-    i := Run;
+    I := Run;
     repeat
-      FoundDoubleMinus := (fLine[i] = '-') and (fLine[i + 1] = '-');
+      FoundDoubleMinus := (fLine[I] = '-') and (fLine[I + 1] = '-');
       if FoundDoubleMinus then Break;
-      Inc(i);
-    until not IsIdentChar(fLine[i]);
-    Run := i;
+      Inc(I);
+    until not IsIdentChar(fLine[I]);
+    Run := I;
   end;
 end;
 
@@ -1947,7 +1940,7 @@ begin
   inherited;
 end;
 
-function TSynSQLSyn.GetDefaultAttribute(Index: integer):
+function TSynSQLSyn.GetDefaultAttribute(Index: Integer):
   TSynHighlighterAttributes;
 begin
   case Index of
@@ -2005,7 +1998,7 @@ begin
   end;
 end;
 
-function TSynSQLSyn.GetTokenKind: integer;
+function TSynSQLSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
@@ -2052,7 +2045,7 @@ begin
   Result := SYNS_LangSQL;
 end;
 
-procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: integer);
+procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
 var
   S: string;
 begin

@@ -1079,7 +1079,7 @@ object PageSetupDlg: TPageSetupDlg
       object Label3: TLabel
         Left = 10
         Top = 94
-        Width = 22
+        Width = 23
         Height = 15
         Caption = 'Top:'
       end

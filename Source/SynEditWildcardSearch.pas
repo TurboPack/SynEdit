@@ -102,12 +102,12 @@ begin
   Result := fPattern;
 end;
 
-function TSynEditWildcardSearch.GetResult(Index: integer): integer;
+function TSynEditWildcardSearch.GetResult(Index: Integer): Integer;
 begin
   Result := inherited GetResult(Index);
 end;
 
-function TSynEditWildcardSearch.GetResultCount: integer;
+function TSynEditWildcardSearch.GetResultCount: Integer;
 begin
   Result := inherited GetResultCount;
 end;

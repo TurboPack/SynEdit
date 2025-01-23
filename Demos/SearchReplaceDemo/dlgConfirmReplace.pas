@@ -50,7 +50,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   public
-    procedure PrepareShow(AEditorRect: TRect; X, Y1, Y2: integer;
+    procedure PrepareShow(AEditorRect: TRect; X, Y1, Y2: Integer;
       AReplaceText: string);
   end;
 
@@ -77,9 +77,9 @@ begin
 end;
 
 procedure TConfirmReplaceDialog.PrepareShow(AEditorRect: TRect;
-  X, Y1, Y2: integer; AReplaceText: string);
+  X, Y1, Y2: Integer; AReplaceText: string);
 var
-  nW, nH: integer;
+  nW, nH: Integer;
 begin
   lblConfirmation.Caption := Format(SAskReplaceText, [AReplaceText]);
   nW := AEditorRect.Right - AEditorRect.Left;

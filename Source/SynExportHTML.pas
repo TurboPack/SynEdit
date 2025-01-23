@@ -15,6 +15,7 @@ Portions created by James D. Jacobson are Copyright 1999 Martin Waldenburg.
 Changes to emit XHTML 1.0 Strict complying code by Maël Hörz.
 Unicode translation by Maël Hörz.
 All Rights Reserved.
+
 Contributors to the SynEdit project are listed in the Contributors.txt file.
 Alternatively, the contents of this file may be used under the terms of the
 GNU General Public License Version 2 or later (the "GPL"), in which case
@@ -25,10 +26,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-$Id: SynExportHTML.pas,v 1.19.2.7 2008/09/14 16:24:59 maelh Exp $
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynExportHTML;
@@ -52,7 +49,7 @@ type
     FStyleNameCache: TDictionary<TSynHighlighterAttributes, string>;
     FStyleValueCache: TDictionary<TSynHighlighterAttributes, string>;
     FAddNewLine: Boolean;
-    FSuppressFragmentInfo: boolean;
+    FSuppressFragmentInfo: Boolean;
     function AttriToCSS(Attri: TSynHighlighterAttributes;
       UniqueAttriName: string): string;
     function AttriToCSSCallback(Highlighter: TSynCustomHighlighter;
@@ -72,16 +69,16 @@ type
   protected
     // CreateHTMLFragment is used to indicate that this is for the clipboard "HTML Format" output.
     // Note: SynEdit's default OLE clipboard handling bypasses SynEditExport's clipboard handling.
-    FCreateHTMLFragment: boolean;   // True if format should be "HTML Format", always uses inline css.
-    FInlineCSS: boolean;
+    FCreateHTMLFragment: Boolean;   // True if format should be "HTML Format", always uses inline css.
+    FInlineCSS: Boolean;
     procedure SetTokenAttribute(Attri: TSynHighlighterAttributes); override;
     procedure FormatAfterLastAttribute; override;
-    procedure FormatAttributeDone(BackgroundChanged, ForegroundChanged: boolean;
+    procedure FormatAttributeDone(BackgroundChanged, ForegroundChanged: Boolean;
       FontStylesChanged: TFontStyles); override;
-    procedure FormatAttributeInit(BackgroundChanged, ForegroundChanged: boolean;
+    procedure FormatAttributeInit(BackgroundChanged, ForegroundChanged: Boolean;
       FontStylesChanged: TFontStyles); override;
     procedure FormatBeforeFirstAttribute(BackgroundChanged,
-      ForegroundChanged: boolean; FontStylesChanged: TFontStyles); override;
+      ForegroundChanged: Boolean; FontStylesChanged: TFontStyles); override;
     procedure FormatNewLine; override;
     function GetFooter: string; override;
     function GetFormatName: string; override;
@@ -95,11 +92,11 @@ type
     procedure Clear; override;
   published
     property Color;
-    property CreateHTMLFragment: boolean read FCreateHTMLFragment
+    property CreateHTMLFragment: Boolean read FCreateHTMLFragment
       write FCreateHTMLFragment default False;
-    property InlineCSS: boolean read FInlineCSS
+    property InlineCSS: Boolean read FInlineCSS
       write FInlineCSS default False;
-    property SuppressFragmentInfo: boolean read FSuppressFragmentInfo
+    property SuppressFragmentInfo: Boolean read FSuppressFragmentInfo
       write FSuppressFragmentInfo default False;
     property DefaultFilter;
     property Encoding;
@@ -283,7 +280,7 @@ begin
 end;
 
 procedure TSynExporterHTML.FormatAttributeDone(BackgroundChanged,
-  ForegroundChanged: boolean; FontStylesChanged: TFontStyles);
+  ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
 begin
   if FAddNewLine then
   begin
@@ -295,7 +292,7 @@ begin
 end;
 
 procedure TSynExporterHTML.FormatAttributeInit(BackgroundChanged,
-  ForegroundChanged: boolean; FontStylesChanged: TFontStyles);
+  ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
 var
   StyleName: string;
   StyleValue: string;
@@ -316,7 +313,7 @@ begin
 end;
 
 procedure TSynExporterHTML.FormatBeforeFirstAttribute(BackgroundChanged,
-  ForegroundChanged: boolean; FontStylesChanged: TFontStyles);
+  ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
 var
   StyleName: string;
   StyleValue: string;

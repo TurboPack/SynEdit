@@ -26,11 +26,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterXML.pas,v 1.11.2.6 2008/09/14 16:25:03 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 History:
 -------------------------------------------------------------------------------
 2000-11-30 Removed mHashTable and MakeIdentTable per Michael Hieke
@@ -139,13 +134,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -176,7 +171,7 @@ type
       write fSpaceAttri;
     property SymbolAttri: TSynHighlighterAttributes read fSymbolAttri
       write fSymbolAttri;
-    property WantBracesParsed : Boolean read FWantBracesParsed
+    property WantBracesParsed: Boolean read FWantBracesParsed
       write FWantBracesParsed default True;
   end;
 
@@ -271,7 +266,7 @@ end;
 procedure TSynXMLSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynXMLSyn.CarriageReturnProc;
@@ -289,7 +284,7 @@ end;
 
 procedure TSynXMLSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
   while fLine[Run] <= #32 do
   begin
@@ -374,7 +369,7 @@ begin
     if (fLine[Run] = '-') and (fLine[Run + 1] = '-') and (fLine[Run + 2] = '>') then
     begin
       fRange := rsComment;
-      break;
+      Break;
     end;
     Inc(Run);
   end;
@@ -396,7 +391,7 @@ begin
     begin
       fRange := rsText;
       Inc(Run);
-      break;
+      Break;
     end;
     Inc(Run);
   end;
@@ -421,7 +416,7 @@ begin
             '[': begin
                    while True do
                    begin
-                     inc(Run);
+                     Inc(Run);
                      case fLine[Run] of
                        ']':
                          begin
@@ -442,7 +437,7 @@ begin
                    Break;
                  end;
           end;
-          inc(Run);
+          Inc(Run);
         end;
     end;
     rsDocTypeSquareBraces:
@@ -455,7 +450,7 @@ begin
             Inc(Run);
             Exit;
           end;
-          inc(Run);
+          Inc(Run);
         end;
       end;
   end;
@@ -477,7 +472,7 @@ begin
     begin
       fRange := rsText;
       Inc(Run);
-      break;
+      Break;
     end;
     Inc(Run);
   end;
@@ -607,7 +602,7 @@ begin
   if (fLine[Run] <= #31) or (fLine[Run] = '<') then
   begin
     NextProcedure;
-    exit;
+    Exit;
   end;
 
   fTokenID := tkText;
@@ -796,7 +791,7 @@ begin
   end;
 end;
 
-function TSynXMLSyn.GetTokenKind: integer;
+function TSynXMLSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

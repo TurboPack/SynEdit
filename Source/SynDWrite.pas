@@ -1491,16 +1491,16 @@ type
     FIDW: ID2D1RenderTarget;
     function GetIDW: ID2D1RenderTarget;
   public
-    constructor Create(const Width, Height: integer);
+    constructor Create(const Width, Height: Integer);
   end;
 
-  function SynWicRenderTarget(const Width, Height: integer): ISynWicRenderTarget;
+  function SynWicRenderTarget(const Width, Height: Integer): ISynWicRenderTarget;
 
 type
   TGraphemeEnumerator = record
   private
     FTextLayout: IDWriteTextLayout;
-    FStart: integer;
+    FStart: Integer;
     FString: string;
     FCurrent: string;
   public
@@ -1524,7 +1524,7 @@ function Graphemes(const AValue: string): TGraphemeEnumeratorHelper;
 function D2D1ColorF(const AColor: TColor; Opacity: Single = 1.0): TD2D1ColorF; overload;
 function DWTextRange(startPosition: Cardinal; length: Cardinal): TDwriteTextRange;
 function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: Cardinal): TDwriteFontFeature;
-function DWGetTypography(Features: array of Integer) : IDWriteTypography;
+function DWGetTypography(Features: array of Integer): IDWriteTypography;
 function WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
 function ScaledWicBitmap(Source: IWICBitmap;
   const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
@@ -1583,7 +1583,7 @@ begin
   Result.parameter := parameter;
 end;
 
-function DWGetTypography(Features: array of Integer) : IDWriteTypography;
+function DWGetTypography(Features: array of Integer): IDWriteTypography;
 var
   Feature: Integer;
 begin
@@ -1887,7 +1887,7 @@ begin
 end;
 
 class function TSynDWrite.RenderTarget: ID2D1DCRenderTarget;
-Var
+var
   RT: ID2D1DCRenderTarget;
 begin
   if SingletonRenderTarget = nil then
@@ -2151,7 +2151,7 @@ end;
 procedure TSynTextLayout.SetTypography(Typography: TSynTypography; const Start,
     Count: Integer);
 const
-  DefaultTypoFeatures: array[0..7] of integer =
+  DefaultTypoFeatures: array[0..7] of Integer =
   (DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_LIGATURES,             // clig
    DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_ALTERNATES,            // calt
    DWRITE_FONT_FEATURE_TAG_GLYPH_COMPOSITION_DECOMPOSITION,  // ccmp
@@ -2160,7 +2160,7 @@ const
    DWRITE_FONT_FEATURE_TAG_MARK_POSITIONING,                 // mark
    DWRITE_FONT_FEATURE_TAG_MARK_TO_MARK_POSITIONING,         // mkmk
    DWRITE_FONT_FEATURE_TAG_REQUIRED_LIGATURES);              // rlig
-  TypoFeaturesNoLigatures: array[0..2] of integer =
+  TypoFeaturesNoLigatures: array[0..2] of Integer =
   (DWRITE_FONT_FEATURE_TAG_GLYPH_COMPOSITION_DECOMPOSITION,  // ccmp
    DWRITE_FONT_FEATURE_TAG_MARK_POSITIONING,                 // mark
    DWRITE_FONT_FEATURE_TAG_MARK_TO_MARK_POSITIONING);        // salt
@@ -2185,7 +2185,7 @@ end;
 
 { TSynWICRenderTarget }
 
-constructor TSynWICRenderTarget.Create(const Width, Height: integer);
+constructor TSynWICRenderTarget.Create(const Width, Height: Integer);
 var
   RenderTargetProp: TD2D1RenderTargetProperties;
 begin
@@ -2212,7 +2212,7 @@ begin
   Result := FIDW;
 end;
 
-function SynWicRenderTarget(const Width, Height: integer): ISynWicRenderTarget;
+function SynWicRenderTarget(const Width, Height: Integer): ISynWicRenderTarget;
 begin
   Result := TSynWicRenderTarget.Create(Width, Height);
 end;

@@ -28,11 +28,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterDml.pas,v 1.11.2.7 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
   - There are no metadata qualifiers.
 -------------------------------------------------------------------------------}
@@ -378,13 +373,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -610,7 +605,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 798 + Ord(Str^) * 3;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 2439;
   fStringLen := Str - fToIdent;
@@ -3207,21 +3202,21 @@ begin
   // variables...
   fTokenID := tkVariable;
   repeat
-    inc(Run);
+    Inc(Run);
   until not IsAsciiChar;
 end;
 
 procedure TSynDmlSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
 end;
 
 procedure TSynDmlSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
-  if FLine[Run] = #10 then inc(Run);
+  Inc(Run);
+  if FLine[Run] = #10 then Inc(Run);
 end;
 
 procedure TSynDmlSyn.GreaterProc;
@@ -3234,48 +3229,48 @@ end;
 procedure TSynDmlSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynDmlSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynDmlSyn.LowerProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   if (fLine[Run]= '=') or (fLine[Run]= '>') then Inc(Run);
 end;
 
 procedure TSynDmlSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynDmlSyn.NumberProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while CharInSet(FLine[Run], ['0'..'9', '.']) do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynDmlSyn.PointProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
-  if (fLine[Run]='.') or (fLine[Run]=')') then inc(Run);
+  Inc(Run);
+  if (fLine[Run]='.') or (fLine[Run]=')') then Inc(Run);
 end;
 
 procedure TSynDmlSyn.RemProc;
@@ -3287,9 +3282,9 @@ begin
   begin
     if not CharInSet(p^, [#9, #32]) then
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
-      exit;
+      Exit;
     end;
     Dec(p);
   end;
@@ -3303,23 +3298,23 @@ end;
 procedure TSynDmlSyn.SpaceProc;
 begin
   fTokenID := tkSpace;
-  while (fLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (fLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynDmlSyn.StringProc;
 begin
   fTokenID := tkString;
-  if (FLine[Run + 1] = '"') and (FLine[Run + 2] = '"') then inc(Run, 2);
+  if (FLine[Run + 1] = '"') and (FLine[Run + 2] = '"') then Inc(Run, 2);
   repeat
-    inc(Run);
+    Inc(Run);
   until (FLine[Run] = '"') or IsLineEnd(Run);
 
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynDmlSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -3352,7 +3347,7 @@ begin
   inherited;
 end;
 
-function TSynDmlSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynDmlSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -3397,7 +3392,7 @@ begin
   end;
 end;
 
-function TSynDmlSyn.GetTokenKind: integer;
+function TSynDmlSyn.GetTokenKind: Integer;
 begin
   Result := Ord(GetTokenID);
 end;

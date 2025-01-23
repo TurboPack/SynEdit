@@ -9,7 +9,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
   Position = poScreenCenter
   WindowState = wsMaximized
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 15
   object ToolBar1: TToolBar
     Left = 0
@@ -27,7 +26,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Left = 5
       Top = 0
       Action = FirstCmd
-      ImageName = 'Item1'
       ParentShowHint = False
       ShowHint = True
     end
@@ -35,7 +33,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Left = 29
       Top = 0
       Action = PrevCmd
-      ImageName = 'Item2'
       ParentShowHint = False
       ShowHint = True
     end
@@ -43,7 +40,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Left = 53
       Top = 0
       Action = NextCmd
-      ImageName = 'Item3'
       ParentShowHint = False
       ShowHint = True
     end
@@ -51,7 +47,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Left = 77
       Top = 0
       Action = LastCmd
-      ImageName = 'Item4'
       ParentShowHint = False
       ShowHint = True
     end
@@ -69,7 +64,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Top = 0
       Action = ZoomCmd
       DropdownMenu = PopupMenu1
-      ImageName = 'Item5'
       ParentShowHint = False
       ShowHint = True
       Style = tbsDropDown
@@ -87,7 +81,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Left = 156
       Top = 0
       Action = PrintCmd
-      ImageName = 'Item6'
       ParentShowHint = False
       ShowHint = True
     end
@@ -104,7 +97,6 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Left = 188
       Top = 0
       Action = CloseCmd
-      ImageName = 'Item7'
       ParentShowHint = False
       ShowHint = True
     end
@@ -139,6 +131,7 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Caption = 'FirstCmd'
       Hint = 'First|Go to first page'
       ImageIndex = 0
+      ImageName = 'Item1'
       ShortCut = 32838
       OnExecute = FirstCmdExecute
     end
@@ -146,6 +139,7 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Caption = 'PrevCmd'
       Hint = 'Previous|Go to previous page'
       ImageIndex = 1
+      ImageName = 'Item2'
       ShortCut = 32848
       OnExecute = PrevCmdExecute
     end
@@ -153,6 +147,7 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Caption = 'NextCmd'
       Hint = 'Next|Go to next page'
       ImageIndex = 2
+      ImageName = 'Item3'
       ShortCut = 32846
       OnExecute = NextCmdExecute
     end
@@ -160,6 +155,7 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Caption = 'LastCmd'
       Hint = 'Last|Go to last page'
       ImageIndex = 3
+      ImageName = 'Item4'
       ShortCut = 32844
       OnExecute = LastCmdExecute
     end
@@ -167,6 +163,7 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Caption = 'FitCmd'
       Hint = 'Zoom|Zoom In/Out'
       ImageIndex = 4
+      ImageName = 'Item5'
       ShortCut = 32858
       OnExecute = ZoomCmdExecute
     end
@@ -174,6 +171,7 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Caption = 'PrintCmd'
       Hint = 'Print|Print the document'
       ImageIndex = 5
+      ImageName = 'Item6'
       ShortCut = 16464
       OnExecute = PrintCmdExecute
     end
@@ -181,6 +179,7 @@ object TestPrintPreviewDlg: TTestPrintPreviewDlg
       Caption = 'CloseCmd'
       Hint = 'Close|Close Print Preview'
       ImageIndex = 6
+      ImageName = 'Item7'
       ShortCut = 32835
       OnExecute = CloseCmdExecute
     end

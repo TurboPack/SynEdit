@@ -28,13 +28,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterPHP.pas,v 1.22.2.7 2005/12/16 20:09:37 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a PHP syntax highlighter for SynEdit)
@@ -148,13 +141,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
@@ -248,7 +241,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 155 + Ord(Str^) * 90;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 439;
   fStringLen := Str - fToIdent;
@@ -269,15 +262,15 @@ end;
 
 procedure TSynPHPSyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if KeyIndices[i] = -1 then
-      fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if KeyIndices[I] = -1 then
+      fIdentFuncTable[I] := AltFunc;
 
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if @fIdentFuncTable[i] = nil then
-      fIdentFuncTable[i] := KeyWordFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[I] = nil then
+      fIdentFuncTable[I] := KeyWordFunc;
 end;
 
 function TSynPHPSyn.AltFunc(Index: Integer): TtkTokenKind;
@@ -331,10 +324,10 @@ begin
   begin
     fTokenID := tkSymbol;
     case FLine[Run + 1] of
-      '=':  inc(Run, 2);                 {and assign}
-      '&':  inc(Run, 2);                 {conditional and}
+      '=':  Inc(Run, 2);                 {and assign}
+      '&':  Inc(Run, 2);                 {conditional and}
     else                                 {and}
-        inc(Run);
+        Inc(Run);
     end;
   end;
 end;
@@ -343,8 +336,8 @@ procedure TSynPHPSyn.CRProc;
 begin
   fTokenID := tkSpace;
   Case FLine[Run + 1] of
-    #10: inc(Run, 2);
-  else inc(Run);
+    #10: Inc(Run, 2);
+  else Inc(Run);
   end;
 end;
 
@@ -352,10 +345,10 @@ procedure TSynPHPSyn.EqualProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                  {logical equal}
-    '>': inc(Run, 2);                  {Hash operator}
+    '=': Inc(Run, 2);                  {logical equal}
+    '>': Inc(Run, 2);                  {Hash operator}
   else                                 {assign}
-      inc(Run);
+      Inc(Run);
   end;
 end;
 
@@ -363,36 +356,36 @@ procedure TSynPHPSyn.GreaterProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                   {greater than or equal to}
-    '>': inc(Run, 2);
+    '=': Inc(Run, 2);                   {greater than or equal to}
+    '>': Inc(Run, 2);
   else                                 {greater than}
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynPHPSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynPHPSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPHPSyn.LowerProc;
 {$IFDEF SYN_HEREDOC}
 var
-  i, Len : Integer;
+  I, Len: Integer;
 {$ENDIF}
 begin
     case FLine[Run + 1] of
       '=':                               {less than or equal to}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           fTokenID := tkSymbol;
         end;
       '<':
@@ -401,11 +394,11 @@ begin
 {$IFDEF SYN_HEREDOC}
           if (FLine[Run + 2] = '<') and IsIdentChar(FLine[Run + 3]) then
           begin
-            inc(Run, 3);
+            Inc(Run, 3);
 
-            i := Run;
-            while IsIdentChar(FLine[i]) do Inc(i);
-            Len := i - Run;
+            I := Run;
+            while IsIdentChar(FLine[I]) do Inc(I);
+            Len := I - Run;
 
             if Len > 255 then
             begin
@@ -424,16 +417,16 @@ begin
 {$ENDIF}
           if FLine[Run + 2] = '=' then   {shift left assign}
           begin
-            inc(Run, 3)
+            Inc(Run, 3)
           end
           else                           {shift left}
           begin
-            inc(Run, 2);
+            Inc(Run, 2);
           end;
         end;
     else                                 {less than}
       begin
-        inc(Run);
+        Inc(Run);
         fTokenID := tkSymbol;
       end;
     end;
@@ -443,11 +436,11 @@ procedure TSynPHPSyn.MinusProc;
 begin
     fTokenID := tkSymbol;
     case FLine[Run + 1] of
-      '=': inc(Run, 2);                  {subtract assign}
-      '-': inc(Run, 2);                  {decrement}
-      '>': inc(Run, 2);                  {Class operator}
+      '=': Inc(Run, 2);                  {subtract assign}
+      '-': Inc(Run, 2);                  {decrement}
+      '>': Inc(Run, 2);                  {Class operator}
     else                                 {subtract}
-      inc(Run);
+      Inc(Run);
     end;
 end;
 
@@ -455,9 +448,9 @@ procedure TSynPHPSyn.MultiplyProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                  {multiply assign}
+    '=': Inc(Run, 2);                  {multiply assign}
   else                                 {multiply}
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -465,16 +458,16 @@ procedure TSynPHPSyn.NotSymbolProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                  {not equal}
+    '=': Inc(Run, 2);                  {not equal}
   else                                 {logical complement}
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynPHPSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPHPSyn.NumberProc;
@@ -490,15 +483,15 @@ procedure TSynPHPSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -506,10 +499,10 @@ procedure TSynPHPSyn.OrSymbolProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                  {inclusive or assign}
-    '|': inc(Run, 2);                  {conditional or}
+    '=': Inc(Run, 2);                  {inclusive or assign}
+    '|': Inc(Run, 2);                  {conditional or}
   else                                 {inclusive or}
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -517,17 +510,17 @@ procedure TSynPHPSyn.PlusProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                  {add assign}
-    '|': inc(Run, 2);                  {increment}
+    '=': Inc(Run, 2);                  {add assign}
+    '|': Inc(Run, 2);                  {increment}
   else                                 {add}
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynPHPSyn.PoundProc;
 begin
   repeat
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run);
   fTokenID := tkComment;
 end;
@@ -536,15 +529,15 @@ procedure TSynPHPSyn.RemainderSymbolProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                  {remainder assign}
+    '=': Inc(Run, 2);                  {remainder assign}
   else                                 {remainder}
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynPHPSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   FTokenID := tkSymbol;
 end;
 
@@ -552,29 +545,29 @@ end;
 procedure TSynPHPSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
   function LineHasChar(Line: Integer; character: char;
-  StartCol : Integer): boolean; // faster than Pos!
+  StartCol: Integer): Boolean; // faster than Pos!
   var
-    i: Integer;
+    I: Integer;
   begin
-    result := false;
+    Result := False;
     for I := StartCol to Length(CurLine) do begin
-      if CurLine[i] = character then begin
+      if CurLine[I] = character then begin
         // Char must have proper highlighting (ignore stuff inside comments...)
         if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> fCommentAttri then begin
-          result := true;
-          break;
+          Result := True;
+          Break;
         end;
       end;
     end;
   end;
 
-  function FindBraces(Line: Integer) : Boolean;
-  Var
-    Col : Integer;
+  function FindBraces(Line: Integer): Boolean;
+  var
+    Col: Integer;
   begin
     Result := False;
 
@@ -592,7 +585,7 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end else if CurLine[col] = '}' then
       begin
@@ -604,15 +597,15 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end;
     end; // for Col
   end;
 
   function FoldRegion(Line: Integer): Boolean;
-  Var
-    S : string;
+  var
+    S: string;
   begin
     Result := False;
     S := TrimLeft(CurLine);
@@ -670,10 +663,10 @@ begin
     case FLine[Run + 1] of
       '/':                               {c++ style comments}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           fTokenID := tkComment;
           while not IsLineEnd(Run) do
-            inc(Run);
+            Inc(Run);
         end;
       '*':
         begin
@@ -681,39 +674,39 @@ begin
           begin
             fRange := rsDocument;
             fTokenID := tkDocument;
-            inc(Run);
+            Inc(Run);
           end
           else                           {c style comment}
           begin
             fRange := rsComment;
             fTokenID := tkComment;
-            inc(Run);
+            Inc(Run);
           end;
 
-          inc(Run);
+          Inc(Run);
           while not IsLineEnd(Run) do
             if fLine[Run] = '*' then
             begin
               if fLine[Run + 1] = '/' then
               begin
                 fRange := rsUnKnown;
-                inc(Run, 2);
-                break;
+                Inc(Run, 2);
+                Break;
               end
               else
-                inc(Run)
+                Inc(Run)
             end
             else
-              inc(Run);
+              Inc(Run);
         end;
       '=':                               {division assign}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           fTokenID := tkSymbol;
         end;
     else                                 {division}
       begin
-        inc(Run);
+        Inc(Run);
         fTokenID := tkSymbol;
       end;
     end;
@@ -721,9 +714,9 @@ end;
 
 procedure TSynPHPSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynPHPSyn.StringProc;
@@ -757,7 +750,7 @@ begin
   while not IsLineEnd(Run) do
   begin
     if (FLine[Run] = iCloseChar) and not IsEscaped then
-      break;
+      Break;
     if (FLine[Run] = '$') and (iCloseChar = '"') and
       ((FLine[Run + 1] = '{') or IsIdentChar(FLine[Run + 1])) then
     begin
@@ -765,7 +758,7 @@ begin
         Dec(Run);
       if not IsEscaped then
       begin
-        { break the token to process the variable }
+        { Break the token to process the variable }
         fRange := rsVarExpansion;
         Exit;
       end
@@ -776,7 +769,7 @@ begin
   end;
   if (FLine[Run] = iCloseChar) then
     fRange := rsUnKnown;
-  if not IsLineEnd(Run) then inc(Run);
+  if not IsLineEnd(Run) then Inc(Run);
 end;
 
 procedure TSynPHPSyn.VarExpansionProc;
@@ -784,9 +777,9 @@ type
   TExpansionSyntax = (esNormal, esComplex, esBrace);
 var
   iSyntax: TExpansionSyntax;
-  iOpenBraces: integer;
-  iOpenBrackets: integer;
-  iTempRun: integer;
+  iOpenBraces: Integer;
+  iOpenBrackets: Integer;
+  iTempRun: Integer;
 begin
   fRange := rsString34; { var expansion only occurs in double quoted strings }
   FTokenID := tkVariable;
@@ -817,7 +810,7 @@ begin
         if iOpenBraces = 0 then
         begin
           Inc(Run);
-          break;
+          Break;
         end;
       end;
       if FLine[Run] = '{' then
@@ -846,10 +839,10 @@ begin
           begin
             Inc(iTempRun, 2);
             Run := iTempRun;
-            continue;
+            Continue;
           end
           else
-            break;
+            Break;
         end
         else
           Inc(iOpenBrackets);
@@ -857,10 +850,10 @@ begin
       else if (FLine[iTempRun] = '-') and (FLine[iTempRun +1] = '>') then
         Inc(iTempRun, 2)
       else
-        break;
+        Break;
 
       if not IsIdentChar(FLine[iTempRun]) then
-        break
+        Break
       else
         repeat
           Inc(iTempRun);
@@ -869,7 +862,7 @@ begin
       while FLine[iTempRun] = ']' do
       begin
         if iOpenBrackets = 0 then
-          break;
+          Break;
         Dec(iOpenBrackets);
         Inc(iTempRun);
       end;
@@ -884,7 +877,7 @@ begin
 {begin}
   if IsIdentChar(fLine[Run+1]) then
   begin
-    inc(Run);
+    Inc(Run);
     { checking function name }
     if fLine[Run-1] = '@' then
     begin
@@ -898,13 +891,13 @@ begin
       fTokenID := tkVariable;
     while IsIdentChar(fLine[Run]) do
     begin
-      inc(Run);
+      Inc(Run);
     end;
   end
   else
   begin
     fTokenID := tkSymbol;
-    inc(Run);
+    Inc(Run);
   end;
 {end}
 end;
@@ -913,15 +906,15 @@ procedure TSynPHPSyn.XOrSymbolProc;
 begin
   fTokenID := tkSymbol;
   case FLine[Run + 1] of
-    '=': inc(Run, 2);                  {xor assign}
+    '=': Inc(Run, 2);                  {xor assign}
   else                                 {xor}
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynPHPSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -935,17 +928,17 @@ begin
     #0:
       begin
         NullProc;
-        exit;
+        Exit;
       end;
     #10:
       begin
         LFProc;
-        exit;
+        Exit;
       end;
     #13:
       begin
         CRProc;
-        exit;
+        Exit;
       end;
   end;
 
@@ -954,15 +947,15 @@ begin
     begin
       if fLine[Run + 1] = '/' then
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fRange := rsUnKnown;
-        break;
+        Break;
       end
       else
-        inc(Run);
+        Inc(Run);
     end
     else
-      inc(Run);
+      Inc(Run);
 end;
 
 procedure TSynPHPSyn.String39Proc;
@@ -990,13 +983,13 @@ procedure TSynPHPSyn.HeredocProc;
       #13: CRProc;
     else
       repeat
-        inc(Run);
+        Inc(Run);
       until IsLineEnd(Run);
     end;
   end;
 
 var
-  i: Integer;
+  I: Integer;
 begin
   if IsLineEnd(Run) and (fTokenPos = Run) then
   begin
@@ -1007,28 +1000,28 @@ begin
 
   if Run = 0 then
   begin
-    i := 0;
+    I := 0;
 
-    while not (IsLineEnd(FLine[i]) or (FLine[i] = ';')) do
+    while not (IsLineEnd(FLine[I]) or (FLine[I] = ';')) do
     begin
-      if i > fHeredocLength then
+      if I > fHeredocLength then
       begin
         SkipToEOL;
         Exit;
       end;
-      Inc(i);
+      Inc(I);
     end;
 
-    if i <> fHeredocLength then
+    if I <> fHeredocLength then
     begin
       SkipToEOL;
       Exit;
     end;
 
-    if (CalcFCS(FLine[0], i) = fHeredocChecksum) then
+    if (CalcFCS(FLine[0], I) = fHeredocChecksum) then
     begin
       fRange := rsUnknown;
-      Run := i;
+      Run := I;
       Exit;
     end;
   end;
@@ -1091,7 +1084,7 @@ begin
   end;
 end;
 
-function TSynPHPSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynPHPSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -1153,7 +1146,7 @@ begin
   end;
 end;
 
-function TSynPHPSyn.GetTokenKind: integer;
+function TSynPHPSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

@@ -87,13 +87,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -428,7 +428,7 @@ begin
   inherited;
 end;
 
-function TSynJSONSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynJSONSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_KEYWORD: Result := FReservedAttri;
@@ -473,7 +473,7 @@ begin
   end;
 end;
 
-function TSynJSONSyn.GetTokenKind: integer;
+function TSynJSONSyn.GetTokenKind: Integer;
 begin
   Result := Ord(FTokenID);
 end;
@@ -487,29 +487,29 @@ end;
 procedure TSynJSONSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
   function LineHasChar(Line: Integer; character: char;
-  StartCol : Integer): boolean; // faster than Pos!
+  StartCol : Integer): Boolean; // faster than Pos!
   var
-    i: Integer;
+    I: Integer;
   begin
-    result := false;
+    Result := False;
     for I := StartCol to Length(CurLine) do begin
       if CurLine[i] = character then begin
         // Char must have proper highlighting (ignore stuff inside comments...)
         if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> CommentAttribute then begin
-          result := true;
-          break;
+          Result := True;
+          Break;
         end;
       end;
     end;
   end;
 
-  function FindBraces(Line: Integer; OpenBrace, CloseBrace: char; FoldType: integer) : Boolean;
-  Var
-    Col : Integer;
+  function FindBraces(Line: Integer; OpenBrace, CloseBrace: char; FoldType: Integer): Boolean;
+  var
+    Col: Integer;
   begin
     Result := False;
 
@@ -527,7 +527,7 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end else if CurLine[col] = CloseBrace then
       begin
@@ -539,7 +539,7 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end;
     end; // for Col

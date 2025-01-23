@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterSml.pas,v 1.14.2.6 2008/09/14 16:25:03 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides SynEdit with a Standard ML syntax highlighter, with extra options for the standard Basis library.)
@@ -125,7 +118,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -179,7 +172,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 157 + Ord(Str^) * 35;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 71;
   fStringLen := Str - fToIdent;
@@ -305,18 +298,18 @@ procedure TSynSMLSyn.CRProc;
 begin
   fTokenID := tkSpace;
   Case FLine[Run + 1] of
-    #10: inc(Run, 2);
-  else inc(Run);
+    #10: Inc(Run, 2);
+  else Inc(Run);
   end;
 end;
 
 procedure TSynSMLSyn.ColonProc;
 begin
-  inc(Run);
+  Inc(Run);
   if Basis and (fLine[Run] = ':') then
   begin
     fTokenID := tkOperator;
-    inc(Run);
+    Inc(Run);
   end
   else fTokenID := tkSymbol;
 end;
@@ -324,20 +317,20 @@ end;
 procedure TSynSMLSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynSMLSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynSMLSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynSMLSyn.NumberProc;
@@ -353,28 +346,28 @@ procedure TSynSMLSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
-      '.':  if FLine[Run + 1] = '.' then break;
+      '.':  if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynSMLSyn.OperatorProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkOperator;
 end;
 
 procedure TSynSMLSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynSMLSyn.StringProc;
@@ -394,10 +387,10 @@ begin
           end;
       end;
     end;
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run) or (fLine[Run] = '"');
   if FLine[Run] = '"' then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynSMLSyn.StringEndProc;
@@ -442,27 +435,27 @@ begin
         end;
       '"': Break;
     end;
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run) or (fLine[Run] = '"');
   if FLine[Run] = '"' then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynSMLSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynSMLSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
 procedure TSynSMLSyn.BasisOpProc;
 begin
-  inc(Run);
+  Inc(Run);
   if Basis then fTokenID := tkOperator else fTokenID := tkIdentifier;
 end;
 
@@ -608,7 +601,7 @@ begin
   end;
 end;
 
-function TSynSMLSyn.GetTokenKind: integer;
+function TSynSMLSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

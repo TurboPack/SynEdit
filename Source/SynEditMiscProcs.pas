@@ -103,13 +103,13 @@ function EnumHighlighterAttris(Highlighter: TSynCustomHighlighter;
 type
   // Procedural type for adding keyword entries when enumerating keyword
   // lists using the EnumerateKeywords procedure below.
-  TEnumerateKeywordEvent = procedure(AKeyword: string; AKind: integer)
+  TEnumerateKeywordEvent = procedure(AKeyword: string; AKind: Integer)
     of object;
 
   //  This procedure will call AKeywordProc for all keywords in KeywordList. A
   //  keyword is considered any number of successive chars that are contained in
   //  Identifiers, with chars not contained in Identifiers before and after them.
-  procedure EnumerateKeywords(AKind: integer; KeywordList: string;
+  procedure EnumerateKeywords(AKind: Integer; KeywordList: string;
     IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
 
 {$IFDEF SYN_HEREDOC}
@@ -130,7 +130,7 @@ procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen:
     Integer);
 
 // Tests whether a color is dark
-function IsColorDark(AColor : TColor) : boolean;
+function IsColorDark(AColor: TColor): Boolean;
 
 // Substitutes control characters with Unicode control pictures
 procedure SubstituteControlChars(var Input: string);
@@ -183,7 +183,7 @@ begin
     while pLine^ <> #0 do
     begin
       if pLine^ = #9 then
-        break;
+        Break;
       Inc(CharsBefore);
       Inc(pLine);
     end;
@@ -241,7 +241,7 @@ begin
             pDest^ := pSrc^;
             Inc(pDest);
           until (pSrc^ = #0);
-          exit;
+          Exit;
         end;
       end
       else
@@ -326,7 +326,7 @@ begin
             #0:
               begin
                 Inc(Result, Index);
-                break;
+                Break;
               end;
             #9:
               begin
@@ -375,7 +375,7 @@ begin
         begin
           case pNext^ of
             #0:
-              break;
+              Break;
             #9:
               begin
                 Inc(iPos, TabWidth);
@@ -383,7 +383,7 @@ begin
                 if iPos > Position then
                 begin
                   InsideTabChar := True;
-                  break;
+                  Break;
                 end;
               end;
           else
@@ -411,7 +411,7 @@ begin
       if IsOfCategory(p^) then
       begin
         Result := Start;
-        exit;
+        Exit;
       end;
       Inc(p);
       Inc(Start);
@@ -432,7 +432,7 @@ begin
       if IsOfCategory(Line[i]) then
       begin
         Result := i;
-        exit;
+        Exit;
       end;
   end;
 end;
@@ -573,7 +573,7 @@ begin
   Result := 1;
   for i := 0 to HighlighterList.Count - 1 do
     if HighlighterList[i] = Highlighter then
-      exit
+      Exit
     else if Assigned(HighlighterList[i]) and
       (TObject(HighlighterList[i]).ClassType = Highlighter.ClassType) then
       Inc(Result);
@@ -591,7 +591,7 @@ begin
   if (HighlighterList.IndexOf(Highlighter) >= 0) then
   begin
     if SkipDuplicates then
-      exit;
+      Exit;
   end
   else
     HighlighterList.Add(Highlighter);
@@ -602,7 +602,7 @@ begin
       Result := InternalEnumHighlighterAttris(DefaultHighlighter,
         SkipDuplicates, HighlighterAttriProc, Params, HighlighterList);
       if not Result then
-        exit;
+        Exit;
 
       for i := 0 to Schemes.Count - 1 do
       begin
@@ -613,12 +613,12 @@ begin
         Result := HighlighterAttriProc(Highlighter, Schemes[i].MarkerAttri,
           UniqueAttriName, Params);
         if not Result then
-          exit;
+          Exit;
 
         Result := InternalEnumHighlighterAttris(Schemes[i].Highlighter,
           SkipDuplicates, HighlighterAttriProc, Params, HighlighterList);
         if not Result then
-          exit
+          Exit
       end
     end
   else if Assigned(Highlighter) then
@@ -631,7 +631,7 @@ begin
       Result := HighlighterAttriProc(Highlighter, Highlighter.Attribute[i],
         UniqueAttriName, Params);
       if not Result then
-        exit
+        Exit
     end
 end;
 
@@ -644,7 +644,7 @@ begin
   if not Assigned(Highlighter) or not Assigned(HighlighterAttriProc) then
   begin
     Result := False;
-    exit;
+    Exit;
   end;
 
   HighlighterList := TList.Create;
@@ -656,7 +656,7 @@ begin
   end
 end;
 
-procedure EnumerateKeywords(AKind: integer; KeywordList: string;
+procedure EnumerateKeywords(AKind: Integer; KeywordList: string;
   IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
 var
   pStart, pEnd: PWideChar;
@@ -670,7 +670,7 @@ begin
       // skip over chars that are not in Identifiers
       while (pStart^ <> #0) and not IsIdentChar(pStart^) do
         Inc(pStart);
-      if pStart^ = #0 then break;
+      if pStart^ = #0 then Break;
       // find the last char that is in Identifiers
       pEnd := pStart + 1;
       while (pEnd^ <> #0) and IsIdentChar(pEnd^) do
@@ -734,7 +734,7 @@ end;
 {$ENDIF}
 
 function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer;
-Var
+var
   Res: UInt64;
   Remainder: UInt64;
 begin
@@ -828,7 +828,7 @@ begin
   end;
 end;
 
-function IsColorDark(AColor : TColor) : boolean;
+function IsColorDark(AColor: TColor): Boolean;
 var
   ACol: Longint;
 begin

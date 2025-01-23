@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterJava.pas,v 1.18.2.8 2005/12/16 20:09:37 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Java highlighter for SynEdit)
@@ -152,13 +145,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;    
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -220,7 +213,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 598 + Ord(Str^) * 349;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 113;
   fStringLen := Str - fToIdent;
@@ -310,17 +303,17 @@ begin
     #0:
       begin
         NullProc;
-        exit;
+        Exit;
       end;
     #10:
       begin
         LFProc;
-        exit;
+        Exit;
       end;
     #13:
       begin
         CRProc;
-        exit;
+        Exit;
       end;
   end;
 
@@ -329,12 +322,12 @@ begin
       '*':
         if fLine[Run + 1] = '/' then
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           fRange := rsUnknown;
-          break;
+          Break;
         end
-        else inc(Run);
-    else inc(Run);
+        else Inc(Run);
+    else Inc(Run);
     end;
 end;
 
@@ -343,19 +336,19 @@ begin
   case FLine[Run + 1] of
     '=':                               {and assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkAndAssign;
       end;
     '&':                               {conditional and}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkCondAnd;
       end;
   else                                 {and}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkAnd;
     end;
@@ -366,30 +359,30 @@ procedure TSynJavaSyn.AsciiCharProc;
 begin
   fTokenID := tkString;
   repeat
-    if IsLineEnd(Run) then break;
+    if IsLineEnd(Run) then Break;
     if fLine[Run] = #92 then
       Inc(Run); // backslash, if we have an escaped single character, skip to the next
-    if not IsLineEnd(Run) then inc(Run); //Add check here to prevent overrun from backslash being last char
+    if not IsLineEnd(Run) then Inc(Run); //Add check here to prevent overrun from backslash being last char
   until FLine[Run] = #39;
-  if not IsLineEnd(Run) then inc(Run);
+  if not IsLineEnd(Run) then Inc(Run);
 end;
 
 procedure TSynJavaSyn.AtSymbolProc;
 begin
   fTokenID := tkInvalid;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynJavaSyn.BraceCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
   FExtTokenID := xtkBraceClose;
 end;
 
 procedure TSynJavaSyn.BraceOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
   FExtTokenID := xtkBraceOpen;
 end;
@@ -398,21 +391,21 @@ procedure TSynJavaSyn.CRProc;
 begin
   fTokenID := tkSpace;
   Case FLine[Run + 1] of
-    #10: inc(Run, 2);
-  else inc(Run);
+    #10: Inc(Run, 2);
+  else Inc(Run);
   end;
 end;
 
 procedure TSynJavaSyn.ColonProc;
 begin
-  inc(Run);                            {colon - conditional}
+  Inc(Run);                            {colon - conditional}
   fTokenID := tkSymbol;
   FExtTokenID := xtkColon;
 end;
 
 procedure TSynJavaSyn.CommaProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   fExtTokenID := xtkComma;
 end;
@@ -422,13 +415,13 @@ begin
   case FLine[Run + 1] of
     '=':                               {logical equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkLogEqual;
       end;
   else                                 {assign}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkAssign;
     end;
@@ -440,7 +433,7 @@ begin
   Case FLine[Run + 1] of
     '=':                               {greater than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkGreaterThanEqual;
       end;
@@ -449,23 +442,23 @@ begin
         Case FLine[Run + 2] of
           '=':                         {shift right assign}
             begin
-            inc(Run, 3);
+            Inc(Run, 3);
             FExtTokenID := xtkShiftRightAssign;
             end;
           '>':
             if FLine[Run + 3] = '=' then
             begin
-              inc(Run, 4);             {unsigned shift right assign}
+              Inc(Run, 4);             {unsigned shift right assign}
               FExtTokenID := xtkUnsignShiftRightAssign;
             end
             else
             begin
-              inc(Run, 3);             {unsigned shift right}
+              Inc(Run, 3);             {unsigned shift right}
               FExtTokenID := xtkUnsignShiftRight;
             end;
         else                           {shift right}
           begin
-            inc(Run, 2);
+            Inc(Run, 2);
             FExtTokenID := xtkShiftRight;
           end;
         end;
@@ -473,7 +466,7 @@ begin
       end;
   else                                 {greater than}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkGreaterThan;
     end;
@@ -483,14 +476,14 @@ end;
 procedure TSynJavaSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynJavaSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynJavaSyn.LowerProc;
@@ -498,7 +491,7 @@ begin
   case FLine[Run + 1] of
     '=':                               {less than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkLessThanEqual;
       end;
@@ -506,19 +499,19 @@ begin
       begin
         if FLine[Run + 2] = '=' then   {shift left assign}
         begin
-          inc(Run, 3);
+          Inc(Run, 3);
           FExtTokenID := xtkShiftLeftAssign;
         end
         else                           {shift left}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           FExtTokenID := xtkShiftLeft;
         end;
         fTokenID := tkSymbol;
       end;
   else                                 {less than}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkLessThan;
     end;
@@ -530,19 +523,19 @@ begin
   case FLine[Run + 1] of
     '=':                               {subtract assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkSubtractAssign;
       end;
     '-':                               {decrement}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkDecrement;
       end;
   else                                 {subtract}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkSubtract;
     end;
@@ -554,13 +547,13 @@ begin
   case FLine[Run + 1] of
     '=':                               {multiply assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkMultiplyAssign;
       end;
   else                                 {multiply}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkMultiply;
     end;
@@ -572,13 +565,13 @@ begin
   case FLine[Run + 1] of
     '=':                               {not equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkNotEqual;
       end;
   else                                 {logical complement}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkLogComplement;
     end;
@@ -588,7 +581,7 @@ end;
 procedure TSynJavaSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynJavaSyn.NumberProc;
@@ -604,15 +597,15 @@ procedure TSynJavaSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -621,19 +614,19 @@ begin
   case FLine[Run + 1] of
     '=':                               {inclusive or assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkIncOrAssign;
       end;
     '|':                               {conditional or}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkCondOr;
       end;
   else                                 {inclusive or}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkIncOr;
     end;
@@ -645,19 +638,19 @@ begin
   case FLine[Run + 1] of
     '=':                               {add assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkAddAssign;
       end;
     '+':                               {increment}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkIncrement;
       end;
   else                                 {add}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkAdd;
     end;
@@ -666,7 +659,7 @@ end;
 
 procedure TSynJavaSyn.PointProc;
 begin
-  inc(Run);                            {point}
+  Inc(Run);                            {point}
   if CharInSet(FLine[Run], ['0'..'9']) then
   begin
     NumberProc;
@@ -678,7 +671,7 @@ end;
 
 procedure TSynJavaSyn.PoundProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkInvalid;
 end;
 
@@ -686,7 +679,7 @@ procedure TSynJavaSyn.QuestionProc;
 begin
   fTokenID := tkSymbol;                {question mark - conditional}
   FExtTokenID := xtkQuestion;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynJavaSyn.RemainderSymbolProc;
@@ -694,13 +687,13 @@ begin
   case FLine[Run + 1] of
     '=':                               {remainder assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkRemainderAssign;
       end;
   else                                 {remainder}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkRemainder;
     end;
@@ -709,47 +702,47 @@ end;
 
 procedure TSynJavaSyn.RoundCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkRoundClose;
-  dec(FRoundCount);
+  Dec(FRoundCount);
 end;
 
 procedure TSynJavaSyn.RoundOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   FTokenID := tkSymbol;
   FExtTokenID := xtkRoundOpen;
-  inc(FRoundCount);
+  Inc(FRoundCount);
 end;
 
 //++ CodeFolding
 procedure TSynJavaSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
   function LineHasChar(Line: Integer; character: char;
-  StartCol : Integer): boolean; // faster than Pos!
+  StartCol: Integer): Boolean; // faster than Pos!
   var
-    i: Integer;
+    I: Integer;
   begin
-    result := false;
+    Result := False;
     for I := StartCol to Length(CurLine) do begin
-      if CurLine[i] = character then begin
+      if CurLine[I] = character then begin
         // Char must have proper highlighting (ignore stuff inside comments...)
         if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> fCommentAttri then begin
-          result := true;
-          break;
+          Result := True;
+          Break;
         end;
       end;
     end;
   end;
 
-  function FindBraces(Line: Integer) : Boolean;
-  Var
-    Col : Integer;
+  function FindBraces(Line: Integer): Boolean;
+  var
+    Col: Integer;
   begin
     Result := False;
 
@@ -767,7 +760,7 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end else if CurLine[col] = '}' then
       begin
@@ -779,15 +772,15 @@ var
             Result := True;
           end;
           // Skip until a newline
-          break;
+          Break;
         end;
       end;
     end; // for Col
   end;
 
   function FoldRegion(Line: Integer): Boolean;
-  Var
-    S : string;
+  var
+    S: string;
   begin
     Result := False;
     S := TrimLeft(CurLine);
@@ -842,7 +835,7 @@ end;
 
 procedure TSynJavaSyn.SemiColonProc;
 begin
-  inc(Run);                            {semicolon}
+  Inc(Run);                            {semicolon}
   fTokenID := tkSymbol;
   FExtTokenID := xtkSemiColon;
 end;
@@ -852,11 +845,11 @@ begin
   case FLine[Run + 1] of
     '/':                               {c++ style comments}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkComment;
         while not IsLineEnd(Run) do
         begin
-          inc(Run);
+          Inc(Run);
         end;
       end;
     '*':
@@ -865,7 +858,7 @@ begin
         begin
           fRange := rsDocument;
           fTokenID := tkDocument;
-          inc(Run);
+          Inc(Run);
         end
         else                           {c style comment}
         begin
@@ -873,29 +866,29 @@ begin
           fTokenID := tkComment;
         end;
 
-        inc(Run, 2);
+        Inc(Run, 2);
         while not IsLineEnd(Run) do
           case fLine[Run] of
             '*':
               if fLine[Run + 1] = '/' then
               begin
-                inc(Run, 2);
+                Inc(Run, 2);
                 fRange := rsUnknown;
-                break;
-              end else inc(Run);
+                Break;
+              end else Inc(Run);
             else
-            inc(Run);
+            Inc(Run);
           end;
       end;
     '=':                               {division assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkDivideAssign;
       end;
   else                                 {division}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkDivide;
     end;
@@ -904,44 +897,44 @@ end;
 
 procedure TSynJavaSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynJavaSyn.SquareCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSquareClose;
-  dec(FSquareCount);
+  Dec(FSquareCount);
 end;
 
 procedure TSynJavaSyn.SquareOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSquareOpen;
-  inc(FSquareCount);
+  Inc(FSquareCount);
 end;
 
 procedure TSynJavaSyn.StringProc;
 begin
   fTokenID := tkString;
-  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then inc(Run, 2);
+  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then Inc(Run, 2);
   repeat
-    if IsLineEnd(Run) then break;
+    if IsLineEnd(Run) then Break;
     case FLine[Run] of
       #92: Inc(Run);  // Backslash, if we have an escaped charcter it can be skipped
     end;
-    if not IsLineEnd(Run) then inc(Run); //Add check here to prevent overrun from backslash being last char
+    if not IsLineEnd(Run) then Inc(Run); //Add check here to prevent overrun from backslash being last char
   until FLine[Run] = #34;
-  if not IsLineEnd(Run) then inc(Run);
+  if not IsLineEnd(Run) then Inc(Run);
 end;
 
 procedure TSynJavaSyn.TildeProc;
 begin
-  inc(Run);                            {bitwise complement}
+  Inc(Run);                            {bitwise complement}
   fTokenId := tkSymbol;
   FExtTokenID := xtkBitComplement;
 end;
@@ -951,13 +944,13 @@ begin
   Case FLine[Run + 1] of
     '=':                               {xor assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkXorAssign;
       end;
   else                                 {xor}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkXor;
     end;
@@ -966,7 +959,7 @@ end;
 
 procedure TSynJavaSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -1026,7 +1019,7 @@ begin
   inherited;
 end;
 
-function TSynJavaSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynJavaSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -1086,7 +1079,7 @@ begin
   end;
 end;
 
-function TSynJavaSyn.GetTokenKind: integer;
+function TSynJavaSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

@@ -18,8 +18,8 @@ uses
   SynEditMiscClasses;
 
   procedure RegisterSearchHighlightIndicatorSpec(Editor: TCustomSynEdit);
-  procedure HighligthtSearchTerm(ATerm : string; Editor: TCustomSynEdit;
-    SearchEngine : TSynEditSearchCustom; SearchOptions : TSynSearchOptions);
+  procedure HighligthtSearchTerm(ATerm: string; Editor: TCustomSynEdit;
+    SearchEngine: TSynEditSearchCustom; SearchOptions: TSynSearchOptions);
   procedure ClearSearchHighlight(Editor: TCustomSynEdit);
 
 implementation
@@ -47,8 +47,8 @@ begin
   Editor.Indicators.Clear(SearchHighlightIndicatorId);
 end;
 
-procedure HighligthtSearchTerm(ATerm : string; Editor: TCustomSynEdit;
-  SearchEngine : TSynEditSearchCustom; SearchOptions : TSynSearchOptions);
+procedure HighligthtSearchTerm(ATerm: string; Editor: TCustomSynEdit;
+  SearchEngine: TSynEditSearchCustom; SearchOptions: TSynSearchOptions);
 var
   I: Integer;
   J: Integer;

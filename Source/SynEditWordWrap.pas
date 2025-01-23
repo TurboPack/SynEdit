@@ -53,28 +53,28 @@ type
 
   TSynWordWrapPlugin = class(TInterfacedObject, ISynEditBufferPlugin)
   private
-    fLineOffsets: TList<Integer>;
-    fRowLengths: TList<Integer>;
-    fLineCount: integer;
-    fEditor: TCustomSynEdit;
-    fMaxRowWidth: Integer;
+    FLineOffsets: TList<Integer>;
+    FRowLengths: TList<Integer>;
+    FLineCount: Integer;
+    FEditor: TCustomSynEdit;
+    FMaxRowWidth: Integer;
   protected
     procedure WrapLine(const Index: Integer; out RowLengths: TArray<Integer>);
     procedure WrapLines;
-    function ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean = False): integer;
+    function ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean = False): Integer;
     procedure TrimArrays;
-    property Editor: TCustomSynEdit read fEditor;
+    property Editor: TCustomSynEdit read FEditor;
   public
     constructor Create(aOwner: TCustomSynEdit);
     destructor Destroy; override;
     { ISynEditBufferPlugin }
     function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
-    function RowCount: integer;
-    function GetRowLength(aRow: integer): integer;
-    function LinesInserted(aIndex: integer; aCount: integer): integer;
-    function LinesDeleted(aIndex: integer; aCount: integer): integer;
-    function LinePut(aIndex: integer; const OldLine: string): integer;
+    function RowCount: Integer;
+    function GetRowLength(aRow: Integer): Integer;
+    function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
+    function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
+    function LinePut(aIndex: Integer; const OldLine: string): Integer;
     procedure Reset;
     procedure DisplayChanged;
   end;
@@ -97,37 +97,37 @@ uses
 function TSynWordWrapPlugin.BufferToDisplayPos(
   const aPos: TBufferCoord): TDisplayCoord;
 var
-  vStartRow: integer; // first row of the line
-  cRow: integer;
-  vRowLen: integer;
+  vStartRow: Integer; // first row of the line
+  cRow: Integer;
+  vRowLen: Integer;
 begin
   Assert(aPos.Char > 0);
   Assert(aPos.Line > 0);
-  if fLineCount < aPos.Line then
+  if FLineCount < aPos.Line then
   begin
     // beyond EOF
     Result.Column := aPos.Char;
-    Result.Row := fRowLengths.Count + (aPos.Line - fLineCount);
+    Result.Row := FRowLengths.Count + (aPos.Line - FLineCount);
     Exit;
   end;
   if aPos.Line = 1 then
     vStartRow := 0
   else
-    vStartRow := fLineOffsets[aPos.Line - 2];
+    vStartRow := FLineOffsets[aPos.Line - 2];
   vRowLen := 0;
-  for cRow := vStartRow to fLineOffsets[aPos.Line - 1] - 1 do
+  for cRow := vStartRow to FLineOffsets[aPos.Line - 1] - 1 do
   begin
-    Inc(vRowLen, fRowLengths[cRow]);
+    Inc(vRowLen, FRowLengths[cRow]);
     if aPos.Char <= vRowLen then
     begin
-      Result.Column := aPos.Char - vRowLen + fRowLengths[cRow];
+      Result.Column := aPos.Char - vRowLen + FRowLengths[cRow];
       Result.Row := cRow + 1;
       Exit;
     end;
   end;
   // beyond EOL
-  Result.Column := aPos.Char - vRowLen + fRowLengths[fLineOffsets[aPos.Line - 1] - 1];
-  Result.Row := fLineOffsets[aPos.Line - 1];
+  Result.Column := aPos.Char - vRowLen + FRowLengths[FLineOffsets[aPos.Line - 1] - 1];
+  Result.Row := FLineOffsets[aPos.Line - 1];
 end;
 
 constructor TSynWordWrapPlugin.Create(aOwner: TCustomSynEdit);
@@ -135,148 +135,148 @@ begin
   inherited Create; // just to work as reminder in case I revert it to a TComponent...
   if aOwner = nil then
     raise Exception.Create( 'Owner of TSynWordWrapPlugin must be a TCustomSynEdit' );
-  fEditor := aOwner;
-  fLineCount := fEditor.Lines.Count;
-  fLineOffsets := TList<Integer>.Create;
-  fRowLengths := TList<Integer>.Create;
+  FEditor := aOwner;
+  FLineCount := FEditor.Lines.Count;
+  FLineOffsets := TList<Integer>.Create;
+  FRowLengths := TList<Integer>.Create;
   Reset;
 end;
 
 destructor TSynWordWrapPlugin.Destroy;
 begin
   inherited;
-  fLineOffsets.Free;;
-  fRowLengths.Free;
+  FLineOffsets.Free;;
+  FRowLengths.Free;
 end;
 
 procedure TSynWordWrapPlugin.DisplayChanged;
 begin
-  if Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth) <> fMaxRowWidth then
+  if Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth) <> FMaxRowWidth then
     Reset;
 end;
 
 function TSynWordWrapPlugin.DisplayToBufferPos(
   const aPos: TDisplayCoord): TBufferCoord;
 var
-  cLine: integer;
-  cRow: integer;
+  cLine: Integer;
+  cRow: Integer;
 begin
   Assert(aPos.Column > 0);
   Assert(aPos.Row > 0);
-  if aPos.Row > fRowLengths.Count then
+  if aPos.Row > FRowLengths.Count then
   begin
     // beyond EOF
     Result.Char := aPos.Column;
-    Result.Line := aPos.Row - fRowLengths.Count + fLineCount;
+    Result.Line := aPos.Row - FRowLengths.Count + FLineCount;
     Exit;
   end;
   //Optimized loop start point but could use binary search
-  for cLine := Min(aPos.Row - 2, fLineCount - 2) downto 0 do
-    if aPos.Row > fLineOffsets[cLine] then
+  for cLine := Min(aPos.Row - 2, FLineCount - 2) downto 0 do
+    if aPos.Row > FLineOffsets[cLine] then
     begin
       Result.Line := cLine + 2;
-      if aPos.Row = fLineOffsets[cLine + 1] then //last row of line
+      if aPos.Row = FLineOffsets[cLine + 1] then //last row of line
         Result.Char := aPos.Column
       else
-        Result.Char := Min(aPos.Column, fRowLengths[aPos.Row - 1] + 1);
-      for cRow := fLineOffsets[cLine] to aPos.Row - 2 do
-        Inc(Result.Char, fRowLengths[cRow]);
+        Result.Char := Min(aPos.Column, FRowLengths[aPos.Row - 1] + 1);
+      for cRow := FLineOffsets[cLine] to aPos.Row - 2 do
+        Inc(Result.Char, FRowLengths[cRow]);
       Exit;
     end;
   // first line
   Result.Line := 1;
-  if aPos.Row = fLineOffsets[0] then //last row of line
+  if aPos.Row = FLineOffsets[0] then //last row of line
     Result.Char := aPos.Column
   else
-    Result.Char := Min(aPos.Column, fRowLengths[aPos.Row - 1] + 1);
+    Result.Char := Min(aPos.Column, FRowLengths[aPos.Row - 1] + 1);
   for cRow := 0 to aPos.Row - 2 do
-    Inc(Result.Char, fRowLengths[cRow]);
+    Inc(Result.Char, FRowLengths[cRow]);
 end;
 
-function TSynWordWrapPlugin.GetRowLength(aRow: integer): integer;
+function TSynWordWrapPlugin.GetRowLength(aRow: Integer): Integer;
 // aRow is 1-based...
 begin
-  if (aRow <= 0) or (aRow > fRowLengths.Count) then
+  if (aRow <= 0) or (aRow > FRowLengths.Count) then
     TList.Error(SListIndexError, aRow);
-  Result := fRowLengths[aRow - 1];
+  Result := FRowLengths[aRow - 1];
 end;
 
-function TSynWordWrapPlugin.LinesDeleted(aIndex: integer; aCount: integer): integer;
+function TSynWordWrapPlugin.LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
 // Returns the number of rows deleted
 var
-  vStartRow: integer;
-  vEndRow: integer;
-  cLine: integer;
+  vStartRow: Integer;
+  vEndRow: Integer;
+  cLine: Integer;
 begin
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
-  Assert(aIndex + aCount <= fLineCount);
+  Assert(aIndex + aCount <= FLineCount);
 
   if aIndex = 0 then
     vStartRow := 0
   else
-    vStartRow := fLineOffsets[aIndex - 1];
-  vEndRow := fLineOffsets[aIndex + aCount - 1];
+    vStartRow := FLineOffsets[aIndex - 1];
+  vEndRow := FLineOffsets[aIndex + aCount - 1];
   Result := vEndRow - vStartRow;
-  // resize fRowLengths
-  if vStartRow < fRowLengths.Count then
-    fRowLengths.DeleteRange(vStartRow, Result);
-  // resize fLineOffsets
-  fLineOffsets.DeleteRange(aIndex, aCount);
-  Dec(fLineCount, aCount);
+  // resize FRowLengths
+  if vStartRow < FRowLengths.Count then
+    FRowLengths.DeleteRange(vStartRow, Result);
+  // resize FLineOffsets
+  FLineOffsets.DeleteRange(aIndex, aCount);
+  Dec(FLineCount, aCount);
   // update offsets
-  for cLine := aIndex to fLineCount - 1 do
-    Dec(fLineOffsets.List[cLine], Result);
-  if fLineCount = 0 then
+  for cLine := aIndex to FLineCount - 1 do
+    Dec(FLineOffsets.List[cLine], Result);
+  if FLineCount = 0 then
     TrimArrays;
 end;
 
-function TSynWordWrapPlugin.LinesInserted(aIndex: integer; aCount: integer): integer;
+function TSynWordWrapPlugin.LinesInserted(aIndex: Integer; aCount: Integer): Integer;
 // Returns the number of rows inserted
 var
-  cLine: integer;
+  cLine: Integer;
   TempArray: TArray<Integer>;
 begin
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
-  Assert(aIndex <= fLineCount);
-  Inc(fLineCount, aCount);
-  // resize fLineOffsets
+  Assert(aIndex <= FLineCount);
+  Inc(FLineCount, aCount);
+  // resize FLineOffsets
   SetLength(TempArray, aCount);
-  fLineOffsets.InsertRange(aIndex, TempArray);
+  FLineOffsets.InsertRange(aIndex, TempArray);
   // Rewrap
   Result := 0;
   for cLine := aIndex to aIndex + aCount - 1 do
     Inc(Result, ReWrapLine(cLine, True));
   // Adjust lines below
-  for cLine := aIndex + aCount to fLineCount - 1 do
-    Inc(fLineOffsets.List[cLine], Result);
+  for cLine := aIndex + aCount to FLineCount - 1 do
+    Inc(FLineOffsets.List[cLine], Result);
 end;
 
-function TSynWordWrapPlugin.LinePut(aIndex: integer; const OldLine: string): integer;
+function TSynWordWrapPlugin.LinePut(aIndex: Integer; const OldLine: string): Integer;
 var
-  cLine: integer;
+  cLine: Integer;
 begin
   Assert(aIndex >= 0);
-  Assert(aIndex < fLineCount);
+  Assert(aIndex < FLineCount);
   // Rewrap
   Result := ReWrapLine(aIndex);
   // Adjust lines below
   if Result <> 0 then
-    for cLine := aIndex + 1 to fLineCount - 1 do
-      Inc(fLineOffsets.List[cLine], Result);
+    for cLine := aIndex + 1 to FLineCount - 1 do
+      Inc(FLineOffsets.List[cLine], Result);
 end;
 
 procedure TSynWordWrapPlugin.Reset;
 begin
   // Ensure minimum line length
-  fMaxRowWidth := Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth);
+  FMaxRowWidth := Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth);
 
   WrapLines;
 end;
 
-function TSynWordWrapPlugin.ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean): integer;
-// Wraps the line and adjusts fRowLenghts and fLineOffsets[aIndex]
+function TSynWordWrapPlugin.ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean): Integer;
+// Wraps the line and adjusts fRowLenghts and FLineOffsets[aIndex]
 // Returns RowCount delta (how many wrapped lines were added or removed by this change).
 var
   RowLengths: TArray<Integer>;
@@ -288,15 +288,15 @@ begin
   if aIndex = 0 then
     PrevOffset := 0
   else
-    PrevOffset := fLineOffsets[aIndex - 1];
+    PrevOffset := FLineOffsets[aIndex - 1];
   if IsLineInserted then
     PrevRowCount := 0
   else
-    PrevRowCount := fLineOffsets[aIndex] - PrevOffset;
+    PrevRowCount := FLineOffsets[aIndex] - PrevOffset;
   if PrevRowCount > 0 then
-    fRowLengths.DeleteRange(PrevOffset, PrevRowCount);
-  fRowLengths.InsertRange(PrevOffset, RowLengths);
-  fLineOffsets[aIndex] := PrevOffset + Length(RowLengths);
+    FRowLengths.DeleteRange(PrevOffset, PrevRowCount);
+  FRowLengths.InsertRange(PrevOffset, RowLengths);
+  FLineOffsets[aIndex] := PrevOffset + Length(RowLengths);
   Result := Length(RowLengths) - PrevRowCount;
 end;
 
@@ -305,12 +305,12 @@ var
   cLine: Integer;
   RowLengths: TArray<TArray<Integer>>;
 begin
-  fLineOffsets.Clear;
-  fLineOffsets.Capacity := Editor.Lines.Count;
-  fRowLengths.Clear;
-  fRowLengths.Capacity := Editor.Lines.Count;
+  FLineOffsets.Clear;
+  FLineOffsets.Capacity := Editor.Lines.Count;
+  FRowLengths.Clear;
+  FRowLengths.Capacity := Editor.Lines.Count;
 
-  if (Editor.Lines.Count = 0) or (fMaxRowWidth < Editor.CharWidth) then
+  if (Editor.Lines.Count = 0) or (FMaxRowWidth < Editor.CharWidth) then
     Exit;
 
   SetLength(RowLengths, Editor.Lines.Count);
@@ -321,24 +321,24 @@ begin
 
   for cLine := 0 to Editor.Lines.Count - 1 do
   begin
-    fRowLengths.AddRange(RowLengths[cLine]);
-    fLineOffsets.Add(fRowLengths.Count);
+    FRowLengths.AddRange(RowLengths[cLine]);
+    FLineOffsets.Add(FRowLengths.Count);
   end;
 end;
 
-function TSynWordWrapPlugin.RowCount: integer;
+function TSynWordWrapPlugin.RowCount: Integer;
 begin
-  Result := fRowLengths.Count;
-  if fLineCount > 0 then
-    Assert(Result = fLineOffsets[fLineCount - 1])
+  Result := FRowLengths.Count;
+  if FLineCount > 0 then
+    Assert(Result = FLineOffsets[FLineCount - 1])
   else
     Assert(Result = 0);
 end;
 
 procedure TSynWordWrapPlugin.TrimArrays;
 begin
-  fLineOffsets.TrimExcess;
-  fRowLengths.TrimExcess;
+  FLineOffsets.TrimExcess;
+  FRowLengths.TrimExcess;
 end;
 
 procedure TSynWordWrapPlugin.WrapLine(const Index: Integer;
@@ -359,7 +359,7 @@ begin
 
   PStart := PChar(SLine);
   PEnd := PStart + SLine.Length;
-  if (PEnd - PStart) * CW < fMaxRowWidth div 3 then
+  if (PEnd - PStart) * CW < FMaxRowWidth div 3 then
     // Optimization.  Assume line will fit!
     RowLengths := [SLine.Length]
   else
@@ -367,7 +367,7 @@ begin
     fWorkList := TList<Integer>.Create;
     try
       // Preallocation helps with very long lines
-      fWorkList.Capacity := MulDiv(SLine.Length, CW + 1, fMaxRowWidth);
+      fWorkList.Capacity := MulDiv(SLine.Length, CW + 1, FMaxRowWidth);
       P := PStart;
       PBreak := nil;
       W := 0;
@@ -384,7 +384,7 @@ begin
           else
             Break;
           end;
-          if W > fMaxRowWidth then
+          if W > FMaxRowWidth then
             Break;
           if (P > PStart) and Editor.IsWordBreakChar(P^) then
             // Keep opening brackets with the next line
@@ -392,7 +392,7 @@ begin
           Inc(P);
         end;
 
-        if (P < PEnd) and (W <= fMaxRowWidth) then
+        if (P < PEnd) and (W <= FMaxRowWidth) then
         begin
           // Just in case P is followed by combining characters
           if (P > PStart) and not (Word((P-1)^) in [9, 32]) then
@@ -412,9 +412,9 @@ begin
           Layout.Create(Editor.TextFormat, P, P2-P, MaxInt, Editor.LineHeight);
           LW := Round(Layout.TextMetrics.width);
 
-          if W + LW >= fMaxRowWidth then
+          if W + LW >= FMaxRowWidth then
           begin
-            CheckOSError(Layout.IDW.HitTestPoint(fMaxRowWidth - W,
+            CheckOSError(Layout.IDW.HitTestPoint(FMaxRowWidth - W,
               Editor.LineHeight div 2, IsTrailing, IsInside, HTM));
             Inc(P, HTM.textPosition);
           end
@@ -423,7 +423,7 @@ begin
           Inc(W, LW);
         end;
 
-        if W >= fMaxRowWidth then
+        if W >= FMaxRowWidth then
         begin
           if Assigned(PBreak) then
           begin

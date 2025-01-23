@@ -554,7 +554,7 @@ function GetScrollHint: THintWindow;
 begin
   if ScrollHintWnd = nil then begin
     ScrollHintWnd := HintWindowClass.Create(Application);
-    ScrollHintWnd.Visible := FALSE;
+    ScrollHintWnd.Visible := False;
   end;
   Result := ScrollHintWnd;
 end;
@@ -589,7 +589,7 @@ begin
               ScrollHint := GetScrollHint;
               if not ScrollHint.Visible then begin
                 ScrollHint.Color := Application.HintColor;
-                ScrollHint.Visible := TRUE;
+                ScrollHint.Visible := True;
               end;
               s := Format(SYNS_PreviewScrollInfoFmt, [FPageNumber]);
               rc := ScrollHint.CalcHintRect(200, s, nil);
@@ -704,7 +704,7 @@ begin
 end;
 
 procedure TSynEditPrintPreview.WMMouseWheel(var Message: TWMMouseWheel);
-Var
+var
   Shift: TShiftState;
   WheelDelta: SmallInt;
   MousePos: TSmallPoint;
@@ -721,7 +721,7 @@ begin
 end;
 
 procedure TSynEditPrintPreview.WMMouseHWheel(var Message: TWMMouseWheel);
-Var
+var
   Shift: TShiftState;
   WheelDelta: SmallInt;
   MousePos: TSmallPoint;

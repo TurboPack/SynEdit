@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterAsm.pas,v 1.14.2.6 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a x86 Assembler highlighter for SynEdit)
@@ -75,7 +68,7 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    FKeywords: TDictionary<String, TtkTokenKind>;
+    FKeywords: TDictionary<string, TtkTokenKind>;
     procedure CommentProc;
     procedure CRProc;
     procedure GreaterProc;
@@ -90,7 +83,7 @@ type
     procedure SingleQuoteStringProc;
     procedure SymbolProc;
     procedure UnknownProc;
-    procedure DoAddKeyword(AKeyword: string; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
   protected
     function GetSampleSource: string; override;
@@ -101,12 +94,12 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -164,7 +157,7 @@ const
     'sldt,smsw,stc,std,sti,stos,stosb,stosd,stosw,str,sub,test,verr,verw,' +
     'wait,wbinvd,xadd,xchg,xlat,xlatb,xor';
 
-procedure TSynAsmSyn.DoAddKeyword(AKeyword: string; AKind: integer);
+procedure TSynAsmSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -172,7 +165,7 @@ end;
 
 function TSynAsmSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
@@ -192,7 +185,7 @@ begin
   fCaseSensitive := False;
 
   // Create the keywords dictionary case-insensitive
-  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
+  FKeywords := TDictionary<string, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri       := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
@@ -247,14 +240,14 @@ end;
 procedure TSynAsmSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynAsmSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynAsmSyn.LowerProc;
@@ -267,7 +260,7 @@ end;
 procedure TSynAsmSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynAsmSyn.NumberProc;
@@ -283,7 +276,7 @@ procedure TSynAsmSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
     Inc(Run);
@@ -313,39 +306,39 @@ procedure TSynAsmSyn.StringProc;
 begin
   fTokenID := tkString;
   if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then
-    inc(Run, 2);
+    Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #34;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynAsmSyn.SingleQuoteStringProc;
 begin
   fTokenID := tkString;
   if (FLine[Run + 1] = #39) and (FLine[Run + 2] = #39) then
-    inc(Run, 2);
+    Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #39;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynAsmSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynAsmSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkIdentifier;
 end;
 
@@ -378,7 +371,7 @@ begin
   inherited;
 end;
 
-function TSynAsmSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynAsmSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -412,7 +405,7 @@ begin
   end;
 end;
 
-function TSynAsmSyn.GetTokenKind: integer;
+function TSynAsmSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

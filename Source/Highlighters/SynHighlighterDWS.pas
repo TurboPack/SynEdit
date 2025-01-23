@@ -60,7 +60,7 @@ type
     rsType, rsUnit, rsUnknown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function : TtkTokenKind of object;
+  TIdentFuncTableFunc = function: TtkTokenKind of object;
 
 type
    TAnsiStringList = class(TStringList)
@@ -72,9 +72,9 @@ type
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
-    fCommentClose : Char;
+    fCommentClose: Char;
     fIdentFuncTable: array[0..388] of TIdentFuncTableFunc;
-    fKeyWords : TAnsiStringList;
+    fKeyWords: TAnsiStringList;
     FKeywordsUnitScoped: TAnsiStringList;
     FKeywordsPropertyScoped: TAnsiStringList;
     FKeywordsTypeScoped: TAnsiStringList;
@@ -91,8 +91,8 @@ type
     fDirecAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
-    RE_BlockBegin : TRegEx;
-    RE_BlockEnd : TRegEx;
+    RE_BlockBegin: TRegEx;
+    RE_BlockEnd: TRegEx;
     RE_Code: TRegEx;
     RE_ControlFlow: TRegEx;
     function AltFunc: TtkTokenKind;
@@ -323,16 +323,16 @@ end;
 {$ENDIF}
 function TSynDWSSyn.HashKey(Str: PWideChar): Cardinal;
 var
-  c : Word;
+  C: Word;
 begin
   Result:=0;
   while IsIdentChar(Str^) do
   begin
-      c:=Ord(Str^);
-      if c in [Ord('A')..Ord('Z')] then
-         c := c + (Ord('a')-Ord('A'));
-      Result := Result * 692 + c * 171;
-      inc(Str);
+      C:=Ord(Str^);
+      if C in [Ord('A')..Ord('Z')] then
+         C := C + (Ord('a')-Ord('A'));
+      Result := Result * 692 + C * 171;
+      Inc(Str);
    end;
    fStringLen := Str - fToIdent;
    Result := Result mod Cardinal(Length(fIdentFuncTable));
@@ -356,37 +356,37 @@ end;
 
 procedure TSynDWSSyn.InitIdent;
 
-  procedure SetIdentFunc(h : Integer; const func : TIdentFuncTableFunc);
+  procedure SetIdentFunc(h: Integer; const func: TIdentFuncTableFunc);
   begin
     fIdentFuncTable[h]:=func;
   end;
 
 var
-  i : Integer;
+  I: Integer;
 begin
-  for i := Low(cKeywords) to High(cKeywords) do
+  for I := Low(cKeywords) to High(cKeywords) do
   begin
-    SetIdentFunc(HashKey(@cKeyWords[i][1]), KeyWordFunc);
-    fKeyWords.Add(cKeyWords[i]);
+    SetIdentFunc(HashKey(@cKeyWords[I][1]), KeyWordFunc);
+    fKeyWords.Add(cKeyWords[I]);
    end;
-  for i := 0 to High(cKeywordsUnitScoped) do
+  for I := 0 to High(cKeywordsUnitScoped) do
   begin
-    SetIdentFunc(HashKey(@cKeywordsUnitScoped[i][1]), FuncUnitScoped);
-    FKeywordsUnitScoped.Add(cKeywordsUnitScoped[i]);
+    SetIdentFunc(HashKey(@cKeywordsUnitScoped[I][1]), FuncUnitScoped);
+    FKeywordsUnitScoped.Add(cKeywordsUnitScoped[I]);
   end;
-  for i := 0 to High(cKeywordsPropertyScoped) do
+  for I := 0 to High(cKeywordsPropertyScoped) do
   begin
-    SetIdentFunc(HashKey(@cKeywordsPropertyScoped[i][1]), FuncPropertyScoped);
-    FKeywordsPropertyScoped.Add(cKeywordsPropertyScoped[i]);
+    SetIdentFunc(HashKey(@cKeywordsPropertyScoped[I][1]), FuncPropertyScoped);
+    FKeywordsPropertyScoped.Add(cKeywordsPropertyScoped[I]);
   end;
-  for i := 0 to High(cKeywordsTypeScoped) do
+  for I := 0 to High(cKeywordsTypeScoped) do
   begin
-    SetIdentFunc(HashKey(@cKeywordsTypeScoped[i][1]), FuncTypeScoped);
-    FKeywordsTypeScoped.Add(cKeywordsTypeScoped[i]);
+    SetIdentFunc(HashKey(@cKeywordsTypeScoped[I][1]), FuncTypeScoped);
+    FKeywordsTypeScoped.Add(cKeywordsTypeScoped[I]);
   end;
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if @fIdentFuncTable[i] = nil then
-      fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[I] = nil then
+      fIdentFuncTable[I] := AltFunc;
 
   SetIdentFunc(HashKey('asm'), FuncAsm);
   SetIdentFunc(HashKey('end'), FuncEnd);
@@ -404,7 +404,7 @@ end;
 
 function TSynDWSSyn.KeyWordFunc: TtkTokenKind;
 var
-   buf : String;
+   buf: string;
 begin
    SetString(buf, fToIdent, fStringLen);
    if (fKeyWords.IndexOf(buf)>=0) and (FLine[Run - 1] <> '&') then
@@ -459,7 +459,7 @@ end;
 
 function TSynDWSSyn.FuncTypeScoped: TtkTokenKind;
 var
-   buf : String;
+   buf: string;
 begin
    SetString(buf, fToIdent, fStringLen);
   if (FRange = rsType) and (FKeywordsTypeScoped.IndexOf(buf) >= 0) then
@@ -484,7 +484,7 @@ end;
 
 function TSynDWSSyn.FuncPropertyScoped: TtkTokenKind;
 var
-   buf: String;
+   buf: string;
 begin
   SetString(buf, FToIdent, FStringLen);
   if (FRange = rsProperty) and (FKeywordsPropertyScoped.IndexOf(buf) >= 0) then
@@ -495,7 +495,7 @@ end;
 
 function TSynDWSSyn.FuncUnitScoped: TtkTokenKind;
 var
-   buf: String;
+   buf: string;
 begin
   SetString(buf, FToIdent, FStringLen);
   if (FRange = rsUnit) and (FKeywordsUnitScoped.IndexOf(buf) >= 0) then
@@ -529,8 +529,8 @@ end;
 procedure TSynDWSSyn.AddressOpProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
-  if fLine[Run] = '@' then inc(Run);
+  Inc(Run);
+  if fLine[Run] = '@' then Inc(Run);
 end;
 
 procedure TSynDWSSyn.AsciiCharProc;
@@ -576,7 +576,7 @@ begin
             fRange := rsAsm
           else
             fRange := rsUnKnown;
-          break;
+          Break;
         end;
         Inc(Run);
       until IsLineEnd(Run);
@@ -606,14 +606,14 @@ end;
 procedure TSynDWSSyn.ColonOrGreaterProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
-  if fLine[Run] = '=' then inc(Run);
+  Inc(Run);
+  if fLine[Run] = '=' then Inc(Run);
 end;
 
 procedure TSynDWSSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
     Inc(Run);
 end;
@@ -621,7 +621,7 @@ end;
 procedure TSynDWSSyn.IdentProc;
 begin
   fTokenID := IdentKind(fLine + Run);
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   while IsIdentChar(fLine[Run]) do
     Inc(Run);
 end;
@@ -639,7 +639,7 @@ procedure TSynDWSSyn.IntegerProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkHex;
   while IsIntegerChar do
     Inc(Run);
@@ -648,24 +648,24 @@ end;
 procedure TSynDWSSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynDWSSyn.LoadDelphiStyle;
 
 
-   procedure AddKeyword( const AName : string );
+   procedure AddKeyword( const AName: string );
    var
-     I : integer;
+     I: Integer;
    begin
      I := HashKey( @AName[1] );
      fIdentFuncTable[I]:= KeyWordFunc;
      fKeyWords.Add(AName);
    end;
 
-   procedure RemoveKeyword( const AName : string );
+   procedure RemoveKeyword( const AName: string );
    var
-     I : integer;
+     I: Integer;
    begin
      I := fKeyWords.IndexOf(AName);
      if I <> -1 then
@@ -681,7 +681,7 @@ const
   cKeywordsToRemove: array[0..1] of string = (
       'break', 'exit');
 var
-  i : integer;
+  I: Integer;
 begin
   // This routine can be called to install a Delphi style of colors
   // and highlighting. It modifies the basic TSynDWSSyn to reproduce
@@ -693,18 +693,18 @@ begin
   CommentAttri.Foreground := clComment;
 
   // These are keywords highlighted in Delphi but not in TSynDWSSyn ..
-  for i:=Low(cKeywordsToAdd) to High(cKeywordsToAdd) do
-    AddKeyword( cKeywordsToAdd[i] );
+  for I:=Low(cKeywordsToAdd) to High(cKeywordsToAdd) do
+    AddKeyword( cKeywordsToAdd[I] );
 
   // These are keywords highlighted in TSynDWSSyn but not in Delphi...
-  for i:=Low(cKeywordsToRemove) to High(cKeywordsToRemove) do
-    RemoveKeyword( cKeywordsToRemove[i] );
+  for I:=Low(cKeywordsToRemove) to High(cKeywordsToRemove) do
+    RemoveKeyword( cKeywordsToRemove[I] );
 end;
 
 procedure TSynDWSSyn.LowerProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   if (fLine[Run] = '=') or (fLine[Run] = '>') then
     Inc(Run);
 end;
@@ -712,7 +712,7 @@ end;
 procedure TSynDWSSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynDWSSyn.NumberProc;
@@ -754,7 +754,7 @@ end;
 procedure TSynDWSSyn.PointProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   if (fLine[Run] = '.') or (fLine[Run - 1] = ')') then
     Inc(Run);
 end;
@@ -774,7 +774,7 @@ begin
           fRange := rsAsm
         else
           fRange := rsUnKnown;
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -799,7 +799,7 @@ begin
       end;
     '.':
       begin
-        inc(Run);
+        Inc(Run);
         fTokenID := tkSymbol;
       end;
   else
@@ -844,9 +844,9 @@ end;
 
 procedure TSynDWSSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynDWSSyn.StringAposProc;
@@ -858,7 +858,7 @@ begin
     if fLine[Run] = #39 then begin
       Inc(Run);
       if fLine[Run] <> #39 then
-        break;
+        Break;
     end;
     Inc(Run);
   end;
@@ -876,7 +876,7 @@ begin
       Inc(Run);
       if fLine[Run] <> '''' then begin
         fRange := rsUnknown;
-        break;
+        Break;
       end;
     end;
     Inc(Run);
@@ -907,7 +907,7 @@ begin
       if fLine[Run] <> '"' then
       begin
         fRange := rsUnknown;
-        break;
+        Break;
       end;
     end;
     Inc(Run);
@@ -916,13 +916,13 @@ end;
 
 procedure TSynDWSSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynDWSSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -1040,7 +1040,7 @@ end;
 type
   TRangeStates = set of TRangeState;
 
-Const
+const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_Asm = 12;
@@ -1054,14 +1054,14 @@ Const
 procedure TSynDWSSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
   function BlockDelimiter(Line: Integer): Boolean;
   var
     BeginIndex: Integer;
     EndIndex: Integer;
-    Match : TMatch;
+    Match: TMatch;
     MatchValue: string;
     StructureHighlight: Boolean;
   begin
@@ -1149,8 +1149,8 @@ var
     end;
   end;
 
-  function IsMultiLineStatement(Line : integer; Ranges: TRangeStates;
-     Fold : Boolean; FoldType: Integer = 1): Boolean;
+  function IsMultiLineStatement(Line: Integer; Ranges: TRangeStates;
+     Fold: Boolean; FoldType: Integer = 1): Boolean;
   begin
     Result := True;
     if TRangeState(GetLineRange(LinesToScan, Line)) in Ranges then
@@ -1214,28 +1214,28 @@ procedure TSynDWSSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
 {
    Provide folding for procedures and functions included nested ones.
 }
-Var
-  i, j, SkipTo: Integer;
+var
+  I, j, SkipTo: Integer;
   ImplementationIndex: Integer;
   FoldRange: TSynFoldRange;
-  Match : TMatch;
+  Match: TMatch;
 begin
   ImplementationIndex := - 1;
-  for i  := FoldRanges.Ranges.Count - 1 downto 0 do
+  for I  := FoldRanges.Ranges.Count - 1 downto 0 do
   begin
-    if FoldRanges.Ranges.List[i].FoldType = FT_Implementation then
-      ImplementationIndex := i
-    else if FoldRanges.Ranges.List[i].FoldType = FT_CodeDeclaration then
+    if FoldRanges.Ranges.List[I].FoldType = FT_Implementation then
+      ImplementationIndex := I
+    else if FoldRanges.Ranges.List[I].FoldType = FT_CodeDeclaration then
     begin
       if ImplementationIndex >= 0 then begin
         // Code declaration in the Interface part of a unit
-        FoldRanges.Ranges.Delete(i);
+        FoldRanges.Ranges.Delete(I);
         Dec(ImplementationIndex);
-        continue;
+        Continue;
       end;
       // Examine the following ranges
       SkipTo := 0;
-      j := i + 1;
+      j := I + 1;
       while J < FoldRanges.Ranges.Count do begin
         FoldRange := FoldRanges.Ranges.List[j];
         Inc(j);
@@ -1244,7 +1244,7 @@ begin
             // Nested procedure or function
             begin
               SkipTo := FoldRange.ToLine;
-              continue;
+              Continue;
             end;
           FT_Standard:
             // possibly begin end;
@@ -1258,14 +1258,14 @@ begin
                 begin
                   // function or procedure followed by begin end block
                   // Adjust ToLine
-                  FoldRanges.Ranges.List[i].ToLine := FoldRange.ToLine;
-                  FoldRanges.Ranges.List[i].FoldType := FT_CodeDeclarationWithBody;
-                  break
+                  FoldRanges.Ranges.List[I].ToLine := FoldRange.ToLine;
+                  FoldRanges.Ranges.List[I].FoldType := FT_CodeDeclarationWithBody;
+                  Break
                 end else
                 begin
                   // class or record declaration follows, so
-                  FoldRanges.Ranges.Delete(i);
-                  break;
+                  FoldRanges.Ranges.Delete(I);
+                  Break;
                  end;
               end else
                 Assert(False, 'TSynDWSSyn.AdjustFoldRanges');
@@ -1277,8 +1277,8 @@ begin
             else begin
               // Otherwise delete
               // eg. function definitions within a class definition
-              FoldRanges.Ranges.Delete(i);
-              break
+              FoldRanges.Ranges.Delete(I);
+              Break
             end;
           end;
         end;
@@ -1346,21 +1346,21 @@ end;
 //
 function TSynDWSSyn.IsCurrentToken(const Token: string): Boolean;
 var
-   i : Integer;
-   temp : PWideChar;
+   I: Integer;
+   temp: PWideChar;
 begin
    temp := fToIdent;
   if Length(Token) = FStringLen then
   begin
       Result := True;
-    for i := 1 to FStringLen do
+    for I := 1 to FStringLen do
     begin
-      if (temp^ <> Token[i]) and ((temp^>'z') or (UpCase(temp^) <> UpCase(Token[i]))) then
+      if (temp^ <> Token[I]) and ((temp^>'z') or (UpCase(temp^) <> UpCase(Token[I]))) then
       begin
             Result := False;
-            break;
+            Break;
          end;
-         inc(temp);
+         Inc(temp);
       end;
   end
   else

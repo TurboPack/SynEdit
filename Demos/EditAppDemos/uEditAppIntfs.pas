@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: uEditAppIntfs.pas,v 1.2 2000/11/22 08:34:14 mghie Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit uEditAppIntfs;
@@ -46,37 +39,37 @@ uses
 type
   IEditor = interface
     procedure Activate;
-    function AskSaveChanges: boolean;
-    function CanClose: boolean;
+    function AskSaveChanges: Boolean;
+    function CanClose: Boolean;
     procedure Close;
     function GetCaretPos: TPoint;
     function GetEditorState: string;
     function GetFileName: string;
     function GetFileTitle: string;
-    function GetModified: boolean;
+    function GetModified: Boolean;
     procedure OpenFile(AFileName: string);
   end;
 
   IEditorFactory = interface
-    function CanCloseAll: boolean;
+    function CanCloseAll: Boolean;
     procedure CloseAll;
     function CreateBorderless(AOwner: TForm): IEditor;
     function CreateMDIChild(AOwner: TForm): IEditor;
     function CreateTabSheet(AOwner: TPageControl): IEditor;
-    function GetEditorCount: integer;
-    function GetEditor(Index: integer): IEditor;
+    function GetEditorCount: Integer;
+    function GetEditor(Index: Integer): IEditor;
     procedure RemoveEditor(AEditor: IEditor);
-    property Editor[Index: integer]: IEditor read GetEditor;
+    property Editor[Index: Integer]: IEditor read GetEditor;
   end;
 
   IEditCommands = interface
-    function CanCopy: boolean;
-    function CanCut: boolean;
-    function CanDelete: boolean;
-    function CanPaste: boolean;
-    function CanRedo: boolean;
-    function CanSelectAll: boolean;
-    function CanUndo: boolean;
+    function CanCopy: Boolean;
+    function CanCut: Boolean;
+    function CanDelete: Boolean;
+    function CanPaste: Boolean;
+    function CanRedo: Boolean;
+    function CanSelectAll: Boolean;
+    function CanUndo: Boolean;
     procedure ExecCopy;
     procedure ExecCut;
     procedure ExecDelete;
@@ -87,10 +80,10 @@ type
   end;
 
   IFileCommands = interface
-    function CanClose: boolean;
-    function CanPrint: boolean;
-    function CanSave: boolean;
-    function CanSaveAs: boolean;
+    function CanClose: Boolean;
+    function CanPrint: Boolean;
+    function CanSave: Boolean;
+    function CanSaveAs: Boolean;
     procedure ExecClose;
     procedure ExecPrint;
     procedure ExecSave;
@@ -98,10 +91,10 @@ type
   end;
 
   ISearchCommands = interface
-    function CanFind: boolean;
-    function CanFindNext: boolean;
-    function CanFindPrev: boolean;
-    function CanReplace: boolean;
+    function CanFind: Boolean;
+    function CanFindNext: Boolean;
+    function CanFindPrev: Boolean;
+    function CanReplace: Boolean;
     procedure ExecFind;
     procedure ExecFindNext;
     procedure ExecFindPrev;

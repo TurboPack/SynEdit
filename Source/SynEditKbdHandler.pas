@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditKbdHandler.pas,v 1.10.2.1 2004/08/31 12:55:17 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynEditKbdHandler;
@@ -59,7 +52,7 @@ type
   TMethodList = class
   private
     fData: TList;
-    function GetItem(Index: integer): TMethod;
+    function GetItem(Index: Integer): TMethod;
     function GetCount: Integer;
   public
     constructor Create;
@@ -188,7 +181,7 @@ var
   idx: Integer;
 begin
   if fInKeyDown then
-    exit;
+    Exit;
   fInKeyDown := True;
   try
     with fKeyDownChain do
@@ -199,7 +192,7 @@ begin
         if (Key = 0) then
         begin
           fInKeyDown := False;
-          exit;
+          Exit;
         end;
       end;
     end;
@@ -213,7 +206,7 @@ var
   idx: Integer;
 begin
   if fInKeyUp then
-    exit;
+    Exit;
   fInKeyUp := True;
   try
     with fKeyUpChain do
@@ -224,7 +217,7 @@ begin
         if (Key = 0) then
         begin
           fInKeyUp := False;
-          exit;
+          Exit;
         end;
       end;
     end;
@@ -238,7 +231,7 @@ var
   idx: Integer;
 begin
   if fInKeyPress then
-    exit;
+    Exit;
   fInKeyPress := True;
   try
     with fKeyPressChain do
@@ -249,7 +242,7 @@ begin
         if (Key = #0) then
         begin
           fInKeyPress := False;
-          exit;
+          Exit;
         end;
       end;
     end;

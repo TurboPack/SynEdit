@@ -210,7 +210,7 @@ type
       Change: TItemChange; var AllowChange: Boolean);
   private
     FSynEdit: TSynEditorOptionsContainer;
-    FPoppedFrom : TColorPopup;
+    FPoppedFrom: TColorPopup;
     FUserCommand: TSynEditorOptionsUserCommand;
     FAllUserCommands: TSynEditorOptionsAllUserCommands;
 
@@ -218,7 +218,7 @@ type
     InChanging: Boolean;
     FExtended: Boolean;
 
-    function GetColor(Item : TMenuItem) : TColor;
+    function GetColor(Item: TMenuItem): TColor;
     procedure GetData;
     procedure PutData;
     procedure EditStrCallback(const S: string);
@@ -227,7 +227,7 @@ type
     eKeyShort2: TSynHotKey;
     eKeyShort1: TSynHotKey;
 
-    function Execute(EditOptions : TSynEditorOptionsContainer) : Boolean;
+    function Execute(EditOptions: TSynEditorOptionsContainer): Boolean;
     property GetUserCommandNames: TSynEditorOptionsUserCommand read FUserCommand
       write FUserCommand;
     property GetAllUserCommands: TSynEditorOptionsAllUserCommands
@@ -250,7 +250,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function Execute(EditOptions : TSynEditorOptionsContainer) : Boolean;
+    function Execute(EditOptions: TSynEditorOptionsContainer): Boolean;
     property Form: TfmEditorOptionsDialog read FForm;
   published
     property GetUserCommand: TSynEditorOptionsUserCommand
@@ -284,7 +284,7 @@ type
     FOptions: TSynEditorOptions;
     FSynGutter: TSynGutter;
     FColor: TColor;
-    FActiveLineColor : TColor;
+    FActiveLineColor: TColor;
     FVisibleSpecialChars: TSynVisibleSpecialChars;
     procedure SetBookMarks(const Value: TSynBookMarkOpt);
     procedure SetFont(const Value: TFont);
@@ -293,8 +293,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure Assign(Source : TPersistent); override;
-    procedure AssignTo(Dest : TPersistent); override;
+    procedure Assign(Source: TPersistent); override;
+    procedure AssignTo(Dest: TPersistent); override;
   published
     property Options: TSynEditorOptions read FOptions write FOptions;
     property BookMarkOptions: TSynBookMarkOpt read FBookmarks write SetBookMarks;
@@ -305,7 +305,7 @@ type
     property RightEdge: Integer read FRightEdge write FRightEdge;
     property RightEdgeColor: TColor read FRightEdgeColor write FRightEdgeColor;
     property WantTabs: Boolean read FWantTabs write FWantTabs;
-    property WordWrap : Boolean read FWordWrap write FWordWrap;
+    property WordWrap: Boolean read FWordWrap write FWordWrap;
     property InsertCaret: TSynEditCaretType read FInsertCaret write FInsertCaret;
     property OverwriteCaret: TSynEditCaretType read FOverwriteCaret write FOverwriteCaret;
     property HideSelection: Boolean read FHideSelection write FHideSelection;
@@ -315,7 +315,7 @@ type
     property DisplayFlowControl: TSynDisplayFlowControl read FDisplayFlowControl;
     property TabWidth: Integer read FTabWidth write FTabWidth;
     property Keystrokes: TSynEditKeyStrokes read FKeystrokes write SetKeystrokes;
-    property ActiveLineColor : TColor read FActiveLineColor write FActiveLineColor;
+    property ActiveLineColor: TColor read FActiveLineColor write FActiveLineColor;
     property VisibleSpecialChars: TSynVisibleSpecialChars
       read FVisibleSpecialChars write FVisibleSpecialChars;
   end;
@@ -343,7 +343,7 @@ begin
   inherited;
 end;
 
-function TSynEditOptionsDialog.Execute(EditOptions : TSynEditorOptionsContainer) : Boolean;
+function TSynEditOptionsDialog.Execute(EditOptions: TSynEditorOptionsContainer): Boolean;
 begin
   Result:= FForm.Execute(EditOptions);
 end;
@@ -547,7 +547,7 @@ end;
 
 { TfmEditorOptionsDialog }
 
-function TfmEditorOptionsDialog.Execute(EditOptions : TSynEditorOptionsContainer) : Boolean;
+function TfmEditorOptionsDialog.Execute(EditOptions: TSynEditorOptionsContainer): Boolean;
 begin
   if (EditOptions = nil) then
   begin
@@ -566,8 +566,8 @@ end;
 
 
 procedure TfmEditorOptionsDialog.GetData;
-var I : Integer;
-    Item : TListItem;
+var I: Integer;
+    Item: TListItem;
 begin
   //Gutter
   ckGutterVisible.Checked:= FSynEdit.Gutter.Visible;
@@ -707,7 +707,7 @@ begin
 end;
 
 procedure TfmEditorOptionsDialog.PopupMenuClick(Sender: TObject);
-var C : TColor;
+var C: TColor;
 begin
   C:= GetColor(TMenuItem(Sender));
   //Set the color based on where it was "popped from"
@@ -718,9 +718,9 @@ begin
 end;
 
 procedure TfmEditorOptionsDialog.FormCreate(Sender: TObject);
-var I : Integer;
-    C : TColor;
-    B : TBitmap;
+var I: Integer;
+    C: TColor;
+    B: TBitmap;
 begin
   KeyList.OnSelectItem := KeyListSelectItem;
 
@@ -825,12 +825,8 @@ begin
 end;
 
 procedure TfmEditorOptionsDialog.btnUpdateKeyClick(Sender: TObject);
-var Cmd          : Integer;
-{    KeyLoc       : Integer;
-    TmpCommand   : string;
-    OldShortcut  : TShortcut;
-    OldShortcut2 : TShortcut;
-}
+var
+  Cmd: Integer;
 begin
   if (KeyList.Selected = nil) and (Sender <> btnAddKey) then
   begin
@@ -855,7 +851,7 @@ begin
 end;
 
 procedure TfmEditorOptionsDialog.btnAddKeyClick(Sender: TObject);
-var Item : TListItem;
+var Item: TListItem;
 begin
   if cKeyCommand.ItemIndex < 0 then Exit;
   Item:= KeyList.Items.Add;
@@ -882,7 +878,7 @@ end;
 procedure TfmEditorOptionsDialog.FormShow(Sender: TObject);
 var 
   Commands: TStringList;
-  i : Integer;
+  I: Integer;
 begin
 //We need to do this now because it will not have been assigned when
 //create occurs
@@ -898,9 +894,9 @@ begin
     Commands := TStringList.Create;
     try
       FAllUserCommands(Commands);
-      for i := 0 to Commands.Count - 1 do
-        if Commands.Objects[i] <> nil then
-          cKeyCommand.Items.AddObject(Commands[i], Commands.Objects[i]);
+      for I := 0 to Commands.Count - 1 do
+        if Commands.Objects[I] <> nil then
+          cKeyCommand.Items.AddObject(Commands[I], Commands.Objects[I]);
     finally
       Commands.Free;
     end;
@@ -948,7 +944,7 @@ end;
 
 procedure TfmEditorOptionsDialog.btnRightEdgeMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var P : TPoint;
+var P: TPoint;
 begin
   FPoppedFrom:= cpRightEdge;
   P:= pRightEdgeColor.ClientToScreen(Point(-1, pRightEdgeColor.Height-1));
@@ -959,7 +955,7 @@ end;
 
 procedure TfmEditorOptionsDialog.btnGutterColorMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var P : TPoint;
+var P: TPoint;
 begin
   FPoppedFrom:= cpGutter;
   P:= pGutterColor.ClientToScreen(Point(-1, pGutterColor.Height-1));
@@ -970,7 +966,7 @@ end;
 
 procedure TfmEditorOptionsDialog.FillInKeystrokeInfo(
   AKey: TSynEditKeystroke; AItem: TListItem);
-var TmpString: String;
+var TmpString: string;
 begin
   with AKey do
   begin
@@ -1009,7 +1005,7 @@ procedure TfmEditorOptionsDialog.KeyListChanging(Sender: TObject;
   Item: TListItem; Change: TItemChange; var AllowChange: Boolean);
 begin
 //make sure that it's saved.
-  if InChanging then exit;
+  if InChanging then Exit;
   InChanging := True;
   if Visible then
   begin

@@ -1117,7 +1117,7 @@ begin
   while I < IdentList.Count - 1 do
   begin
     Writeln(OutFile, '    ' + IdentList[I] + ',');
-    inc(I);
+    Inc(I);
   end;
   Writeln(OutFile, '    ' + IdentList[I] + ');');
   Writeln(OutFile);
@@ -1155,7 +1155,7 @@ begin
       'Unknown') then
       Writeln(OutFile, '    f' + Copy(IdentList[I], Length(IdentPre) + 1,
         Length(IdentList[I])) + 'Attri: TSynHighlighterAttributes;');
-    inc(I);
+    Inc(I);
   end;
 
   Writeln(OutFile, '    function HashKey(Str: PWideChar): Cardinal;');
@@ -1166,7 +1166,7 @@ begin
     Writeln(OutFile, AnsiString('    function Func' +
       ToAlphaNum(FirstLetterCap(TLexKeys(KeyList[I]).KeyName)) +
       '(Index: Integer): T' + IdentPre + 'TokenKind;'));
-    inc(I);
+    Inc(I);
   end;
 
   I := 0;
@@ -1174,7 +1174,7 @@ begin
   begin
     Writeln(OutFile, '    procedure ' + TLexCharsets(SetList[I]).SetName +
       'Proc;');
-    inc(I);
+    Inc(I);
   end;
 
   Writeln(OutFile, '    procedure UnknownProc;');
@@ -1228,7 +1228,7 @@ begin
         Length(IdentPre) + 1, Length(IdentList[I])) +
         'Attri write f' + Copy(IdentList[I], Length(IdentPre) + 1,
         Length(IdentList[I])) + 'Attri;');
-    inc(I);
+    Inc(I);
   end;
 
   Writeln(OutFile, '  end;');
@@ -1290,14 +1290,14 @@ begin
     if I < KeyList.Count - 1 then
       while TLexKeys(KeyList[I]).Key = TLexKeys(KeyList[I + 1]).Key do
       begin
-        inc(I);
+        Inc(I);
         if I >= KeyList.Count - 1 then
-          break;
+          Break;
       end;
     KeyString := IntToStr(TLexKeys(KeyList[I]).Key);
     Writeln(OutFile, '  fIdentFuncTable[' + KeyString + '] := Func' +
       ToAlphaNum(FirstLetterCap(TLexKeys(KeyList[I]).KeyName)) + ';');
-    inc(I);
+    Inc(I);
   end;
 
   Writeln(OutFile, 'end;');
@@ -1319,9 +1319,9 @@ begin
         Writeln(OutFile, '  if IsCurrentToken(KeyWords[Index]) then');
         Writeln(OutFile, '    Result := ' + IdentPre + TLexKeys(KeyList[I]).TokenType);
         Writeln(OutFile, '  else');
-        inc(I);
+        Inc(I);
         if I >= KeyList.Count - 1 then
-          break;
+          Break;
       end;
       Writeln(OutFile, '  if IsCurrentToken(KeyWords[Index]) then');
       Writeln(OutFile, '    Result := ' + IdentPre + TLexKeys(KeyList[I]).TokenType);
@@ -1329,7 +1329,7 @@ begin
       Writeln(OutFile, '    Result := ' + IdentPre + 'Identifier;');
     Writeln(OutFile, 'end;');
     Writeln(OutFile);
-    inc(I);
+    Inc(I);
   end;
 
   Writeln(OutFile, 'function ' + LexName + '.AltFunc(Index: Integer): T' + IdentPre +
@@ -1357,9 +1357,9 @@ begin
   begin
     Writeln(OutFile, 'procedure ' + LexName + '.SpaceProc;');
     Writeln(OutFile, 'begin');
-    Writeln(OutFile, '  inc(Run);');
+    Writeln(OutFile, '  Inc(Run);');
     Writeln(OutFile, '  fTokenID := ' + IdentPre + 'Space;');
-    Writeln(OutFile, '  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);');
+    Writeln(OutFile, '  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);');
     Writeln(OutFile, 'end;');
     Writeln(OutFile);
   end;
@@ -1367,7 +1367,7 @@ begin
   Writeln(OutFile, 'procedure ' + LexName + '.NullProc;');
   Writeln(OutFile, 'begin');
   Writeln(OutFile, '  fTokenID := ' + IdentPre + 'Null;');
-  Writeln(OutFile, '  inc(Run);');
+  Writeln(OutFile, '  Inc(Run);');
   Writeln(OutFile, 'end;');
   Writeln(OutFile);
 
@@ -1377,9 +1377,9 @@ begin
     Writeln(OutFile, '  fTokenID := ' + IdentPre + 'Space;')
   else
     Writeln(OutFile, '  fTokenID := ' + IdentPre + 'Unknown;');
-  Writeln(OutFile, '  inc(Run);');
+  Writeln(OutFile, '  Inc(Run);');
   Writeln(OutFile, '  if fLine[Run] = #10 then');
-  Writeln(OutFile, '    inc(Run);');
+  Writeln(OutFile, '    Inc(Run);');
   Writeln(OutFile, 'end;');
   Writeln(OutFile);
 
@@ -1389,7 +1389,7 @@ begin
     Writeln(OutFile, '  fTokenID := ' + IdentPre + 'Space;')
   else
     Writeln(OutFile, '  fTokenID := ' + IdentPre + 'Unknown;');
-  Writeln(OutFile, '  inc(Run);');
+  Writeln(OutFile, '  Inc(Run);');
   Writeln(OutFile, 'end;');
   Writeln(OutFile);
 
@@ -1568,12 +1568,12 @@ begin
     Write(OutFile, '  ' + TLexCharsets(SetList[I]).ProcData);
     Writeln(OutFile, 'end;');
     Writeln(OutFile);
-    inc(I);
+    Inc(I);
   end;
 
   Writeln(OutFile, 'procedure ' + LexName + '.UnknownProc;');
   Writeln(OutFile, 'begin');
-  Writeln(OutFile, '  inc(Run);');
+  Writeln(OutFile, '  Inc(Run);');
   Writeln(OutFile, '  fTokenID := ' + IdentPre + 'Unknown;');
   Writeln(OutFile, 'end;');
   Writeln(OutFile);
@@ -1728,7 +1728,7 @@ begin
       Writeln(OutFile, '    ' + IdentList[I] + ': Result := f' +
         Copy(IdentList[I], Length(IdentPre) + 1, Length(IdentList[I])) +
         'Attri;');
-    inc(I);
+    Inc(I);
   end;
   Writeln(OutFile, '    ' + IdentPre + 'Unknown: Result := f' +
     CboUnknownTokenAttr.Text + 'Attri;');

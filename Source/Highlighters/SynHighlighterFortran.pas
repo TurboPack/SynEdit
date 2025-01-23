@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterFortran.pas,v 1.15.2.9 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Fortran syntax highlighter for SynEdit)
@@ -113,12 +106,12 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -176,7 +169,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 294 + Ord(Str^) * 110;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 193;
   fStringLen := Str - fToIdent;
@@ -253,11 +246,11 @@ begin
   fTokenID := tkString;
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #39;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynFortranSyn.CRProc;
@@ -269,7 +262,7 @@ end;
 
 procedure TSynFortranSyn.CommaProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
@@ -278,12 +271,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {logical equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {assign}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -291,14 +284,14 @@ end;
 
 procedure TSynFortranSyn.ExclamationProc;
 begin
-  inc(Run, 1);                        {Fortran Comments}
+  Inc(Run, 1);                        {Fortran Comments}
   fTokenID := tkComment;
   while FLine[Run] <> #0 do
   begin
     case FLine[Run] of
-      #10, #13: break;
+      #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -307,20 +300,20 @@ begin
   Case FLine[Run + 1] of
     '=':                               {greater than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '>':
       begin
         if FLine[Run + 2] = '=' then   {shift right assign}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {shift right}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {greater than}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -330,19 +323,19 @@ procedure TSynFortranSyn.IdentProc;
 begin
   if CharInSet(FLine[Run], ['C', 'c']) and (Run = 0) then
   begin   //Fortran comments
-    inc(Run, 1);
+    Inc(Run, 1);
     CommentProc;
   end
   else begin
     fTokenID := IdentKind(fLine + Run);
-    inc(Run, fStringLen);
-    while IsIdentChar(fLine[Run]) do inc(Run);
+    Inc(Run, fStringLen);
+    while IsIdentChar(fLine[Run]) do Inc(Run);
   end;
 end;
 
 procedure TSynFortranSyn.LFProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
 end;
 
@@ -351,20 +344,20 @@ begin
   case FLine[Run + 1] of
     '=':                               {less than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '<':
       begin
         if FLine[Run + 2] = '=' then   {shift left assign}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {shift left}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {less than}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -373,21 +366,21 @@ end;
 procedure TSynFortranSyn.MinusProc;
 begin
   {subtract}
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynFortranSyn.ModSymbolProc;
 begin
   {mod}
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynFortranSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynFortranSyn.NumberProc;
@@ -403,22 +396,22 @@ procedure TSynFortranSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynFortranSyn.PlusProc;
 begin
   {subtract}
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
@@ -431,7 +424,7 @@ begin
        or ((SysUtils.AnsiUpperCase(FLine[Run + 1]) = 'O') and (SysUtils.AnsiUpperCase(FLine[Run + 2]) = 'R'))){.or.}
      and (FLine[Run + 3] = '.') then
     begin
-      inc(Run, 4);
+      Inc(Run, 4);
       fTokenID := tkSymbol;
     end
   else if (((SysUtils.AnsiUpperCase(FLine[Run + 1]) = 'A')
@@ -442,7 +435,7 @@ begin
               and (SysUtils.AnsiUpperCase(FLine[Run + 3]) = 'T')))    {.not.}
           and (FLine[Run + 4] = '.') then
     begin
-      inc(Run, 5);
+      Inc(Run, 5);
       fTokenID := tkSymbol;
     end
   else if (SysUtils.AnsiUpperCase(FLine[Run + 1]) = 'T')
@@ -451,7 +444,7 @@ begin
           and (SysUtils.AnsiUpperCase(FLine[Run + 4]) = 'E')
           and (FLine[Run + 5] = '.') then  {.true.}
     begin
-      inc(Run, 6);
+      Inc(Run, 6);
       fTokenID := tkSymbol;
     end
   else if (SysUtils.AnsiUpperCase(FLine[Run + 1]) = 'F')
@@ -461,57 +454,57 @@ begin
           and (SysUtils.AnsiUpperCase(FLine[Run + 5]) = 'E')
           and (FLine[Run + 6] = '.') then  {.false.}
     begin
-      inc(Run, 7);
+      Inc(Run, 7);
       fTokenID := tkSymbol;
     end
   else                                 {point}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
 end;
 
 procedure TSynFortranSyn.RoundCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynFortranSyn.RoundOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   FTokenID := tkSymbol;
 end;
 
 procedure TSynFortranSyn.SemiColonProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynFortranSyn.SlashProc;
 begin
   {division}
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynFortranSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynFortranSyn.StarProc;
 begin
   if (Run = 0) then begin   //Fortran comments
-    inc(Run);
+    Inc(Run);
     CommentProc;
   end
   else begin
     {star}
-    inc(Run);
+    Inc(Run);
     fTokenID := tkSymbol;
   end;
 end;
@@ -522,30 +515,30 @@ begin
   while FLine[Run] <> #0 do
   begin
     case FLine[Run] of
-      #10, #13: break;
+      #10, #13: Break;
     end; //case
-    inc(Run);
+    Inc(Run);
   end; //while
 end;
 
 procedure TSynFortranSyn.StringProc;
 begin
   fTokenID := tkString;
-  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then inc(Run, 2);
+  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
       #92:
-        if FLine[Run + 1] = #10 then inc(Run);
+        if FLine[Run + 1] = #10 then Inc(Run);
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #34;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynFortranSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -580,7 +573,7 @@ begin
   inherited;
 end;
 
-function TSynFortranSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynFortranSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -619,7 +612,7 @@ begin
   end;
 end;
 
-function TSynFortranSyn.GetTokenKind: integer;
+function TSynFortranSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

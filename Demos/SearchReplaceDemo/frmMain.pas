@@ -10,6 +10,7 @@ The Original Code is: frmMain.pas, released 2000-06-23.
 The Original Code is part of the SearchReplaceDemo project, written by
 Michael Hieke for the SynEdit component suite.
 All Rights Reserved.
+
 Contributors to the SynEdit project are listed in the Contributors.txt file.
 Alternatively, the contents of this file may be used under the terms of the
 GNU General Public License Version 2 or later (the "GPL"), in which case
@@ -20,10 +21,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-$Id: frmMain.pas,v 1.5.2.3 2009/09/29 00:13:16 maelh Exp $
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-Known Issues:
 -------------------------------------------------------------------------------}
 unit frmMain;
 {$I SynEdit.inc}
@@ -73,8 +70,8 @@ type
     procedure SynEditorProcessCommand(Sender: TObject; var Command:
         TSynEditorCommand; var AChar: WideChar; Data: Pointer);
   private
-    procedure DoSearchReplaceText(AReplace: boolean; ABackwards: boolean);
-    procedure ShowSearchReplaceDialog(AReplace: boolean);
+    procedure DoSearchReplaceText(AReplace: Boolean; ABackwards: Boolean);
+    procedure ShowSearchReplaceDialog(AReplace: Boolean);
   end;
 var
   SearchReplaceDemoForm: TSearchReplaceDemoForm;

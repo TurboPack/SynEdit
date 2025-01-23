@@ -279,12 +279,12 @@ type
     procedure AddKey(const ACmd: TSynEditorCommand; const AKey: word;
        const AShift: TShiftState; const AKey2: word = 0;
        const AShift2: TShiftState = []);
-    function FindCommand(Cmd: TSynEditorCommand): integer;
-    function FindKeycode(Code: word; SS: TShiftState): integer;
+    function FindCommand(Cmd: TSynEditorCommand): Integer;
+    function FindKeycode(Code: word; SS: TShiftState): Integer;
     function FindKeycode2(Code1: word; SS1: TShiftState;
-      Code2: word; SS2: TShiftState): integer;
-    function FindShortcut(SC: TShortcut): integer;
-    function FindShortcut2(SC, SC2: TShortcut): integer;
+      Code2: word; SS2: TShiftState): Integer;
+    function FindShortcut(SC: TShortcut): Integer;
+    function FindShortcut2(SC, SC2: TShortcut): Integer;
     procedure LoadFromStream(AStream: TStream);
     procedure ResetDefaults;
     procedure SaveToStream(AStream: TStream);
@@ -453,7 +453,7 @@ const
 // GetEditorCommandValues and GetEditorCommandExtended for editing key assignments
 procedure GetEditorCommandValues(Proc: TGetStrProc);
 var
-  i: integer;
+  i: Integer;
 begin
   for i := Low(EditorCommandStrs) to High(EditorCommandStrs) do
     case EditorCommandStrs[I].Value of
@@ -466,7 +466,7 @@ end;
 
 procedure GetEditorCommandExtended(Proc: TGetStrProc);
 var
-  i: integer;
+  i: Integer;
 begin
   for i := Low(EditorCommandStrs) to High(EditorCommandStrs) do
     case EditorCommandStrs[I].Value of
@@ -477,12 +477,12 @@ begin
     end;
 end;
 
-function IdentToEditorCommand(const Ident: string; var Cmd: Integer): boolean;
+function IdentToEditorCommand(const Ident: string; var Cmd: Integer): Boolean;
 begin
     Result := IdentToInt(Ident, Cmd, EditorCommandStrs);
 end;
 
-function EditorCommandToIdent(Cmd: Integer; var Ident: string): boolean;
+function EditorCommandToIdent(Cmd: Integer; var Ident: string): Boolean;
 begin
   Result := IntToIdent(Cmd, Ident, EditorCommandStrs);
 end;
@@ -556,7 +556,7 @@ procedure TSynEditKeyStroke.SetShortCut(const Value: TShortCut);
 var
   NewKey: Word;
   NewShift: TShiftState;
-  Dup: integer;
+  Dup: Integer;
   CurrCmd, DupCmd: string;
 begin
   // Duplicate values of no shortcut are OK.
@@ -599,7 +599,7 @@ procedure TSynEditKeyStroke.SetShortCut2(const Value: TShortCut);
 var
   NewKey: Word;
   NewShift: TShiftState;
-  Dup: integer;
+  Dup: Integer;
   CurrCmd, DupCmd: string;
 begin
   // Duplicate values of no shortcut are OK.
@@ -685,7 +685,7 @@ begin
   inherited Create(AOwner, TSynEditKeyStroke);
 end;
 
-function TSynEditKeyStrokes.FindCommand(Cmd: TSynEditorCommand): integer;
+function TSynEditKeyStrokes.FindCommand(Cmd: TSynEditorCommand): Integer;
 var
   Idx: Integer;
 begin
@@ -739,7 +739,7 @@ begin
     end;
 end;
 
-function TSynEditKeyStrokes.FindShortcut2(SC, SC2: TShortcut): integer;
+function TSynEditKeyStrokes.FindShortcut2(SC, SC2: TShortcut): Integer;
 var
   Idx: Integer;
 begin
@@ -759,7 +759,7 @@ end;
 
 procedure TSynEditKeyStrokes.LoadFromStream(AStream: TStream);
 var
-  Num: integer;
+  Num: Integer;
 begin
   Clear;
   AStream.Read(Num, SizeOf(Num));
@@ -895,7 +895,7 @@ end;
 
 procedure TSynEditKeyStrokes.SaveToStream(AStream: TStream);
 var
-  i, Num: integer;
+  i, Num: Integer;
 begin
   Num := Count;
   AStream.Write(Num, SizeOf(Num));
@@ -905,7 +905,7 @@ end;
 
 function ConvertCodeStringToExtended(AString: string): string;
 var
-  i: integer;
+  i: Integer;
   WorkStr: string;
 begin
   if pos('ec', AString) = 1 then
@@ -953,37 +953,37 @@ var
 begin
   if pos('ec', AString) = 1 then
   begin
-    result := AString;
-    exit;
+    Result := AString;
+    Exit;
   end;
 
   WorkStr := AString;
 
-  i := pos('Select All', WorkStr);
-  if i = 0 then
+  I := pos('Select All', WorkStr);
+  if I = 0 then
   begin
-    i := pos('Select ', WorkStr);
-    while i <> 0 do
+    I := pos('Select ', WorkStr);
+    while I <> 0 do
     begin
-      Delete(WorkStr,i,Length('Select '));
-      Insert('Sel ',WorkStr,i);
-      i := pos('Select ', WorkStr);
+      Delete(WorkStr,I,Length('Select '));
+      Insert('Sel ',WorkStr,I);
+      I := pos('Select ', WorkStr);
     end;
   end;
 
-  i := pos('Bookmark ', WorkStr);
-  while i <> 0 do
+  I := pos('Bookmark ', WorkStr);
+  while I <> 0 do
   begin
-    Delete(WorkStr,i,Length('Bookmark '));
-    Insert('Marker ',WorkStr,i);
-    i := pos('Bookmark ', WorkStr);
+    Delete(WorkStr,I,Length('Bookmark '));
+    Insert('Marker ',WorkStr,I);
+    I := pos('Bookmark ', WorkStr);
   end;
 
-  i := pos(' ', WorkStr);
-  while i <> 0 do
+  I := pos(' ', WorkStr);
+  while I <> 0 do
   begin
-    delete(WorkStr,i,1);
-    i := pos(' ', WorkStr);
+    delete(WorkStr,I,1);
+    I := pos(' ', WorkStr);
   end;
 
   Result := 'ec' + WorkStr;
@@ -1006,11 +1006,11 @@ begin
   Result := ecNone;
 
   AString := Uppercase(AString);
-  for i := Low(EditorCommandStrs) to High(EditorCommandStrs) do
-    if Uppercase(EditorCommandStrs[i].Name) = AString then
+  for I := Low(EditorCommandStrs) to High(EditorCommandStrs) do
+    if Uppercase(EditorCommandStrs[I].Name) = AString then
     begin
-      Result := EditorCommandStrs[i].Value;
-      break;
+      Result := EditorCommandStrs[I].Value;
+      Break;
     end;
 end;
 

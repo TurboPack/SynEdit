@@ -417,7 +417,7 @@ begin
         repeat
           LMaxW := FMaxWidth;
           if PRec^.FTextWidth <= LMaxW then
-            break;
+            Break;
         until AtomicCmpExchange(FMaxWidth, PRec^.FTextWidth, LMaxW) = LMaxW;
       end);
     Result := Max(FMaxWidth, 0);
@@ -613,7 +613,7 @@ begin
 end;
 
 procedure TSynEditStringList.SaveToStream(Stream: TStream; Encoding: TEncoding);
-Var
+var
   Cancel: Boolean;
   S: string;
   Buffer, Preamble: TBytes;

@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: dmCommands.pas,v 1.2 2000/11/22 08:34:13 mghie Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit dmCommands;
@@ -43,7 +36,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ActnList, SynHighlighterSQL, SynHighlighterPas, SynEditHighlighter,
-  SynHighlighterCpp;
+  SynHighlighterCpp, SynEditCodeFolding, System.Actions;
 
 type
   TCommandsDataModule = class(TDataModule)
@@ -107,12 +100,12 @@ type
   public
     procedure AddMRUEntry(AFileName: string);
     function GetHighlighterForFile(AFileName: string): TSynCustomHighlighter;
-    function GetMRUEntries: integer;
-    function GetMRUEntry(Index: integer): string;
+    function GetMRUEntries: Integer;
+    function GetMRUEntry(Index: Integer): string;
     function GetSaveFileName(var ANewName: string;
-      AHighlighter: TSynCustomHighlighter): boolean;
-    function GetUntitledNumber: integer;
-    procedure ReleaseUntitledNumber(ANumber: integer);
+      AHighlighter: TSynCustomHighlighter): Boolean;
+    function GetUntitledNumber: Integer;
+    procedure ReleaseUntitledNumber(ANumber: Integer);
     procedure RemoveMRUEntry(AFileName: string);
   end;
 
@@ -137,7 +130,7 @@ resourcestring
 procedure TCommandsDataModule.DataModuleCreate(Sender: TObject);
 begin
   fHighlighters := TStringList.Create;
-  GetHighlighters(Self, fHighlighters, FALSE);
+  GetHighlighters(Self, fHighlighters, False);
   dlgFileOpen.Filter := GetHighlightersFilter(fHighlighters) + SFilterAllFiles;
   fMRUFiles := TStringList.Create;
 end;
@@ -171,12 +164,12 @@ begin
     Result := nil;
 end;
 
-function TCommandsDataModule.GetMRUEntries: integer;
+function TCommandsDataModule.GetMRUEntries: Integer;
 begin
   Result := fMRUFiles.Count;
 end;
 
-function TCommandsDataModule.GetMRUEntry(Index: integer): string;
+function TCommandsDataModule.GetMRUEntry(Index: Integer): string;
 begin
   if (Index >= 0) and (Index < fMRUFiles.Count) then
     Result := fMRUFiles[Index]
@@ -185,7 +178,7 @@ begin
 end;
 
 function TCommandsDataModule.GetSaveFileName(var ANewName: string;
-  AHighlighter: TSynCustomHighlighter): boolean;
+  AHighlighter: TSynCustomHighlighter): Boolean;
 begin
   with dlgFileSave do begin
     if ANewName <> '' then begin
@@ -201,35 +194,35 @@ begin
       Filter := SFilterAllFiles;
     if Execute then begin
       ANewName := FileName;
-      Result := TRUE;
+      Result := True;
     end else
-      Result := FALSE;
+      Result := False;
   end;
 end;
 
-function TCommandsDataModule.GetUntitledNumber: integer;
+function TCommandsDataModule.GetUntitledNumber: Integer;
 begin
   if fUntitledNumbers = nil then
     fUntitledNumbers := TBits.Create;
   Result := fUntitledNumbers.OpenBit;
   if Result = fUntitledNumbers.Size then
     fUntitledNumbers.Size := fUntitledNumbers.Size + 32;
-  fUntitledNumbers[Result] := TRUE;
+  fUntitledNumbers[Result] := True;
   Inc(Result);
 end;
 
-procedure TCommandsDataModule.ReleaseUntitledNumber(ANumber: integer);
+procedure TCommandsDataModule.ReleaseUntitledNumber(ANumber: Integer);
 begin
   Dec(ANumber);
   if (fUntitledNumbers <> nil) and (ANumber >= 0)
     and (ANumber < fUntitledNumbers.Size)
   then
-    fUntitledNumbers[ANumber] := FALSE;
+    fUntitledNumbers[ANumber] := False;
 end;
 
 procedure TCommandsDataModule.RemoveMRUEntry(AFileName: string);
 var
-  i: integer;
+  i: Integer;
 begin
   for i := fMRUFiles.Count - 1 downto 0 do begin
     if CompareText(AFileName, fMRUFiles[i]) = 0 then

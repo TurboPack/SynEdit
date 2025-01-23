@@ -99,8 +99,8 @@ type
     fPackageSource: Boolean;
     fTypeAttri: TSynHighlighterAttributes;
     // Regular Expressions
-    RE_BlockBegin : TRegEx;
-    RE_BlockEnd : TRegEx;
+    RE_BlockBegin: TRegEx;
+    RE_BlockEnd: TRegEx;
     RE_Code: TRegEx;
     RE_ControlFlow: TRegEx;
     function AltFunc(Index: Integer): TtkTokenKind;
@@ -301,7 +301,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 526 + Ord(Str^) * 502;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 641;
   fStringLen := Str - fToIdent;
@@ -325,11 +325,11 @@ end;
 
 procedure TSynPasSyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if KeyIndices[i] = -1 then
-      fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if KeyIndices[I] = -1 then
+      fIdentFuncTable[I] := AltFunc;
 
   fIdentFuncTable[215] := FuncType;
   fIdentFuncTable[412] := FuncType;
@@ -389,9 +389,9 @@ begin
   fIdentFuncTable[291] := FuncWrite;
   fIdentFuncTable[496] := FuncWriteonly;
 
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if @fIdentFuncTable[i] = nil then
-      fIdentFuncTable[i] := KeyWordFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[I] = nil then
+      fIdentFuncTable[I] := KeyWordFunc;
 end;
 
 function TSynPasSyn.AltFunc(Index: Integer): TtkTokenKind;
@@ -776,8 +776,8 @@ end;
 procedure TSynPasSyn.AddressOpProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
-  if fLine[Run] = '@' then inc(Run);
+  Inc(Run);
+  if fLine[Run] = '@' then Inc(Run);
 end;
 
 procedure TSynPasSyn.AsciiCharProc;
@@ -819,7 +819,7 @@ begin
             fRange := rsAsm
           else
             fRange := rsUnKnown;
-          break;
+          Break;
         end;
         Inc(Run);
       until IsLineEnd(Run);
@@ -849,14 +849,14 @@ end;
 procedure TSynPasSyn.ColonOrGreaterProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
-  if fLine[Run] = '=' then inc(Run);
+  Inc(Run);
+  if fLine[Run] = '=' then Inc(Run);
 end;
 
 procedure TSynPasSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
     Inc(Run);
 end;
@@ -864,7 +864,7 @@ end;
 procedure TSynPasSyn.IdentProc;
 begin
   fTokenID := IdentKind(fLine + Run);
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   while IsIdentChar(fLine[Run]) do
     Inc(Run);
 end;
@@ -882,7 +882,7 @@ procedure TSynPasSyn.IntegerProc;
   end;
   
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkHex;
   while IsIntegerChar do
     Inc(Run);
@@ -891,13 +891,13 @@ end;
 procedure TSynPasSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPasSyn.LowerProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   if (fLine[Run] = '=') or (fLine[Run] = '>') then
     Inc(Run);
 end;
@@ -905,7 +905,7 @@ end;
 procedure TSynPasSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPasSyn.NumberProc;
@@ -947,7 +947,7 @@ end;
 procedure TSynPasSyn.PointProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   if (fLine[Run] = '.') or (fLine[Run - 1] = ')') then
     Inc(Run);
 end; 
@@ -967,7 +967,7 @@ begin
           fRange := rsAsm
         else
           fRange := rsUnKnown;
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -991,7 +991,7 @@ begin
       end;
     '.':
       begin
-        inc(Run);
+        Inc(Run);
         fTokenID := tkSymbol;
       end;
   else
@@ -1023,9 +1023,9 @@ end;
 
 procedure TSynPasSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynPasSyn.StringProc;
@@ -1037,7 +1037,7 @@ begin
     if fLine[Run] = #39 then begin
       Inc(Run);
       if fLine[Run] <> #39 then
-        break;
+        Break;
     end;
     Inc(Run);
   end;
@@ -1045,13 +1045,13 @@ end;
 
 procedure TSynPasSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynPasSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -1174,7 +1174,7 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
   procedure LoadKeyVersions(const Key, Prefix: string);
   var
     Versions: TStringList;
-    i: Integer;
+    I: Integer;
   begin
     with TRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
     begin
@@ -1186,8 +1186,8 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
             Versions := TStringList.Create;
             try
               GetKeyNames(Versions);
-              for i := 0 to Versions.Count - 1 do
-                DelphiVersions.Add(Prefix + Versions[i]);
+              for I := 0 to Versions.Count - 1 do
+                DelphiVersions.Add(Prefix + Versions[I]);
             finally
               FreeAndNil(Versions);
             end;
@@ -1214,7 +1214,7 @@ function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
 // Possible parameter values:
 //   index into TStrings returned by EnumUserSettings
 // Possible return values:
-//   True : settings were read and used
+//   True: settings were read and used
 //   False: problem reading settings or invalid version specified - old settings
 //          were preserved
 
@@ -1227,10 +1227,10 @@ function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
 
       function ReadDelphi2Or3(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
       var
-        i: Integer;
+        I: Integer;
       begin
-        for i := 1 to Length(name) do
-          if name[i] = ' ' then name[i] := '_';
+        for I := 1 to Length(name) do
+          if name[I] = ' ' then name[I] := '_';
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
                 '\Software\Borland\Delphi\'+settingTag+'\Highlight',name,True);
       end; { ReadDelphi2Or3 }
@@ -1413,7 +1413,7 @@ end;
 type
   TRangeStates = set of TRangeState;
 
-Const
+const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_Asm = 12;
@@ -1425,14 +1425,14 @@ Const
 procedure TSynPasSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
   function BlockDelimiter(Line: Integer): Boolean;
   var
     BeginIndex: Integer;
     EndIndex: Integer;
-    Match : TMatch;
+    Match: TMatch;
     MatchValue: string;
     StructureHighlight: Boolean;
   begin
@@ -1520,8 +1520,8 @@ var
     end;
   end;
 
-  function IsMultiLineStatement(Line : integer; Ranges: TRangeStates;
-     Fold : Boolean; FoldType: Integer = 1): Boolean;
+  function IsMultiLineStatement(Line: Integer; Ranges: TRangeStates;
+     Fold: Boolean; FoldType: Integer = 1): Boolean;
   begin
     Result := True;
     if TRangeState(GetLineRange(LinesToScan, Line)) in Ranges then
@@ -1582,28 +1582,28 @@ procedure TSynPasSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
 {
    Provide folding for procedures and functions included nested ones.
 }
-Var
-  i, j, SkipTo: Integer;
+var
+  I, j, SkipTo: Integer;
   ImplementationIndex: Integer;
   FoldRange: TSynFoldRange;
   mc: TMatchCollection;
 begin
   ImplementationIndex := - 1;
-  for i  := FoldRanges.Ranges.Count - 1 downto 0 do
+  for I  := FoldRanges.Ranges.Count - 1 downto 0 do
   begin
-    if FoldRanges.Ranges.List[i].FoldType = FT_Implementation then
-      ImplementationIndex := i
-    else if FoldRanges.Ranges.List[i].FoldType = FT_CodeDeclaration then
+    if FoldRanges.Ranges.List[I].FoldType = FT_Implementation then
+      ImplementationIndex := I
+    else if FoldRanges.Ranges.List[I].FoldType = FT_CodeDeclaration then
     begin
       if ImplementationIndex >= 0 then begin
         // Code declaration in the Interface part of a unit
-        FoldRanges.Ranges.Delete(i);
+        FoldRanges.Ranges.Delete(I);
         Dec(ImplementationIndex);
-        continue;
+        Continue;
       end;
       // Examine the following ranges
       SkipTo := 0;
-      j := i + 1;
+      j := I + 1;
       while J < FoldRanges.Ranges.Count do begin
         FoldRange := FoldRanges.Ranges.List[j];
         Inc(j);
@@ -1612,7 +1612,7 @@ begin
           FT_CodeDeclarationWithBody:
             begin
               SkipTo := FoldRange.ToLine;
-              continue;
+              Continue;
             end;
           FT_Standard:
           // possibly begin end;
@@ -1627,14 +1627,14 @@ begin
                 begin
                   // function or procedure followed by begin end block
                   // Adjust ToLine
-                  FoldRanges.Ranges.List[i].ToLine := FoldRange.ToLine;
-                  FoldRanges.Ranges.List[i].FoldType := FT_CodeDeclarationWithBody;
-                  break
+                  FoldRanges.Ranges.List[I].ToLine := FoldRange.ToLine;
+                  FoldRanges.Ranges.List[I].FoldType := FT_CodeDeclarationWithBody;
+                  Break
                 end else
                 begin
                   // class or record declaration follows, so
-                  FoldRanges.Ranges.Delete(i);
-                  break;
+                  FoldRanges.Ranges.Delete(I);
+                  Break;
                  end;
               end else
                 Assert(False, 'TSynDWSSyn.AdjustFoldRanges');
@@ -1646,8 +1646,8 @@ begin
             else begin
               // Otherwise delete
               // eg. function definitions within a class definition
-              FoldRanges.Ranges.Delete(i);
-              break
+              FoldRanges.Ranges.Delete(I);
+              Break
             end;
           end;
         end;

@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterModelica.pas,v 1.12.2.6 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynHighlighterModelica;
@@ -108,13 +101,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
-    function GetEol: boolean; override;
+    function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -167,7 +160,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 598 + Ord(Str^) * 127;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 97;
   fStringLen := Str - fToIdent;
@@ -188,15 +181,15 @@ end;
 
 procedure TSynModelicaSyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if KeyIndices[i] = -1 then
-      fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if KeyIndices[I] = -1 then
+      fIdentFuncTable[I] := AltFunc;
 
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if @fIdentFuncTable[i] = nil then
-      fIdentFuncTable[i] := KeyWordFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[I] = nil then
+      fIdentFuncTable[I] := KeyWordFunc;
 end;
 
 function TSynModelicaSyn.AltFunc(Index: Integer): TtkTokenKind;
@@ -305,14 +298,14 @@ end;
 procedure TSynModelicaSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynModelicaSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynModelicaSyn.LowerProc;
@@ -340,7 +333,7 @@ end;
 procedure TSynModelicaSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynModelicaSyn.NumberProc;
@@ -356,15 +349,15 @@ procedure TSynModelicaSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -406,7 +399,7 @@ begin
     '*':
       begin
         fRange := rsComment;
-        inc(Run);
+        Inc(Run);
         if IsLineEnd(Run) then
           fTokenID := tkComment
         else
@@ -453,7 +446,7 @@ end;
 
 procedure TSynModelicaSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -467,9 +460,9 @@ begin
     fTokenID := tkComment;
     repeat
       if (fLine[Run] = '*') and (fLine[Run + 1] = '/') then begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fRange := rsUnknown;
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -486,9 +479,9 @@ begin
     fTokenID := tkString;
     repeat
       if fLine[Run] = #39 then begin
-        inc(Run);
+        Inc(Run);
         fRange := rsUnknown;
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -509,7 +502,7 @@ begin
           begin
             Inc(Run);
             fRange := rsUnknown;
-            break;
+            Break;
           end;
         #92:
           begin
@@ -560,7 +553,7 @@ begin
   inherited;
 end;
 
-function TSynModelicaSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynModelicaSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -574,7 +567,7 @@ begin
   end;
 end;
 
-function TSynModelicaSyn.GetEol: boolean;
+function TSynModelicaSyn.GetEol: Boolean;
 begin
   Result := Run = fLineLen + 1;
 end;
@@ -606,7 +599,7 @@ begin
   end;
 end;
 
-function TSynModelicaSyn.GetTokenKind: integer;
+function TSynModelicaSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

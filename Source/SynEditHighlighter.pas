@@ -132,7 +132,7 @@ type
     fBrackets: string;
     Run: Integer;
     fOldRun: Integer;
-    // If FScanningToEOL is true then only ranges need to be scanned.
+    // If FScanningToEOL is True then only ranges need to be scanned.
     FScanningToEOL: Boolean;
     procedure Loaded; override;
     procedure AddAttribute(Attri: TSynHighlighterAttributes);
@@ -189,11 +189,11 @@ type
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
-    function GetHighlighterAttriAtRowCol(const Lines : TStrings;
+    function GetHighlighterAttriAtRowCol(const Lines: TStrings;
       const Line: Integer; const Char: Integer): TSynHighlighterAttributes;
-    function GetHighlighterAttriAtRowColEx(const Lines : TStrings;
+    function GetHighlighterAttriAtRowColEx(const Lines: TStrings;
       const Line, Char: Integer;  var Token: string;
-      var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): boolean;
+      var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): Boolean;
     function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; virtual;
     property FriendlyLanguageName: string read GetFriendlyLanguageName;
     property LanguageName: string read GetLanguageName;
@@ -659,7 +659,7 @@ begin
         Foreground := Ini.ReadInteger(Name, 'Foreground', Foreground);
       if S.IndexOf('Style') <> -1 then
         IntegerStyle := Ini.ReadInteger(Name, 'Style', IntegerStyle);
-      Result := true;
+      Result := True;
     end
     else
       Result := False;
@@ -772,7 +772,7 @@ begin
           if AttriName = SrcAttri.Name then
           begin
             Attribute[i].Assign(SrcAttri);
-            break;
+            Break;
           end;
         end;
       end;
@@ -845,7 +845,7 @@ begin
   end;
 end;
 
-function TSynCustomHighlighter.LoadFromFile(AFileName : String): boolean;
+function TSynCustomHighlighter.LoadFromFile(AFileName: string): Boolean;
 var
   AIni: TMemIniFile;
 begin
@@ -857,7 +857,7 @@ begin
   end;
 end;
 
-function TSynCustomHighlighter.SaveToFile(AFileName : String): boolean;
+function TSynCustomHighlighter.SaveToFile(AFileName: string): Boolean;
 var
   AIni: TMemIniFile;
 begin
@@ -932,7 +932,7 @@ end;
 
 function TSynCustomHighlighter.GetHighlighterAttriAtRowColEx(
   const Lines: TStrings; const Line, Char: Integer; var Token: string;
-  var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): boolean;
+  var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): Boolean;
 var
   LineText: string;
 begin
@@ -954,7 +954,7 @@ begin
           Attri := GetTokenAttribute;
           TokenType := GetTokenKind;
           Result := True;
-          exit;
+          Exit;
         end;
         Next;
       end;
@@ -1021,9 +1021,9 @@ begin
       if Temp^ <> Token[i] then
       begin
         Result := False;
-        break;
+        Break;
       end;
-      inc(Temp);
+      Inc(Temp);
     end;
   end
   else
@@ -1165,7 +1165,7 @@ end;
 
 procedure TSynCustomHighlighter.DoSetLine(const Value: string; LineNumber: Integer);
 
-  procedure DoWideLowerCase(const value : string; var dest : string);
+  procedure DoWideLowerCase(const value: string; var dest: string);
   begin
     // segregated here so case-insensitive highlighters don't have to pay the overhead
     // of the exception frame for the release of the temporary string

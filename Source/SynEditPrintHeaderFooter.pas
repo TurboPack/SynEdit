@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditPrintHeaderFooter.pas,v 1.10.2.7 2008/09/23 14:02:08 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 
@@ -74,15 +67,15 @@ CONTENTS:
           $TIME$       : Print the time
           $DATETIME$   : Print the date and then the time
           $TIMEDATE$   : Print the time and then the date
-      procedure Delete(Index : Integer);
+      procedure Delete(Index: Integer);
         Delete THeaderFooterItem with index Index.
       procedure Clear;
         Clear all THeaderFooterItems.
-      function Count : Integer;
+      function Count: Integer;
         Returns number of THeaderFooterItems.
-      function Get(Index : Integer) : THeaderFooterItem;
+      function Get(Index: Integer): THeaderFooterItem;
         Returns THeaderFooterItem with Index.
-      procedure SetPixPrInch(Value : Integer);
+      procedure SetPixPrInch(Value: Integer);
         Corrects the PixPerInch property of fonts. Used internally by
         TSynEditPrint.
       procedure InitPrint
@@ -364,7 +357,7 @@ begin
             begin
               Inc(Run); // also the '$'
               Start := Run;
-              break;
+              Break;
             end
             else
             begin
@@ -664,7 +657,7 @@ end;
 
 procedure THeaderFooter.DrawFrame(RT: ID2D1RenderTarget);
 //Draws frame around header/footer
-Var
+var
   BoxRect: TD2D1RectF;
 begin
   if (FrameTypes = []) then Exit;
@@ -779,13 +772,13 @@ end;
 
 function THeaderFooter.GetAsString: string;
 var
-  i: integer;
+  I: Integer;
 begin
   FixLines;
   Result := '';
-  for i := 0 to FItems.Count - 1 do begin
+  for I := 0 to FItems.Count - 1 do begin
     if Result <> '' then Result := Result + '/';
-    Result := Result + EncodeString(THeaderFooterItem(FItems[i]).AsString);
+    Result := Result + EncodeString(THeaderFooterItem(FItems[I]).AsString);
   end; //for
 end;
 
@@ -810,7 +803,7 @@ end;
 
 procedure THeaderFooter.LoadFromStream(AStream: TStream);
 var
-  Num, i: Integer;
+  Num, I: Integer;
   aCharset: TFontCharset;
   aColor: TColor;
   aHeight: Integer;
@@ -856,8 +849,8 @@ begin
     while Num > 0 do
     begin
       // load headerfooter items from stream
-      i := Add('', nil, taLeftJustify, 1);
-      Get(i).LoadFromStream(AStream);
+      I := Add('', nil, taLeftJustify, 1);
+      Get(I).LoadFromStream(AStream);
       Dec(Num);
     end;
   end;
@@ -865,7 +858,7 @@ end;
 
 procedure THeaderFooter.SaveToStream(AStream: TStream);
 var
-  i, Num: integer;
+  I, Num: Integer;
   aCharset: TFontCharset;
   aColor: TColor;
   aHeight: Integer;
@@ -873,7 +866,7 @@ var
   aPitch: TFontPitch;
   aSize: Integer;
   aStyle: TFontStyles;
-  aLen : integer;
+  aLen: Integer;
 begin
   with AStream do begin
     // write the header/footer properties first
@@ -903,8 +896,8 @@ begin
     // now write the items
     Num := Count;
     Write(Num, SizeOf(Num));
-    for i := 0 to Num - 1 do
-      Get(i).SaveToStream(AStream);
+    for I := 0 to Num - 1 do
+      Get(I).SaveToStream(AStream);
   end;
 end;
 

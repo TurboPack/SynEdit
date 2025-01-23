@@ -27,11 +27,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynHighlighterManager.pas,v 1.7.2.2 2008/03/01 18:32:02 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
   - does not work when dropped on a frame in Delphi 5
 -------------------------------------------------------------------------------}
@@ -126,27 +121,27 @@ var
 
   procedure CheckExisting;
   var
-    i: integer;
-    j: integer;
+    I: Integer;
+    J: Integer;
   begin
-    for i := 0 to form.ComponentCount-1 do begin
-      j := highlight.FindByClass(form.Components[i]);
-      if j >= 0 then begin
-        j := synForm.clbHighlighters.Items.IndexOf(highlight[j].GetFriendlyLanguageName);
-        if j >= 0 then
-          synForm.clbHighlighters.Checked[j] := true;
+    for I := 0 to form.ComponentCount-1 do begin
+      J := highlight.FindByClass(form.Components[I]);
+      if J >= 0 then begin
+        J := synForm.clbHighlighters.Items.IndexOf(highlight[J].GetFriendlyLanguageName);
+        if J >= 0 then
+          synForm.clbHighlighters.Checked[J] := True;
       end;
     end; //for
   end;
 
-  function FindHighlighterComp(hlClass: TSynCustomHighlighterClass): integer;
+  function FindHighlighterComp(hlClass: TSynCustomHighlighterClass): Integer;
   var
-    i: integer;
+    I: Integer;
   begin
     Result := -1;
-    for i := 0 to form.ComponentCount-1 do begin
-      if form.Components[i] is hlClass then begin
-        Result := i;
+    for I := 0 to form.ComponentCount-1 do begin
+      if form.Components[I] is hlClass then begin
+        Result := I;
         Exit;
       end;
     end; //for
@@ -154,24 +149,24 @@ var
 
   procedure PlaceNew;
   var
-    i: integer;
-    high: integer;
-    comp: integer;
-    xpos, ypos: integer;
-    xstart: integer;
+    I: Integer;
+    high: Integer;
+    comp: Integer;
+    xpos, ypos: Integer;
+    xstart: Integer;
 
     procedure GetStartCoordinates;
     var
-      compTop: integer;
-      compLeft: integer;
-      i: integer;
+      compTop: Integer;
+      compLeft: Integer;
+      I: Integer;
     begin
       xpos := -1;
       ypos := -1;
-      for i := 0 to form.ComponentCount-1 do begin
-        if form.Components[i] is TSynCustomHighlighterClass then begin
-          compLeft := LongRec(form.Components[i].DesignInfo).Lo;
-          compTop  := LongRec(form.Components[i].DesignInfo).Hi;
+      for I := 0 to form.ComponentCount-1 do begin
+        if form.Components[I] is TSynCustomHighlighterClass then begin
+          compLeft := LongRec(form.Components[I].DesignInfo).Lo;
+          compTop  := LongRec(form.Components[I].DesignInfo).Hi;
           if (xpos < 0) or (compLeft < xpos) then
             xpos := compLeft;
           if (ypos < 0) or (compTop < ypos) then
@@ -194,24 +189,24 @@ var
       end;
     end;
 
-    function CoordinatesTaken: boolean;
+    function CoordinatesTaken: Boolean;
     var
-      compTop: integer;
-      compLeft: integer;
+      compTop: Integer;
+      compLeft: Integer;
       compRect: TRect;
       testRect: TRect;
       interRect: TRect;
-      i: integer;
+      I: Integer;
     begin
-      Result := false;
+      Result := False;
       testRect := Rect(xpos,ypos,xpos+31,ypos+31);
-      for i := 0 to form.ComponentCount-1 do begin
-        if (form.Components[i] <> self) and (not (form.Components[i] is TControl)) then begin
-          compLeft := LongRec(form.Components[i].DesignInfo).Lo;
-          compTop  := LongRec(form.Components[i].DesignInfo).Hi;
+      for I := 0 to form.ComponentCount-1 do begin
+        if (form.Components[I] <> self) and (not (form.Components[I] is TControl)) then begin
+          compLeft := LongRec(form.Components[I].DesignInfo).Lo;
+          compTop  := LongRec(form.Components[I].DesignInfo).Hi;
           compRect := Rect(compLeft,compTop,compLeft+31,compTop+31);
           if IntersectRect(interRect,testRect,compRect) then begin
-            Result := true;
+            Result := True;
             Exit;
           end;
         end;
@@ -230,9 +225,9 @@ var
     // inserted highlighters to be sorted by name.
     // Iterate twice - delete highlighters in first pass (to make place), create
     // in second.
-    for i := 0 to synForm.clbHighlighters.Items.Count-1 do begin
-      if not synForm.clbHighlighters.Checked[i] then begin // unchecked - remove
-        high := highlight.FindByFriendlyName(synForm.clbHighlighters.Items[i]);
+    for I := 0 to synForm.clbHighlighters.Items.Count-1 do begin
+      if not synForm.clbHighlighters.Checked[I] then begin // unchecked - remove
+        high := highlight.FindByFriendlyName(synForm.clbHighlighters.Items[I]);
         if high >= 0 then begin
           comp := FindHighlighterComp(highlight[high]);
           if comp >= 0 then
@@ -240,9 +235,9 @@ var
         end;
       end;
     end; //for
-    for i := 0 to synForm.clbHighlighters.Items.Count-1 do begin
-      if synForm.clbHighlighters.Checked[i] then begin // checked - add
-        high := highlight.FindByFriendlyName(synForm.clbHighlighters.Items[i]);
+    for I := 0 to synForm.clbHighlighters.Items.Count-1 do begin
+      if synForm.clbHighlighters.Checked[I] then begin // checked - add
+        high := highlight.FindByFriendlyName(synForm.clbHighlighters.Items[I]);
         if high >= 0 then begin
           if FindHighlighterComp(highlight[high]) < 0 then begin
             GetFreeCoordinates;
@@ -358,7 +353,7 @@ begin
     Width := PPIScale(305);
     Height := PPIScale(201);
     //ItemHeight := 13;
-    Sorted := true;
+    Sorted := True;
     TabOrder := 0;
   end;
   with btnSelectAll do
@@ -415,28 +410,28 @@ end;
 
 procedure TSynHighlighterForm.DeselectAll(Sender: TObject);
 var
-  i: integer;
+  I: Integer;
 begin
-  for i := 0 to clbHighlighters.Items.Count-1 do
-    clbHighlighters.Checked[i] := false;
+  for I := 0 to clbHighlighters.Items.Count-1 do
+    clbHighlighters.Checked[I] := False;
 end;
 
 procedure TSynHighlighterForm.LoadForm;
 var
-  i: integer;
+  I: Integer;
 begin
   clbHighlighters.Clear;
-  for i := 0 to Highlight.Count-1 do begin
-    clbHighlighters.Items.Add(Highlight[i].GetFriendlyLanguageName); 
+  for I := 0 to Highlight.Count-1 do begin
+    clbHighlighters.Items.Add(Highlight[I].GetFriendlyLanguageName);
   end; //for
 end;
 
 procedure TSynHighlighterForm.SelectAll(Sender: TObject);
 var
-  i: integer;
+  I: Integer;
 begin
-  for i := 0 to clbHighlighters.Items.Count-1 do
-    clbHighlighters.Checked[i] := true;
+  for I := 0 to clbHighlighters.Items.Count-1 do
+    clbHighlighters.Checked[I] := True;
 end;
 
 end.

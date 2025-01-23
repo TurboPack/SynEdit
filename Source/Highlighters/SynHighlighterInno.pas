@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterInno.pas,v 1.22.2.9 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides an Inno script file highlighter for SynEdit)
@@ -77,7 +70,7 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    FKeywords: TDictionary<String, TtkTokenKind>;
+    FKeywords: TDictionary<string, TtkTokenKind>;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymbolProc;
     procedure CRProc;
@@ -92,7 +85,7 @@ type
     procedure SemiColonProc;
     procedure StringProc;
     procedure UnknownProc;
-    procedure DoAddKeyword(AKeyword: string; AKind: integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
   protected
     function GetSampleSource: string; override;
     function IsCurrentToken(const Token: string): Boolean; override;
@@ -108,7 +101,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
   published
     property ConstantAttri: TSynHighlighterAttributes read fConstantAttri
@@ -196,7 +189,7 @@ const
 
 function TSynInnoSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
@@ -223,9 +216,9 @@ begin
       if AnsiLowerCase(Temp^)[1] <> AnsiLowerCase(Token[i])[1] then
       begin
         Result := False;
-        break;
+        Break;
       end;
-      inc(Temp);
+      Inc(Temp);
     end;
   end
   else
@@ -238,7 +231,7 @@ begin
   fCaseSensitive := False;
 
   // Create the keywords dictionary case-insensitive
-  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
+  FKeywords := TDictionary<string, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
@@ -303,14 +296,14 @@ end;
 procedure TSynInnoSyn.SymbolProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynInnoSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
-  if fLine[Run] = #10 then inc(Run);
+  Inc(Run);
+  if fLine[Run] = #10 then Inc(Run);
 end;
 
 procedure TSynInnoSyn.EqualProc;
@@ -324,17 +317,17 @@ begin
     if fLine[Run] = ';' then
     begin
       Inc(Run);
-      break;
+      Break;
     end;
   until IsLineEnd(Run);
 end;
 
 procedure TSynInnoSyn.IdentProc;
 var
-  LookAhead: integer;
+  LookAhead: Integer;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   if fTokenID = tkKeyOrParameter then
   begin
     LookAhead := Run;
@@ -353,7 +346,7 @@ begin
   if Run > 0 then
   begin
     fTokenID := tkUnknown;
-    inc(Run);
+    Inc(Run);
     Exit;
   end;
 
@@ -364,7 +357,7 @@ begin
     if fLine[Run] = ']' then
     begin
       Inc(Run);
-      break;
+      Break;
     end;
   until IsLineEnd(Run);
 end;
@@ -372,13 +365,13 @@ end;
 procedure TSynInnoSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynInnoSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynInnoSyn.NumberProc;
@@ -447,7 +440,7 @@ begin
       // If the semicolon is not the first non-whitespace character on the
       // line, then it isn't the start of a comment.
       fTokenID := tkUnknown;
-      inc(Run);
+      Inc(Run);
       Exit;
     end;
   fTokenID := tkComment;
@@ -464,14 +457,14 @@ begin
     if fLine[Run] = '"' then begin
       Inc(Run);
       if fLine[Run] <> '"' then // embedded "" does not end the string
-        break;
+        Break;
     end;
   until IsLineEnd(Run);
 end;
 
 procedure TSynInnoSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -496,7 +489,7 @@ begin
   inherited;
 end;
 
-function TSynInnoSyn.GetDefaultAttribute(Index: integer):
+function TSynInnoSyn.GetDefaultAttribute(Index: Integer):
   TSynHighlighterAttributes;
 begin
   case Index of
@@ -535,7 +528,7 @@ begin
   end;
 end;
 
-function TSynInnoSyn.GetTokenKind: integer;
+function TSynInnoSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
@@ -555,7 +548,7 @@ begin
   Result := SYNS_LangInno;
 end;
 
-procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: integer);
+procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));

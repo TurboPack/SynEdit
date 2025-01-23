@@ -68,15 +68,15 @@ end;
 
 function TTextReplaceDialog.GetReplaceTextHistory: string;
 var
-  i: integer;
+  I: Integer;
 begin
   Result := '';
-  for i := 0 to cbReplaceText.Items.Count - 1 do begin
-    if i >= 10 then
-      break;
-    if i > 0 then
+  for I := 0 to cbReplaceText.Items.Count - 1 do begin
+    if I >= 10 then
+      Break;
+    if I > 0 then
       Result := Result + #13#10;
-    Result := Result + cbReplaceText.Items[i];
+    Result := Result + cbReplaceText.Items[I];
   end;
 end;
 
@@ -93,20 +93,20 @@ end;
 procedure TTextReplaceDialog.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 var
-  s: string;
-  i: integer;
+  S: string;
+  I: Integer;
 begin
   inherited;
   if ModalResult = mrOK then begin
-    s := cbReplaceText.Text;
-    if s <> '' then begin
-      i := cbReplaceText.Items.IndexOf(s);
-      if i > -1 then begin
-        cbReplaceText.Items.Delete(i);
-        cbReplaceText.Items.Insert(0, s);
-        cbReplaceText.Text := s;
+    S := cbReplaceText.Text;
+    if S <> '' then begin
+      I := cbReplaceText.Items.IndexOf(S);
+      if I > -1 then begin
+        cbReplaceText.Items.Delete(I);
+        cbReplaceText.Items.Insert(0, S);
+        cbReplaceText.Text := S;
       end else
-        cbReplaceText.Items.Insert(0, s);
+        cbReplaceText.Items.Insert(0, S);
     end;
   end;
 end;
