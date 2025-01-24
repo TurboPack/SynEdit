@@ -7815,23 +7815,19 @@ const
   TestScrollOptions = [eoDisableScrollArrows, eoHideShowScrollbars,
     eoScrollPastEof, eoScrollPastEol];
 var
-  bUpdateScroll: Boolean;
+  UpdateScroll: Boolean;
 begin
   if (Value <> fScrollOptions) then
   begin
-    bUpdateScroll := (ScrollOptions * TestScrollOptions) <> (Value * TestScrollOptions);
+    UpdateScroll := (ScrollOptions * TestScrollOptions) <> (Value * TestScrollOptions);
     fScrollOptions := Value;
-    if HandleAllocated then
+    if HandleAllocated and UpdateScroll then
     begin
-      CalcTextAreaWidth;  // in case eoWrapWithRightEdge changed
-      if bUpdateScroll then
-      begin
-        if not (eoScrollPastEol in ScrollOptions) then
-          LeftChar := LeftChar;
-        if not (eoScrollPastEof in ScrollOptions) then
-          TopLine := TopLine;
-        UpdateScrollBars;
-      end;
+      if not (eoScrollPastEol in ScrollOptions) then
+        LeftChar := LeftChar;
+      if not (eoScrollPastEof in ScrollOptions) then
+        TopLine := TopLine;
+      UpdateScrollBars;
     end;
   end;
 end;

@@ -641,22 +641,25 @@ end;
 
 procedure TfmEditorOptionsDialog.PutData;
 var
-  vOptions: TSynEditorOptions;
-  vScrollOptions: TSynEditorScrollOptions;
-  procedure SetFlag(aOption: TSynEditorOption; aValue: Boolean);
+  EdOptions: TSynEditorOptions;
+  EdScrollOptions: TSynEditorScrollOptions;
+
+  procedure SetFlag(Option: TSynEditorOption; Value: Boolean);
   begin
-    if aValue then
-      Include(vOptions, aOption)
+    if Value then
+      Include(EdOptions, Option)
     else
-      Exclude(vOptions, aOption);
+      Exclude(EdOptions, Option);
   end;
-  procedure SetScrollFlag(aOption: TSynEditorScrollOption; aValue: Boolean);
+
+  procedure SetScrollFlag(Option: TSynEditorScrollOption; Value: Boolean);
   begin
-    if aValue then
-      Include(vScrollOptions, aOption)
+    if Value then
+      Include(EdScrollOptions, Option)
     else
-      Exclude(vScrollOptions, aOption);
+      Exclude(EdScrollOptions, Option);
   end;
+
 begin
   //Gutter
   FSynEdit.Gutter.Visible:= ckGutterVisible.Checked;
@@ -680,16 +683,11 @@ begin
   FSynEdit.Font.Assign(labFont.Font);
   //Options
   FSynEdit.WantTabs:= ckWantTabs.Checked;
-  vOptions := FSynEdit.Options; //Keep old values for unsupported options
+  EdOptions := FSynEdit.Options; //Keep old values for unsupported options
   SetFlag(eoAutoIndent, ckAutoIndent.Checked);
   SetFlag(eoDragDropEditing, ckDragAndDropEditing.Checked);
   SetFlag(eoSmartTabs, ckSmartTabs.Checked);
   SetFlag(eoBracketsHighlight, ckBracketsHiglight.Checked);
-  SetScrollFlag(eoHalfPageScroll, ckHalfPageScroll.Checked);
-  SetScrollFlag(eoScrollByOneLess, ckScrollByOneLess.Checked);
-  SetScrollFlag(eoScrollPastEof, ckScrollPastEOF.Checked);
-  SetScrollFlag(eoScrollPastEol, ckScrollPastEOL.Checked);
-  SetScrollFlag(eoShowScrollHint, ckShowScrollHint.Checked);
   SetFlag(eoTabsToSpaces, ckTabsToSpaces.Checked);
   SetFlag(eoTrimTrailingSpaces, ckTrimTrailingSpaces.Checked);
   SetFlag(eoKeepCaretX, ckKeepCaretX.Checked);
@@ -698,9 +696,15 @@ begin
   SetFlag(eoEnhanceHomeKey, ckEnhanceHomeKey.Checked);
   SetFlag(eoEnhanceEndKey, ckEnhanceEndKey.Checked);
   SetFlag(eoGroupUndo, ckGroupUndo.Checked);
+  FSynEdit.Options := EdOptions;
+  SetScrollFlag(eoHalfPageScroll, ckHalfPageScroll.Checked);
+  SetScrollFlag(eoScrollByOneLess, ckScrollByOneLess.Checked);
+  SetScrollFlag(eoScrollPastEof, ckScrollPastEOF.Checked);
+  SetScrollFlag(eoScrollPastEol, ckScrollPastEOL.Checked);
+  SetScrollFlag(eoShowScrollHint, ckShowScrollHint.Checked);
   SetScrollFlag(eoDisableScrollArrows, ckDisableScrollArrows.Checked);
   SetScrollFlag(eoHideShowScrollbars, ckHideShowScrollbars.Checked);
-  FSynEdit.Options := vOptions;
+  FSynEdit.ScrollOptions := EdScrollOptions;
   if ckShowSpecialChars.Checked then
     FSynEdit.VisibleSpecialChars := [scWhitespace, scControlChars, scEOL]
   else
