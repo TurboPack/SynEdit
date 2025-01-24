@@ -156,7 +156,7 @@ begin
     BarKind := SB_VERT;
   Btn1Enabled := True;
   Btn2Enabled := True;
-  if (eoDisableScrollArrows in FOwner.Options) then
+  if (eoDisableScrollArrows in FOwner.ScrollOptions) then
   begin
     Btn1Enabled := (AState.nPos > AState.nMin);
     Btn2Enabled := ((AState.nPos + AState.nPage - AState.nMin) < AState.nMax);
@@ -201,7 +201,7 @@ var
   HideEnabled: Boolean;
 begin
   WindowStyle := GetWindowLong(FOwner.Handle, GWL_STYLE);
-  HideEnabled := (eoHideShowScrollbars in FOwner.Options);
+  HideEnabled := (eoHideShowScrollbars in FOwner.ScrollOptions);
   if AState.Kind = sbHorizontal then
   begin
     BarKind := SB_HORZ;
@@ -270,7 +270,7 @@ begin
     begin
       MaxScroll := (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
         FOwner.CharWidth) + 1);
-      if (eoScrollPastEol in FOwner.Options) or (FOwner.LeftChar > 1) then
+      if (eoScrollPastEol in FOwner.ScrollOptions) or (FOwner.LeftChar > 1) then
         MaxScroll := Max(MaxScroll + 1,
           FOwner.LeftChar - 1 + GetHorzPageInChars);  // PastEOL adds 1 to MaxScroll.
     end;
@@ -285,7 +285,7 @@ begin
   if FNewVertSBState.Active then
   begin
     MaxScroll := FOwner.DisplayRowCount;
-    if (eoScrollPastEof in FOwner.Options) then
+    if (eoScrollPastEof in FOwner.ScrollOptions) then
       Inc(MaxScroll, FOwner.LinesInWindow - 1);
     FNewVertSBState.nMin := 1;
     FNewVertSBState.nMax := Max(1, MaxScroll);
@@ -339,9 +339,9 @@ begin
     SB_LINELEFT: FOwner.LeftChar := FOwner.LeftChar - 1;
       // Scrolls one page of chars left / right
     SB_PAGERIGHT: FOwner.LeftChar := FOwner.LeftChar
-      + (GetHorzPageInChars - Ord(eoScrollByOneLess in FOwner.Options));
+      + (GetHorzPageInChars - Ord(eoScrollByOneLess in FOwner.ScrollOptions));
     SB_PAGELEFT: FOwner.LeftChar := FOwner.LeftChar
-      - (GetHorzPageInChars - Ord(eoScrollByOneLess in FOwner.Options));
+      - (GetHorzPageInChars - Ord(eoScrollByOneLess in FOwner.ScrollOptions));
       // Scrolls to the current scroll bar position
     SB_THUMBPOSITION,
     SB_THUMBTRACK:
@@ -389,9 +389,9 @@ begin
     SB_LINEUP: FOwner.TopLine := FOwner.TopLine - 1;
       // Scrolls one page of lines up / down
     SB_PAGEDOWN: FOwner.TopLine := FOwner.TopLine
-      + (FOwner.LinesInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+      + (FOwner.LinesInWindow - Ord(eoScrollByOneLess in FOwner.ScrollOptions));
     SB_PAGEUP: FOwner.TopLine := FOwner.TopLine
-      - (FOwner.LinesInWindow - Ord(eoScrollByOneLess in FOwner.Options));
+      - (FOwner.LinesInWindow - Ord(eoScrollByOneLess in FOwner.ScrollOptions));
       // Scrolls to the current scroll bar position
     SB_THUMBPOSITION,
     SB_THUMBTRACK:
@@ -399,7 +399,7 @@ begin
         FIsScrolling := True;
         ScrollInfo := GetBarScrollInfo(sbVertical);
         FOwner.TopLine := ScrollInfo.nTrackPos;
-        if eoShowScrollHint in FOwner.Options then
+        if eoShowScrollHint in FOwner.ScrollOptions then
         begin
           ScrollHint := GetScrollHint;
           ScrollHint.Color := FOwner.ScrollHintColor;
@@ -412,7 +412,7 @@ begin
           end;
 
           rc := ScrollHint.CalcHintRect(200, s, nil);
-          if eoScrollHintFollows in FOwner.Options then
+          if eoScrollHintFollows in FOwner.ScrollOptions then
           begin
             ButtonH := GetSystemMetrics(SM_CYVSCROLL);
             pt := FOwner.ClientToScreen(Point(FOwner.ClientWidth - rc.Right - 4,
@@ -434,7 +434,7 @@ begin
     SB_ENDSCROLL:
       begin
         FIsScrolling := False;
-        if eoShowScrollHint in FOwner.Options then
+        if eoShowScrollHint in FOwner.ScrollOptions then
           ShowWindow(GetScrollHint.Handle, SW_HIDE);
         UpdateScrollBars;
       end;
@@ -566,7 +566,7 @@ begin
         end;
 
         with TCustomSynEdit(Control) do
-          BtnEnabled := not (eoDisableScrollArrows in Options) or (TopLine > 1);
+          BtnEnabled := not (eoDisableScrollArrows in ScrollOptions) or (TopLine > 1);
 
         if (LVertSliderRect.Height <> 0) and BtnEnabled then
           Details := LStyle.GetElementDetails(VertUpState)
@@ -576,11 +576,11 @@ begin
 
         with TCustomSynEdit(Control) do
         begin
-          if (eoScrollPastEof in Options) then
+          if (eoScrollPastEof in ScrollOptions) then
             MaxScroll := DisplayRowCount
           else
             MaxScroll := DisplayRowCount - LinesInWindow + 1;
-          BtnEnabled := not (eoDisableScrollArrows in Options) or (TopLine < MaxScroll);
+          BtnEnabled := not (eoDisableScrollArrows in ScrollOptions) or (TopLine < MaxScroll);
         end;
 
         if (LVertSliderRect.Height <> 0) and BtnEnabled then

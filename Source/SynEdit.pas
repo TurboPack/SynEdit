@@ -125,23 +125,15 @@ type
 
   TSynEditorOption = (
     eoAutoIndent,              //Will indent the caret on new lines with the same amount of leading white space as the preceding line
-    eoDisableScrollArrows,     //Disables the scroll bar arrow buttons when you can't scroll in that direction any more
     eoDragDropEditing,         //Allows you to select a block of text and drag it within the document to another location
     eoDropFiles,               //Allows the editor accept OLE file drops
     eoEnhanceHomeKey,          //enhances home key positioning, similar to visual studio
     eoEnhanceEndKey,           //enhances End key positioning, similar to JDeveloper
     eoGroupUndo,               //When undoing/redoing actions, handle all continous changes of the same kind in one call instead undoing/redoing each command separately
-    eoHalfPageScroll,          //When scrolling with page-up and page-down commands, only scroll a half page at a time
-    eoHideShowScrollbars,      //if enabled, then the scrollbars will only show when necessary.
     eoKeepCaretX,              //When moving through lines w/o Cursor Past EOL, keeps the X position of the cursor
     eoNoCaret,                 //Makes it so the caret is never visible
     eoNoSelection,             //Disables selecting text
     eoRightMouseMovesCursor,   //When clicking with the right mouse for a popup menu, move the cursor to that location
-    eoScrollByOneLess,         //Forces scrolling to be one less
-    eoScrollHintFollows,       //The scroll hint follows the mouse when scrolling vertically
-    eoScrollPastEof,           //Allows the cursor to go past the end of file marker
-    eoScrollPastEol,           //Allows the cursor to go past the last character into the white space at the end of a line
-    eoShowScrollHint,          //Shows a hint of the visible line numbers when scrolling vertically
     eoSmartTabDelete,          //similar to Smart Tabs, but when you delete characters
     eoSmartTabs,               //When tabbing, the cursor will go to the next non-white space character of the previous line
     eoSpecialLineDefaultFg,    //disables the foreground text color override when using the OnSpecialLineColor event
@@ -159,15 +151,29 @@ type
     );
   TSynEditorOptions = set of TSynEditorOption;
 
+  TSynEditorScrollOption = (
+    eoDisableScrollArrows,     //Disables the scroll bar arrow buttons when you can't scroll in that direction any more
+    eoHalfPageScroll,          //When scrolling with page-up and page-down commands, only scroll a half page at a time
+    eoHideShowScrollbars,      //if enabled, then the scrollbars will only show when necessary.
+    eoScrollByOneLess,         //Forces scrolling to be one less
+    eoScrollHintFollows,       //The scroll hint follows the mouse when scrolling vertically
+    eoScrollPastEof,           //Allows the cursor to go past the end of file marker
+    eoScrollPastEol,           //Allows the cursor to go past the last character into the white space at the end of a line
+    eoShowScrollHint           //Shows a hint of the visible line numbers when scrolling vertically
+    );
+  TSynEditorScrollOptions = set of TSynEditorScrollOption;
+
   TSynSpecialChars = (scWhitespace, scControlChars, scEOL);
   TSynVisibleSpecialChars = set of TSynSpecialChars;
 
 const
-  SYNEDIT_DEFAULT_OPTIONS = [eoAutoIndent, eoDragDropEditing, eoKeepCaretX,
-    eoEnhanceHomeKey, eoEnhanceEndKey, eoHideShowScrollbars,
-    eoDisableScrollArrows, eoShowScrollHint, eoTabIndent, eoTabsToSpaces,
+  SYNEDIT_DEFAULT_OPTIONS = [
+    eoAutoIndent, eoDragDropEditing, eoKeepCaretX,
+    eoEnhanceHomeKey, eoEnhanceEndKey, eoTabIndent, eoTabsToSpaces,
     eoSmartTabDelete, eoGroupUndo, eoDropFiles, eoShowLigatures,
     eoBracketsHighlight, eoAccessibility, eoCompleteBrackets, eoCompleteQuotes];
+  SYNEDIT_DEFAULT_SCROLLOPTIONS =
+    [eoHideShowScrollbars, eoDisableScrollArrows, eoShowScrollHint];
 
 type
 // use scAll to update a statusbar when another TCustomSynEdit got the focus
@@ -356,6 +362,7 @@ type
     fTabWidth: Integer;
     fStateFlags: TSynStateFlags;
     fOptions: TSynEditorOptions;
+    fScrollOptions: TSynEditorScrollOptions;
     FVisibleSpecialChars: TSynVisibleSpecialChars;
     fStatusChanges: TSynStatusChanges;
     fLastKey: word;
@@ -510,6 +517,7 @@ type
     procedure SetMaxUndo(const Value: Integer);
     procedure SetModified(Value: Boolean);
     procedure SetOptions(Value: TSynEditorOptions);
+    procedure SetScrollOptions(Value: TSynEditorScrollOptions);
     procedure SetVisibleSpecialChars(Value: TSynVisibleSpecialChars);
     procedure SetOverwriteCaret(const Value: TSynEditCaretType);
     procedure SetRightEdge(Value: Integer);
@@ -935,6 +943,8 @@ type
     property MaxUndo: Integer read GetMaxUndo write SetMaxUndo default 0;
     property Options: TSynEditorOptions read fOptions write SetOptions
       default SYNEDIT_DEFAULT_OPTIONS;
+    property ScrollOptions: TSynEditorScrollOptions read fScrollOptions write SetScrollOptions
+      default SYNEDIT_DEFAULT_SCROLLOPTIONS;
     property VisibleSpecialChars: TSynVisibleSpecialChars
       read FVisibleSpecialChars write SetVisibleSpecialChars;
     property OverwriteCaret: TSynEditCaretType read FOverwriteCaret
@@ -1073,6 +1083,7 @@ type
     property Lines;
     property MaxUndo;
     property Options;
+    property ScrollOptions;
     property OverwriteCaret;
     property ReadOnly;
     property RightEdge;
@@ -1537,6 +1548,7 @@ begin
   FSelections.AddCaret(BC, True);
 
   fOptions := SYNEDIT_DEFAULT_OPTIONS;
+  fScrollOptions := SYNEDIT_DEFAULT_SCROLLOPTIONS;
 
   fScrollTimer := TTimer.Create(Self);
   fScrollTimer.Enabled := False;
@@ -1779,13 +1791,13 @@ procedure TCustomSynEdit.ForceCaretX(aCaretX: Integer);
 var
   vRestoreScroll: Boolean;
 begin
-  vRestoreScroll := not (eoScrollPastEol in fOptions);
-  Include(fOptions, eoScrollPastEol);
+  vRestoreScroll := not (eoScrollPastEol in fScrollOptions);
+  Include(fScrollOptions, eoScrollPastEol);
   try
     InternalCaretX := aCaretX;
   finally
     if vRestoreScroll then
-      Exclude(fOptions, eoScrollPastEol);
+      Exclude(fScrollOptions, eoScrollPastEol);
   end;
 end;
 
@@ -2052,7 +2064,7 @@ begin
 //    UpdateScrollBars;
 //-- Flicker Reduction
     //SetBlockBegin(CaretXY);
-    if not (eoScrollPastEof in Options) then
+    if not (eoScrollPastEof in ScrollOptions) then
       TopLine := TopLine;
   end;
   HighlightBrackets;
@@ -3754,15 +3766,15 @@ begin
   begin
     // this is just to make sure if Lines stringlist should be empty
     Value.Line := 1;
-    if not (eoScrollPastEol in fOptions) then
+    if not (eoScrollPastEol in fScrollOptions) then
       nMaxX := 1;
   end
   else
   begin
-    if not (eoScrollPastEol in fOptions) then
+    if not (eoScrollPastEol in fScrollOptions) then
       nMaxX := Length(Lines[Value.Line - 1]) + 1;
   end;
-  if (Value.Char > nMaxX) and (not(eoScrollPastEol in Options)) then
+  if (Value.Char > nMaxX) and (not(eoScrollPastEol in fScrollOptions)) then
     Value.Char := nMaxX;
   if Value.Char < 1 then
     Value.Char := 1;
@@ -3923,7 +3935,7 @@ begin
     Value := 1
   else
   begin
-    if eoScrollPastEol in Options then
+    if eoScrollPastEol in ScrollOptions then
       MaxVal := MaxInt
     else if WordWrap and (eoWrapWithRightEdge in FOptions) and
       (WrapAreaWidth > FTextAreaWidth - FCharWidth)
@@ -4040,7 +4052,7 @@ var
         // Delete all lines in the selection range.
       TSynEditStringList(Lines).DeleteLines(BB.Line, BE.Line - BB.Line);
         // Put the stuff that was outside of selection back in.
-      if Options >= [eoScrollPastEol, eoTrimTrailingSpaces] then
+      if (eoTrimTrailingSpaces in Options) and (eoScrollPastEol in ScrollOptions) then
         TempString := TempString.TrimRight;
       Lines[BB.Line - 1] := TempString;
     end;
@@ -4152,7 +4164,7 @@ procedure TCustomSynEdit.SetTopLine(Value: Integer);
 var
   Delta: Integer;
 begin
-  if (eoScrollPastEof in Options) then
+  if (eoScrollPastEof in ScrollOptions) then
     Value := Min(Value, DisplayRowCount)
   else
     Value := Min(Value, DisplayRowCount - fLinesInWindow + 1);
@@ -4324,15 +4336,15 @@ begin
           end;
         end;
         // insert the selected text
-        ChangeScrollPastEOL := not (eoScrollPastEol in fOptions);
+        ChangeScrollPastEOL := not (eoScrollPastEol in fScrollOptions);
         try
           if ChangeScrollPastEOL then
-            Include(fOptions, eoScrollPastEol);
+            Include(fScrollOptions, eoScrollPastEol);
           CaretXY := vNewCaret;
           SelText := DragDropText; // creates undo action
         finally
           if ChangeScrollPastEOL then
-            Exclude(fOptions, eoScrollPastEol);
+            Exclude(fScrollOptions, eoScrollPastEol);
         end;
         SetCaretAndSelection(CaretXY, vNewCaret, CaretXY);
       finally
@@ -6105,7 +6117,7 @@ begin
     SRow := Rows[DC.Row];
 
     // Make sure X is visible
-    if (eoScrollPastEol in FOptions) and (DC.Column > SRow.Length) then
+    if (eoScrollPastEol in fScrollOptions) and (DC.Column > SRow.Length) then
       WidthToX := TextWidth(SRow) + (DC.Column - SRow.Length) * FCharWidth
     else
       WidthToX := TextWidth(Copy(SRow, 1, DC.Column - 1));
@@ -6415,8 +6427,8 @@ begin
       ecPageUp, ecSelPageUp, ecPageDown, ecSelPageDown, ecSelColumnPageUp, ecSelColumnPageDown:
         begin
           Caret := ColumnSelectionStart;
-          counter := fLinesInWindow shr Ord(eoHalfPageScroll in fOptions);
-          if eoScrollByOneLess in fOptions then
+          counter := fLinesInWindow shr Ord(eoHalfPageScroll in fScrollOptions);
+          if eoScrollByOneLess in fScrollOptions then
             Dec(counter);
           if (Command in [ecPageUp, ecSelPageUp, ecSelColumnPageUp]) then
             counter := -counter;
@@ -7777,17 +7789,12 @@ begin
 end;
 
 procedure TCustomSynEdit.SetOptions(Value: TSynEditorOptions);
-const
-  ScrollOptions = [eoDisableScrollArrows, eoHideShowScrollbars,
-    eoScrollPastEof, eoScrollPastEol];
 var
   bSetDrag: Boolean;
-  bUpdateScroll: Boolean;
 begin
   if (Value <> fOptions) then
   begin
     bSetDrag := (eoDropFiles in fOptions) <> (eoDropFiles in Value);
-    bUpdateScroll := (Options * ScrollOptions) <> (Value * ScrollOptions);
     fOptions := Value;
 
     FUndoRedo.GroupUndo := eoGroupUndo in Options;
@@ -7799,14 +7806,30 @@ begin
       // (un)register HWND as drop target
       if bSetDrag and not (csDesigning in ComponentState) then
         DragAcceptFiles(Handle, (eoDropFiles in fOptions));
+    end;
+  end;
+end;
 
+procedure TCustomSynEdit.SetScrollOptions(Value: TSynEditorScrollOptions);
+const
+  TestScrollOptions = [eoDisableScrollArrows, eoHideShowScrollbars,
+    eoScrollPastEof, eoScrollPastEol];
+var
+  bUpdateScroll: Boolean;
+begin
+  if (Value <> fScrollOptions) then
+  begin
+    bUpdateScroll := (ScrollOptions * TestScrollOptions) <> (Value * TestScrollOptions);
+    fScrollOptions := Value;
+    if HandleAllocated then
+    begin
+      CalcTextAreaWidth;  // in case eoWrapWithRightEdge changed
       if bUpdateScroll then
       begin
-        if not (eoScrollPastEol in Options) then
+        if not (eoScrollPastEol in ScrollOptions) then
           LeftChar := LeftChar;
-        if not (eoScrollPastEof in Options) then
+        if not (eoScrollPastEof in ScrollOptions) then
           TopLine := TopLine;
-
         UpdateScrollBars;
       end;
     end;
@@ -7846,9 +7869,9 @@ begin
     end
     else
       UpdateScrollbars;
-    if not (eoScrollPastEol in Options) then
+    if not (eoScrollPastEol in ScrollOptions) then
       LeftChar := LeftChar;
-    if not (eoScrollPastEof in Options) then
+    if not (eoScrollPastEof in ScrollOptions) then
       TopLine := TopLine;
   end;
 end;
@@ -7864,7 +7887,7 @@ begin
   SRow := Rows[Dst.Row];
   RowLen := SRow.Length;
   // only moving or selecting one char can change the line
-  ChangeY := WordWrap or not (eoScrollPastEol in fOptions);
+  ChangeY := WordWrap or not (eoScrollPastEol in fScrollOptions);
   if ChangeY and (DX = -1) and (Dst.Column = 1) and (Dst.Row > 1) then
   begin
     // end of previous line
