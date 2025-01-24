@@ -528,6 +528,8 @@ var
   Color: TColor;
   AnnWidth: Integer;
   SliderBitmap: TBitmap;
+  BtnEnabled: Boolean;
+  MaxScroll: Integer;
 begin
   if Handle = 0 then Exit;
   if DC = 0 then Exit;
@@ -563,13 +565,25 @@ begin
           end;
         end;
 
-        if LVertSliderRect.Height <> 0 then
+        with TCustomSynEdit(Control) do
+          BtnEnabled := not (eoDisableScrollArrows in Options) or (TopLine > 1);
+
+        if (LVertSliderRect.Height <> 0) and BtnEnabled then
           Details := LStyle.GetElementDetails(VertUpState)
         else
           Details := LStyle.GetElementDetails(tsArrowBtnUpDisabled);
         LStyle.DrawElement(LBitmap.Canvas.Handle, Details, VertUpButtonRect, nil, LPPI);
 
-        if LVertSliderRect.Height <> 0 then
+        with TCustomSynEdit(Control) do
+        begin
+          if (eoScrollPastEof in Options) then
+            MaxScroll := DisplayRowCount
+          else
+            MaxScroll := DisplayRowCount - LinesInWindow + 1;
+          BtnEnabled := not (eoDisableScrollArrows in Options) or (TopLine < MaxScroll);
+        end;
+
+        if (LVertSliderRect.Height <> 0) and BtnEnabled then
           Details := LStyle.GetElementDetails(VertDownState)
         else
           Details := LStyle.GetElementDetails(tsArrowBtnDownDisabled);
