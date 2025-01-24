@@ -3245,7 +3245,7 @@ begin
   InvalidateSelection(0);
 
 
-  ScrollPastEOL := eoScrollPastEol in TCustomSynEdit(FOwner).Options;
+  ScrollPastEOL := eoScrollPastEol in TCustomSynEdit(FOwner).ScrollOptions;
 
   if TCustomSynEdit(FOwner).WordWrap then
   begin

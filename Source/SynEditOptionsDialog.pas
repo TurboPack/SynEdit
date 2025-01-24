@@ -282,6 +282,7 @@ type
     FInsertCaret: TSynEditCaretType;
     FKeystrokes: TSynEditKeyStrokes;
     FOptions: TSynEditorOptions;
+    FScrollOptions: TSynEditorScrollOptions;
     FSynGutter: TSynGutter;
     FColor: TColor;
     FActiveLineColor: TColor;
@@ -297,6 +298,7 @@ type
     procedure AssignTo(Dest: TPersistent); override;
   published
     property Options: TSynEditorOptions read FOptions write FOptions;
+    property ScrollOptions: TSynEditorScrollOptions read FScrollOptions write FScrollOptions;
     property BookMarkOptions: TSynBookMarkOpt read FBookmarks write SetBookMarks;
     property Color: TColor read FColor write FColor;
     property Font: TFont read FFont write SetFont;
@@ -398,6 +400,7 @@ begin
 
     Self.Color := TCustomSynEdit(Source).Color;
     Self.Options := TCustomSynEdit(Source).Options;
+    Self.ScrollOptions := TCustomSynEdit(Source).ScrollOptions;
     Self.ExtraLineSpacing := TCustomSynEdit(Source).ExtraLineSpacing;
     Self.HideSelection := TCustomSynEdit(Source).HideSelection;
     Self.InsertCaret := TCustomSynEdit(Source).InsertCaret;
@@ -425,6 +428,7 @@ begin
     Self.DisplayFlowControl.Assign(TSynEditorOptionsContainer(Source).DisplayFlowControl);
     Self.Color := TSynEditorOptionsContainer(Source).Color;
     Self.Options := TSynEditorOptionsContainer(Source).Options;
+    Self.ScrollOptions := TSynEditorOptionsContainer(Source).ScrollOptions;
     Self.ExtraLineSpacing := TSynEditorOptionsContainer(Source).ExtraLineSpacing;
     Self.HideSelection := TSynEditorOptionsContainer(Source).HideSelection;
     Self.InsertCaret := TSynEditorOptionsContainer(Source).InsertCaret;
@@ -458,6 +462,7 @@ begin
       TCustomSynEdit(Dest).DisplayFlowControl.Assign(Self.DisplayFlowControl);
       TCustomSynEdit(Dest).Color := Self.Color;
       TCustomSynEdit(Dest).Options := Self.Options;
+      TCustomSynEdit(Dest).ScrollOptions := Self.ScrollOptions;
       TCustomSynEdit(Dest).ExtraLineSpacing := Self.ExtraLineSpacing;
       TCustomSynEdit(Dest).HideSelection := Self.HideSelection;
       TCustomSynEdit(Dest).InsertCaret := Self.InsertCaret;
@@ -501,6 +506,7 @@ begin
   Color:= clWindow;
   Keystrokes.ResetDefaults;
   Options := SYNEDIT_DEFAULT_OPTIONS;
+  ScrollOptions := SYNEDIT_DEFAULT_SCROLLOPTIONS;
   ExtraLineSpacing := 0;
   HideSelection := False;
   InsertCaret := ctVerticalLine;
@@ -597,11 +603,11 @@ begin
   ckWantTabs.Checked:= FSynEdit.WantTabs;
   ckSmartTabs.Checked:= eoSmartTabs in FSynEdit.Options;
   ckBracketsHiglight.Checked:= eoBracketsHighlight in FSynEdit.Options;
-  ckHalfPageScroll.Checked:= eoHalfPageScroll in FSynEdit.Options;
-  ckScrollByOneLess.Checked:= eoScrollByOneLess in FSynEdit.Options;
-  ckScrollPastEOF.Checked:= eoScrollPastEof in FSynEdit.Options;
-  ckScrollPastEOL.Checked:= eoScrollPastEol in FSynEdit.Options;
-  ckShowScrollHint.Checked:= eoShowScrollHint in FSynEdit.Options;
+  ckHalfPageScroll.Checked:= eoHalfPageScroll in FSynEdit.ScrollOptions;
+  ckScrollByOneLess.Checked:= eoScrollByOneLess in FSynEdit.ScrollOptions;
+  ckScrollPastEOF.Checked:= eoScrollPastEof in FSynEdit.ScrollOptions;
+  ckScrollPastEOL.Checked:= eoScrollPastEol in FSynEdit.ScrollOptions;
+  ckShowScrollHint.Checked:= eoShowScrollHint in FSynEdit.ScrollOptions;
   ckTabsToSpaces.Checked:= eoTabsToSpaces in FSynEdit.Options;
   ckTrimTrailingSpaces.Checked:= eoTrimTrailingSpaces in FSynEdit.Options;
   ckKeepCaretX.Checked:= eoKeepCaretX in FSynEdit.Options;
@@ -610,8 +616,8 @@ begin
   ckEnhanceHomeKey.Checked := eoEnhanceHomeKey in FSynEdit.Options;
   ckEnhanceEndKey.Checked := eoEnhanceEndKey in FSynEdit.Options;
   ckGroupUndo.Checked := eoGroupUndo in FSynEdit.Options;
-  ckDisableScrollArrows.Checked := eoDisableScrollArrows in FSynEdit.Options;
-  ckHideShowScrollbars.Checked := eoHideShowScrollbars in FSynEdit.Options;
+  ckDisableScrollArrows.Checked := eoDisableScrollArrows in FSynEdit.ScrollOptions;
+  ckHideShowScrollbars.Checked := eoHideShowScrollbars in FSynEdit.ScrollOptions;
   ckShowSpecialChars.Checked := FSynEdit.VisibleSpecialChars <> [];
   //Caret
   cInsertCaret.ItemIndex:= ord(FSynEdit.InsertCaret);
@@ -636,7 +642,7 @@ end;
 procedure TfmEditorOptionsDialog.PutData;
 var
   vOptions: TSynEditorOptions;
-
+  vScrollOptions: TSynEditorScrollOptions;
   procedure SetFlag(aOption: TSynEditorOption; aValue: Boolean);
   begin
     if aValue then
@@ -644,7 +650,13 @@ var
     else
       Exclude(vOptions, aOption);
   end;
-
+  procedure SetScrollFlag(aOption: TSynEditorScrollOption; aValue: Boolean);
+  begin
+    if aValue then
+      Include(vScrollOptions, aOption)
+    else
+      Exclude(vScrollOptions, aOption);
+  end;
 begin
   //Gutter
   FSynEdit.Gutter.Visible:= ckGutterVisible.Checked;
@@ -673,11 +685,11 @@ begin
   SetFlag(eoDragDropEditing, ckDragAndDropEditing.Checked);
   SetFlag(eoSmartTabs, ckSmartTabs.Checked);
   SetFlag(eoBracketsHighlight, ckBracketsHiglight.Checked);
-  SetFlag(eoHalfPageScroll, ckHalfPageScroll.Checked);
-  SetFlag(eoScrollByOneLess, ckScrollByOneLess.Checked);
-  SetFlag(eoScrollPastEof, ckScrollPastEOF.Checked);
-  SetFlag(eoScrollPastEol, ckScrollPastEOL.Checked);
-  SetFlag(eoShowScrollHint, ckShowScrollHint.Checked);
+  SetScrollFlag(eoHalfPageScroll, ckHalfPageScroll.Checked);
+  SetScrollFlag(eoScrollByOneLess, ckScrollByOneLess.Checked);
+  SetScrollFlag(eoScrollPastEof, ckScrollPastEOF.Checked);
+  SetScrollFlag(eoScrollPastEol, ckScrollPastEOL.Checked);
+  SetScrollFlag(eoShowScrollHint, ckShowScrollHint.Checked);
   SetFlag(eoTabsToSpaces, ckTabsToSpaces.Checked);
   SetFlag(eoTrimTrailingSpaces, ckTrimTrailingSpaces.Checked);
   SetFlag(eoKeepCaretX, ckKeepCaretX.Checked);
@@ -686,8 +698,8 @@ begin
   SetFlag(eoEnhanceHomeKey, ckEnhanceHomeKey.Checked);
   SetFlag(eoEnhanceEndKey, ckEnhanceEndKey.Checked);
   SetFlag(eoGroupUndo, ckGroupUndo.Checked);
-  SetFlag(eoDisableScrollArrows, ckDisableScrollArrows.Checked);
-  SetFlag(eoHideShowScrollbars, ckHideShowScrollbars.Checked);
+  SetScrollFlag(eoDisableScrollArrows, ckDisableScrollArrows.Checked);
+  SetScrollFlag(eoHideShowScrollbars, ckHideShowScrollbars.Checked);
   FSynEdit.Options := vOptions;
   if ckShowSpecialChars.Checked then
     FSynEdit.VisibleSpecialChars := [scWhitespace, scControlChars, scEOL]
