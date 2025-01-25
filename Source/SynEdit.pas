@@ -3940,12 +3940,13 @@ begin
     else if WordWrap and (eoWrapWithRightEdge in FOptions) and
       (WrapAreaWidth > FTextAreaWidth - FCharWidth)
     then
-      MaxVal := CeilOfIntDiv(WrapAreaWidth - FTextAreaWidth, FCharWidth) + 2
+      MaxVal := CeilOfIntDiv(WrapAreaWidth, FCharWidth) + 2 +
+        - FTextAreaWidth div FCharWidth
     else
       // + 2 because we want to allow for an extra space at the end
       // and LeftChar 1 would mean that the char appears right at the edge
-      MaxVal := Max(CeilOfIntDiv(Max(TSynEditStringList(Lines).MaxWidth +
-                2 * FCharWidth - TextAreaWidth, 0), FCharWidth), 1);
+      MaxVal := CeilOfIntDiv(TSynEditStringList(Lines).MaxWidth, FCharWidth) +
+        2 - FTextAreaWidth div fCharWidth;
     Value := MinMax(Value, 1, MaxVal);
   end;
 

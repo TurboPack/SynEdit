@@ -47,6 +47,7 @@ type
     procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
     procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
     procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
+    procedure DrawHorzScroll(DC: HDC); override;
     procedure DrawVertScroll(DC: HDC); override;
   end;
 
@@ -66,6 +67,17 @@ uses
   SynEditMiscClasses,
   SynEditStrConst,
   SynEditKeyConst;
+
+function GetBarScrollInfo(Handle: THandle; AKind: TScrollBarKind): TScrollInfo;
+begin
+  FillChar(Result, SizeOf(Result), 0);
+  Result.cbSize := SizeOf(Result);
+  Result.fMask := SIF_ALL;
+  if AKind = sbHorizontal then
+    GetScrollInfo(Handle, SB_HORZ, Result)
+  else
+    GetScrollInfo(Handle, SB_VERT, Result);
+end;
 
 type
   TSynScrollBarState = record
@@ -91,7 +103,6 @@ type
     FNewVertSBState: TSynScrollBarState;   // New Vertical ScrollBar state
     function GetIsScrolling: Boolean;
     function GetHorzPageInChars: Integer;
-    function GetBarScrollInfo(AKind: TScrollBarKind): TScrollInfo;
     procedure SetScrollBarFromState(const AState: TSynScrollBarState);
     procedure SetScrollBarPos(AKind: TScrollBarKind; APos: Integer; ARefresh: Boolean);
     procedure ApplyButtonState(const AState: TSynScrollBarState);
@@ -121,17 +132,6 @@ end;
 destructor TSynEditScrollBars.Destroy;
 begin
   inherited;
-end;
-
-function TSynEditScrollBars.GetBarScrollInfo(AKind: TScrollBarKind): TScrollInfo;
-begin
-  FillChar(Result, SizeOf(Result), 0);
-  Result.cbSize := SizeOf(Result);
-  Result.fMask := SIF_ALL;
-  if AKind = sbHorizontal then
-    GetScrollInfo(FOwner.Handle, SB_HORZ, Result)
-  else
-    GetScrollInfo(FOwner.Handle, SB_VERT, Result);
 end;
 
 function TSynEditScrollBars.GetHorzPageInChars: Integer;
@@ -270,7 +270,7 @@ begin
     begin
       MaxScroll := (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
         FOwner.CharWidth) + 1);
-      if (eoScrollPastEol in FOwner.ScrollOptions) or (FOwner.LeftChar > 1) then
+      if eoScrollPastEol in FOwner.ScrollOptions then
         MaxScroll := Max(MaxScroll + 1,
           FOwner.LeftChar - 1 + GetHorzPageInChars);  // PastEOL adds 1 to MaxScroll.
     end;
@@ -347,7 +347,7 @@ begin
     SB_THUMBTRACK:
     begin
       FIsScrolling := True;
-      ScrollInfo := GetBarScrollInfo(sbHorizontal);
+      ScrollInfo := GetBarScrollInfo(FOwner.Handle, sbHorizontal);
       FOwner.LeftChar := ScrollInfo.nTrackPos;
       SetScrollBarPos(sbHorizontal, ScrollInfo.nTrackPos, False);
     end;
@@ -397,7 +397,7 @@ begin
     SB_THUMBTRACK:
       begin
         FIsScrolling := True;
-        ScrollInfo := GetBarScrollInfo(sbVertical);
+        ScrollInfo := GetBarScrollInfo(FOwner.Handle, sbVertical);
         FOwner.TopLine := ScrollInfo.nTrackPos;
         if eoShowScrollHint in FOwner.ScrollOptions then
         begin
@@ -511,6 +511,72 @@ end;
 {$REGION 'TSynScrollingStyleHook'}
 
 { TSynScrollingStyleHook }
+
+procedure TSynScrollingStyleHook.DrawHorzScroll(DC: HDC);
+var
+  LBitmap: TBitmap;
+  Details: TThemedElementDetails;
+  R, LHorzScrollRect: TRect;
+  LPPI: Integer;
+  LStyle: TCustomStyleServices;
+  BtnEnabled: Boolean;
+  ScrollInfo: TScrollInfo;
+begin
+  if Handle = 0 then Exit;
+  if DC = 0 then Exit;
+  LPPI := Control.CurrentPPI;
+  LStyle := StyleServices;
+  LHorzScrollRect := HorzScrollRect;
+  if (LHorzScrollRect.Height > 0) and (LHorzScrollRect.Width > 0) then
+  begin
+    LBitmap := TBitmap.Create;
+    try
+      LBitmap.Width := LHorzScrollRect.Width;
+      LBitmap.Height := LHorzScrollRect.Height;
+      MoveWindowOrg(LBitmap.Canvas.Handle, -LHorzScrollRect.Left, -LHorzScrollRect.Top);
+      if LStyle.Available then
+      begin
+        R := LHorzScrollRect;
+        R.Left := HorzUpButtonRect.Right;
+        R.Right := HorzDownButtonRect.Left;
+        if (R.Height > 0) and (R.Width > 0) then
+        begin
+          Details := LStyle.GetElementDetails(tsUpperTrackHorzNormal);
+          LStyle.DrawElement(LBitmap.Canvas.Handle, Details, R, nil, LPPI);
+        end;
+
+        if (HorzSliderRect.Height > 0) and (HorzSliderRect.Width > 0) then
+        begin
+          Details := LStyle.GetElementDetails(HorzSliderState);
+          LStyle.DrawElement(LBitmap.Canvas.Handle, Details, HorzSliderRect, nil, LPPI);
+        end;
+
+        with TCustomSynEdit(Control) do
+          BtnEnabled := not (eoDisableScrollArrows in ScrollOptions) or (LeftChar > 1);
+        if (HorzSliderRect.Height > 0) and BtnEnabled then
+          Details := LStyle.GetElementDetails(HorzUpState)
+        else
+          Details := LStyle.GetElementDetails(tsArrowBtnLeftDisabled);
+        LStyle.DrawElement(LBitmap.Canvas.Handle, Details, HorzUpButtonRect, nil, LPPI);
+
+        ScrollInfo := GetBarScrollInfo(Control.Handle, sbHorizontal);
+        BtnEnabled := ([eoDisableScrollArrows, eoScrollPastEol] *
+          TCustomSynEdit(Control).ScrollOptions <> [eoDisableScrollArrows]) or
+          (ScrollInfo.nPos <= ScrollInfo.nMax - Integer(ScrollInfo.nPage));
+        if (HorzSliderRect.Height > 0) and BtnEnabled then
+          Details := LStyle.GetElementDetails(HorzDownState)
+        else
+          Details := LStyle.GetElementDetails(tsArrowBtnRightDisabled);
+        LStyle.DrawElement(LBitmap.Canvas.Handle, Details, HorzDownButtonRect, nil, LPPI);
+      end;
+      MoveWindowOrg(LBitmap.Canvas.Handle, LHorzScrollRect.Left, LHorzScrollRect.Top);
+      BitBlt(DC, LHorzScrollRect.Left, LHorzScrollRect.Top, LBitmap.Width, LBitmap.Height,
+        LBitmap.Canvas.Handle, 0, 0, SRCCOPY);
+    finally
+      LBitmap.Free;
+    end;
+  end;
+end;
 
 procedure TSynScrollingStyleHook.DrawVertScroll(DC: HDC);
 var
