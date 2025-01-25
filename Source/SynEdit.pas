@@ -3653,7 +3653,7 @@ begin
       FSelections.Store(SelStorage);
       Result := SearchReplace(Pattern, '', SearchOptions,
         FSelection.Normalized.Stop,
-        BufferCoord(Lines[Lines.Count -1].Length + 1, Lines.Count - 1)) > 0;
+        BufferCoord(Lines[Lines.Count -1].Length + 1, Lines.Count)) > 0;
 
       if Result and AddSelection then
       begin
