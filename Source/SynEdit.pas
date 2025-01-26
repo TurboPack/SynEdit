@@ -2193,7 +2193,7 @@ end;
 
 procedure TCustomSynEdit.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
-  P: TDisplayCoord;
+  DC: TDisplayCoord;
   BC: TBufferCoord;
 begin
   inherited MouseMove(Shift, x, y);
@@ -2202,14 +2202,15 @@ begin
     // should we begin scrolling?
     ComputeScroll(X, Y);
     { compute new caret }
-    P := PixelsToNearestRowColumn(X, Y);
-    P.Row := MinMax(P.Row, 1, DisplayRowCount);
-//  Not sure what was the purpose of these
-//    if fScrollDeltaX <> 0 then
-//      P.Column := DisplayX;
-//    if fScrollDeltaY <> 0 then
-//      P.Row := DisplayY;
-    BC := DisplayToBufferPos(P);
+    DC := PixelsToNearestRowColumn(X, Y);
+    DC.Row := MinMax(DC.Row, 1, DisplayRowCount);
+    if not (eoScrollPastEol in fScrollOptions) then
+      DC.Column := MinMax(DC.Column, 1, RowLength[DC.Row] + 1);
+    if fScrollDeltaX <> 0 then
+      DC.Column := DisplayX;
+    if fScrollDeltaY <> 0 then
+      DC.Row := DisplayY;
+    BC := DisplayToBufferPos(DC);
 
     if BC = CaretXY then Exit;  // no movement
 
@@ -2218,7 +2219,7 @@ begin
       // Column selection
       IncPaintLock;
       try
-        MoveDisplayPosAndSelection(P, True);
+        MoveDisplayPosAndSelection(DC, True);
         InvalidateSelection(FSelection);
         FSelections.ColumnSelection(ColumnSelectionStart, CaretXY, FLastPosX);
       finally
@@ -2232,7 +2233,7 @@ begin
       else if fClickCount = 3 then
         DoMouseSelectLineRange(BC)
       else
-        MoveDisplayPosAndSelection(P, True);
+        MoveDisplayPosAndSelection(DC, True);
       // Deal with overlapping selections
       Selections.MouseSelection(FSelection);
     end;
@@ -2253,7 +2254,8 @@ begin
   iMousePos := ScreenToClient( iMousePos );
   DC := PixelsToRowColumn( iMousePos.X, iMousePos.Y );
   DC.Row := MinMax(DC.Row, 1, DisplayRowCount);
-  DC.Column := MinMax(DC.Column, 1, RowLength[DC.Row] + 1);
+  if not (eoScrollPastEol in fScrollOptions) then
+    DC.Column := MinMax(DC.Column, 1, RowLength[DC.Row] + 1);
 
   IncPaintLock;
   try
