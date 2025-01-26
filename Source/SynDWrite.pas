@@ -1894,7 +1894,7 @@ begin
   begin
     CheckOSError(D2DFactory.CreateDCRenderTarget(
       D2D1RenderTargetProperties(
-        {$IFDEF GPUSupport}
+        {$IFNDEF DisableGPUSupport}
         D2D1_RENDER_TARGET_TYPE_DEFAULT,
         {$ELSE}
         D2D1_RENDER_TARGET_TYPE_SOFTWARE, // much faster in my desktop with a slow GPU
@@ -2195,7 +2195,7 @@ begin
 
   RenderTargetProp :=
     D2D1RenderTargetProperties(
-      {$IFDEF GPUSupport}
+      {$IFNDEF DisableGPUSupport}
       D2D1_RENDER_TARGET_TYPE_DEFAULT,
       {$ELSE}
       D2D1_RENDER_TARGET_TYPE_SOFTWARE, // much faster in my desktop with a slow GPU
