@@ -66,11 +66,11 @@ type
     FBG: TColor;
     FFG: TColor;
     FOnChange: TNotifyEvent;
-    FAlpha: Single;
+    FOpacity: Byte;
     FFillWholeLines: Boolean;
     procedure SetBG(Value: TColor);
     procedure SetFG(Value: TColor);
-    procedure SetAlpha(Value: Single);
+    procedure SetOpacity(Value: Byte);
     procedure SetFillWholeLines(const Value: Boolean);
   public
     constructor Create;
@@ -79,7 +79,7 @@ type
   published
     property Background: TColor read FBG write SetBG default clHighLight;
     property Foreground: TColor read FFG write SetFG default clHighLightText;
-    property Alpha: Single read FAlpha write SetAlpha;
+    property Opacity: Byte read FOpacity write SetOpacity default 115;
     property FillWholeLines: Boolean read FFillWholeLines write SetFillWholeLines
       default True;
   end;
@@ -839,7 +839,7 @@ begin
   FBG := clHighLight;
   FFG := clHighLightText;
   FFillWholeLines := True;
-  Alpha := 0.45;
+  Opacity := 115;
 end;
 
 procedure TSynSelectedColor.Assign(Source: TPersistent);
@@ -849,7 +849,7 @@ begin
     var Src := TSynSelectedColor(Source);
     FBG := Src.FBG;
     FFG := Src.FFG;
-    FAlpha := Src.Alpha;
+    FOpacity := Src.Opacity;
     FFillWholeLines := Src.FillWholeLines;
     if Assigned(FOnChange) then
       FOnChange(Self);
@@ -858,12 +858,11 @@ begin
     inherited Assign(Source);
 end;
 
-procedure TSynSelectedColor.SetAlpha(Value: Single);
+procedure TSynSelectedColor.SetOpacity(Value: Byte);
 begin
-  Value := EnsureRange(Value, 0, 1);
-  if (FAlpha <> Value) then
+  if (FOpacity <> Value) then
   begin
-    FAlpha := Value;
+    FOpacity := Value;
     if Assigned(FOnChange) then
       FOnChange(Self);
   end;

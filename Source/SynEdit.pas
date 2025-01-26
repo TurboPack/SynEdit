@@ -2570,9 +2570,9 @@ var
     begin
       if not fSelectedColor.FillWholeLines then
         IsFullySelected := False
-      else if not SameValue(fSelectedColor.Alpha, 1) then
+      else if fSelectedColor.Opacity <> 255 then
       begin
-        BGAlpha := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha);
+        BGAlpha := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Opacity / 255);
         IsFullySelected := False;
       end
     end;
@@ -3005,8 +3005,7 @@ var
         PartSel.Last := BE.Char - RowStart.Char;
       end;
 
-      if DoOnSpecialLineColors(Line, FG, BG) and
-        SameValue(fSelectedColor.Alpha, 1)
+      if DoOnSpecialLineColors(Line, FG, BG) and (fSelectedColor.Opacity = 255)
       then
       begin
         // Invert special colors as in Delphi
@@ -3083,9 +3082,9 @@ var
       PartSel := PartSelArr[Index];
       if (PartSel.Last < MaxInt) and (PartSel.First > LastChar) then Continue;
 
-      AlphaBlended := not SameValue(fSelectedColor.Alpha, 1);
+      AlphaBlended := fSelectedColor.Opacity <> 255;
       if AlphaBlended then
-        BGColor := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Alpha)
+        BGColor := D2D1ColorF(fSelectedColor.Background, fSelectedColor.Opacity / 255)
       else
         BGColor := D2D1ColorF(PartSel.SelBG);
 
@@ -3327,7 +3326,7 @@ begin
     end;
 
     // Paint partial selection if not alpha blending the selection color
-    if SameValue(fSelectedColor.Alpha, 1) then
+    if fSelectedColor.Opacity = 255 then
       PaintPartialSelections(Layout, Row, Line, RowStart, FirstChar, LastChar);
 
     // Indicators
@@ -3379,7 +3378,7 @@ begin
         if IsWhiteChar(SRow[I]) then
         begin
           if IsPointInSelection(DisplayToBufferPos(DisplayCoord(I, Row))) and
-            SameValue(fSelectedColor.Alpha, 1)
+            (fSelectedColor.Opacity = 255)
           then
             DrawWhitespace(Layout, Row, I - FirstChar + 1, SRow[I], fSelectedColor.Foreground)
           else
@@ -3416,7 +3415,7 @@ begin
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(BGAlpha));
 
     // Paint partial selection if not alpha blending the selection color
-    if not SameValue(fSelectedColor.Alpha, 1) then
+    if fSelectedColor.Opacity <> 255 then
       PaintPartialSelections(Layout, Row, Line, RowStart, FirstChar, LastChar);
 
     // Draw right edge
