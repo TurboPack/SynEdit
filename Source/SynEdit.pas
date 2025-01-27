@@ -1617,9 +1617,6 @@ end;
 
 destructor TCustomSynEdit.Destroy;
 begin
-  if Assigned(FUIAutomationProvider) then
-    (FUIAutomationProvider as TSynUIAutomationProvider).EditorDestroyed;
-
   Highlighter := nil;
   if (fChainedEditor <> nil) or (fLines <> fOrigLines) then
     RemoveLinesPointer;
@@ -4550,9 +4547,10 @@ begin
     DragAcceptFiles(Handle, False);
 
   //https://learn.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiareturnrawelementprovider
+
   if Assigned(FUIAutomationProvider) then
   begin
-    UiaDisconnectProvider(IRawElementProviderSimple(FUIAutomationProvider));
+    (FUIAutomationProvider as TSynUIAutomationProvider).EditorDestroyed;
     UiaReturnRawElementProvider(Handle, 0, 0, nil);
     FUIAutomationProvider := nil;
   end;

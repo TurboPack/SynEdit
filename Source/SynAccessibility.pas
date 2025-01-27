@@ -387,8 +387,7 @@ end;
 
 procedure TSynUIAutomationProvider.EditorDestroyed;
 begin
-  //TODO: Check why it was disabled - Possibly call in ForceQueue
-  //UiaDisconnectProvider(IRawElementProviderSimple(Self));
+  UiaDisconnectProvider(IRawElementProviderSimple(Self));
   FSynEdit := nil;
 end;
 
