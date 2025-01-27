@@ -3567,9 +3567,14 @@ begin
 
     if Value <> FSelection.Stop then
     begin
-      InvalidateRange(Value, FSelection.Stop);
-      FSelection.Stop := Value;
-      StatusChanged([scSelection]);
+      IncPaintLock;
+      try
+        InvalidateRange(Value, FSelection.Stop);
+        FSelection.Stop := Value;
+        StatusChanged([scSelection]);
+      finally
+        DecPaintLock;
+      end;
     end;
   end;
 end;
