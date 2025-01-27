@@ -9483,7 +9483,7 @@ begin
   Line := 1;
   repeat
     RowIndex := TSynEditStringList(Lines).LineCharIndex(Line);  // zero based
-    if Index < RowIndex + LBTotalLen then
+    if Index <= RowIndex + LBTotalLen then
       Exit(BufferCoord(Index + 1 - PrevRowIndex - LBTotalLen, Line));
     PrevRowIndex := RowIndex;
     Inc(LBTotalLen, LBLen);
