@@ -9490,7 +9490,7 @@ begin
     Inc(Line);
   until Line >= Lines.Count;
    // If we reach this point Index points to the last line
-  Exit(BufferCoord(Index + 1 - RowIndex - LBTotalLen, Lines.Count));
+  Exit(BufferCoord(Max(Index + 1 - RowIndex - LBTotalLen, 1), Lines.Count));
 end;
 
 function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord;
