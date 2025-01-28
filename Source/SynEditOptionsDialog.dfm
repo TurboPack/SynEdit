@@ -3,7 +3,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   Top = 154
   BorderStyle = bsDialog
   Caption = 'Editor Options'
-  ClientHeight = 397
+  ClientHeight = 415
   ClientWidth = 388
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -14,96 +14,27 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   Position = poMainFormCenter
   OnCreate = FormCreate
   OnShow = FormShow
+  DesignSize = (
+    388
+    415)
   TextHeight = 15
   object PageControl1: TPageControl
     Left = 6
     Top = 8
     Width = 380
-    Height = 345
+    Height = 363
     ActivePage = Display
-    Anchors = [akLeft, akTop, akRight]
+    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     object Display: TTabSheet
+      BorderWidth = 6
       Caption = 'Display'
-      object gbRightEdge: TGroupBox
-        Left = 8
-        Top = 134
-        Width = 170
-        Height = 88
-        Caption = 'Right Edge'
-        TabOrder = 1
-        object Label3: TLabel
-          Left = 9
-          Top = 56
-          Width = 59
-          Height = 15
-          Caption = 'Edge color:'
-        end
-        object Label10: TLabel
-          Left = 9
-          Top = 26
-          Width = 75
-          Height = 15
-          Caption = 'Edge Column:'
-        end
-        object pRightEdgeBack: TPanel
-          Left = 97
-          Top = 54
-          Width = 52
-          Height = 21
-          BorderWidth = 1
-          TabOrder = 1
-          object pRightEdgeColor: TPanel
-            Left = 2
-            Top = 2
-            Width = 38
-            Height = 17
-            Align = alClient
-            BevelOuter = bvLowered
-            Color = clGray
-            TabOrder = 0
-            OnClick = pRightEdgeColorClick
-          end
-          object btnRightEdge: TPanel
-            Left = 40
-            Top = 2
-            Width = 10
-            Height = 17
-            Align = alRight
-            BevelOuter = bvNone
-            TabOrder = 1
-            OnMouseDown = btnRightEdgeMouseDown
-            object Image1: TImage
-              Left = 3
-              Top = 6
-              Width = 5
-              Height = 5
-              Picture.Data = {
-                07544269746D61708A000000424D8A0000000000000076000000280000000500
-                0000050000000100040000000000140000000000000000000000100000001000
-                0000000000000000800000800000008080008000000080008000808000008080
-                8000C0C0C0000000FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFF
-                FF00DDDDD000DD0DD000D000D00000000000DDDDD000}
-              Transparent = True
-              OnMouseDown = btnRightEdgeMouseDown
-            end
-          end
-        end
-        object eRightEdge: TEdit
-          Left = 98
-          Top = 23
-          Width = 51
-          Height = 23
-          TabOrder = 0
-          Text = '0'
-        end
-      end
       object gbGutter: TGroupBox
-        Left = 8
-        Top = 4
-        Width = 355
+        Left = 0
+        Top = 0
+        Width = 360
         Height = 121
-        Anchors = [akLeft, akTop, akRight]
+        Align = alTop
         Caption = 'Gutter'
         TabOrder = 0
         object Label1: TLabel
@@ -241,118 +172,210 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           end
         end
       end
-      object gbBookmarks: TGroupBox
-        Left = 8
-        Top = 232
-        Width = 170
-        Height = 79
-        Caption = 'Bookmarks'
-        TabOrder = 3
-        object ckBookmarkKeys: TCheckBox
-          Left = 9
-          Top = 25
-          Width = 101
-          Height = 17
-          Caption = 'Bookmark keys'
+      object Panel2: TPanel
+        Left = 0
+        Top = 121
+        Width = 360
+        Height = 96
+        Align = alTop
+        BevelOuter = bvNone
+        TabOrder = 1
+        object gbRightEdge: TGroupBox
+          Left = 0
+          Top = 4
+          Width = 172
+          Height = 88
+          Caption = 'Right Edge'
           TabOrder = 0
+          object Label3: TLabel
+            Left = 9
+            Top = 56
+            Width = 59
+            Height = 15
+            Caption = 'Edge color:'
+          end
+          object Label10: TLabel
+            Left = 9
+            Top = 26
+            Width = 75
+            Height = 15
+            Caption = 'Edge Column:'
+          end
+          object pRightEdgeBack: TPanel
+            Left = 97
+            Top = 54
+            Width = 52
+            Height = 21
+            BorderWidth = 1
+            TabOrder = 1
+            object pRightEdgeColor: TPanel
+              Left = 2
+              Top = 2
+              Width = 38
+              Height = 17
+              Align = alClient
+              BevelOuter = bvLowered
+              Color = clGray
+              TabOrder = 0
+              OnClick = pRightEdgeColorClick
+            end
+            object btnRightEdge: TPanel
+              Left = 40
+              Top = 2
+              Width = 10
+              Height = 17
+              Align = alRight
+              BevelOuter = bvNone
+              TabOrder = 1
+              OnMouseDown = btnRightEdgeMouseDown
+              object Image1: TImage
+                Left = 3
+                Top = 6
+                Width = 5
+                Height = 5
+                Picture.Data = {
+                  07544269746D61708A000000424D8A0000000000000076000000280000000500
+                  0000050000000100040000000000140000000000000000000000100000001000
+                  0000000000000000800000800000008080008000000080008000808000008080
+                  8000C0C0C0000000FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFF
+                  FF00DDDDD000DD0DD000D000D00000000000DDDDD000}
+                Transparent = True
+                OnMouseDown = btnRightEdgeMouseDown
+              end
+            end
+          end
+          object eRightEdge: TEdit
+            Left = 98
+            Top = 23
+            Width = 51
+            Height = 23
+            TabOrder = 0
+            Text = '0'
+          end
         end
-        object ckBookmarkVisible: TCheckBox
-          Left = 9
-          Top = 51
-          Width = 121
-          Height = 17
-          Caption = 'Bookmarks visible'
+        object gbLineSpacing: TGroupBox
+          Left = 186
+          Top = 5
+          Width = 174
+          Height = 88
+          Caption = 'Line spacing / Tab spacing'
           TabOrder = 1
-        end
-      end
-      object gbEditorFont: TGroupBox
-        Left = 193
-        Top = 232
-        Width = 170
-        Height = 79
-        Caption = 'Editor Font'
-        TabOrder = 4
-        object btnFont: TButton
-          Left = 67
-          Top = 49
-          Width = 84
-          Height = 25
-          Caption = 'Font'
-          TabOrder = 0
-          OnClick = btnFontClick
-        end
-        object Panel3: TPanel
-          Left = 8
-          Top = 19
-          Width = 143
-          Height = 30
-          BevelOuter = bvNone
-          TabOrder = 1
-          object labFont: TLabel
-            Left = 0
-            Top = 0
-            Width = 143
-            Height = 30
-            Align = alClient
-            Alignment = taCenter
-            AutoSize = False
-            Caption = 'Courier New 10pt'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -13
-            Font.Name = 'Courier New'
-            Font.Style = []
-            ParentFont = False
+          object Label8: TLabel
+            Left = 9
+            Top = 27
+            Width = 59
+            Height = 15
+            Caption = 'Extra Lines:'
+          end
+          object Label9: TLabel
+            Left = 9
+            Top = 56
+            Width = 56
+            Height = 15
+            Caption = 'Tab Width:'
+          end
+          object eLineSpacing: TEdit
+            Left = 80
+            Top = 23
+            Width = 52
+            Height = 23
+            TabOrder = 0
+            Text = '0'
+          end
+          object eTabWidth: TEdit
+            Left = 80
+            Top = 53
+            Width = 52
+            Height = 23
+            TabOrder = 1
+            Text = '8'
           end
         end
       end
-      object gbLineSpacing: TGroupBox
-        Left = 193
-        Top = 134
-        Width = 170
+      object Panel4: TPanel
+        Left = 0
+        Top = 217
+        Width = 360
         Height = 88
-        Caption = 'Line spacing / Tab spacing'
+        Align = alTop
+        BevelOuter = bvNone
         TabOrder = 2
-        object Label8: TLabel
-          Left = 9
-          Top = 27
-          Width = 59
-          Height = 15
-          Caption = 'Extra Lines:'
-        end
-        object Label9: TLabel
-          Left = 9
-          Top = 56
-          Width = 56
-          Height = 15
-          Caption = 'Tab Width:'
-        end
-        object eLineSpacing: TEdit
-          Left = 80
-          Top = 23
-          Width = 52
-          Height = 23
+        object gbBookmarks: TGroupBox
+          Left = 0
+          Top = 4
+          Width = 170
+          Height = 79
+          Caption = 'Bookmarks'
           TabOrder = 0
-          Text = '0'
+          object ckBookmarkKeys: TCheckBox
+            Left = 9
+            Top = 25
+            Width = 101
+            Height = 17
+            Caption = 'Bookmark keys'
+            TabOrder = 0
+          end
+          object ckBookmarkVisible: TCheckBox
+            Left = 9
+            Top = 51
+            Width = 121
+            Height = 17
+            Caption = 'Bookmarks visible'
+            TabOrder = 1
+          end
         end
-        object eTabWidth: TEdit
-          Left = 80
-          Top = 53
-          Width = 52
-          Height = 23
+        object gbEditorFont: TGroupBox
+          Left = 186
+          Top = 5
+          Width = 174
+          Height = 79
+          Caption = 'Editor Font'
           TabOrder = 1
-          Text = '8'
+          object btnFont: TButton
+            Left = 67
+            Top = 47
+            Width = 84
+            Height = 25
+            Caption = 'Font'
+            TabOrder = 0
+            OnClick = btnFontClick
+          end
+          object Panel3: TPanel
+            Left = 8
+            Top = 19
+            Width = 143
+            Height = 30
+            BevelOuter = bvNone
+            TabOrder = 1
+            object labFont: TLabel
+              Left = 0
+              Top = 0
+              Width = 143
+              Height = 30
+              Align = alClient
+              Alignment = taCenter
+              AutoSize = False
+              Caption = 'Courier New 10pt'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -13
+              Font.Name = 'Courier New'
+              Font.Style = []
+              ParentFont = False
+            end
+          end
         end
       end
     end
     object Options: TTabSheet
+      BorderWidth = 6
       Caption = 'Options'
       object gbOptions: TGroupBox
-        Left = 8
-        Top = 4
-        Width = 355
-        Height = 232
-        Anchors = [akLeft, akTop, akRight]
+        Left = 0
+        Top = 0
+        Width = 360
+        Height = 250
+        Align = alClient
         Caption = 'Options'
         TabOrder = 0
         object ckAutoIndent: TCheckBox
@@ -482,8 +505,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Top = 53
           Width = 170
           Height = 17
-          Hint = 
-            'When the cursor moves to a bracket highlight the matching one'
+          Hint = 'When the cursor moves to a bracket highlight the matching one'
           Caption = 'Higlight matching brackets'
           TabOrder = 2
         end
@@ -580,14 +602,36 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Caption = 'Show special chars'
           TabOrder = 21
         end
+        object ckCompleteBrackets: TCheckBox
+          Left = 9
+          Top = 224
+          Width = 170
+          Height = 17
+          Hint = 'Auto complete brackets'
+          Caption = 'Complete brackets'
+          TabOrder = 22
+        end
+        object ckCompleteQuotes: TCheckBox
+          Left = 182
+          Top = 224
+          Width = 170
+          Height = 17
+          Hint = 'Auto complete quotes'
+          Caption = 'Complete quotes'
+          TabOrder = 23
+        end
       end
       object gbCaret: TGroupBox
-        Left = 8
-        Top = 240
-        Width = 355
+        Left = 0
+        Top = 250
+        Width = 360
         Height = 71
+        Align = alBottom
         Caption = 'Caret'
         TabOrder = 1
+        DesignSize = (
+          360
+          71)
         object Label2: TLabel
           Left = 16
           Top = 18
@@ -608,6 +652,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Width = 219
           Height = 23
           Style = csDropDownList
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
           Items.Strings = (
             'Vertical Line'
@@ -621,6 +666,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           Width = 219
           Height = 23
           Style = csDropDownList
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 1
           Items.Strings = (
             'Vertical Line'
@@ -631,33 +677,16 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
       end
     end
     object Keystrokes: TTabSheet
+      BorderWidth = 6
       Caption = 'Keystrokes'
-      object btnAddKey: TButton
-        Left = 88
-        Top = 152
-        Width = 75
-        Height = 25
-        Caption = '&Add'
-        TabOrder = 2
-        OnClick = btnAddKeyClick
-      end
-      object btnRemKey: TButton
-        Left = 168
-        Top = 152
-        Width = 75
-        Height = 25
-        Caption = '&Remove'
-        TabOrder = 3
-        OnClick = btnRemKeyClick
-      end
       object gbKeyStrokes: TGroupBox
-        Left = 8
-        Top = 192
-        Width = 355
+        Left = 0
+        Top = 203
+        Width = 360
         Height = 118
-        Anchors = [akLeft, akTop, akRight]
+        Align = alBottom
         Caption = 'Keystroke Options'
-        TabOrder = 4
+        TabOrder = 1
         object Label5: TLabel
           Left = 16
           Top = 28
@@ -689,20 +718,12 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           OnKeyUp = cKeyCommandKeyUp
         end
       end
-      object btnUpdateKey: TButton
-        Left = 8
-        Top = 152
-        Width = 75
-        Height = 25
-        Caption = '&Update'
-        TabOrder = 1
-        OnClick = btnUpdateKeyClick
-      end
       object pnlCommands: TPanel
-        Left = 8
-        Top = 12
-        Width = 356
-        Height = 132
+        Left = 0
+        Top = 0
+        Width = 360
+        Height = 159
+        Align = alClient
         BevelInner = bvRaised
         BevelOuter = bvLowered
         Caption = 'pnlCommands'
@@ -710,8 +731,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
         object KeyList: TListView
           Left = 2
           Top = 2
-          Width = 352
-          Height = 128
+          Width = 356
+          Height = 155
           Align = alClient
           BorderStyle = bsNone
           Columns = <
@@ -732,13 +753,50 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
           OnChanging = KeyListChanging
         end
       end
+      object Panel1: TPanel
+        Left = 0
+        Top = 159
+        Width = 360
+        Height = 44
+        Align = alBottom
+        BevelOuter = bvNone
+        TabOrder = 2
+        object btnRemKey: TButton
+          Left = 162
+          Top = 5
+          Width = 75
+          Height = 25
+          Caption = '&Remove'
+          TabOrder = 0
+          OnClick = btnRemKeyClick
+        end
+        object btnAddKey: TButton
+          Left = 81
+          Top = 5
+          Width = 75
+          Height = 25
+          Caption = '&Add'
+          TabOrder = 1
+          OnClick = btnAddKeyClick
+        end
+        object btnUpdateKey: TButton
+          Left = 0
+          Top = 5
+          Width = 75
+          Height = 25
+          Caption = '&Update'
+          TabOrder = 2
+          OnClick = btnUpdateKeyClick
+        end
+      end
     end
   end
   object btnOk: TButton
     Left = 226
-    Top = 362
+    Top = 380
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = '&OK'
     Default = True
     ModalResult = 1
@@ -747,21 +805,22 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
   end
   object btnCancel: TButton
     Left = 306
-    Top = 362
+    Top = 380
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Cancel = True
     Caption = '&Cancel'
     ModalResult = 2
     TabOrder = 2
   end
   object ColorDialog: TColorDialog
-    Left = 20
-    Top = 351
+    Left = 24
+    Top = 369
   end
   object ColorPopup: TPopupMenu
-    Left = 52
-    Top = 351
+    Left = 56
+    Top = 369
     object None1: TMenuItem
       Tag = -1
       Caption = 'None'
@@ -893,8 +952,8 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     end
   end
   object ImageList1: TImageList
-    Left = 84
-    Top = 351
+    Left = 88
+    Top = 369
   end
   object FontDialog: TFontDialog
     Font.Charset = DEFAULT_CHARSET
@@ -903,7 +962,7 @@ object fmEditorOptionsDialog: TfmEditorOptionsDialog
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     Options = [fdEffects, fdFixedPitchOnly]
-    Left = 116
-    Top = 351
+    Left = 120
+    Top = 369
   end
 end
