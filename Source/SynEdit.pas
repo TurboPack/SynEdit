@@ -5931,7 +5931,7 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
   var
     Len: Integer;
     Line: string;
-    CharRight, CharLeft: WideChar;
+    CharRight, CharLeft, TmpChar: WideChar;
   begin
     if (fOptions * [eoCompleteBrackets, eoCompleteQuotes] <> []) and
       (FSelections.Count = 1) and (FSelection.IsEmpty) then
@@ -5941,7 +5941,6 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
 
       if Chr = FAutoCompleteChar then
       begin
-
         if InsertMode and (CaretX <= Len) and
           (Line[CaretX] = FAutoCompleteChar) then
           ExecuteCommand(ecDeleteChar, WideNull, nil);
@@ -5958,8 +5957,9 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
         begin
           // Auto-complete brackets if the next Char is not an
           // opening bracket
-          FAutoCompleteChar := MatchingBracket(Chr, Brackets);
-          ExecuteCommand(ecChar, FAutoCompleteChar, nil);
+          TmpChar := MatchingBracket(Chr, Brackets);
+          ExecuteCommand(ecChar, TmpChar, nil);
+          FAutoCompleteChar := TmpChar;
           CaretX := CaretX - 1;
         end
         else if (eoCompleteQuotes in fOptions) and
@@ -5976,8 +5976,8 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
             not IsIdentChar(CharRight) and
             not CharInSet(CharLeft, ['"', '''']) then
           begin
-            FAutoCompleteChar := Chr;
             ExecuteCommand(ecChar, Chr, nil);
+            FAutoCompleteChar := Chr;
             CaretX := CaretX - 1;
           end;
         end;
