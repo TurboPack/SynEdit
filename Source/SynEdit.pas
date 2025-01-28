@@ -9464,33 +9464,54 @@ begin
     Result := Self.GetWordAtRowCol(Point); // return the point at the mouse position
 end;
 
-function TCustomSynEdit.CharIndexToRowCol(Index: Integer;
-  LineBreak: string): TBufferCoord;
-{ Index is 0-based; Result.Char and Result.Line are 1-based
-  A faster implementatin using Quick Search is possible}
+function TCustomSynEdit.CharIndexToRowCol(Index: Integer; LineBreak: string): TBufferCoord;
+// Index is 0-based; Result.Char and Result.Line are 1-based
+// This is made to perfectly match the older linear function and so it treats the last line
+// as infinitely long (for index past EOF) and also switches to a linear search if linebreak
+// is empty (a probably rare corner case where consecutive empty lines have the same index.)
 var
-  Line, PrevRowIndex, RowIndex, LBLen, LBTotalLen: Integer;
+  RowIndex, LBLen: Integer;
+  RowStartIndex: Integer;
+  RowLen: Integer;
+  LBFudge: Integer;   // Value to subtract from RowIndex.
+  FirstLine, LastLine, TestLine: Integer;
 begin
   LBLen := LineBreak.Length;
-
+  if Index < 1 then
+    Exit(BufferCoord(1, 1));
   case Lines.Count of
     0: Exit(BufferCoord(1, 1));
     1: Exit(BufferCoord(Index + 1, 1));
   end;
-
-  LBTotalLen := 0;
-  PrevRowIndex := 0;
-  Line := 1;
-  repeat
-    RowIndex := TSynEditStringList(Lines).LineCharIndex(Line);  // zero based
-    if Index <= RowIndex + LBTotalLen then
-      Exit(BufferCoord(Max(Index + 1 - PrevRowIndex - LBTotalLen, 1), Line));
-    PrevRowIndex := RowIndex;
-    Inc(LBTotalLen, LBLen);
-    Inc(Line);
-  until Line >= Lines.Count;
-   // If we reach this point Index points to the last line
-  Exit(BufferCoord(Max(Index + 1 - RowIndex - LBTotalLen, 1), Lines.Count));
+  LBFudge := Max(0, LBLen - 1);
+  TestLine := 0;
+  FirstLine := 0;
+  LastLine := Lines.Count - 1;
+  while FirstLine <= LastLine do
+  begin
+    if LBLen > 0 then
+      TestLine := FirstLine + (LastLine - FirstLine) div 2;
+    RowIndex := TSynEditStringList(Lines).LineCharIndex(TestLine) + (TestLine * LBLen);
+    RowLen := TSynEditStringList(Lines).LineCharLength(TestLine);
+    if TestLine > 0 then
+      RowStartIndex := RowIndex - LBFudge  // Move the startindex back by LBLen - 1
+    else
+      RowStartIndex := RowIndex;
+    if (Index >= RowStartIndex) and (Index <= (RowIndex + RowLen)) then
+      Exit(BufferCoord(Max(Index + 1 - RowIndex, 1), TestLine + 1))
+    else if (LBLen = 0) then
+    begin
+      Inc(TestLine);
+      if TestLine > LastLine then
+        Break;
+    end
+    else if (RowIndex < Index) then
+      FirstLine := TestLine + 1
+    else
+      LastLine := TestLine - 1;
+  end;
+  RowIndex := TSynEditStringList(Lines).LineCharIndex(Lines.Count - 1) + ((Lines.Count - 1) * LBLen);
+  Exit(BufferCoord(Max(Index + 1 - RowIndex, 1), Lines.Count));
 end;
 
 function TCustomSynEdit.RowColToCharIndex(RowCol: TBufferCoord;
