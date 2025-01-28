@@ -9484,7 +9484,7 @@ begin
   repeat
     RowIndex := TSynEditStringList(Lines).LineCharIndex(Line);  // zero based
     if Index <= RowIndex + LBTotalLen then
-      Exit(BufferCoord(Index + 1 - PrevRowIndex - LBTotalLen, Line));
+      Exit(BufferCoord(Max(Index + 1 - PrevRowIndex - LBTotalLen, 1), Line));
     PrevRowIndex := RowIndex;
     Inc(LBTotalLen, LBLen);
     Inc(Line);
