@@ -9466,44 +9466,53 @@ end;
 
 function TCustomSynEdit.CharIndexToRowCol(Index: Integer; LineBreak: string): TBufferCoord;
 // Index is 0-based; Result.Char and Result.Line are 1-based
-// This is made to perfectly match the older linear function and so it treats the last line
-// as infinitely long (for index past EOF) and also switches to a linear search if linebreak
-// is empty (a probably rare corner case where consecutive empty lines have the same index.)
+// Treats the last line as infinitely long (for index past EOF.)
 var
   RowIndex, LBLen: Integer;
   RowStartIndex: Integer;
   RowLen: Integer;
-  LBFudge: Integer;   // Value to subtract from RowIndex.
+  LBFudge: Integer;
   FirstLine, LastLine, TestLine: Integer;
-begin
-  LBLen := LineBreak.Length;
-  if Index < 1 then
-    Exit(BufferCoord(1, 1));
-  case Lines.Count of
-    0: Exit(BufferCoord(1, 1));
-    1: Exit(BufferCoord(Index + 1, 1));
-  end;
-  LBFudge := Max(0, LBLen - 1);
-  TestLine := 0;
-  FirstLine := 0;
-  LastLine := Lines.Count - 1;
-  while FirstLine <= LastLine do
+  procedure GetLineInfo;
   begin
-    if LBLen > 0 then
-      TestLine := FirstLine + (LastLine - FirstLine) div 2;
     RowIndex := TSynEditStringList(Lines).LineCharIndex(TestLine) + (TestLine * LBLen);
     RowLen := TSynEditStringList(Lines).LineCharLength(TestLine);
     if TestLine > 0 then
       RowStartIndex := RowIndex - LBFudge  // Move the startindex back by LBLen - 1
     else
       RowStartIndex := RowIndex;
+  end;
+begin
+  if Index < 1 then
+    Exit(BufferCoord(1, 1));
+  case Lines.Count of
+    0: Exit(BufferCoord(1, 1));
+    1: Exit(BufferCoord(Index + 1, 1));
+  end;
+  LBLen := LineBreak.Length;
+  LBFudge := Max(0, LBLen - 1);
+  TestLine := 0;
+  FirstLine := 0;
+  LastLine := Lines.Count - 1;
+  while FirstLine <= LastLine do
+  begin
+    TestLine := FirstLine + (LastLine - FirstLine) div 2;
+    GetLineInfo;
     if (Index >= RowStartIndex) and (Index <= (RowIndex + RowLen)) then
-      Exit(BufferCoord(Max(Index + 1 - RowIndex, 1), TestLine + 1))
-    else if (LBLen = 0) then
     begin
-      Inc(TestLine);
-      if TestLine > LastLine then
-        Break;
+      if LBLen = 0 then
+      begin
+        // if Linebreak is empty need to check previous lines for matches.
+        repeat
+          Dec(TestLine);
+          if TestLine < 0 then
+            Break;
+          GetLineInfo;
+        until ((Index < RowStartIndex) or (Index > (RowIndex + RowLen)));
+        Inc(TestLine);
+        GetLineInfo;
+      end;
+      Exit(BufferCoord(Max(Index + 1 - RowIndex, 1), TestLine + 1))
     end
     else if (RowIndex < Index) then
       FirstLine := TestLine + 1
