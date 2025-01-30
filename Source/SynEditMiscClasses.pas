@@ -145,6 +145,9 @@ type
   TGutterBandClickEvent = procedure(Sender: TObject; Button: TMouseButton;
     X, Y, Row, Line: Integer) of object;
 
+  TGutterBandContextPopupEvent = procedure(Sender: TObject; MousePos: TPoint;
+    Row, Line: Integer; var Handled: Boolean) of object;
+
   TGutterMouseCursorEvent = procedure(Sender: TObject; X, Y, Row, Line: Integer;
     var Cursor: TCursor) of object;
 
@@ -204,9 +207,10 @@ type
     FBackground: TSynGutterBandBackground;
     FOnPaintLines: TGutterBandPaintEvent;
     FOnClick: TGutterBandClickEvent;
+    FOnContextPopup: TGutterBandContextPopupEvent;
     FOnMouseCursor: TGutterMouseCursorEvent;
     function GetSynGutter: TSynGutter;
-    function GetEditor: TPersistent;
+    function GetEditor: TComponent;
     procedure DoPaintLines(RT: ID2D1RenderTarget; ClipR: TRect; const FirstRow,
       LastRow: Integer);
     procedure PaintMarks(RT: ID2D1RenderTarget; ClipR: TRect;
@@ -245,7 +249,7 @@ type
     procedure DoMouseCursor(Sender: TObject; X, Y, Row, Line: Integer;
       var Cursor: TCursor);
     property LeftX: Integer read GetLeftX;
-    property Editor: TPersistent read GetEditor;
+    property Editor: TComponent read GetEditor;
     property Gutter: TSynGutter read GetSynGutter;
   published
     property Kind: TSynGutterBandKind read FKind write SetKind;
@@ -257,6 +261,8 @@ type
     property OnPaintLines: TGutterBandPaintEvent read FOnPaintLines
       write SetOnPaintLines;
     property OnCLick: TGutterBandClickEvent read FOnClick write SetOnClick;
+    property OnContextPopup: TGutterBandContextPopupEvent
+      read FOnContextPopup write FOnContextPopup;
     property OnMouseCursor: TGutterMouseCursorEvent read FOnMouseCursor
       write SetOnMouseCursor;
   end;
@@ -2065,10 +2071,10 @@ begin
     [ClassName, TRttiEnumerationType.GetName<TSynGutterBandKind>(FKind)])
 end;
 
-function TSynGutterBand.GetEditor: TPersistent;
+function TSynGutterBand.GetEditor: TComponent;
 begin
   if Assigned(Gutter) then
-    Result := Gutter.GetOwner
+    Result := Gutter.GetOwner as TComponent
   else
     Result := nil;
 end;

@@ -648,6 +648,7 @@ type
     procedure CalcTextAreaWidth;
     procedure DoBlockIndent;
     procedure DoBlockUnindent;
+    procedure DoContextPopup(MousePos: TPoint; var Handled: Boolean); override;
     procedure DoOnClearBookmark(var Mark: TSynEditMark); virtual;
     procedure DoOnCommandProcessed(Command: TSynEditorCommand; AChar: WideChar;
       Data: Pointer); virtual;
@@ -9612,6 +9613,30 @@ procedure TCustomSynEdit.DoChange;
 begin
   if Assigned(fOnChange) then
     fOnChange(Self);
+end;
+
+procedure TCustomSynEdit.DoContextPopup(MousePos: TPoint; var Handled: Boolean);
+var
+  Band: TSynGutterBand;
+  RowColumn: TDisplayCoord;
+  Line: Integer;
+begin
+  if MousePos.X <= fGutterWidth then
+  begin
+    RowColumn := PixelsToRowColumn(MousePos.X, MousePos.Y);
+    Line := RowToLine(RowColumn.Row);
+
+    if Line <= Lines.Count then
+    begin
+      Band := FGutter.BandAtX(MousePos.X);
+      if Assigned(Band) and Assigned(Band.OnContextPopup) then
+      begin
+        Band.OnContextPopup(Self, MousePos, RowColumn.Row, Line, Handled);
+        if Handled then Exit;
+      end;
+    end;
+  end;
+  inherited DoContextPopup(MousePos, Handled);
 end;
 
 procedure TCustomSynEdit.ReadAddedKeystrokes(Reader: TReader);
