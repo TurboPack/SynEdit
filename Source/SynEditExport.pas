@@ -166,6 +166,7 @@ type
     { Saves the contents of the output buffer to a stream. }
     procedure SaveToStream(Stream: TStream);
     function SupportedEncodings: TSynEncodings; virtual; abstract;
+    function ExportedText: string;
   public
     { Default background color for text that has no token attribute assigned or
       for token attributes that have the background set to default. }
@@ -306,30 +307,9 @@ begin
 end;
 
 procedure TSynCustomExporter.CopyToClipboard;
-const
-  Nulls: array[0..1] of Byte = (0, 0);
-var
-  S: string;
 begin
   if fExportAsText then
-  begin
-    fBuffer.Position := fBuffer.Size;
-    fBuffer.Write(Nulls, FCharSize);
-    case Encoding of
-      seUTF16LE:
-        S := PWideChar(fBuffer.Memory);
-      seUTF16BE:
-        begin
-          S := PWideChar(fBuffer.Memory);
-          StrSwapByteOrder(PWideChar(S));
-        end;
-      seUTF8:
-        S := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
-      seAnsi:
-        S := string(PAnsiChar(fBuffer.Memory));
-    end;
-    SetClipboardText(S);
-  end
+    SetClipboardText(ExportedText)
   else
     CopyToClipboardFormat(GetClipboardFormat);
 end;
@@ -371,6 +351,27 @@ end;
 procedure TSynCustomExporter.ExportAll(ALines: TStrings);
 begin
   ExportRange(ALines, BufferCoord(1, 1), BufferCoord(MaxInt, MaxInt));
+end;
+
+function TSynCustomExporter.ExportedText: string;
+const
+  Nulls: array[0..1] of Byte = (0, 0);
+begin
+  fBuffer.Position := fBuffer.Size;
+  fBuffer.Write(Nulls, FCharSize);
+  case Encoding of
+    seUTF16LE:
+      Result := PWideChar(fBuffer.Memory);
+    seUTF16BE:
+      begin
+        Result := PWideChar(fBuffer.Memory);
+        StrSwapByteOrder(PWideChar(Result));
+      end;
+    seUTF8:
+      Result := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
+    seAnsi:
+      Result := string(PAnsiChar(fBuffer.Memory));
+  end;
 end;
 
 procedure TSynCustomExporter.ExportRange(ALines: TStrings; Start, Stop: TBufferCoord);
