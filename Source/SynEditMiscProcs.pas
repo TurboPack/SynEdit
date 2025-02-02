@@ -869,9 +869,14 @@ begin
 end;
 
 function ColorToHTML(Color: TColor): string;
+var
+  R, G, B: Byte;
 begin
-  Color := ColorToRGB(Color); // Convert to RGB if it's a system color
-  Result := Format('#%6.6x', [Color and $FFFFFF]);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+
+  Result := Format('#%.2X%.2X%.2X', [R, G, B]);
 end;
 
 function IsBracket(Chr: Char; const Brackets: string): Boolean;
