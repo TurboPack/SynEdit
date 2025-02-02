@@ -138,6 +138,9 @@ procedure SubstituteControlChars(var Input: string);
 // Returns a compiled regular expression
 function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TRegEx;
 
+// Converts TColor to an HTML color string
+function ColorToHTML(Color: TColor): string;
+
 // Bracket functions (Brackets have the form '()[]{}')
 function IsBracket(Chr: Char; const Brackets: string): Boolean;
 function IsOpeningBracket(Chr: Char; const Brackets: string): Boolean;
@@ -865,6 +868,11 @@ begin
   {$ENDIF}
 end;
 
+function ColorToHTML(Color: TColor): string;
+begin
+  Color := ColorToRGB(Color); // Convert to RGB if it's a system color
+  Result := Format('#%6.6x', [Color and $FFFFFF]);
+end;
 
 function IsBracket(Chr: Char; const Brackets: string): Boolean;
 begin

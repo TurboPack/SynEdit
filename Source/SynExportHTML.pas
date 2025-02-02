@@ -55,7 +55,6 @@ type
     function AttriToCSSCallback(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes; UniqueAttriName: string;
       Params: array of Pointer): Boolean;
-    function ColorToHTML(AColor: TColor): string;
     function GetStyleName(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes): string;
     function MakeValidName(Name: string): string;
@@ -228,35 +227,6 @@ begin
   if Assigned(FStyleValueCache) then
     FStyleValueCache.Clear;
   FAddNewLine := False;
-end;
-
-function TSynExporterHTML.ColorToHTML(AColor: TColor): string;
-var
-  RGBColor: Integer;
-  RGBValue: byte;
-const
-  Digits: array[0..15] of Char = '0123456789ABCDEF';
-begin
-  RGBColor := ColorToRGB(AColor);
-  Result := '#000000';
-  RGBValue := GetRValue(RGBColor);
-  if RGBValue > 0 then
-  begin
-    Result[2] := Digits[RGBValue shr  4];
-    Result[3] := Digits[RGBValue and 15];
-  end;
-  RGBValue := GetGValue(RGBColor);
-  if RGBValue > 0 then
-  begin
-    Result[4] := Digits[RGBValue shr  4];
-    Result[5] := Digits[RGBValue and 15];
-  end;
-  RGBValue := GetBValue(RGBColor);
-  if RGBValue > 0 then
-  begin
-    Result[6] := Digits[RGBValue shr  4];
-    Result[7] := Digits[RGBValue and 15];
-  end;
 end;
 
 procedure TSynExporterHTML.SetTokenAttribute(Attri: TSynHighlighterAttributes);
