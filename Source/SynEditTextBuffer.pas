@@ -403,23 +403,23 @@ begin
     Result := 0
   else
   begin
-      TParallel.&For(0, FCount - 1, procedure(I:Integer)
-      var
-        LMaxW: Integer;
-        PRec: PSynEditStringRec;
+    TParallel.&For(0, FCount - 1, procedure(I:Integer)
+    var
+      LMaxW: Integer;
+      PRec: PSynEditStringRec;
+    begin
+      PRec := @FList^[I];
+      if sfTextWidthUnknown in PRec^.FFlags then
       begin
-        PRec := @FList^[I];
-        if sfTextWidthUnknown in PRec^.FFlags then
-        begin
-          PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
-          Exclude(PRec^.FFlags, sfTextWidthUnknown);
-        end;
-        repeat
-          LMaxW := FMaxWidth;
-          if PRec^.FTextWidth <= LMaxW then
-            Break;
-        until AtomicCmpExchange(FMaxWidth, PRec^.FTextWidth, LMaxW) = LMaxW;
-      end);
+        PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
+        Exclude(PRec^.FFlags, sfTextWidthUnknown);
+      end;
+      repeat
+        LMaxW := FMaxWidth;
+        if PRec^.FTextWidth <= LMaxW then
+          Break;
+      until AtomicCmpExchange(FMaxWidth, PRec^.FTextWidth, LMaxW) = LMaxW;
+    end);
     Result := Max(FMaxWidth, 0);
   end;
 end;
