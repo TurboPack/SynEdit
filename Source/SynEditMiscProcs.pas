@@ -870,13 +870,10 @@ end;
 
 function ColorToHTML(Color: TColor): string;
 var
-  R, G, B: Byte;
+  R: TColorRef;
 begin
-  R := GetRValue(Color);
-  G := GetGValue(Color);
-  B := GetBValue(Color);
-
-  Result := Format('#%.2X%.2X%.2X', [R, G, B]);
+  R := ColorToRGB(Color);
+  Result := Format('#%.2x%.2x%.2x', [GetRValue(R), GetGValue(R), GetBValue(R)]);
 end;
 
 function IsBracket(Chr: Char; const Brackets: string): Boolean;

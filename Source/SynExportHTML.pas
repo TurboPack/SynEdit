@@ -235,17 +235,19 @@ begin
   // If a newline happens while there are tokens with no attributes we add <br>s
   if FAddNewLine then
   begin
-    AddData('<br>' + SLineBreak);
+    AddNewLine;
     FAddNewLine := False;
   end;
 end;
 
 procedure TSynExporterHTML.FormatAfterLastAttribute;
 begin
+  AddData('</span>');
   if FAddNewLine then
-    AddData('</span><br></div>' + SLineBreak + '</div>')
-  else
-    AddData('</span></div></div>');
+    AddNewLine;
+  AddData('</code></pre>');
+  AddNewLine;
+  AddData('</div>');
   FAddNewLine := False;
 end;
 
@@ -254,7 +256,7 @@ procedure TSynExporterHTML.FormatAttributeDone(BackgroundChanged,
 begin
   if FAddNewLine then
   begin
-    AddData('</span><br></div>' + SLineBreak + '<div>');
+    AddData('</span>' + SLineBreak);
     FAddNewLine := False;
   end
   else
@@ -294,7 +296,8 @@ begin
   else
     BkgColor := '';
   AddData('<div style="font-family: ' + FFont.Name + ', ''Courier New'', monospace; font-size: ' +
-    FFont.Size.ToString + 'pt;' + BkgColor + '">');
+    FFont.Size.ToString + 'pt;' + BkgColor + '">' + SLineBreak);
+  AddData('<pre><code>');
   if FCreateHTMLFragment or FInlineCSS then
   begin
     // Cache all our CSS values.
@@ -302,14 +305,14 @@ begin
     EnumHighlighterAttris(Highlighter, True, AttriToInlineCSSCallback, []);
     FStyleValueCache.TryGetValue(Highlighter.GetTokenAttribute, StyleValue);
     if StyleValue <> '' then
-      AddData('<div><span style="' + StyleValue + '">')
+      AddData('<span style="' + StyleValue + '">')
     else
-      AddData('<div><span>');
+      AddData('<span>');
   end
   else
   begin
     StyleName := GetStyleName(Highlighter, Highlighter.GetTokenAttribute);
-    AddData('<div><span class="' + StyleName + '">');
+    AddData('<span class="' + StyleName + '">');
   end;
 end;
 
@@ -317,7 +320,7 @@ procedure TSynExporterHTML.FormatNewLine;
 begin
   if FAddNewLine then
   begin
-    AddData('<br>' + SLineBreak);
+    AddData(SLineBreak);
     FAddNewLine := False;
   end;
   FAddNewLine := True;
@@ -414,7 +417,7 @@ begin
     '<': Result := '&lt;';
     '>': Result := '&gt;';
     '"': Result := '&quot;';
-    ' ': Result := '&nbsp;';
+//    ' ': Result := '&nbsp;';
     else Result := '';
   end
 end;
@@ -450,3 +453,4 @@ begin
 end;
 
 end.
+
