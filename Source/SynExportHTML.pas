@@ -417,7 +417,6 @@ begin
     '<': Result := '&lt;';
     '>': Result := '&gt;';
     '"': Result := '&quot;';
-//    ' ': Result := '&nbsp;';
     else Result := '';
   end
 end;
