@@ -19,7 +19,6 @@ unit SynMarkdownViewer;
 interface
 
 uses
-  WinApi.Windows,
   System.Classes,
   Vcl.Controls,
   System.Generics.Collections,
@@ -55,7 +54,7 @@ type
   end;
 
   TMarkDownRegEx = record
-    Backticks: TRegex;
+    Backticks: TRegEx;
     Bullets: TRegEx;
     NumList: TRegEx;
     MergeLines: TRegEx;
@@ -77,9 +76,9 @@ type
     FOnClickLink: TSynOnClickLink;
     procedure SetMarkdown(Value: string);
   protected
-    MarkdownIndicators: TMarkdownIndicators;
-    procedure DoOnMouserCursor(const aLineCharPos: TBufferCoord;
-      var aCursor: TCursor); override;
+    FMarkdownIndicators: TMarkdownIndicators;
+    procedure DoOnMouserCursor(const ALineCharPos: TBufferCoord;
+      var ACursor: TCursor); override;
     procedure DoOnPaint; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y:
       Integer); override;
@@ -87,16 +86,17 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     class constructor Create;
-    property Markdown: string write SetMarkdown;
     class var RegExps: TMarkDownRegEx;
+    property Markdown: string write SetMarkdown;
   published
-    property OnCLickLink: TSynOnClickLink read FOnCLickLink write FOnClickLink;
+    property OnCLickLink: TSynOnClickLink read FOnClickLink write FOnClickLink;
     property ReadOnly default True;
   end;
 
 implementation
 
 uses
+  Winapi.Windows,
   Winapi.ShellAPI,
   System.UITypes,
   System.SysUtils,
@@ -123,7 +123,7 @@ begin
   WordWrap := True;
   LockUndo;
 
-  MarkdownIndicators.Create(Self);
+  FMarkdownIndicators.Create(Self);
 end;
 
 class constructor TSynMarkdownViewer.Create;
@@ -138,18 +138,18 @@ begin
   inherited;
 end;
 
-procedure TSynMarkdownViewer.DoOnMouserCursor(const aLineCharPos: TBufferCoord;
-  var aCursor: TCursor);
+procedure TSynMarkdownViewer.DoOnMouserCursor(const ALineCharPos: TBufferCoord;
+  var ACursor: TCursor);
 var
   Indicator: TSynIndicator;
   Underline: TSynIndicator;
 begin
-  if Indicators.IndicatorAtPos(aLineCharPos, TMarkdownIndicators.IdLink, Indicator) then
+  if Indicators.IndicatorAtPos(ALineCharPos, TMarkdownIndicators.IdLink, Indicator) then
   begin
-    aCursor := crHandPoint;
-    if not Indicators.IndicatorAtPos(aLineCharPos, TMarkdownIndicators.IdUnderline, Underline) then
-      Indicators.Add(aLineCharPos.Line, TSynIndicator.New(
-        TMarkdownIndicators.idUnderline, Indicator.CharStart, Indicator.CharEnd));
+    ACursor := crHandPoint;
+    if not Indicators.IndicatorAtPos(ALineCharPos, TMarkdownIndicators.IdUnderline, Underline) then
+      Indicators.Add(ALineCharPos.Line, TSynIndicator.New(
+        TMarkdownIndicators.IdUnderline, Indicator.CharStart, Indicator.CharEnd));
   end else
   begin
     Indicators.Clear(TMarkdownIndicators.IdUnderline);
@@ -164,6 +164,7 @@ begin
   // paint horizontal rulers
 
   Canvas.Pen.Width := MulDiv(2, FCurrentPPI, 96);
+  Canvas.Pen.Color := Font.Color;
 
   for Line in FHorzRules do
   begin
@@ -265,7 +266,7 @@ procedure TSynMarkdownViewer.SetMarkdown(Value: string);
         Include(CurrLI, liBullet)
       else if RegExps.NumList.IsMatch(Line) then
         Include(CurrLI, liBullet)
-      else if Line.StartsWith('```') then
+      else if Line.TrimLeft.StartsWith('```') then
       begin
         // Start of a code block
         PrevLI := [liCode];
@@ -346,7 +347,7 @@ procedure TSynMarkdownViewer.SetMarkdown(Value: string);
     TTag = record
       Start, Stop: Integer;
       TagLen: Integer;
-      Guid: TGuid;
+      Guid: TGUID;
       Link: string;
     end;
 
@@ -381,24 +382,26 @@ procedure TSynMarkdownViewer.SetMarkdown(Value: string);
 
   var
     LineNo: Integer;
-    HeaderGuid: TGuid;
+    HeaderGuid: TGUID;
     Match: TMatch;
     EmphasisMatches: TMatchCollection;
     TickMatches: TMatchCollection;
     Tag: TTag;
   begin
     // Headers
-    HeaderGuid := TGuid.Empty;
+    HeaderGuid := TGUID.Empty;
     Match := RegExps.Header.Match(Line);
     if Match.Success and InRange(Match.Groups[1].Value.Length, 1, 6) then
     begin
       case Match.Groups[1].Value.Length of
-        1: HeaderGuid := MarkdownIndicators.IdHeading1;
-        2: HeaderGuid := MarkdownIndicators.IdHeading2;
-        3: HeaderGuid := MarkdownIndicators.IdHeading3;
-        4, 5, 6: HeaderGuid := MarkdownIndicators.IdHeadingOther;
+        1: HeaderGuid := FMarkdownIndicators.IdHeading1;
+        2: HeaderGuid := FMarkdownIndicators.IdHeading2;
+        3: HeaderGuid := FMarkdownIndicators.IdHeading3;
+        4, 5, 6: HeaderGuid := FMarkdownIndicators.IdHeadingOther;
       end;
       Line := Copy(Line, Match.Groups[1].Value.Length + 2);
+      // Remove other formatting
+      Line := Line.Trim(['*']);
       LineNo := Lines.Add(Line);
       Indicators.Add(LineNo + 1,
         TSynIndicator.Create(HeaderGuid, 1, Line.Length + 1), False);
@@ -449,17 +452,17 @@ procedure TSynMarkdownViewer.SetMarkdown(Value: string);
       Tag.Stop := Tag.Start + Match.Length;
       if Match.Groups[1].Length > 0 then
       begin
-        Tag.Guid := MarkdownIndicators.IdBoldItalic;
+        Tag.Guid := FMarkdownIndicators.IdBoldItalic;
         Tag.TagLen := 3;
       end
       else if Match.Groups[2].Length > 0 then
       begin
-        Tag.Guid := MarkdownIndicators.IdBold;
+        Tag.Guid := FMarkdownIndicators.IdBold;
         Tag.TagLen := 2;
       end
       else if Match.Groups[3].Length > 0 then
       begin
-        Tag.Guid := MarkdownIndicators.IdItalic;
+        Tag.Guid := FMarkdownIndicators.IdItalic;
         Tag.TagLen := 1;
       end;
       Tags := Tags + [Tag];
@@ -469,7 +472,7 @@ procedure TSynMarkdownViewer.SetMarkdown(Value: string);
     TickMatches := RegExps.Backticks.Matches(Line);
     for Match in TickMatches do
     begin
-      Tag.Guid := MarkdownIndicators.IdInlineCode;
+      Tag.Guid := FMarkdownIndicators.IdInlineCode;
       Tag.Start := Match.Index;
       Tag.Stop := Tag.Start + Match.Length;
       Tag.TagLen := 1;
