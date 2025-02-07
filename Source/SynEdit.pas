@@ -8620,8 +8620,7 @@ procedure TCustomSynEdit.DoBlockUnindent;
 var
   OrgCaretPos, BB, BE: TBufferCoord;
   Line: string;
-  PLine: PChar;
-  EndLine, I, TmpDelLen, DelPos: Integer;
+  EndLine, I, TmpDelLen: Integer;
 
 begin
   BB := BlockBegin;
@@ -8642,12 +8641,10 @@ begin
       Line := Lines[I - 1];
       //Instead of doing a StringofChar, we need to get *exactly* what was
       //being deleted incase there is a TabChar
-      PLine := PChar(Line);
-      TmpDelLen := GetDelLen(PChar(PLine));
+      TmpDelLen := GetDelLen(PChar(Line));
       if TmpDelLen > 0 then
       begin
-        DelPos := 1;
-        Delete(Line, DelPos, TmpDelLen);
+        Delete(Line, 1, TmpDelLen);
         Lines[I - 1] := Line;
         if I = BB.Line then
           BB.Char := Max(BB.Char - TmpDelLen, 1);
