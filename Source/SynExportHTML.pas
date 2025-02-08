@@ -286,17 +286,21 @@ end;
 
 procedure TSynExporterHTML.FormatBeforeFirstAttribute(BackgroundChanged,
   ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
+const
+  ColorAttrFmt = ' background-color: %s; color: %s;';
+  FirstDiv =
+    '<div style="font-family: %s, ''Courier New'', monospace; font-size: %spt; %s">' +
+    sLineBreak;
 var
   StyleName: string;
   StyleValue: string;
-  BkgColor: string;
+  ColorAttrs: string;
 begin
   if UseBackground then
-    BkgColor := ' background-color: '+ ColorToHTML(fBackgroundColor) + ';'
+    ColorAttrs := Format(ColorAttrFmt, [ColorToHTML(Color), ColorToHTML(Font.Color)])
   else
-    BkgColor := '';
-  AddData('<div style="font-family: ' + FFont.Name + ', ''Courier New'', monospace; font-size: ' +
-    FFont.Size.ToString + 'pt;' + BkgColor + '">' + SLineBreak);
+    ColorAttrs := '';
+  AddData(Format(FirstDiv, [FFont.Name, FFont.Size.ToString, ColorAttrs]));
   AddData('<pre><code>');
   if FCreateHTMLFragment or FInlineCSS then
   begin
