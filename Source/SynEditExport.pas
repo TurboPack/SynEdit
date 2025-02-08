@@ -479,50 +479,26 @@ end;
 
 function TSynCustomExporter.ReplaceReservedChars(AToken: string): string;
 var
-  I, ISrc, IDest, SrcLen, DestLen: Integer;
-  Replace: string;
-  c: WideChar;
+  Chr: Char;
+  Replacement: string;
+  SB: TStringBuilder;
 begin
-  if AToken <> '' then
-  begin
-    SrcLen := Length(AToken);
-    ISrc := 1;
-    DestLen := SrcLen;
-    IDest := 1;
-    SetLength(Result, DestLen);
-    while ISrc <= SrcLen do
+  if AToken = '' then Exit('');
+
+  SB := TStringBuilder.Create(AToken.Length * 2); // Initial capacity estimate
+  try
+    for Chr in AToken do
     begin
-      c := AToken[ISrc];
-      Replace := ReplaceReservedChar(c);
-      if Replace <> '' then
-        Inc(ISrc)
+      Replacement := ReplaceReservedChar(Chr);
+      if Replacement = '' then
+        SB.Append(Chr)
       else
-      begin
-        if IDest > DestLen then
-        begin
-          Inc(DestLen, 32);
-          SetLength(Result, DestLen);
-        end;
-        Result[IDest] := c;
-        Inc(ISrc);
-        Inc(IDest);
-        Continue;
-      end;
-      if IDest + Length(Replace) - 1 > DestLen then
-      begin
-        Inc(DestLen, Max(32, IDest + Length(Replace) - DestLen));
-        SetLength(Result, DestLen);
-      end;
-      for I := 1 to Length(Replace) do
-      begin
-        Result[IDest] := Replace[I];
-        Inc(IDest);
-      end;
+         SB.Append(Replacement);
     end;
-    SetLength(Result, IDest - 1);
-  end
-  else
-    Result := '';
+    Result := SB.ToString;
+  finally
+    SB.Free;
+  end;
 end;
 
 procedure TSynCustomExporter.SaveToFile(const FileName: string);
