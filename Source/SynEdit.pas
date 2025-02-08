@@ -947,7 +947,7 @@ type
     property ScrollOptions: TSynEditorScrollOptions read fScrollOptions write SetScrollOptions
       default SYNEDIT_DEFAULT_SCROLLOPTIONS;
     property VisibleSpecialChars: TSynVisibleSpecialChars
-      read FVisibleSpecialChars write SetVisibleSpecialChars;
+      read FVisibleSpecialChars write SetVisibleSpecialChars default [];
     property OverwriteCaret: TSynEditCaretType read FOverwriteCaret
       write SetOverwriteCaret default ctBlock;
     property RightEdge: Integer read fRightEdge write SetRightEdge default 80;
