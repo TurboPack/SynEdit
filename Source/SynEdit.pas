@@ -5500,7 +5500,6 @@ begin
   for Line := StartLine to Lines.Count do
   begin
     Flags := TSynEditStringList(Lines).ChangeFlags[Line - 1];
-    // Is this enough?
     if sfModified in Flags then
     begin
       CaretY := Line;
@@ -5519,7 +5518,6 @@ begin
   for Line := StartLine downto 1 do
   begin
     Flags := TSynEditStringList(Lines).ChangeFlags[Line - 1];
-    // Is this enough?
     if sfModified in Flags then
     begin
       CaretY := Line;
