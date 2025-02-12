@@ -739,6 +739,8 @@ type
     function GetPositionOfMouse(out aPos: TBufferCoord): Boolean;
     function GetWordAtRowCol(XY: TBufferCoord): string;
     procedure GetWordBoundaries(XY: TBufferCoord; var BB, BE: TBufferCoord);
+    procedure GotoPrevChangedLine;
+    procedure GotoNextChangedLine;
     procedure GotoBookMark(BookMark: Integer); virtual;
     procedure GotoLineAndCenter(ALine: Integer); virtual;
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
@@ -5488,6 +5490,44 @@ begin
   end;
 end;
 
+procedure TCustomSynEdit.GotoNextChangedLine;
+var
+  Flags: TSynLineChangeFlags;
+  StartLine: Integer;
+  Line: Integer;
+begin
+  StartLine := Max(1, CaretY + 1);
+  for Line := StartLine to Lines.Count do
+  begin
+    Flags := TSynEditStringList(Lines).ChangeFlags[Line - 1];
+    // Is this enough?
+    if sfModified in Flags then
+    begin
+      CaretY := Line;
+      Exit;
+    end;
+  end;
+end;
+
+procedure TCustomSynEdit.GotoPrevChangedLine;
+var
+  Flags: TSynLineChangeFlags;
+  StartLine: Integer;
+  Line: Integer;
+begin
+  StartLine := Min(Lines.Count, CaretY - 1);
+  for Line := StartLine downto 1 do
+  begin
+    Flags := TSynEditStringList(Lines).ChangeFlags[Line - 1];
+    // Is this enough?
+    if sfModified in Flags then
+    begin
+      CaretY := Line;
+      Exit;
+    end;
+  end;
+end;
+
 procedure TCustomSynEdit.ClearBookMark(BookMark: Integer);
 begin
   if (BookMark in [0..9]) and assigned(fBookMarks[BookMark]) then
@@ -6810,6 +6850,10 @@ begin
         begin
           if not ReadOnly then Redo;
         end;
+      ecGotoPrevChange:
+        GotoPrevChangedLine;
+      ecGotoNextChange:
+        GotoNextChangedLine;
       ecGotoMarker0..ecGotoMarker9:
         begin
           if BookMarkOptions.EnableKeys then

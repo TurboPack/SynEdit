@@ -125,6 +125,9 @@ const
 
   ecCommentBlock    = 260;  // Comment Block
 
+  ecGotoPrevChange  = 270;  // Goto previous changed line.
+  ecGotoNextChange  = 271;  // Goto next changed line.
+
   ecGotoMarker0     = 301;  // Goto marker
   ecGotoMarker1     = 302;  // Goto marker
   ecGotoMarker2     = 303;  // Goto marker
@@ -322,7 +325,7 @@ uses
 { Command mapping routines }
 
 const
-  EditorCommandStrs: array[0..122] of TIdentMapEntry = (
+  EditorCommandStrs: array[0..124] of TIdentMapEntry = (
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
     (Value: ecRight; Name: 'ecRight'),
@@ -393,6 +396,8 @@ const
     (Value: ecCommentBlock; Name: 'ecCommentBlock'),
     (Value: ecAutoCompletion; Name: 'ecAutoCompletion'),
     (Value: ecContextHelp; Name: 'ecContextHelp'),
+    (Value: ecGotoPrevChange; Name: 'ecGotoPrevChange'),
+    (Value: ecGotoNextChange; Name: 'ecGotoNextChange'),
     (Value: ecGotoMarker0; Name: 'ecGotoMarker0'),
     (Value: ecGotoMarker1; Name: 'ecGotoMarker1'),
     (Value: ecGotoMarker2; Name: 'ecGotoMarker2'),
@@ -834,6 +839,8 @@ begin
   AddKey(ecDeleteEOL, Ord('Y'), [ssCtrl,ssShift]);
   AddKey(ecUndo, Ord('Z'), [ssCtrl]);
   AddKey(ecRedo, Ord('Z'), [ssCtrl,ssShift]);
+  AddKey(ecGotoPrevChange, SYNEDIT_SUBTRACT, [ssCtrl,ssShift]);
+  AddKey(ecGotoNextChange, SYNEDIT_ADD, [ssCtrl,ssShift]);
   AddKey(ecGotoMarker0, Ord('0'), [ssCtrl]);
   AddKey(ecGotoMarker1, Ord('1'), [ssCtrl]);
   AddKey(ecGotoMarker2, Ord('2'), [ssCtrl]);
@@ -1064,6 +1071,8 @@ begin
   SynCommandsInfo.Add(ecMatchBracket, TSynCommandInfo.Create(ckSingleCaret, False));
   SynCommandsInfo.Add(ecSelMatchBracket, TSynCommandInfo.Create(ckSingleCaret, False));
   SynCommandsInfo.Add(ecCommentBlock, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecGotoPrevChange, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoNextChange, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecGotoMarker0, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecGotoMarker1, TSynCommandInfo.Create(ckStandard, False));
   SynCommandsInfo.Add(ecGotoMarker2, TSynCommandInfo.Create(ckStandard, False));
