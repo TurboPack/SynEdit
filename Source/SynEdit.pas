@@ -739,8 +739,8 @@ type
     function GetPositionOfMouse(out aPos: TBufferCoord): Boolean;
     function GetWordAtRowCol(XY: TBufferCoord): string;
     procedure GetWordBoundaries(XY: TBufferCoord; var BB, BE: TBufferCoord);
-    procedure GotoPrevChangedLine;
-    procedure GotoNextChangedLine;
+    procedure GotoPrevChange;
+    procedure GotoNextChange;
     procedure GotoBookMark(BookMark: Integer); virtual;
     procedure GotoLineAndCenter(ALine: Integer); virtual;
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
@@ -758,6 +758,7 @@ type
     procedure InvalidateSelection; overload;
     procedure InvalidateSelection(const Sel: TSynSelection); overload;
     function IsBookmark(BookMark: Integer): Boolean;
+    function IsLineMOdified(ALine: Integer): Boolean;
     function IsPointInSelection(const Value: TBufferCoord): Boolean;
     procedure LockUndo;
     procedure MoveDisplayPosAndSelection(const NewPos: TDisplayCoord;
@@ -5490,40 +5491,40 @@ begin
   end;
 end;
 
-procedure TCustomSynEdit.GotoNextChangedLine;
+procedure TCustomSynEdit.GotoNextChange;
 var
-  Flags: TSynLineChangeFlags;
-  StartLine: Integer;
   Line: Integer;
 begin
-  StartLine := Max(1, CaretY + 1);
-  for Line := StartLine to Lines.Count do
-  begin
-    Flags := TSynEditStringList(Lines).ChangeFlags[Line - 1];
-    if sfModified in Flags then
+  Line := CaretY;
+  while (Line < Lines.Count) and IsLineModified(Line) do
+    Inc(Line);
+  while (Line < Lines.Count) do
+    if IsLineModified(Line) then
     begin
       CaretY := Line;
       Exit;
-    end;
-  end;
+    end
+    else
+      Inc(Line);
 end;
 
-procedure TCustomSynEdit.GotoPrevChangedLine;
+procedure TCustomSynEdit.GotoPrevChange;
 var
-  Flags: TSynLineChangeFlags;
-  StartLine: Integer;
   Line: Integer;
 begin
-  StartLine := Min(Lines.Count, CaretY - 1);
-  for Line := StartLine downto 1 do
-  begin
-    Flags := TSynEditStringList(Lines).ChangeFlags[Line - 1];
-    if sfModified in Flags then
+  Line := Min(CaretY, Lines.Count);
+  while (Line > 1) and IsLineModified(Line) do
+    Dec(Line);
+  while Line > 1 do
+    if IsLineModified(Line) then
     begin
+      while (Line > 1) and IsLineModified(Line - 1) do
+        Dec(Line);
       CaretY := Line;
       Exit;
-    end;
-  end;
+    end
+    else
+      Dec(Line);
 end;
 
 procedure TCustomSynEdit.ClearBookMark(BookMark: Integer);
@@ -6848,10 +6849,10 @@ begin
         begin
           if not ReadOnly then Redo;
         end;
-      ecGotoPrevChange:
-        GotoPrevChangedLine;
-      ecGotoNextChange:
-        GotoNextChangedLine;
+      ecNextChange:
+        GotoNextChange;
+      ecPreviousChange:
+        GotoPrevChange;
       ecGotoMarker0..ecGotoMarker9:
         begin
           if BookMarkOptions.EnableKeys then
@@ -9409,6 +9410,11 @@ begin
   else
     Result := (AChar = '_') or AChar.IsLetterOrDigit or
       CharInSet(AChar, FAdditionalIdentChars);
+end;
+
+function TCustomSynEdit.IsLineMOdified(ALine: Integer): Boolean;
+begin
+  Result := sfModified in TSynEditStringList(Lines).ChangeFlags[ALine - 1];
 end;
 
 function TCustomSynEdit.IsNonWhiteChar(AChar: WideChar): Boolean;
