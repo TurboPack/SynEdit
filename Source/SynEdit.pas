@@ -5496,9 +5496,9 @@ var
   Line: Integer;
 begin
   Line := CaretY;
-  while (Line < Lines.Count) and IsLineModified(Line) do
+  while (Line <= Lines.Count) and IsLineModified(Line) do
     Inc(Line);
-  while (Line < Lines.Count) do
+  while (Line <= Lines.Count) do
     if IsLineModified(Line) then
     begin
       CaretY := Line;
@@ -5513,9 +5513,9 @@ var
   Line: Integer;
 begin
   Line := Min(CaretY, Lines.Count);
-  while (Line > 1) and IsLineModified(Line) do
+  while (Line >= 1) and IsLineModified(Line) do
     Dec(Line);
-  while Line > 1 do
+  while Line >= 1 do
     if IsLineModified(Line) then
     begin
       while (Line > 1) and IsLineModified(Line - 1) do
