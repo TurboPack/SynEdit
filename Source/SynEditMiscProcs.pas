@@ -132,6 +132,9 @@ function GetCorrectFontWeight(Font: TFont): Integer;
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 {$ENDIF}
 
+var 
+  dnsWINE: Boolean = false;
+  
 implementation
 
 uses
@@ -711,8 +714,11 @@ begin
 end;
 
 function DefaultFontName: string;
-begin
-  if CheckWin32Version(6) then
+begin  
+  // DENOVO: Added check for DNS_WINE so we can override the default font. 
+  if dnsWINE then  
+    Result := 'Courier New'
+  else if CheckWin32Version(6) then
     Result := 'Consolas'
   else
     Result := 'Courier New';
