@@ -272,7 +272,7 @@ type
   published
     // Size of the gutter shapes in pixels at 96 PPI
     property  GutterShapeSize: Integer read fGutterShapeSize
-      write SetGutterShapeSize default 11;
+      write SetGutterShapeSize default 9;
     property CollapsedLineColor: TColor read fCollapsedLineColor
       write SetCollapsedLineColor default clGrayText;
     property FolderBarLinesColor: TColor read fFolderBarLinesColor
@@ -1184,7 +1184,7 @@ begin
   fFolderBarLinesColor := clGrayText;
   fShowCollapsedLine := False;
   fShowHintMark := True;
-  fGutterShapeSize := 11;
+  fGutterShapeSize := 9;
 end;
 
 function TSynCodeFolding.ScaledGutterShapeSize(PPI: Integer): Integer;
