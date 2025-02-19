@@ -244,10 +244,8 @@ type
     function IsWidthStored: Boolean;
     function GetWidth: Integer;
     function GetVisible: Boolean;
-    procedure SetOnClick(const Value: TGutterBandClickEvent);
     function GetLeftX: Integer;
     function FoldShapeRect(Row, Line: Integer): TRect;
-    procedure SetOnMouseCursor(const Value: TGutterMouseCursorEvent);
     function IsVisibleStored: Boolean;
   protected
     function GetDisplayName: string; override;
@@ -273,11 +271,11 @@ type
       write SetBackground default gbbGutter;
     property OnPaintLines: TGutterBandPaintEvent read FOnPaintLines
       write SetOnPaintLines;
-    property OnCLick: TGutterBandClickEvent read FOnClick write SetOnClick;
+    property OnCLick: TGutterBandClickEvent read FOnClick write FOnClick;
     property OnContextPopup: TGutterBandContextPopupEvent
       read FOnContextPopup write FOnContextPopup;
     property OnMouseCursor: TGutterMouseCursorEvent read FOnMouseCursor
-      write SetOnMouseCursor;
+      write FOnMouseCursor;
   end;
 
   TSynBandsCollection = class(TOwnedCollection)
@@ -318,7 +316,6 @@ type
     FGradientStartColor: TColor;
     FGradientEndColor: TColor;
     FGradientSteps: Integer;
-    FBandsModified: Boolean;
     FInternalImage: TSynInternalImage;
     FTrackChanges: TSynTrackChanges;
     FBands: TSynBandsCollection;
@@ -394,8 +391,7 @@ type
       default 48;
     property TrackChanges: TSynTrackChanges read FTrackChanges
       write FTrackChanges;
-    property Bands: TSynBandsCollection read FBands write SetBands
-      stored FBandsModified;
+    property Bands: TSynBandsCollection read FBands write SetBands;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
   {$ENDREGION 'TSynGutter'}
@@ -1000,8 +996,6 @@ begin
   finally
     Bands.EndUpdate;
   end;
-  // So that Bands are not stored unless modified
-  FBandsModified := False;
   AssignableBands := True;
 end;
 
@@ -2557,17 +2551,6 @@ begin
   Changed(False);
 end;
 
-procedure TSynGutterBand.SetOnClick(const Value: TGutterBandClickEvent);
-begin
-  FOnClick := Value;
-  Changed(False);
-end;
-
-procedure TSynGutterBand.SetOnMouseCursor(const Value: TGutterMouseCursorEvent);
-begin
-  FOnMouseCursor := Value;
-end;
-
 procedure TSynGutterBand.SetOnPaintLines(const Value: TGutterBandPaintEvent);
 begin
   FOnPaintLines := Value;
@@ -2606,10 +2589,7 @@ begin
   inherited;
   Gutter := TSynGutter(GetOwner);
   if Assigned(Gutter) then
-  begin
-    Gutter.FBandsModified := True;
     Gutter.Changed;
-  end;
 end;
 
 {$ENDREGION}
