@@ -91,21 +91,25 @@ type
   TSynStructureColor = class(TCollectionItem)
   private
     FColor: TColor;
+    procedure SetColor(const Value: TColor);
   public
     procedure Assign(Source: TPersistent); override;
   published
-    property Color: TColor read FColor write FColor;
+    property Color: TColor read FColor write SetColor;
   end;
 
   TSynStructureColors = class(TOwnedCollection)
   private
     function GetColors(Index: Integer): TSynStructureColor;
+  protected
+    procedure Update(Item: TCollectionItem); override;
   public
     property Colors[Index: Integer]: TSynStructureColor read GetColors; default;
   end;
 
   TSynIndentGuides = class(TPersistent)
   private
+    FOwner: TPersistent;
     FColor: TColor;
     FVisible: Boolean;
     FStyle: TSynIdentGuidesStyle;
@@ -113,11 +117,19 @@ type
     FStructureColors: TSynStructureColors;
     FStructureHighlight: Boolean;
     FUseStructureColors: Boolean;
+    FStructuredColorsModified: Boolean;
+    procedure Changed;
     procedure SetColor(const Value: TColor);
     procedure SetVisible(const Value: Boolean);
     procedure SetStyle(const Value: TSynIdentGuidesStyle);
+    procedure SetStructureColors(const Value: TSynStructureColors);
+    procedure SetUseStructureColors(const Value: Boolean);
+    procedure SetStructureHighlight(const Value: Boolean);
+  protected
+    function GetOwner: TPersistent; override;
   public
-    constructor Create;
+    constructor Create; overload;
+    constructor Create(Owner: TPersistent); overload;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -128,10 +140,11 @@ type
     property Color: TColor read FColor write SetColor
       default clMedGray;
     property UseStructureColors: Boolean read FUseStructureColors
-      write FUseStructureColors default True;
+      write SetUseStructureColors default True;
     property StructureHighlight: Boolean read FStructureHighlight
-      write FStructureHighlight default True;
-    property StructureColors: TSynStructureColors read FStructureColors;
+      write SetStructureHighlight default True;
+    property StructureColors: TSynStructureColors read FStructureColors
+      write SetStructureColors stored FStructuredColorsModified;
   end;
   {$ENDREGION 'Indentation Guides'}
 
@@ -282,7 +295,6 @@ type
   {$REGION 'TSynGutter'}
   TSynGutter = class(TPersistent)
   private
-    [Weak]
     FOwner: TPersistent; // Synedit
     FUpdateCount: Integer;
     FCurrentPPI: Integer;
@@ -306,6 +318,7 @@ type
     FGradientStartColor: TColor;
     FGradientEndColor: TColor;
     FGradientSteps: Integer;
+    FBandsModified: Boolean;
     FInternalImage: TSynInternalImage;
     FTrackChanges: TSynTrackChanges;
     FBands: TSynBandsCollection;
@@ -381,7 +394,8 @@ type
       default 48;
     property TrackChanges: TSynTrackChanges read FTrackChanges
       write FTrackChanges;
-    property Bands: TSynBandsCollection read FBands write SetBands;
+    property Bands: TSynBandsCollection read FBands write SetBands
+      stored FBandsModified;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
   {$ENDREGION 'TSynGutter'}
@@ -802,6 +816,8 @@ type
   TSynScrollbarAnnotations = class(TOwnedCollection)
   private
     function GetAnnotations(Index: Integer): TSynScrollbarAnnItem;
+  protected
+    procedure Update(Item: TCollectionItem); override;
   public
     procedure SetDefaultAnnotations;
     property Annotations[Index: Integer]: TSynScrollbarAnnItem
@@ -984,6 +1000,8 @@ begin
   finally
     Bands.EndUpdate;
   end;
+  // So that Bands are not stored unless modified
+  FBandsModified := False;
   AssignableBands := True;
 end;
 
@@ -2585,9 +2603,13 @@ procedure TSynBandsCollection.Update(Item: TCollectionItem);
 var
   Gutter: TSynGutter;
 begin
+  inherited;
   Gutter := TSynGutter(GetOwner);
   if Assigned(Gutter) then
+  begin
+    Gutter.FBandsModified := True;
     Gutter.Changed;
+  end;
 end;
 
 {$ENDREGION}
@@ -2709,6 +2731,15 @@ begin
     inherited;
 end;
 
+procedure TSynStructureColor.SetColor(const Value: TColor);
+begin
+  if FColor <> Value then
+  begin
+    FColor := Value;
+    Changed(False);
+  end;
+end;
+
 { TSynStructureColors }
 
 function TSynStructureColors.GetColors(Index: Integer): TSynStructureColor;
@@ -2737,6 +2768,18 @@ begin
     inherited Assign(Source);
 end;
 
+procedure TSynIndentGuides.Changed;
+begin
+  if Assigned(FOnChange) then
+    FOnChange(Self);
+end;
+
+constructor TSynIndentGuides.Create(Owner: TPersistent);
+begin
+  FOwner := Owner;
+  Create;
+end;
+
 constructor TSynIndentGuides.Create;
 begin
   inherited Create;
@@ -2747,10 +2790,17 @@ begin
   FUseStructureColors := True;
   FStructureColors := TSynStructureColors.Create(Self, TSynStructureColor);
   // Initialize structure colors
-  with TSynStructureColor(FStructureColors.Add) do Color := $FF901E;  // clWebDodgerBlue;
-  with TSynStructureColor(FStructureColors.Add) do Color := $008CFF;  // clWebDarkOrange;
-  with TSynStructureColor(FStructureColors.Add) do Color := $20A5DA;  // clWebGoldenRod;
-  with TSynStructureColor(FStructureColors.Add) do Color := $008080;  // clWebOlive
+  FStructureColors.BeginUpdate;
+  try
+    with TSynStructureColor(FStructureColors.Add) do Color := $FF901E;  // clWebDodgerBlue;
+    with TSynStructureColor(FStructureColors.Add) do Color := $008CFF;  // clWebDarkOrange;
+    with TSynStructureColor(FStructureColors.Add) do Color := $20A5DA;  // clWebGoldenRod;
+    with TSynStructureColor(FStructureColors.Add) do Color := $008080;  // clWebOlive
+  finally
+    FStructureColors.EndUpdate;
+  end;
+  // So that StructuredColors are not stored unless modified
+  FStructuredColorsModified := False;
 end;
 
 destructor TSynIndentGuides.Destroy;
@@ -2759,25 +2809,60 @@ begin
   inherited;
 end;
 
+function TSynIndentGuides.GetOwner: TPersistent;
+begin
+  Result := FOwner;
+end;
+
 procedure TSynIndentGuides.SetColor(const Value: TColor);
 begin
-  FColor := Value;
-  if Assigned(FOnChange) then
-    FOnChange(Self);
+  if FColor <> Value then
+  begin
+    FColor := Value;
+    Changed;
+  end;
+end;
+
+procedure TSynIndentGuides.SetStructureColors(const Value: TSynStructureColors);
+begin
+  FStructureColors.Assign(Value);
+  Changed;
+end;
+
+procedure TSynIndentGuides.SetStructureHighlight(const Value: Boolean);
+begin
+  if FStructureHighlight <> Value then
+  begin
+    FStructureHighlight := Value;
+    Changed;
+  end;
 end;
 
 procedure TSynIndentGuides.SetStyle(const Value: TSynIdentGuidesStyle);
 begin
-  FStyle := Value;
-  if Assigned(FOnChange) then
-    FOnChange(Self);
+  if FStyle <> Value then
+  begin
+    FStyle := Value;
+    Changed;
+  end;
+end;
+
+procedure TSynIndentGuides.SetUseStructureColors(const Value: Boolean);
+begin
+  if FUseStructureColors <> Value then
+  begin
+    FUseStructureColors := Value;
+    Changed;
+  end;
 end;
 
 procedure TSynIndentGuides.SetVisible(const Value: Boolean);
 begin
-  FVisible := Value;
-  if Assigned(FOnChange) then
-    FOnChange(Self);
+  if FVisible <> Value then
+  begin
+    FVisible := Value;
+    Changed;
+  end;
 end;
 
 {$ENDREGION}
@@ -3062,6 +3147,19 @@ begin
   if FRegister = nil then
     FRegister := TDictionary<TGUID, TSynIndicatorSpec>.Create;
   FRegister.AddOrSetValue(Id, Spec);
+end;
+
+procedure TSynStructureColors.Update(Item: TCollectionItem);
+var
+  IndentGuides : TSynIndentGuides;
+begin
+  inherited;
+  IndentGuides := TSynIndentGuides(GetOwner);
+  if Assigned(IndentGuides) then
+  begin
+    IndentGuides.FStructuredColorsModified := True;
+    IndentGuides.Changed;
+  end;
 end;
 
 { TSynIndicatorSpec }
@@ -3916,6 +4014,14 @@ begin
     AnnType := sbaTrackChanges;
     FullRow := True;
   end;
+end;
+
+procedure TSynScrollbarAnnotations.Update(Item: TCollectionItem);
+begin
+  inherited;
+  with TCustomSynEdit(Owner) do
+    if HandleAllocated then
+      SendMessage(Handle, WM_NCPAINT, 0, 0);
 end;
 
 {$REGION 'TSynDisplayFlowControl'}

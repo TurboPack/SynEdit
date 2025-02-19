@@ -1483,7 +1483,7 @@ begin
   fActiveLineColor := clNone;
   fSelectedColor := TSynSelectedColor.Create;
   fSelectedColor.OnChange := SelectedColorChanged;
-  FIndentGuides := TSynIndentGuides.Create;
+  FIndentGuides := TSynIndentGuides.Create(Self);
   FIndentGuides.OnChange := IndentGuidesChanged;
   fBookMarkOpt := TSynBookMarkOpt.Create(Self);
   fBookMarkOpt.OnChange := BookMarkOptionsChanged;
