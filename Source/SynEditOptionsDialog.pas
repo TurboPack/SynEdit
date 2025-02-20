@@ -502,7 +502,7 @@ begin
 end;
 
 
-constructor TSynEditorOptionsContainer.create(AOwner: TComponent);
+constructor TSynEditorOptionsContainer.Create(AOwner: TComponent);
 begin
   inherited;
   FBookmarks := TSynBookMarkOpt.Create(Self);
@@ -511,6 +511,7 @@ begin
   FSynGutter.AssignableBands := False;
   FSelectedColor := TSynSelectedColor.Create;
   FIndentGuides := TSynIndentGuides.Create;
+  FDisplayFlowControl := TSynDisplayFlowControl.Create;
   FFont := TFont.Create;
   FFont.Name := DefaultFontName;
   FFont.Size := 10;
@@ -539,6 +540,7 @@ begin
   FSynGutter.Free;
   FSelectedColor.Free;
   FIndentGuides.Free;
+  FDisplayFlowControl.Free;
   FFont.Free;
   inherited;
 end;
@@ -784,10 +786,10 @@ begin
   with eKeyShort1 do
   begin
     Parent := gbKeystrokes;
-    Left := 120;
-    Top := 55;
-    Width := 185;
-    Height := 21;
+    Left := Muldiv(120, FCurrentPPI, Screen.DefaultPixelsPerInch);
+    Top := Muldiv(55, FCurrentPPI, Screen.DefaultPixelsPerInch);
+    Width := Muldiv(185, FCurrentPPI, Screen.DefaultPixelsPerInch);
+    Height := Muldiv(21, FCurrentPPI, Screen.DefaultPixelsPerInch);
     HotKey := 0;
     InvalidKeys := [];
     Modifiers := [];
@@ -798,10 +800,10 @@ begin
   with eKeyShort2 do
   begin
     Parent := gbKeystrokes;
-    Left := 120;
-    Top := 87;
-    Width := 185;
-    Height := 21;
+    Left := Muldiv(120, FCurrentPPI, Screen.DefaultPixelsPerInch);
+    Top := Muldiv(87, FCurrentPPI, Screen.DefaultPixelsPerInch);
+    Width := Muldiv(185, FCurrentPPI, Screen.DefaultPixelsPerInch);
+    Height := Muldiv(21, FCurrentPPI, Screen.DefaultPixelsPerInch);
     HotKey := 0;
     InvalidKeys := [];
     Modifiers := [];
