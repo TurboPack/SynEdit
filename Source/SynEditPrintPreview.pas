@@ -114,7 +114,7 @@ type
     procedure ScrollVertTo(Value: Integer); virtual;
     procedure UpdateScrollbars; virtual;
     procedure SizeChanged; virtual;
-    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif}); override;
+    procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
     function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -167,14 +167,15 @@ const
 
 { TSynEditPrintPreview }
 
-procedure TSynEditPrintPreview.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif});
+procedure TSynEditPrintPreview.ChangeScale(M, D: Integer; isDpiChange: Boolean);
 begin
-  {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
+  if isDpiChange then
+  begin
     FMargin_X := MulDiv(FMargin_X, M, D);
     FMargin_Y := MulDiv(FMargin_Y, M, D);
     FShadow_Size := MulDiv(FShadow_Size, M, D);
-  {$if CompilerVersion >= 31}end;{$endif}
-  inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
+  end;
+  inherited ChangeScale(M, D, isDpiChange);
 end;
 
 constructor TSynEditPrintPreview.Create(AOwner: TComponent);

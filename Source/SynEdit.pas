@@ -683,7 +683,7 @@ type
     property InternalCaretX: Integer write InternalSetCaretX;
     property InternalCaretY: Integer write InternalSetCaretY;
     property InternalCaretXY: TBufferCoord write InternalSetCaretXY;
-    procedure ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif}); override;
+    procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -5654,27 +5654,28 @@ begin
   FOrigUndoRedo.OnModifiedChanged(Sender);
 end;
 
-procedure TCustomSynEdit.ChangeScale(M, D: Integer{$if CompilerVersion >= 31}; isDpiChange: Boolean{$endif});
+procedure TCustomSynEdit.ChangeScale(M, D: Integer; isDpiChange: Boolean);
 begin
-  {$if CompilerVersion >= 31}if isDpiChange then begin{$endif}
-  IncPaintLock;
-  try
-    fExtraLineSpacing := MulDiv(fExtraLineSpacing, M, D);
-    fTextMargin := MulDiv(fTextMargin, M, D);
-    FCarets.CaretSize := MulDiv(FCarets.CaretSize, M, D);
-    fGutter.ChangeScale(M,D);
-    fBookMarkOpt.ChangeScale(M, D);
-    fWordWrapGlyph.ChangeScale(M, D);
-    // Adjust Font.PixelsPerInch so that Font.Size is correct
-    // Delphi should be doing that but it doesn't
-    {$if CompilerVersion < 36}
-    Font.PixelsPerInch := M;
-    {$endif}
-  finally
-    DecPaintLock;
+  if isDpiChange then
+  begin
+    IncPaintLock;
+    try
+      fExtraLineSpacing := MulDiv(fExtraLineSpacing, M, D);
+      fTextMargin := MulDiv(fTextMargin, M, D);
+      FCarets.CaretSize := MulDiv(FCarets.CaretSize, M, D);
+      fGutter.ChangeScale(M,D);
+      fBookMarkOpt.ChangeScale(M, D);
+      fWordWrapGlyph.ChangeScale(M, D);
+      // Adjust Font.PixelsPerInch so that Font.Size is correct
+      // Delphi should be doing that but it doesn't
+      {$if CompilerVersion < 36}
+      Font.PixelsPerInch := M;
+      {$endif}
+    finally
+      DecPaintLock;
+    end;
   end;
-  {$if CompilerVersion >= 31}end;{$endif}
-  inherited ChangeScale(M, D{$if CompilerVersion >= 31}, isDpiChange{$endif});
+  inherited ChangeScale(M, D, isDpiChange);
  end;
 
 procedure TCustomSynEdit.UnHookTextBuffer;
