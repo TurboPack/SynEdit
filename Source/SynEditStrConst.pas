@@ -267,12 +267,15 @@ const
 
 resourcestring
   SYNS_NoSearchEngineError      = 'No search engine has been assigned';
+  SYNS_SaveError                = 'Saving highlighter to file "%s" failed';
+  SYNS_LoadError                = 'Loading highlighter from file "%s" failed';
 
   SYNS_Untitled                 = 'Untitled';
   SYNS_Line                     = 'Line';
   SYNS_Char                     = 'Char';
   SYNS_Row                      = 'Row';
   SYNS_Column                   = 'Column';
+  SYNS_Files                    = 'Files';
 
 
   // Friendly names for highlighter attributes

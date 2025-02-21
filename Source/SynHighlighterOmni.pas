@@ -54,9 +54,6 @@ uses
 const
   SYNS_AttrKey2  = 'Keywords 2';
   SYNS_AttrKey3  = 'Keywords 3';
-  SYNS_Lang_None = '<not assigned>';
-resourcestring
-  SYNS_Files = 'Files';
 
 type
   TtkTokenKind = (tkSymbol, tkKey, tkComment, tkIdentifier, tkNull, tkNumber,
@@ -377,7 +374,7 @@ begin
   FStringDelim := [sdSingleQuote];
   FStringDelimCh := '''';
   FRange := rsUnknown;
-  FLangName := SYNS_Lang_None;
+  FLangName := SYNS_FriendlyLangUnknown;
   FHighlighterGroup := hgNone;
   FCaseSensitive := False;
   FEscapedStrings := True;
@@ -2013,7 +2010,7 @@ procedure TSynOmniSyn.SetLangName(const Value: string);
 begin
   FLangName := Value;
   if Value = '' then
-    FLangName := SYNS_Lang_None;
+    FLangName := SYNS_FriendlyLangUnknown;
 end;
 
 procedure TSynOmniSyn.SetKeyWords2(const Value: TStrings);

@@ -141,10 +141,6 @@ uses
   System.IniFiles,
   SynEditStrConst;
 
-resourcestring
-  SYNS_SaveError = 'Saving highlighter to file "%s" failed';
-  SYNS_LoadError = 'Loading highlighter from file "%s" failed';
-
 procedure TSynOmniSynSetup.edLanguagelNameChange(Sender: TObject);
 begin
   bSave.Enabled := edLanguagelName.Text <> '';
