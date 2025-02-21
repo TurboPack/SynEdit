@@ -114,6 +114,7 @@ uses
   SynHighlighterUnreal,
   SynHighlighterST,
   SynHighlighterLDraw,
+  SynHighlighterOmni,
   SynSpellCheck,
   SynURIOpener;
 
@@ -156,7 +157,7 @@ begin
   RegisterComponents(SYNS_HighlightersPage, [
     //classic
     TSynCppSyn, TSynEiffelSyn, TSynFortranSyn, TSynGeneralSyn, TSynJavaSyn,
-    TSynM3Syn, TSynPasSyn, TSynVBSyn, TSynCobolSyn, TSynCSSyn,
+    TSynM3Syn, TSynPasSyn, TSynVBSyn, TSynCobolSyn, TSynCSSyn, TSynOmniSyn,
     // internet
     TSynCssSyn, TSynHTMLSyn, TSynJScriptSyn, TSynPHPSyn, TSynVBScriptSyn,
     TSynXMLSyn, TSynJSONSyn, TSynVrml97Syn,

@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+ï»¿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -11,7 +11,7 @@ the specific language governing rights and limitations under the License.
 The Original Code is: SynEditPropertyReg.pas, released 2000-04-07.
 The Original Code is based on mwEditPropertyReg.pas, part of the
 mwEdit component suite.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -38,9 +38,7 @@ uses
   DesignIntf,
   DesignEditors,
   VCLEditors,
-  StrEdit,
-  SynUnicode,
-  Classes;
+  System.Classes;
 
 type
   TSynEditFontProperty = class(TFontProperty)
@@ -83,15 +81,22 @@ type
     function GetVerbCount: Integer; override;
   end;
 
+  TSynOmniSynComponentEditor = class(TDefaultEditor)
+    procedure Edit; override;
+    procedure ExecuteVerb(Index: Integer); override;
+    function GetVerb(Index: Integer): string; override;
+    function GetVerbCount: Integer; override;
+  end;
+
 procedure Register;
 
 implementation
 
 uses
-  Dialogs,
-  Forms,
-  Graphics,
-  Controls,
+  Vcl.Dialogs,
+  Vcl.Forms,
+  Vcl.Graphics,
+  Vcl.Controls,
   SynEditTypes,
   SynEditKeyCmds,
   SynEditKeyCmdsEditor,
@@ -103,7 +108,9 @@ uses
   SynMacroRecorder,
   SynAutoCorrect,
   SynAutoCorrectEditor,
-  SysUtils;
+  SynHighlighterOmni,
+  SynOmniSetupDialog,
+  System.SysUtils;
 
 { TSynEditFontProperty }
 
@@ -264,16 +271,35 @@ begin
   GetValue := '(AutoCorrections)';
 end;                
 
+procedure TSynOmniSynComponentEditor.Edit;
+begin
+  if EditOmniHighlighter(TSynOmniSyn(Component)) then
+    Designer.Modified;
+end;
+
+procedure TSynOmniSynComponentEditor.ExecuteVerb(Index: Integer);
+begin
+  case Index of
+    0: Edit;
+  end;
+end;
+
+function TSynOmniSynComponentEditor.GetVerb(Index: Integer): string;
+begin
+  case Index of
+    0: Result := '&Edit Omni Highlighter...';
+  end;
+end;
+
+function TSynOmniSynComponentEditor.GetVerbCount: Integer;
+begin
+  Result := 1;
+end;
 
 { Register }
 
 procedure Register;
 begin
-  RegisterPropertyEditor(TypeInfo(WideChar), nil,
-     '', TCharProperty);
-  RegisterPropertyEditor(TypeInfo(TStrings), nil,
-     '', TStringListProperty);
-
   RegisterPropertyEditor(TypeInfo(TFont), TCustomSynEdit,
      'Font', TSynEditFontProperty);
   RegisterPropertyEditor(TypeInfo(TSynEditorCommand), nil,
@@ -284,13 +310,16 @@ begin
     '', TSynEditPrintMarginsProperty);
   RegisterPropertyEditor(TypeInfo(TStrings), TSynAutoCorrect,
     'Items', TAutoCorrectionProperty);
-  RegisterComponentEditor(TSynAutoCorrect, TSynAutoCorrectComponentEditor);
   RegisterPropertyEditor(TypeInfo(TShortCut), TSynCompletionProposal, '',
     TShortCutProperty);
   RegisterPropertyEditor(TypeInfo(TShortCut), TSynAutoComplete, '',
     TShortCutProperty);
   RegisterPropertyEditor(TypeInfo(TShortCut), TSynMacroRecorder, '',
     TShortCutProperty);
+
+  RegisterComponentEditor(TSynAutoCorrect, TSynAutoCorrectComponentEditor);
+  RegisterComponentEditor(TSynOmniSyn, TSynOmniSynComponentEditor);
+
 end;
 
 end.

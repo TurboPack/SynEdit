@@ -135,6 +135,9 @@
         <DCCReference Include="..\..\..\Source\SynExportHTML.pas"/>
         <DCCReference Include="..\..\..\Source\SynExportRTF.pas"/>
         <DCCReference Include="..\..\..\Source\SynExportTeX.pas"/>
+        <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
+            <Form>SynOmniSetupDialog</Form>
+        </DCCReference>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas"/>
@@ -174,6 +177,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterOmni.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPerl.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPHP.pas"/>

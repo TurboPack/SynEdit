@@ -283,6 +283,9 @@
         <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas">
             <BuildOrder>92</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterOmni.pas">
+            <BuildOrder>93</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas">
             <BuildOrder>93</BuildOrder>
         </DelphiCompile>
@@ -360,6 +363,11 @@
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\SynAutoCorrectEditor.pas">
             <Form>frmAutoCorrectEditor</Form>
+            <FormType>dfm</FormType>
+            <BuildOrder>110</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynOmniSetupDialog.pas">
+            <Form>SynOmniSynSetup</Form>
             <FormType>dfm</FormType>
             <BuildOrder>110</BuildOrder>
         </DelphiCompile>
