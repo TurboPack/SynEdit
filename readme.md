@@ -1,6 +1,6 @@
 # SynEdit
 
-The master branch remains compatible with Delphi 10.1 Berlin or later.
+The master branch remains compatible with Delphi 10.3 Rio or later.
 
 ### Table of contents
 1.  [Introduction](#Introduction)
