@@ -115,6 +115,7 @@ type
     eKeyWordChars: TEdit;
     lCodeFoldingType: TLabel;
     lKeyWordChars: TLabel;
+    gbxKeywords: TGroupBox;
     procedure edLanguagelNameChange(Sender: TObject);
     procedure edFileTypeKeyPress(Sender: TObject; var Key: Char);
     procedure bLoadClick(Sender: TObject);

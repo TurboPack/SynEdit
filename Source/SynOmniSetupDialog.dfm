@@ -47,7 +47,7 @@ object SynOmniSynSetup: TSynOmniSynSetup
     Top = 150
     Width = 346
     Height = 221
-    Caption = 'Comment styles'
+    Caption = 'Comment styles:'
     TabOrder = 2
     object Bevel1: TBevel
       Left = 170
@@ -563,7 +563,7 @@ object SynOmniSynSetup: TSynOmniSynSetup
     object cCommentTexInfo: TCheckBox
       Left = 8
       Top = 192
-      Width = 70
+      Width = 95
       Height = 17
       Hint = 'TexInfo comment @c. @ignore ... @end ignore, @bye'
       Caption = '@c, @ignore'
@@ -655,7 +655,7 @@ object SynOmniSynSetup: TSynOmniSynSetup
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = '&Load'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = bLoadClick
   end
   object bSave: TButton
@@ -666,7 +666,7 @@ object SynOmniSynSetup: TSynOmniSynSetup
     Anchors = [akLeft, akBottom]
     Caption = '&Save'
     Enabled = False
-    TabOrder = 7
+    TabOrder = 6
     OnClick = bSaveClick
   end
   object btnCancel: TButton
@@ -678,12 +678,12 @@ object SynOmniSynSetup: TSynOmniSynSetup
     Cancel = True
     Caption = '&Cancel'
     ModalResult = 2
-    TabOrder = 8
+    TabOrder = 7
   end
   object edFileType: TEdit
     Left = 178
     Top = 25
-    Width = 164
+    Width = 182
     Height = 23
     CharCase = ecLowerCase
     TabOrder = 1
@@ -754,115 +754,6 @@ object SynOmniSynSetup: TSynOmniSynSetup
       OnClick = edLanguagelNameChange
     end
   end
-  object pageKeyWords: TPageControl
-    Left = 366
-    Top = 0
-    Width = 197
-    Height = 517
-    ActivePage = tsKeyWords1
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    TabOrder = 5
-    TabWidth = 30
-    object tsKeyWords1: TTabSheet
-      Caption = '1'
-      object mKeyWords: TMemo
-        Left = 0
-        Top = 0
-        Width = 189
-        Height = 456
-        Align = alTop
-        ScrollBars = ssVertical
-        TabOrder = 0
-        WordWrap = False
-        OnChange = edLanguagelNameChange
-      end
-      object cKW1StartWith: TCheckBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 467
-        Width = 183
-        Height = 17
-        Align = alBottom
-        Caption = 'Keyword prefixes'
-        TabOrder = 1
-      end
-    end
-    object tsKeyWords2: TTabSheet
-      Caption = '2'
-      ImageIndex = 1
-      object mResWords: TMemo
-        Left = 0
-        Top = 0
-        Width = 189
-        Height = 456
-        Align = alTop
-        ScrollBars = ssVertical
-        TabOrder = 0
-        WordWrap = False
-        OnChange = edLanguagelNameChange
-      end
-      object cKW2StartWith: TCheckBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 467
-        Width = 183
-        Height = 17
-        Align = alBottom
-        Caption = 'Keyword prefixes'
-        TabOrder = 1
-      end
-    end
-    object tsKeyWords3: TTabSheet
-      Caption = '3'
-      ImageIndex = 3
-      object mKeyWords2: TMemo
-        Left = 0
-        Top = 0
-        Width = 189
-        Height = 456
-        Align = alTop
-        ScrollBars = ssVertical
-        TabOrder = 0
-        WordWrap = False
-        OnChange = edLanguagelNameChange
-      end
-      object cKW3StartWith: TCheckBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 467
-        Width = 183
-        Height = 17
-        Align = alBottom
-        Caption = 'Keyword prefixes'
-        TabOrder = 1
-      end
-    end
-    object tsKeyWords4: TTabSheet
-      Caption = '4'
-      ImageIndex = 2
-      object mKeyWords3: TMemo
-        Left = 0
-        Top = 0
-        Width = 189
-        Height = 456
-        Align = alTop
-        ScrollBars = ssVertical
-        TabOrder = 0
-        WordWrap = False
-        OnChange = edLanguagelNameChange
-      end
-      object cKW4StartWith: TCheckBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 467
-        Width = 183
-        Height = 17
-        Align = alBottom
-        Caption = 'Keyword prefixes'
-        TabOrder = 1
-      end
-    end
-  end
   object btnOK: TButton
     Left = 373
     Top = 528
@@ -872,14 +763,14 @@ object SynOmniSynSetup: TSynOmniSynSetup
     Caption = '&OK'
     Default = True
     ModalResult = 1
-    TabOrder = 9
+    TabOrder = 8
   end
   object gProperties: TGroupBox
     Left = 8
     Top = 53
     Width = 352
     Height = 84
-    TabOrder = 10
+    TabOrder = 9
     object lCodeFoldingType: TLabel
       Left = 14
       Top = 37
@@ -926,6 +817,124 @@ object SynOmniSynSetup: TSynOmniSynSetup
       TabOrder = 2
       Text = '_'
       OnChange = edLanguagelNameChange
+    end
+  end
+  object gbxKeywords: TGroupBox
+    Left = 366
+    Top = 8
+    Width = 194
+    Height = 509
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Caption = 'Keywords:'
+    TabOrder = 10
+    object pageKeyWords: TPageControl
+      Left = 2
+      Top = 17
+      Width = 190
+      Height = 490
+      ActivePage = tsKeyWords1
+      Align = alClient
+      TabOrder = 0
+      TabWidth = 30
+      object tsKeyWords1: TTabSheet
+        Caption = '1'
+        object mKeyWords: TMemo
+          Left = 0
+          Top = 0
+          Width = 182
+          Height = 434
+          Align = alTop
+          ScrollBars = ssVertical
+          TabOrder = 0
+          WordWrap = False
+          OnChange = edLanguagelNameChange
+        end
+        object cKW1StartWith: TCheckBox
+          AlignWithMargins = True
+          Left = 3
+          Top = 440
+          Width = 176
+          Height = 17
+          Align = alBottom
+          Caption = 'Keyword prefixes'
+          TabOrder = 1
+        end
+      end
+      object tsKeyWords2: TTabSheet
+        Caption = '2'
+        ImageIndex = 1
+        object mResWords: TMemo
+          Left = 0
+          Top = 0
+          Width = 182
+          Height = 433
+          Align = alTop
+          ScrollBars = ssVertical
+          TabOrder = 0
+          WordWrap = False
+          OnChange = edLanguagelNameChange
+        end
+        object cKW2StartWith: TCheckBox
+          AlignWithMargins = True
+          Left = 3
+          Top = 440
+          Width = 176
+          Height = 17
+          Align = alBottom
+          Caption = 'Keyword prefixes'
+          TabOrder = 1
+        end
+      end
+      object tsKeyWords3: TTabSheet
+        Caption = '3'
+        ImageIndex = 3
+        object mKeyWords2: TMemo
+          Left = 0
+          Top = 0
+          Width = 182
+          Height = 434
+          Align = alTop
+          ScrollBars = ssVertical
+          TabOrder = 0
+          WordWrap = False
+          OnChange = edLanguagelNameChange
+        end
+        object cKW3StartWith: TCheckBox
+          AlignWithMargins = True
+          Left = 3
+          Top = 440
+          Width = 176
+          Height = 17
+          Align = alBottom
+          Caption = 'Keyword prefixes'
+          TabOrder = 1
+        end
+      end
+      object tsKeyWords4: TTabSheet
+        Caption = '4'
+        ImageIndex = 2
+        object mKeyWords3: TMemo
+          Left = 0
+          Top = 0
+          Width = 182
+          Height = 433
+          Align = alTop
+          ScrollBars = ssVertical
+          TabOrder = 0
+          WordWrap = False
+          OnChange = edLanguagelNameChange
+        end
+        object cKW4StartWith: TCheckBox
+          AlignWithMargins = True
+          Left = 3
+          Top = 440
+          Width = 176
+          Height = 17
+          Align = alBottom
+          Caption = 'Keyword prefixes'
+          TabOrder = 1
+        end
+      end
     end
   end
   object OpenDialog: TOpenDialog
