@@ -1527,7 +1527,7 @@ end;
 
 class function TSynOmniSyn.GetLanguageName: string;
 begin
-  Result := SYNS_LangGeneral;
+  Result := SYNS_LangOmni;
 end;
 
 function TSynOmniSyn.LoadFromIniFile(const FileName: string): Boolean;
@@ -2003,7 +2003,7 @@ end;
 
 class function TSynOmniSyn.GetFriendlyLanguageName: string;
 begin
-  Result := SYNS_FriendlyLangGeneral;
+  Result := SYNS_FriendlyLangOmni;
 end;
 
 procedure TSynOmniSyn.SetLangName(const Value: string);

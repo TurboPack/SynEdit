@@ -31,7 +31,8 @@ unit uHighlighterProcs;
 interface
 
 uses
-  Classes, SynEditHighlighter;
+  System.Classes,
+  SynEditHighlighter;
 
 procedure GetHighlighters(AOwner: TComponent; AHighlighters: TStringList;
   AppendToList: Boolean);
@@ -42,24 +43,36 @@ function GetHighlighterFromFileExt(AHighlighters: TStringList;
 implementation
 
 uses
-  SysUtils;
-  
+  System.SysUtils,
+  SynHighlighterOmni;
+
 procedure GetHighlighters(AOwner: TComponent; AHighlighters: TStringList;
   AppendToList: Boolean);
 var
-  I: Integer;
+  Comp: TComponent;
   Highlighter: TSynCustomHighlighter;
+  LangName: string;
 begin
   if Assigned(AOwner) and Assigned(AHighlighters) then begin
     if not AppendToList then
       AHighlighters.Clear;
-    for I := AOwner.ComponentCount - 1 downto 0 do begin
-      if not (AOwner.Components[I] is TSynCustomHighlighter) then
+    for Comp in AOwner do
+    begin
+      if not (Comp is TSynCustomHighlighter) then
         Continue;
-      Highlighter := AOwner.Components[I] as TSynCustomHighlighter;
-      // only one highlighter for each language
-      if AHighlighters.IndexOf(Highlighter.GetLanguageName) = -1 then
-        AHighlighters.AddObject(Highlighter.GetLanguageName, Highlighter);
+      Highlighter := TSynCustomHighlighter(Comp);
+      // Only one highlighter for each language
+      // Omni highlighters are a special case
+      if Highlighter is TSynOmniSyn then
+        LangName := TSynOmniSyn(Highlighter).LangName
+      else
+        LangName := Highlighter.LanguageName;
+
+      if LangName = '' then
+        Continue;
+
+      if AHighlighters.IndexOf(LangName) = -1 then
+        AHighlighters.AddObject(LangName, Highlighter);
     end;
     AHighlighters.Sort;
   end;

@@ -217,6 +217,7 @@ const
   SYNS_LangVBSScript            =  'MS-VBScript';
   SYNS_LangGalaxy               =  'Galaxy';
   SYNS_LangGeneral              =  'General';
+  SYNS_LangOmni                 =  'Omni';
   SYNS_LangPascal               =  'ObjectPascal';
   SYNS_LangDWScript             =  'DWScriptPascal';
   SYNS_LangX86Asm               =  'x86Assembly';
@@ -528,6 +529,7 @@ resourcestring
   SYNS_FriendlyLangVBSScript            =  'MS VBScript';
   SYNS_FriendlyLangGalaxy               =  'Galaxy';
   SYNS_FriendlyLangGeneral              =  'General';
+  SYNS_FriendlyLangOmni                 =  'Omni';
   SYNS_FriendlyLangPascal               =  'Object Pascal';
   SYNS_FriendlyLangDWScript             =  'DWScript Pascal';
   SYNS_FriendlyLangX86Asm               =  'x86 Assembly';
