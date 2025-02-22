@@ -1,3 +1,5 @@
+For recent contributors see https://github.com/pyscripter/SynEdit/graphs/contributors.
+
 Contributors to the SynEdit project:
 
     Ackbar, Andre Mens, Andy Colson, Anthony Steele, Arentjan Banck, Aaron Chan,
@@ -37,4 +39,3 @@ of appearance):
     Eden Kirin,  Max Horváth,  riceball,  Ewart Nijburg,  Nils Springob,
     Jeff D. Smith,  Pavel Krehula,  Peter Wolters
 
-$Id: Contributors.txt,v 1.20.2.2 2004/12/10 15:31:01 maelh Exp $
