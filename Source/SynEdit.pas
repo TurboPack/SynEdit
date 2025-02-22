@@ -5973,6 +5973,8 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
     Len: Integer;
     Line: string;
     CharRight, CharLeft, TmpChar: WideChar;
+    Token: string;
+    Attri: TSynHighlighterAttributes;
   begin
     if (fOptions * [eoCompleteBrackets, eoCompleteQuotes] <> []) and
       (FSelections.Count = 1) and (FSelection.IsEmpty) then
@@ -6011,6 +6013,10 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
           CharLeft := ' ';
           if CaretX > 2 then
             CharLeft := Line[CaretX - 2];
+
+          var IsString := Assigned(fHighlighter) and
+            GetHighlighterAttriAtRowCol(CaretXY, Token, Attri) and
+            (Attri = fHighlighter.StringAttribute);
 
           if not IsIdentChar(CharLeft) and
             not CharInSet(CharLeft, ['"', '''']) and
