@@ -116,7 +116,8 @@ uses
   SynHighlighterLDraw,
   SynHighlighterOmni,
   SynSpellCheck,
-  SynURIOpener;
+  SynURIOpener,
+  SynEditActionsResource;
 
 procedure Register;
 
@@ -184,8 +185,9 @@ begin
   RegisterActions('SynEdit Spell Check',
     [TSynSpellCheckFile, TSynSpellCheckLine, TSynSpellCheckSelection,
     TSynSpellCheckWord, TSynSpellClearErrors, TSynSpellCheckAsYouType,
-    TSynSpellErrorAdd, TSynSpellErrorIgnoreOnce, 
-    TSynSpellErrorIgnore, TSynSpellErrorDelete], nil);
+    TSynSpellErrorAdd, TSynSpellErrorIgnoreOnce,
+    TSynSpellErrorIgnore, TSynSpellErrorDelete], TSynEditActions);
+  RegisterActions('Edit', [TSynEditRedo], TSynEditActions);
 end;
 
 end.

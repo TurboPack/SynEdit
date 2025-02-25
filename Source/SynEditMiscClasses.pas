@@ -54,6 +54,7 @@ uses
   Vcl.Menus,
   Vcl.ImgList,
   Vcl.ExtCtrls,
+  Vcl.StdActns,
   SynDWrite,
   SynEditTypes,
   SynEditKeyConst,
@@ -836,6 +837,12 @@ type
  end;
 
  {$ENDREGION 'TSynDisplayFlowControl'}
+
+{$REGION 'TSynEditRedo'}
+
+  TSynEditRedo = class(TEditAction);
+
+{$ENDREGION 'TSynEditRedo'}
 
 implementation
 

@@ -8731,6 +8731,8 @@ begin
         DeleteSelections
       else if Action is TEditUndo then
         CommandProcessor(ecUndo, ' ', nil)
+      else if Action is TSynEditRedo then
+        CommandProcessor(ecRedo, ' ', nil)
       else if Action is TEditSelectAll then
         CommandProcessor(ecSelectAll, ' ', nil);
     end
@@ -8765,7 +8767,7 @@ begin
     if Result then
     begin
       if Action is TEditCut then
-        TEditAction(Action).Enabled := not (IsEmpty or ReadOnly)
+        TEditAction(Action).Enabled := not (FSelections.IsEmpty or ReadOnly)
       else if Action is TEditCopy then
         TEditAction(Action).Enabled := not IsEmpty
       else if Action is TEditPaste then
@@ -8774,10 +8776,13 @@ begin
         TEditAction(Action).Enabled := not (FSelections.IsEmpty or ReadOnly)
       else if Action is TEditUndo then
         TEditAction(Action).Enabled := CanUndo
+      else if Action is TSynEditRedo then
+        TEditAction(Action).Enabled := CanRedo
       else if Action is TEditSelectAll then
-        TEditAction(Action).Enabled := True;
+        TEditAction(Action).Enabled := not IsEmpty;
     end;
-  end else if (Action is TSearchAction) or (Action is TSearchFindNext) then
+  end
+  else if (Action is TSearchAction) or (Action is TSearchFindNext) then
   begin
     Result := Focused;
     if Result then
