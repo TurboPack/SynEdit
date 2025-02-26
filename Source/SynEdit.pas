@@ -2071,13 +2071,8 @@ begin
   HighlightBrackets;
   DoChange;
 
-  if Assigned(FUIAutomationProvider) and UiaClientsAreListening
-  then
-    TThread.ForceQueue(nil, procedure
-    begin
-      UiaRaiseAutomationEvent(IRawElementProviderSimple(FUIAutomationProvider),
-        UIA_Text_TextChangedEventId);
-    end);
+  if Assigned(FUIAutomationProvider) then
+    (FUIAutomationProvider as TSynUIAutomationProvider).RaiseTextChangedEvent;
 end;
 
 procedure TCustomSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;

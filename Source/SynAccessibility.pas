@@ -360,6 +360,7 @@ type
   public
     constructor Create(ASynEdit: TCustomSynEdit);
     procedure NotifyBoundingRectangleChange;
+    procedure RaiseTextChangedEvent;
     procedure RaiseTextSelectionChangedEvent;
     procedure EditorDestroyed;
   end;
@@ -608,6 +609,17 @@ begin
     Result := S_OK;
 
   RetVal := FSynEdit.Text;
+end;
+
+procedure TSynUIAutomationProvider.RaiseTextChangedEvent;
+begin
+  if UiaClientsAreListening then
+    TThread.ForceQueue(nil, procedure
+    begin
+      if Assigned(FSynEdit) then
+        UiaRaiseAutomationEvent(IRawElementProviderSimple(Self),
+          UIA_Text_TextChangedEventId);
+    end);
 end;
 
 procedure TSynUIAutomationProvider.RaiseTextSelectionChangedEvent;
