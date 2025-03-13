@@ -44,13 +44,14 @@ function CreateSynEditScrollBars(Editor: TCustomControl): ISynEditScrollBars;
 type
   TSynScrollingStyleHook = class(TScrollingStyleHook)
   strict protected
+    {$IF (CompilerVersion < 36) or not Declared(RTLVersion123)}
     procedure WMMouseMove(var Msg: TWMMouse); message WM_MOUSEMOVE;
+    {$ENDIF}
     procedure WMKeyDown(var Msg: TMessage); message WM_KEYDOWN;
     procedure WMKeyUp(var Msg: TMessage); message WM_KEYUP;
     procedure DrawHorzScroll(DC: HDC); override;
     procedure DrawVertScroll(DC: HDC); override;
   end;
-
 
 implementation
 
@@ -750,6 +751,7 @@ begin
   end;
 end;
 
+{$IF (CompilerVersion < 36) or not Declared(RTLVersion123)}
 // Workaround for https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-2252
 
 { TScrollingStyleHookHelper }
@@ -764,6 +766,14 @@ begin
     FLeftButtonDown := False;
 end;
 
+procedure TSynScrollingStyleHook.WMMouseMove(var Msg: TWMMouse);
+begin
+ if not (ssLeft in KeysToShiftState(Msg.Keys)) then
+   SetLeftButtonDownToFalse;
+ inherited;
+end;
+{$ENDIF}
+
 procedure TSynScrollingStyleHook.WMKeyDown(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
@@ -774,13 +784,6 @@ procedure TSynScrollingStyleHook.WMKeyUp(var Msg: TMessage);
 begin
   CallDefaultProc(TMessage(Msg));
   Handled := True;
-end;
-
-procedure TSynScrollingStyleHook.WMMouseMove(var Msg: TWMMouse);
-begin
- if not (ssLeft in KeysToShiftState(Msg.Keys)) then
-   SetLeftButtonDownToFalse;
- inherited;
 end;
 
 {$ENDREGION 'TSynScrollingStyleHook'}
