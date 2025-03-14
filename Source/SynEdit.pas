@@ -9341,7 +9341,7 @@ var
   Plugin: TSynEditPlugin;
 begin
   // SynIndicators
-  FIndicators.LinePut(Index);
+  FIndicators.LinePut(Index, OldLine);
 
   // Selections
   if not fUndoRedo.InsideUndoRedo then
