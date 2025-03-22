@@ -218,7 +218,7 @@ type
   TSynHighlighterList = class(TList)
   private
     hlList: TList;
-    function GetItem(Index: Integer): TSynCustomHighlighterClass;
+    function GetItem(Index: NativeInt): TSynCustomHighlighterClass;
   public
     constructor Create;
     destructor Destroy; override;
@@ -226,7 +226,7 @@ type
     function FindByFriendlyName(FriendlyName: string): Integer;
     function FindByName(Name: string): Integer;
     function FindByClass(Comp: TComponent): Integer;
-    property Items[Index: Integer]: TSynCustomHighlighterClass
+    property Items[Index: NativeInt]: TSynCustomHighlighterClass
       read GetItem; default;
   end;
 
@@ -303,7 +303,7 @@ begin
   end;
 end;
 
-function TSynHighlighterList.GetItem(Index: Integer): TSynCustomHighlighterClass;
+function TSynHighlighterList.GetItem(Index: NativeInt): TSynCustomHighlighterClass;
 begin
   Result := TSynCustomHighlighterClass(hlList[Index]);
 end;
