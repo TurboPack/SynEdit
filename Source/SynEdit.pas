@@ -3513,6 +3513,7 @@ begin
     end;
 
     Assert(SelList.Count > 0);
+    Include(fStatusChanges, scSelection);
 
     SelStorage.Selections := SelList.ToArray;
     FSelections.Restore(SelStorage);
@@ -6403,7 +6404,10 @@ begin
           if FSelections.Count = 1 then
             CaretXY := CaretXY // removes selection
           else
+          begin
             FSelections.Clear(ksKeepBase);
+            Include(fStatusChanges, scSelection);
+          end;
         end;
       ecDeleteSelections:
         begin
