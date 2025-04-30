@@ -7502,6 +7502,16 @@ end;
 
 function TCustomSynEdit.SearchReplace(const ASearch, AReplace: string;
   AOptions: TSynSearchOptions; const Start, Stop: TBufferCoord): Integer;
+{
+  - If valid Start and Stop parameters are provided, then search/replace takes
+    place between those coordinates, ignoring the ssoSelection and
+    ssoEntireScope options.
+  - If Options include ssoSelection and you provide a valid Start parameter
+    and Stop = TBufferCoord.Invalid then search/replace takes place
+    within the multiple selections, but after/before the Start
+    depending on the option ssoBackwards.
+}
+
 var
   ptStart, ptEnd: TBufferCoord; // start and end of the search range
   nEOLCount, i: Integer;
