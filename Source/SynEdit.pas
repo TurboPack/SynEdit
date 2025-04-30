@@ -7773,6 +7773,9 @@ begin
     if bReplaceAll and not bPrompt then DecPaintLock;
     if bEndUndoBlock then EndUndoBlock;
     DoOnPaintTransient(ttAfter);
+    // The search engine may be used by other editors
+    // Don't leave a hanging reference
+    fSearchEngine.IsWordBreakFunction := nil;
   end;
 end;
 
