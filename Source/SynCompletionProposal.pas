@@ -3414,9 +3414,6 @@ var
   Temp: string;
   I, J: Integer;
   StartOfBlock: TBufferCoord;
-  ChangedIndent: Boolean;
-  ChangedTrailing: Boolean;
-  TmpOptions: TSynEditorOptions;
   OrigOptions: TSynEditorOptions;
   BeginningSpaceCount: Integer;
   Spacing: string;
@@ -3428,16 +3425,9 @@ begin
     begin
       Editor.Lines.BeginUpdate;
       try
-        TmpOptions := Editor.Options;
         OrigOptions := Editor.Options;
-        ChangedIndent := eoAutoIndent in TmpOptions;
-        ChangedTrailing := eoTrimTrailingSpaces in TmpOptions;
-
-        if ChangedIndent then Exclude(TmpOptions, eoAutoIndent);
-        if ChangedTrailing then Exclude(TmpOptions, eoTrimTrailingSpaces);
-
-        if ChangedIndent or ChangedTrailing then
-          Editor.Options := TmpOptions;
+        Editor.Options := Editor.Options - [eoAutoIndent, eoTrimTrailingSpaces,
+          eoCompleteBrackets, eoCompleteQuotes];
 
         Editor.BeginUndoBlock;
         try
@@ -3495,7 +3485,7 @@ begin
             Editor.CommandProcessor(ecDeleteLastChar, ' ', nil);
           end;
 
-          if ChangedIndent or ChangedTrailing then Editor.Options := OrigOptions;
+          Editor.Options := OrigOptions;
         finally
           Editor.EndUndoBlock;
         end;
