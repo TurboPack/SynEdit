@@ -8,7 +8,7 @@
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectGuid>{AC917C2B-5870-48AD-981D-668AD3E4A533}</ProjectGuid>
         <ProjectName Condition="'$(ProjectName)'==''">SynEditDR</ProjectName>
-        <ProjectVersion>20.1</ProjectVersion>
+        <ProjectVersion>20.3</ProjectVersion>
         <TargetedPlatforms>3</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -33,6 +33,14 @@
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64x)'!=''">
+        <BCC_EnableBatchCompilation>true</BCC_EnableBatchCompilation>
+        <BT_BuildType>Debug</BT_BuildType>
+        <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <SanitizedProjectName>SynEditDR</SanitizedProjectName>
@@ -90,6 +98,9 @@
         <DCCReference Include="..\..\..\Source\SynAutoCorrectEditor.pas">
             <Form>frmAutoCorrectEditor</Form>
         </DCCReference>
+        <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
+            <Form>SynOmniSynSetup</Form>
+        </DCCReference>
         <DCCReference Include="..\..\..\Source\SynCompletionProposal.pas"/>
         <DCCReference Include="..\..\..\Source\SynDBEdit.pas"/>
         <DCCReference Include="..\..\..\Source\SynDWrite.pas"/>
@@ -135,9 +146,6 @@
         <DCCReference Include="..\..\..\Source\SynExportHTML.pas"/>
         <DCCReference Include="..\..\..\Source\SynExportRTF.pas"/>
         <DCCReference Include="..\..\..\Source\SynExportTeX.pas"/>
-        <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
-            <Form>SynOmniSetupDialog</Form>
-        </DCCReference>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas"/>
@@ -256,9 +264,9 @@
             </Delphi.Personality>
             <ModelSupport>False</ModelSupport>
             <Platforms>
-                <Platform value="Linux64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
+                <Platform value="Win64x">False</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

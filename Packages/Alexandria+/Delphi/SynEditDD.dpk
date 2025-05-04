@@ -2,10 +2,11 @@ package SynEditDD;
 
 {$R *.res}
 {$R '..\..\..\Source\SynEditReg.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
-{$DEBUGINFO ON}
+{$DEBUGINFO OFF}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
@@ -24,6 +25,7 @@ package SynEditDD;
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
 {$DEFINE RELEASE}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'TurboPack SynEdit Delphi designtime package'}
 {$LIBSUFFIX AUTO}
 {$DESIGNONLY}
@@ -36,6 +38,8 @@ requires
 contains
   SynEditReg in '..\..\..\Source\SynEditReg.pas',
   SynEditPropertyReg in '..\..\..\Source\SynEditPropertyReg.pas',
-  SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas';
+  SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas',
+  SynEditActionsResource in '..\..\..\Source\SynEditActionsResource.pas' {SynEditActions: TDataModule};
 
 end.
+
