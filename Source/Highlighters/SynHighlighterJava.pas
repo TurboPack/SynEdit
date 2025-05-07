@@ -750,17 +750,17 @@ var
     EndIndex: Integer;
     Col: Integer;
   begin
-    Result := True;
     LineHasChar('{', 1, BeginIndex);
     LineHasChar('}', 1, EndIndex);
 
+    Result := True;
     if (BeginIndex <= 0) and (EndIndex <= 0) then
       Result := False
     else if (BeginIndex > 0) and (EndIndex <= 0) then
       FoldRanges.StartFoldRange(Line + 1, 1,
         LeftSpaces(CurLine, True, TabWidth(LinesToScan)))
     else if (BeginIndex <= 0) and (EndIndex > 0) then
-        FoldRanges.StopFoldRange(Line + 1, 1)
+      FoldRanges.StopFoldRange(Line + 1, 1)
     else if EndIndex >= BeginIndex then // {}
     begin
       if LineHasChar('{', EndIndex, Col) then
