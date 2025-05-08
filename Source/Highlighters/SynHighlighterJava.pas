@@ -743,6 +743,11 @@ var
     end;
   end;
 
+  function Indent: Integer;
+  begin
+    Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
+  end;
+
   function FindBraces(Line: Integer): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
   var
@@ -757,17 +762,13 @@ var
     if (OpenIdx <= 0) and (CloseIdx <= 0) then
       Result := False
     else if (OpenIdx > 0) and (CloseIdx <= 0) then
-      FoldRanges.StartFoldRange(Line + 1, 1,
-        LeftSpaces(CurLine, True, TabWidth(LinesToScan)))
+      FoldRanges.StartFoldRange(Line + 1, 1, Indent)
     else if (OpenIdx <= 0) and (CloseIdx > 0) then
       FoldRanges.StopFoldRange(Line + 1, 1)
     else if CloseIdx >= OpenIdx then // {}
     begin
       if LineHasChar('{', CloseIdx, Idx) then
-      begin
-        FoldRanges.StartFoldRange(Line + 1, 1,
-          LeftSpaces(CurLine, True, TabWidth(LinesToScan)));
-      end
+        FoldRanges.StartFoldRange(Line + 1, 1, Indent)
       else
         Result := False;
     end
