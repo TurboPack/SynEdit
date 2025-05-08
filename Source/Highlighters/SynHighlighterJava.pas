@@ -723,33 +723,33 @@ procedure TSynJavaSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
   CurLine: string;
-  Line: Integer;
-
-  function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
-  var
-    I: Integer;
-  begin
-    Result := False;
-    Col := 0;
-    for I := StartCol to Length(CurLine) do begin
-      if CurLine[I] = AChar then begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) = fSymbolAttri then
-        begin
-          Col := I;
-          Exit(True);
-        end;
-      end;
-    end;
-  end;
-
-  function Indent: Integer;
-  begin
-    Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
-  end;
 
   function FindBraces(Line: Integer): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
+
+    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    var
+      I: Integer;
+    begin
+      Result := False;
+      Col := 0;
+      for I := StartCol to Length(CurLine) do begin
+        if CurLine[I] = AChar then begin
+          // Char must have proper highlighting (ignore stuff inside comments...)
+          if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) = fSymbolAttri then
+          begin
+            Col := I;
+            Exit(True);
+          end;
+        end;
+      end;
+    end;
+
+    function Indent: Integer;
+    begin
+      Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
+    end;
+
   var
     OpenIdx: Integer;
     CloseIdx: Integer;
@@ -777,8 +777,7 @@ var
       if LineHasChar('}', OpenIdx, Idx) then
         FoldRanges.StopFoldRange(Line + 1, 1)
       else
-        FoldRanges.StopStartFoldRange(Line + 1, 1,
-          LeftSpaces(CurLine, True, TabWidth(LinesToScan)));
+        FoldRanges.StopStartFoldRange(Line + 1, 1, Indent);
     end;
   end;
 
@@ -800,6 +799,8 @@ var
     end;
   end;
 
+var
+  Line: Integer;
 begin
   for Line := FromLine to ToLine do
   begin

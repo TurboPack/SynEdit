@@ -83,6 +83,7 @@ type
     function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
+    class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
   public
@@ -119,7 +120,8 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 { TSynJSONSyn }
 
@@ -428,6 +430,11 @@ begin
   inherited;
 end;
 
+class function TSynJSONSyn.GetCapabilities: TSynHighlighterCapabilities;
+begin
+  Result := inherited GetCapabilities + [hcStructureHighlight];
+end;
+
 function TSynJSONSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
@@ -490,59 +497,61 @@ var
   CurLine: string;
   Line: Integer;
 
-  function LineHasChar(Line: Integer; character: char;
-  StartCol : Integer): Boolean; // faster than Pos!
-  var
-    I: Integer;
-  begin
-    Result := False;
-    for I := StartCol to Length(CurLine) do begin
-      if CurLine[i] = character then begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> CommentAttribute then begin
-          Result := True;
-          Break;
+  function FindBraces(Line: Integer; OpenBrace, CloseBrace: Char; FoldType: Integer): Boolean;
+  // Covers the following line patterns: {, }, {}, }{, {}{, }{}
+
+    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    var
+      I: Integer;
+    begin
+      Result := False;
+      Col := 0;
+      for I := StartCol to Length(CurLine) do begin
+        if CurLine[I] = AChar then begin
+          // Char must have proper highlighting (ignore stuff inside comments...)
+          if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) = fSymbolAttri then
+          begin
+            Col := I;
+            Exit(True);
+          end;
         end;
       end;
     end;
-  end;
 
-  function FindBraces(Line: Integer; OpenBrace, CloseBrace: char; FoldType: Integer): Boolean;
-  var
-    Col: Integer;
-  begin
-    Result := False;
-
-    for Col := 1 to Length(CurLine) do
+    function Indent: Integer;
     begin
-      // We've found a starting character
-      if CurLine[col] = OpenBrace then
-      begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> CommentAttribute then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, CloseBrace, col + 1) then begin
-            FoldRanges.StartFoldRange(Line + 1, FoldType);
-            Result := True;
-          end;
-          // Skip until a newline
-          Break;
-        end;
-      end else if CurLine[col] = CloseBrace then
-      begin
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> CommentAttribute then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, OpenBrace, col + 1) then begin
-            FoldRanges.StopFoldRange(Line + 1, FoldType);
-            Result := True;
-          end;
-          // Skip until a newline
-          Break;
-        end;
-      end;
-    end; // for Col
+      Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
+    end;
+
+  var
+    OpenIdx: Integer;
+    CloseIdx: Integer;
+    Idx: Integer;
+  begin
+    LineHasChar(OpenBrace, 1, OpenIdx);
+    LineHasChar(CloseBrace, 1, CloseIdx);
+
+    Result := True;
+    if (OpenIdx <= 0) and (CloseIdx <= 0) then
+      Result := False
+    else if (OpenIdx > 0) and (CloseIdx <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, FoldType, Indent)
+    else if (OpenIdx <= 0) and (CloseIdx > 0) then
+      FoldRanges.StopFoldRange(Line + 1, FoldType)
+    else if CloseIdx >= OpenIdx then // {}
+    begin
+      if LineHasChar(OpenBrace, CloseIdx, Idx) then
+        FoldRanges.StartFoldRange(Line + 1, FoldType, Indent)
+      else
+        Result := False;
+    end
+    else // }{
+    begin
+      if LineHasChar(CloseBrace, OpenIdx, Idx) then
+        FoldRanges.StopFoldRange(Line + 1, FoldType)
+      else
+        FoldRanges.StopStartFoldRange(Line + 1, FoldType, Indent);
+    end;
   end;
 
 begin

@@ -137,6 +137,7 @@ type
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
   public
+    class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
   public
@@ -548,59 +549,61 @@ var
   CurLine: string;
   Line: Integer;
 
-  function LineHasChar(Line: Integer; character: char;
-  StartCol: Integer): Boolean; // faster than Pos!
-  var
-    I: Integer;
-  begin
-    Result := False;
-    for I := StartCol to Length(CurLine) do begin
-      if CurLine[I] = character then begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> fCommentAttri then begin
-          Result := True;
-          Break;
+  function FindBraces(Line: Integer): Boolean;
+  // Covers the following line patterns: {, }, {}, }{, {}{, }{}
+
+    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    var
+      I: Integer;
+    begin
+      Result := False;
+      Col := 0;
+      for I := StartCol to Length(CurLine) do begin
+        if CurLine[I] = AChar then begin
+          // Char must have proper highlighting (ignore stuff inside comments...)
+          if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) = fSymbolAttri then
+          begin
+            Col := I;
+            Exit(True);
+          end;
         end;
       end;
     end;
-  end;
 
-  function FindBraces(Line: Integer): Boolean;
-  var
-    Col: Integer;
-  begin
-    Result := False;
-
-    for Col := 1 to Length(CurLine) do
+    function Indent: Integer;
     begin
-      // We've found a starting character
-      if CurLine[col] = '{' then
-      begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, '}', col + 1) then begin
-            FoldRanges.StartFoldRange(Line + 1, 1);
-            Result := True;
-          end;
-          // Skip until a newline
-          Break;
-        end;
-      end else if CurLine[col] = '}' then
-      begin
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, '{', col + 1) then begin
-            FoldRanges.StopFoldRange(Line + 1, 1);
-            Result := True;
-          end;
-          // Skip until a newline
-          Break;
-        end;
-      end;
-    end; // for Col
+      Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
+    end;
+
+  var
+    OpenIdx: Integer;
+    CloseIdx: Integer;
+    Idx: Integer;
+  begin
+    LineHasChar('{', 1, OpenIdx);
+    LineHasChar('}', 1, CloseIdx);
+
+    Result := True;
+    if (OpenIdx <= 0) and (CloseIdx <= 0) then
+      Result := False
+    else if (OpenIdx > 0) and (CloseIdx <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, 1, Indent)
+    else if (OpenIdx <= 0) and (CloseIdx > 0) then
+      FoldRanges.StopFoldRange(Line + 1, 1)
+    else if CloseIdx >= OpenIdx then // {}
+    begin
+      if LineHasChar('{', CloseIdx, Idx) then
+        FoldRanges.StartFoldRange(Line + 1, 1, Indent)
+      else
+        Result := False;
+    end
+    else // }{
+    begin
+      if LineHasChar('}', OpenIdx, Idx) then
+        FoldRanges.StopFoldRange(Line + 1, 1)
+      else
+        FoldRanges.StopStartFoldRange(Line + 1, 1, Indent);
+    end;
   end;
 
   function FoldRegion(Line: Integer): Boolean;
@@ -1082,6 +1085,11 @@ begin
     '^': XOrSymbolProc;
     else UnknownProc;
   end;
+end;
+
+class function TSynPHPSyn.GetCapabilities: TSynHighlighterCapabilities;
+begin
+  Result := inherited GetCapabilities + [hcStructureHighlight];
 end;
 
 function TSynPHPSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
