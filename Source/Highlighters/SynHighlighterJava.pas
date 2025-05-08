@@ -744,26 +744,26 @@ var
   end;
 
   function FindBraces(Line: Integer): Boolean;
-  // Covers the following line patters: {, }, {}, }{, {}{, }{}
+  // Covers the following line patterns: {, }, {}, }{, {}{, }{}
   var
-    BeginIndex: Integer;
-    EndIndex: Integer;
-    Col: Integer;
+    OpenIdx: Integer;
+    CloseIdx: Integer;
+    Idx: Integer;
   begin
-    LineHasChar('{', 1, BeginIndex);
-    LineHasChar('}', 1, EndIndex);
+    LineHasChar('{', 1, OpenIdx);
+    LineHasChar('}', 1, CloseIdx);
 
     Result := True;
-    if (BeginIndex <= 0) and (EndIndex <= 0) then
+    if (OpenIdx <= 0) and (CloseIdx <= 0) then
       Result := False
-    else if (BeginIndex > 0) and (EndIndex <= 0) then
+    else if (OpenIdx > 0) and (CloseIdx <= 0) then
       FoldRanges.StartFoldRange(Line + 1, 1,
         LeftSpaces(CurLine, True, TabWidth(LinesToScan)))
-    else if (BeginIndex <= 0) and (EndIndex > 0) then
+    else if (OpenIdx <= 0) and (CloseIdx > 0) then
       FoldRanges.StopFoldRange(Line + 1, 1)
-    else if EndIndex >= BeginIndex then // {}
+    else if CloseIdx >= OpenIdx then // {}
     begin
-      if LineHasChar('{', EndIndex, Col) then
+      if LineHasChar('{', CloseIdx, Idx) then
       begin
         FoldRanges.StartFoldRange(Line + 1, 1,
           LeftSpaces(CurLine, True, TabWidth(LinesToScan)));
@@ -773,7 +773,7 @@ var
     end
     else // }{
     begin
-      if LineHasChar('}', BeginIndex, Col) then
+      if LineHasChar('}', OpenIdx, Idx) then
         FoldRanges.StopFoldRange(Line + 1, 1)
       else
         FoldRanges.StopStartFoldRange(Line + 1, 1,
