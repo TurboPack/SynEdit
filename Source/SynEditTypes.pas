@@ -204,6 +204,7 @@ end;
     );
 
   TSynEditUndoItem = class(TObject)
+  public
     ChangeStartPos: TBufferCoord;
     ChangeEndPos: TBufferCoord;
     ChangeStr: string;
