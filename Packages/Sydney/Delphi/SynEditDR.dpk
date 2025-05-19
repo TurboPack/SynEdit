@@ -40,7 +40,6 @@ contains
   SynAccessibility in '..\..\..\Source\SynAccessibility.pas',
   SynAutoCorrect in '..\..\..\Source\SynAutoCorrect.pas',
   SynAutoCorrectEditor in '..\..\..\Source\SynAutoCorrectEditor.pas' {frmAutoCorrectEditor},
-  SynOmniSetupDialog in '..\..\..\Source\SynOmniSetupDialog.pas' {SynOmniSynSetup},
   SynCompletionProposal in '..\..\..\Source\SynCompletionProposal.pas',
   SynDBEdit in '..\..\..\Source\SynDBEdit.pas',
   SynDWrite in '..\..\..\Source\SynDWrite.pas',
@@ -142,6 +141,7 @@ contains
   SynHighlighterXML in '..\..\..\Source\Highlighters\SynHighlighterXML.pas',
   SynHighlighterYAML in '..\..\..\Source\Highlighters\SynHighlighterYAML.pas',
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
+  SynOmniSetupDialog in '..\..\..\Source\SynOmniSetupDialog.pas' {SynOmniSynSetup},
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
   SynURIOpener in '..\..\..\Source\SynURIOpener.pas';

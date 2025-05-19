@@ -36,9 +36,9 @@ requires
   SynEditDR;
 
 contains
-  SynEditReg in '..\..\..\Source\SynEditReg.pas',
+  SynEditActionsResource in '..\..\..\Source\SynEditActionsResource.pas' {SynEditActions: TDataModule},
   SynEditPropertyReg in '..\..\..\Source\SynEditPropertyReg.pas',
-  SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas',
-  SynEditActionsResource in '..\..\..\Source\SynEditActionsResource.pas' {SynEditActions: TDataModule};
+  SynEditReg in '..\..\..\Source\SynEditReg.pas',
+  SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas';
 
 end.

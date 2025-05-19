@@ -93,9 +93,13 @@
         <DCCReference Include="..\..\..\Source\SynEditReg.dcr"/>
         <DCCReference Include="designide.dcp"/>
         <DCCReference Include="SynEditDR.dcp"/>
-        <DCCReference Include="..\..\..\Source\SynEditReg.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditActionsResource.pas">
+            <Form>SynEditActions</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
         <DCCReference Include="..\..\..\Source\SynEditPropertyReg.pas"/>
-        <DCCReference Include="..\..\..\Source\SynHighlighterManager.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditReg.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterManager.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

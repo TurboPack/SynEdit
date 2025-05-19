@@ -37,6 +37,7 @@ requires
   rtl;
 
 contains
+  SynAccessibility in '..\..\..\Source\SynAccessibility.pas',
   SynAutoCorrect in '..\..\..\Source\SynAutoCorrect.pas',
   SynAutoCorrectEditor in '..\..\..\Source\SynAutoCorrectEditor.pas' {frmAutoCorrectEditor},
   SynCompletionProposal in '..\..\..\Source\SynCompletionProposal.pas',
@@ -115,6 +116,7 @@ contains
   SynHighlighterModelica in '..\..\..\Source\Highlighters\SynHighlighterModelica.pas',
   SynHighlighterMsg in '..\..\..\Source\Highlighters\SynHighlighterMsg.pas',
   SynHighlighterMulti in '..\..\..\Source\Highlighters\SynHighlighterMulti.pas',
+  SynHighlighterOmni in '..\..\..\Source\Highlighters\SynHighlighterOmni.pas',
   SynHighlighterPas in '..\..\..\Source\Highlighters\SynHighlighterPas.pas',
   SynHighlighterPerl in '..\..\..\Source\Highlighters\SynHighlighterPerl.pas',
   SynHighlighterPHP in '..\..\..\Source\Highlighters\SynHighlighterPHP.pas',
@@ -137,7 +139,9 @@ contains
   SynHighlighterVrml97 in '..\..\..\Source\Highlighters\SynHighlighterVrml97.pas',
   SynHighlighterWebIDL in '..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas',
   SynHighlighterXML in '..\..\..\Source\Highlighters\SynHighlighterXML.pas',
+  SynHighlighterYAML in '..\..\..\Source\Highlighters\SynHighlighterYAML.pas',
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
+  SynOmniSetupDialog in '..\..\..\Source\SynOmniSetupDialog.pas' {SynOmniSynSetup},
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
   SynURIOpener in '..\..\..\Source\SynURIOpener.pas';

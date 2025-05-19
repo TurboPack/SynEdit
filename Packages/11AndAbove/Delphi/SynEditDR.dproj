@@ -131,9 +131,6 @@
         <DCCReference Include="..\..\..\Source\SynAutoCorrectEditor.pas">
             <Form>frmAutoCorrectEditor</Form>
         </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
-            <Form>SynOmniSynSetup</Form>
-        </DCCReference>
         <DCCReference Include="..\..\..\Source\SynCompletionProposal.pas"/>
         <DCCReference Include="..\..\..\Source\SynDBEdit.pas"/>
         <DCCReference Include="..\..\..\Source\SynDWrite.pas"/>
@@ -243,6 +240,9 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas"/>
         <DCCReference Include="..\..\..\Source\SynMacroRecorder.pas"/>
+        <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
+            <Form>SynOmniSynSetup</Form>
+        </DCCReference>
         <DCCReference Include="..\..\..\Source\SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
         <DCCReference Include="..\..\..\Source\SynURIOpener.pas"/>
