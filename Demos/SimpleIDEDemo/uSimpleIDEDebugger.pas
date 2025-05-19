@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: uSimpleIDEDebugger.pas,v 1.2 2000/11/11 19:12:59 mghie Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit uSimpleIDEDebugger;
@@ -49,24 +42,24 @@ type
   TDebuggerLineInfo = (dlCurrentLine, dlBreakpointLine, dlExecutableLine);
   TDebuggerLineInfos = set of TDebuggerLineInfo;
   
-  TBreakpointChangeEvent = procedure(Sender: TObject; ALine: integer) of object;
+  TBreakpointChangeEvent = procedure(Sender: TObject; ALine: Integer) of object;
   TDebuggerStateChangeEvent = procedure(Sender: TObject;
     OldState, NewState: TDebuggerState) of object;
 
   TSampleDebugger = class(TObject)
   private
     fBreakpoints: TList;
-    fCurrentLine: integer;
+    fCurrentLine: Integer;
     fDebuggerState: TDebuggerState;
-    fLineToStop: integer;
-    fNextInstruction: integer;
+    fLineToStop: Integer;
+    fNextInstruction: Integer;
     fWantedState: TDebuggerState;
     fOnBreakpointChange: TBreakpointChangeEvent;
     fOnCurrentLineChange: TNotifyEvent;
     fOnStateChange: TDebuggerStateChangeEvent;
     fOnYield: TNotifyEvent;
-    function CurrentLineIsBreakpoint: boolean;
-    procedure DoOnBreakpointChanged(ALine: integer);
+    function CurrentLineIsBreakpoint: Boolean;
+    procedure DoOnBreakpointChanged(ALine: Integer);
     procedure DoCurrentLineChanged;
     procedure DoStateChange;
     procedure DoYield;
@@ -74,25 +67,25 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    function CanGotoCursor(ALine: integer): boolean;
-    function CanPause: boolean;
-    function CanRun: boolean;
-    function CanStep: boolean;
-    function CanStop: boolean;
+    function CanGotoCursor(ALine: Integer): Boolean;
+    function CanPause: Boolean;
+    function CanRun: Boolean;
+    function CanStep: Boolean;
+    function CanStop: Boolean;
     procedure ClearAllBreakpoints;
-    function GetLineInfos(ALine: integer): TDebuggerLineInfos;
-    procedure GotoCursor(ALine: integer);
-    function HasBreakpoints: boolean;
-    function IsBreakpointLine(ALine: integer): boolean;
-    function IsExecutableLine(ALine: integer): boolean;
-    function IsRunning: boolean;
+    function GetLineInfos(ALine: Integer): TDebuggerLineInfos;
+    procedure GotoCursor(ALine: Integer);
+    function HasBreakpoints: Boolean;
+    function IsBreakpointLine(ALine: Integer): Boolean;
+    function IsExecutableLine(ALine: Integer): Boolean;
+    function IsRunning: Boolean;
     procedure Pause;
     procedure Run;
     procedure Step;
     procedure Stop;
-    procedure ToggleBreakpoint(ALine: integer);
+    procedure ToggleBreakpoint(ALine: Integer);
   public
-    property CurrentLine: integer read fCurrentLine;
+    property CurrentLine: Integer read fCurrentLine;
     property OnBreakpointChange: TBreakpointChangeEvent read fOnBreakpointChange
       write fOnBreakpointChange;
     property OnCurrentLineChange: TNotifyEvent read fOnCurrentLineChange
@@ -115,14 +108,14 @@ const
 {  9 }  '  i: integer;'#13#10 +
 { 10 }  ''#13#10 +
 { 11 }  'begin'#13#10 +
-{ 12 }  '  while TRUE do'#13#10 +
+{ 12 }  '  while True do'#13#10 +
 { 13 }  '    TestProc;'#13#10 +
 { 14 }  'end.';
 
 type
   TSampleExecutableLine = record
-    Line: integer;
-    Delta: integer; // to change the array index
+    Line: Integer;
+    Delta: Integer; // to change the array index
   end;
 
 const
@@ -131,7 +124,7 @@ const
     (Line: 13; Delta: 1), (Line:  4; Delta: 1),
     (Line:  5; Delta: 1), (Line:  6; Delta: -4),
     (Line: 14; Delta: 1), (Line: -1; Delta: 0));
-  ExecutableLines: array[0..6] of integer = (4, 5, 6, 11, 12, 13, 14);
+  ExecutableLines: array[0..6] of Integer = (4, 5, 6, 11, 12, 13, 14);
 
 implementation
 
@@ -152,38 +145,38 @@ begin
   inherited Destroy;
 end;
 
-function TSampleDebugger.CanGotoCursor(ALine: integer): boolean;
+function TSampleDebugger.CanGotoCursor(ALine: Integer): Boolean;
 begin
   Result := (fDebuggerState <> dsRunning) and IsExecutableLine(ALine);
 end;
 
-function TSampleDebugger.CanPause: boolean;
+function TSampleDebugger.CanPause: Boolean;
 begin
   Result := fDebuggerState = dsRunning;
 end;
 
-function TSampleDebugger.CanRun: boolean;
+function TSampleDebugger.CanRun: Boolean;
 begin
   Result := fDebuggerState <> dsRunning;
 end;
 
-function TSampleDebugger.CanStep: boolean;
+function TSampleDebugger.CanStep: Boolean;
 begin
   Result := fDebuggerState <> dsRunning;
 end;
 
-function TSampleDebugger.CanStop: boolean;
+function TSampleDebugger.CanStop: Boolean;
 begin
   Result := fDebuggerState <> dsStopped;
 end;
 
-function TSampleDebugger.CurrentLineIsBreakpoint: boolean;
+function TSampleDebugger.CurrentLineIsBreakpoint: Boolean;
 begin
   Result := (fCurrentLine = fLineToStop)
     or ((fBreakpoints.Count > 0) and IsBreakpointLine(fCurrentLine));
 end;
 
-procedure TSampleDebugger.DoOnBreakpointChanged(ALine: integer);
+procedure TSampleDebugger.DoOnBreakpointChanged(ALine: Integer);
 begin
   if Assigned(fOnBreakpointChange) then
     fOnBreakpointChange(Self, ALine);
@@ -223,7 +216,7 @@ begin
   end;
 end;
 
-function TSampleDebugger.GetLineInfos(ALine: integer): TDebuggerLineInfos;
+function TSampleDebugger.GetLineInfos(ALine: Integer): TDebuggerLineInfos;
 begin
   Result := [];
   if ALine > 0 then begin
@@ -236,52 +229,52 @@ begin
   end;
 end;
 
-procedure TSampleDebugger.GotoCursor(ALine: integer);
+procedure TSampleDebugger.GotoCursor(ALine: Integer);
 begin
   fLineToStop := ALine;
   Run;
 end;
 
-function TSampleDebugger.HasBreakpoints: boolean;
+function TSampleDebugger.HasBreakpoints: Boolean;
 begin
   Result := fBreakpoints.Count > 0;
 end;
 
-function TSampleDebugger.IsBreakpointLine(ALine: integer): boolean;
+function TSampleDebugger.IsBreakpointLine(ALine: Integer): Boolean;
 var
-  i: integer;
+  i: Integer;
 begin
-  Result := FALSE;
+  Result := False;
   if ALine > 0 then begin
     i := fBreakpoints.Count - 1;
     while i >= 0 do begin
-      if integer(fBreakpoints[i]) = ALine then begin
-        Result := TRUE;
-        break;
+      if Integer(fBreakpoints[i]) = ALine then begin
+        Result := True;
+        Break;
       end;
       Dec(i);
     end;
   end;
 end;
 
-function TSampleDebugger.IsExecutableLine(ALine: integer): boolean;
+function TSampleDebugger.IsExecutableLine(ALine: Integer): Boolean;
 var
-  i: integer;
+  i: Integer;
 begin
-  Result := FALSE;
+  Result := False;
   if ALine > 0 then begin
     i := High(ExecutableLines);
     while i >= Low(ExecutableLines) do begin
       if ALine = ExecutableLines[i] then begin
-        Result := TRUE;
-        break;
+        Result := True;
+        Break;
       end;
       Dec(i);
     end;
   end;
 end;
 
-function TSampleDebugger.IsRunning: boolean;
+function TSampleDebugger.IsRunning: Boolean;
 begin
   Result := fDebuggerState = dsRunning;
 end;
@@ -340,22 +333,22 @@ begin
   DoStateChange;
 end;
 
-procedure TSampleDebugger.ToggleBreakpoint(ALine: integer);
+procedure TSampleDebugger.ToggleBreakpoint(ALine: Integer);
 var
-  SetBP: boolean;
-  i: integer;
+  SetBP: Boolean;
+  i: Integer;
 begin
   if ALine > 0 then begin
-    SetBP := TRUE;
+    SetBP := True;
     for i := 0 to fBreakpoints.Count - 1 do begin
-      if integer(fBreakpoints[i]) = ALine then begin
+      if Integer(fBreakpoints[i]) = ALine then begin
         fBreakpoints.Delete(i);
-        SetBP := FALSE;
-        break;
-      end else if integer(fBreakpoints[i]) > ALine then begin
+        SetBP := False;
+        Break;
+      end else if Integer(fBreakpoints[i]) > ALine then begin
         fBreakpoints.Insert(i, pointer(ALine));
-        SetBP := FALSE;
-        break;
+        SetBP := False;
+        Break;
       end;
     end;
     if SetBP then

@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterCache.pas,v 1.13.2.6 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Cache object script files highlighter for SynEdit)
@@ -92,7 +85,7 @@ type
     fUserFunctionAttri: TSynHighlighterAttributes;
     fEmbedSQLAttri: TSynHighlighterAttributes;
     fEmbedTextAttri: TSynHighlighterAttributes;
-    FCanKey: boolean;    // if true, the next token can be a keyword
+    FCanKey: Boolean;    // if true, the next token can be a keyword
     function AltFunc(Index: Integer): TtkTokenKind;
     function KeyWordFunc(Index: Integer): TtkTokenKind;
     function Func38html(Index: Integer): TtkTokenKind;
@@ -121,13 +114,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -328,7 +321,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 355 + Ord(Str^) * 71;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 1997;
   fStringLen := Str - fToIdent;
@@ -349,18 +342,18 @@ end;
 
 procedure TSynCacheSyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if KeyIndices[i] = -1 then
-      fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if KeyIndices[I] = -1 then
+      fIdentFuncTable[I] := AltFunc;
 
   fIdentFuncTable[379] := Func38html;
   fIdentFuncTable[1125] := Func38sql;
 
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if @fIdentFuncTable[i] = nil then
-      fIdentFuncTable[i] := KeyWordFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[I] = nil then
+      fIdentFuncTable[I] := KeyWordFunc;
 end;
 
 function TSynCacheSyn.AltFunc(Index: Integer): TtkTokenKind;
@@ -448,8 +441,8 @@ end;
 procedure TSynCacheSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
-  if fLine[Run] = #10 then inc(Run);
+  Inc(Run);
+  if fLine[Run] = #10 then Inc(Run);
   FRange := rsUnknown;
 end;
 
@@ -460,9 +453,9 @@ begin
 
   while FLine[Run] <> #0 do  begin
     case FLine[Run] of
-      #10, #13: break;
+      #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -476,7 +469,7 @@ begin
   if FTokenPos=0 then fTokenID := tkLabel
   else begin
     fir := FLine[Run];
-    if fir = '^' then FCanKey := true;
+    if fir = '^' then FCanKey := True;
 
     FRange := rsUnknown;
     if FCanKey then
@@ -484,30 +477,30 @@ begin
     else
     begin
       fTokenID := tkIdentifier;
-      while IsIdentChar(fLine[Run]) do inc(Run);
-      exit;
+      while IsIdentChar(fLine[Run]) do Inc(Run);
+      Exit;
     end;
     FRange := rsCommand;
-    inc(Run, fStringLen);
+    Inc(Run, fStringLen);
     if not (IsLineEnd(Run) or CharInSet(fLine[Run], [#32, ':'])) and (fir <> '^') then
     begin
       fTokenID := tkIdentifier;
     end
   end;
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynCacheSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  FCanKey := true;
-  inc(Run);
+  FCanKey := True;
+  Inc(Run);
 end;
 
 procedure TSynCacheSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCacheSyn.NumberProc;
@@ -526,32 +519,32 @@ begin
   if (fTokenPos = 0) and CharInSet(FLine[Run], ['0'..'9']) then
   begin
     fTokenID := tkLabel;
-    while IsIdentChar(fLine[Run]) do inc(Run);
-    FCanKey := false;
-    exit;
+    while IsIdentChar(fLine[Run]) do Inc(Run);
+    FCanKey := False;
+    Exit;
   end;
 
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
-      '.':  if FLine[Run + 1] = '.' then break;
+      '.':  if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
   FRange := rsUnknown;
 end;
 
 procedure TSynCacheSyn.SpaceProc;
 var
-  x: integer;
+  x: Integer;
 begin
   x := Run;
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
-  FCanKey := true;
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
+  FCanKey := True;
   if FRange = rsCommand then
     FCanKey := (Run - x > 1);
 end;
@@ -559,20 +552,20 @@ end;
 procedure TSynCacheSyn.StringProc;
 begin
   fTokenID := tkString;
-  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then inc(Run, 2);
+  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #34;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
   FRange := rsUnknown;
 end;
 
 procedure TSynCacheSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -606,7 +599,7 @@ begin
   inherited;
 end;
 
-function TSynCacheSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynCacheSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -657,7 +650,7 @@ begin
   end;
 end;
 
-function TSynCacheSyn.GetTokenKind: integer;
+function TSynCacheSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
@@ -698,8 +691,8 @@ end;
 procedure TSynCacheSyn.IndirectProc;
 begin
   fTokenID := tkIndirect;
-  inc(Run);
-  while IsIdentChar(FLine[Run]) do inc(Run);
+  Inc(Run);
+  while IsIdentChar(FLine[Run]) do Inc(Run);
   FRange := rsUnknown;
 end;
 
@@ -709,7 +702,7 @@ end;
 procedure TSynCacheSyn.SymbolProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   FRange := rsUnknown;
 end;
 
@@ -728,13 +721,13 @@ begin
                 end;
            else begin
                   fTokenID := IdentKind((fLine + Run));
-                  inc(Run, fStringLen);
+                  Inc(Run, fStringLen);
                   if fTokenID = tkKey then fTokenID := tkFunction;
                 end;
          end;
     else fTokenID := tkIdentifier;
   end;
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
   FRange := rsUnknown;
 end;
 
@@ -745,25 +738,25 @@ end;
 //------------------------------------------------------------------------------
 procedure TSynCacheSyn.DirectiveProc;
 var
-  i: integer;
+  I: Integer;
 begin
   if FLine[Run + 1] = '#' then
     fTokenID := tkClass
   else
   begin
-    for i := fTokenPos downto 0 do
-      if not CharInSet(FLine[i], [#32, '#']) then
+    for I := fTokenPos downto 0 do
+      if not CharInSet(FLine[I], [#32, '#']) then
       begin
         fTokenID := tkSymbol;
-        inc(Run);
-        exit;
+        Inc(Run);
+        Exit;
       end;
 
     fTokenID := tkDirective
   end;
 
-  inc(Run);
-  while IsIdentChar(fLine[Run]) or (FLine[Run] = '#') do inc(Run);
+  Inc(Run);
+  while IsIdentChar(fLine[Run]) or (FLine[Run] = '#') do Inc(Run);
   FRange := rsUnknown;
 end;
 
@@ -779,22 +772,22 @@ begin
                  fTokenID := IdentKind( (fLine + Run) );
                  if fTokenID <> tkEmbedSQL then begin
                    fTokenID := tkSymbol;
-                   inc( Run );
+                   Inc( Run );
                  end else begin
                    fBrace := 1;
-                   fFirstBrace := true;
-                   inc( Run, fStringLen );
+                   fFirstBrace := True;
+                   Inc( Run, fStringLen );
                  end;
                end;
     rsSQL: begin
              fTokenID := tkEmbedSQL;
              while (FLine[Run] <> #0) and (fBrace<>0) do begin
                case FLine[Run] of
-                 '(': if not fFirstBrace then inc(fBrace)
-                      else fFirstBrace := false;
-                 ')': dec(fBrace);
+                 '(': if not fFirstBrace then Inc(fBrace)
+                      else fFirstBrace := False;
+                 ')': Dec(fBrace);
                end;
-               inc(Run);
+               Inc(Run);
              end;
              if fBrace=0 then fRange := rsUnknown;
            end;
@@ -802,11 +795,11 @@ begin
               fTokenID := tkEmbedSQL;
               while (FLine[Run] <> #0) and (fBrace<>0) do begin
                 case FLine[Run] of
-                  '<': if not fFirstBrace then inc(fBrace)
-                       else fFirstBrace := false;
-                  '>': dec(fBrace);
+                  '<': if not fFirstBrace then Inc(fBrace)
+                       else fFirstBrace := False;
+                  '>': Dec(fBrace);
                 end;
-                inc(Run);
+                Inc(Run);
               end;
               if fBrace=0 then fRange := rsUnknown;
             end;

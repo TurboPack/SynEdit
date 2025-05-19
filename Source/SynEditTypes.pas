@@ -50,15 +50,18 @@ uses
   System.Classes;
 
 const
-// These might need to be localized depending on the characterset because they might be
-// interpreted as valid ident characters.
-  SynTabGlyph: WideChar = #$2192;       //'->'
-  SynSoftBreakGlyph: WideChar = #$00AC; //'¬'
-  SynLineBreakGlyph: WideChar = #$00B6; //'¶'
-  SynSpaceGlyph: WideChar = #$2219;     //'·'
+  DefaultBrackets = '()[]{}';
+
+type
+  TSynAlignment = TAlignment;
+
+var
+  SynTabAlignment: TSynAlignment = taCenter;
 
 type
   ESynError = class(Exception);
+
+  TSynFlowControl = (fcNone, fcContinue, fcBreak, fcExit);
 
   // DOS: CRLF, UNIX: LF, Mac: CR, Unicode: LINE SEPARATOR
   TSynEditFileFormat = (sffDos, sffUnix, sffMac, sffUnicode);
@@ -77,12 +80,11 @@ type
 
   TSynInfoLossEvent = procedure (var Encoding: TEncoding; Cancel: Boolean) of object;
 
-  PSynSelectionMode = ^TSynSelectionMode;
-  TSynSelectionMode = (smNormal, smLine, smColumn);
-
   TBufferCoord = record
-    Char: integer;
-    Line: integer;
+    // Char and Line are 1-based
+    Char: Integer;
+    Line: Integer;
+    function ToString(ShortForm: Boolean = True): string;
     class operator Equal(a, b: TBufferCoord): Boolean;
     class operator NotEqual(a, b: TBufferCoord): Boolean;
     class operator LessThan(a, b: TBufferCoord): Boolean;
@@ -91,11 +93,13 @@ type
     class operator GreaterThanOrEqual(a, b: TBufferCoord): Boolean;
     class function Min(a, b: TBufferCoord): TBufferCoord; static;
     class function Max(a, b: TBufferCoord): TBufferCoord; static;
+    class function Invalid: TBufferCoord; static;
+    function IsValid: Boolean;
   end;
 
   TDisplayCoord = record
-    Column: integer;
-    Row: integer;
+    Column: Integer;
+    Row: Integer;
     class operator Equal(a, b: TDisplayCoord): Boolean;
     class operator NotEqual(a, b: TDisplayCoord): Boolean;
     class operator LessThan(a, b: TDisplayCoord): Boolean;
@@ -105,6 +109,28 @@ type
     class function Min(a, b: TDisplayCoord): TDisplayCoord; static;
     class function Max(a, b: TDisplayCoord): TDisplayCoord; static;
   end;
+
+  TSynSelection = record
+    Caret: TBufferCoord;
+    Start: TBufferCoord;
+    Stop: TBufferCoord;
+    CaretAtEOL: Boolean;  // used by wordwrap
+    LastPosX: Integer;    // in pixels. Used in vertical movements
+    procedure Normalize;
+    function Normalized: TSynSelection;
+    function IsEmpty: Boolean;
+    procedure Join(const Sel: TSynSelection);
+    function Intersects(const Other: TSynSelection): Boolean;
+    function Contains(const BC: TBufferCoord): Boolean;
+    constructor Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL:
+        Boolean = False; ALastPosX: Integer = 0);
+    class operator Equal(a, b: TSynSelection): Boolean;
+    class operator NotEqual(a, b: TSynSelection): Boolean;
+    class function Invalid: TSynSelection; static;
+    function IsValid: Boolean;
+  end;
+
+  TSynSelectionArray = TArray<TSynSelection>;
 
   (*  Helper methods for TControl - for backwward compatibility *)
   {$IF CompilerVersion <= 32}
@@ -117,9 +143,18 @@ type
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
-function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
 
 type
+{ *************************** For Carets **********************************}
+
+TCaretShape = record
+  Width: Integer;
+  Height: Integer;
+  Offset: TPoint;
+  constructor Create(AWidth, AHeight: Integer; AOffset: TPoint);
+end;
+
+
 { ************************* For ScrollBars ********************************}
 
   ISynEditScrollBars = interface
@@ -150,7 +185,7 @@ type
     procedure DisplayChanged;
     // pretty clear, heh?
     procedure Reset;
-    property RowLength[RowIndex: integer]: integer read GetRowLength;
+    property RowLength[RowIndex: Integer]: Integer read GetRowLength;
   end;
 
 { ************************* For Undo Redo ********************************}
@@ -169,12 +204,12 @@ type
     );
 
   TSynEditUndoItem = class(TObject)
+  public
     ChangeStartPos: TBufferCoord;
     ChangeEndPos: TBufferCoord;
     ChangeStr: string;
     ChangeNumber: Integer;
     ChangeReason: TSynChangeReason;
-    ChangeSelMode: TSynSelectionMode;
     // the following undo item cannot be grouped with this one  when undoing
     // don't group the previous one with this one when redoing
     GroupBreak: Boolean;
@@ -188,6 +223,7 @@ type
     function GetCanRedo: Boolean;
     function GetFullUndoImposible: Boolean;
     function GetOnModifiedChanged: TNotifyEvent;
+    function GetInsideUndoRedo: Boolean;
     procedure SetModified(const Value: Boolean);
     procedure SetMaxUndoActions(const Value: Integer);
     procedure SetGroupUndo(const Value: Boolean);
@@ -229,6 +265,7 @@ type
     property FullUndoImpossible: Boolean read GetFullUndoImposible;
     property OnModifiedChanged: TNotifyEvent read GetOnModifiedChanged
       write SetOnModifiedChanged;
+    property InsideUndoRedo: Boolean read GetInsideUndoRedo;
   end;
 
 implementation
@@ -236,6 +273,7 @@ Uses
 {$IF CompilerVersion <= 32}
   Vcl.Forms,
 {$ENDIF}
+  SynEditStrConst,
   SynUnicode;
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
@@ -267,6 +305,17 @@ class operator TBufferCoord.GreaterThanOrEqual(a, b: TBufferCoord): Boolean;
 begin
   Result :=  (b.Line < a.Line)
     or ((b.Line = a.Line) and (b.Char <= a.Char))
+end;
+
+class function TBufferCoord.Invalid: TBufferCoord;
+begin
+  Result.Char := 0;
+  Result.Line := 0;
+end;
+
+function TBufferCoord.IsValid: Boolean;
+begin
+  Result := (Char > 0) and (Line > 0);
 end;
 
 class operator TBufferCoord.LessThan(a, b: TBufferCoord): Boolean;
@@ -304,6 +353,14 @@ end;
 class operator TBufferCoord.NotEqual(a, b: TBufferCoord): Boolean;
 begin
   Result := (a.Char <> b.Char) or (a.Line <> b.Line);
+end;
+
+function TBufferCoord.ToString(ShortForm: Boolean = True): string;
+begin
+  if ShortForm then
+    Result := Format('%d:%d', [Self.Line, Self.Char])
+  else
+    Result := Format('%s: %d %s: %d',[SYNS_Line, Self.Line, SYNS_Char, Self.Char]);
 end;
 
 { TDisplayCoord }
@@ -362,16 +419,6 @@ begin
   Result := (a.Row <> b.Row) or (a.Column <> b.Column);
 end;
 
-function LineBreakFromFileFormat(FileFormat: TSynEditFileFormat): string;
-begin
-  case FileFormat of
-    sffDos: Result := WideCRLF;
-    sffUnix: Result := WideLF;
-    sffMac: Result := WideCR;
-    sffUnicode: Result := WideLineSeparator;
-  end;
-end;
-
 {$IF CompilerVersion <= 32}
 { TControlHelper }
 
@@ -387,6 +434,97 @@ end;
 {$ENDIF}
 
 
+
+{ TSynSelection }
+
+function TSynSelection.Contains(const BC: TBufferCoord): Boolean;
+begin
+  Result := (BC >= TBufferCoord.Min(Start, Stop)) and
+    (BC < TBufferCoord.Max(Start, Stop));
+end;
+
+constructor TSynSelection.Create(const ACaret, AStart, AStop: TBufferCoord;
+    ACaretAtEOL: Boolean = False; ALastPosX: Integer = 0);
+begin
+  Caret := ACaret;
+  Start := AStart;
+  Stop := AStop;
+  CaretAtEOL := ACaretAtEOL;
+  LastPosX := ALastPosX;
+end;
+
+class operator TSynSelection.Equal(a, b: TSynSelection): Boolean;
+begin
+  Result := (a.Start = b.Start) and (a.Stop = b.Stop);
+end;
+
+function TSynSelection.Intersects(const Other: TSynSelection): Boolean;
+begin
+  Result := Self.Contains(Other.Start) or Self.Contains(Other.Stop) or
+    Other.Contains(TBufferCoord.Min(Self.Start, Self.Stop));
+end;
+
+class function TSynSelection.Invalid: TSynSelection;
+begin
+  Result := TSynSelection.Create(TBufferCoord.Invalid, TBufferCoord.Invalid,
+    TBufferCoord.Invalid);
+end;
+
+function TSynSelection.IsEmpty: Boolean;
+begin
+  Result := Start = Stop
+end;
+
+function TSynSelection.IsValid: Boolean;
+begin
+  Result := Caret.IsValid and Start.IsValid and Stop.IsValid;
+end;
+
+procedure TSynSelection.Join(const Sel: TSynSelection);
+var
+  N1, N2: TSynSelection;
+begin
+  N1 := Normalized;
+  N2 := Sel.Normalized;
+  Start := TBufferCoord.Min(N1.Start, N2.Start);
+  Stop := TBufferCoord.Max(N1.Stop, N2.Stop);
+  //  Set the caret to the Start or the Stop depending on the orignal carets
+  if (Sel.Caret = Start) or (Sel.Caret = Stop) then
+    Caret := Sel.Caret
+  else if not (Caret = Start) and not (Caret = Stop) then
+    Caret := Stop;
+end;
+
+procedure TSynSelection.Normalize;
+begin
+  if Start > Stop then
+  begin
+    var Temp := Start;
+    Start := Stop;
+    Stop := Temp;
+    Caret := Stop;
+  end;
+end;
+
+function TSynSelection.Normalized: TSynSelection;
+begin
+  Result := Self;
+  Result.Normalize;
+end;
+
+class operator TSynSelection.NotEqual(a, b: TSynSelection): Boolean;
+begin
+  Result := (a.Start <> b.Start) or (a.Stop <> b.Stop)
+end;
+
+{ TCaretShape }
+
+constructor TCaretShape.Create(AWidth, AHeight: Integer; AOffset: TPoint);
+begin
+  Width := AWidth;
+  Height := AHeight;
+  Offset := AOffset;
+end;
 
 end.
 

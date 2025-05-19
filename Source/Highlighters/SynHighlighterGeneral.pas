@@ -64,7 +64,7 @@ type
 
   TStringDelim = (sdSingleQuote, sdDoubleQuote, sdSingleAndDoubleQuote);
 
-  TGetTokenAttributeEvent = procedure (attribute : TSynHighlighterAttributes) of object;
+  TGetTokenAttributeEvent = procedure (attribute: TSynHighlighterAttributes) of object;
 
 const
    cDefaultIdentChars = '_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
@@ -89,7 +89,7 @@ type
     fStringDelim: TStringDelim;
     fDetectPreprocessor: Boolean;
     fOnGetTokenAttribute: TGetTokenAttributeEvent;
-    FStringMultiLine : Boolean;
+    FStringMultiLine: Boolean;
     procedure AsciiCharProc;
     procedure BraceOpenProc;
     procedure PointCommaProc;
@@ -113,39 +113,39 @@ type
     procedure SetStringDelim(const Value: TStringDelim);
     function GetIdentifierChars: string;
     procedure SetIdentifierChars(const Value: string);
-    function StoreIdentChars : Boolean;
-    procedure SetDetectPreprocessor(Value: boolean);
+    function StoreIdentChars: Boolean;
+    procedure SetDetectPreprocessor(Value: Boolean);
   public
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
-    function IsStringDelim(aChar : WideChar) : Boolean;
+    function IsStringDelim(aChar: WideChar): Boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
-    function GetCharBeforeToken(offset : Integer = -1) : WideChar;
-    function GetCharAfterToken(offset : Integer = 1) : WideChar;
+    function GetCharBeforeToken(offset: Integer = -1): WideChar;
+    function GetCharAfterToken(offset: Integer = 1): WideChar;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsKeyword(const AKeyword: string): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
-    function SaveToRegistry(RootKey: HKEY; Key: string): boolean; override;
-    function LoadFromRegistry(RootKey: HKEY; Key: string): boolean; override;
-    property OnGetTokenAttribute : TGetTokenAttributeEvent read fOnGetTokenAttribute write fOnGetTokenAttribute;
-    property StringMultiLine : Boolean read FStringMultiLine write FStringMultiLine;
+    function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    property OnGetTokenAttribute: TGetTokenAttributeEvent read fOnGetTokenAttribute write fOnGetTokenAttribute;
+    property StringMultiLine: Boolean read FStringMultiLine write FStringMultiLine;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
     property Comments: TCommentStyles read fComments write SetComments default [];
-    property DetectPreprocessor: boolean read fDetectPreprocessor
+    property DetectPreprocessor: Boolean read fDetectPreprocessor
       write SetDetectPreprocessor;
     property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri
       write fIdentifierAttri;
@@ -202,7 +202,7 @@ begin
     if Compare = 0 then
     begin
       Result := True;
-      break;
+      Break;
     end
     else if Compare < 0 then
       First := I + 1
@@ -266,7 +266,7 @@ begin
       begin
         fRange := rsUnKnown;
         Inc(Run, 2);
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -286,7 +286,7 @@ begin
       begin
         fRange := rsUnKnown;
         Inc(Run);
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -306,7 +306,7 @@ begin
       begin
         fRange := rsUnKnown;
         Inc(Run, 2);
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -319,14 +319,14 @@ begin
   begin
     fTokenID := tkPreprocessor;
     repeat
-      inc(Run);
+      Inc(Run);
     until IsLineEnd(Run);
   end
   else
   begin
     fTokenID := tkString;
     repeat
-      inc(Run);
+      Inc(Run);
     until not CharInSet(fLine[Run], ['0'..'9']);
   end;
 end;
@@ -337,25 +337,25 @@ begin
   begin
     fTokenID := tkComment;
     fRange := rsPasStyle;
-    inc(Run);
+    Inc(Run);
     while FLine[Run] <> #0 do
       case FLine[Run] of
         '}':
           begin
             fRange := rsUnKnown;
-            inc(Run);
-            break;
+            Inc(Run);
+            Break;
           end;
-        #10: break;
+        #10: Break;
 
-        #13: break;
+        #13: Break;
       else
-        inc(Run);
+        Inc(Run);
       end;
   end
   else
   begin
-    inc(Run);
+    Inc(Run);
     fTokenID := tkSymbol;
   end;
 end;
@@ -366,16 +366,16 @@ begin
   begin
     fTokenID := tkComment;
     fRange := rsUnknown;
-    inc(Run);
+    Inc(Run);
     while FLine[Run] <> #0 do
     begin
       fTokenID := tkComment;
-      inc(Run);
+      Inc(Run);
     end;
   end
   else
   begin
-    inc(Run);
+    Inc(Run);
     fTokenID := tkSymbol;
   end;
 end;
@@ -389,7 +389,7 @@ end;
 
 procedure TSynGeneralSyn.IdentProc;
 begin
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
   if IsKeyWord(GetToken) then
     fTokenId := tkKey
   else
@@ -409,21 +409,21 @@ procedure TSynGeneralSyn.IntegerProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
-  while IsIntegerChar do inc(Run);
+  while IsIntegerChar do Inc(Run);
 end;
 
 procedure TSynGeneralSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynGeneralSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynGeneralSyn.NumberProc;
@@ -439,25 +439,25 @@ procedure TSynGeneralSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       'x': begin // handle C style hex numbers
              IntegerProc;
-             break;
+             Break;
            end;
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynGeneralSyn.RoundOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   if csAnsiStyle in fComments then
   begin
     case fLine[Run] of
@@ -465,24 +465,24 @@ begin
         begin
           fTokenID := tkComment;
           fRange := rsAnsi;
-          inc(Run);
+          Inc(Run);
           while fLine[Run] <> #0 do
             case fLine[Run] of
               '*':
                 if fLine[Run + 1] = ')' then
                 begin
                   fRange := rsUnKnown;
-                  inc(Run, 2);
-                  break;
-                end else inc(Run);
-              #10: break;
-              #13: break;
-            else inc(Run);
+                  Inc(Run, 2);
+                  Break;
+                end else Inc(Run);
+              #10: Break;
+              #13: Break;
+            else Inc(Run);
             end;
         end;
       '.':
         begin
-          inc(Run);
+          Inc(Run);
           fTokenID := tkSymbol;
         end;
     else
@@ -506,9 +506,9 @@ begin
           while FLine[Run] <> #0 do
           begin
             case FLine[Run] of
-              #10, #13: break;
+              #10, #13: Break;
             end;
-            inc(Run);
+            Inc(Run);
           end;
         end
         else
@@ -527,11 +527,11 @@ begin
                 if fLine[Run + 1] = '/' then
                 begin
                   fRange := rsUnKnown;
-                  inc(Run, 2);
-                  break;
-                end else inc(Run);
+                  Inc(Run, 2);
+                  Break;
+                end else Inc(Run);
               #10, #13:
-                break;
+                Break;
               else
                 Inc(Run);
             end;
@@ -546,14 +546,14 @@ end;
 
 procedure TSynGeneralSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynGeneralSyn.StringProc;
 var
-   delim : WideChar;
+   delim: WideChar;
 begin
   fTokenID := tkString;
   if IsStringDelim(fLine[Run + 1]) and IsStringDelim(fLine[Run + 2]) then
@@ -561,17 +561,17 @@ begin
   delim:=fLine[Run];
   repeat
     case FLine[Run] of
-      #0 :  break;
-      #10, #13: if not StringMultiLine then break;
+      #0:  Break;
+      #10, #13: if not StringMultiLine then Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = delim;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynGeneralSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -605,7 +605,7 @@ begin
   inherited;
 end;
 
-function TSynGeneralSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynGeneralSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -636,7 +636,7 @@ end;
 
 // GetCharBeforeToken
 //
-function TSynGeneralSyn.GetCharBeforeToken(offset : Integer = -1) : WideChar;
+function TSynGeneralSyn.GetCharBeforeToken(offset: Integer = -1): WideChar;
 begin
    if fTokenPos+offset>=0 then
       Result:=FLine[fTokenPos+offset]
@@ -645,7 +645,7 @@ end;
 
 // GetCharAfterToken
 //
-function TSynGeneralSyn.GetCharAfterToken(offset : Integer = 1) : WideChar;
+function TSynGeneralSyn.GetCharAfterToken(offset: Integer = 1): WideChar;
 begin
    Result:=FLine[fTokenPos+offset];
 end;
@@ -669,7 +669,7 @@ begin
     fOnGetTokenAttribute(Result);
 end;
 
-function TSynGeneralSyn.GetTokenKind: integer;
+function TSynGeneralSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
@@ -717,35 +717,37 @@ begin
   Result := SYNS_LangGeneral;
 end;
 
-function TSynGeneralSyn.LoadFromRegistry(RootKey: HKEY; Key: string): boolean;
+function TSynGeneralSyn.LoadFromRegistry(RootKey: HKEY; Key: string): Boolean;
 var
-  r: TRegistry;
+  Reg: TRegistry;
 begin
-  r:= TRegistry.Create;
+  Reg:= TRegistry.Create;
   try
-    r.RootKey := RootKey;
-    if r.OpenKeyReadOnly(Key) then begin
-      if r.ValueExists('KeyWords') then KeyWords.Text:= r.ReadString('KeyWords');
+    Reg.RootKey := RootKey;
+    if Reg.OpenKeyReadOnly(Key) then begin
+      if Reg.ValueExists('KeyWords') then KeyWords.Text:= Reg.ReadString('KeyWords');
       Result := inherited LoadFromRegistry(RootKey, Key);
     end
-    else Result := false;
-  finally r.Free; end;
+    else
+      Result := False;
+  finally Reg.Free; end;
 end;
 
-function TSynGeneralSyn.SaveToRegistry(RootKey: HKEY; Key: string): boolean;
+function TSynGeneralSyn.SaveToRegistry(RootKey: HKEY; Key: string): Boolean;
 var
-  r: TRegistry;
+  Reg: TRegistry;
 begin
-  r:= TRegistry.Create;
+  Reg:= TRegistry.Create;
   try
-    r.RootKey := RootKey;
-    if r.OpenKey(Key,true) then
+    Reg.RootKey := RootKey;
+    if Reg.OpenKey(Key, True) then
     begin
-      r.WriteString('KeyWords', KeyWords.Text);
+      Reg.WriteString('KeyWords', KeyWords.Text);
       Result := inherited SaveToRegistry(RootKey, Key);
     end
-    else Result := false;
-  finally r.Free; end;
+    else
+      Result := False;
+  finally Reg.Free; end;
 end;
 
 function TSynGeneralSyn.GetStringDelim: TStringDelim;
@@ -768,12 +770,12 @@ begin
   fIdentChars := Value;
 end;
 
-function TSynGeneralSyn.StoreIdentChars : Boolean;
+function TSynGeneralSyn.StoreIdentChars: Boolean;
 begin
    Result := (fIdentChars<>cDefaultIdentChars);
 end;
 
-procedure TSynGeneralSyn.SetDetectPreprocessor(Value: boolean);
+procedure TSynGeneralSyn.SetDetectPreprocessor(Value: Boolean);
 begin
   if Value <> fDetectPreprocessor then
   begin
@@ -789,11 +791,11 @@ end;
 
 // IsStringDelim
 //
-function TSynGeneralSyn.IsStringDelim(aChar : WideChar) : Boolean;
+function TSynGeneralSyn.IsStringDelim(aChar: WideChar): Boolean;
 begin
    case fStringDelim of
-      sdSingleQuote : Result:=(aChar='''');
-      sdDoubleQuote : Result:=(aChar='"');
+      sdSingleQuote: Result:=(aChar='''');
+      sdDoubleQuote: Result:=(aChar='"');
    else
       Result:=(aChar='''') or (aChar='"');
    end;

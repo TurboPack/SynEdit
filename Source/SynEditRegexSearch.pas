@@ -26,12 +26,10 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditRegexSearch.pas,v 1.5.2.2 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
+  - ssoWholeWords is not used
+  - backward search may not work as expected if you start the search within a
+    match (e.g.  search for 'aa' in 'aaa^a' where ^ is the current position)
 -------------------------------------------------------------------------------}
 
 unit SynEditRegexSearch;
@@ -51,10 +49,11 @@ uses
 type
   TSynEditRegexSearch = class(TSynEditSearchCustom)
   private
-    RegEx : TRegEx;
+    RegEx: TRegEx;
     fMatchCollection: TMatchCollection;
-    fOptions : TRegExOptions;
-    fPattern: String;
+    fOptions: TRegExOptions;
+    fPattern: string;
+    fResultCount: Integer;
   protected
     function GetPattern: string; override;
     procedure SetPattern(const Value: string); override;
@@ -64,7 +63,8 @@ type
     function GetResultCount: Integer; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function FindAll(const NewText: string): Integer; override;
+    function FindAll(const NewText: string; StartChar: Integer = 1;
+      EndChar: Integer = 0): Integer; override;
     function PreprocessReplaceExpression(const AReplace: string): string; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
@@ -83,7 +83,7 @@ type
   { TPerlRegExHelper }
 
   TPerlRegExHelper = class helper for TPerlRegEx
-    procedure AddRawOptions(PCREOptions : Integer);
+    procedure AddRawOptions(PCREOptions: Integer);
   end;
 
 procedure TPerlRegExHelper.AddRawOptions(PCREOptions: Integer);
@@ -94,7 +94,7 @@ end;
 type
   TRegExHelper = record helper for TRegEx
   public
-    procedure AddRawOptions(PCREOptions : Integer);
+    procedure AddRawOptions(PCREOptions: Integer);
   end;
 
 procedure TRegExHelper.AddRawOptions(PCREOptions: Integer);
@@ -111,10 +111,20 @@ begin
   fOptions := [];
 end;
 
-function TSynEditRegexSearch.FindAll(const NewText: string): Integer;
+function TSynEditRegexSearch.FindAll(const NewText: string;
+  StartChar: Integer = 1; EndChar: Integer = 0): Integer;
 begin
-  fMatchCollection :=  RegEx.Matches(NewText);
+  if NewText = '' then
+    Exit(0);
+
+  fMatchCollection :=  RegEx.Matches(NewText, StartChar);
+
   Result := fMatchCollection.Count;
+  if (EndChar > 0) and (EndChar < NewText.Length + 1) then
+    // Exclude results beyond EndChar
+    while (Result > 0) and ((fMatchCollection[Result - 1].Index + fMatchCollection[Result - 1].Length) > EndChar) do
+      Dec(Result);
+  fResultCount := Result;
 end;
 
 // replace new line and tab symbol to real chars
@@ -147,7 +157,7 @@ end;
 
 function TSynEditRegexSearch.GetResultCount: Integer;
 begin
-  Result := fMatchCollection.Count;
+  Result := fResultCount;
 end;
 
 procedure TSynEditRegexSearch.SetOptions(const Value: TSynSearchOptions);

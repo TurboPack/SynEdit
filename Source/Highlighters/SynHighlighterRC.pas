@@ -24,12 +24,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterRC.pas,v 1.6.2.8 2008/09/14 16:25:02 maelh Exp $
-
-You may retrieve the latest version of SynEdit from the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 -------------------------------------------------------------------------------}
 
 unit SynHighlighterRC;
@@ -97,15 +91,15 @@ type
    constructor Create(aOwner: TComponent); override;
    destructor Destroy; override;
    function GetDefaultAttribute(index: integer): TSynHighlighterAttributes; override;
-   function GetEol: boolean; override;
-   function GetRange: pointer; override;
+   function GetEol: Boolean; override;
+   function GetRange: Pointer; override;
    function GetTokenID: TtkTokenKind;
    function GetTokenAttribute: TSynHighlighterAttributes; override;
-   function GetTokenKind: integer; override;
+   function GetTokenKind: Integer; override;
    procedure Next; override;
-   procedure SetRange(value: pointer); override;
+   procedure SetRange(value: Pointer); override;
    procedure ResetRange; override;
-   function UseUserSettings(SettingIndex: integer): boolean; override;
+   function UseUserSettings(SettingIndex: Integer): Boolean; override;
    procedure EnumUserSettings(Settings: TStrings); override;
   published
    property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
@@ -148,13 +142,13 @@ const
     -1, -1, -1, -1, 48, -1, 12, -1, -1, -1, -1, -1, -1, -1, 75, 73, 14, -1, 77, 
     -1, 4, 63, -1, -1, -1, -1, 65, 19, 27, -1, 31, 38, -1, -1, -1, -1, -1, 50, 
     -1, -1, -1, 28, -1, -1, -1, -1, -1, -1, -1, 8, 6, 18, -1, -1, -1, -1, -1, 
-    -1, -1, -1, -1, -1, -1, -1, 49, 76, -1, 59, -1, -1, 52, 47, 29, -1, -1, -1, 
-    -1, -1, -1, -1, 56, -1, -1, 44, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-    -1, -1, -1, -1, 1, -1, -1, 71, 17, 32, 34, -1, 45, -1, -1, -1, 70, -1, 3, 
-    -1, 62, 43, 5, -1, -1, 33, 0, 51, 16, 69, -1, -1, -1, 39, -1, -1, 7, -1, 11, 
-    -1, -1, -1, 21, -1, 40, -1, -1, 36, -1, -1, -1, -1, -1, -1, -1, -1, -1, 53, 
-    -1, 26, -1, 66, 25, -1, -1, 72, -1, -1, 60, 15, -1, -1, -1, -1, 55, -1, -1, 
-    -1, 30, -1, -1, -1, 46, -1, 58, -1, 37, 22, -1 
+    -1, -1, -1, -1, -1, -1, -1, 49, 76, -1, 59, -1, -1, 52, 47, 29, -1, -1, -1,
+    -1, -1, -1, -1, 56, -1, -1, 44, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, 1, -1, -1, 71, 17, 32, 34, -1, 45, -1, -1, -1, 70, -1, 3,
+    -1, 62, 43, 5, -1, -1, 33, 0, 51, 16, 69, -1, -1, -1, 39, -1, -1, 7, -1, 11,
+    -1, -1, -1, 21, -1, 40, -1, -1, 36, -1, -1, -1, -1, -1, -1, -1, -1, -1, 53,
+    -1, 26, -1, 66, 25, -1, -1, 72, -1, -1, 60, 15, -1, -1, -1, -1, 55, -1, -1,
+    -1, 30, -1, -1, -1, 46, -1, 58, -1, 37, 22, -1
   );
 
 { TSynRCSyn }
@@ -166,7 +160,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 25 + Ord(Str^) * 298;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 241;
   fStringLen := Str - fToIdent;
@@ -187,15 +181,15 @@ end;
 
 procedure TSynRCSyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if KeyIndices[i] = -1 then
-      fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if KeyIndices[I] = -1 then
+      fIdentFuncTable[I] := AltFunc;
 
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if @fIdentFuncTable[i] = nil then
-      fIdentFuncTable[i] := KeyWordFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[I] = nil then
+      fIdentFuncTable[I] := KeyWordFunc;
 end;
 
 function TSynRCSyn.AltFunc(Index: Integer): TtkTokenKind;
@@ -256,10 +250,10 @@ procedure TSynRCSyn.QuoteProc;
 begin
   fTokenId:= tkString;
   repeat
-   inc(Run);
+   Inc(Run);
   until IsLineEnd(Run) or (fLine[Run] = #34);
   if fLine[Run] = #34 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynRCSyn.SlashProc;
@@ -270,32 +264,32 @@ begin
    '/':
     begin
       fTokenId := tkComment;
-      inc(Run, 2);
-      while not IsLineEnd(Run) do inc(Run);
+      Inc(Run, 2);
+      while not IsLineEnd(Run) do Inc(Run);
     end;
    '*':
     begin
       fTokenID := tkComment;
       fRange := rsComment;
-      inc(Run, 2);
+      Inc(Run, 2);
       while fLine[Run] <> #0 do
        case fLine[Run] of
         '*':
          if fLine[Run + 1] = '/' then
           begin
-            inc(Run, 2);
+            Inc(Run, 2);
             fRange := rsUnknown;
-            break;
+            Break;
           end
-         else inc(Run);
-        #10, #13: break;
+         else Inc(Run);
+        #10, #13: Break;
        else
-        inc(Run);
+        Inc(Run);
        end;
     end;
   else
    fTokenId := tkSymbol;
-   inc(Run);  
+   Inc(Run);
   end
 end;
 
@@ -311,12 +305,12 @@ begin
    repeat
     if (fLine[Run] = '*') and (fLine[Run +1] = '/') then
      begin
-       inc(Run, 2);
+       Inc(Run, 2);
        fRange := rsUnknown;
-       break;
+       Break;
      end
     else
-     inc(Run);
+     Inc(Run);
    until IsLineEnd(Run);
   end;
 end;
@@ -330,51 +324,51 @@ begin
       if fLine[Run +1] = '/' then
        begin
          fRange := rsUnknown;
-         exit;
+         Exit;
        end
       else
        if fLine[Run +1] = '*' then
         begin
           fRange := rsComment;
-          exit;
+          Exit;
         end
     end;
-   inc(Run);
+   Inc(Run);
   until IsLineEnd(Run);
 end;
 
 procedure TSynRCSyn.IdentProc;
 begin
   fTokenId := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynRCSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
-   inc(Run);
+   Inc(Run);
 end;
 
 procedure TSynRCSyn.LFProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
 end;
 
 procedure TSynRCSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynRCSyn.NullProc;
 begin
   fTokenId := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynRCSyn.NumberProc;
@@ -391,26 +385,26 @@ procedure TSynRCSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
    begin
      case fLine[Run] of
-      '.': if fLine[Run + 1] = '.' then break;
+      '.': if fLine[Run + 1] = '.' then Break;
      end;
-     inc(Run);
+     Inc(Run);
    end;
 end;
 
 procedure TSynRCSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynRCSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -451,14 +445,14 @@ begin
   end;
 end;
 
-function TSynRCSyn.GetEol: boolean;
+function TSynRCSyn.GetEol: Boolean;
 begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynRCSyn.GetRange: pointer;
+function TSynRCSyn.GetRange: Pointer;
 begin
-  Result := pointer(fRange);
+  Result := Pointer(fRange);
 end;
 
 function TSynRCSyn.GetTokenID: TtkTokenKind;
@@ -502,7 +496,7 @@ begin
   // ** ??
 end;
 
-function TSynRCSyn.UseUserSettings(SettingIndex: integer): boolean;
+function TSynRCSyn.UseUserSettings(SettingIndex: Integer): Boolean;
 begin
   Result := False;
 end;

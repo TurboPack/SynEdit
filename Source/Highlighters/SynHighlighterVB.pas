@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterVB.pas,v 1.14.2.6 2005/12/16 17:13:16 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Visual Basic highlighter for SynEdit)
@@ -50,16 +43,15 @@ unit SynHighlighterVB;
 interface
 
 uses
-  Windows, Messages, Controls, Graphics, System.Win.Registry,
+  System.Classes,
+  System.SysUtils,
+  System.Win.Registry,
+  System.RegularExpressions,
+  Vcl.Graphics,
   SynEditHighlighter,
   SynEditTypes,
-  SysUtils,
   SynUnicode,
-  Classes,
-//++ CodeFolding
-  System.RegularExpressions,
   SynEditCodeFolding;
-//++ CodeFolding
 
 type
   TtkTokenKind = (tkSymbol, tkKey, tkComment, tkIdentifier, tkNull, tkNumber, tkSpace,
@@ -69,10 +61,7 @@ type
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
 type
-//  TSynVBSyn = class(TSynCustomHighlighter)
-//++ CodeFolding
   TSynVBSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     FTokenID: TtkTokenKind;
     fIdentFuncTable: array[0..1510] of TIdentFuncTableFunc;
@@ -83,10 +72,8 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-//++ CodeFolding
-    RE_BlockBegin : TRegEx;
-    RE_BlockEnd : TRegEx;
-//-- CodeFolding
+    RE_BlockBegin: TRegEx;
+    RE_BlockEnd: TRegEx;
     function AltFunc(Index: Integer): TtkTokenKind;
     function KeyWordFunc(Index: Integer): TtkTokenKind;
     function FuncRem(Index: Integer): TtkTokenKind;
@@ -114,19 +101,17 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -146,6 +131,7 @@ type
 implementation
 
 uses
+  SynEditMiscProcs,
   SynEditStrConst;
 
 const
@@ -274,7 +260,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 573 + Ord(Str^) * 524;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 1511;
   fStringLen := Str - fToIdent;
@@ -359,14 +345,11 @@ begin
   InitIdent;
   fDefaultFilter := SYNS_FilterVisualBASIC;
 
-//++ CodeFolding
-  RE_BlockBegin := TRegEx.Create('\b(sub |function |private sub |private function |if |for |select case)\b', [roIgnoreCase]);
-  RE_BlockEnd := TRegEx.Create('\b(end sub|end function|end if|next|end select)\b', [roIgnoreCase]);
-//-- CodeFolding
+  RE_BlockBegin := CompiledRegEx('\b(sub |function |private sub |private function |if |for |select case)\b', [roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('\b(end sub|end function|end if|next|end select)\b', [roIgnoreCase]);
 end;
 
-//++ CodeFolding
-Const
+const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_CodeDeclaration = 16;
@@ -376,7 +359,7 @@ Const
 procedure TSynVBSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
   ok: Boolean;
 
@@ -471,7 +454,7 @@ procedure TSynVBSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
 {
    Provide folding for procedures and functions included nested ones.
 }
-Var
+var
   i, j, SkipTo: Integer;
   ImplementationIndex: Integer;
   FoldRange: TSynFoldRange;
@@ -489,7 +472,7 @@ begin
         // Code declaration in the Interface part of a unit
         FoldRanges.Ranges.Delete(i);
         Dec(ImplementationIndex);
-        continue;
+        Continue;
       end;
       // Examine the following ranges
       SkipTo := 0;
@@ -502,7 +485,7 @@ begin
           FT_CodeDeclarationWithBody:
             begin
               SkipTo := FoldRange.ToLine;
-              continue;
+              Continue;
             end;
           FT_Standard:
           // possibly begin end;
@@ -519,12 +502,12 @@ begin
                   // Adjust ToLine
                   FoldRanges.Ranges.List[i].ToLine := FoldRange.ToLine;
                   FoldRanges.Ranges.List[i].FoldType := FT_CodeDeclarationWithBody;
-                  break
+                  Break
                 end else
                 begin
                   // class or record declaration follows, so
                   FoldRanges.Ranges.Delete(i);
-                  break;
+                  Break;
                  end;
               end else
                 Assert(False, 'TSynVBSSyn.AdjustFoldRanges');
@@ -537,7 +520,7 @@ begin
               // Otherwise delete
               // eg. function definitions within a class definition
               FoldRanges.Ranges.Delete(i);
-              break
+              Break
             end;
           end;
         end;
@@ -549,11 +532,10 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
 
 procedure TSynVBSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
 end;
 
@@ -576,10 +558,10 @@ procedure TSynVBSyn.DateProc;
 begin
   fTokenID := tkString;
   repeat
-    if IsLineEnd(Run) then break;
-    inc(Run);
+    if IsLineEnd(Run) then Break;
+    Inc(Run);
   until FLine[Run] = '#';
-  if not IsLineEnd(Run) then inc(Run);
+  if not IsLineEnd(Run) then Inc(Run);
 end;
 
 procedure TSynVBSyn.GreaterProc;
@@ -592,14 +574,14 @@ end;
 procedure TSynVBSyn.IdentProc;
 begin
   fTokenID := IdentKind(fLine + Run);
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynVBSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynVBSyn.LowerProc;
@@ -612,7 +594,7 @@ end;
 procedure TSynVBSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynVBSyn.NumberProc;
@@ -628,32 +610,32 @@ procedure TSynVBSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
-  while IsNumberChar do inc(Run);
+  while IsNumberChar do Inc(Run);
 end;
 
 procedure TSynVBSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynVBSyn.StringProc;
 begin
   fTokenID := tkString;
-  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then inc(Run, 2);
+  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then Inc(Run, 2);
   repeat
-    if IsLineEnd(Run) then break;
-    inc(Run);
+    if IsLineEnd(Run) then Break;
+    Inc(Run);
   until FLine[Run] = #34;
-  if not IsLineEnd(Run) then inc(Run);
+  if not IsLineEnd(Run) then Inc(Run);
 end;
 
 procedure TSynVBSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -692,7 +674,7 @@ begin
   inherited;
 end;
 
-function TSynVBSyn.GetDefaultAttribute(Index: integer):
+function TSynVBSyn.GetDefaultAttribute(Index: Integer):
   TSynHighlighterAttributes;
 begin
   case Index of
@@ -732,7 +714,7 @@ begin
   end;
 end;
 
-function TSynVBSyn.GetTokenKind: integer;
+function TSynVBSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

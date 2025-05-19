@@ -26,11 +26,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: dlgConfirmReplace.pas,v 1.2 2000/11/22 08:37:05 mghie Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 
@@ -55,7 +50,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   public
-    procedure PrepareShow(AEditorRect: TRect; X, Y1, Y2: integer;
+    procedure PrepareShow(AEditorRect: TRect; X, Y1, Y2: Integer;
       AReplaceText: string);
   end;
 
@@ -82,9 +77,9 @@ begin
 end;
 
 procedure TConfirmReplaceDialog.PrepareShow(AEditorRect: TRect;
-  X, Y1, Y2: integer; AReplaceText: string);
+  X, Y1, Y2: Integer; AReplaceText: string);
 var
-  nW, nH: integer;
+  nW, nH: Integer;
 begin
   lblConfirmation.Caption := Format(SAskReplaceText, [AReplaceText]);
   nW := AEditorRect.Right - AEditorRect.Left;

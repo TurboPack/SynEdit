@@ -17,7 +17,6 @@ object EditorForm: TEditorForm
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object SynEditor: TSynEdit
     Left = 0
@@ -58,8 +57,10 @@ object EditorForm: TEditorForm
         Width = 2
       end>
     Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
+    ScrollbarAnnotations = <>
     SearchEngine = SynEditSearch1
     SelectedColor.Alpha = 0.400000005960464500
+    VisibleSpecialChars = []
     OnChange = SynEditorChange
     OnReplaceText = SynEditorReplaceText
     OnStatusChange = SynEditorStatusChange

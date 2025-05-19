@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditPrintMargins.pas,v 1.5.2.2 2006/05/21 11:59:34 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 
@@ -90,12 +83,14 @@ unit SynEditPrintMargins;
 interface
 
 uses
-  Graphics,
+  Winapi.Windows,
+  Vcl.Graphics,
   SynEditPrintTypes,
   SynEditPrinterInfo,
   SynUnicode,
-  Classes,
-  SysUtils;
+  SynDWrite,
+  System.Classes,
+  System.SysUtils;
 
 type
   //Margins class - sorting out dimensions of printable area
@@ -163,9 +158,9 @@ type
     PHFInternalMargin: Integer;  // Internal margin in device units (pixels)
     PGutter: Integer; // Binding gutter in device units (pixels)
     constructor Create;
-    procedure InitPage(ACanvas: TCanvas; PageNum: Integer;
-      PrinterInfo: TSynEditPrinterInfo; LineNumbers,
-      LineNumbersInMargin: Boolean; MaxLineNum: Integer);
+    procedure InitPage(TextFormat: TSynTextFormat; PageNum: Integer; PrinterInfo:
+        TSynEditPrinterInfo; LineNumbers, LineNumbersInMargin: Boolean; MaxLineNum:
+        Integer);
     procedure Assign(Source: TPersistent); override;
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
@@ -338,30 +333,38 @@ end;
 
 // -----------------------------------------------------------------------------
 // Called by TSynEditPrint class to initialize margins
-procedure TSynEditPrintMargins.InitPage(ACanvas: TCanvas; PageNum: Integer;
+procedure TSynEditPrintMargins.InitPage(TextFormat: TSynTextFormat; PageNum: Integer;
   PrinterInfo: TSynEditPrinterInfo; LineNumbers, LineNumbersInMargin: Boolean;
   MaxLineNum: Integer);
-//Calculate the P... values
+// Calculate the P... values
+// Values correspond to 96 PPI, since we rendering at that resoultion
+var
+  Layout: TSynTextLayout;
+  Str: string;
 begin
   if FMirrorMargins and ((PageNum mod 2) = 0) then
   begin
-    PLeft := PrinterInfo.PixFromLeft(FRight);
-    PRight := PrinterInfo.PrintableWidth - PrinterInfo.PixFromRight(FLeft + FGutter);
+    PLeft := MulDiv(PrinterInfo.PixFromLeft(FRight), 96, PrinterInfo.XPixPrInch);
+    PRight := MulDiv(PrinterInfo.PrintableWidth - PrinterInfo.PixFromRight(FLeft + FGutter), 96, PrinterInfo.XPixPrInch);
   end
   else begin
-    PLeft := PrinterInfo.PixFromLeft(FLeft + FGutter);
-    PRight := PrinterInfo.PrintableWidth - PrinterInfo.PixFromRight(FRight);
+    PLeft := MulDiv(PrinterInfo.PixFromLeft(FLeft + FGutter), 96, PrinterInfo.XPixPrInch);
+    PRight := MulDiv(PrinterInfo.PrintableWidth - PrinterInfo.PixFromRight(FRight), 96, PrinterInfo.XPixPrInch);
   end;
   if LineNumbers and (not LineNumbersInMargin) then
-    PLeft := PLeft + ACanvas.TextWidth(IntToStr(MaxLineNum) + ': ');
-  PTop := PrinterInfo.PixFromTop(FTop);
-  PBottom := PrinterInfo.PrintableHeight - PrinterInfo.PixFromBottom(FBottom);
-  PHeader := PrinterInfo.PixFromTop(FHeader);
-  PFooter := PrinterInfo.PrintableHeight - PrinterInfo.PixFromBottom(FFooter);
-  PHFInternalMargin := Round(PrinterInfo.YPixPrmm * FHFInternalMargin);
-  PGutter := Round(PrinterInfo.XPixPrmm * FGutter);
-  PRightHFTextIndent := PRight - Round(PrinterInfo.XPixPrmm * FRightHFTextIndent);
-  PLeftHFTextIndent := PLeft + Round(PrinterInfo.XPixPrmm * FLeftHFTextIndent);
+  begin
+    Str:= IntToStr(MaxLineNum) + ': ';
+    Layout := TSynTextLayout.Create(TextFormat, PChar(Str), Str.Length);
+    PLeft := PLeft + Round(Layout.TextMetrics.widthIncludingTrailingWhitespace);
+  end;
+  PTop := MulDiv(PrinterInfo.PixFromTop(FTop), 96, PrinterInfo.YPixPrInch);
+  PBottom := MulDiv(PrinterInfo.PrintableHeight - PrinterInfo.PixFromBottom(FBottom), 96, PrinterInfo.YPixPrInch);
+  PHeader := MulDiv(PrinterInfo.PixFromTop(FHeader), 96, PrinterInfo.YPixPrInch);
+  PFooter := MulDiv(PrinterInfo.PrintableHeight - PrinterInfo.PixFromBottom(FFooter), 96, PrinterInfo.YPixPrInch);
+  PHFInternalMargin := MulDiv(Round(PrinterInfo.YPixPrmm * FHFInternalMargin), 96, PrinterInfo.XPixPrInch);
+  PGutter := MulDiv(Round(PrinterInfo.XPixPrmm * FGutter), 96, PrinterInfo.XPixPrInch);
+  PRightHFTextIndent := PRight - MulDiv(Round(PrinterInfo.XPixPrmm * FRightHFTextIndent), 96, PrinterInfo.XPixPrInch);
+  PLeftHFTextIndent := PLeft + MulDiv(Round(PrinterInfo.XPixPrmm * FLeftHFTextIndent), 96, PrinterInfo.XPixPrInch);
 end;
 
 // -----------------------------------------------------------------------------

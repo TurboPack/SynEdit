@@ -126,9 +126,13 @@
         <DCCReference Include="vcldb.dcp"/>
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="rtl.dcp"/>
+        <DCCReference Include="..\..\..\Source\SynAccessibility.pas"/>
         <DCCReference Include="..\..\..\Source\SynAutoCorrect.pas"/>
         <DCCReference Include="..\..\..\Source\SynAutoCorrectEditor.pas">
             <Form>frmAutoCorrectEditor</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
+            <Form>SynOmniSynSetup</Form>
         </DCCReference>
         <DCCReference Include="..\..\..\Source\SynCompletionProposal.pas"/>
         <DCCReference Include="..\..\..\Source\SynDBEdit.pas"/>
@@ -214,6 +218,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterOmni.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPerl.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPHP.pas"/>
@@ -236,6 +241,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas"/>
         <DCCReference Include="..\..\..\Source\SynMacroRecorder.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>

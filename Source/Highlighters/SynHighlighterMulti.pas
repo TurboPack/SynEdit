@@ -43,12 +43,13 @@ unit SynHighlighterMulti;
 interface
 
 uses
-  Windows,
-  Registry,
+  Winapi.Windows,
+  System.Win.Registry,
+  System.RegularExpressions,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-  Classes;
+  System.Classes;
 
 type
   TOnCheckMarker = procedure (Sender: TObject; var StartPos, MarkerLen: Integer;
@@ -58,6 +59,8 @@ type
   private
     fEndExpr: string;
     fStartExpr: string;
+    fEndRE: TRegEx;
+    fStartRE: TRegEx;
     fHighlighter: TSynCustomHighLighter;
     fMarkerAttri: TSynHighlighterAttributes;
     fSchemeName: TComponentName;
@@ -99,14 +102,14 @@ type
   TSchemes = class(TCollection)
   private
     fOwner: TSynMultiSyn;
-    function GetItems(Index: integer): TScheme;
-    procedure SetItems(Index: integer; const Value: TScheme);
+    function GetItems(Index: Integer): TScheme;
+    procedure SetItems(Index: Integer; const Value: TScheme);
   protected
     function GetOwner: TPersistent; override;
     procedure Update(Item: TCollectionItem); override;
   public
     constructor Create(aOwner: TSynMultiSyn);
-    property Items[aIndex: integer]: TScheme read GetItems write SetItems;
+    property Items[aIndex: Integer]: TScheme read GetItems write SetItems;
       default;
   end;
 
@@ -169,8 +172,8 @@ type
     fDefaultLanguageName: string;
     fMarkers: TList;
     fMarker: TMarker;
-    fNextMarker: integer;
-    fCurrScheme: integer;
+    fNextMarker: Integer;
+    fCurrScheme: Integer;
     fTmpRange: pointer;
     fOnCustomRange: TCustomRangeEvent;
     fLineStr: string;
@@ -189,9 +192,9 @@ type
     procedure Loaded; override;
     procedure SetSchemes(const Value: TSchemes);
     procedure ClearMarkers;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes; override;
-    function GetAttribCount: integer; override;
-    function GetAttribute(Index: integer): TSynHighlighterAttributes; override;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
+    function GetAttribCount: Integer; override;
+    function GetAttribute(Index: Integer): TSynHighlighterAttributes; override;
     procedure HookHighlighter(aHL: TSynCustomHighlighter);
     procedure UnhookHighlighter(aHL: TSynCustomHighlighter);
     procedure Notification(aComp: TComponent; aOp: TOperation); override;
@@ -210,9 +213,8 @@ type
     destructor Destroy; override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
-    function GetToken: string; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -234,19 +236,11 @@ type
 implementation
 
 uses
-  Graphics,
+  System.SysUtils,
+  System.Math,
+  Vcl.Graphics,
   SynEditMiscProcs,
-  SynEditStrConst,
-  RegularExpressions,
-  SysUtils;
-
-procedure CheckExpression(const Expr: string);
-var
-  Parser: TRegEx;
-begin
-  // will raise an exception if the expression is incorrect
-  Parser := TRegEx.Create(Expr, [roNotEmpty, roCompiled]);
-end;
+  SynEditStrConst;
 
 { TMarker }
 
@@ -337,7 +331,7 @@ begin
   end;
 end;
 
-function TSynMultiSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynMultiSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 var
   HL: TSynCustomHighlighter;
 begin
@@ -363,7 +357,7 @@ begin
   else if DefaultHighlighter <> nil then
     Result := DefaultHighlighter.GetEol
   else
-    Result := Run > fLineLen + 1;
+    Result := Run > fLineLen;
 end;
 
 class function TSynMultiSyn.GetLanguageName: string;
@@ -371,7 +365,7 @@ begin
   Result := SYNS_LangGeneralMulti;
 end;
 
-function TSynMultiSyn.GetMarkers(Index: integer): TMarker;
+function TSynMultiSyn.GetMarkers(Index: Integer): TMarker;
 begin
   Result := TMarker(fMarkers[Index]);
 end;
@@ -415,7 +409,7 @@ begin
     if Range = 0 then
       Exit;
     iSchemeRange := cardinal(Range);
-    fCurrScheme := integer(iSchemeRange and MaxSchemeCount) - 2;
+    fCurrScheme := Integer(iSchemeRange and MaxSchemeCount) - 2;
     iSchemeRange := iSchemeRange shr SchemeIndexSize;
     if (CurrScheme < 0) then
     begin
@@ -425,14 +419,6 @@ begin
     else
       Schemes[CurrScheme].Highlighter.SetRange(pointer(iSchemeRange));
   end;
-end;
-
-function TSynMultiSyn.GetToken: string;
-begin
-  if DefaultHighlighter = nil then
-    Result := fLineStr
-  else
-    Result := inherited GetToken;
 end;
 
 function TSynMultiSyn.GetTokenAttribute: TSynHighlighterAttributes;
@@ -447,7 +433,7 @@ begin
     Result := nil;
 end;
 
-function TSynMultiSyn.GetTokenKind: integer;
+function TSynMultiSyn.GetTokenKind: Integer;
 begin
   if fMarker <> nil then
     Result := 0
@@ -470,23 +456,16 @@ var
   iToken, TmpLine: string;
   iHL: TSynCustomHighlighter;
 begin
-  if DefaultHighlighter = nil then
-  begin
-    if Run > 0 then
-      Inc(Run)
-    else
-      Run := Length(fLineStr) + 1;
-    inherited;
-    Exit;
-  end;
-
   if (fNextMarker < fMarkers.Count) and (Run + 1 >= Markers[fNextMarker].fStartPos) then
   begin
     fMarker := Markers[fNextMarker];
     if fMarker.fIsOpenMarker then
     begin
       fCurrScheme := fMarker.fScheme;
-      fTmpRange := DefaultHighlighter.GetRange;
+      if DefaultHighlighter = nil then
+        fTmpRange := nil
+      else
+        fTmpRange := DefaultHighlighter.GetRange;
       Schemes[CurrScheme].Highlighter.ResetRange;
     end;
     Inc(fNextMarker);
@@ -507,15 +486,22 @@ begin
       TmpLine := fLineStr
     else
       TmpLine := Copy(fLineStr, 1, Markers[fNextMarker].fStartPos - 1);
-      
-    iHL.SetLine(TmpLine, fLineNumber);
+
+    if iHL = nil then
+    begin
+      FTokenPos := Run;
+      Run := Max(Length(TmpLine), 1);
+    end
+    else
+      iHL.SetLine(TmpLine, fLineNumber);
   end
   else if fMarker <> nil then
   begin
     if not fMarker.fIsOpenMarker then
     begin
       fCurrScheme := -1;
-      DefaultHighlighter.SetRange(fTmpRange);
+      if Assigned(DefaultHighlighter) then
+        DefaultHighlighter.SetRange(fTmpRange);
     end;
     fMarker := nil;
 
@@ -527,9 +513,15 @@ begin
     if fNextMarker < fMarkers.Count then
       TmpLine := Copy(fLineStr, Run + 1, Markers[fNextMarker].fStartPos - Run - 1)
     else
-      TmpLine := Copy(fLineStr, Run + 1, MaxInt);
+      TmpLine := Copy(fLineStr, Run + 1);
 
-    iHL.SetLine(TmpLine, fLineNumber);
+    if iHL = nil then
+    begin
+      FTokenPos := Run;
+      Inc(Run, Max(Length(TmpLine), 1))
+    end
+    else
+      iHL.SetLine(TmpLine, fLineNumber);
   end
   else
   begin
@@ -537,11 +529,22 @@ begin
       iHL := Schemes[CurrScheme].Highlighter
     else
       iHL := DefaultHighlighter;
-    iHL.Next;
+    if iHL = nil then
+    begin
+      FTokenPos := Run;
+      Run := Max(FLineLen, Run + 1);
+    end
+    else
+      iHL.Next;
   end;
 
-  fTokenPos := iHL.GetTokenPos;
-  iToken := iHL.GetToken;
+  if Assigned(iHL) then
+  begin
+    fTokenPos := iHL.GetTokenPos;
+    iToken := iHL.GetToken;
+  end
+  else
+    iToken := inherited GetToken;
   if fNextMarker > 0 then
     with Markers[fNextMarker - 1] do
       Inc(fTokenPos, fStartPos + fMarkerLen - 1);
@@ -670,7 +673,7 @@ end;
 function TSynMultiSyn.SaveToRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   r: TRegistry;
-  i: integer;
+  i: Integer;
 begin
   if DefaultHighlighter <> nil then
     Result := DefaultHighlighter.SaveToRegistry(RootKey, Key + '\DefaultHighlighter')
@@ -732,7 +735,7 @@ begin
   end
   else
   begin
-    CurrScheme := integer(Range and MaxSchemeCount) - 1;
+    CurrScheme := Integer(Range and MaxSchemeCount) - 1;
     Range := Range shr SchemeIndexSize;
     if CurrScheme >= 0 then
     begin
@@ -747,7 +750,7 @@ begin
   end;
 end;
 
-function TSynMultiSyn.UpdateRangeProcs: boolean;
+function TSynMultiSyn.UpdateRangeProcs: Boolean;
 // determines the appropriate RangeProcs and returns whether they were changed
 var
   i: Integer;
@@ -762,7 +765,7 @@ begin
       if Schemes[i].Highlighter is TSynMultiSyn then
       begin
         fRangeProc := OldRangeProc;
-        break;
+        Break;
       end;
   end;
   Result := TMethod(OldProc).Code <> TMethod(fRangeProc).Code;
@@ -810,13 +813,12 @@ end;
 
 procedure TSynMultiSyn.DoSetLine(const Value: string; LineNumber: Integer);
 var
-  iParser: TRegEx;
-  Match : TMatch;
+  Match: TMatch;
   iScheme: TScheme;
   iExpr: string;
   iLine: string;
   iEaten: Integer;
-  i: Integer;
+  Idx: Integer;
 begin
   ClearMarkers;
 
@@ -830,11 +832,10 @@ begin
   while iLine <> '' do
     if iScheme <> nil then
     begin
-      if iScheme.CaseSensitive then
-        iParser.Create(iScheme.EndExpr, [roNotEmpty, roCompiled])
+      if iScheme.EndExpr = '' then
+        Break
       else
-        iParser.Create(iScheme.EndExpr, [roNotEmpty, roIgnoreCase, roCompiled]);
-      Match := iParser.Match(iLine);
+        Match := iScheme.fEndRE.Match(iLine);
 
       if Match.Success then
       begin
@@ -846,23 +847,21 @@ begin
         iScheme := nil;
       end
       else
-        break;
+        Break;
     end
     else
     begin
-      for i := 0 to Schemes.Count - 1 do
+      Idx := 0;
+      while Idx < Schemes.Count do
       begin
-        iScheme := Schemes[i];
-        if (iScheme.StartExpr = '') or (iScheme.EndExpr = '') or
-          (iScheme.Highlighter = nil) or (not iScheme.Highlighter.Enabled) then
+        iScheme := Schemes[Idx];
+        if (iScheme.StartExpr = '') or (iScheme.Highlighter = nil) or
+          (not iScheme.Highlighter.Enabled) then
         begin
-          continue;
+          Inc(Idx);
+          Continue;
         end;
-        if iScheme.CaseSensitive then
-          iParser.Create(iScheme.StartExpr, [roNotEmpty, roCompiled])
-        else
-          iParser.Create(iScheme.StartExpr, [roNotEmpty, roIgnoreCase, roCompiled]);
-        Match := iParser.Match(iLine);
+        Match := iScheme.fStartRE.Match(iLine);
 
         if Match.Success then
         begin
@@ -871,14 +870,16 @@ begin
             iExpr, True, LineNumber, Value);
           Delete(iLine, 1, Match.Index - 1 + Match.Length);
           Inc(iEaten, Match.Index - 1 + Match.Length);
-          break;
+          Break;
         end;
+        Inc(Idx);
       end; {for}
-      if i >= Schemes.Count then
-        break;
+      if Idx >= Schemes.Count then
+        Break;
     end; {else}
 
   fLineStr := Value;
+  fLineLen := Value.Length;
   fLine := PWideChar(fLineStr);
   fCasedLineStr := '';
   fCasedLine := PWideChar(fLineStr);
@@ -927,7 +928,7 @@ end;
 function TScheme.ConvertExpression(const Value: string): string;
 begin
   if not CaseSensitive then
-    Result := SysUtils.AnsiUpperCase(Value)
+    Result := Value.ToUpper
   else
     Result := Value;
 end;
@@ -974,6 +975,21 @@ begin
   if fCaseSensitive <> Value then
   begin
     fCaseSensitive := Value;
+    // recompile regular expressions
+    if fStartExpr <> '' then
+    begin
+      if fCaseSensitive then
+        fStartRE := CompiledRegEx(fStartExpr, [roNotEmpty])
+      else
+        fStartRE := CompiledRegEx(fStartExpr, [roNotEmpty, roIgnoreCase]);
+    end;
+    if fEndExpr <> '' then
+    begin
+      if fCaseSensitive then
+        fEndRE := CompiledRegEx(fEndExpr, [roNotEmpty])
+      else
+        fEndRE := CompiledRegEx(fEndExpr, [roNotEmpty, roIgnoreCase]);
+    end;
     Changed(True);
   end;
 end;
@@ -990,7 +1006,13 @@ begin
   if fEndExpr <> Value then
   begin
     if Value <> '' then
-      CheckExpression(Value);
+    begin
+      // Raises an exception if invalid
+      if fCaseSensitive then
+        fEndRE := CompiledRegEx(Value, [roNotEmpty])
+      else
+        fEndRE := CompiledRegEx(Value, [roNotEmpty, roIgnoreCase]);
+    end;
     OldValue := fEndExpr;
     fEndExpr := Value;
     if ConvertExpression(OldValue) <> ConvertExpression(Value) then
@@ -1032,7 +1054,13 @@ begin
   if fStartExpr <> Value then
   begin
     if Value <> '' then
-      CheckExpression(Value);
+    begin
+      // Raises an exception if invalid
+      if fCaseSensitive then
+        fStartRE := CompiledRegEx(Value, [roNotEmpty])
+      else
+        fStartRE := CompiledRegEx(Value, [roNotEmpty, roIgnoreCase]);
+    end;
     OldValue := fStartExpr;
     fStartExpr := Value;
     if ConvertExpression(Value) <> ConvertExpression(OldValue) then

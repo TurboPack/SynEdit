@@ -202,7 +202,6 @@ type
 
   TSynSpellCheck = class;
 
-
   TSpellCheckPlugin = class(TSynEditPlugin)
   private
     procedure RegisterIndicatorSpec;
@@ -224,7 +223,7 @@ type
   { Singleton class you can/need only have one instance in your application}
   TSynSpellCheck = class(TComponent)
   public
-    const SpellErrorIndicatorId: TGUID  = '{A59BCD6A-02A6-4B34-B28C-D9EACA0C9F09}';
+    const SpellErrorIndicatorId: TGUID  = '{CAD19326-12B3-4190-9241-99DE3FDDE214}';
     class var GlobalInstance: TSynSpellCheck;
   private type
     TWorkItem = record
@@ -245,6 +244,7 @@ type
     FCheckAsYouType: Boolean;
     FDictionaryNA: Boolean;
     FWorkList: TList<TWorkItem>;
+    FOnChange: TNotifyEvent;
     procedure CreateSpellChecker;
     procedure SetLanguageCode(const Value: string);
     procedure SetEditor(const Value: TCustomSynEdit);
@@ -252,6 +252,7 @@ type
     procedure SetUnderlineStyle(const Value: TUnderlineStyle);
     procedure SetAttributesChecked(const Value: TStrings);
     class var FSpellCheckFactory: ISpellCheckerFactory;
+    procedure SetCheckAsYouType(const Value: Boolean);
   protected
     procedure Notification(AComponent: TComponent;
       Operation: TOperation); override;
@@ -285,7 +286,8 @@ type
     property AttributesChecked: TStrings read FAttributesChecked
       write SetAttributesChecked;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
-    property CheckAsYouType: Boolean read FCheckAsYouType write FCheckAsYouType;
+    property CheckAsYouType: Boolean read FCheckAsYouType write SetCheckAsYouType;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
 {$ENDREGION 'TSynSpellCheck'}
@@ -368,6 +370,7 @@ uses
   SynEditTypes,
   SynUnicode,
   SynDWrite,
+  SynEditMiscProcs,
   SynEditHighlighter,
   SynHighlighterURI,
   SynEditTextBuffer;
@@ -408,7 +411,7 @@ begin
 
   ClearErrors(False);
 
-  for Line := 0 to FEditor.Lines.Count - 1 do
+  for Line := 1 to FEditor.Lines.Count do
     SpellCheckLine(FEditor, Line);
   Editor.Invalidate;
 end;
@@ -472,8 +475,13 @@ var
   Plugin: TSpellCheckPlugin;
 begin
   if FUpdateCount = 0 then
-  for Plugin in FPlugins do
-    Plugin.Changed(LangId);
+  begin
+    for Plugin in FPlugins do
+      Plugin.Changed(LangId);
+
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
 end;
 
 constructor TSynSpellCheck.Create(AOwner: TComponent);
@@ -502,6 +510,7 @@ end;
 procedure TSynSpellCheck.CreateSpellChecker;
 begin
   FSpellChecker := nil;
+
   if not Assigned(SpellCheckFactory()) then
   begin
     FDictionaryNA := True;
@@ -543,9 +552,7 @@ var
 begin
   if not Assigned(FEditor) then Exit;
 
-  if not FEditor.Indicators.IndicatorAtPos(BC, Indicator) or
-    (Indicator.Id <> SpellErrorIndicatorId)
-  then
+  if not FEditor.Indicators.IndicatorAtPos(BC, SpellErrorIndicatorId, Indicator) then
     Exit;
 
   Result := SpellCheckLine(FEditor, BC.Line, 0, MaxInt, BC.Char);
@@ -554,9 +561,9 @@ end;
 procedure TSynSpellCheck.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
-  inherited;
   if (AComponent is TCustomSynEdit) and (Operation = opRemove) then
-  RemoveEditor(TCustomSynEdit(AComponent));
+    RemoveEditor(TCustomSynEdit(AComponent));
+  inherited;
 end;
 
 function TSynSpellCheck.RemoveEditor(AEditor: TCustomSynEdit): Boolean;
@@ -583,17 +590,22 @@ begin
   Changed;
 end;
 
+procedure TSynSpellCheck.SetCheckAsYouType(const Value: Boolean);
+begin
+  if Value <> FCheckAsYouType then
+  begin
+    FCheckAsYouType := Value;
+    Changed;
+  end;
+end;
+
 procedure TSynSpellCheck.SetEditor(const Value: TCustomSynEdit);
 begin
   if Value <> FEditor then
   begin
+    FEditor := Value;
     if Assigned(Value) then
-    begin
       AddEditor(Value);
-      FEditor := Value;
-    end
-    else
-      FEditor := nil;
   end;
 end;
 
@@ -716,8 +728,8 @@ begin
       if TokenPos + Token.Length < StartChar then Continue;
 
       Attri := Editor.HighLighter.GetTokenAttribute;
-      if (Token <> '') and Assigned(Attri) and
-        (FAttributesChecked.IndexOf(Attri.Name) >= 0)
+      if (Token <> '') and (not Assigned(Attri) or
+        (FAttributesChecked.IndexOf(Attri.Name) >= 0))
       then
         FWorkList.Add(TWorkItem.Create(Token,TokenPos));
 
@@ -774,15 +786,28 @@ begin
 end;
 
 procedure TSpellCheckPlugin.LinePut(aIndex: Integer; const OldLine: string);
+var
+  Line: string;
+  Len1, Len2: Integer;
+  StartingPos: Integer;
 begin
+  if Editor <> FSynSpellCheck.Editor then Exit;  // Chained editors
+
   if Assigned(FSynSpellCheck.SpellChecker()) and FSynSpellCheck.CheckAsYouType then
-    FSynSpellCheck.SpellCheckLine(Editor, aIndex + 1);
+  begin
+    Line := Editor.Lines[aIndex];
+    LineDiff(Line, OldLine, StartingPos, Len1, Len2);
+    if (Len1 <> 0) or (Len2 <> 1) or not Editor.IsIdentChar(Line[StartingPos]) then
+      FSynSpellCheck.SpellCheckLine(Editor, aIndex + 1);
+  end;
 end;
 
 procedure TSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);
 var
   Line: Integer;
 begin
+  if Editor <> FSynSpellCheck.Editor then Exit;
+
   if Assigned(FSynSpellCheck.SpellChecker()) and FSynSpellCheck.CheckAsYouType then
     for Line := FirstLine + 1 to FirstLine + Count do
       FSynSpellCheck.SpellCheckLine(Editor, Line);

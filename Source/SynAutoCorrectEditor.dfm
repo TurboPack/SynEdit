@@ -11,13 +11,11 @@ object frmAutoCorrectEditor: TfrmAutoCorrectEditor
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = True
   Position = poScreenCenter
   ShowHint = True
   OnCreate = FormCreate
   OnPaint = FormPaint
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object lblLabel1: TLabel
     Left = 16

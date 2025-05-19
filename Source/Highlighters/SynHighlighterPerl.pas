@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+ï»¿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterPerl.pas, released 2000-04-10.
 The Original Code is based on the DcjSynPerl.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Trier.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -27,11 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterPerl.pas,v 1.14.2.7 2005/12/16 20:09:37 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
 
 Known Issues:
   - Using q, qq, qw, qx, m, s, tr will not properly parse the contained
@@ -131,16 +126,17 @@ type
     function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
+    class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;               //Fiala
     procedure Next; override;
@@ -178,7 +174,8 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 const
   { expanded keywords list }                                                    //Fiala
@@ -388,7 +385,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 714 + Ord(Str^) * 970;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 2729;
   fStringLen := Str - fToIdent;
@@ -409,13 +406,13 @@ end;
 
 procedure TSynPerlSyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if KeyIndices[i] = -1 then
-      fIdentFuncTable[i] := AltFunc
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if KeyIndices[I] = -1 then
+      fIdentFuncTable[I] := AltFunc
     else
-      fIdentFuncTable[i] := FuncKey;
+      fIdentFuncTable[I] := FuncKey;
 
 {variable                                                                       //Fiala
   all functions starting FuncNN (NN = number)
@@ -573,20 +570,20 @@ begin
   case FLine[Run + 1] of
     '=':                               {bit and assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '&':
       begin
         if FLine[Run + 2] = '=' then   {logical and assign}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {logical and}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {bit and}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -596,8 +593,8 @@ procedure TSynPerlSyn.CRProc;
 begin
   fTokenID := tkSpace;
   Case FLine[Run + 1] of
-    #10: inc(Run, 2);
-  else inc(Run);
+    #10: Inc(Run, 2);
+  else Inc(Run);
   end;
 end;
 
@@ -606,12 +603,12 @@ begin
   Case FLine[Run + 1] of
     ':':                               {double colon}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {colon}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -624,9 +621,9 @@ begin
     fTokenID := tkComment;
     repeat
       case FLine[Run] of
-        #0, #10, #13: break;
+        #0, #10, #13: Break;
       end;
-      inc(Run);
+      Inc(Run);
     until FLine[Run] = #0;
   end
   else
@@ -638,22 +635,22 @@ begin
   case FLine[Run + 1] of
     '=':                               {logical equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '>':                               {digraph}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '~':                               {bind scalar to pattern}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {assign}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -664,20 +661,20 @@ begin
   Case FLine[Run + 1] of
     '=':                               {greater than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '>':
       begin
         if FLine[Run + 2] = '=' then   {shift right assign}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {shift right}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {greater than}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -691,24 +688,24 @@ begin
         Case FLine[Run + 1] of
           '!'..'+', '-'..'@', '['..']', '_', '`', '|', '~':
             begin                      {predefined variables}
-              inc(Run, 2);
+              Inc(Run, 2);
               fTokenID := tkVariable;
-              exit;
+              Exit;
             end;
           '^':
             begin
               Case FLine[Run + 2] of
                 'A', 'D', 'F', 'I', 'L', 'P', 'T', 'W', 'X':
                   begin                {predefined variables}
-                    inc(Run, 3);
+                    Inc(Run, 3);
                     fTokenID := tkVariable;
-                    exit;
+                    Exit;
                   end;
                 #0, #10, #13:          {predefined variables}
                   begin
-                    inc(Run, 2);
+                    Inc(Run, 2);
                     fTokenID := tkVariable;
-                    exit;
+                    Exit;
                   end;
               end;
             end;
@@ -719,15 +716,15 @@ begin
         Case FLine[Run + 1] of
           '=':                         {mod assign}
             begin
-              inc(Run, 2);
+              Inc(Run, 2);
               fTokenID := tkSymbol;
-              exit;
+              Exit;
             end;
           #0, #10, #13:                {mod}
             begin
-              inc(Run);
+              Inc(Run);
               fTokenID := tkSymbol;
-              exit;
+              Exit;
             end;
         end;
       end;
@@ -736,29 +733,29 @@ begin
         Case FLine[Run + 1] of
           '=':                         {repetition assign}
             begin
-              inc(Run, 2);
+              Inc(Run, 2);
               fTokenID := tkSymbol;
-              exit;
+              Exit;
             end;
           #0, #10, #13:                {repetition}
             begin
-              inc(Run);
+              Inc(Run);
               fTokenID := tkSymbol;
-              exit;
+              Exit;
             end;
         end;
       end;
   end;
   {regular identifier}
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynPerlSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPerlSyn.LowerProc;
@@ -767,22 +764,22 @@ begin
     '=':
       begin
         if FLine[Run + 2] = '>' then   {compare - less than, equal, greater}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {less than or equal to}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '<':
       begin
         if FLine[Run + 2] = '=' then   {shift left assign}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {shift left}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {less than}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -793,22 +790,22 @@ begin
   case FLine[Run + 1] of
     '=':                               {subtract assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '-':                               {decrement}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '>':                               {arrow}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {subtract}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -819,17 +816,17 @@ begin
   case FLine[Run + 1] of
     '~':                               {logical negated bind like =~}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '=':                               {not equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {not}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -838,7 +835,7 @@ end;
 procedure TSynPerlSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPerlSyn.NumberProc;
@@ -859,38 +856,38 @@ begin
     case FLine[Run + 1] of
       '.':
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           if FLine[Run] = '.' then     {sed range}
-            inc(Run);
+            Inc(Run);
 
           fTokenID := tkSymbol;        {range}
-          exit;
+          Exit;
         end;
       '=':
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           fTokenID := tkSymbol;        {concatenation assign}
-          exit;
+          Exit;
         end;
       'a'..'z', 'A'..'Z', '_':
         begin
           fTokenID := tkSymbol;        {concatenation}
-          inc(Run);
-          exit;
+          Inc(Run);
+          Exit;
         end;
     end;
   end;
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
       '-':                             {check for e notation}
-        if not ((FLine[Run + 1] = 'e') or (FLine[Run + 1] = 'E')) then break;
+        if not ((FLine[Run + 1] = 'e') or (FLine[Run + 1] = 'E')) then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -899,20 +896,20 @@ begin
   case FLine[Run + 1] of
     '=':                               {bit or assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '|':
       begin
         if FLine[Run + 2] = '=' then   {logical or assign}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {logical or}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {bit or}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -923,17 +920,17 @@ begin
   case FLine[Run + 1] of
     '=':                               {add assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '+':                               {increment}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {add}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -945,15 +942,15 @@ var
 
   function GetFirstBracket: char;
   var
-    i: integer;
+    I: Integer;
   begin
     Result := #0;
-    i := Run + 1;
-    while not IsLineEnd(i) do
+    I := Run + 1;
+    while not IsLineEnd(I) do
     begin
-      if CharInSet(FLine[i], [' ', #8, '(', '{']) then
+      if CharInSet(FLine[I], [' ', #8, '(', '{']) then
         { we will return opening bracket }
-        case FLine[i] of
+        case FLine[I] of
           '(': begin
             Result := ')';
             Break;
@@ -966,7 +963,7 @@ var
       { when other than opening bracket or space, we will stop }
       else
         Break;
-      inc(i)
+      Inc(I)
     end;
 
   end;
@@ -980,16 +977,16 @@ begin
     myBracket := ')';
     fTokenID := tkString;
     repeat
-      inc(Run);
+      Inc(Run);
     until (FLine[Run] = myBracket) or IsLineEnd(Run);
     if not IsLineEnd(Run) then
-      inc(Run);
+      Inc(Run);
   end
   else
   begin
   { standard identifier }
     fTokenID := tkIdentifier;
-    inc(run);
+    Inc(run);
   end;
 end;
 
@@ -998,12 +995,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {division assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {division}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -1011,9 +1008,9 @@ end;
 
 procedure TSynPerlSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynPerlSyn.StarProc;
@@ -1021,20 +1018,20 @@ begin
   case FLine[Run + 1] of
     '=':                               {multiply assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
     '*':
       begin
         if FLine[Run + 2] = '=' then   {exponentiation assign}
-          inc(Run, 3)
+          Inc(Run, 3)
         else                           {exponentiation}
-          inc(Run, 2);
+          Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {multiply}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -1042,7 +1039,7 @@ end;
 
 procedure TSynPerlSyn.StringInterpProc;
 var
-  fBackslashCount : Integer;
+  fBackslashCount: Integer;
 begin
   { modification for first quote is backshlashed }
   if (FRange = rsUnknown ) and (FLine[Run - 1] = '\') then                      // Fiala
@@ -1057,10 +1054,10 @@ begin
     FRange := rsString
   else
     Inc(Run);
-  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then inc(Run, 2);
+  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
       #92:
         { If we're looking at a backslash, and the following character is an
           end quote, and it's preceeded by an odd number of backslashes, then
@@ -1073,14 +1070,14 @@ begin
             while ((Run > fBackslashCount) and (FLine[Run - fBackslashCount] = #92)) do
               fBackslashCount := fBackslashCount + 1;
 
-            if (fBackslashCount mod 2 = 1) then inc(Run)
+            if (fBackslashCount mod 2 = 1) then Inc(Run)
           end;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #34;
   if FLine[Run] = #34 then
     FRange := rsUnknown;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynPerlSyn.StringLiteralProc;
@@ -1088,11 +1085,11 @@ begin
   fTokenID := tkString;
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #39;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynPerlSyn.SymbolProc;
@@ -1101,7 +1098,7 @@ begin
     fTokenId := tkSymbol
   else
     fTokenId := tkUnknown;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPerlSyn.XOrSymbolProc;
@@ -1109,12 +1106,12 @@ begin
   Case FLine[Run + 1] of
     '=':                               {xor assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
       end;
   else                                 {xor}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
     end;
   end;
@@ -1122,7 +1119,7 @@ end;
 
 procedure TSynPerlSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -1165,7 +1162,12 @@ begin
   inherited;
 end;
 
-function TSynPerlSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+class function TSynPerlSyn.GetCapabilities: TSynHighlighterCapabilities;
+begin
+  Result := inherited GetCapabilities + [hcStructureHighlight];
+end;
+
+function TSynPerlSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -1207,7 +1209,7 @@ begin
   end;
 end;
 
-function TSynPerlSyn.GetTokenKind: integer;
+function TSynPerlSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
@@ -1299,7 +1301,7 @@ function TSynPerlSyn.IsWordBreakChar(AChar: WideChar): Boolean;                 
 begin
   case AChar of
     #0..#32, '.', ',', ';', ':', '"', '''', '+', '`', '-', '^', '!', '?', '&',
-    '§', '#', '~', '[', ']', '(', ')', '{', '}', '<', '>',
+    'Â§', '#', '~', '[', ']', '(', ')', '{', '}', '<', '>',
     '=', '*', '/', '\', '|':
       Result := True;
     else
@@ -1321,67 +1323,69 @@ end;
 procedure TSynPerlSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
-  function LineHasChar(Line: Integer; character: char;
-  StartCol : Integer): boolean; // faster than Pos!
-  var
-    i: Integer;
-  begin
-    result := false;
-    for I := StartCol to Length(CurLine) do begin
-      if CurLine[i] = character then begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> fCommentAttri then begin
-          result := true;
-          break;
+  function FindBraces(Line: Integer): Boolean;
+  // Covers the following line patterns: {, }, {}, }{, {}{, }{}
+
+    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    var
+      I: Integer;
+    begin
+      Result := False;
+      Col := 0;
+      for I := StartCol to Length(CurLine) do begin
+        if CurLine[I] = AChar then begin
+          // Char must have proper highlighting (ignore stuff inside comments...)
+          if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) = fSymbolAttri then
+          begin
+            Col := I;
+            Exit(True);
+          end;
         end;
       end;
     end;
-  end;
 
-  function FindBraces(Line: Integer) : Boolean;
-  Var
-    Col : Integer;
-  begin
-    Result := False;
-
-    for Col := 1 to Length(CurLine) do
+    function Indent: Integer;
     begin
-      // We've found a starting character
-      if CurLine[col] = '{' then
-      begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, '}', col + 1) then begin
-            FoldRanges.StartFoldRange(Line + 1, 1);
-            Result := True;
-          end;
-          // Skip until a newline
-          break;
-        end;
-      end else if CurLine[col] = '}' then
-      begin
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, '{', col + 1) then begin
-            FoldRanges.StopFoldRange(Line + 1, 1);
-            Result := True;
-          end;
-          // Skip until a newline
-          break;
-        end;
-      end;
-    end; // for Col
+      Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
+    end;
+
+  var
+    OpenIdx: Integer;
+    CloseIdx: Integer;
+    Idx: Integer;
+  begin
+    LineHasChar('{', 1, OpenIdx);
+    LineHasChar('}', 1, CloseIdx);
+
+    Result := True;
+    if (OpenIdx <= 0) and (CloseIdx <= 0) then
+      Result := False
+    else if (OpenIdx > 0) and (CloseIdx <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, 1, Indent)
+    else if (OpenIdx <= 0) and (CloseIdx > 0) then
+      FoldRanges.StopFoldRange(Line + 1, 1)
+    else if CloseIdx >= OpenIdx then // {}
+    begin
+      if LineHasChar('{', CloseIdx, Idx) then
+        FoldRanges.StartFoldRange(Line + 1, 1, Indent)
+      else
+        Result := False;
+    end
+    else // }{
+    begin
+      if LineHasChar('}', OpenIdx, Idx) then
+        FoldRanges.StopFoldRange(Line + 1, 1)
+      else
+        FoldRanges.StopStartFoldRange(Line + 1, 1, Indent);
+    end;
   end;
 
   function FoldRegion(Line: Integer): Boolean;
-  Var
-    S : string;
+  var
+    S: string;
   begin
     Result := False;
     S := TrimLeft(CurLine);
@@ -1427,7 +1431,7 @@ end;
 
 procedure TSynPerlSyn.StringEndProc;                                            //Fiala
 var
-  fBackslashCount : Integer;
+  fBackslashCount: Integer;
 begin
   FTokenID := tkString;
   repeat
@@ -1437,7 +1441,7 @@ begin
             fRange := rsUnknown;
             Break;
           end;
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
       #92:
         { If we're looking at a backslash, and the following character is an
           end quote, and it's preceeded by an odd number of backslashes, then
@@ -1450,10 +1454,10 @@ begin
             while ((Run > fBackslashCount) and (FLine[Run - fBackslashCount] = #92)) do
               fBackslashCount := fBackslashCount + 1;
 
-            if (fBackslashCount mod 2 = 1) then inc(Run)
+            if (fBackslashCount mod 2 = 1) then Inc(Run)
           end;
     end;
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run);
 end;
 

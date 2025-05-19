@@ -20,10 +20,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-$Id: frmMain.pas,v 1.7 2004/04/24 17:04:54 markonjezic Exp $
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-Known Issues:
 -------------------------------------------------------------------------------}
 unit frmMain;
 {$I SynEdit.inc}
@@ -117,14 +113,14 @@ type
     procedure SynEditorTSynGutterBands1PaintLines(RT: ID2D1RenderTarget; ClipR:
         TRect; const FirstRow, LastRow: Integer; var DoDefaultPainting: Boolean);
   private
-    FCurrentLine: integer;
+    FCurrentLine: Integer;
     FDebugger: TSampleDebugger;
-    procedure DebuggerBreakpointChange(Sender: TObject; ALine: integer);
+    procedure DebuggerBreakpointChange(Sender: TObject; ALine: Integer);
     procedure DebuggerCurrentLineChange(Sender: TObject);
     procedure DebuggerStateChange(Sender: TObject; OldState,
       NewState: TDebuggerState);
     procedure DebuggerYield(Sender: TObject);
-    procedure SetCurrentLine(ALine: integer);
+    procedure SetCurrentLine(ALine: Integer);
   end;
 
 var
@@ -142,8 +138,8 @@ type
   TDebugSupportPlugin = class(TSynEditPlugin)
   protected
     fForm: TSimpleIDEMainForm;
-    procedure LinesInserted(FirstLine, Count: integer); override;
-    procedure LinesDeleted(FirstLine, Count: integer); override;
+    procedure LinesInserted(FirstLine, Count: Integer); override;
+    procedure LinesDeleted(FirstLine, Count: Integer); override;
   public
     constructor Create(AForm: TSimpleIDEMainForm);
   end;
@@ -155,13 +151,13 @@ begin
   fForm := AForm;
 end;
 
-procedure TDebugSupportPlugin.LinesInserted(FirstLine, Count: integer);
+procedure TDebugSupportPlugin.LinesInserted(FirstLine, Count: Integer);
 begin
 // Note: You will need this event if you want to track the changes to
 //       breakpoints in "Real World" apps, where the editor is not read-only
 end;
 
-procedure TDebugSupportPlugin.LinesDeleted(FirstLine, Count: integer);
+procedure TDebugSupportPlugin.LinesDeleted(FirstLine, Count: Integer);
 begin
 // Note: You will need this event if you want to track the changes to
 //       breakpoints in "Real World" apps, where the editor is not read-only
@@ -202,7 +198,7 @@ procedure TSimpleIDEMainForm.FormCloseQuery(Sender: TObject;
 begin
   if FDebugger.IsRunning then begin
     FDebugger.Stop;
-    CanClose := FALSE;
+    CanClose := False;
   end;
 end;
 
@@ -214,11 +210,11 @@ begin
   if FDebugger <> nil then begin
     LI := FDebugger.GetLineInfos(Line);
     if dlCurrentLine in LI then begin
-      Special := TRUE;
+      Special := True;
       FG := clWhite;
       BG := clBlue;
     end else if dlBreakpointLine in LI then begin
-      Special := TRUE;
+      Special := True;
       FG := clWhite;
       if dlExecutableLine in LI then
         BG := clRed
@@ -229,7 +225,7 @@ begin
 end;
 
 procedure TSimpleIDEMainForm.DebuggerBreakpointChange(Sender: TObject;
-  ALine: integer);
+  ALine: Integer);
 begin
   if (ALine >= 1) and (ALine <= SynEditor.Lines.Count) then
   begin
@@ -267,7 +263,7 @@ begin
   UpdateActions;
   Application.ProcessMessages;
 end;
-procedure TSimpleIDEMainForm.SetCurrentLine(ALine: integer);
+procedure TSimpleIDEMainForm.SetCurrentLine(ALine: Integer);
 begin
   if FCurrentLine <> ALine then
   begin
@@ -371,9 +367,9 @@ procedure TSimpleIDEMainForm.SynEditorTSynGutterBands1PaintLines(RT:
     ID2D1RenderTarget; ClipR: TRect; const FirstRow, LastRow: Integer; var
     DoDefaultPainting: Boolean);
 var
-  LH, Y: integer;
+  LH, Y: Integer;
   LI: TDebuggerLineInfos;
-  ImgIndex: integer;
+  ImgIndex: Integer;
   Row, Line: Integer;
 begin
   DoDefaultPainting := False;

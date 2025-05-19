@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditPythonBehaviour.pas,v 1.5.2.3 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a component which implements editing rules to apply to a Python source file)
@@ -39,7 +32,7 @@ Known Issues:
 @created(1999-10-17)
 @lastmod(May 19, 2000)
 The  SynEditPythonBehaviour unit provides a simple component implements editing rules to apply
-to a python source file. Python has a unusual way to mark blocks (like begin/end in pascal) : it
+to a python source file. Python has a unusual way to mark blocks (like begin/end in pascal): it
 uses indentation. So the rule is after a ":" and a line break, we have to indent once.
 }
 unit SynEditPythonBehaviour;
@@ -56,17 +49,17 @@ type
   TSynEditPythonBehaviour = class(TComponent)
   private
     FEditor: TSynEdit;
-    fIndent: integer;
+    FIndent: Integer;
   protected
     procedure SetEditor(Value: TSynEdit); virtual;
-    procedure doProcessUserCommand(Sender: TObject; AfterProcessing: boolean;
-      var Handled: boolean; var Command: TSynEditorCommand;
+    procedure doProcessUserCommand(Sender: TObject; AfterProcessing: Boolean;
+      var Handled: Boolean; var Command: TSynEditorCommand;
       var AChar: WideChar; Data: Pointer; HandlerData: Pointer); virtual;
   public
     constructor Create(aOwner: TComponent); override;
   published
     property Editor: TSynEdit read FEditor write SetEditor;
-    property Indent: integer read fIndent write fIndent default 4;
+    property Indent: Integer read FIndent write FIndent default 4;
   end;
 
 implementation
@@ -88,13 +81,13 @@ begin
 end; 
 
 procedure TSynEditPythonBehaviour.doProcessUserCommand(Sender: TObject;
-  AfterProcessing: boolean; var Handled: boolean;
+  AfterProcessing: Boolean; var Handled: Boolean;
   var Command: TSynEditorCommand; var AChar: WideChar; Data: Pointer;
   HandlerData: pointer);
 var
   iEditor: TCustomSynEdit;
   iPrevLine: string;
-  cSpace: integer;
+  cSpace: Integer;
 begin
   if (Command = ecLineBreak) and AfterProcessing then
   begin
@@ -118,7 +111,7 @@ end;
 constructor TSynEditPythonBehaviour.Create(aOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fIndent := 4;
+  FIndent := 4;
 end;
 
 end.

@@ -27,12 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterMsg.pas,v 1.8.2.6 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 -------------------------------------------------------------------------------}
 
 unit SynHighlighterMsg;
@@ -111,11 +105,11 @@ type
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes; override;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -150,7 +144,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 182 + Ord(Str^);
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 7;
   fStringLen := Str - fToIdent;
@@ -249,29 +243,29 @@ end;
 
 procedure TSynMsgSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynMsgSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynMsgSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynMsgSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynMsgSyn.BraceCommentOpenProc;
@@ -367,7 +361,7 @@ end;
 procedure TSynMsgSyn.IdentProc;
 begin
   fTokenID := IdentKind(fLine + Run);
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   while IsIdentChar(fLine[Run]) do
     Inc(Run);
 end;
@@ -392,7 +386,7 @@ end;
 
 procedure TSynMsgSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -421,7 +415,7 @@ begin
   inherited;
 end;
 
-function TSynMsgSyn.GetDefaultAttribute(Index: integer): TSynHighLighterAttributes;
+function TSynMsgSyn.GetDefaultAttribute(Index: Integer): TSynHighLighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -461,7 +455,7 @@ begin
   end;
 end;
 
-function TSynMsgSyn.GetTokenKind: integer;
+function TSynMsgSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

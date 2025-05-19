@@ -24,13 +24,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditStrConst.pas,v 1.41.2.5 2009/01/06 16:26:01 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynEditStrConst;
@@ -55,6 +48,7 @@ const
 //
 //
 const
+  SYNS_AttrAnchor               =  'Anchor';
   SYNS_AttrAreaAIdentifier      =  'Area_A_Identifier';
   SYNS_AttrArrowHead            =  'ArrowHead';
   SYNS_AttrAsm                  =  'Asm';
@@ -87,6 +81,7 @@ const
   SYNS_AttrDirective            =  'Directive';
   SYNS_AttrDOCTYPESection       =  'DOCTYPE-Section';
   SYNS_AttrDocumentation        =  'Documentation';
+  SYNS_AttrDocumentDelimiter    =  'DocumentDelimiter';
   SYNS_AttrElementName          =  'ElementName';
   SYNS_AttrEmbedSQL             =  'EmbeddedSQL';
   SYNS_AttrEmbedText            =  'EmbeddedText';
@@ -123,6 +118,7 @@ const
   SYNS_AttrNonReservedKeyword   =  'NonreservedKeyword';
   SYNS_AttrNull                 =  'Null';
   SYNS_AttrNumber               =  'Number';
+  SYNS_AttrNumericValue         =  'NumericValue';
   SYNS_AttrOctal                =  'Octal';
   SYNS_AttrOperator             =  'Operator';
   SYNS_AttrOperatorAndSymbols   =  'OperatorAndSymbols';
@@ -164,12 +160,14 @@ const
   SYNS_AttrSyntaxError          =  'SyntaxError';
   SYNS_AttrSystem               =  'SystemFunctionsAndVariables';
   SYNS_AttrSystemValue          =  'SystemValue';
+  SYNS_AttrTag                  =  'Tag';
   SYNS_AttrTagArea              =  'TagArea';
   SYNS_AttrTableName            =  'TableName';
   SYNS_AttrTemplate             = 'Template';
   SYNS_AttrTerminator           =  'Terminator';
   SYNS_AttrTeXCommand           =  'TeX-Command';
   SYNS_AttrText                 =  'Text';
+  SYNS_AttrTextValue            =  'TextValue';
   SYNS_AttrTextMathMode         =  'TextInMathMode';
   SYNS_AttrThirdTri             =  'ThirdTri';
   SYNS_AttrTixKeyWords          =  'Tix-Keywords';
@@ -219,6 +217,7 @@ const
   SYNS_LangVBSScript            =  'MS-VBScript';
   SYNS_LangGalaxy               =  'Galaxy';
   SYNS_LangGeneral              =  'General';
+  SYNS_LangOmni                 =  'Omni';
   SYNS_LangPascal               =  'ObjectPascal';
   SYNS_LangDWScript             =  'DWScriptPascal';
   SYNS_LangX86Asm               =  'x86Assembly';
@@ -265,13 +264,23 @@ const
   SYNS_LangUnknown              =  '<Unknown>';
   SYNS_LangURI                  =  'URI';
   SYNS_LangVrml97               =  'Vrml97';
+  SYNS_LangYAML                 =  'YAML';
 
 resourcestring
   SYNS_NoSearchEngineError      = 'No search engine has been assigned';
+  SYNS_SaveError                = 'Saving highlighter to file "%s" failed';
+  SYNS_LoadError                = 'Loading highlighter from file "%s" failed';
 
-  SYNS_Untitled                 =  'Untitled';
+  SYNS_Untitled                 = 'Untitled';
+  SYNS_Line                     = 'Line';
+  SYNS_Char                     = 'Char';
+  SYNS_Row                      = 'Row';
+  SYNS_Column                   = 'Column';
+  SYNS_Files                    = 'Files';
+
 
   // Friendly names for highlighter attributes
+  SYNS_FriendlyAttrAnchor               =  'Anchor';
   SYNS_FriendlyAttrAreaAIdentifier      =  'Area A Identifier';
   SYNS_FriendlyAttrArrowHead            =  'ArrowHead';
   SYNS_FriendlyAttrAsm                  =  'Asm';
@@ -304,6 +313,7 @@ resourcestring
   SYNS_FriendlyAttrDirective            =  'Directive';
   SYNS_FriendlyAttrDOCTYPESection       =  'DOCTYPE Section';
   SYNS_FriendlyAttrDocumentation        =  'Documentation';
+  SYNS_FriendlyAttrDocumentDelimiter    =  'Document Delimiter';
   SYNS_FriendlyAttrElementName          =  'Element Name';
   SYNS_FriendlyAttrEmbedSQL             =  'Embedded SQL';
   SYNS_FriendlyAttrEmbedText            =  'Embedded Text';
@@ -340,6 +350,7 @@ resourcestring
   SYNS_FriendlyAttrNonReservedKeyword   =  'Non-reserved Keyword';
   SYNS_FriendlyAttrNull                 =  'Null';
   SYNS_FriendlyAttrNumber               =  'Number';
+  SYNS_FriendlyAttrNumericValue         =  'Numeric Value';
   SYNS_FriendlyAttrOctal                =  'Octal';
   SYNS_FriendlyAttrOperator             =  'Operator';
   SYNS_FriendlyAttrOperatorAndSymbols   =  'Operator And Symbols';
@@ -381,12 +392,14 @@ resourcestring
   SYNS_FriendlyAttrSyntaxError          =  'Syntax Error';
   SYNS_FriendlyAttrSystem               =  'System Functions and Variables';
   SYNS_FriendlyAttrSystemValue          =  'System Value';
+  SYNS_FriendlyAttrTag                  =  'Tag';
   SYNS_FriendlyAttrTagArea              =  'Tag Area';
   SYNS_FriendlyAttrTableName            =  'Table Name';
-  SYNS_FriendlyAttrTemplate             = 'Template';
+  SYNS_FriendlyAttrTemplate             =  'Template';
   SYNS_FriendlyAttrTerminator           =  'Terminator';
   SYNS_FriendlyAttrTeXCommand           =  'TeX Command';
   SYNS_FriendlyAttrText                 =  'Text';
+  SYNS_FriendlyAttrTextValue            =  'Text Value';
   SYNS_FriendlyAttrTextMathMode         =  'Text in Math Mode';
   SYNS_FriendlyAttrThirdTri             =  'ThirdTri';
   SYNS_FriendlyAttrTixKeyWords          =  'Tix Keywords';
@@ -432,7 +445,7 @@ resourcestring
   SYNS_PreviewScrollInfoFmt     =  'Page: %d';
 
   // strings for property editors etc
-  SYNS_EDuplicateShortcut       =  'Shortcut already exists';
+  SYNS_EDuplicateShortcut       =  'Shortcut for command "%s" is already used for command "%s"';
   SYNS_ShortcutNone             =  '<none>';
   SYNS_DuplicateShortcutMsg     =  'The keystroke "%s" is already assigned ' +
                                    'to another editor command. (%s)';
@@ -463,7 +476,7 @@ resourcestring
   SYNS_FilterDFM                =  'Borland Form Files (*.dfm;*.xfm)|*.dfm;*.xfm';
   SYNS_FilterX86Assembly        =  'x86 Assembly Files (*.asm)|*.asm';
   SYNS_FilterGembase            =  'GEMBASE Files (*.dml;*.gem)|*.dml;*.gem';
-  SYNS_FilterINI                =  'INI Files (*.ini)|*.ini';
+  SYNS_FilterINI                =  'INI/TOML Files (*.ini;*.toml)|*.ini;*.toml';
   SYNS_FilterSML                =  'Standard ML Files (*.sml)|*.sml';
   SYNS_FilterVisualBASIC        =  'Visual Basic Files (*.bas)|*.bas';
   SYNS_FilterADSP21xx           =  'DSP Files (*.dsp;*.inc)|*.dsp;*.inc';
@@ -498,6 +511,7 @@ resourcestring
   SYNS_FilterLLVMIR             =  'LLVM IR files (*.ll)|*.ll';
   SYNS_FilterURI                =  'All Files (*.*)|*.*';
   SYNS_FilterVrml97             =  'Vrml97/X3D World (*.wrl;*.wrml;*.vrl;*.vrml;*.x3d)|*.wrl;*.wrml;*.vrl;*.vrml;*.x3d';
+  SYNS_FilterYAML               =  'YAML files (*.yaml)|*.yaml';
 
   // friendly language names
   SYNS_FriendlyLangHP48                 =  'HP48';
@@ -515,6 +529,7 @@ resourcestring
   SYNS_FriendlyLangVBSScript            =  'MS VBScript';
   SYNS_FriendlyLangGalaxy               =  'Galaxy';
   SYNS_FriendlyLangGeneral              =  'General';
+  SYNS_FriendlyLangOmni                 =  'Omni';
   SYNS_FriendlyLangPascal               =  'Object Pascal';
   SYNS_FriendlyLangDWScript             =  'DWScript Pascal';
   SYNS_FriendlyLangX86Asm               =  'x86 Assembly';
@@ -561,6 +576,7 @@ resourcestring
   SYNS_FriendlyLangUnknown              =  '<Unknown>';
   SYNS_FriendlyLangURI                  =  'URI';
   SYNS_FriendlyLangVrml97               =  'Vrml97';
+  SYNS_FriendlyLangYAML                 =  'YAML';
 
 implementation
 

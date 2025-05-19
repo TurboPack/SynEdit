@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+ï»¿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@ The Original Code is: SynEditPrint.pas, released 2000-06-01.
 
 The Initial Author of the Original Code is Morten J. Skovrup.
 Portions written by Morten J. Skovrup are copyright 2000 Morten J. Skovrup.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -56,7 +56,7 @@ CONTENTS:
     OnPrintStatus : Fired at Beginning, End and when a new page is started
     Highlighter   : The highlighter used for highlighting the text (see also the
                     SynEdit property below)
-    LineNumbersInMargin : If true line numbers are printed in the left margin,
+    LineNumbersInMargin : If True line numbers are printed in the left margin,
                           else left margin is increased by width of line
                           number text.
     SelectedOnly  : Print only the selected Area
@@ -68,8 +68,8 @@ CONTENTS:
                   properties Lines, Font and Highlighter are automatically
                   set to the corresponding values of the TSynEdit component
   Run-time methods:
-    UpdatePages   : Used internally by the TSynEditPrintPreview component
-    PrintToCanvas : Used internally by the TSynEditPrintPreview component
+    InitPrint     : Used internally by the TSynEditPrintPreview component
+    PaintPreview  : Used internally by the TSynEditPrintPreview component
     Print         : Prints the contents of the Lines property
     PrintRange(StartPage,EndPage) : Prints the specified page-range (both inclusive)
 -------------------------------------------------------------------------------}
@@ -109,6 +109,7 @@ type
     LastLine: Integer;
     LastRow: Integer;
   end;
+
   //The actual print controller object
   TSynEditPrint = class(TComponent)
   private
@@ -122,7 +123,6 @@ type
     FDocTitle: string;
     FPrinterInfo: TSynEditPrinterInfo;
     FPages: TObjectList<TPageLine>;
-    FCanvas: TCanvas;
     FMaxLeftChar: Integer;
     FWrap: Boolean;
     FOnPrintLine: TPrintLineEvent;
@@ -131,7 +131,6 @@ type
     FHighlight: Boolean;
     FColors: Boolean;
     FHighlighter: TSynCustomHighlighter;
-    FOldFont: TFont;
     FSynOK: Boolean;
     FLineNumbers: Boolean;
     FLineOffset: Integer;
@@ -140,14 +139,13 @@ type
     FDefaultBG: TColor;
     FPageOffset: Integer;
     FRangesOK: Boolean;
-    FMaxWidth: integer;
+    FMaxRowCount: Integer;
+    FMaxWidth: Integer;
     FPagesCounted: Boolean;
     FLineNumbersInMargin: Boolean;
-    FTabWidth: integer;
-    FFontColor: TColor;
+    FTabWidth: Integer;
     FSelectedOnly: Boolean;
     FSelAvail: Boolean;
-    FSelMode: TSynSelectionMode;
     FBlockBegin: TBufferCoord;
     FBlockEnd: TBufferCoord;
     FSynTextFormat: TSynTextFormat;
@@ -155,13 +153,11 @@ type
     procedure SetLines(const Value: TStrings);
     procedure SetFont(const Value: TFont);
     procedure SetMaxLeftChar(const Value: Integer);
-    procedure PrintPage(Num: Integer);
-    procedure WriteLineNumber(const LineNumber, YPos: Integer);
+    procedure PrintPage(RT: ID2D1RenderTarget; Num: Integer; const ClipR: TRect);
+    procedure WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos:
+        Integer; FontColor: TColor);
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
-    procedure RestoreCurrentFont;
-    procedure SaveCurrentFont;
     procedure SetPixelsPrInch;
-    procedure InitPrint;
     procedure InitRanges;
     function GetPageCount: Integer;
     procedure SetSynEdit(const Value: TCustomSynEdit);
@@ -172,14 +168,15 @@ type
   protected
     procedure DefineProperties(Filer: TFiler); override;
     property MaxLeftChar: Integer read FMaxLeftChar write SetMaxLeftChar;
-    procedure PrintStatus(Status: TSynPrintStatus; PageNumber: integer;
-      var Abort: boolean); virtual;
-    procedure PrintLine(LineNumber, PageNumber: Integer); virtual;
+    procedure DoPrintStatus(Status: TSynPrintStatus; PageNumber: Integer;
+      var Abort: Boolean); virtual;
+    procedure DoPrintLine(LineNumber, PageNumber: Integer); virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure UpdatePages(ACanvas: TCanvas);
-    procedure PrintToCanvas(ACanvas: TCanvas; PageNumber: Integer);
+    procedure InitPrint;
+    procedure PrintToCanvas(ACanvas: TCanvas; const RenderRect, ClipRect: TRect;
+      PageNo: Integer);
     procedure Print;
     procedure PrintRange(StartPage, EndPage: Integer);
     property PrinterInfo: TSynEditPrinterInfo read FPrinterInfo;
@@ -189,7 +186,7 @@ type
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
   published
-    property Copies: integer read FCopies write FCopies;
+    property Copies: Integer read FCopies write FCopies;
     property Header: THeader read FHeader write SetHeader;
     property Footer: TFooter read FFooter write SetFooter;
     property Margins: TSynEditPrintMargins read FMargins write SetMargins;
@@ -213,7 +210,7 @@ type
       write SetHighlighter;
     property LineNumbersInMargin: Boolean read FLineNumbersInMargin
       write FLineNumbersInMargin default False;
-    property TabWidth: integer read fTabWidth write fTabWidth;
+    property TabWidth: Integer read fTabWidth write fTabWidth;
     property Color: TColor read fDefaultBG write fDefaultBG;
   end;
 
@@ -223,6 +220,9 @@ uses
   Winapi.MultiMon,
   System.Math,
   System.UITypes;
+
+resourcestring
+  SYNS_NoPrinter = 'No printer available';
 
 { TSynEditPrint }
 
@@ -236,7 +236,9 @@ begin
   FMargins := TSynEditPrintMargins.Create;
   FPrinterInfo := TSynEditPrinterInfo.Create;
   FFont := TFont.Create;
-  FOldFont := TFont.Create;
+  FFont.Name := DefaultFontName;
+  FFont.PixelsPerInch := 96;
+  FFont.Size := 10;
   MaxLeftChar := 1024;
   FWrap := True;
   FHighlight := True;
@@ -246,7 +248,7 @@ begin
   FPageOffset := 0;
   FLineNumbersInMargin := False;
   FPages := TObjectList<TPageLine>.Create;
-  FTabWidth := 8;                                                     
+  FTabWidth := 8;
   FDefaultBG := clWhite;
 end;
 
@@ -258,7 +260,6 @@ begin
   FMargins.Free;
   FPrinterInfo.Free;
   FFont.Free;
-  FOldFont.Free;
   FPages.Free;
   inherited;
 end;
@@ -297,38 +298,29 @@ end;
 procedure TSynEditPrint.InitPrint;
 { Initialize Font.PixelsPerInch, Character widths, Margins, Total Page count,
   headers and footers}
-var
-  TmpSize: Integer;
 begin
-  FDefaultBG := FCanvas.Brush.Color;
-  fFontColor := FFont.Color;
-  FCanvas.Font.Assign(FFont);
-  if not FPrinting then
-  begin
-    SetPixelsPrInch;
-    TmpSize := FCanvas.Font.Size;
-    FCanvas.Font.PixelsPerInch := FFont.PixelsPerInch;
-    FCanvas.Font.Size := TmpSize;
-  end;
-  FSynTextFormat.Create(FCanvas.Font, FTabWidth, 0, 0);
+  FPrinterInfo.UpdatePrinter;
+  SetPixelsPrInch;
+  FSynTextFormat := TSynTextFormat.Create(FFont, FTabWidth, 0, 0);
   FLineHeight := FSynTextFormat.LineHeight;
-  FMargins.InitPage(FCanvas, 1, FPrinterInfo, FLineNumbers, FLineNumbersInMargin,
-    FLines.Count - 1 + FLineOffset);
+  FMargins.InitPage(FSynTextFormat, 1, FPrinterInfo, FLineNumbers,
+    FLineNumbersInMargin, FLines.Count - 1 + FLineOffset);
   FSynOK := Highlight and Assigned(FHighLighter) and (FLines.Count > 0);
   CalcPages;
-  FHeader.InitPrint(FCanvas, FPages.Count, FTitle, FMargins);
-  FFooter.InitPrint(FCanvas, FPages.Count, FTitle, FMargins);
+  FHeader.InitPrint(FPages.Count, FTitle, FMargins);
+  FFooter.InitPrint(FPages.Count, FTitle, FMargins);
 end;
 
 procedure TSynEditPrint.SetPixelsPrInch;
+// Scale fonts for 96 PPI
 var
   TmpSize: Integer;
 begin
-  FHeader.SetPixPrInch(FPrinterInfo.YPixPrInch);
-  FFooter.SetPixPrInch(FPrinterInfo.YPixPrInch);
-  //This should be necessary - else size would be changed...
+  FHeader.SetPixPrInch(96);
+  FFooter.SetPixPrInch(96);
+
   TmpSize := FFont.Size;
-  FFont.PixelsPerInch := FPrinterInfo.YPixPrInch;
+  FFont.PixelsPerInch := 96;
   FFont.Size := TmpSize;
 end;
 
@@ -363,8 +355,7 @@ var
   ActualLineCount: Cardinal;
   LayoutRowCount: Integer;
   RowCount: Integer;
-  MaxRowCount: Integer;
-  iStartLine, iEndLine: integer;
+  iStartLine, iEndLine: Integer;
 begin
   InitRanges;
   FPages.Clear;
@@ -383,8 +374,8 @@ begin
   PageLine.FirstRow := 1;
   PageLine.LastLine := -1;
   FPages.Add(PageLine);
-  MaxRowCount := (FMargins.PBottom - FMargins.PTop) div FLineHeight;
-  Assert(MaxRowCount > 1);
+  FMaxRowCount := (FMargins.PBottom - FMargins.PTop) div FLineHeight;
+  Assert(FMaxRowCount > 1);
   RowCount := 0;
   for I := iStartLine to iEndLine do
   begin
@@ -401,21 +392,27 @@ begin
       Inc(RowCount, LayoutRowCount);
     end;
 
-    while RowCount >= MaxRowCount do
+    // Add new page(s) if needed (word wrap)
+    while RowCount >= FMaxRowCount do
     begin
       PageLine.LastLine := I;
-      PageLine.LastRow := LayoutRowCount - (RowCount - MaxRowCount);
-      if (RowCount = MaxRowCount) and (I = iEndLine) then Break;
+      PageLine.LastRow := LayoutRowCount - (RowCount - FMaxRowCount);
+
+      if (RowCount = FMaxRowCount) and (I = iEndLine) then Break;
+
       PageLine := TPageLine.Create;
-      PageLine.FirstLine := IfThen(RowCount = MaxRowCount, I + 1, I);
-      PageLine.FirstRow := IfThen(RowCount = MaxRowCount, 1,
-         LayoutRowCount - (RowCount - MaxRowCount) + 1);
+      PageLine.FirstLine := IfThen(RowCount = FMaxRowCount, I + 1, I);
+      PageLine.FirstRow := IfThen(RowCount = FMaxRowCount, 1,
+         LayoutRowCount - RowCount + FMaxRowCount + 1);
       FPages.Add(PageLine);
-      RowCount := RowCount - MaxRowCount;
+      RowCount := RowCount - FMaxRowCount;
     end;
 
     if I = iEndLine then
+    begin
       PageLine.LastLine := I;
+      PageLine.LastRow := LayoutRowCount;
+    end;
   end;
   FPagesCounted := True;
 end;
@@ -423,37 +420,27 @@ end;
 { Writes the line number. FMargins. PLeft is the position of the left margin
   (which is automatically incremented by the length of the linenumber text, if
   the linenumbers should not be placed in the margin) }
-procedure TSynEditPrint.WriteLineNumber(const LineNumber, YPos: Integer);
+procedure TSynEditPrint.WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos: Integer;
+  FontColor: TColor);
 var
   AStr: string;
+  Layout: TSynTextLayout;
 begin
-  SaveCurrentFont;
   AStr := IntToStr(LineNumber + FLineOffset) + ': ';
-  FCanvas.Brush.Color := FDefaultBG;
-  FCanvas.Font.Assign(Font);
-  FCanvas.Font.Style := [];
-  FCanvas.Font.Color := clBlack;
-  FCanvas.TextOut(FMargins.PLeft - FCanvas.TextWidth(AStr), YPos, AStr);
-  RestoreCurrentFont;
+  Layout := TSynTextLayout.Create(FSynTextFormat, PChar(AStr), AStr.Length);
+  Layout.Draw(RT, FMargins.PLeft -
+    Round(Layout.TextMetrics.widthIncludingTrailingWhitespace), YPos, FontColor);
 end;
 
-procedure TSynEditPrint.SaveCurrentFont;
-begin
-  FOldFont.Assign(FCanvas.Font);
-end;
-
-procedure TSynEditPrint.RestoreCurrentFont;
-begin
-  FCanvas.Font.Assign(FOldFont);
-end;
-
-procedure TSynEditPrint.PrintPage(Num: Integer);
-//Prints a page
+procedure TSynEditPrint.PrintPage(RT: ID2D1RenderTarget; Num: Integer; const ClipR: TRect);
+// Prints a page to a RenderTarget
+// ** The RenderTarget assumes a PPI of 96 **
+// The ClipR(ect) serves the purpose of reducing painting when previewing
 var
   I: Integer;
   LineText: string;
   YPos: Integer;
-  iSelStart, iSelLen: integer;
+  iSelStart, iSelLen: Integer;
   TextLayout: TSynTextLayout;
   LineMetrics: TDwriteLineMetrics;
   ActualLineCount: Cardinal;
@@ -461,70 +448,58 @@ var
   Token: string;
   TokenPos, TokenEnd: Integer;
   Attr: TSynHighlighterAttributes;
-  AColor: TColor;
+  BkgColor, FontColor, AColor: TColor;
   HitMetrics: TDwriteHitTestMetrics;
   X1, X2, Y1, Y2: Single;
-  TextRect: TRect;
-  DevTextRect: TRect;
-  ClipRect: TRect;
-  WicRT: ISynWICRenderTarget;
-  RT: ID2D1RenderTarget;
-  GDIRT: ID2D1GdiInteropRenderTarget;
-  SourceDC: HDC;
 begin
-  PrintStatus(psNewPage, Num, FAbort);
+  DoPrintStatus(psNewPage, Num, FAbort);
   if not FAbort then
   begin
-    FMargins.InitPage(FCanvas, Num, FPrinterInfo, FLineNumbers,
-      FLineNumbersInMargin, FLines.Count - 1 + FLineOffset);
-    FHeader.Print(FCanvas, Num + FPageOffset);
-
     if FPages.Count >= Num then
     begin
-      with FMargins do
-        TextRect := Rect(PLeft, PTop, PRight, PBottom);
-
-      ClipRect := FCanvas.ClipRect;
-      DevTextRect := TextRect;
-      if not FPrinting then
-        LPToDP(FCanvas.Handle, DevTextRect, 2);
-
-      WicRT := SynWICRenderTarget(DevTextRect.Width, DevTextRect.Height);
-      RT := WicRt.IDW;
-      if not FPrinting then
-        RT.SetTransform(
-          TD2DMatrix3X2F.Scale(DevTextRect.Width / TextRect.Width,
-            DevTextRect.Height /TextRect.Height, Point(0, 0)));
-
       RT.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
       RT.SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-      RT.BeginDraw;
-      RT.Clear(D2D1ColorF(Color));
 
-      YPos := 0;
+      if FColors and FSynOK then
+        BkgColor := FHighlighter.WhitespaceAttribute.Background
+      else
+        BkgColor := Color;
+
+      if IsColorDark(BkgColor) then
+        FontColor := clWhite
+      else
+        FontColor := Font.Color;
+
+      RT.Clear(D2D1ColorF(BkgColor));
+
+      if FMargins.PTop >= ClipR.Top then
+        FHeader.Print(RT, Num + FPageOffset);
+
+      // TODO multicaret
+      YPos := FMargins.PTop;
       for i := FPages[Num - 1].FirstLine to  FPages[Num - 1].LastLine do
       begin
-        if FLineNumbers then
-          WriteLineNumber(i + 1, YPos + FMargins.PTop);
+        if FLineNumbers and (YPos + FLineHeight >= ClipR.Top) then
+          WriteLineNumber(RT, i + 1, YPos, FontColor);
 
         LineText := FLines[I];
 
         if LineText = '' then
-          Inc(YPos, FLineHeight)
+          LayoutRowCount := 1
         else
         begin
-          if not fSelectedOnly or (fSelMode = smLine) then
+          if not fSelectedOnly then
           begin
             iSelStart := 1;
             iSelLen := LineText.Length;
           end
           else
           begin
-            if (fSelMode = smColumn) or (i = fBlockBegin.Line -1) then
+            if i = fBlockBegin.Line -1 then
               iSelStart := fBlockBegin.Char
             else
               iSelStart := 1;
-            if (fSelMode = smColumn) or (i = fBlockEnd.Line -1) then
+            if i = fBlockEnd.Line -1 then
               iSelLen := fBlockEnd.Char  - iSelStart
             else
               iSelLen := MaxInt;
@@ -558,12 +533,28 @@ begin
                   if AColor <> clNone then
                     TextLayout.SetFontColor(AColor, TokenPos, TokenEnd - TokenPos);
                   AColor := Attr.Background;
-                  if AColor <> clNone then
+                  if (AColor <> clNone) and (AColor <> BkgColor) then
                   begin
                     TextLayout.IDW.HitTestTextPosition(TokenPos - 1, False, X1, Y1, HitMetrics);
                     TextLayout.IDW.HitTestTextPosition(TokenEnd - 2, True, X2, Y2, HitMetrics);
-                    RT.FillRectangle(Rect(Round(X1), YPos + Round(Y1), Round(X2),
-                      YPos + Round(Y2) + FLineHeight), TSynDWrite.SolidBrush(AColor));
+
+                    // Word wrap complications - line continues from previous page
+                    if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1) then
+                    begin
+                      Y1 := Y1 - (FPages[Num - 1].FirstRow - 1) * FLineHeight;
+                      Y2 := Y2 - (FPages[Num - 1].FirstRow - 1) * FLineHeight;
+                    end;
+
+                    if Y2 >= 0 then
+                    begin
+                      if YPos + Round(Y1) >=  FMargins.PTop + FMaxRowCount * FLineHeight
+                      then
+                        Break;
+
+                      RT.FillRectangle(Rect(Round(X1) + FMargins.PLeft, YPos + Round(Y1),
+                        Round(X2) + FMargins.PLeft, YPos + Round(Y2) + FLineHeight),
+                        TSynDWrite.SolidBrush(AColor));
+                    end;
                   end;
                 end;
               end;
@@ -574,57 +565,80 @@ begin
           TextLayout.IDW.GetLineMetrics(@LineMetrics, 1, ActualLineCount);
           LayoutRowCount := ActualLineCount; // to avoid warnings
 
-          if YPos + FMargins.PTop + LayoutRowCount * FLineHeight >= ClipRect.Top then
+          if YPos + LayoutRowCount * FLineHeight >= ClipR.Top then
+          begin
             if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1) then
             begin
-              TextLayout.DrawClipped(RT, 0,
+              TextLayout.DrawClipped(RT, FMargins.PLeft,
                 YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
-                Rect(0, YPos, FMaxWidth,
-                ((FMargins.PBottom - FMargins.PTop) div FLineHeight) * FLineHeight),
-                FFont.Color);
+                Rect(FMargins.PLeft, YPos, FMargins.PRight,
+                FMargins.PTop + FMaxRowCount * FLineHeight), FFont.Color);
               LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
             end else if (I = FPages[Num - 1].LastLine) and
               (FPages[Num - 1].LastRow < LayoutRowCount)
             then
-              TextLayout.DrawClipped(RT, 0, YPos,
-                Rect(0, YPos, FMaxWidth, YPos + FPages[Num - 1].LastRow * FLineHeight),
-                FFont.Color)
+              TextLayout.DrawClipped(RT, FMargins.PLeft, YPos,
+                Rect(FMargins.PLeft, YPos, FMargins.PRight,
+                YPos + FPages[Num - 1].LastRow * FLineHeight), FFont.Color)
             else
-              TextLayout.Draw(RT, 0, YPos, FFont.Color);
-
-          Inc(YPos, LayoutRowCount * FLineHeight);
-          if YPos + FMargins.PTop > ClipRect.Bottom then Break;
+              TextLayout.Draw(RT, FMargins.PLeft, YPos, FFont.Color);
+          end;
         end;
-        PrintLine(i + 1, Num);
+        DoPrintLine(I + 1, Num);
+
+        Inc(YPos, LayoutRowCount * FLineHeight);
+        // Optimization do not print anything below ClipR
+        if YPos > ClipR.Bottom then Exit;
       end;
 
-      GDIRT := RT as ID2D1GdiInteropRenderTarget;
-      CheckOSError(GDIRT.GetDC(D2D1_DC_INITIALIZE_MODE_COPY, SourceDC));
-      StretchBlt(FCanvas.Handle, TextRect.Left, TextRect.Top, TextRect.Width, TextRect.Height,
-        SourceDC, 0, 0, DevTextRect.Width, DevTextRect.Height, SRCCOPY);
-      GDIRT.ReleaseDC(nil);
-
-      RT.EndDraw;
+      FFooter.Print(RT, Num + FPageOffset);
     end;
-    FFooter.Print(FCanvas, Num + FPageOffset);
   end;
 end;
 
-procedure TSynEditPrint.UpdatePages(ACanvas: TCanvas);
-//Update pages (called explicitly by preview component)
-begin
-  FCanvas := ACanvas;
-  FPrinterInfo.UpdatePrinter;
-  InitPrint;
-end;
-
-procedure TSynEditPrint.PrintToCanvas(ACanvas: TCanvas; PageNumber: Integer);
-//Print to specified canvas. Used by preview component
+procedure TSynEditPrint.PrintToCanvas(ACanvas: TCanvas; const RenderRect,
+    ClipRect: TRect; PageNo: Integer);
+// Used by preview component
+var
+  RT:  ID2D1DCRenderTarget;
+  ScaleX, ScaleY: Single;
+  ClipR: TRect;
 begin
   FAbort := False;
   FPrinting := False;
-  FCanvas := ACanvas;
-  PrintPage(PageNumber);
+
+  with PrinterInfo do
+  begin
+    // The RenderTarget expects a PPI of 96
+    ScaleX := RenderRect.Width / (PhysicalWidth * 96 / XPixPrInch) ;
+    ScaleY := RenderRect.Height / (PhysicalHeight * 96 / YPixPrInch);
+  end;
+
+  ClipR := ClipRect;
+  // Transform ClipR to the Coordinate system of RenderTarget
+  ClipR.Offset(-RenderRect.Left, -RenderRect.Top);
+  ClipR := TRect.Create(
+    ScalePoint(ClipR.TopLeft, 1 / ScaleX, 1 / ScaleY),
+    ScalePoint(ClipR.BottomRight, 1 / ScaleX, 1 / ScaleY));
+
+  // Reset so that rendering for printing is not mixed up with Synedit rendering
+  TSynDWrite.ResetRenderTarget;
+  RT := TSynDWrite.RenderTarget;
+  try
+    RT.BindDC(ACanvas.Handle, RenderRect);
+    RT.BeginDraw;
+    try
+      RT.SetTransform(
+        TD2DMatrix3X2F.Scale(ScaleX, ScaleY, Point(0, 0)));
+
+      PrintPage(RT, PageNo, ClipR);
+    finally
+      RT.EndDraw;
+    end;
+  finally
+    // Reset so that it does not mess up the SynEdit drawing
+    TSynDWrite.ResetRenderTarget;
+  end;
 end;
 
 procedure TSynEditPrint.Print;
@@ -633,108 +647,142 @@ begin
 end;
 
 procedure TSynEditPrint.PrintRange(StartPage, EndPage: Integer);
-//Prints the pages in the specified range
+// Prints the pages in the specified range.  It uses as guide the sample app
+// https://github.com/microsoft/Windows-classic-samples/tree/main/Samples/D2DPrintingFromDesktopApps
 var
-  i, ii: Integer;
+  Page, Copy: Integer;
+  Title, PrinterName: string;
+  PrintDocumentPackageTarget: IPrintDocumentPackageTarget;
+  Device: ID2D1Device;
+  DeviceContext: ID2D1DeviceContext;
+  PrintControl: ID2D1PrintControl;
+  CommandList: ID2D1CommandList;
+  ClipR: TRect;
 begin
   if fSelectedOnly and not fSelAvail then
-    exit;
+    Exit;
 
   FPrinting := True;
   FAbort := False;
-  // The next part sets the document title that is used by the printer queue.
+  // Set the print job title
   if FDocTitle <> '' then
-    Printer.Title := FDocTitle
+    Title := FDocTitle
   else
-    Printer.Title := FTitle;
-  Printer.BeginDoc;
-  PrintStatus(psBegin, StartPage, FAbort);
-  UpdatePages(Printer.Canvas);
+    Title := FTitle;
+  if Title = '' then
+    Title := 'SynEdit document';
 
-  for ii:=1 to Copies do
-  begin
-    i := StartPage;
-    if EndPage < 0 then
-      EndPage := FPages.Count;
-    while (i <= EndPage) and (not FAbort) do begin
-      PrintPage(i);
-      if ((i < EndPage) or (ii<Copies)) and not FAbort then
-        Printer.NewPage;
-      i := i + 1;
+  DoPrintStatus(psBegin, StartPage, FAbort);
+  InitPrint;
+
+  if Printer.PrinterIndex < 0 then
+    raise ESynError.CreateRes(@SYNS_NoPrinter);
+
+  PrinterName := Printer.Printers[Printer.PrinterIndex];
+
+  // ClipR corresponds to the whole paper area -> no clipping
+  ClipR := Rect(0, 0,
+    MulDiv(FPrinterInfo.PhysicalWidth, 96, FPrinterInfo.XPixPrInch),
+    MulDiv(FPrinterInfo.PhysicalHeight, 96,  FPrinterInfo.YPixPrInch));
+
+  CheckOSError(TSynDWrite.PrintDocumentPackageTargetFactory.CreateDocumentPackageTargetForPrintJob(
+    PChar(PrinterName),               // printer name
+    PChar(Title),                     // job name
+    nil,                              // job output stream; when nullptr, send to printer
+    nil,                              // job print ticket
+    PrintDocumentPackageTarget        // result IPrintDocumentPackageTarget object
+    ));
+
+  // Reset so that rendering for printing is not mixed up with Synedit rendering
+  TSynDWrite.ResetRenderTarget;
+  try
+    CheckOSError(TSynDWrite.RenderTarget.BindDC(GetDC(0), TRect.Empty));
+    DeviceContext := TSynDWrite.RenderTarget as ID2D1DeviceContext;
+
+    DeviceContext.GetDevice(Device);
+    CheckOSError(Device.CreatePrintControl(
+      TSynDWrite.ImagingFactory,
+      PrintDocumentPackageTarget,
+      nil,
+      PrintControl));
+
+    for Copy := 1 to Copies do
+    begin
+      Page := StartPage;
+      if EndPage < 0 then
+        EndPage := FPages.Count;
+      while (Page <= EndPage) and (not FAbort) do begin
+        CheckOSError(DeviceContext.CreateCommandList(CommandList));
+        DeviceContext.SetTarget(CommandList);
+        DeviceContext.BeginDraw;
+        try
+          PrintPage(DeviceContext, Page, ClipR);
+        finally
+          DeviceContext.EndDraw;
+        end;
+        CheckOSError(CommandList.Close);
+
+        // We have rendered at 96 PPI.  The D2D printing system scales
+        // appropriately for the selected printer
+        CheckOSError(PrintControl.AddPage(commandList,
+          D2D1SizeF(ClipR.Width, ClipR.Height), nil));
+        Page := Page + 1;
+      end;
     end;
+    if not FAbort then
+      DoPrintStatus(psEnd, EndPage, FAbort);
+    PrintControl.Close;
+    FPrinting := False;
+  finally
+    // Reset so that it does not mess up the SynEdit drawing
+    TSynDWrite.ResetRenderTarget;
   end;
-  if not FAbort then
-    PrintStatus(psEnd, EndPage, FAbort);
-  Printer.EndDoc;
-  FPrinting := False;
 end;
 
-procedure TSynEditPrint.PrintLine(LineNumber, PageNumber: Integer);
+procedure TSynEditPrint.DoPrintLine(LineNumber, PageNumber: Integer);
 //Fires the OnPrintLine event
 begin
   if Assigned(FOnPrintLine) then
     FOnPrintLine(Self, LineNumber, PageNumber);
 end;
 
-procedure TSynEditPrint.PrintStatus(Status: TSynPrintStatus;
-  PageNumber: integer; var Abort: boolean);
+procedure TSynEditPrint.DoPrintStatus(Status: TSynPrintStatus;
+  PageNumber: Integer; var Abort: Boolean);
 //Fires the OnPrintStatus event
 begin
   Abort := False;
-  if Assigned(FOnPrintStatus) then
+  if FPrinting and Assigned(FOnPrintStatus) then
     FOnPrintStatus(Self, Status, PageNumber, Abort);
-  if Abort then begin
-    if FPrinting then
-      Printer.Abort;
-  end;
+  // if Abort then printing will stop at the earliest opportunity
 end;
 
 function TSynEditPrint.GetPageCount: Integer;
 {Returns total page count. If pages hasn't been counted before,
- then a UpdatePages is called with a temporary canvas}
-var
-  TmpCanvas: TCanvas;
-  DC: HDC;
+ then InitPrint is called which calculates pages}
 begin
-  Result := 0;
   if FPagesCounted then
     Result := FPages.Count
   else begin
-    TmpCanvas := TCanvas.Create;
-    try
-      DC := GetDC(0);
-      try
-        if DC <> 0 then
-        begin
-          TmpCanvas.Handle := DC;
-          UpdatePages(TmpCanvas);
-          TmpCanvas.Handle := 0;
-          Result := FPages.Count;
-          FPagesCounted := True;
-        end;
-      finally
-        ReleaseDC(0, DC);
-      end;
-    finally
-      TmpCanvas.Free;
-    end;
+    InitPrint; // Calls CalcPages;
+    Result := FPages.Count;
   end;
 end;
 
 function TSynEditPrint.GetTextLayout(const Line: Integer): TSynTextLayout;
+// TODO multicaret
 var
   iSelStart, iSelLen: Integer;
   S: string;
 begin
-  if not fSelectedOnly or (fSelMode = smLine) then
+  if not fSelectedOnly then
     S := Lines[Line]
   else
   begin
-    if (fSelMode = smColumn) or (Line = fBlockBegin.Line -1) then
+    if Line = fBlockBegin.Line -1 then
       iSelStart := fBlockBegin.Char
     else
       iSelStart := 1;
-    if (fSelMode = smColumn) or (Line = fBlockEnd.Line -1) then
+    if Line = fBlockEnd.Line -1 then
       iSelLen := fBlockEnd.Char  - iSelStart
     else
       iSelLen := MaxInt;
@@ -752,7 +800,6 @@ begin
   fSelAvail := Value.SelAvail;
   fBlockBegin := Value.BlockBegin;
   fBlockEnd := Value.BlockEnd;
-  fSelMode := Value.SelectionMode;
 end;
 
 procedure TSynEditPrint.LoadFromStream(AStream: TStream);

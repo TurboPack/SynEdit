@@ -110,7 +110,7 @@ begin
       while (i < Words.Count) and (Length(Line) + Length(Words[i]) <= 80) do
       begin
         Line := Line + Words[i] + ' ';
-        inc(i);
+        Inc(i);
       end;
       WrappedLines.Add(Line);
     end;
@@ -223,7 +223,7 @@ begin
     LabelPercentage.Caption := '0%';
     Application.ProcessMessages;
 
-    if Length(KeyWords) = 0 then exit;
+    if Length(KeyWords) = 0 then Exit;
 
     searching := True;
     ButtonFindHash.Caption := 'Stop Search';
@@ -249,7 +249,7 @@ begin
           if collided then
           begin
             HashKeyList.Clear;
-            break;
+            Break;
           end;
         end;
         if not collided then
@@ -268,7 +268,7 @@ begin
             SearchStop;
             Exit;
           end;
-        break; // all the following solutions will only have a bigger array
+        Break; // all the following solutions will only have a bigger array
         end;
         Application.ProcessMessages;
         if not searching then
@@ -301,7 +301,7 @@ begin
     Result := Result + Format('    Result := Result * %d + Ord(Str^);', [FinalC]) + #13#10
   else
     Result := Result + Format('    Result := Result * %d + Ord(Str^) * %d;', [FinalC, FinalD]) + #13#10;
-  Result := Result + '    inc(Str);'#13#10;
+  Result := Result + '    Inc(Str);'#13#10;
   Result := Result + '  end;'#13#10;
   Result := Result + '  Result := Result mod ' + IntToStr(FinalM) + ';'#13#10;
   Result := Result + '  fStringLen := Str - fToIdent;'#13#10;

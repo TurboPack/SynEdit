@@ -48,14 +48,14 @@ unit SynHighlighterPas;
 interface
 
 uses
-  Windows,
-  Registry,
-  Graphics,
+  Winapi.Windows,
+  System.Win.Registry,
+  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
-  SysUtils,
-  Classes,
+  System.SysUtils,
+  System.Classes,
   System.RegularExpressions,
   SynEditCodeFolding;
 
@@ -77,10 +77,7 @@ const
   BDSVersionPrefix = 'BDS';
 
 type
-//  TSynPasSyn = class(TSynCustomHighlighter)
-//++ CodeFolding
   TSynPasSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fAsmStart: Boolean;
     fRange: TRangeState;
@@ -101,11 +98,11 @@ type
     fDelphiVersion: TDelphiVersion;
     fPackageSource: Boolean;
     fTypeAttri: TSynHighlighterAttributes;
-//++ CodeFolding
-    RE_BlockBegin : TRegEx;
-    RE_BlockEnd : TRegEx;
+    // Regular Expressions
+    RE_BlockBegin: TRegEx;
+    RE_BlockEnd: TRegEx;
     RE_Code: TRegEx;
-//-- CodeFolding
+    RE_ControlFlow: TRegEx;
     function AltFunc(Index: Integer): TtkTokenKind;
     function KeyWordFunc(Index: Integer): TtkTokenKind;
     function FuncAsm(Index: Integer): TtkTokenKind;
@@ -190,12 +187,11 @@ type
     procedure SetRange(Value: Pointer); override;
     function UseUserSettings(VersionIndex: Integer): Boolean; override;
     procedure EnumUserSettings(DelphiVersions: TStrings); override;
-//++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-//-- CodeFolding
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -229,7 +225,9 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Math,
+  SynEditStrConst,
+  SynEditMiscProcs;
 
 const
   // if the language is case-insensitive keywords *must* be in lowercase
@@ -293,19 +291,25 @@ const
     -1, 80
   );
 
-{$Q-}
+{$IFOPT Q+}
+  {$OVERFLOWCHECKS OFF}
+  {$DEFINE OVERFLOWCHECK_ON}
+{$ENDIF}
 function TSynPasSyn.HashKey(Str: PWideChar): Cardinal;
 begin
   Result := 0;
   while IsIdentChar(Str^) do
   begin
     Result := Result * 526 + Ord(Str^) * 502;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 641;
   fStringLen := Str - fToIdent;
 end;
-{$Q+}
+{$IFDEF OVERFLOWCHECK_ON}
+  {$OVERFLOWCHECKS ON}
+  {$UNDEF OVERFLOWCHECK_ON}
+{$ENDIF}
 
 function TSynPasSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
@@ -321,11 +325,11 @@ end;
 
 procedure TSynPasSyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if KeyIndices[i] = -1 then
-      fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if KeyIndices[I] = -1 then
+      fIdentFuncTable[I] := AltFunc;
 
   fIdentFuncTable[215] := FuncType;
   fIdentFuncTable[412] := FuncType;
@@ -385,9 +389,9 @@ begin
   fIdentFuncTable[291] := FuncWrite;
   fIdentFuncTable[496] := FuncWriteonly;
 
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    if @fIdentFuncTable[i] = nil then
-      fIdentFuncTable[i] := KeyWordFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    if @fIdentFuncTable[I] = nil then
+      fIdentFuncTable[I] := KeyWordFunc;
 end;
 
 function TSynPasSyn.AltFunc(Index: Integer): TtkTokenKind;
@@ -401,6 +405,29 @@ begin
     Result := tkKey
   else
     Result := tkIdentifier
+end;
+
+function TSynPasSyn.FlowControlAtLine(Lines: TStrings; Line: Integer):
+    TSynFlowControl;
+var
+  Match: TMatch;
+begin
+  Result := fcNone;
+
+  Match := RE_ControlFlow.Match(Lines[Line - 1]);
+  if Match.Success then
+  begin
+    if Match.Groups[2].Length > 0 then
+      Result := fcBreak
+    else if Match.Groups[3].Length > 0 then
+      Result := fcContinue
+    else
+      Result := fcExit;
+
+    if GetHighlighterAttriAtRowCol(Lines, Line - 1, Match.Index) <> IdentifierAttri
+    then
+      Result := fcNone;
+  end;
 end;
 
 function TSynPasSyn.FuncAsm(Index: Integer): TtkTokenKind;
@@ -696,7 +723,6 @@ begin
     Result := tkIdentifier
 end;
 
-
 constructor TSynPasSyn.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -741,20 +767,17 @@ begin
   fAsmStart := False;
   fDefaultFilter := SYNS_FilterPascal;
 
-//++ CodeFolding
-  RE_BlockBegin := TRegEx.Create('\b(begin|record|class)\b', [roIgnoreCase]);
-
-  RE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
-
-  RE_Code := TRegEx.Create('^\s*(function|procedure)\b', [roIgnoreCase]);
-//-- CodeFolding
+  RE_BlockBegin := CompiledRegEx('\b(begin|record|class|case|try)\b', [roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('\bend\b', [roIgnoreCase]);
+  RE_Code := CompiledRegEx('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
+  RE_ControlFlow := CompiledRegEx('\b((break)|(continue)|(exit))\b', [roIgnoreCase]);
 end;
 
 procedure TSynPasSyn.AddressOpProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
-  if fLine[Run] = '@' then inc(Run);
+  Inc(Run);
+  if fLine[Run] = '@' then Inc(Run);
 end;
 
 procedure TSynPasSyn.AsciiCharProc;
@@ -796,7 +819,7 @@ begin
             fRange := rsAsm
           else
             fRange := rsUnKnown;
-          break;
+          Break;
         end;
         Inc(Run);
       until IsLineEnd(Run);
@@ -826,14 +849,14 @@ end;
 procedure TSynPasSyn.ColonOrGreaterProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
-  if fLine[Run] = '=' then inc(Run);
+  Inc(Run);
+  if fLine[Run] = '=' then Inc(Run);
 end;
 
 procedure TSynPasSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
     Inc(Run);
 end;
@@ -841,7 +864,7 @@ end;
 procedure TSynPasSyn.IdentProc;
 begin
   fTokenID := IdentKind(fLine + Run);
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   while IsIdentChar(fLine[Run]) do
     Inc(Run);
 end;
@@ -859,7 +882,7 @@ procedure TSynPasSyn.IntegerProc;
   end;
   
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkHex;
   while IsIntegerChar do
     Inc(Run);
@@ -868,13 +891,13 @@ end;
 procedure TSynPasSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPasSyn.LowerProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   if (fLine[Run] = '=') or (fLine[Run] = '>') then
     Inc(Run);
 end;
@@ -882,7 +905,7 @@ end;
 procedure TSynPasSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynPasSyn.NumberProc;
@@ -924,7 +947,7 @@ end;
 procedure TSynPasSyn.PointProc;
 begin
   fTokenID := tkSymbol;
-  inc(Run);
+  Inc(Run);
   if (fLine[Run] = '.') or (fLine[Run - 1] = ')') then
     Inc(Run);
 end; 
@@ -944,7 +967,7 @@ begin
           fRange := rsAsm
         else
           fRange := rsUnKnown;
-        break;
+        Break;
       end;
       Inc(Run);
     until IsLineEnd(Run);
@@ -968,7 +991,7 @@ begin
       end;
     '.':
       begin
-        inc(Run);
+        Inc(Run);
         fTokenID := tkSymbol;
       end;
   else
@@ -1000,9 +1023,9 @@ end;
 
 procedure TSynPasSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynPasSyn.StringProc;
@@ -1014,7 +1037,7 @@ begin
     if fLine[Run] = #39 then begin
       Inc(Run);
       if fLine[Run] <> #39 then
-        break;
+        Break;
     end;
     Inc(Run);
   end;
@@ -1022,13 +1045,13 @@ end;
 
 procedure TSynPasSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynPasSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -1151,7 +1174,7 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
   procedure LoadKeyVersions(const Key, Prefix: string);
   var
     Versions: TStringList;
-    i: Integer;
+    I: Integer;
   begin
     with TRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
     begin
@@ -1163,8 +1186,8 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
             Versions := TStringList.Create;
             try
               GetKeyNames(Versions);
-              for i := 0 to Versions.Count - 1 do
-                DelphiVersions.Add(Prefix + Versions[i]);
+              for I := 0 to Versions.Count - 1 do
+                DelphiVersions.Add(Prefix + Versions[I]);
             finally
               FreeAndNil(Versions);
             end;
@@ -1191,7 +1214,7 @@ function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
 // Possible parameter values:
 //   index into TStrings returned by EnumUserSettings
 // Possible return values:
-//   True : settings were read and used
+//   True: settings were read and used
 //   False: problem reading settings or invalid version specified - old settings
 //          were preserved
 
@@ -1204,10 +1227,10 @@ function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
 
       function ReadDelphi2Or3(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
       var
-        i: Integer;
+        I: Integer;
       begin
-        for i := 1 to Length(name) do
-          if name[i] = ' ' then name[i] := '_';
+        for I := 1 to Length(name) do
+          if name[I] = ' ' then name[I] := '_';
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
                 '\Software\Borland\Delphi\'+settingTag+'\Highlight',name,True);
       end; { ReadDelphi2Or3 }
@@ -1352,7 +1375,7 @@ end;
 
 class function TSynPasSyn.GetCapabilities: TSynHighlighterCapabilities;
 begin
-  Result := inherited GetCapabilities + [hcUserSettings];
+  Result := inherited GetCapabilities + [hcUserSettings, hcStructureHighlight];
 end;
 
 function TSynPasSyn.IsFilterStored: Boolean;
@@ -1387,16 +1410,13 @@ begin
   Result := SYNS_FriendlyLangPascal;
 end;
 
-//++ CodeFolding
 type
   TRangeStates = set of TRangeState;
 
-Const
+const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_Asm = 12;
-  FT_HereDocDouble = 13;
-  FT_HereDocSingle = 14;
   FT_ConditionalDirective = 15;
   FT_CodeDeclaration = 16;
   FT_CodeDeclarationWithBody = 17;
@@ -1405,53 +1425,66 @@ Const
 procedure TSynPasSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
-  ok: Boolean;
 
   function BlockDelimiter(Line: Integer): Boolean;
   var
-    Index: Integer;
-    mcb: TMatchCollection;
-    mce: TMatchCollection;
-    match: TMatch;
-  begin
-    Result := False;
+    StructureHighlight: Boolean;
 
-    mcb := RE_BlockBegin.Matches(CurLine);
-    if mcb.Count > 0 then
+    function Indent: Integer;
+    begin
+      if StructureHighlight then
+        Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan))
+      else
+        Result := -1;
+    end;
+
+  var
+    BeginIndex: Integer;
+    EndIndex: Integer;
+    Match: TMatch;
+    MatchValue: string;
+  begin
+    BeginIndex := 0;
+    EndIndex := 0;
+    StructureHighlight := False;
+
+    Match := RE_BlockBegin.Match(CurLine);
+    if Match.Success then
     begin
       // Char must have proper highlighting (ignore stuff inside comments...)
-      Index :=  mcb.Item[0].Index;
-      if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
+      BeginIndex :=  Match.Index;
+      if GetHighlighterAttriAtRowCol(LinesToScan, Line, BeginIndex) <> fKeyAttri then
+        BeginIndex := -1
+      else
       begin
-        ok := False;
-        // And ignore lines with both opening and closing chars in them
-        for match in Re_BlockEnd.Matches(CurLine) do
-          if match.Index > Index then
-          begin
-            OK := True;
-            Break;
-          end;
-        if not OK then begin
-          FoldRanges.StartFoldRange(Line + 1, FT_Standard);
-          Result := True;
-        end;
-      end;
-    end
-    else
-    begin
-      mce := RE_BlockEnd.Matches(CurLine);
-      if mce.Count > 0 then
-      begin
-        Index :=  mce.Item[0].Index;
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Index) <> fCommentAttri then
-        begin
-          FoldRanges.StopFoldRange(Line + 1, FT_Standard);
-          Result := True;
-        end;
+        MatchValue := LowerCase(Match.Value);
+        StructureHighlight := (MatchValue = 'begin') or
+          (MatchValue = 'case') or (MatchValue = 'try');
       end;
     end;
+
+    Match := RE_BlockEnd.Match(CurLine);
+    if Match.Success then begin
+      begin
+        EndIndex :=  Match.Index;
+        if GetHighlighterAttriAtRowCol(LinesToScan, Line, EndIndex) <> fKeyAttri then
+          EndIndex := -1;
+      end;
+    end;
+
+    Result := True;
+    if (BeginIndex <= 0) and (EndIndex <= 0) then
+      Result := False
+    else if (BeginIndex > 0) and (EndIndex <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, FT_Standard, Indent)
+    else if (BeginIndex <= 0) and (EndIndex > 0) then
+      FoldRanges.StopFoldRange(Line + 1, FT_Standard)
+    else if EndIndex >= BeginIndex then
+      Result := False  // begin end on the same line - ignore
+    else // end begin  as in "end else begin"
+      FoldRanges.StopStartFoldRange(Line + 1, FT_Standard, Indent);
   end;
 
   function FoldRegion(Line: Integer): Boolean;
@@ -1487,11 +1520,16 @@ var
     begin
       FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
       Result := True;
+    end
+    else if Uppercase(Copy(S, 1, 7)) = '{$IFEND' then
+    begin
+      FoldRanges.StopFoldRange(Line + 1, FT_ConditionalDirective);
+      Result := True;
     end;
   end;
 
-  function IsMultiLineStatement(Line : integer; Ranges: TRangeStates;
-     Fold : Boolean; FoldType: Integer = 1): Boolean;
+  function IsMultiLineStatement(Line: Integer; Ranges: TRangeStates;
+     Fold: Boolean; FoldType: Integer = 1): Boolean;
   begin
     Result := True;
     if TRangeState(GetLineRange(LinesToScan, Line)) in Ranges then
@@ -1552,28 +1590,28 @@ procedure TSynPasSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
 {
    Provide folding for procedures and functions included nested ones.
 }
-Var
-  i, j, SkipTo: Integer;
+var
+  I, j, SkipTo: Integer;
   ImplementationIndex: Integer;
   FoldRange: TSynFoldRange;
   mc: TMatchCollection;
 begin
   ImplementationIndex := - 1;
-  for i  := FoldRanges.Ranges.Count - 1 downto 0 do
+  for I  := FoldRanges.Ranges.Count - 1 downto 0 do
   begin
-    if FoldRanges.Ranges.List[i].FoldType = FT_Implementation then
-      ImplementationIndex := i
-    else if FoldRanges.Ranges.List[i].FoldType = FT_CodeDeclaration then
+    if FoldRanges.Ranges.List[I].FoldType = FT_Implementation then
+      ImplementationIndex := I
+    else if FoldRanges.Ranges.List[I].FoldType = FT_CodeDeclaration then
     begin
       if ImplementationIndex >= 0 then begin
         // Code declaration in the Interface part of a unit
-        FoldRanges.Ranges.Delete(i);
+        FoldRanges.Ranges.Delete(I);
         Dec(ImplementationIndex);
-        continue;
+        Continue;
       end;
       // Examine the following ranges
       SkipTo := 0;
-      j := i + 1;
+      j := I + 1;
       while J < FoldRanges.Ranges.Count do begin
         FoldRange := FoldRanges.Ranges.List[j];
         Inc(j);
@@ -1582,7 +1620,7 @@ begin
           FT_CodeDeclarationWithBody:
             begin
               SkipTo := FoldRange.ToLine;
-              continue;
+              Continue;
             end;
           FT_Standard:
           // possibly begin end;
@@ -1597,14 +1635,14 @@ begin
                 begin
                   // function or procedure followed by begin end block
                   // Adjust ToLine
-                  FoldRanges.Ranges.List[i].ToLine := FoldRange.ToLine;
-                  FoldRanges.Ranges.List[i].FoldType := FT_CodeDeclarationWithBody;
-                  break
+                  FoldRanges.Ranges.List[I].ToLine := FoldRange.ToLine;
+                  FoldRanges.Ranges.List[I].FoldType := FT_CodeDeclarationWithBody;
+                  Break
                 end else
                 begin
                   // class or record declaration follows, so
-                  FoldRanges.Ranges.Delete(i);
-                  break;
+                  FoldRanges.Ranges.Delete(I);
+                  Break;
                  end;
               end else
                 Assert(False, 'TSynDWSSyn.AdjustFoldRanges');
@@ -1616,8 +1654,8 @@ begin
             else begin
               // Otherwise delete
               // eg. function definitions within a class definition
-              FoldRanges.Ranges.Delete(i);
-              break
+              FoldRanges.Ranges.Delete(I);
+              Break
             end;
           end;
         end;
@@ -1629,8 +1667,6 @@ begin
     //FoldRanges.Ranges.List[ImplementationIndex].ToLine := LinesToScan.Count;
     FoldRanges.Ranges.Delete(ImplementationIndex);
 end;
-//-- CodeFolding
-
 
 
 initialization

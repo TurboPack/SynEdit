@@ -31,6 +31,7 @@ uses
   System.Classes,
   System.Win.Registry,
   System.IniFiles,
+  Generics.Collections,
   Vcl.Graphics,
   SynEditTypes,
   SynEditMiscClasses,
@@ -84,8 +85,10 @@ type
   end;
 
   TSynHighlighterCapability = (
-    hcUserSettings, // supports Enum/UseUserSettings
-    hcRegistry      // supports LoadFrom/SaveToRegistry
+    hcUserSettings,            // supports Enum/UseUserSettings
+    hcRegistry,                // supports LoadFrom/SaveToRegistry
+    hcCodeFolding,             // supports code folding
+    hcStructureHighlight       // supports structure highlighting
   );
 
   TSynHighlighterCapabilities = set of TSynHighlighterCapability;
@@ -112,6 +115,7 @@ type
     procedure SetEnabled(const Value: Boolean);
     procedure SetAdditionalIdentChars(const Value: TSysCharSet);
     procedure SetAdditionalWordBreakChars(const Value: TSysCharSet);
+    function IsBracketsStored: Boolean;
   protected
     fCasedLine: PWideChar;
     fCasedLineStr: string;
@@ -125,9 +129,10 @@ type
     fToIdent: PWideChar;
     fTokenPos: Integer;
     fUpdateChange: Boolean;
+    fBrackets: string;
     Run: Integer;
     fOldRun: Integer;
-    // If FScanningToEOL is true then only ranges need to be scanned.
+    // If FScanningToEOL is True then only ranges need to be scanned.
     FScanningToEOL: Boolean;
     procedure Loaded; override;
     procedure AddAttribute(Attri: TSynHighlighterAttributes);
@@ -184,6 +189,12 @@ type
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
+    function GetHighlighterAttriAtRowCol(const Lines: TStrings;
+      const Line: Integer; const Char: Integer): TSynHighlighterAttributes;
+    function GetHighlighterAttriAtRowColEx(const Lines: TStrings;
+      const Line, Char: Integer;  var Token: string;
+      var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): Boolean;
+    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; virtual;
     property FriendlyLanguageName: string read GetFriendlyLanguageName;
     property LanguageName: string read GetLanguageName;
   public
@@ -193,6 +204,7 @@ type
     property Attribute[Index: Integer]: TSynHighlighterAttributes
       read GetAttribute;
     property Capabilities: TSynHighlighterCapabilities read GetCapabilities;
+    property CaseSensitive: Boolean read fCaseSensitive;
     property SampleSource: string read GetSampleSource write SetSampleSource;
     property CommentAttribute: TSynHighlighterAttributes
       index SYN_ATTR_COMMENT read GetDefaultAttribute;
@@ -208,6 +220,8 @@ type
       index SYN_ATTR_WHITESPACE read GetDefaultAttribute;
     property ExportName: string read GetExportName;
   published
+    property Brackets: string read fBrackets write fBrackets
+      stored IsBracketsStored;
     property DefaultFilter: string read GetDefaultFilter write SetDefaultFilter
       stored IsFilterStored;
     property Enabled: Boolean read fEnabled write SetEnabled default True;
@@ -215,19 +229,10 @@ type
 
   TSynCustomHighlighterClass = class of TSynCustomHighlighter;
 
-  TSynHighlighterList = class(TList)
-  private
-    hlList: TList;
-    function GetItem(Index: NativeInt): TSynCustomHighlighterClass;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function Count: Integer;
+  TSynHighlighterList = class(TList<TSynCustomHighlighterClass>)
     function FindByFriendlyName(FriendlyName: string): Integer;
     function FindByName(Name: string): Integer;
     function FindByClass(Comp: TComponent): Integer;
-    property Items[Index: NativeInt]: TSynCustomHighlighterClass
-      read GetItem; default;
   end;
 
   procedure RegisterPlaceableHighlighter(highlighter:
@@ -237,27 +242,12 @@ type
 implementation
 
 uses
+  System.Character,
   SynEditMiscProcs,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditTextBuffer;
 
 { THighlighterList }
-function TSynHighlighterList.Count: Integer;
-begin
-  Result := hlList.Count;
-end;
-
-constructor TSynHighlighterList.Create;
-begin
-  inherited Create;
-  hlList := TList.Create;
-end;
-
-destructor TSynHighlighterList.Destroy;
-begin
-  hlList.Free;
-  inherited;
-end;
-
 function TSynHighlighterList.FindByClass(Comp: TComponent): Integer;
 var
   i: Integer;
@@ -303,11 +293,6 @@ begin
   end;
 end;
 
-function TSynHighlighterList.GetItem(Index: NativeInt): TSynCustomHighlighterClass;
-begin
-  Result := TSynCustomHighlighterClass(hlList[Index]);
-end;
-
 var
   G_PlaceableHighlighters: TSynHighlighterList;
 
@@ -318,8 +303,8 @@ var
 
   procedure RegisterPlaceableHighlighter(highlighter: TSynCustomHighlighterClass);
   begin
-    if G_PlaceableHighlighters.hlList.IndexOf(highlighter) < 0 then
-      G_PlaceableHighlighters.hlList.Add(highlighter);
+    if G_PlaceableHighlighters.IndexOf(highlighter) < 0 then
+      G_PlaceableHighlighters.Add(highlighter);
   end;
 
 { TSynHighlighterAttributes }
@@ -674,7 +659,7 @@ begin
         Foreground := Ini.ReadInteger(Name, 'Foreground', Foreground);
       if S.IndexOf('Style') <> -1 then
         IntegerStyle := Ini.ReadInteger(Name, 'Style', IntegerStyle);
-      Result := true;
+      Result := True;
     end
     else
       Result := False;
@@ -718,6 +703,7 @@ begin
   fAttrChangeHooks := TSynNotifyEventChain.CreateEx(Self);
   fDefaultFilter := '';
   fEnabled := True;
+  fBrackets := DefaultBrackets;
 end;
 
 destructor TSynCustomHighlighter.Destroy;
@@ -744,6 +730,12 @@ begin
       DefHighlightChange(nil);
     end;
   end;
+end;
+
+function TSynCustomHighlighter.FlowControlAtLine(Lines: TStrings; Line:
+    Integer): TSynFlowControl;
+begin
+  Result := fcNone;
 end;
 
 procedure TSynCustomHighlighter.FreeHighlighterAttributes;
@@ -780,7 +772,7 @@ begin
           if AttriName = SrcAttri.Name then
           begin
             Attribute[i].Assign(SrcAttri);
-            break;
+            Break;
           end;
         end;
       end;
@@ -790,6 +782,7 @@ begin
       //fWordBreakChars := Src.WordBreakChars; //TODO: does this make sense anyway?
       DefaultFilter := Src.DefaultFilter;
       Enabled := Src.Enabled;
+      Brackets := Src.Brackets;
     finally
       EndUpdate;
     end;
@@ -852,7 +845,7 @@ begin
   end;
 end;
 
-function TSynCustomHighlighter.LoadFromFile(AFileName : String): boolean;
+function TSynCustomHighlighter.LoadFromFile(AFileName: string): Boolean;
 var
   AIni: TMemIniFile;
 begin
@@ -864,7 +857,7 @@ begin
   end;
 end;
 
-function TSynCustomHighlighter.SaveToFile(AFileName : String): boolean;
+function TSynCustomHighlighter.SaveToFile(AFileName: string): Boolean;
 var
   AIni: TMemIniFile;
 begin
@@ -927,6 +920,50 @@ begin
   Result := FExportName;
 end;
 
+function TSynCustomHighlighter.GetHighlighterAttriAtRowCol(
+  const Lines: TStrings; const Line, Char: Integer): TSynHighlighterAttributes;
+var
+  Token: string;
+  TokenType, Start: Integer;
+begin
+  GetHighlighterAttriAtRowColEx(Lines, Line, Char, Token, TokenType,
+    Start, Result);
+end;
+
+function TSynCustomHighlighter.GetHighlighterAttriAtRowColEx(
+  const Lines: TStrings; const Line, Char: Integer; var Token: string;
+  var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): Boolean;
+var
+  LineText: string;
+begin
+  if  (Line >= 0) and (Line < Lines.Count) then
+  begin
+    LineText := Lines[Line];
+    if Line = 0 then
+      ResetRange
+    else
+      SetRange(TSynEditStringList(Lines).Ranges[Line - 1]);
+    SetLine(LineText, Line);
+    if (Char > 0) and (Char <= Length(LineText)) then
+      while not GetEol do
+      begin
+        Start := GetTokenPos + 1;
+        Token := GetToken;
+        if (Char >= Start) and (Char < Start + Length(Token)) then
+        begin
+          Attri := GetTokenAttribute;
+          TokenType := GetTokenKind;
+          Result := True;
+          Exit;
+        end;
+        Next;
+      end;
+  end;
+  Token := '';
+  Attri := nil;
+  Result := False;
+end;
+
 function TSynCustomHighlighter.GetRange: Pointer;
 begin
   Result := nil;
@@ -965,6 +1002,11 @@ begin
   fAttrChangeHooks.Add(ANotifyEvent);
 end;
 
+function TSynCustomHighlighter.IsBracketsStored: Boolean;
+begin
+  Result := FBrackets <> DefaultBrackets;
+end;
+
 function TSynCustomHighlighter.IsCurrentToken(const Token: string): Boolean;
 var
   I: Integer;
@@ -979,9 +1021,9 @@ begin
       if Temp^ <> Token[i] then
       begin
         Result := False;
-        break;
+        Break;
       end;
-      inc(Temp);
+      Inc(Temp);
     end;
   end
   else
@@ -1002,7 +1044,6 @@ begin
       Result := False;
   end;
   Result := Result or CharInSet(AChar, FAdditionalIdentChars);
-  Result := Result and not IsWordBreakChar(AChar);
 end;
 
 function TSynCustomHighlighter.IsKeyword(const AKeyword: string): Boolean;
@@ -1021,7 +1062,7 @@ begin
     0..32:
       Result := True;
     else
-      Result := not (IsIdentChar(AChar) or IsWordBreakChar(AChar))
+      Result := AChar.IsWhiteSpace and not IsIdentChar(AChar);
   end
 end;
 
@@ -1035,14 +1076,14 @@ begin
     else
     begin
       case Ord(AChar) of
-      0..32: Result := True;
+        0..32: Result := True;
       else
        Result := False;
       end;
     end;
   end;
   Result := Result or CharInSet(AChar, FAdditionalWordBreakChars);
-  Result := Result and not CharInSet(AChar, FAdditionalIdentChars);
+  Result := Result and not IsIdentChar(AChar);
 end;
 
 function TSynCustomHighlighter.SaveToIniFile(AIni: TCustomIniFile): Boolean;
@@ -1072,8 +1113,8 @@ end;
 
 procedure TSynCustomHighlighter.Next;
 begin
-  if fOldRun = Run then Exit;
-  fOldRun := Run;
+  if fOldRun <> Run then
+    fOldRun := Run;
 end;
 
 procedure TSynCustomHighlighter.NextToEol;
@@ -1124,7 +1165,7 @@ end;
 
 procedure TSynCustomHighlighter.DoSetLine(const Value: string; LineNumber: Integer);
 
-  procedure DoWideLowerCase(const value : string; var dest : string);
+  procedure DoWideLowerCase(const value: string; var dest: string);
   begin
     // segregated here so case-insensitive highlighters don't have to pay the overhead
     // of the exception frame for the release of the temporary string

@@ -216,17 +216,17 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
-    function UseUserSettings(settingIndex: integer): boolean; override;
+    function UseUserSettings(settingIndex: Integer): Boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
@@ -258,7 +258,8 @@ implementation
 uses
   Windows,
   Registry,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditMiscProcs;
 
  const
   KeyWords: array[0..76] of string = (
@@ -296,7 +297,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 52 + Ord(Str^) * 456;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 211;
   fStringLen := Str - fToIdent;
@@ -962,17 +963,17 @@ begin
     #0:
       begin
         NullProc;
-        exit;
+        Exit;
       end;
     #10:
       begin
         LFProc;
-        exit;
+        Exit;
       end;
     #13:
       begin
         CRProc;
-        exit;
+        Exit;
       end;
   end;
 
@@ -981,7 +982,7 @@ begin
       '*':
         if fLine[Run + 1] = '/' then
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           if fRange = rsAnsiCAsm then
             fRange := rsAsm
           else if fRange = rsAnsiCAsmBlock then
@@ -990,12 +991,12 @@ begin
             fRange := rsDirective
           else
             fRange := rsUnKnown;
-          break;
+          Break;
         end else
-          inc(Run);
-      #10: break;
-      #13: break;
-    else inc(Run);
+          Inc(Run);
+      #10: Break;
+      #13: Break;
+    else Inc(Run);
     end;
 end;
 
@@ -1005,17 +1006,17 @@ begin
   case FLine[Run + 1] of
     '=':                               {and assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkAndAssign;
       end;
     '&':                               {logical and}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLogAnd;
       end;
   else                                 {and}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkAnd;
     end;
   end;
@@ -1027,23 +1028,23 @@ begin
   repeat
     if fLine[Run] = '\' then begin
       if CharInSet(fLine[Run + 1], [#39, '\']) then
-        inc(Run);
+        Inc(Run);
     end;
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run) or (fLine[Run] = #39);
   if fLine[Run] = #39 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynCSSyn.AtSymbolProc;
 begin
   fTokenID := tkUnknown;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCSSyn.BraceCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
   FExtTokenID := xtkBraceClose;
   if fRange = rsAsmBlock then fRange := rsUnknown;
@@ -1051,7 +1052,7 @@ end;
 
 procedure TSynCSSyn.BraceOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
   FExtTokenID := xtkBraceOpen;
   if fRange = rsAsm then
@@ -1074,12 +1075,12 @@ begin
   Case FLine[Run + 1] of
     ':':                               {scope resolution operator}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkScopeResolution;
       end;
   else                                 {colon}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkColon;
     end;
   end;
@@ -1087,7 +1088,7 @@ end;
 
 procedure TSynCSSyn.CommaProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkComma;
 end;
@@ -1118,11 +1119,11 @@ begin
             if fLine[Run + 1] = '/' then
             begin // is end of directive as well
               fRange := rsUnknown;
-              break;
+              Break;
             end else if fLine[Run + 1] = '*' then
             begin // might be embedded only
               fRange := rsDirectiveComment;
-              break;
+              Break;
             end else
               Inc(Run);
           end;
@@ -1132,13 +1133,13 @@ begin
             if IsLineEnd(Run) then
             begin
               fRange := rsDirective;
-              break;
+              Break;
             end;
           end;
         #0, #10, #13:
           begin
             fRange := rsUnknown;
-            break;
+            Break;
           end;
         else
           Inc(Run);
@@ -1152,12 +1153,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {logical equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLogEqual;
       end;
   else                                 {assign}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkAssign;
     end;
   end;
@@ -1169,25 +1170,25 @@ begin
   Case FLine[Run + 1] of
     '=':                               {greater than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkGreaterThanEqual;
       end;
     '>':
       begin
         if FLine[Run + 2] = '=' then   {shift right assign}
         begin
-          inc(Run, 3);
+          Inc(Run, 3);
           FExtTokenID := xtkShiftRightAssign;
         end
         else                           {shift right}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           FExtTokenID := xtkShiftRight;
         end;
       end;
   else                                 {greater than}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkGreaterThan;
     end;
   end;
@@ -1197,20 +1198,20 @@ procedure TSynCSSyn.QuestionProc;
 begin
   fTokenID := tkSymbol;                {conditional}
   FExtTokenID := xtkQuestion;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCSSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynCSSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCSSyn.LowerProc;
@@ -1219,25 +1220,25 @@ begin
   case FLine[Run + 1] of
     '=':                               {less than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLessThanEqual;
       end;
     '<':
       begin
         if FLine[Run + 2] = '=' then   {shift left assign}
         begin
-          inc(Run, 3);
+          Inc(Run, 3);
           FExtTokenID := xtkShiftLeftAssign;
         end
         else                           {shift left}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           FExtTokenID := xtkShiftLeft;
         end;
       end;
   else                                 {less than}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkLessThan;
     end;
   end;
@@ -1249,22 +1250,22 @@ begin
   case FLine[Run + 1] of
     '=':                               {subtract assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkSubtractAssign;
       end;
     '-':                               {decrement}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkDecrement;
       end;
     '>':                               {arrow}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkArrow;
       end;
   else                                 {subtract}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkSubtract;
     end;
   end;
@@ -1276,12 +1277,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {mod assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkModAssign;
       end;
   else                                 {mod}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkMod;
     end;
   end;
@@ -1293,12 +1294,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {not equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkNotEqual;
       end;
   else                                 {not}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkLogComplement;
     end;
   end;
@@ -1307,7 +1308,7 @@ end;
 procedure TSynCSSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCSSyn.NumberProc;
@@ -1323,15 +1324,15 @@ procedure TSynCSSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -1341,17 +1342,17 @@ begin
   case FLine[Run + 1] of
     '=':                               {or assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkIncOrAssign;
       end;
     '|':                               {logical or}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLogOr;
       end;
   else                                 {or}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkIncOr;
     end;
   end;
@@ -1363,17 +1364,17 @@ begin
   case FLine[Run + 1] of
     '=':                               {add assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkAddAssign;
       end;
     '+':                               {increment}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkIncrement;
       end;
   else                                 {add}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkAdd;
     end;
   end;
@@ -1384,26 +1385,26 @@ begin
   fTokenID := tkSymbol;
   if (FLine[Run + 1] = '.') and (FLine[Run + 2] = '.') then
     begin                              {ellipse}
-      inc(Run, 3);
+      Inc(Run, 3);
       FExtTokenID := xtkEllipse;
     end
   else                                 {point}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkPoint;
     end;
 end;
 
 procedure TSynCSSyn.RoundCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkRoundClose;
 end;
 
 procedure TSynCSSyn.RoundOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   FTokenID := tkSymbol;
   FExtTokenID := xtkRoundOpen;
 end;
@@ -1412,67 +1413,69 @@ end;
 procedure TSynCSSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);
 var
-  CurLine: String;
+  CurLine: string;
   Line: Integer;
 
-  function LineHasChar(Line: Integer; character: char;
-  StartCol : Integer): boolean; // faster than Pos!
-  var
-    i: Integer;
-  begin
-    result := false;
-    for I := StartCol to Length(CurLine) do begin
-      if CurLine[i] = character then begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) <> fCommentAttri then begin
-          result := true;
-          break;
+  function FindBraces(Line: Integer): Boolean;
+  // Covers the following line patterns: {, }, {}, }{, {}{, }{}
+
+    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    var
+      I: Integer;
+    begin
+      Result := False;
+      Col := 0;
+      for I := StartCol to Length(CurLine) do begin
+        if CurLine[I] = AChar then begin
+          // Char must have proper highlighting (ignore stuff inside comments...)
+          if GetHighlighterAttriAtRowCol(LinesToScan, Line, I) = fSymbolAttri then
+          begin
+            Col := I;
+            Exit(True);
+          end;
         end;
       end;
     end;
-  end;
 
-  function FindBraces(Line: Integer) : Boolean;
-  Var
-    Col : Integer;
-  begin
-    Result := False;
-
-    for Col := 1 to Length(CurLine) do
+    function Indent: Integer;
     begin
-      // We've found a starting character
-      if CurLine[col] = '{' then
-      begin
-        // Char must have proper highlighting (ignore stuff inside comments...)
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, '}', col + 1) then begin
-            FoldRanges.StartFoldRange(Line + 1, 1);
-            Result := True;
-          end;
-          // Skip until a newline
-          break;
-        end;
-      end else if CurLine[col] = '}' then
-      begin
-        if GetHighlighterAttriAtRowCol(LinesToScan, Line, Col) <> fCommentAttri then
-        begin
-          // And ignore lines with both opening and closing chars in them
-          if not LineHasChar(Line, '{', col + 1) then begin
-            FoldRanges.StopFoldRange(Line + 1, 1);
-            Result := True;
-          end;
-          // Skip until a newline
-          break;
-        end;
-      end;
-    end; // for Col
+      Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
+    end;
+
+  var
+    OpenIdx: Integer;
+    CloseIdx: Integer;
+    Idx: Integer;
+  begin
+    LineHasChar('{', 1, OpenIdx);
+    LineHasChar('}', 1, CloseIdx);
+
+    Result := True;
+    if (OpenIdx <= 0) and (CloseIdx <= 0) then
+      Result := False
+    else if (OpenIdx > 0) and (CloseIdx <= 0) then
+      FoldRanges.StartFoldRange(Line + 1, 1, Indent)
+    else if (OpenIdx <= 0) and (CloseIdx > 0) then
+      FoldRanges.StopFoldRange(Line + 1, 1)
+    else if CloseIdx >= OpenIdx then // {}
+    begin
+      if LineHasChar('{', CloseIdx, Idx) then
+        FoldRanges.StartFoldRange(Line + 1, 1, Indent)
+      else
+        Result := False;
+    end
+    else // }{
+    begin
+      if LineHasChar('}', OpenIdx, Idx) then
+        FoldRanges.StopFoldRange(Line + 1, 1)
+      else
+        FoldRanges.StopStartFoldRange(Line + 1, 1, Indent);
+    end;
   end;
 
   function FoldRegion(Line: Integer): Boolean;
-  Var
-    S : string;
+  var
+    S: string;
   begin
     Result := False;
     S := TrimLeft(CurLine);
@@ -1527,7 +1530,7 @@ end;
 
 procedure TSynCSSyn.SemiColonProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSemiColon;
   if fRange = rsAsm then fRange := rsUnknown;
@@ -1539,7 +1542,7 @@ begin
     '/':                               {c++ style comments}
       begin
         fTokenID := tkComment;
-        inc(Run, 2);
+        Inc(Run, 2);
         while not IsLineEnd(Run) do Inc(Run);
       end;
     '*':                               {c style comments}
@@ -1551,13 +1554,13 @@ begin
           fRange := rsAnsiCAsmBlock
         else if fRange <> rsDirectiveComment then                          
           fRange := rsAnsiC;
-        inc(Run, 2);
+        Inc(Run, 2);
         while fLine[Run] <> #0 do
           case fLine[Run] of
             '*':
               if fLine[Run + 1] = '/' then
               begin
-                inc(Run, 2);
+                Inc(Run, 2);
                 if fRange = rsDirectiveComment then
                   fRange := rsDirective
                 else if fRange = rsAnsiCAsm then
@@ -1569,26 +1572,26 @@ begin
                   else
                     fRange := rsUnKnown;
                   end;
-                break;
-              end else inc(Run);
+                Break;
+              end else Inc(Run);
             #10, #13:
               begin
                 if fRange = rsDirectiveComment then
                   fRange := rsAnsiC;
-                break;
+                Break;
               end;
-          else inc(Run);
+          else Inc(Run);
           end;
       end;
     '=':                               {divide assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkDivideAssign;
       end;
   else                                 {divide}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkDivide;
     end;
@@ -1597,21 +1600,21 @@ end;
 
 procedure TSynCSSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynCSSyn.SquareCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSquareClose;
 end;
 
 procedure TSynCSSyn.SquareOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSquareOpen;
 end;
@@ -1622,12 +1625,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {multiply assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkMultiplyAssign;
       end;
   else                                 {star}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkStar;
     end;
   end;
@@ -1649,10 +1652,10 @@ begin
           end;
       end;
     end;
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run) or (fLine[Run] = #34);
   if FLine[Run] = #34 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynCSSyn.StringEndProc;
@@ -1697,15 +1700,15 @@ begin
         end;
       #34: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run) or (fLine[Run] = #34);
   if FLine[Run] = #34 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynCSSyn.TildeProc;
 begin
-  inc(Run);                            {bitwise complement}
+  Inc(Run);                            {bitwise complement}
   fTokenId := tkSymbol;
   FExtTokenID := xtkBitComplement;
 end;
@@ -1716,12 +1719,12 @@ begin
   Case FLine[Run + 1] of
   	'=':                               {xor assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkXorAssign;
       end;
   else                                 {xor}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkXor;
     end;
   end;
@@ -1729,7 +1732,7 @@ end;
 
 procedure TSynCSSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -1792,7 +1795,7 @@ begin
   end;
 end;
 
-function TSynCSSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynCSSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -1846,7 +1849,7 @@ begin
   end;
 end;
 
-function TSynCSSyn.GetTokenKind: integer;
+function TSynCSSyn.GetTokenKind: Integer;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -1882,7 +1885,7 @@ begin
   end;
 end;
 
-function TSynCSSyn.UseUserSettings(settingIndex: integer): boolean;
+function TSynCSSyn.UseUserSettings(settingIndex: Integer): Boolean;
 // Possible parameter values:
 //   index into TStrings returned by EnumUserSettings
 // Possible return values:
@@ -1890,25 +1893,25 @@ function TSynCSSyn.UseUserSettings(settingIndex: integer): boolean;
 //   false: problem reading settings or invalid version specified - old settings
 //          were preserved
 
-  function ReadCPPBSettings(settingIndex: integer): boolean;
+  function ReadCPPBSettings(settingIndex: Integer): Boolean;
 
-    function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): boolean;
+    function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
 
-      function ReadCPPB1(settingTag: string; attri: TSynHighlighterAttributes; name: string): boolean;
+      function ReadCPPB1(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
       var
-        i: integer;
+        I: Integer;
       begin
-        for i := 1 to Length(name) do
-          if name[i] = ' ' then name[i] := '_';
+        for I := 1 to Length(name) do
+          if name[I] = ' ' then name[I] := '_';
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-             '\SOFTWARE\Borland\C++Builder\'+settingTag+'\Highlight',name,true);
+             '\SOFTWARE\Borland\C++Builder\'+settingTag+'\Highlight',name, True);
       end; { ReadCPPB1 }
 
-      function ReadCPPB3OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): boolean;
+      function ReadCPPB3OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
       begin
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
                  '\Software\Borland\C++Builder\'+settingTag+'\Editor\Highlight',
-                 key,false);
+                 key, False);
       end; { ReadCPPB3OrMore }
 
     begin { ReadCPPBSetting }
@@ -1916,7 +1919,9 @@ function TSynCSSyn.UseUserSettings(settingIndex: integer): boolean;
         if (settingTag[1] = '1')
           then Result := ReadCPPB1(settingTag,attri,key)
           else Result := ReadCPPB3OrMore(settingTag,attri,key);
-      except Result := false; end;
+      except
+        Result := False;
+      end;
     end; { ReadCPPBSetting }
 
   var
@@ -1936,7 +1941,8 @@ function TSynCSSyn.UseUserSettings(settingIndex: integer): boolean;
     s := TStringList.Create;
     try
       EnumUserSettings(s);
-      if settingIndex >= s.Count then Result := false
+      if settingIndex >= s.Count then
+        Result := False
       else begin
         tmpStringAttri    := TSynHighlighterAttributes.Create('', '');
         tmpNumberAttri    := TSynHighlighterAttributes.Create('', '');
@@ -2014,14 +2020,14 @@ begin
   Result := SYNS_LangCS;
 end;
 
-function TSynCSSyn.IsFilterStored: boolean;
+function TSynCSSyn.IsFilterStored: Boolean;
 begin
   Result := fDefaultFilter <> SYNS_FilterCS;
 end;
 
 class function TSynCSSyn.GetCapabilities: TSynHighlighterCapabilities;
 begin
-  Result := inherited GetCapabilities + [hcUserSettings];
+  Result := inherited GetCapabilities + [hcUserSettings, hcStructureHighlight];
 end;
 
 class function TSynCSSyn.GetFriendlyLanguageName: string;

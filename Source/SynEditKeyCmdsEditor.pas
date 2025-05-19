@@ -26,13 +26,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditKeyCmdsEditor.pas,v 1.10.2.2 2004/12/10 15:31:05 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynEditKeyCmdsEditor;
@@ -131,26 +124,26 @@ end;
 
 procedure TSynEditKeystrokesEditorForm.UpdateKeystrokesList;
 var
-  x: integer;
+  I: Integer;
 begin
   KeyCmdList.Items.BeginUpdate;
   try
     KeyCmdList.Items.Clear;
-    for x := 0 to FKeystrokes.Count-1 do
+    for I := 0 to FKeystrokes.Count-1 do
     begin
       with KeyCmdList.Items.Add do
       begin
         if FExtended then
-          Caption := ConvertCodeStringToExtended(EditorCommandToCodeString(FKeystrokes[x].Command))
-        else Caption := EditorCommandToCodeString(FKeystrokes[x].Command);
-        if FKeystrokes[x].ShortCut = 0 then
+          Caption := ConvertCodeStringToExtended(EditorCommandToCodeString(FKeystrokes[I].Command))
+        else Caption := EditorCommandToCodeString(FKeystrokes[I].Command);
+        if FKeystrokes[I].ShortCut = 0 then
           SubItems.Add(SYNS_ShortCutNone)
         else
-          if FKeystrokes[x].ShortCut2 = 0 then
-            SubItems.Add(Menus.ShortCutToText(FKeystrokes[x].ShortCut))
+          if FKeystrokes[I].ShortCut2 = 0 then
+            SubItems.Add(Menus.ShortCutToText(FKeystrokes[I].ShortCut))
           else
-            SubItems.Add(Menus.ShortCutToText(FKeystrokes[x].ShortCut)+ ' '+
-              Menus.ShortCutToText(FKeystrokes[x].ShortCut2));
+            SubItems.Add(Menus.ShortCutToText(FKeystrokes[I].ShortCut)+ ' '+
+              Menus.ShortCutToText(FKeystrokes[I].ShortCut2));
       end;
     end;
   finally
@@ -186,10 +179,10 @@ begin
   Msg.MinMaxInfo.ptMinTrackSize := Point(300, 225);
 end;
 
-procedure TSynEditKeystrokesEditorForm.btnAddClick(Sender: TObject);            //DDH 10/16/01 Begin (reworked proc)
+procedure TSynEditKeystrokesEditorForm.btnAddClick(Sender: TObject);
 var
   NewStroke: TSynEditKeyStroke;
-  AForm : TSynEditKeystrokeEditorForm;
+  AForm: TSynEditKeystrokeEditorForm;
 
   function AddKeyStroke: Boolean;
   var
@@ -327,7 +320,7 @@ begin
   if SelItem = NIL then
   begin
     MessageBeep(1);
-    exit;
+    Exit;
   end;
   AForm := TSynEditKeystrokeEditorForm.Create(Self);
   with AForm do
@@ -363,7 +356,7 @@ begin
     finally
       AForm.Free;
     end;
-end;                                                                            //DDH 10/16/01 End (reworked procs)
+end;
 
 procedure TSynEditKeystrokesEditorForm.btnDeleteClick(Sender: TObject);
 var
@@ -373,7 +366,7 @@ begin
   if SelItem = nil then
   begin
     MessageBeep(1);
-    exit;
+    Exit;
   end;
   FKeystrokes[SelItem.Index].Free;
   KeyCmdList.Items.Delete(SelItem.Index);

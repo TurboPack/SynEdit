@@ -30,35 +30,35 @@ unit SynEditDataObject;
 
 interface
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  ActiveX,
-  Generics.Collections;
+  Winapi.Windows,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Collections;
 
 Type
 
   TSynEnumFormatEtc = class (TInterfacedObject, IEnumFORMATETC)
   private
-    FList : TArray<TClipFormat>;
-    FIndex : integer;
+    FList: TArray<TClipFormat>;
+    FIndex: Integer;
   protected
-    function GetFormatEtc(ClipFormat : TClipFormat): TFormatEtc;
+    function GetFormatEtc(ClipFormat: TClipFormat): TFormatEtc;
     {IEnumFORMATETC}
     function Next (celt: Longint; out elt; pceltFetched: PLongint): HResult; stdcall;
     function Skip (celt: Longint): HResult; stdcall;
-    function Reset : HResult; stdcall;
+    function Reset: HResult; stdcall;
     function Clone (out Enum: IEnumFormatEtc): HResult; stdcall;
   public
-    constructor Create (FormatList : TArray<TClipFormat>; Index : integer = 0);
+    constructor Create (FormatList: TArray<TClipFormat>; Index: Integer = 0);
   end;
 
   TSynEditDataObject = class (TInterfacedObject, IDataObject)
   private
-    fText : string;
-    FFormatEtc : TList<TClipFormat>;
-    MemoryStream : TMemoryStream;
-    HtmlStream : TMemoryStream;
+    FText: string;
+    FInternalText: string;
+    FFormatEtc: TList<TClipFormat>;
+    HtmlStream: TMemoryStream;
     procedure StreamHTML(Editor: TObject; Stream: TStream);
   protected
     function GetData (const formatetcIn: TFormatEtc; out medium: TStgMedium): HResult; overload; stdcall;
@@ -71,14 +71,17 @@ Type
     function DUnadvise (dwConnection: Longint): HResult; overload; stdcall;
     function EnumDAdvise (out enumAdvise: IEnumStatData): HResult; overload; stdcall;
   public
-    constructor Create(ASynEdit : TObject);
+    constructor Create(ASynEdit: TObject);
     destructor Destroy; override;
   end;
 
-function MakeGlobal (Value : integer) : hGlobal; overload;
 function MakeGlobal (const S: string): hGlobal; overload;
-function MakeGlobal (var P; Size : integer) : hGlobal; overload;
-function HasFormat(DataObject : IDataObject; Format : TClipFormat): Boolean;
+function MakeGlobal (var P; Size: Integer): hGlobal; overload;
+function HasFormat(DataObject: IDataObject; Format: TClipFormat): Boolean;
+function GetInternalClipText: TArray<string>;
+
+const
+  IntClipFormatDelimiter = #$EEFF;   // from private unicode area
 
 var
   SynEditClipboardFormat: UINT;
@@ -87,13 +90,15 @@ var
 implementation
 
 uses
+  Vcl.Clipbrd,
   SynEdit,
+  SynEditTypes,
   SynExportHTML;
 
 function MakeGlobal (const S: string): hGlobal;
 var
-  P : PChar;
-  Size : Integer;
+  P: PChar;
+  Size: Integer;
 begin
   Size := ByteLength(S) + SizeOf(Char);
   Result := GlobalAlloc (GHND, Size);
@@ -107,14 +112,9 @@ begin
   end
 end;
 
-function MakeGlobal (Value : integer) : hGlobal;
-begin
-  Result := MakeGlobal (Value, sizeof (integer))
-end;
-
-function MakeGlobal (var P; Size : integer) : hGlobal;
+function MakeGlobal (var P; Size: Integer): hGlobal;
 var
-  D : pointer;
+  D: pointer;
 begin
   Result := GlobalAlloc (GHND, Size);
   if Result = 0 then
@@ -127,11 +127,11 @@ begin
   end
 end;
 
-function HasFormat(DataObject : IDataObject; Format : TClipFormat):Boolean;
-Var
-  FormatEnumerator : IEnumFormatEtc;
-  FormatEtc  : TFormatEtc;
-  Returned : integer;
+function HasFormat(DataObject: IDataObject; Format: TClipFormat):Boolean;
+var
+  FormatEnumerator: IEnumFormatEtc;
+  FormatEtc: TFormatEtc;
+  Returned: Integer;
 begin
   Result := False;
   if (DataObject.EnumFormatEtc (DATADIR_GET, FormatEnumerator) = S_OK) then begin
@@ -142,22 +142,70 @@ begin
   end;
 end;
 
-constructor TSynEditDataObject.Create(ASynEdit : TObject);
+function GetInternalClipText: TArray<string>;
+var
+  Data: THandle;
+  TempS: string;
+begin
+  Result := [];
+  if not Clipboard.HasFormat(SynEditClipboardFormat) then Exit;
+  Data := Clipboard.GetAsHandle(SynEditClipboardFormat);
+
+  if Data <> 0 then
+    try
+      TempS := PChar(GlobalLock(Data));
+      Result := TempS.Split([IntClipFormatDelimiter]);
+    finally
+      GlobalUnlock(Data);
+    end;
+end;
+
+
+constructor TSynEditDataObject.Create(ASynEdit: TObject);
+var
+  Ed: TCustomSynEdit;
+
+  function DelimitedText(Delimiter: string): string;
+  var
+    Index: Integer;
+    Sel: TSynSelection;
+  begin
+    Result := '';
+    for Index := 0 to Ed.Selections.Count - 1 do
+    begin
+      Sel := Ed.Selections[Index];
+      if Sel.IsEmpty then
+        Result := Result + Ed.Lines[Sel.Caret.Line - 1]
+      else
+        Result := Result + Ed.SelectionText(Sel);
+
+      if Index < Ed.Selections.Count - 1 then
+        Result := Result + Delimiter;
+    end;
+  end;
+
 begin
   inherited Create;
-  MemoryStream := TMemoryStream.Create;
-  HtmlStream := TMemoryStream.Create;
+
+  Ed := ASynEdit as TCustomSynEdit;
+
   FFormatEtc := TList<TClipFormat>.Create;
+
   FFormatEtc.Add(CF_UNICODETEXT);
-  FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
-  fText := (ASynEdit as TCustomSynEdit).SelText;
-  MemoryStream.Write((ASynEdit as TCustomSynEdit).ActiveSelectionMode,
-    SizeOf(TCustomSynEdit(ASynEdit).ActiveSelectionMode));
+  FText := DelimitedText(SLineBreak);
+
+  if Ed.Selections.Count > 1 then
+  begin
+    FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
+    FInternalText := DelimitedText(IntClipFormatDelimiter);
+  end;
+
   if not (eoCopyPlainText in TCustomSynEdit(ASynEdit).Options) and
-    Assigned(TCustomSynEdit(ASynEdit).Highlighter)
+    Assigned(TCustomSynEdit(ASynEdit).Highlighter) and (FText <> '')
   then
   begin
     FFormatEtc.Add(HTMLClipboardFormat); // HTMLFormat
+    HtmlStream := TMemoryStream.Create;
     StreamHtml(ASynEdit, HtmlStream);
   end;
 end;
@@ -165,7 +213,6 @@ end;
 destructor TSynEditDataObject.Destroy;
 begin
   FFormatEtc.Free;
-  MemoryStream.Free;
   HtmlStream.Free;
   inherited Destroy
 end;
@@ -180,7 +227,7 @@ begin
     if FormatEtcIn.cfFormat = CF_UNICODETEXT then
       Medium.hGlobal := MakeGlobal(FText)
     else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
-      Medium.hGlobal := MakeGlobal(MemoryStream.Memory^, MemoryStream.Position)
+      Medium.hGlobal := MakeGlobal(FInternalText)
     else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) then
       Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position);
   except
@@ -196,6 +243,7 @@ end;
 procedure TSynEditDataObject.StreamHTML(Editor: TObject; Stream: TStream);
 var
   HTMLExport: TSynExporterHTML;
+  SL: TStringList;
   Ed: TCustomSynEdit;
 begin
   Ed := Editor as TCustomSynEdit;
@@ -203,10 +251,16 @@ begin
   try
     HTMLExport.Font := Ed.Font;
     HTMLExport.CreateHTMLFragment := True;
-    HTMLExport.UseBackground := True;
+    HTMLExport.UseBackground := not (eoNoHTMLBackground in TCustomSynEdit(Editor).Options);
     HTMLExport.Highlighter := Ed.Highlighter;
-    HTMLExport.ExportRange(Ed.Lines, Ed.BlockBegin, Ed.BlockEnd);
-    HTMLExport.SaveToStream(Stream);
+    SL := TStringList.Create;
+    try
+      SL.Text := FText;
+      HTMLExport.ExportAll(SL);
+      HTMLExport.SaveToStream(Stream);
+    finally
+      SL.Free;
+    end;
     // Adding a terminating null byte to the Stream.
     Stream.WriteData(0, 1);
   finally
@@ -268,7 +322,7 @@ end;
 //=== BASE ENUM FORMATETC CLASS ================================================
 
 constructor TSynEnumFormatEtc.Create(FormatList: TArray<TClipFormat>;
-  Index: integer);
+  Index: Integer);
 begin
   inherited Create;
   FList := FormatList;
@@ -289,7 +343,7 @@ end;
 
 function TSynEnumFormatEtc.Next (celt: Longint; out elt; pceltFetched: PLongint): HResult;
 var
-  I : integer;
+  I: Integer;
   FormatEtc: PFormatEtc;
 begin
   I := 0;
@@ -321,7 +375,7 @@ begin
   end
 end;
 
-function TSynEnumFormatEtc.Reset : HResult;
+function TSynEnumFormatEtc.Reset: HResult;
 begin
   FIndex := 0;
   Result := S_OK;

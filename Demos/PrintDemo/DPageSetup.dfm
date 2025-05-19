@@ -6,20 +6,22 @@ object PageSetupDlg: TPageSetupDlg
   ClientHeight = 397
   ClientWidth = 632
   Color = clBtnFace
-  ParentFont = True
-  OldCreateOrder = True
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
   Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 15
   object PageControl: TPageControl
     Left = 0
     Top = 0
     Width = 632
     Height = 397
-    ActivePage = HeaderFooter
+    ActivePage = Margins
     Align = alClient
     TabOrder = 2
     OnChange = PageControlChange
@@ -1063,78 +1065,78 @@ object PageSetupDlg: TPageSetupDlg
       object Label1: TLabel
         Left = 10
         Top = 44
-        Width = 21
-        Height = 13
+        Width = 23
+        Height = 15
         Caption = 'Left:'
       end
       object Label2: TLabel
         Left = 10
         Top = 69
-        Width = 28
-        Height = 13
+        Width = 31
+        Height = 15
         Caption = 'Right:'
       end
       object Label3: TLabel
         Left = 10
         Top = 94
-        Width = 22
-        Height = 13
+        Width = 23
+        Height = 15
         Caption = 'Top:'
       end
       object Label4: TLabel
         Left = 10
         Top = 119
-        Width = 36
-        Height = 13
+        Width = 43
+        Height = 15
         Caption = 'Bottom:'
       end
       object Label5: TLabel
         Left = 10
         Top = 14
-        Width = 27
-        Height = 13
+        Width = 30
+        Height = 15
         Caption = 'Units:'
       end
       object Label6: TLabel
         Left = 10
         Top = 174
-        Width = 38
-        Height = 13
+        Width = 41
+        Height = 15
         Caption = 'Header:'
       end
       object Label7: TLabel
         Left = 10
         Top = 199
-        Width = 33
-        Height = 13
+        Width = 37
+        Height = 15
         Caption = 'Footer:'
       end
       object Label8: TLabel
         Left = 10
         Top = 224
-        Width = 84
-        Height = 13
+        Width = 96
+        Height = 15
         Caption = 'HFInternalMargin:'
       end
       object Label9: TLabel
         Left = 10
         Top = 249
-        Width = 86
-        Height = 13
+        Width = 93
+        Height = 15
         Caption = 'LeftHFTextIndent:'
       end
       object Label10: TLabel
         Left = 10
         Top = 274
-        Width = 93
-        Height = 13
+        Width = 101
+        Height = 15
         Caption = 'RightHFTextIndent:'
       end
       object Label11: TLabel
         Left = 10
         Top = 144
-        Width = 29
-        Height = 13
+        Width = 33
+        Height = 15
         Caption = 'Gutter'
       end
       object CBMirrorMargins: TCheckBox
@@ -1149,79 +1151,78 @@ object PageSetupDlg: TPageSetupDlg
         Left = 110
         Top = 40
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 1
       end
       object EditRight: TEdit
         Left = 110
         Top = 65
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 2
       end
       object EditTop: TEdit
         Left = 110
         Top = 90
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 3
       end
       object EditBottom: TEdit
         Left = 110
         Top = 115
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 4
       end
       object EditGutter: TEdit
         Left = 110
         Top = 140
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 5
       end
       object EditHeader: TEdit
         Left = 110
         Top = 170
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 6
       end
       object EditFooter: TEdit
         Left = 110
         Top = 195
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 7
       end
       object EditHFInternalMargin: TEdit
         Left = 110
         Top = 220
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 8
       end
       object EditLeftHFTextIndent: TEdit
         Left = 110
         Top = 245
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 9
       end
       object EditRightHFTextIndent: TEdit
         Left = 110
         Top = 270
         Width = 151
-        Height = 21
+        Height = 23
         TabOrder = 10
       end
       object CBUnits: TComboBox
         Left = 110
         Top = 10
         Width = 151
-        Height = 21
+        Height = 23
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 11
         OnChange = CBUnitsChange
         Items.Strings = (
@@ -1243,7 +1244,7 @@ object PageSetupDlg: TPageSetupDlg
         Top = 340
         Width = 156
         Height = 17
-        Caption = 'Print line numbers in margin'
+        Caption = 'Line numbers in margin'
         TabOrder = 13
       end
       object CBHighlight: TCheckBox
@@ -1284,22 +1285,22 @@ object PageSetupDlg: TPageSetupDlg
         object Label12: TLabel
           Left = 10
           Top = 15
-          Width = 18
-          Height = 13
+          Width = 20
+          Height = 15
           Caption = 'Left'
         end
         object Label13: TLabel
           Left = 210
           Top = 15
-          Width = 31
-          Height = 13
+          Width = 35
+          Height = 15
           Caption = 'Center'
         end
         object Label14: TLabel
           Left = 410
           Top = 15
-          Width = 25
-          Height = 13
+          Width = 28
+          Height = 15
           Caption = 'Right'
         end
         object REHeaderLeft: TRichEdit
@@ -1307,6 +1308,12 @@ object PageSetupDlg: TPageSetupDlg
           Top = 30
           Width = 191
           Height = 56
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 0
           WordWrap = False
@@ -1319,6 +1326,12 @@ object PageSetupDlg: TPageSetupDlg
           Width = 191
           Height = 56
           Alignment = taCenter
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 1
           WordWrap = False
@@ -1331,6 +1344,12 @@ object PageSetupDlg: TPageSetupDlg
           Width = 191
           Height = 56
           Alignment = taRightJustify
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 2
           WordWrap = False
@@ -1423,22 +1442,22 @@ object PageSetupDlg: TPageSetupDlg
         object Label15: TLabel
           Left = 10
           Top = 15
-          Width = 18
-          Height = 13
+          Width = 20
+          Height = 15
           Caption = 'Left'
         end
         object Label16: TLabel
           Left = 210
           Top = 15
-          Width = 31
-          Height = 13
+          Width = 35
+          Height = 15
           Caption = 'Center'
         end
         object Label17: TLabel
           Left = 410
           Top = 15
-          Width = 25
-          Height = 13
+          Width = 28
+          Height = 15
           Caption = 'Right'
         end
         object REFooterLeft: TRichEdit
@@ -1446,6 +1465,12 @@ object PageSetupDlg: TPageSetupDlg
           Top = 30
           Width = 191
           Height = 56
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 0
           WordWrap = False
@@ -1458,6 +1483,12 @@ object PageSetupDlg: TPageSetupDlg
           Width = 191
           Height = 56
           Alignment = taCenter
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 1
           WordWrap = False
@@ -1470,6 +1501,12 @@ object PageSetupDlg: TPageSetupDlg
           Width = 191
           Height = 56
           Alignment = taRightJustify
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 2
           WordWrap = False
@@ -1563,7 +1600,6 @@ object PageSetupDlg: TPageSetupDlg
         AutoSize = True
         Caption = 'ToolBar1'
         EdgeBorders = [ebBottom]
-        Flat = True
         Images = ImageList1
         Indent = 5
         TabOrder = 2

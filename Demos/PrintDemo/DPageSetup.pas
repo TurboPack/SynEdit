@@ -25,13 +25,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: DPageSetup.pas,v 1.2 2000/11/22 08:37:05 mghie Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit DPageSetup;
@@ -44,7 +37,7 @@ uses
   Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
   Buttons, ExtCtrls, ComCtrls, ToolWin, ImgList, ActnList, Dialogs,
   SynEditPrintTypes, SynEditPrint, SynEditPrintMargins,
-  SynEditPrintHeaderFooter;
+  SynEditPrintHeaderFooter, System.Actions, System.ImageList;
 
 type
   TPageSetupDlg = class(TForm)
@@ -443,7 +436,10 @@ begin
   for i := 0 to Editor.Lines.Count - 1 do begin
     SelectLine(i);
     AFont.Assign(CurrText);
-    HeadFoot.Add(Editor.Lines[i], AFont, Al, i + 1);
+    if not CBColors.Checked then
+      AFont.Color := HeadFoot.DefaultFont.Color;
+
+    HeadFoot.Add(TrimRight(Editor.Lines[i]), AFont, Al, i + 1);
   end;
   AFont.Free;
 end;

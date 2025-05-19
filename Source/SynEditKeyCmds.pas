@@ -27,14 +27,8 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditKeyCmds.pas,v 1.23.2.4 2008/09/14 16:24:58 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
-// TODO: introduce friendly Names for the Commands (EditorCommandStrs is not good enough for end-users)
+// TODO: introduce friendly names for the Commands (EditorCommandStrs is not good enough for end-users)
 
 unit SynEditKeyCmds;
 
@@ -43,17 +37,19 @@ unit SynEditKeyCmds;
 interface
 
 uses
-  Menus,
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Collections,
+  Vcl.Menus,
   SynUnicode,
-  Classes,
-  SynEditTypes,
-  SysUtils;
+  SynEditTypes;
 
 const
   //****************************************************************************
   // NOTE!  If you add an editor command, you must also update the
   //    EditorCommandStrs constant array in implementation section below, or the
   //    command will not show up in the IDE.
+  //
   //****************************************************************************
 
   // "Editor Commands".  Key strokes are translated from a table into these
@@ -87,11 +83,6 @@ const
   ecEditorTop       = 15;   // Move cursor to absolute beginning
   ecEditorBottom    = 16;   // Move cursor to absolute end
   ecGotoXY          = 17;   // Move cursor to specific coordinates, Data = PPoint
-
-//******************************************************************************
-// Maybe the command processor should just take a boolean that signifies if
-// selection is affected or not?
-//******************************************************************************
 
   ecSelection       = 100;  // Add this to ecXXX command to get equivalent
                             // command, but with selection enabled. This is not
@@ -129,12 +120,13 @@ const
   ecOverwriteMode   = 222;  // Set overwrite mode
   ecToggleMode      = 223;  // Toggle ins/ovr mode
 
-  ecNormalSelect    = 231;  // Normal selection mode
-  ecColumnSelect    = 232;  // Column selection mode
-  ecLineSelect      = 233;  // Line selection mode
-
   ecMatchBracket    = 250;  // Go to matching bracket
-  ecCommentBlock    = 251;  // Comment Block
+  ecSelMatchBracket = 251;  // Select to matching bracket
+
+  ecCommentBlock    = 260;  // Comment Block
+
+  ecNextChange      = 270;  // Goto next change.
+  ecPreviousChange  = 271;  // Goto previous change.
 
   ecGotoMarker0     = 301;  // Goto marker
   ecGotoMarker1     = 302;  // Goto marker
@@ -156,6 +148,10 @@ const
   ecSetMarker7      = 358;  // Set marker, Data = PPoint - X, Y Pos
   ecSetMarker8      = 359;  // Set marker, Data = PPoint - X, Y Pos
   ecSetMarker9      = 360;  // Set marker, Data = PPoint - X, Y Pos
+
+  ecZoomIn          = 401;
+  ecZoomOut         = 402;
+  ecZoomReset       = 403;
 
   ecGotFocus        = 480;
   ecLostFocus       = 481;
@@ -200,7 +196,7 @@ const
   ecMoveLineUp      = 663;
   ecMoveLineDown    = 664;
 
-  //++ CodeFolding
+  // CodeFolding
   ecFoldAll         = 701;
   ecUnfoldAll       = 702;
   ecFoldNearest     = 705;
@@ -211,14 +207,35 @@ const
   ecUnfoldLevel1    = 721;
   ecUnfoldLevel2    = 722;
   ecUnfoldLevel3    = 723;
-  ecFoldRegions      = 731;
-  ecUnfoldRegions    = 732;
-  //-- CodeFolding
+  ecFoldRegions     = 731;
+  ecUnfoldRegions   = 732;
+
+  // Multi-caret
+  ecSelectColumn       = 150;
+
+  ecCancelSelections   = 800;
+  ecDeleteSelections   = 801; // Internal command
+  ecSelColumnLeft      = ecLeft + ecSelectColumn;
+  ecSelColumnRight     = ecRight + ecSelectColumn;
+  ecSelColumnUp        = ecUp + ecSelectColumn;
+  ecSelColumnDown      = ecDown + ecSelectColumn;
+  ecSelColumnPageUp    = ecPageUp + ecSelectColumn;
+  ecSelColumnPageDown  = ecPageDown + ecSelectColumn;
+  ecSelMatchingText    = 802;
+  ecCaretsAtLineEnds   = 803;
 
   ecUserFirst       = 1001; // Start of user-defined commands
 
 type
   ESynKeyError = class(Exception);
+
+  TSynCommandKind = (ckStandard, ckSingleCaret, ckMultiCaret);
+
+  TSynCommandInfo = record
+    CommandKind: TSynCommandKind;
+    StoreMultiCaret: Boolean;
+    constructor Create(ACommandKind: TSynCommandKind; AStoreMultiCaret: Boolean);
+  end;
 
   TSynEditKeyStroke = class(TCollectionItem)
   private
@@ -255,28 +272,22 @@ type
       default 0;
   end;
 
-  TSynEditKeyStrokes = class(TCollection)
+  TSynEditKeyStrokes = class(TOwnedCollection)
   private
-    FOwner: TPersistent;
     function GetItem(Index: Integer): TSynEditKeyStroke;
     procedure SetItem(Index: Integer; Value: TSynEditKeyStroke);
-  protected
-    function GetOwner: TPersistent; override;
   public
     constructor Create(AOwner: TPersistent);
     function Add: TSynEditKeyStroke;
-//++ CodeFolding
     procedure AddKey(const ACmd: TSynEditorCommand; const AKey: word;
        const AShift: TShiftState; const AKey2: word = 0;
        const AShift2: TShiftState = []);
-//-- CodeFolding
-    procedure Assign(Source: TPersistent); override;
-    function FindCommand(Cmd: TSynEditorCommand): integer;
-    function FindKeycode(Code: word; SS: TShiftState): integer;
+    function FindCommand(Cmd: TSynEditorCommand): Integer;
+    function FindKeycode(Code: word; SS: TShiftState): Integer;
     function FindKeycode2(Code1: word; SS1: TShiftState;
-      Code2: word; SS2: TShiftState): integer;
-    function FindShortcut(SC: TShortcut): integer;
-    function FindShortcut2(SC, SC2: TShortcut): integer;
+      Code2: word; SS2: TShiftState): Integer;
+    function FindShortcut(SC: TShortcut): Integer;
+    function FindShortcut2(SC, SC2: TShortcut): Integer;
     procedure LoadFromStream(AStream: TStream);
     procedure ResetDefaults;
     procedure SaveToStream(AStream: TStream);
@@ -289,6 +300,7 @@ type
 // useful elsewhere.
 function EditorCommandToDescrString(Cmd: TSynEditorCommand): string;
 function EditorCommandToCodeString(Cmd: TSynEditorCommand): string;
+function EditorCommandToExtendedCodeString(Cmd: TSynEditorCommand): string;
 procedure GetEditorCommandValues(Proc: TGetStrProc);
 procedure GetEditorCommandExtended(Proc: TGetStrProc);
 function IdentToEditorCommand(const Ident: string; var Cmd: Integer): Boolean;
@@ -299,19 +311,21 @@ function ConvertExtendedToCommand(AString: string): TSynEditorCommand;
 function ConvertCodeStringToCommand(AString: string): TSynEditorCommand;
 function IndexToEditorCommand(const AIndex: Integer): Integer;
 
+// Synedit command information
+var
+  SynCommandsInfo: TDictionary<Integer, TSynCommandInfo>;
+
 implementation
 
 uses
-  Windows,
+  Winapi.Windows,
   SynEditKeyConst,
   SynEditStrConst;
 
 { Command mapping routines }
 
 const
-//++ CodeFolding
-  EditorCommandStrs: array[0..112] of TIdentMapEntry = (
-//-- CodeFolding
+  EditorCommandStrs: array[0..124] of TIdentMapEntry = (
     (Value: ecNone; Name: 'ecNone'),
     (Value: ecLeft; Name: 'ecLeft'),
     (Value: ecRight; Name: 'ecRight'),
@@ -378,12 +392,12 @@ const
     (Value: ecTab; Name: 'ecTab'),
     (Value: ecShiftTab; Name: 'ecShiftTab'),
     (Value: ecMatchBracket; Name: 'ecMatchBracket'),
+    (Value: ecSelMatchBracket; Name: 'ecSelMatchBracket'),
     (Value: ecCommentBlock; Name: 'ecCommentBlock'),
-    (Value: ecNormalSelect; Name: 'ecNormalSelect'),
-    (Value: ecColumnSelect; Name: 'ecColumnSelect'),
-    (Value: ecLineSelect; Name: 'ecLineSelect'),
     (Value: ecAutoCompletion; Name: 'ecAutoCompletion'),
     (Value: ecContextHelp; Name: 'ecContextHelp'),
+    (Value: ecNextChange; Name: 'ecNextChange'),
+    (Value: ecPreviousChange; Name: 'ecPrevChange'),
     (Value: ecGotoMarker0; Name: 'ecGotoMarker0'),
     (Value: ecGotoMarker1; Name: 'ecGotoMarker1'),
     (Value: ecGotoMarker2; Name: 'ecGotoMarker2'),
@@ -404,6 +418,9 @@ const
     (Value: ecSetMarker7; Name: 'ecSetMarker7'),
     (Value: ecSetMarker8; Name: 'ecSetMarker8'),
     (Value: ecSetMarker9; Name: 'ecSetMarker9'),
+    (Value: ecZoomIn; Name: 'ecZoomIn'),
+    (Value: ecZoomOut; Name: 'ecZoomOut'),
+    (Value: ecZoomReset; Name: 'ecZoomReset'),
     (Value: ecUpperCase; Name: 'ecUpperCase'),
     (Value: ecLowerCase; Name: 'ecLowerCase'),
     (Value: ecToggleCase; Name: 'ecToggleCase'),
@@ -413,7 +430,7 @@ const
     (Value: ecMoveLineUp; Name:'ecMoveLineUp'),
     (Value: ecMoveLineDown; Name:'ecMoveLineDown'),
     (Value: ecString; Name:'ecString'),
-//++ CodeFolding
+    // CodeFolding
     (Value: ecFoldAll; Name:'ecFoldAll'),
     (Value: ecUnfoldAll; Name:'ecUnfoldAll'),
     (Value: ecFoldNearest; Name:'ecFoldNearest'),
@@ -425,13 +442,23 @@ const
     (Value: ecUnfoldLevel2; Name:'ecUnfoldLevel2'),
     (Value: ecUnfoldLevel3; Name:'ecUnfoldLevel3'),
     (Value: ecFoldRegions; Name:'ecFoldRanges'),
-    (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'));
-//-- CodeFolding
+    (Value: ecUnfoldRegions; Name:'ecUnfoldRanges'),
+    // Multi-caret
+    (Value: ecCancelSelections; Name:'ecCancelSelections'),
+    (Value: ecSelColumnLeft; Name:'ecSelColumnLeft'),
+    (Value: ecSelColumnRight; Name:'ecSelColumnRight'),
+    (Value: ecSelColumnUp; Name:'ecSelColumnUp'),
+    (Value: ecSelColumnDown; Name:'ecSelColumnDown'),
+    (Value: ecSelColumnPageUp; Name:'ecSelColumnPageUp'),
+    (Value: ecSelColumnPageDown; Name:'ecSelColumnPageDown'),
+    (Value: ecSelMatchingText; Name:'ecSelMatchingText'),
+    (Value: ecCaretsAtLineEnds; Name:'ecCaretsAtLineEnds')
+    );
 
 // GetEditorCommandValues and GetEditorCommandExtended for editing key assignments
 procedure GetEditorCommandValues(Proc: TGetStrProc);
 var
-  i: integer;
+  i: Integer;
 begin
   for i := Low(EditorCommandStrs) to High(EditorCommandStrs) do
     case EditorCommandStrs[I].Value of
@@ -444,7 +471,7 @@ end;
 
 procedure GetEditorCommandExtended(Proc: TGetStrProc);
 var
-  i: integer;
+  i: Integer;
 begin
   for i := Low(EditorCommandStrs) to High(EditorCommandStrs) do
     case EditorCommandStrs[I].Value of
@@ -455,12 +482,12 @@ begin
     end;
 end;
 
-function IdentToEditorCommand(const Ident: string; var Cmd: Integer): boolean;
+function IdentToEditorCommand(const Ident: string; var Cmd: Integer): Boolean;
 begin
     Result := IdentToInt(Ident, Cmd, EditorCommandStrs);
 end;
 
-function EditorCommandToIdent(Cmd: Integer; var Ident: string): boolean;
+function EditorCommandToIdent(Cmd: Integer; var Ident: string): Boolean;
 begin
   Result := IntToIdent(Cmd, Ident, EditorCommandStrs);
 end;
@@ -476,6 +503,12 @@ begin
   if not EditorCommandToIdent(Cmd, Result) then
     Result := IntToStr(Cmd);
 end;
+
+function EditorCommandToExtendedCodeString(Cmd: TSynEditorCommand): string;
+begin
+  Result := ConvertCodeStringToExtended(EditorCommandToCodeString(Cmd));
+end;
+
 
 { TSynEditKeyStroke }
 
@@ -503,7 +536,7 @@ end;
 
 function TSynEditKeyStroke.GetShortCut: TShortCut;
 begin
-  Result := Menus.ShortCut(Key, Shift);
+  Result := Vcl.Menus.ShortCut(Key, Shift);
 end;
 
 procedure TSynEditKeyStroke.SetCommand(const Value: TSynEditorCommand);
@@ -528,7 +561,8 @@ procedure TSynEditKeyStroke.SetShortCut(const Value: TShortCut);
 var
   NewKey: Word;
   NewShift: TShiftState;
-  Dup: integer;
+  Dup: Integer;
+  CurrCmd, DupCmd: string;
 begin
   // Duplicate values of no shortcut are OK.
   if Value <> 0 then
@@ -536,12 +570,16 @@ begin
     // Check for duplicate shortcut in the collection and disallow if there is.
     Dup := TSynEditKeyStrokes(Collection).FindShortcut2(Value, ShortCut2);
     if (Dup <> -1) and (Dup <> Self.Index) then
-      begin
-      raise ESynKeyError.Create(SYNS_EDuplicateShortCut);
-      end;
+    begin
+      CurrCmd := EditorCommandToExtendedCodeString(FCommand);
+      DupCmd := EditorCommandToExtendedCodeString(
+        TSynEditKeyStrokes(Collection)[Dup].Command);
+
+      raise ESynKeyError.CreateFmt(SYNS_EDuplicateShortCut, [CurrCmd, DupCmd]);
+    end;
   end;
 
-  Menus.ShortCutToKey(Value, NewKey, NewShift);
+  Vcl.Menus.ShortCutToKey(Value, NewKey, NewShift);
 
   if (NewKey <> Key) or (NewShift <> Shift) then
   begin
@@ -566,7 +604,8 @@ procedure TSynEditKeyStroke.SetShortCut2(const Value: TShortCut);
 var
   NewKey: Word;
   NewShift: TShiftState;
-  Dup: integer;
+  Dup: Integer;
+  CurrCmd, DupCmd: string;
 begin
   // Duplicate values of no shortcut are OK.
   if Value <> 0 then
@@ -574,10 +613,16 @@ begin
     // Check for duplicate shortcut in the collection and disallow if there is.
     Dup := TSynEditKeyStrokes(Collection).FindShortcut2(ShortCut, Value);
     if (Dup <> -1) and (Dup <> Self.Index) then
-      raise ESynKeyError.Create(SYNS_EDuplicateShortCut);
+    begin
+      CurrCmd := EditorCommandToExtendedCodeString(FCommand);
+      DupCmd := EditorCommandToExtendedCodeString(
+        TSynEditKeyStrokes(Collection)[Dup].Command);
+
+      raise ESynKeyError.CreateFmt(SYNS_EDuplicateShortCut, [CurrCmd, DupCmd]);
+    end;
   end;
 
-  Menus.ShortCutToKey(Value, NewKey, NewShift);
+  Vcl.Menus.ShortCutToKey(Value, NewKey, NewShift);
   if (NewKey <> Key2) or (NewShift <> Shift2) then
   begin
     Key2 := NewKey;
@@ -587,7 +632,7 @@ end;
 
 function TSynEditKeyStroke.GetShortCut2: TShortCut;
 begin
-  Result := Menus.ShortCut(Key2, Shift2);
+  Result := Vcl.Menus.ShortCut(Key2, Shift2);
 end;
 
 procedure TSynEditKeyStroke.LoadFromStream(AStream: TStream);
@@ -640,93 +685,75 @@ begin
 end;
 //-- CodeFolding
 
-procedure TSynEditKeyStrokes.Assign(Source: TPersistent);
-var
-  x: integer;
-begin
-  if Source is TSynEditKeyStrokes then
-  begin
-    Clear;
-    for x := 0 to TSynEditKeyStrokes(Source).Count-1 do
-    begin
-      with Add do
-        Assign(TSynEditKeyStrokes(Source)[x]);
-    end;
-  end
-  else
-    inherited Assign(Source);
-end;
-
 constructor TSynEditKeyStrokes.Create(AOwner: TPersistent);
 begin
-  inherited Create(TSynEditKeyStroke);
-  FOwner := AOwner;
+  inherited Create(AOwner, TSynEditKeyStroke);
 end;
 
-function TSynEditKeyStrokes.FindCommand(Cmd: TSynEditorCommand): integer;
+function TSynEditKeyStrokes.FindCommand(Cmd: TSynEditorCommand): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if Items[x].Command = Cmd then
+  for Idx := 0 to Count-1 do
+    if Items[Idx].Command = Cmd then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
-function TSynEditKeyStrokes.FindKeycode(Code: word; SS: TShiftState): integer;
+function TSynEditKeyStrokes.FindKeycode(Code: word; SS: TShiftState): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if (Items[x].Key = Code) and (Items[x].Shift = SS) and (Items[x].Key2 = 0)
+  for Idx := 0 to Count-1 do
+    if (Items[Idx].Key = Code) and (Items[Idx].Shift = SS) and (Items[Idx].Key2 = 0)
     then begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
 function TSynEditKeyStrokes.FindKeycode2(Code1: word; SS1: TShiftState;
-  Code2: word; SS2: TShiftState): integer;
+  Code2: word; SS2: TShiftState): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if (Items[x].Key = Code1) and (Items[x].Shift = SS1) and
-       (Items[x].Key2 = Code2) and (Items[x].Shift2 = SS2) then
+  for Idx := 0 to Count-1 do
+    if (Items[Idx].Key = Code1) and (Items[Idx].Shift = SS1) and
+       (Items[Idx].Key2 = Code2) and (Items[Idx].Shift2 = SS2) then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
-function TSynEditKeyStrokes.FindShortcut(SC: TShortcut): integer;
+function TSynEditKeyStrokes.FindShortcut(SC: TShortcut): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if Items[x].Shortcut = SC then
+  for Idx := 0 to Count-1 do
+    if Items[Idx].Shortcut = SC then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
-function TSynEditKeyStrokes.FindShortcut2(SC, SC2: TShortcut): integer;
+function TSynEditKeyStrokes.FindShortcut2(SC, SC2: TShortcut): Integer;
 var
-  x: integer;
+  Idx: Integer;
 begin
   Result := -1;
-  for x := 0 to Count-1 do
-    if (Items[x].Shortcut = SC) and (Items[x].Shortcut2 = SC2) then
+  for Idx := 0 to Count - 1 do
+    if (Items[Idx].Shortcut = SC) and (Items[Idx].Shortcut2 = SC2) then
     begin
-      Result := x;
-      break;
+      Result := Idx;
+      Break;
     end;
 end;
 
@@ -735,14 +762,9 @@ begin
  Result := TSynEditKeyStroke(inherited GetItem(Index));
 end;
 
-function TSynEditKeyStrokes.GetOwner: TPersistent;
-begin
-  Result := FOwner;
-end;
-
 procedure TSynEditKeyStrokes.LoadFromStream(AStream: TStream);
 var
-  Num: integer;
+  Num: Integer;
 begin
   Clear;
   AStream.Read(Num, SizeOf(Num));
@@ -771,6 +793,7 @@ begin
   AddKey(ecSelRight, SYNEDIT_RIGHT, [ssShift]);
   AddKey(ecWordRight, SYNEDIT_RIGHT, [ssCtrl]);
   AddKey(ecSelWordRight, SYNEDIT_RIGHT, [ssShift,ssCtrl]);
+  AddKey(ecSelWord, Ord('W'), [ssCtrl]);
   AddKey(ecPageDown, SYNEDIT_NEXT, []);
   AddKey(ecSelPageDown, SYNEDIT_NEXT, [ssShift]);
   AddKey(ecPageBottom, SYNEDIT_NEXT, [ssCtrl]);
@@ -816,6 +839,8 @@ begin
   AddKey(ecDeleteEOL, Ord('Y'), [ssCtrl,ssShift]);
   AddKey(ecUndo, Ord('Z'), [ssCtrl]);
   AddKey(ecRedo, Ord('Z'), [ssCtrl,ssShift]);
+  AddKey(ecNextChange, SYNEDIT_ADD, [ssCtrl,ssShift]);
+  AddKey(ecPreviousChange, SYNEDIT_SUBTRACT, [ssCtrl,ssShift]);
   AddKey(ecGotoMarker0, Ord('0'), [ssCtrl]);
   AddKey(ecGotoMarker1, Ord('1'), [ssCtrl]);
   AddKey(ecGotoMarker2, Ord('2'), [ssCtrl]);
@@ -836,18 +861,18 @@ begin
   AddKey(ecSetMarker7, Ord('7'), [ssCtrl,ssShift]);
   AddKey(ecSetMarker8, Ord('8'), [ssCtrl,ssShift]);
   AddKey(ecSetMarker9, Ord('9'), [ssCtrl,ssShift]);
-  AddKey(ecNormalSelect, Ord('N'), [ssCtrl,ssShift]);
-  AddKey(ecColumnSelect, Ord('C'), [ssCtrl,ssShift]);
-  AddKey(ecLineSelect, Ord('L'), [ssCtrl,ssShift]);
-  AddKey(ecMatchBracket, Ord('B'), [ssCtrl,ssShift]);
+  AddKey(ecZoomIn, SYNEDIT_ADD, [ssAlt]);
+  AddKey(ecZoomOut, SYNEDIT_SUBTRACT, [ssAlt]);
+  AddKey(ecZoomReset, VK_NUMPAD0, [ssAlt]);
+  AddKey(ecMatchBracket, VK_OEM_6, [ssCtrl]); // VK_OEM_6 is ']' in US keyboards
+  AddKey(ecSelMatchBracket, VK_OEM_6, [ssCtrl,ssShift]);
   AddKey(ecLowerCase, Ord('K'), [ssCtrl], Ord('L'), [ssCtrl]);
   AddKey(ecUpperCase, Ord('K'), [ssCtrl], Ord('U'), [ssCtrl]);
   AddKey(ecTitleCase, Ord('K'), [ssCtrl], Ord('T'), [ssCtrl]);
-  AddKey(ecCopyLineUp, SYNEDIT_UP, [ssShift, ssAlt]);
-  AddKey(ecCopyLineDown, SYNEDIT_DOWN, [ssShift, ssAlt]);
+  AddKey(ecCopyLineDown, Ord('D'), [ssCtrl]);
   AddKey(ecMoveLineUp, SYNEDIT_UP, [ssAlt]);
   AddKey(ecMoveLineDown, SYNEDIT_DOWN, [ssAlt]);
-//++ CodeFolding
+  // CodeFolding
   AddKey(ecFoldAll, VK_OEM_MINUS, [ssCtrl, ssShift]);   {- _}
   AddKey(ecUnfoldAll,  VK_OEM_PLUS, [ssCtrl, ssShift]); {= +}
   AddKey(ecFoldNearest, VK_OEM_2, [ssCtrl]);  // Divide {'/'}
@@ -858,7 +883,16 @@ begin
   AddKey(ecUnfoldLevel1, Ord('K'), [ssCtrl, ssShift], Ord('1'), [ssCtrl, ssShift]);
   AddKey(ecUnfoldLevel2, Ord('K'), [ssCtrl, ssShift], Ord('2'), [ssCtrl, ssShift]);
   AddKey(ecUnfoldLevel3, Ord('K'), [ssCtrl, ssShift], Ord('3'), [ssCtrl, ssShift]);
-//-- CodeFolding
+  // Multi-caret
+  AddKey(ecCancelSelections, SYNEDIT_ESCAPE, []);
+  AddKey(ecSelColumnLeft, SYNEDIT_LEFT, [ssShift, ssAlt]);
+  AddKey(ecSelColumnRight, SYNEDIT_RIGHT, [ssShift, ssAlt]);
+  AddKey(ecSelColumnUp, SYNEDIT_UP, [ssShift, ssAlt]);
+  AddKey(ecSelColumnDown, SYNEDIT_DOWN, [ssShift, ssAlt]);
+  AddKey(ecSelColumnPageUp, SYNEDIT_PRIOR, [ssShift, ssAlt]);
+  AddKey(ecSelColumnPageDown, SYNEDIT_NEXT, [ssShift, ssAlt]);
+  AddKey(ecSelMatchingText, Ord('W'), [ssShift, ssCtrl]);
+  AddKey(ecCaretsAtLineEnds, SYNEDIT_END, [ssAlt]);
 end;
 
 procedure TSynEditKeyStrokes.SetItem(Index: Integer; Value: TSynEditKeyStroke);
@@ -868,7 +902,7 @@ end;
 
 procedure TSynEditKeyStrokes.SaveToStream(AStream: TStream);
 var
-  i, Num: integer;
+  i, Num: Integer;
 begin
   Num := Count;
   AStream.Write(Num, SizeOf(Num));
@@ -878,7 +912,7 @@ end;
 
 function ConvertCodeStringToExtended(AString: string): string;
 var
-  i: integer;
+  i: Integer;
   WorkStr: string;
 begin
   if pos('ec', AString) = 1 then
@@ -926,37 +960,37 @@ var
 begin
   if pos('ec', AString) = 1 then
   begin
-    result := AString;
-    exit;
+    Result := AString;
+    Exit;
   end;
 
   WorkStr := AString;
 
-  i := pos('Select All', WorkStr);
-  if i = 0 then
+  I := pos('Select All', WorkStr);
+  if I = 0 then
   begin
-    i := pos('Select ', WorkStr);
-    while i <> 0 do
+    I := pos('Select ', WorkStr);
+    while I <> 0 do
     begin
-      Delete(WorkStr,i,Length('Select '));
-      Insert('Sel ',WorkStr,i);
-      i := pos('Select ', WorkStr);
+      Delete(WorkStr,I,Length('Select '));
+      Insert('Sel ',WorkStr,I);
+      I := pos('Select ', WorkStr);
     end;
   end;
 
-  i := pos('Bookmark ', WorkStr);
-  while i <> 0 do
+  I := pos('Bookmark ', WorkStr);
+  while I <> 0 do
   begin
-    Delete(WorkStr,i,Length('Bookmark '));
-    Insert('Marker ',WorkStr,i);
-    i := pos('Bookmark ', WorkStr);
+    Delete(WorkStr,I,Length('Bookmark '));
+    Insert('Marker ',WorkStr,I);
+    I := pos('Bookmark ', WorkStr);
   end;
 
-  i := pos(' ', WorkStr);
-  while i <> 0 do
+  I := pos(' ', WorkStr);
+  while I <> 0 do
   begin
-    delete(WorkStr,i,1);
-    i := pos(' ', WorkStr);
+    delete(WorkStr,I,1);
+    I := pos(' ', WorkStr);
   end;
 
   Result := 'ec' + WorkStr;
@@ -979,16 +1013,159 @@ begin
   Result := ecNone;
 
   AString := Uppercase(AString);
-  for i := Low(EditorCommandStrs) to High(EditorCommandStrs) do
-    if Uppercase(EditorCommandStrs[i].Name) = AString then
+  for I := Low(EditorCommandStrs) to High(EditorCommandStrs) do
+    if Uppercase(EditorCommandStrs[I].Name) = AString then
     begin
-      Result := EditorCommandStrs[i].Value;
-      break;
+      Result := EditorCommandStrs[I].Value;
+      Break;
     end;
 end;
 
+procedure CreateSysCommandsInfo;
+begin
+  SynCommandsInfo := TDictionary<Integer, TSynCommandInfo>.Create;
+  SynCommandsInfo.Add(ecLeft, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecRight, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecUp, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecDown, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecWordLeft, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecWordRight, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecLineStart, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecLineEnd, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecPageUp, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecPageDown, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecPageLeft, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecPageRight, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecPageTop, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecPageBottom, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecEditorTop, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecEditorBottom, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecGotoXY, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelLeft, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelRight, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelUp, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelDown, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelWordLeft, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelWordRight, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelLineStart, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelLineEnd, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelPageUp, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelPageDown, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelPageLeft, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelPageRight, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelPageTop, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelPageBottom, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelEditorTop, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelEditorBottom, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelGotoXY, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelWord, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecSelectAll, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecCopy, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecScrollUp, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecScrollDown, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecScrollLeft, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecScrollRight, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecInsertMode, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecOverwriteMode, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecToggleMode, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecMatchBracket, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecSelMatchBracket, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecCommentBlock, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecNextChange, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecPreviousChange, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecGotoMarker0, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker1, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker2, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker3, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker4, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker5, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker6, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker7, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker8, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotoMarker9, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker0, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker1, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker2, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker3, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker4, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker5, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker6, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker7, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker8, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSetMarker9, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecZoomIn, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecZoomOut, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecZoomReset, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecGotFocus, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecLostFocus, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecContextHelp, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecDeleteLastChar, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecDeleteChar, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecDeleteWord, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecDeleteLastWord, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecDeleteBOL, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecDeleteEOL, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecDeleteLine, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecClearAll, TSynCommandInfo.Create(ckSingleCaret, True));
+  SynCommandsInfo.Add(ecLineBreak, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecInsertLine, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecChar, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecImeStr, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecUndo, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecRedo, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecCut, TSynCommandInfo.Create(ckStandard, True));
+  SynCommandsInfo.Add(ecPaste, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecBlockIndent, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecBlockUnindent, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecTab, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecShiftTab, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecUpperCase, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecLowerCase, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecToggleCase, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecTitleCase, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecString, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecAutoCompletion, TSynCommandInfo.Create(ckSingleCaret, False));
+  SynCommandsInfo.Add(ecCopyLineUp, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecCopyLineDown, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecMoveLineUp, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecMoveLineDown, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecFoldAll, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecUnfoldAll, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecFoldNearest, TSynCommandInfo.Create(ckMultiCaret, False));
+  SynCommandsInfo.Add(ecUnfoldNearest, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecFoldLevel1, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecFoldLevel2, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecFoldLevel3, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecUnfoldLevel1, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecUnfoldLevel2, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecUnfoldLevel3, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecFoldRegions, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecUnfoldRegions, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecCancelSelections, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecDeleteSelections, TSynCommandInfo.Create(ckMultiCaret, True));
+  SynCommandsInfo.Add(ecSelColumnLeft, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnRight, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnUp, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnDown, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnPageUp, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelColumnPageDown, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecSelMatchingText, TSynCommandInfo.Create(ckStandard, False));
+  SynCommandsInfo.Add(ecCaretsAtLineEnds, TSynCommandInfo.Create(ckStandard, False));
+end;
+
+{ TSynCommandInfo }
+
+constructor TSynCommandInfo.Create(ACommandKind: TSynCommandKind;
+  AStoreMultiCaret: Boolean);
+begin
+  Self.CommandKind := ACommandKind;
+  Self.StoreMultiCaret := AStoreMultiCaret;
+end;
 
 initialization
   RegisterIntegerConsts(TypeInfo(TSynEditorCommand), IdentToEditorCommand,
      EditorCommandToIdent);
+  CreateSysCommandsInfo;
+finalization
+  SynCommandsInfo.Free;
 end.

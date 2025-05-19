@@ -21,7 +21,7 @@ type
     procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
-    LookupList : TStringList;
+    LookupList: TStringList;
   public
     { Public declarations }
   end;
@@ -40,8 +40,8 @@ procedure TForm1.scpParamsExecute(Kind: SynCompletionType; Sender: TObject;
 var locline, lookup: UnicodeString;
     TmpX, savepos, StartX,
     ParenCounter,
-    TmpLocation    : Integer;
-    FoundMatch     : Boolean;
+    TmpLocation: Integer;
+    FoundMatch: Boolean;
 begin
   //Param Completion is different than Code Completion.  We can't just use
   //the string passed to us we have to figure out what they are looking for,
@@ -64,27 +64,27 @@ begin
     TmpX := CaretX;
     if TmpX > length(locLine) then
       TmpX := length(locLine)
-    else dec(TmpX);
+    else Dec(TmpX);
     FoundMatch := False;
     TmpLocation := 0;
     while (TmpX > 0) and not(FoundMatch) do
     begin
       if LocLine[TmpX] = ',' then
       begin
-        inc(TmpLocation);
-        dec(TmpX);
+        Inc(TmpLocation);
+        Dec(TmpX);
       end else if LocLine[TmpX] = ')' then
       begin
         //We found a close, go till it's opening paren
         ParenCounter := 1;
-        dec(TmpX);
+        Dec(TmpX);
         while (TmpX > 0) and (ParenCounter > 0) do
         begin
-          if LocLine[TmpX] = ')' then inc(ParenCounter)
-          else if LocLine[TmpX] = '(' then dec(ParenCounter);
-          dec(TmpX);
+          if LocLine[TmpX] = ')' then Inc(ParenCounter)
+          else if LocLine[TmpX] = '(' then Dec(ParenCounter);
+          Dec(TmpX);
         end;
-        if TmpX > 0 then dec(TmpX);  //eat the open paren
+        if TmpX > 0 then Dec(TmpX);  //eat the open paren
       end else if locLine[TmpX] = '(' then
       begin
         //we have a valid open paren, lets see what the word before it is
@@ -95,17 +95,17 @@ begin
         begin
           SavePos := TmpX;
           While (TmpX > 0) and SynEdit1.IsIdentChar(locLine[TmpX]) do
-            dec(TmpX);
-          inc(TmpX);
+            Dec(TmpX);
+          Inc(TmpX);
           lookup := Uppercase(Copy(LocLine, TmpX, SavePos - TmpX + 1));
           FoundMatch := LookupList.IndexOf(Lookup) > -1;
           if not(FoundMatch) then
           begin
             TmpX := StartX;
-            dec(TmpX);
+            Dec(TmpX);
           end;
         end;
-      end else dec(TmpX)
+      end else Dec(TmpX)
     end;
   end;
 

@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterCAC.pas,v 1.10.2.8 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a CA-Clipper syntax highlighter for SynEdit)
@@ -105,13 +98,13 @@ type
     class function GetFriendlyLanguageName: string; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -208,7 +201,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 123 + Ord(Str^) * 763;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 709;
   fStringLen := Str - fToIdent;
@@ -290,18 +283,18 @@ begin
     #0:
       begin
         NullProc;
-        exit;
+        Exit;
       end;
     #10:
       begin
         LFProc;
-        exit;
+        Exit;
       end;
 
     #13:
       begin
         CRProc;
-        exit;
+        Exit;
       end;
   end;
 
@@ -311,12 +304,12 @@ begin
         if fLine[Run + 1] = '/' then
         begin
           fRange := rsUnknown;
-          inc(Run, 2);
-          break;
-        end else inc(Run);
-      #10: break;
-      #13: break;
-    else inc(Run);
+          Inc(Run, 2);
+          Break;
+        end else Inc(Run);
+      #10: Break;
+      #13: Break;
+    else Inc(Run);
     end;
 end;
 
@@ -324,28 +317,28 @@ procedure TSynCACSyn.CRProc;
 begin
   fTokenID := tkSpace;
   case FLine[Run + 1] of
-    #10: inc(Run, 2);
-  else inc(Run);
+    #10: Inc(Run, 2);
+  else Inc(Run);
   end;
 end;
 
 procedure TSynCACSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynCACSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCACSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCACSyn.NumberProc;
@@ -361,15 +354,15 @@ procedure TSynCACSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -378,38 +371,38 @@ begin
   case FLine[Run + 1] of
     '/':
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkComment;
         while FLine[Run] <> #0 do
         begin
           case FLine[Run] of
-            #10, #13: break;
+            #10, #13: Break;
           end;
-          inc(Run);
+          Inc(Run);
         end;
       end;
     '*':
       begin
         fTokenID := tkComment;
         fRange := rsCStyle;
-        inc(Run, 2);
+        Inc(Run, 2);
         while fLine[Run] <> #0 do
           case fLine[Run] of
             '*':
               if fLine[Run + 1] = '/' then
               begin
                 fRange := rsUnknown;
-                inc(Run, 2);
-                break;
-              end else inc(Run);
-            #10: break;
-            #13: break;
-          else inc(Run);
+                Inc(Run, 2);
+                Break;
+              end else Inc(Run);
+            #10: Break;
+            #13: Break;
+          else Inc(Run);
           end;
       end;
   else
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkOperator;
     end;
   end;
@@ -417,14 +410,14 @@ end;
 
 procedure TSynCACSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynCACSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkOperator;
 end;
 
@@ -435,14 +428,14 @@ begin
   fTokenID := tkString;
   ActiveStr := FLine[Run];
   if ((FLine[Run + 1] = #39) and (FLine[Run + 2] = #39)) or
-    ((FLine[Run + 1] = #34) and (FLine[Run + 2] = #34)) then inc(Run, 2);
+    ((FLine[Run + 1] = #34) and (FLine[Run + 2] = #34)) then Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until (FLine[Run] = ActiveStr);
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynCACSyn.DirectiveProc;
@@ -450,17 +443,17 @@ begin
   fTokenID := tkDirective;
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
-      '/': if FLine[Run + 1] = '/' then break;
-      #34, #39: break;
+      #0, #10, #13: Break;
+      '/': if FLine[Run + 1] = '/' then Break;
+      #34, #39: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #0;
 end;
 
 procedure TSynCACSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -507,7 +500,7 @@ begin
   inherited;
 end;
 
-function TSynCACSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynCACSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -551,7 +544,7 @@ begin
   end;
 end;
 
-function TSynCACSyn.GetTokenKind: integer;
+function TSynCACSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
@@ -588,7 +581,7 @@ begin
   end
   else
   begin
-    inc(Run);
+    Inc(Run);
     fTokenID := tkOperator;
   end;
 end;

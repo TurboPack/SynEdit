@@ -27,12 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterGWS.pas,v 1.13.2.7 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 -------------------------------------------------------------------------------}
 
 unit SynHighlighterGWS;
@@ -153,12 +147,12 @@ Type
     constructor Create(AOwner: TComponent); override;
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
-    function GetDefaultAttribute (Index: integer): TSynHighlighterAttributes; override;
+    function GetDefaultAttribute (Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -197,7 +191,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result * 797 + Ord(Str^) * 6;
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 13;
   fStringLen := Str - fToIdent;
@@ -389,17 +383,17 @@ begin
     #0:
       begin
         NullProc;
-        exit;
+        Exit;
       end;
     #10:
       begin
         LFProc;
-        exit;
+        Exit;
       end;
     #13:
       begin
         CRProc;
-        exit;
+        Exit;
       end;
   end;
 
@@ -407,14 +401,14 @@ begin
     case FLine[Run] of
       '*':
         if fLine[Run + 1] = '/' then begin
-          inc(Run, 2);
+          Inc(Run, 2);
           fRange := rsUnKnown;
-          break;
+          Break;
         end else
-          inc(Run);
-      #10: break;
-      #13: break;
-    else inc(Run);
+          Inc(Run);
+      #10: Break;
+      #13: Break;
+    else Inc(Run);
     end;
 end;
 
@@ -424,17 +418,17 @@ begin
   case FLine[Run + 1] of
     '=':                               {and assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkAndAssign;
       end;
     '&':                               {logical and}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLogAnd;
       end;
   else                                 {and}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkAnd;
     end;
   end;
@@ -446,23 +440,23 @@ begin
   repeat
     if fLine[Run] = '\' then begin
       if CharInSet(fLine[Run + 1], [#39, '\']) then
-        inc(Run);
+        Inc(Run);
     end;
-    inc(Run);
+    Inc(Run);
   until IsLineEnd(Run) or (fLine[Run] = #39);
   if fLine[Run] = #39 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.AtSymbolProc;
 begin
   fTokenID := tkUnknown;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.BraceCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
   FExtTokenID := xtkBraceClose;
   fRange := rsUnknown;
@@ -470,7 +464,7 @@ end;
 
 procedure TSynGWScriptSyn.BraceOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
   FExtTokenID := xtkBraceOpen;
 end;
@@ -488,12 +482,12 @@ begin
   Case FLine[Run + 1] of
     ':':                               {scope resolution operator}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkScopeResolution;
       end;
   else                                 {colon}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkColon;
     end;
   end;
@@ -501,7 +495,7 @@ end;
 
 procedure TSynGWScriptSyn.CommaProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkComma;
 end;
@@ -512,12 +506,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {logical equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLogEqual;
       end;
   else                                 {assign}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkAssign;
     end;
   end;
@@ -529,25 +523,25 @@ begin
   Case FLine[Run + 1] of
     '=':                               {greater than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkGreaterThanEqual;
       end;
     '>':
       begin
         if FLine[Run + 2] = '=' then   {shift right assign}
         begin
-          inc(Run, 3);
+          Inc(Run, 3);
           FExtTokenID := xtkShiftRightAssign;
         end
         else                           {shift right}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           FExtTokenID := xtkShiftRight;
         end;
       end;
   else                                 {greater than}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkGreaterThan;
     end;
   end;
@@ -557,20 +551,20 @@ procedure TSynGWScriptSyn.QuestionProc;
 begin
   fTokenID := tkSymbol;                {conditional}
   FExtTokenID := xtkQuestion;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.IdentProc;
 begin
   fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  Inc(Run, fStringLen);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.LowerProc;
@@ -579,25 +573,25 @@ begin
   case FLine[Run + 1] of
     '=':                               {less than or equal to}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLessThanEqual;
       end;
     '<':
       begin
         if FLine[Run + 2] = '=' then   {shift left assign}
         begin
-          inc(Run, 3);
+          Inc(Run, 3);
           FExtTokenID := xtkShiftLeftAssign;
         end
         else                           {shift left}
         begin
-          inc(Run, 2);
+          Inc(Run, 2);
           FExtTokenID := xtkShiftLeft;
         end;
       end;
   else                                 {less than}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkLessThan;
     end;
   end;
@@ -609,22 +603,22 @@ begin
   case FLine[Run + 1] of
     '=':                               {subtract assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkSubtractAssign;
       end;
     '-':                               {decrement}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkDecrement;
       end;
     '>':                               {arrow}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkArrow;
       end;
   else                                 {subtract}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkSubtract;
     end;
   end;
@@ -636,12 +630,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {mod assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkModAssign;
       end;
   else                                 {mod}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkMod;
     end;
   end;
@@ -653,12 +647,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {not equal}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkNotEqual;
       end;
   else                                 {not}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkLogComplement;
     end;
   end;
@@ -667,7 +661,7 @@ end;
 procedure TSynGWScriptSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.NumberProc;
@@ -683,15 +677,15 @@ procedure TSynGWScriptSyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -701,17 +695,17 @@ begin
   case FLine[Run + 1] of
     '=':                               {or assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkIncOrAssign;
       end;
     '|':                               {logical or}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkLogOr;
       end;
   else                                 {or}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkIncOr;
     end;
   end;
@@ -723,17 +717,17 @@ begin
   case FLine[Run + 1] of
     '=':                               {add assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkAddAssign;
       end;
     '+':                               {increment}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkIncrement;
       end;
   else                                 {add}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkAdd;
     end;
   end;
@@ -744,33 +738,33 @@ begin
   fTokenID := tkSymbol;
   if (FLine[Run + 1] = '.') and (FLine[Run + 2] = '.') then
     begin                              {ellipse}
-      inc(Run, 3);
+      Inc(Run, 3);
       FExtTokenID := xtkEllipse;
     end
   else                                 {point}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkPoint;
     end;
 end;
 
 procedure TSynGWScriptSyn.RoundCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkRoundClose;
 end;
 
 procedure TSynGWScriptSyn.RoundOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   FTokenID := tkSymbol;
   FExtTokenID := xtkRoundOpen;
 end;
 
 procedure TSynGWScriptSyn.SemiColonProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSemiColon;
   fRange := rsUnknown;
@@ -782,37 +776,37 @@ begin
     '/':                               {c++ style comments}
       begin
         fTokenID := tkComment;
-        inc(Run, 2);
+        Inc(Run, 2);
        while not IsLineEnd(Run) do Inc(Run);
       end;
     '*':                               {c style comments}
       begin
         fTokenID := tkComment;
         fRange := rsAnsiC;
-        inc(Run, 2);
+        Inc(Run, 2);
         while fLine[Run] <> #0 do
           case fLine[Run] of
             '*':
               if fLine[Run + 1] = '/' then
               begin
-                inc(Run, 2);
+                Inc(Run, 2);
                 fRange := rsUnKnown;
-                break;
-              end else inc(Run);
-            #10: break;
-            #13: break;
-          else inc(Run);
+                Break;
+              end else Inc(Run);
+            #10: Break;
+            #13: Break;
+          else Inc(Run);
           end;
       end;
     '=':                               {divide assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         fTokenID := tkSymbol;
         FExtTokenID := xtkDivideAssign;
       end;
   else                                 {divide}
     begin
-      inc(Run);
+      Inc(Run);
       fTokenID := tkSymbol;
       FExtTokenID := xtkDivide;
     end;
@@ -821,21 +815,21 @@ end;
 
 procedure TSynGWScriptSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.SquareCloseProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSquareClose;
 end;
 
 procedure TSynGWScriptSyn.SquareOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
   FExtTokenID := xtkSquareOpen;
 end;
@@ -846,12 +840,12 @@ begin
   case FLine[Run + 1] of
     '=':                               {multiply assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkMultiplyAssign;
       end;
   else                                 {star}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkStar;
     end;
   end;
@@ -860,24 +854,24 @@ end;
 procedure TSynGWScriptSyn.StringProc;
 begin
   fTokenID := tkString;
-  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then inc(Run, 2);
+  if (FLine[Run + 1] = #34) and (FLine[Run + 2] = #34) then Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
       #92:                             {backslash}
         case FLine[Run + 1] of
-          #34: inc(Run);               {escaped quote doesn't count}
-          #92: inc(Run);               {escaped backslash doesn't count}
+          #34: Inc(Run);               {escaped quote doesn't count}
+          #92: Inc(Run);               {escaped backslash doesn't count}
         end;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = #34;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynGWScriptSyn.TildeProc;
 begin
-  inc(Run);                            {bitwise complement}
+  Inc(Run);                            {bitwise complement}
   fTokenId := tkSymbol;
   FExtTokenID := xtkBitComplement;
 end;
@@ -888,12 +882,12 @@ begin
   Case FLine[Run + 1] of
   	'=':                               {xor assign}
       begin
-        inc(Run, 2);
+        Inc(Run, 2);
         FExtTokenID := xtkXorAssign;
       end;
   else                                 {xor}
     begin
-      inc(Run);
+      Inc(Run);
       FExtTokenID := xtkXor;
     end;
   end;
@@ -901,7 +895,7 @@ end;
 
 procedure TSynGWScriptSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -989,7 +983,7 @@ begin
   end;
 end;
 
-function TSynGWScriptSyn.GetTokenKind: integer;
+function TSynGWScriptSyn.GetTokenKind: Integer;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -1014,7 +1008,7 @@ begin
   Result := SYNS_LangGWS;
 end;
 
-function TSynGWScriptSyn.GetDefaultAttribute (Index: integer): TSynHighlighterAttributes;
+function TSynGWScriptSyn.GetDefaultAttribute (Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT    : Result := fCommentAttri;

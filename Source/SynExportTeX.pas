@@ -29,11 +29,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynExportTeX.pas,v 1.8.2.5 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 - LaTeX 2e doesn't support Unicode, so this exporter doesn't either.
   (There are solutions like the package utc.sty but still they don't allow mixing
@@ -58,8 +53,8 @@ uses
 type
   TSynExporterTeX = class(TSynCustomExporter)
   private
-    fMargin: integer;
-    fLastAttri: TSynHighlighterAttributes;
+    FMargin: Integer;
+    FLastAttri: TSynHighlighterAttributes;
     function AttriToCommand(Attri: TSynHighlighterAttributes;
       UniqueAttriName: string): string;
     function AttriToCommandCallback(Highlighter: TSynCustomHighlighter;
@@ -73,9 +68,9 @@ type
     function GetNewCommands: string;
     function MakeValidName(Name: string): string;
   protected
-    fCreateTeXFragment: boolean;
-    fTabWidth: integer;
-    fPageStyleEmpty: boolean;
+    fCreateTeXFragment: Boolean;
+    fTabWidth: Integer;
+    fPageStyleEmpty: Boolean;
     
     // overriding these abstract methods (though they are never called for this
     // specific highlighter) to prevent abstract instance warnings
@@ -99,13 +94,13 @@ type
     constructor Create(AOwner: TComponent); override;
     function SupportedEncodings: TSynEncodings; override;
   published
-    property Margin: integer read fMargin write fMargin default 2;
-    property TabWidth: integer read fTabWidth write fTabWidth default 2;
+    property Margin: Integer read FMargin write FMargin default 2;
+    property TabWidth: Integer read fTabWidth write fTabWidth default 2;
     property Color;
-    property CreateTeXFragment: boolean read fCreateTeXFragment
-      write fCreateTeXFragment default false;
-    property PageStyleEmpty: boolean read fPageStyleEmpty write fPageStyleEmpty
-      default false;
+    property CreateTeXFragment: Boolean read fCreateTeXFragment
+      write fCreateTeXFragment default False;
+    property PageStyleEmpty: Boolean read fPageStyleEmpty write fPageStyleEmpty
+      default False;
     property DefaultFilter;
     property Encoding;
     property Font;
@@ -155,9 +150,9 @@ end;
 constructor TSynExporterTeX.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fMargin := 2;
+  FMargin := 2;
   fTabWidth := 2;
-  fPageStyleEmpty := false;
+  fPageStyleEmpty := False;
   fDefaultFilter := SYNS_FilterTeX;
   FEncoding := seAnsi;
 end;
@@ -242,7 +237,7 @@ procedure TSynExporterTeX.FormatToken(Token: string);
 var
   CommandName: string;
 begin
-  CommandName := GetCommandName(Highlighter, fLastAttri);
+  CommandName := GetCommandName(Highlighter, FLastAttri);
   AddData('\' + CommandName + '{' + Token + '}');
 end;
 
@@ -314,7 +309,7 @@ begin
     else
       PageStyle := '';
     Result := Format(TeXHeader + SLineBreak + SLineBreak,
-      [Font.Size, fMargin, GetNewCommands]);
+      [Font.Size, FMargin, GetNewCommands]);
     Result := Result + '\title{' + Title + '}' + SLineBreak + TeXHeader2 +
       SLineBreak + PageStyle;
   end;
@@ -386,7 +381,7 @@ end;
 
 procedure TSynExporterTeX.SetTokenAttribute(Attri: TSynHighlighterAttributes);
 begin
-  fLastAttri := Attri;
+  FLastAttri := Attri;
 end;
 
 function TSynExporterTeX.SupportedEncodings: TSynEncodings;

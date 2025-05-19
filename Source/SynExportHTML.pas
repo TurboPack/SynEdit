@@ -15,6 +15,7 @@ Portions created by James D. Jacobson are Copyright 1999 Martin Waldenburg.
 Changes to emit XHTML 1.0 Strict complying code by Maël Hörz.
 Unicode translation by Maël Hörz.
 All Rights Reserved.
+
 Contributors to the SynEdit project are listed in the Contributors.txt file.
 Alternatively, the contents of this file may be used under the terms of the
 GNU General Public License Version 2 or later (the "GPL"), in which case
@@ -25,10 +26,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-$Id: SynExportHTML.pas,v 1.19.2.7 2008/09/14 16:24:59 maelh Exp $
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-Known Issues:
 -------------------------------------------------------------------------------}
 
 unit SynExportHTML;
@@ -52,13 +49,12 @@ type
     FStyleNameCache: TDictionary<TSynHighlighterAttributes, string>;
     FStyleValueCache: TDictionary<TSynHighlighterAttributes, string>;
     FAddNewLine: Boolean;
-    FSuppressFragmentInfo: boolean;
+    FSuppressFragmentInfo: Boolean;
     function AttriToCSS(Attri: TSynHighlighterAttributes;
       UniqueAttriName: string): string;
     function AttriToCSSCallback(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes; UniqueAttriName: string;
       Params: array of Pointer): Boolean;
-    function ColorToHTML(AColor: TColor): string;
     function GetStyleName(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes): string;
     function MakeValidName(Name: string): string;
@@ -72,16 +68,16 @@ type
   protected
     // CreateHTMLFragment is used to indicate that this is for the clipboard "HTML Format" output.
     // Note: SynEdit's default OLE clipboard handling bypasses SynEditExport's clipboard handling.
-    FCreateHTMLFragment: boolean;   // True if format should be "HTML Format", always uses inline css.
-    FInlineCSS: boolean;
+    FCreateHTMLFragment: Boolean;   // True if format should be "HTML Format", always uses inline css.
+    FInlineCSS: Boolean;
     procedure SetTokenAttribute(Attri: TSynHighlighterAttributes); override;
     procedure FormatAfterLastAttribute; override;
-    procedure FormatAttributeDone(BackgroundChanged, ForegroundChanged: boolean;
+    procedure FormatAttributeDone(BackgroundChanged, ForegroundChanged: Boolean;
       FontStylesChanged: TFontStyles); override;
-    procedure FormatAttributeInit(BackgroundChanged, ForegroundChanged: boolean;
+    procedure FormatAttributeInit(BackgroundChanged, ForegroundChanged: Boolean;
       FontStylesChanged: TFontStyles); override;
     procedure FormatBeforeFirstAttribute(BackgroundChanged,
-      ForegroundChanged: boolean; FontStylesChanged: TFontStyles); override;
+      ForegroundChanged: Boolean; FontStylesChanged: TFontStyles); override;
     procedure FormatNewLine; override;
     function GetFooter: string; override;
     function GetFormatName: string; override;
@@ -95,11 +91,11 @@ type
     procedure Clear; override;
   published
     property Color;
-    property CreateHTMLFragment: boolean read FCreateHTMLFragment
+    property CreateHTMLFragment: Boolean read FCreateHTMLFragment
       write FCreateHTMLFragment default False;
-    property InlineCSS: boolean read FInlineCSS
+    property InlineCSS: Boolean read FInlineCSS
       write FInlineCSS default False;
-    property SuppressFragmentInfo: boolean read FSuppressFragmentInfo
+    property SuppressFragmentInfo: Boolean read FSuppressFragmentInfo
       write FSuppressFragmentInfo default False;
     property DefaultFilter;
     property Encoding;
@@ -120,27 +116,29 @@ uses
 { TSynExporterHTML }
 
 const
-  DetailLength = 105;  // This is the fixed length of the filled-in DetailSection.
-  DetailSection = 'Version:0.9'#13#10 +
-                 'StartHTML:%.10d'#13#10 +
-                 'EndHTML:%.10d'#13#10 +
-                 'StartFragment:%.10d'#13#10 +
-                 'EndFragment:%.10d'#13#10;
+  DetailLength = 95 + 5 * Length(SLineBreak);  // This is the fixed length of the filled-in DetailSection.
+  DetailSection = 'Version:0.9' + SLineBreak +
+                 'StartHTML:%.10d' + SLineBreak +
+                 'EndHTML:%.10d' + SLineBreak +
+                 'StartFragment:%.10d' + SLineBreak +
+                 'EndFragment:%.10d' + SLineBreak;
 
-  HTMLStartText = '<html>'#13#10;
-  HeadStartText = '<head>'#13#10;
+  HTMLStartText = '<html>' + SLineBreak;
+  DocType = '<!DOCTYPE html>'  + SLineBreak;
+  HeadStartText = '<head>' + SLineBreak;
+  MetaUTF8Encoding = '<meta charset="utf-8">' + SLineBreak;
 
-  StyleStartText = '<style type="text/css">'#13#10 + '<!--'#13#10;
-  BodyStyleTextFormat = 'body { color: %s; background-color: %s; }'#13#10;
-  StyleEndText = '-->'#13#10 + '</style>'#13#10;
+  StyleStartText = '<style>' + SLineBreak + '<!--' + SLineBreak;
+  BodyStyleTextFormat = 'body { color: %s; background-color: %s; }' + SLineBreak;
+  StyleEndText = '-->' + SLineBreak + '</style>' + SLineBreak;
 
-  HeadEndText = '</head>'#13#10;
-  BodyStartText   = '<body>'#13#10;
+  HeadEndText = '</head>' + SLineBreak;
+  BodyStartText   = '<body>' + SLineBreak;
 
   FragmentStartText = '<!--StartFragment-->';
   FragmentEndText =   '<!--EndFragment-->';
 
-  BodyEndText   = '</body>'#13#10;
+  BodyEndText   = '</body>' + SLineBreak;
   HTMLEndText   = '</html>';
 
 
@@ -168,7 +166,9 @@ end;
 function TSynExporterHTML.AttriToInlineCSS(Attri: TSynHighlighterAttributes): string;
 begin
   Result := '';
-  if UseBackground and (Attri.Background <> clNone) then
+  if UseBackground and (Attri.Background <> clNone) and
+    (ColorToRGB(Attri.Background) <> ColorToRGB(fBackgroundColor))
+  then
     Result := Result + 'background-color: ' + ColorToHTML(Attri.Background) + '; ';
   if Attri.Foreground <> clNone then
     Result := Result + 'color: ' + ColorToHTML(Attri.Foreground) + '; ';
@@ -215,7 +215,7 @@ begin
   Styles := Params[0];
   StyleText := AttriToCSS(Attri, UniqueAttriName);
   if StyleText <> '' then
-    Styles^ := Styles^ + StyleText + #13#10;
+    Styles^ := Styles^ + StyleText + SLineBreak;
   Result := True; // we want all attributes => tell EnumHighlighterAttris to continue
 end;
 
@@ -229,60 +229,34 @@ begin
   FAddNewLine := False;
 end;
 
-function TSynExporterHTML.ColorToHTML(AColor: TColor): string;
-var
-  RGBColor: Integer;
-  RGBValue: byte;
-const
-  Digits: array[0..15] of Char = '0123456789ABCDEF';
-begin
-  RGBColor := ColorToRGB(AColor);
-  Result := '#000000';
-  RGBValue := GetRValue(RGBColor);
-  if RGBValue > 0 then
-  begin
-    Result[2] := Digits[RGBValue shr  4];
-    Result[3] := Digits[RGBValue and 15];
-  end;
-  RGBValue := GetGValue(RGBColor);
-  if RGBValue > 0 then
-  begin
-    Result[4] := Digits[RGBValue shr  4];
-    Result[5] := Digits[RGBValue and 15];
-  end;
-  RGBValue := GetBValue(RGBColor);
-  if RGBValue > 0 then
-  begin
-    Result[6] := Digits[RGBValue shr  4];
-    Result[7] := Digits[RGBValue and 15];
-  end;
-end;
-
 procedure TSynExporterHTML.SetTokenAttribute(Attri: TSynHighlighterAttributes);
 begin
   inherited;
   // If a newline happens while there are tokens with no attributes we add <br>s
   if FAddNewLine then
   begin
-    AddData('<br>');
+    AddNewLine;
     FAddNewLine := False;
   end;
 end;
 
 procedure TSynExporterHTML.FormatAfterLastAttribute;
 begin
+  AddData('</span>');
   if FAddNewLine then
-    AddData('</span><br></div></div>')
-  else
-    AddData('</span></div></div>');
+    AddNewLine;
+  AddData('</code></pre>');
+  AddNewLine;
+  AddData('</div>');
+  FAddNewLine := False;
 end;
 
 procedure TSynExporterHTML.FormatAttributeDone(BackgroundChanged,
-  ForegroundChanged: boolean; FontStylesChanged: TFontStyles);
+  ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
 begin
   if FAddNewLine then
   begin
-    AddData('</span></div><div>');
+    AddData('</span>' + SLineBreak);
     FAddNewLine := False;
   end
   else
@@ -290,7 +264,7 @@ begin
 end;
 
 procedure TSynExporterHTML.FormatAttributeInit(BackgroundChanged,
-  ForegroundChanged: boolean; FontStylesChanged: TFontStyles);
+  ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
 var
   StyleName: string;
   StyleValue: string;
@@ -311,22 +285,33 @@ begin
 end;
 
 procedure TSynExporterHTML.FormatBeforeFirstAttribute(BackgroundChanged,
-  ForegroundChanged: boolean; FontStylesChanged: TFontStyles);
+  ForegroundChanged: Boolean; FontStylesChanged: TFontStyles);
+const
+  ColorAttrFmt = ' background-color: %s; color: %s;';
+  FirstDiv =
+    '<div style="font-family: %s, ''Courier New'', monospace; font-size: %spt; %s">' +
+    sLineBreak;
 var
   StyleName: string;
   StyleValue: string;
+  ColorAttrs: string;
 begin
-  // Cache all our CSS values.
-  EnumHighlighterAttris(Highlighter, True, AttriToInlineCSSCallback, []);
-  AddData('<div style="font-family: ' + FFont.Name + ', ''Courier New'', monospace; font-size: ' +
-    FFont.Size.ToString + 'pt; white-space: pre; ">');
+  if UseBackground then
+    ColorAttrs := Format(ColorAttrFmt, [ColorToHTML(Color), ColorToHTML(Font.Color)])
+  else
+    ColorAttrs := '';
+  AddData(Format(FirstDiv, [FFont.Name, FFont.Size.ToString, ColorAttrs]));
+  AddData('<pre><code>');
   if FCreateHTMLFragment or FInlineCSS then
   begin
+    // Cache all our CSS values.
+    FStyleValueCache.Clear;
+    EnumHighlighterAttris(Highlighter, True, AttriToInlineCSSCallback, []);
     FStyleValueCache.TryGetValue(Highlighter.GetTokenAttribute, StyleValue);
     if StyleValue <> '' then
-      AddData('<div><span style="' + StyleValue + '">')
+      AddData('<span style="' + StyleValue + '">')
     else
-      AddData('<div><span>');
+      AddData('<span>');
   end
   else
   begin
@@ -339,7 +324,7 @@ procedure TSynExporterHTML.FormatNewLine;
 begin
   if FAddNewLine then
   begin
-    AddData('<br>');
+    AddData(SLineBreak);
     FAddNewLine := False;
   end;
   FAddNewLine := True;
@@ -351,7 +336,7 @@ begin
   if FCreateHTMLFragment and not FSuppressFragmentInfo then
     Result := Result + FragmentEndText;
   if not FCreateHTMLFragment then
-    Result := Result + #13#10 + BodyEndText + HTMLEndText;
+    Result := Result + SLineBreak + BodyEndText + HTMLEndText;
 end;
 
 function TSynExporterHTML.GetFormatName: string;
@@ -368,20 +353,22 @@ var
   StartFragmentPos: Integer;
   EndFragmentPos: Integer;
 begin
-  EnumHighlighterAttris(Highlighter, True, AttriToCSSCallback, [@Styles]);
   Header := HTMLStartText;
   if not FCreateHTMLFragment then
   begin
-    Header := Header +  HeadStartText;
-    Header := Header + '<title>' + Title + '</title>'#13#10;
+    Header := DocType + Header +  HeadStartText;
+    if Encoding = seUTF8 then
+      Header := Header + MetaUTF8Encoding;
+    Header := Header + '<title>' + Title + '</title>' + SLineBreak;
+    Header := Header + StyleStartText;
+    Header := Header +
+      Format(BodyStyleTextFormat, [ColorToHtml(fFont.Color), ColorToHTML(fBackgroundColor)]);
     if not InlineCSS then
     begin
-      Header := Header + StyleStartText;
-      Header := Header +
-        Format(BodyStyleTextFormat, [ColorToHtml(fFont.Color), ColorToHTML(fBackgroundColor)]);
+      EnumHighlighterAttris(Highlighter, True, AttriToCSSCallback, [@Styles]);
       Header := Header + Styles;
-      Header := Header + StyleEndText;
     end;
+    Header := Header + StyleEndText;
     Header := Header + HeadEndText;
   end;
   Header := Header + BodyStartText;
@@ -434,7 +421,6 @@ begin
     '<': Result := '&lt;';
     '>': Result := '&gt;';
     '"': Result := '&quot;';
-    ' ': Result := '&nbsp;';
     else Result := '';
   end
 end;
@@ -470,3 +456,4 @@ begin
 end;
 
 end.
+

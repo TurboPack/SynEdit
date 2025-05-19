@@ -27,13 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterRuby.pas,v 1.10.2.9 2008/09/14 16:25:03 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Ruby highlighter for SynEdit)
@@ -119,15 +112,15 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
-    function IsKeyword(const AKeyword: string): boolean; override;
+    function IsKeyword(const AKeyword: string): Boolean; override;
     function IsSecondKeyWord(aToken: string): Boolean;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -182,7 +175,7 @@ begin
     if Compare = 0 then
     begin
       Result := True;
-      break;
+      Break;
     end
     else if Compare < 0 then
       First := I + 1
@@ -207,7 +200,7 @@ begin
     if Compare = 0 then
     begin
       Result := True;
-      break;
+      Break;
     end
     else if Compare < 0 then
       First := I + 1
@@ -218,7 +211,7 @@ end; { IsSecondKeyWord }
 
 constructor TSynRubySyn.Create(AOwner: TComponent);
 var
-  i: integer;
+  I: Integer;
 begin
   inherited Create(AOwner);
 
@@ -231,8 +224,8 @@ begin
   TStringList(fSecondKeys).Sorted := True;
   TStringList(fSecondKeys).Duplicates := dupIgnore;
   if not (csDesigning in ComponentState) then
-    for i := 1 to RubyKeysCount do
-      fKeyWords.Add(RubyKeys[i]);
+    for I := 1 to RubyKeysCount do
+      fKeyWords.Add(RubyKeys[I]);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Foreground := clMaroon;
@@ -270,13 +263,13 @@ end; { Destroy }
 
 procedure TSynRubySyn.BraceOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynRubySyn.PointCommaProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
@@ -284,14 +277,14 @@ procedure TSynRubySyn.CRProc;
 begin
   fTokenID := tkSpace;
   case FLine[Run + 1] of
-    #10: inc(Run, 2);
-  else inc(Run);
+    #10: Inc(Run, 2);
+  else Inc(Run);
   end;
 end;
 
 procedure TSynRubySyn.IdentProc;
 begin
-  while IsIdentChar(fLine[Run]) do inc(Run);
+  while IsIdentChar(fLine[Run]) do Inc(Run);
   if IsKeyWord(GetToken) then
   begin
     fTokenId := tkKey;
@@ -307,7 +300,7 @@ end;
 procedure TSynRubySyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynRubySyn.LowerProc;
@@ -342,7 +335,7 @@ begin
 
     if IsIdentChar(FLine[Run + SkipRun + 2]) then
     begin
-      inc(Run, 2);
+      Inc(Run, 2);
 
       i := Run;
       while IsIdentChar(FLine[SkipRun + i]) do Inc(i);
@@ -371,12 +364,12 @@ begin
       fTokenID := tkString;
     end
     else
-      inc(Run, 2);
+      Inc(Run, 2);
   end
   else
 {$ENDIF}
   begin
-    inc(Run);
+    Inc(Run);
     fTokenID := tkSymbol;
   end;
 end;
@@ -384,7 +377,7 @@ end;
 procedure TSynRubySyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynRubySyn.NumberProc;
@@ -400,21 +393,21 @@ procedure TSynRubySyn.NumberProc;
   end;
 
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkNumber;
   while IsNumberChar do
   begin
     case FLine[Run] of
       '.':
-        if FLine[Run + 1] = '.' then break;
+        if FLine[Run + 1] = '.' then Break;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
 procedure TSynRubySyn.RoundOpenProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenId := tkSymbol;
 end;
 
@@ -423,12 +416,12 @@ begin
   case FLine[Run] of
     '/':
       begin
-        inc(Run);
+        Inc(Run);
         fTokenId := tkSymbol;
       end;
     '*':
       begin
-        inc(Run);
+        Inc(Run);
         fTokenId := tkSymbol;
       end;
   else
@@ -437,9 +430,9 @@ begin
       while FLine[Run] <> #0 do
       begin
         case FLine[Run] of
-          #10, #13: break;
+          #10, #13: Break;
         end;
-        inc(Run);
+        Inc(Run);
       end;
     end;
   end;
@@ -447,9 +440,9 @@ end;
 
 procedure TSynRubySyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynRubySyn.StringProc;
@@ -475,19 +468,19 @@ begin
   fTokenID := tkString;
   QuoteChar := FLine[Run];      // either " or '
   if (FLine[Run + 1] = QuoteChar) and (FLine[Run + 2] = QuoteChar)
-    then inc(Run, 2);
+    then Inc(Run, 2);
   repeat
     case FLine[Run] of
-      #0, #10, #13: break;
+      #0, #10, #13: Break;
     end;
-    inc(Run);
+    Inc(Run);
   until FLine[Run] = QuoteChar;
-  if FLine[Run] <> #0 then inc(Run);
+  if FLine[Run] <> #0 then Inc(Run);
 end;
 
 procedure TSynRubySyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -502,13 +495,13 @@ procedure TSynRubySyn.HeredocProc;
       #13: CRProc;
     else
       repeat
-        inc(Run);
+        Inc(Run);
       until IsLineEnd(Run);
     end;
   end;
 
 var
-  i : Integer;
+  I: Integer;
 begin
   if IsLineEnd(Run) and (fTokenPos = Run) then
   begin
@@ -518,32 +511,32 @@ begin
   fTokenID := tkString;
 
   if fRange = rsIndentedHeredoc then
-    while FLine[Run] in [WideChar(#9), WideChar(#32)] do Inc(Run);
+    while FLine[Run] in [#$0009, #$0020] do Inc(Run);
 
   if ((Run = 0) and (fRange = rsHeredoc)) or (fRange = rsIndentedHeredoc) then
   begin
-    i := 0;
+    I := 0;
 
-    while not IsLineEnd(FLine[Run + i]) do
+    while not IsLineEnd(FLine[Run + I]) do
     begin
-      if i > fHeredocLength then
+      if I > fHeredocLength then
       begin
         SkipToEOL;
         Exit;
       end;
-      Inc(i);
+      Inc(I);
     end;
 
-    if i <> fHeredocLength then
+    if I <> fHeredocLength then
     begin
       SkipToEOL;
       Exit;
     end;
 
-    if (CalcFCS(FLine[Run], i) = fHeredocChecksum) then
+    if (CalcFCS(FLine[Run], I) = fHeredocChecksum) then
     begin
       fRange := rsUnknown;
-      Run := Run + i;
+      Run := Run + I;
       Exit;
     end;
   end;
@@ -584,7 +577,7 @@ begin
   end;
 end;
 
-function TSynRubySyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynRubySyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -645,7 +638,7 @@ begin
   end;
 end;
 
-function TSynRubySyn.GetTokenKind: integer;
+function TSynRubySyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

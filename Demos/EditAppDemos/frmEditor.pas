@@ -10,6 +10,7 @@ The Original Code is: frmEditor.pas, released 2000-09-08.
 The Original Code is part of the EditAppDemos project, written by
 Michael Hieke for the SynEdit component suite.
 All Rights Reserved.
+
 Contributors to the SynEdit project are listed in the Contributors.txt file.
 Alternatively, the contents of this file may be used under the terms of the
 GNU General Public License Version 2 or later (the "GPL"), in which case
@@ -20,10 +21,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-$Id: frmEditor.pas,v 1.5.2.2 2008/09/14 16:24:57 maelh Exp $
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-Known Issues:
 -------------------------------------------------------------------------------}
 unit frmEditor;
 {$I SynEdit.inc}
@@ -66,16 +63,16 @@ type
     fEditor: TEditor;
     fKind: TEditorKind;
   private
-    fSearchFromCaret: boolean;
-    function DoAskSaveChanges: boolean;
-    procedure DoAssignInterfacePointer(AActive: boolean);
-    function DoSave: boolean;
-    function DoSaveFile: boolean;
-    function DoSaveAs: boolean;
-    procedure DoSearchReplaceText(AReplace: boolean; ABackwards: boolean);
+    fSearchFromCaret: Boolean;
+    function DoAskSaveChanges: Boolean;
+    procedure DoAssignInterfacePointer(AActive: Boolean);
+    function DoSave: Boolean;
+    function DoSaveFile: Boolean;
+    function DoSaveAs: Boolean;
+    procedure DoSearchReplaceText(AReplace: Boolean; ABackwards: Boolean);
     procedure DoUpdateCaption;
     procedure DoUpdateHighlighter;
-    procedure ShowSearchReplaceDialog(AReplace: boolean);
+    procedure ShowSearchReplaceDialog(AReplace: Boolean);
   public
     procedure DoActivate;
   end;
@@ -84,22 +81,22 @@ type
   private
     // IEditor implementation
     procedure Activate;
-    function AskSaveChanges: boolean;
+    function AskSaveChanges: Boolean;
     procedure Close;
     function GetCaretPos: TPoint;
     function GetEditorState: string;
     function GetFileName: string;
     function GetFileTitle: string;
-    function GetModified: boolean;
+    function GetModified: Boolean;
     procedure OpenFile(AFileName: string);
     // IEditCommands implementation
-    function CanCopy: boolean;
-    function CanCut: boolean;
+    function CanCopy: Boolean;
+    function CanCut: Boolean;
     function IEditCommands.CanDelete = CanCut;
-    function CanPaste: boolean;
-    function CanRedo: boolean;
-    function CanSelectAll: boolean;
-    function CanUndo: boolean;
+    function CanPaste: Boolean;
+    function CanRedo: Boolean;
+    function CanSelectAll: Boolean;
+    function CanUndo: Boolean;
     procedure ExecCopy;
     procedure ExecCut;
     procedure ExecDelete;
@@ -108,19 +105,19 @@ type
     procedure ExecSelectAll;
     procedure ExecUndo;
     // IFileCommands implementation
-    function CanClose: boolean;
-    function CanPrint: boolean;
-    function CanSave: boolean;
-    function CanSaveAs: boolean;
+    function CanClose: Boolean;
+    function CanPrint: Boolean;
+    function CanSave: Boolean;
+    function CanSaveAs: Boolean;
     procedure IFileCommands.ExecClose = Close;
     procedure ExecPrint;
     procedure ExecSave;
     procedure ExecSaveAs;
     // ISearchCommands implementation
-    function CanFind: boolean;
-    function CanFindNext: boolean;
+    function CanFind: Boolean;
+    function CanFindNext: Boolean;
     function ISearchCommands.CanFindPrev = CanFindNext;
-    function CanReplace: boolean;
+    function CanReplace: Boolean;
     procedure ExecFind;
     procedure ExecFindNext;
     procedure ExecFindPrev;
@@ -128,11 +125,11 @@ type
   private
     fFileName: string;
     fForm: TEditorForm;
-    fHasSelection: boolean;
-    fIsEmpty: boolean;
-    fIsReadOnly: boolean;
-    fModified: boolean;
-    fUntitledNumber: integer;
+    fHasSelection: Boolean;
+    fIsEmpty: Boolean;
+    fIsReadOnly: Boolean;
+    fModified: Boolean;
+    fUntitledNumber: Integer;
     constructor Create(AForm: TEditorForm);
     procedure DoSetFileName(AFileName: string);
   end;
@@ -143,12 +140,12 @@ uses
 const
   WM_DELETETHIS  =  WM_USER + 42;
 var
-  gbSearchBackwards: boolean;
-  gbSearchCaseSensitive: boolean;
-  gbSearchFromCaret: boolean;
-  gbSearchSelectionOnly: boolean;
-  gbSearchTextAtCaret: boolean;
-  gbSearchWholeWords: boolean;
+  gbSearchBackwards: Boolean;
+  gbSearchCaseSensitive: Boolean;
+  gbSearchFromCaret: Boolean;
+  gbSearchSelectionOnly: Boolean;
+  gbSearchTextAtCaret: Boolean;
+  gbSearchWholeWords: Boolean;
   gsSearchText: string;
   gsSearchTextHistory: string;
   gsReplaceText: string;
@@ -174,14 +171,14 @@ begin
   if fForm <> nil then
     fForm.DoActivate;
 end;
-function TEditor.AskSaveChanges: boolean;
+function TEditor.AskSaveChanges: Boolean;
 begin
   if fForm <> nil then
     Result := fForm.DoAskSaveChanges
   else
-    Result := TRUE;
+    Result := True;
 end;
-function TEditor.CanClose: boolean;
+function TEditor.CanClose: Boolean;
 begin
   Result := fForm <> nil;
 end;
@@ -237,12 +234,12 @@ begin
     Result := SNonameFileTitle + IntToStr(fUntitledNumber);
   end;
 end;
-function TEditor.GetModified: boolean;
+function TEditor.GetModified: Boolean;
 begin
   if fForm <> nil then
     Result := fForm.SynEditor.Modified
   else
-    Result := FALSE;
+    Result := False;
 end;
 procedure TEditor.OpenFile(AFileName: string);
 begin
@@ -257,27 +254,27 @@ begin
   end;
 end;
 // IEditCommands implementation
-function TEditor.CanCopy: boolean;
+function TEditor.CanCopy: Boolean;
 begin
   Result := (fForm <> nil) and fHasSelection;
 end;
-function TEditor.CanCut: boolean;
+function TEditor.CanCut: Boolean;
 begin
   Result := (fForm <> nil) and fHasSelection and not fIsReadOnly;
 end;
-function TEditor.CanPaste: boolean;
+function TEditor.CanPaste: Boolean;
 begin
   Result := (fForm <> nil) and fForm.SynEditor.CanPaste;
 end;
-function TEditor.CanRedo: boolean;
+function TEditor.CanRedo: Boolean;
 begin
   Result := (fForm <> nil) and fForm.SynEditor.CanRedo;
 end;
-function TEditor.CanSelectAll: boolean;
+function TEditor.CanSelectAll: Boolean;
 begin
   Result := fForm <> nil;
 end;
-function TEditor.CanUndo: boolean;
+function TEditor.CanUndo: Boolean;
 begin
   Result := (fForm <> nil) and fForm.SynEditor.CanUndo;
 end;
@@ -317,15 +314,15 @@ begin
     fForm.SynEditor.Undo;
 end;
 // IFileCommands implementation
-function TEditor.CanPrint: boolean;
+function TEditor.CanPrint: Boolean;
 begin
-  Result := FALSE;
+  Result := False;
 end;
-function TEditor.CanSave: boolean;
+function TEditor.CanSave: Boolean;
 begin
   Result := (fForm <> nil) and (fModified or (fFileName = ''));
 end;
-function TEditor.CanSaveAs: boolean;
+function TEditor.CanSaveAs: Boolean;
 begin
   Result := fForm <> nil;
 end;
@@ -349,37 +346,37 @@ begin
     fForm.DoSaveAs;
 end;
 // ISearchCommands implementation
-function TEditor.CanFind: boolean;
+function TEditor.CanFind: Boolean;
 begin
   Result := (fForm <> nil) and not fIsEmpty;
 end;
-function TEditor.CanFindNext: boolean;
+function TEditor.CanFindNext: Boolean;
 begin
   Result := (fForm <> nil) and not fIsEmpty and (gsSearchText <> '');
 end;
-function TEditor.CanReplace: boolean;
+function TEditor.CanReplace: Boolean;
 begin
   Result := (fForm <> nil) and not fIsReadOnly and not fIsEmpty;
 end;
 procedure TEditor.ExecFind;
 begin
   if fForm <> nil then
-    fForm.ShowSearchReplaceDialog(FALSE);
+    fForm.ShowSearchReplaceDialog(False);
 end;
 procedure TEditor.ExecFindNext;
 begin
   if fForm <> nil then
-    fForm.DoSearchReplaceText(FALSE, FALSE);
+    fForm.DoSearchReplaceText(False, False);
 end;
 procedure TEditor.ExecFindPrev;
 begin
   if fForm <> nil then
-    fForm.DoSearchReplaceText(FALSE, TRUE);
+    fForm.DoSearchReplaceText(False, True);
 end;
 procedure TEditor.ExecReplace;
 begin
   if fForm <> nil then
-    fForm.ShowSearchReplaceDialog(TRUE);
+    fForm.ShowSearchReplaceDialog(True);
 end;
 { TEditorTabSheet }
 type
@@ -397,13 +394,13 @@ type
   TEditorFactory = class(TInterfacedObject, IEditorFactory)
   private
     // IEditorFactory implementation
-    function CanCloseAll: boolean;
+    function CanCloseAll: Boolean;
     procedure CloseAll;
     function CreateBorderless(AOwner: TForm): IEditor;
     function CreateMDIChild(AOwner: TForm): IEditor;
     function CreateTabSheet(AOwner: TPageControl): IEditor;
-    function GetEditorCount: integer;
-    function GetEditor(Index: integer): IEditor;
+    function GetEditorCount: Integer;
+    function GetEditor(Index: Integer): IEditor;
     procedure RemoveEditor(AEditor: IEditor);
   private
     fEditors: TInterfaceList;
@@ -420,25 +417,25 @@ begin
   fEditors.Free;
   inherited Destroy;
 end;
-function TEditorFactory.CanCloseAll: boolean;
+function TEditorFactory.CanCloseAll: Boolean;
 var
-  i: integer;
+  i: Integer;
   LEditor: IEditor;
 begin
   i := fEditors.Count - 1;
   while i >= 0 do begin
     LEditor := IEditor(fEditors[i]);
     if not LEditor.AskSaveChanges then begin
-      Result := FALSE;
-      exit;
+      Result := False;
+      Exit;
     end;
     Dec(i);
   end;
-  Result := TRUE;
+  Result := True;
 end;
 procedure TEditorFactory.CloseAll;
 var
-  i: integer;
+  i: Integer;
 begin
   i := fEditors.Count - 1;
   while i >= 0 do begin
@@ -458,7 +455,7 @@ begin
     BorderStyle := bsNone;
     Parent := AOwner;
     Align := alClient;
-    Visible := TRUE;
+    Visible := True;
   end;
   if Result <> nil then
     fEditors.Add(Result);
@@ -493,7 +490,7 @@ begin
       BorderStyle := bsNone;
       Parent := Sheet;
       Align := alClient;
-      Visible := TRUE;
+      Visible := True;
       AOwner.ActivePage := Sheet;
       LForm.SetFocus;
     end;
@@ -505,17 +502,17 @@ begin
     Sheet.Free;
   end;
 end;
-function TEditorFactory.GetEditorCount: integer;
+function TEditorFactory.GetEditorCount: Integer;
 begin
   Result := fEditors.Count;
 end;
-function TEditorFactory.GetEditor(Index: integer): IEditor;
+function TEditorFactory.GetEditor(Index: Integer): IEditor;
 begin
   Result := IEditor(fEditors[Index]);
 end;
 procedure TEditorFactory.RemoveEditor(AEditor: IEditor);
 var
-  i: integer;
+  i: Integer;
 begin
   i := fEditors.IndexOf(AEditor);
   if i > -1 then
@@ -524,11 +521,11 @@ end;
 { TEditorForm }
 procedure TEditorForm.FormActivate(Sender: TObject);
 begin
-  DoAssignInterfacePointer(TRUE);
+  DoAssignInterfacePointer(True);
 end;
 procedure TEditorForm.FormDeactivate(Sender: TObject);
 begin
-  DoAssignInterfacePointer(FALSE);
+  DoAssignInterfacePointer(False);
 end;
 procedure TEditorForm.FormShow(Sender: TObject);
 begin
@@ -560,25 +557,25 @@ begin
 end;
 procedure TEditorForm.SynEditorChange(Sender: TObject);
 var
-  Empty: boolean;
-  i: integer;
+  Empty: Boolean;
+  i: Integer;
 begin
   Assert(fEditor <> nil);
-  Empty := TRUE;
+  Empty := True;
   for i := SynEditor.Lines.Count - 1 downto 0 do
     if SynEditor.Lines[i] <> '' then begin
-      Empty := FALSE;
-      break;
+      Empty := False;
+      Break;
     end;
   fEditor.fIsEmpty := Empty;
 end;
 procedure TEditorForm.SynEditorEnter(Sender: TObject);
 begin
-  DoAssignInterfacePointer(TRUE);
+  DoAssignInterfacePointer(True);
 end;
 procedure TEditorForm.SynEditorExit(Sender: TObject);
 begin
-  DoAssignInterfacePointer(FALSE);
+  DoAssignInterfacePointer(False);
 end;
 procedure TEditorForm.SynEditorReplaceText(Sender: TObject; const ASearch,
     AReplace: string; Line, Column: Integer; var Action: TSynReplaceAction);
@@ -633,7 +630,7 @@ begin
       PCtrl.ActivePage := Sheet;
   end;
 end;
-function TEditorForm.DoAskSaveChanges: boolean;
+function TEditorForm.DoAskSaveChanges: Boolean;
 const
   MBType = MB_YESNOCANCEL or MB_ICONQUESTION;
 var
@@ -647,14 +644,14 @@ begin
     s := Format(SAskSaveChanges, [ExtractFileName(fEditor.GetFileTitle)]);
     case Application.MessageBox(PChar(s), PChar(Application.Title), MBType) of
       IDYes: Result := DoSave;
-      IDNo: Result := TRUE;
+      IDNo: Result := True;
     else
-      Result := FALSE;
+      Result := False;
     end;
   end else
-    Result := TRUE;
+    Result := True;
 end;
-procedure TEditorForm.DoAssignInterfacePointer(AActive: boolean);
+procedure TEditorForm.DoAssignInterfacePointer(AActive: Boolean);
 begin
   if AActive then begin
     GI_ActiveEditor := fEditor;
@@ -672,7 +669,7 @@ begin
       GI_SearchCmds := nil;
   end;
 end;
-function TEditorForm.DoSave: boolean;
+function TEditorForm.DoSave: Boolean;
 begin
   Assert(fEditor <> nil);
   if fEditor.fFileName <> '' then
@@ -680,19 +677,19 @@ begin
   else
     Result := DoSaveAs;
 end;
-function TEditorForm.DoSaveFile: boolean;
+function TEditorForm.DoSaveFile: Boolean;
 begin
   Assert(fEditor <> nil);
   try
     SynEditor.Lines.SaveToFile(fEditor.fFileName);
-    SynEditor.Modified := FALSE;
-    Result := TRUE;
+    SynEditor.Modified := False;
+    Result := True;
   except
     Application.HandleException(Self);
-    Result := FALSE;
+    Result := False;
   end;
 end;
-function TEditorForm.DoSaveAs: boolean;
+function TEditorForm.DoSaveAs: Boolean;
 var
   NewName: string;
 begin
@@ -705,10 +702,10 @@ begin
     DoUpdateHighlighter;
     Result := DoSaveFile;
   end else
-    Result := FALSE;
+    Result := False;
 end;
-procedure TEditorForm.DoSearchReplaceText(AReplace: boolean;
-  ABackwards: boolean);
+procedure TEditorForm.DoSearchReplaceText(AReplace: Boolean;
+  ABackwards: Boolean);
 var
   Options: TSynSearchOptions;
 begin
@@ -757,7 +754,7 @@ begin
   end else
     SynEditor.Highlighter := nil;
 end;
-procedure TEditorForm.ShowSearchReplaceDialog(AReplace: boolean);
+procedure TEditorForm.ShowSearchReplaceDialog(AReplace: Boolean);
 var
   dlg: TTextSearchDialog;
 begin
@@ -802,7 +799,7 @@ begin
       fSearchFromCaret := gbSearchFromCaret;
       if gsSearchText <> '' then begin
         DoSearchReplaceText(AReplace, gbSearchBackwards);
-        fSearchFromCaret := TRUE;
+        fSearchFromCaret := True;
       end;
     end;
   finally

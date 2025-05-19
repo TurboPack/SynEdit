@@ -29,13 +29,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynEditExport.pas,v 1.17.2.8 2008/09/17 13:59:12 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 
 { Base class for exporting a programming language source file or part of it to
@@ -128,7 +121,7 @@ type
     procedure FormatNewLine; virtual; abstract;
     { Returns the size of the formatted text in the output buffer, to be used
       in the format header or footer. }
-    function GetBufferSize: integer;
+    function GetBufferSize: Integer;
     { The clipboard format the exporter creates as native format. }
     function GetClipboardFormat: UINT; virtual;
     { Has to be overridden in descendant classes to return the correct output
@@ -173,6 +166,7 @@ type
     { Saves the contents of the output buffer to a stream. }
     procedure SaveToStream(Stream: TStream);
     function SupportedEncodings: TSynEncodings; virtual; abstract;
+    function ExportedText: string;
   public
     { Default background color for text that has no token attribute assigned or
       for token attributes that have the background set to default. }
@@ -313,30 +307,9 @@ begin
 end;
 
 procedure TSynCustomExporter.CopyToClipboard;
-const
-  Nulls: array[0..1] of Byte = (0, 0);
-var
-  S: string;
 begin
   if fExportAsText then
-  begin
-    fBuffer.Position := fBuffer.Size;
-    fBuffer.Write(Nulls, FCharSize);
-    case Encoding of
-      seUTF16LE:
-        S := PWideChar(fBuffer.Memory);
-      seUTF16BE:
-        begin
-          S := PWideChar(fBuffer.Memory);
-          StrSwapByteOrder(PWideChar(S));
-        end;
-      seUTF8:
-        S := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
-      seAnsi:
-        S := string(PAnsiChar(fBuffer.Memory));
-    end;
-    SetClipboardText(S);
-  end
+    SetClipboardText(ExportedText)
   else
     CopyToClipboardFormat(GetClipboardFormat);
 end;
@@ -378,6 +351,27 @@ end;
 procedure TSynCustomExporter.ExportAll(ALines: TStrings);
 begin
   ExportRange(ALines, BufferCoord(1, 1), BufferCoord(MaxInt, MaxInt));
+end;
+
+function TSynCustomExporter.ExportedText: string;
+const
+  Nulls: array[0..1] of Byte = (0, 0);
+begin
+  fBuffer.Position := fBuffer.Size;
+  fBuffer.Write(Nulls, FCharSize);
+  case Encoding of
+    seUTF16LE:
+      Result := PWideChar(fBuffer.Memory);
+    seUTF16BE:
+      begin
+        Result := PWideChar(fBuffer.Memory);
+        StrSwapByteOrder(PWideChar(Result));
+      end;
+    seUTF8:
+      Result := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
+    seAnsi:
+      Result := string(PAnsiChar(fBuffer.Memory));
+  end;
 end;
 
 procedure TSynCustomExporter.ExportRange(ALines: TStrings; Start, Stop: TBufferCoord);
@@ -445,7 +439,7 @@ begin
   AddData(Token);
 end;
 
-function TSynCustomExporter.GetBufferSize: integer;
+function TSynCustomExporter.GetBufferSize: Integer;
 begin
   Result := fBuffer.Size;
 end;
@@ -485,50 +479,26 @@ end;
 
 function TSynCustomExporter.ReplaceReservedChars(AToken: string): string;
 var
-  I, ISrc, IDest, SrcLen, DestLen: Integer;
-  Replace: string;
-  c: WideChar;
+  Chr: Char;
+  Replacement: string;
+  SB: TStringBuilder;
 begin
-  if AToken <> '' then
-  begin
-    SrcLen := Length(AToken);
-    ISrc := 1;
-    DestLen := SrcLen;
-    IDest := 1;
-    SetLength(Result, DestLen);
-    while ISrc <= SrcLen do
+  if AToken = '' then Exit('');
+
+  SB := TStringBuilder.Create(AToken.Length * 2); // Initial capacity estimate
+  try
+    for Chr in AToken do
     begin
-      c := AToken[ISrc];
-      Replace := ReplaceReservedChar(c);
-      if Replace <> '' then
-        Inc(ISrc)
+      Replacement := ReplaceReservedChar(Chr);
+      if Replacement = '' then
+        SB.Append(Chr)
       else
-      begin
-        if IDest > DestLen then
-        begin
-          Inc(DestLen, 32);
-          SetLength(Result, DestLen);
-        end;
-        Result[IDest] := c;
-        Inc(ISrc);
-        Inc(IDest);
-        continue;
-      end;
-      if IDest + Length(Replace) - 1 > DestLen then
-      begin
-        Inc(DestLen, Max(32, IDest + Length(Replace) - DestLen));
-        SetLength(Result, DestLen);
-      end;
-      for I := 1 to Length(Replace) do
-      begin
-        Result[IDest] := Replace[I];
-        Inc(IDest);
-      end;
+         SB.Append(Replacement);
     end;
-    SetLength(Result, IDest - 1);
-  end
-  else
-    Result := '';
+    Result := SB.ToString;
+  finally
+    SB.Free;
+  end;
 end;
 
 procedure TSynCustomExporter.SaveToFile(const FileName: string);
@@ -561,7 +531,7 @@ end;
 procedure TSynCustomExporter.SetEncoding(const Value: TSynEncoding);
 begin
   // don't change encoding while streaming as this could corrupt output data
-  if FStreaming then exit;
+  if FStreaming then Exit;
 
   if not (Value in SupportedEncodings) then
     raise ESynEncoding.CreateFmt(SEncodingError, [EncodingStrs[Value],

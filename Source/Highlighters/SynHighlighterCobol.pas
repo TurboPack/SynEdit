@@ -28,12 +28,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterCobol.pas,v 1.5.2.6 2006/05/21 11:59:35 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 -------------------------------------------------------------------------------}
 
 unit SynHighlighterCobol;
@@ -79,10 +73,7 @@ type
                  rsComment, rsDebug);
 
 type
-//  TSynCobolSyn = class(TSynCustomHighlighter)
-//++ CodeFolding
   TSynCobolSyn = class(TSynCustomCodeFoldingHighlighter)
-//-- CodeFolding
   private
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
@@ -106,12 +97,10 @@ type
     fTagAreaAttri: TSynHighlighterAttributes;
     fDebugLinesAttri: TSynHighlighterAttributes;
     fBracketAttri: TSynHighlighterAttributes;
-    FKeywords: TDictionary<String, TtkTokenKind>;
-//++ CodeFolding
-    RE_BlockBegin : TRegEx;
-    RE_BlockEnd : TRegEx;
-//-- CodeFolding
-    procedure DoAddKeyword(AKeyword: string; AKind: integer);
+    FKeywords: TDictionary<string, TtkTokenKind>;
+    RE_BlockBegin: TRegEx;
+    RE_BlockEnd: TRegEx;
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure IdentProc;
     procedure UnknownProc;
@@ -146,11 +135,11 @@ type
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes; override;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
 //++ CodeFolding
@@ -386,7 +375,7 @@ const
 const
   StringChars: array[TRangeState] of WideChar = (#0, '"', '''', '=',  '"', '''', #0, #0);
 
-procedure TSynCobolSyn.DoAddKeyword(AKeyword: string; AKind: integer);
+procedure TSynCobolSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -396,14 +385,14 @@ function TSynCobolSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
   I: Integer;
   LRun: Integer;
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   LRun := Run;
   while IsIdentChar(MayBe^) and (LRun <= fCodeEndPos) do
   begin
     Inc(MayBe);
-    inc(LRun);
+    Inc(LRun);
   end;
   fStringLen := Maybe - fToIdent;
   SetString(S, fToIdent, fStringLen);
@@ -435,7 +424,7 @@ procedure TSynCobolSyn.SpaceProc;
 begin
   fTokenID := tkSpace;
   repeat
-    inc(Run);
+    Inc(Run);
   until not CharInSet(fLine[Run], [#1..#32]);
 end;
 
@@ -449,7 +438,7 @@ begin
   begin
     fTokenID := tkSequence;
     repeat
-      inc(Run);
+      Inc(Run);
     until (Run = fCodeStartPos - 1) or IsLineEnd(Run);
   end
   else
@@ -469,7 +458,7 @@ begin
                  fRange := rsUnknown;
            end;
     end;
-    inc(Run);
+    Inc(Run);
   end;
 end;
 
@@ -481,7 +470,7 @@ begin
   begin
     fTokenID := tkTagArea;
     repeat
-      inc(Run);
+      Inc(Run);
     until IsLineEnd(Run);
   end;
 end;
@@ -584,21 +573,21 @@ end;
 procedure TSynCobolSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCobolSyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynCobolSyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCobolSyn.StringOpenProc;
@@ -682,7 +671,7 @@ begin
   fCaseSensitive := False;
 
   // Create the keywords dictionary case-insensitive
-  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
+  FKeywords := TDictionary<string, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighLighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
@@ -754,14 +743,11 @@ begin
   EnumerateKeywords(Ord(tkString), StringWords, IsIdentChar, DoAddKeyword);
   EnumerateKeywords(Ord(tkUnknown), AmbigiousWords, IsIdentChar, DoAddKeyword);
 
-  //++ CodeFolding
-  RE_BlockBegin := TRegEx.Create('\b^(IF |EVALUATE |EXEC |READ |WRITE |PERFORM |STRING |ACCEPT )\b', [roIgnoreCase]);
-  RE_BlockEnd := TRegEx.Create('(END\-IF|END\-EVALUATE|END\-EXEC|END\-READ|END\-WRITE|END\-PERFORM|END\-STRING|END\-ACCEPT)', [roIgnoreCase]);
-//-- CodeFolding
+  RE_BlockBegin := CompiledRegEx('\b^(IF |EVALUATE |EXEC |READ |WRITE |PERFORM |STRING |ACCEPT )\b', [roIgnoreCase]);
+  RE_BlockEnd := CompiledRegEx('(END\-IF|END\-EVALUATE|END\-EXEC|END\-READ|END\-WRITE|END\-PERFORM|END\-STRING|END\-ACCEPT)', [roIgnoreCase]);
 end;
 
-//++ CodeFolding
-Const
+const
   FT_Standard = 1;  // begin end, class end, record end
   FT_Comment = 11;
   FT_CodeDeclaration = 16;
@@ -774,7 +760,7 @@ procedure TSynCobolSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
 var
   Line: Integer;
   iList: TList<Integer>;
-  CurLine: String;
+  CurLine: string;
   ok: Boolean;
   IsLastDot: Boolean;
 
@@ -862,7 +848,6 @@ begin
 
   iList.Free;
 end;
-//-- CodeFolding
 
 destructor TSynCobolSyn.Destroy;
 begin
@@ -883,7 +868,7 @@ begin
     fTokenID := IdentKind((fLine + Run));
     if (fTokenID = tkIdentifier) and (Run < fCodeMediumPos) then
       fTokenID := tkAIdentifier;
-    inc(Run, fStringLen);
+    Inc(Run, fStringLen);
 
     while IsIdentChar(fLine[Run]) and (Run <= fCodeEndPos) do
       Inc(Run);
@@ -893,7 +878,7 @@ end;
 procedure TSynCobolSyn.UnknownProc;
 begin
   fTokenID := tkUnknown;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCobolSyn.Next;
@@ -944,7 +929,7 @@ begin
   end;
 end;
 
-function TSynCobolSyn.GetDefaultAttribute(Index: integer): TSynHighLighterAttributes;
+function TSynCobolSyn.GetDefaultAttribute(Index: Integer): TSynHighLighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -990,7 +975,7 @@ begin
   end;
 end;
 
-function TSynCobolSyn.GetTokenKind: integer;
+function TSynCobolSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
@@ -1148,7 +1133,7 @@ end;
 
 procedure TSynCobolSyn.BracketProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkBracket;
 end;
 

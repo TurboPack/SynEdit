@@ -27,12 +27,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterLDraw.pas,v 1.7.2.7 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides an LDraw syntax highlighter for SynEdit)
@@ -117,12 +111,12 @@ type
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes; override;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetKeyWords(TokenKind: Integer): string; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -161,7 +155,7 @@ begin
   while IsIdentChar(Str^) do
   begin
     Result := Result + Ord(Str^);
-    inc(Str);
+    Inc(Str);
   end;
   Result := Result mod 2;
   fStringLen := Str - fToIdent;
@@ -207,21 +201,21 @@ end;
 procedure TSynLDRSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynLDRSyn.CRProc;
 begin
   fTokenID := tkUnknown;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
-    inc(Run);
+    Inc(Run);
 end;
 
 procedure TSynLDRSyn.LFProc;
 begin
   fTokenID := tkUnknown;
-  inc(Run);
+  Inc(Run);
 end;
 
 constructor TSynLDRSyn.Create(AOwner: TComponent);
@@ -285,7 +279,7 @@ var
   i: Integer;
 begin
   i := 0;
-  while DatLine[i] = ' ' do inc(i);
+  while DatLine[i] = ' ' do Inc(i);
   Result := DatLine[i];
 end;
 
@@ -295,12 +289,12 @@ begin
   begin
     fTokenID := tkComment;
     while (fLine[Run] <> #10) and (fLine[Run] <> #13)
-          and (fLine[Run] <> #0) do inc(Run);
+          and (fLine[Run] <> #0) do Inc(Run);
   end
   else
   begin
     fTokenID := IdentKind((fLine + Run));
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
   while IsIdentChar(fLine[Run]) do
     Inc(Run);
   end;
@@ -320,14 +314,14 @@ procedure TSynLDRSyn.Number1Proc;
     begin
       if DatLine[i] = ' ' then
       begin
-        inc(i);
+        Inc(i);
         b := False;
       end
       else
       begin
-        if not b then inc(Result);
+        if not b then Inc(Result);
         b := True;
-        inc(i)
+        Inc(i)
       end;
     end;
   end;
@@ -357,12 +351,12 @@ begin
     else
       fTokenID := tkIdentifier;
   end;
-  while CharInSet(FLine[Run], ['0'..'9', '.']) do inc(Run);
+  while CharInSet(FLine[Run], ['0'..'9', '.']) do Inc(Run);
 end;
 
 procedure TSynLDRSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -380,7 +374,7 @@ begin
   inherited;
 end;
 
-function TSynLDRSyn.GetDefaultAttribute(Index: integer): TSynHighLighterAttributes;
+function TSynLDRSyn.GetDefaultAttribute(Index: Integer): TSynHighLighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -427,7 +421,7 @@ begin
   end;
 end;
 
-function TSynLDRSyn.GetTokenKind: integer;
+function TSynLDRSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

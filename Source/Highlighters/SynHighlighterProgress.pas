@@ -26,13 +26,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterProgress.pas,v 1.16.2.8 2009/09/28 19:16:08 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Progress Syntax highlighter for SynEdit)
@@ -72,7 +65,7 @@ type
 
   {Used to hold extra rangeinfo in the Lines.Objects pointer.}
   TRangeInfo = packed record
-    case boolean of
+    case Boolean of
       False: (Ptr: Pointer);
       True: (Range: Word; Level: Word);
   end;
@@ -100,7 +93,7 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fDataTypeAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    FKeywords: TDictionary<String, TtkTokenKind>;
+    FKeywords: TDictionary<string, TtkTokenKind>;
     procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AsciiCharProc;
@@ -119,7 +112,7 @@ type
     procedure UnknownProc;
     procedure SymbolProc;
   protected
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
@@ -133,7 +126,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -474,7 +467,7 @@ uses
 
 function TSynProgressSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
@@ -500,7 +493,7 @@ begin
   fCaseSensitive := False;
 
   // Create the keywords dictionary case-insensitive
-  FKeywords := TDictionary<String, TtkTokenKind>.Create(TIStringComparer.Ordinal);
+  FKeywords := TDictionary<string, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Foreground := clRed;
@@ -568,265 +561,265 @@ end;
 procedure TSynProgressSyn.IdentProc;
 begin
   fTokenID := IdentKind(fLine + Run);
-  inc(Run, fStringLen);
+  Inc(Run, fStringLen);
 end;
 
 procedure TSynProgressSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynProgressSyn.NumberProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkNumber;
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
   repeat
-    Inc(p);
-  until not CharInSet(p^, ['0'..'9']);
-  Run := p - fLine;
+    Inc(P);
+  until not CharInSet(P^, ['0'..'9']);
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.PreprocessorDefinitionProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkPreprocessor;
-  p := PWideChar(@fLine[Run]);
-  while p^ <> #0 do
+  P := PWideChar(@fLine[Run]);
+  while P^ <> #0 do
   begin
-    case p^ of
-      '~': if (p + 1)^ = #0 then
+    case P^ of
+      '~': if (P + 1)^ = #0 then
              fRange := rsPreprocessorDef;
     end;
-    inc(p);
+    Inc(P);
   end;
-  Run := p - fLine;
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynProgressSyn.StringProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkString;
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
   repeat
-    Inc(p);
-  until (p^ = #0) or (p^ = '"');
-  if (p^ = '"') then Inc(p);
-  Run := p - fLine;
+    Inc(P);
+  until (P^ = #0) or (P^ = '"');
+  if (P^ = '"') then Inc(P);
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.SymbolProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSymbol;
 end;
 
 procedure TSynProgressSyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
 procedure TSynProgressSyn.AsciiCharProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkString;
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
   repeat
-    inc(p);
-  until (p^ = #0) or (p^ = '''');
-  if (p^ = '''') then Inc(p);
-  Run := p - fLine;
+    Inc(P);
+  until (P^ = #0) or (P^ = '''');
+  if (P^ = '''') then Inc(P);
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.SlashProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
-  p := PWideChar(@fLine[Run]);
-  inc(p);
-  case p^ of
+  P := PWideChar(@fLine[Run]);
+  Inc(P);
+  case P^ of
     '*': begin  {c style comments}
            fTokenID := tkComment;
            fRange := rsComment;
            fCommentLevel := 1;
-           inc(p);
-           while (p^ <> #0) and (fRange = rsComment) do
+           Inc(P);
+           while (P^ <> #0) and (fRange = rsComment) do
            begin
-             case p^ of
+             case P^ of
                '*': begin
-                      inc(p);
-                      if p^ = '/' then
+                      Inc(P);
+                      if P^ = '/' then
                       begin
-                        inc(p);
-                        dec(fCommentLevel);
+                        Inc(P);
+                        Dec(fCommentLevel);
                         if FCommentLevel = 0 then
                           fRange := rsNone;
                       end;
                     end;
                '/': begin
-                      inc(p);
-                      if p^ = '*' then
+                      Inc(P);
+                      if P^ = '*' then
                       begin
-                        inc(p);
-                        inc(fCommentLevel); // Max 65535 commentlevels.
+                        Inc(P);
+                        Inc(fCommentLevel); // Max 65535 commentlevels.
                       end;
                     end;
              else
-               inc(p);
+               Inc(P);
              end;
            end;
          end;
   else  {division}
     fTokenID := tkSymbol;
   end;
-  Run := p - fLine;
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.CommentRangeProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkComment;
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
 
-  if p^ = #0 then
+  if P^ = #0 then
   begin
     NullProc;
-    exit;
+    Exit;
   end;
 
-  while (p^ <> #0) and (fRange = rsComment) do
+  while (P^ <> #0) and (fRange = rsComment) do
   begin
-    case p^ of
+    case P^ of
       '*': begin
-             inc(p);
-             if p^ = '/' then
+             Inc(P);
+             if P^ = '/' then
              begin
-               inc(p);
-               dec(fCommentLevel);
+               Inc(P);
+               Dec(fCommentLevel);
                if fCommentLevel = 0 then
                  fRange := rsNone;
              end;
            end;
       '/': begin
-             inc(p);
-             if p^ = '*' then
+             Inc(P);
+             if P^ = '*' then
              begin
-               inc(p);
-               inc(fCommentLevel);
+               Inc(P);
+               Inc(fCommentLevel);
              end;
            end;
     else
-      inc(p);
+      Inc(P);
     end;
   end;
-  Run := p - fLine;
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.IncludeRangeProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkInclude;
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
 
-  if p^ = #0 then
+  if P^ = #0 then
   begin
     NullProc;
-    exit;
+    Exit;
   end;
 
-  while p^ <> #0 do
+  while P^ <> #0 do
   begin
-    case p^ of
+    case P^ of
       '}': begin
-             dec(fIncludeLevel);
+             Dec(fIncludeLevel);
              if fIncludeLevel = 0 then
              begin
                fRange := rsNone;
-               break;
+               Break;
              end
              else
-               inc(p);
+               Inc(P);
            end;
     else
-      inc(p);
+      Inc(P);
     end;
   end;
-  Run := p - fLine;
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.PreprocessorRangeProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkPreprocessor;
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
 
-  if p^ = #0 then
+  if P^ = #0 then
   begin
     NullProc;
-    exit;
+    Exit;
   end;
 
-  while (p^ <> #0) and (fRange = rsPreprocessor) do
+  while (P^ <> #0) and (fRange = rsPreprocessor) do
   begin
-    case p^ of
-      '{': inc(fPreprocessorLevel);
+    case P^ of
+      '{': Inc(fPreprocessorLevel);
       '}': begin
-             dec(fPreprocessorLevel);
+             Dec(fPreprocessorLevel);
              if fPreprocessorLevel = 0 then
                fRange := rsNone;
            end;
     end;
-    inc(p);
+    Inc(P);
   end;
-  Run := p - fLine;
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.PreprocessorDefinitionRangeProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 begin
   fTokenID := tkPreprocessor;
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
 
   if Run = 0 then
     fRange := rsNone;
 
-  if p^ = #0 then
+  if P^ = #0 then
   begin
     NullProc;
-    exit;
+    Exit;
   end;
 
-  while p^ <> #0 do
+  while P^ <> #0 do
   begin
-    case p^ of
-      '~': if (p+1)^ = #0 then
+    case P^ of
+      '~': if (P+1)^ = #0 then
              fRange := rsPreprocessorDef;
     end;
-    inc(p);
+    Inc(P);
   end;
-  Run := p - fLine;
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.BraceOpenProc;
 var
-  p: PWideChar;
+  P: PWideChar;
 
   function LevelCount: Integer;
   begin
@@ -837,10 +830,10 @@ var
   end;
 
 begin
-  p := PWideChar(@fLine[Run]);
+  P := PWideChar(@fLine[Run]);
 
-  inc(p);
-  case p^ of
+  Inc(P);
+  case P^ of
     'A'..'Z', 'a'..'z', '_': fTokenID := tkInclude;
     '&'                    : fTokenID := tkPreprocessor;
   else
@@ -854,26 +847,26 @@ begin
 
   while LevelCount > 0 do
   begin
-    case p^ of
+    case P^ of
       #0 : begin
              if fTokenID = tkInclude then
                fRange := rsInclude
              else
                fRange := rsPreprocessor;
-             break;
+             Break;
            end;
       '}': case fTokenID of
-             tkInclude     : dec(fIncludeLevel);
-             tkPreprocessor: dec(fPreprocessorLevel);
+             tkInclude     : Dec(fIncludeLevel);
+             tkPreprocessor: Dec(fPreprocessorLevel);
            end;
       '{': case fTokenID of
-             tkInclude     : inc(fIncludeLevel);
-             tkPreprocessor: inc(fPreprocessorLevel);
+             tkInclude     : Inc(fIncludeLevel);
+             tkPreprocessor: Inc(fPreprocessorLevel);
            end;
     end;
-    inc(p);
+    Inc(P);
   end;
-  Run := p - fLine;
+  Run := P - fLine;
 end;
 
 procedure TSynProgressSyn.Next;
@@ -902,7 +895,7 @@ begin
   inherited;
 end;
 
-function TSynProgressSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynProgressSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   Result := nil;
 end;
@@ -951,7 +944,7 @@ begin
   end;
 end;
 
-function TSynProgressSyn.GetTokenKind: integer;
+function TSynProgressSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

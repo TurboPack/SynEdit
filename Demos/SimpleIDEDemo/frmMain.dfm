@@ -14,7 +14,6 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object ToolBarDebug: TToolBar
     Left = 0
@@ -124,7 +123,9 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
     Highlighter = SynPasSyn
     Options = [eoAutoIndent, eoKeepCaretX, eoScrollByOneLess, eoSmartTabs, eoTabsToSpaces, eoTrimTrailingSpaces]
     ReadOnly = True
+    ScrollbarAnnotations = <>
     SelectedColor.Alpha = 0.400000005960464500
+    VisibleSpecialChars = []
     OnSpecialLineColors = SynEditorSpecialLineColors
   end
   object Statusbar: TStatusBar
@@ -197,9 +198,6 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
     end
   end
   object SynPasSyn: TSynPasSyn
-    Options.AutoDetectEnabled = False
-    Options.AutoDetectLineLimit = 0
-    Options.Visible = False
     Left = 172
     Top = 100
   end

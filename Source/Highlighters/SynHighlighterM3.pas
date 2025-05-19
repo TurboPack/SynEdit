@@ -23,13 +23,6 @@ under the MPL, indicate your decision by deleting the provisions above and
 replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
-
-$Id: SynHighlighterM3.pas,v 1.11.2.5 2008/09/14 16:25:00 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
-Known Issues:
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides a Modula-3 syntax highlighter for SynEdit)
@@ -62,7 +55,7 @@ type
 
   TRangeState = packed record
     case Boolean of
-      False: (p: Pointer);
+      False: (P: Pointer);
       True: (TokenRange: Word; Level: Word);
     end;
 
@@ -80,8 +73,8 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     fSyntaxErrorAttri: TSynHighlighterAttributes;
-    FKeywords: TDictionary<String, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: integer);
+    FKeywords: TDictionary<string, TtkTokenKind>;
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymAsciiCharProc;
     procedure SymCommentHelpProc;
@@ -107,13 +100,13 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: Integer; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -159,7 +152,7 @@ const
     'LONGREAL,LOOPHOLE,MAX,MIN,MUTEX,NARROW,NEW,NIL,NULL,NUMBER,ORD,REAL,' +
     'REFANY,ROUND,SUBARRAY,TEXT,TRUE,TRUNC,TYPECODE,VAL';
 
-procedure TSynM3Syn.DoAddKeyword(AKeyword: string; AKind: integer);
+procedure TSynM3Syn.DoAddKeyword(AKeyword: string; AKind: Integer);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -167,7 +160,7 @@ end;
 
 function TSynM3Syn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
@@ -187,7 +180,7 @@ begin
   fCaseSensitive := True;
 
   // Create the keywords dictionary case-sensitive
-  FKeywords := TDictionary<String, TtkTokenKind>.Create;
+  FKeywords := TDictionary<string, TtkTokenKind>.Create;
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style:= [fsItalic];
@@ -238,7 +231,7 @@ begin
       #39: begin
              Inc(Run);
              if fLine[Run] <> #39 then
-               break;
+               Break;
            end;
     end;
     Inc(Run);
@@ -301,7 +294,7 @@ begin
           if fRange.Level = 0 then
           begin
             fRange.TokenRange := Ord(trNone);
-            break
+            Break
           end;
         end;
       end
@@ -314,7 +307,7 @@ end;
 procedure TSynM3Syn.SymNullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynM3Syn.SymNumberProc;
@@ -354,7 +347,7 @@ begin
   while fLine[Run] = '0' do
     Inc(Run);
   if not IsIdentChar(fLine[Run]) then
-    exit;
+    Exit;
   // check for numbers with a base prefix
   if CharInSet(fLine[Run], ['2'..'9']) and (fLine[Run + 1] = '_') then
   begin
@@ -471,9 +464,9 @@ end;
 
 procedure TSynM3Syn.SymSpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynM3Syn.SymStringProc;
@@ -485,7 +478,7 @@ begin
     case fLine[Run] of
       #34: begin
              Inc(Run);
-             break;
+             Break;
            end;
       '\': if CharInSet(fLine[Run + 1], [#34, '\']) then
              Inc(Run);
@@ -531,7 +524,7 @@ begin
   inherited;
 end;
 
-function TSynM3Syn.GetDefaultAttribute(Index: integer):
+function TSynM3Syn.GetDefaultAttribute(Index: Integer):
   TSynHighlighterAttributes;
 begin
   case Index of
@@ -563,7 +556,7 @@ end;
 
 function TSynM3Syn.GetRange: pointer;
 begin
-  result := fRange.p;
+  Result := fRange.P;
 end;
 
 function TSynM3Syn.GetTokenAttribute: TSynHighlighterAttributes;
@@ -590,19 +583,19 @@ begin
   Result := fTokenId;
 end;
 
-function TSynM3Syn.GetTokenKind: integer;
+function TSynM3Syn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;
 
 procedure TSynM3Syn.ResetRange;
 begin
-  fRange.p := nil;
+  fRange.P := nil;
 end;
 
 procedure TSynM3Syn.SetRange(Value: pointer);
 begin
-  fRange.p := Value;
+  fRange.P := Value;
 end;
 
 class function TSynM3Syn.GetFriendlyLanguageName: string;

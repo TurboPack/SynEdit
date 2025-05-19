@@ -94,8 +94,8 @@ type
     fUndefPropertyAttri: TSynHighlighterAttributes;
     fImportantPropertyAttri: TSynHighlighterAttributes;
     fAtRuleAttri: TSynHighlighterAttributes;
-    FKeywords: TDictionary<String, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: integer);
+    FKeywords: TDictionary<string, TtkTokenKind>;
+    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AtRuleProc;
     procedure SelectorProc;
@@ -122,7 +122,7 @@ type
     procedure PlusProc;
     procedure TildeProc;
     procedure PipeProc;
-    procedure CircumflexProc;
+    procedure WildCardProc;
     procedure EqualProc;
     procedure ExclamProc;
   protected
@@ -135,7 +135,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes; override;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
@@ -183,7 +183,7 @@ uses
   SynEditStrConst;
 
 const
-   Properties_CSS1 : string =
+   Properties_CSS1: string =
                       'background'
                      +',background-attachment'
                      +',background-color'
@@ -245,7 +245,7 @@ const
                      +',white-space'
                      +',width'
                      +',word-spacing';
-   Properties_CSS2 : string =
+   Properties_CSS2: string =
                       'border-collapse'
                      +',border-spacing'
                      +',bottom'
@@ -280,7 +280,7 @@ const
                      +',visibility'
                      +',widows'
                      +',z-index';
-   Properties_CSS2_Aural : string =
+   Properties_CSS2_Aural: string =
                       'azimuth'
                      +',cue'
                      +',cue-after'
@@ -301,7 +301,7 @@ const
                      +',stress'
                      +',voice-family'
                      +',volume';
-   Properties_CSS3 : string =
+   Properties_CSS3: string =
                       '@font-face'
                      +',@font-feature-values'
                      +',@keyframes'
@@ -501,7 +501,7 @@ const
 
 function TSynCssSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  S: String;
+  S: string;
 begin
   fToIdent := MayBe;
   while IsIdentChar(MayBe^) do
@@ -618,12 +618,12 @@ begin
   if IsStopChar then
   begin
     case fLine[Run] of
-      #0..#31, '{', '/': NextDeclaration;
+      #0..#31: NextDeclaration;
       ']': BracketCloseProc;
       '~': TildeProc;
       '|': PipeProc;
       '=': EqualProc;
-      '^': CircumflexProc;
+      '^', '*', '$': WildCardProc;
     end;
     Exit;
   end;
@@ -661,7 +661,7 @@ begin
   fTokenID := tkSymbol;
 end;
 
-procedure TSynCssSyn.CircumflexProc;
+procedure TSynCssSyn.WildCardProc;
 begin
   Inc(Run);
   if fLine[Run] = '=' then
@@ -682,10 +682,10 @@ begin
       if (fLine[Run] = '*') and (fLine[Run + 1] = '/') then
       begin
         fRange := fCommentRange;
-        inc(Run, 2);
-        break;
+        Inc(Run, 2);
+        Break;
       end;
-      inc(Run);
+      Inc(Run);
     until IsLineEnd(Run)
   end;
 end;
@@ -717,15 +717,15 @@ begin
     IdentProc
   else
   begin
-    inc(Run);
+    Inc(Run);
     fTokenID := tkNumber;
     while CharInSet(FLine[Run], ['0'..'9', '.']) do
     begin
       case FLine[Run] of
         '.':
-          if FLine[Run + 1] = '.' then break;
+          if FLine[Run + 1] = '.' then Break;
       end;
-      inc(Run);
+      Inc(Run);
     end;
   end;
 end;
@@ -800,7 +800,7 @@ end;
 procedure TSynCssSyn.NullProc;
 begin
   fTokenID := tkNull;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynCssSyn.AtRuleProc;
@@ -886,9 +886,9 @@ end;
 
 procedure TSynCssSyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynCssSyn.StringProc;
@@ -944,13 +944,13 @@ end;
 
 procedure TSynCssSyn.SlashProc;
 begin
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = '*' then
   begin
     fTokenID := tkComment;
     fCommentRange := fRange;
     fRange := rsComment;
-    inc(Run);
+    Inc(Run);
     if not IsLineEnd(Run) then
       CommentProc;
   end
@@ -996,7 +996,7 @@ begin
   end;
 end;
 
-function TSynCssSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynCssSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := fCommentAttri;
@@ -1038,7 +1038,7 @@ begin
   end;
 end;
 
-function TSynCssSyn.GetTokenKind: integer;
+function TSynCssSyn.GetTokenKind: Integer;
 begin
   Result := Ord(fTokenId);
 end;

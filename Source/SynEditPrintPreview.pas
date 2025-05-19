@@ -28,11 +28,6 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-$Id: SynEditPrintPreview.pas,v 1.18.2.2 2008/09/14 16:24:59 maelh Exp $
-
-You may retrieve the latest version of this file at the SynEdit home page,
-located at http://SynEdit.SourceForge.net
-
 Known Issues:
 -------------------------------------------------------------------------------}
 
@@ -52,15 +47,16 @@ unit SynEditPrintPreview;
 interface
 
 uses
-  Themes,
-  Windows,
-  Controls,
-  Messages,
-  Graphics,
-  Forms,
-  SynEditPrint,
-  Classes,
-  SysUtils;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  Vcl.Themes,
+  Vcl.Controls,
+  Vcl.Graphics,
+  Vcl.Forms,
+  SynEditPrint;
 
 type
 //Event raised when page is changed in preview
@@ -68,22 +64,29 @@ type
   TSynPreviewScale = (pscWholePage, pscPageWidth, pscUserScaled);
 
   TSynEditPrintPreview = class(TCustomControl)
+  private
+    FPaperRect: TRect;
   protected
     FBorderStyle: TBorderStyle;
     FSynEditPrint: TSynEditPrint;
     FScaleMode: TSynPreviewScale;
     FScalePercent: Integer;
-        // these are in pixels ( = screen device units)
-    FVirtualSize: TPoint;
+    // these are in pixels ( = screen device units)
+    FVirtualSize: TSize;
     FVirtualOffset: TPoint;
-    FPageSize: TPoint;
+    FPageSize: TSize;
     FScrollPosition: TPoint;
     FPageBG: TColor;
     FPageNumber: Integer;
     FShowScrollHint: Boolean;
     FOnPreviewPage: TPreviewPageEvent;
-    FOnScaleChange: TNotifyEvent;                                               // JD 2002-01-9
-    FWheelAccumulator: Integer;
+    FOnScaleChange: TNotifyEvent;
+    FWheelVAccumulator: Integer;
+    FWheelHAccumulator: Integer;
+    FMargin_X: Integer;
+    FMargin_Y: Integer;
+    FShadow_Size: Integer;
+
     procedure SetBorderStyle(Value: TBorderStyle);
     procedure SetPageBG(Value: TColor);
     procedure SetSynEditPrint(Value: TSynEditPrint);
@@ -95,6 +98,7 @@ type
     procedure WMSize(var Msg: TWMSize); message WM_SIZE;
     procedure WMVScroll(var Msg: TWMVScroll); message WM_VSCROLL;
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
+    procedure WMMouseHWheel(var Message: TWMMouseWheel); message WM_MOUSEHWHEEL;
     procedure PaintPaper;
     function GetPageCount: Integer;
   protected
@@ -110,6 +114,8 @@ type
     procedure ScrollVertTo(Value: Integer); virtual;
     procedure UpdateScrollbars; virtual;
     procedure SizeChanged; virtual;
+    procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
+    function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure Paint; override;
@@ -128,7 +134,7 @@ type
     property Color default clAppWorkspace;
     property Cursor;
     property PageBGColor: TColor read FPageBG write SetPageBG default clWhite;
-    property PopupMenu;                                                         // JD 2002-01-9
+    property PopupMenu;
     property SynEditPrint: TSynEditPrint read FSynEditPrint
       write SetSynEditPrint;
     property ScaleMode: TSynPreviewScale read FScaleMode write SetScaleMode
@@ -143,14 +149,16 @@ type
     property OnMouseUp;
     property OnPreviewPage: TPreviewPageEvent read FOnPreviewPage
       write FOnPreviewPage;
-    property OnScaleChange: TNotifyEvent read FOnScaleChange                    // JD 2002-01-9
-      write FOnScaleChange;                                                     // JD 2002-01-9
+    property OnScaleChange: TNotifyEvent read FOnScaleChange
+      write FOnScaleChange;
   end;
 
 implementation
 
 uses
-  Types, SynEditStrConst;
+  Winapi.D2D1,
+  SynDWrite,
+  SynEditStrConst;
 
 const
   MARGIN_X = 12; // margin width left and right of page
@@ -159,10 +167,21 @@ const
 
 { TSynEditPrintPreview }
 
+procedure TSynEditPrintPreview.ChangeScale(M, D: Integer; isDpiChange: Boolean);
+begin
+  if isDpiChange then
+  begin
+    FMargin_X := MulDiv(FMargin_X, M, D);
+    FMargin_Y := MulDiv(FMargin_Y, M, D);
+    FShadow_Size := MulDiv(FShadow_Size, M, D);
+  end;
+  inherited ChangeScale(M, D, isDpiChange);
+end;
+
 constructor TSynEditPrintPreview.Create(AOwner: TComponent);
 begin
   inherited;
-  ControlStyle := ControlStyle + [csNeedsBorderPaint];
+  ControlStyle := ControlStyle + [csOpaque, csNeedsBorderPaint];
   FBorderStyle := bsSingle;
   FScaleMode := pscUserScaled;
   FScalePercent := 100;
@@ -175,7 +194,11 @@ begin
   FPageNumber := 1;
   FShowScrollHint := True;
   Align := alClient;
-  FWheelAccumulator := 0;
+  FWheelVAccumulator := 0;
+  FWheelHAccumulator := 0;
+  FMargin_X:= MARGIN_X;
+  FMargin_Y:= MARGIN_Y;
+  FShadow_Size:= SHADOW_SIZE;
 end;
 
 procedure TSynEditPrintPreview.CreateParams(var Params: TCreateParams);
@@ -214,31 +237,19 @@ begin
 end;
 
 function TSynEditPrintPreview.GetPageHeight100Percent: Integer;
-var
-  DC: HDC;
-  ScreenDPI: Integer;
 begin
   Result := 0;
-  DC := GetDC(0);
-  ScreenDPI := GetDeviceCaps(DC, LogPixelsY);
-  ReleaseDC(0, DC);
   if Assigned(FSynEditPrint) then
     with FSynEditPrint.PrinterInfo do
-      Result := MulDiv(PhysicalHeight, ScreenDPI, YPixPrInch);
+      Result := MulDiv(PhysicalHeight, Screen.PixelsPerInch, YPixPrInch);
 end;
 
 function TSynEditPrintPreview.GetPageWidth100Percent: Integer;
-var
-  DC: HDC;
-  ScreenDPI: Integer;
 begin
   Result := 0;
-  DC := GetDC(0);
-  ScreenDPI := GetDeviceCaps(DC, LogPixelsX);
-  ReleaseDC(0, DC);
   if Assigned(FSynEditPrint) then
     with FSynEditPrint.PrinterInfo do
-      Result := MulDiv(PhysicalWidth, ScreenDPI, XPixPrInch);
+      Result := MulDiv(PhysicalWidth, Screen.PixelsPerInch, XPixPrInch);
 end;
 
 procedure TSynEditPrintPreview.Notification(AComponent: TComponent;
@@ -251,7 +262,7 @@ end;
 
 procedure TSynEditPrintPreview.PaintPaper;
 var
-  rcClip, rcPaper: TRect;
+  rcClip: TRect;
   rgnPaper: HRGN;
   i: Integer;
 begin
@@ -267,68 +278,42 @@ begin
     if (csDesigning in ComponentState) or (not Assigned(FSynEditPrint)) then begin
       FillRect(rcClip);
       Brush.Color := FPageBG;
-      Rectangle(MARGIN_X, MARGIN_Y, MARGIN_X + 30, MARGIN_Y + 43);
+      Rectangle(FMargin_X, FMargin_Y, FMargin_X + 30, FMargin_Y + 43);
       Exit;
     end;
       // fill background around paper
-    with rcPaper do begin
+    with FPaperRect do begin
       Left := FVirtualOffset.X + FScrollPosition.X;
       if ScaleMode = pscWholePage then
         Top := FVirtualOffset.Y
       else
         Top := FVirtualOffset.Y + FScrollPosition.Y;
-      Right := Left + FPageSize.X;
-      Bottom := Top + FPageSize.Y;
-      rgnPaper := CreateRectRgn(Left, Top, Right + 1, Bottom + 1);
+      Right := Left + FPageSize.Width;
+      Bottom := Top + FPageSize.Height;
+      rgnPaper := CreateRectRgn(Left, Top, Right, Bottom);
     end;
     if (NULLREGION <> ExtSelectClipRgn(Handle, rgnPaper, RGN_DIFF)) then
       FillRect(rcClip);
       // paper shadow
     Brush.Color := clDkGray;
-    with rcPaper do begin
-      for i := 1 to SHADOW_SIZE do
+    with FPaperRect do begin
+      for i := 1 to FShadow_Size do
         PolyLine([Point(Left + i, Bottom + i), Point(Right + i, Bottom + i),
           Point(Right + i, Top + i)]);
     end;
       // paint paper background
     SelectClipRgn(Handle, rgnPaper);
-    Brush.Color := FPageBG;
-    with rcPaper do
-      Rectangle(Left, Top, Right + 1, Bottom + 1);
     DeleteObject(rgnPaper);
   end;
 end;
 
 procedure TSynEditPrintPreview.Paint;
-var
-  ptOrgScreen: TPoint;
 begin
-  with Canvas do begin
-    PaintPaper;
-    if (csDesigning in ComponentState) or (not Assigned(FSynEditPrint)) then
-      Exit;
-      // paint the contents, clipped to the area inside of the print margins
-      // correct scaling for output:
+  PaintPaper;
+  if (csDesigning in ComponentState) or (not Assigned(FSynEditPrint)) then
+    Exit;
 
-    SetMapMode(Handle, MM_ANISOTROPIC);
-      // compute the logical point (0, 0) in screen pixels
-    with FSynEditPrint.PrinterInfo do
-    begin
-      SetWindowExtEx(Handle, PhysicalWidth, PhysicalHeight, nil);
-      SetViewPortExtEx(Handle, FPageSize.X, FPageSize.Y, nil);
-      ptOrgScreen.X := MulDiv(LeftGutter, FPageSize.X, PhysicalWidth);
-      ptOrgScreen.Y := MulDiv(TopGutter, FPageSize.Y, PhysicalHeight);
-      Inc(ptOrgScreen.X, FVirtualOffset.X + FScrollPosition.X);
-      if ScaleMode = pscWholePage then
-        Inc(ptOrgScreen.Y, FVirtualOffset.Y)
-      else
-        Inc(ptOrgScreen.Y, FVirtualOffset.Y + FScrollPosition.Y);
-      SetViewPortOrgEx(Handle, ptOrgScreen.X, ptOrgScreen.Y, nil);
-          // clip the output to the print margins
-      IntersectClipRect(Handle, 0, 0, PrintableWidth, PrintableHeight);
-    end;
-    FSynEditPrint.PrintToCanvas(Canvas, FPageNumber);
-  end;
+  FSynEditPrint.PrintToCanvas(Canvas, FPaperRect, Canvas.ClipRect, FPageNumber);
 end;
 
 procedure TSynEditPrintPreview.ScrollHorzFor(Value: Integer);
@@ -341,7 +326,7 @@ var
   nW, n: Integer;
 begin
   nW := ClientWidth;
-  n := nW - FVirtualSize.X;
+  n := nW - FVirtualSize.Width;
   if (Value < n) then Value := n;
   if (Value > 0) then Value := 0;
   if (Value <> FScrollPosition.X) then
@@ -369,7 +354,7 @@ var
   nH, n: Integer;
 begin
   nH := ClientHeight;
-  n := nH - FVirtualSize.Y;
+  n := nH - FVirtualSize.Height;
   if (Value < n) then Value := n;
   if (Value > 0) then Value := 0;
   if (Value <> FScrollPosition.Y) then
@@ -395,31 +380,31 @@ begin
   // compute paper size
   case fScaleMode of
     pscWholePage: begin
-        FPageSize.X := ClientWidth - 2 * MARGIN_X - SHADOW_SIZE;
-        FPageSize.Y := ClientHeight - 2 * MARGIN_Y - SHADOW_SIZE;
-        nWDef := GetPageWidthFromHeight(FPageSize.Y);
-        if (nWDef < FPageSize.X) then
-          FPageSize.X := nWDef
+        FPageSize.Width := ClientWidth - 2 * FMargin_X - FShadow_Size;
+        FPageSize.Height := ClientHeight - 2 * FMargin_Y - FShadow_Size;
+        nWDef := GetPageWidthFromHeight(FPageSize.Height);
+        if (nWDef < FPageSize.Width) then
+          FPageSize.Width := nWDef
         else
-          FPageSize.Y := GetPageHeightFromWidth(FPageSize.X);
+          FPageSize.Height := GetPageHeightFromWidth(FPageSize.Width);
       end;
     pscPageWidth: begin
-        FPageSize.X := ClientWidth - 2 * MARGIN_X - SHADOW_SIZE;
-        FPageSize.Y := GetPageHeightFromWidth(FPageSize.X);
+        FPageSize.Width := ClientWidth - 2 * FMargin_X - FShadow_Size;
+        FPageSize.Height := GetPageHeightFromWidth(FPageSize.Width);
       end;
     pscUserScaled: begin
-        FPageSize.X := MulDiv(GetPageWidth100Percent, fScalePercent, 100);
-        FPageSize.Y := MulDiv(GetPageHeight100Percent, fScalePercent, 100);
+        FPageSize.Width := MulDiv(GetPageWidth100Percent, fScalePercent, 100);
+        FPageSize.Height := MulDiv(GetPageHeight100Percent, fScalePercent, 100);
       end;
   end;
-  FVirtualSize.X := FPageSize.X + 2 * MARGIN_X + SHADOW_SIZE;
-  FVirtualSize.Y := FPageSize.Y + 2 * MARGIN_Y + SHADOW_SIZE;
-  FVirtualOffset.X := MARGIN_X;
-  if (FVirtualSize.X < ClientWidth) then
-    Inc(FVirtualOffset.X, (ClientWidth - FVirtualSize.X) div 2);
-  FVirtualOffset.Y := MARGIN_Y;
-  if (FVirtualSize.Y < ClientHeight) then
-    Inc(FVirtualOffset.Y, (ClientHeight - FVirtualSize.Y) div 2);
+  FVirtualSize.Width := FPageSize.Width + 2 * FMargin_X + FShadow_Size;
+  FVirtualSize.Height := FPageSize.Height + 2 * FMargin_Y + FShadow_Size;
+  FVirtualOffset.X := FMargin_X;
+  if (FVirtualSize.Width < ClientWidth) then
+    Inc(FVirtualOffset.X, (ClientWidth - FVirtualSize.Width) div 2);
+  FVirtualOffset.Y := FMargin_Y;
+  if (FVirtualSize.Height < ClientHeight) then
+    Inc(FVirtualOffset.Y, (ClientHeight - FVirtualSize.Height) div 2);
   UpdateScrollbars;
 // TODO
   FScrollPosition.X := 0;
@@ -457,7 +442,7 @@ begin
         ShowScrollbar(Handle, SB_HORZ, False);
         // show vertical scrollbar
         si.fMask := si.fMask or SIF_DISABLENOSCROLL;
-        si.nMax := FVirtualSize.Y;
+        si.nMax := FVirtualSize.Height;
         si.nPos := -FScrollPosition.Y;
         si.nPage := ClientHeight;
         SetScrollInfo(Handle, SB_VERT, si, True);
@@ -467,12 +452,12 @@ begin
         ShowScrollbar(Handle, SB_VERT, True);
         si.fMask := si.fMask or SIF_DISABLENOSCROLL;
         // show horizontal scrollbar
-        si.nMax := FVirtualSize.X;
+        si.nMax := FVirtualSize.Width;
         si.nPos := -FScrollPosition.X;
         si.nPage := ClientWidth;
         SetScrollInfo(Handle, SB_HORZ, si, True);
         // show vertical scrollbar
-        si.nMax := FVirtualSize.Y;
+        si.nMax := FVirtualSize.Height;
         si.nPos := -FScrollPosition.Y;
         si.nPage := ClientHeight;
         SetScrollInfo(Handle, SB_VERT, si, True);
@@ -514,8 +499,8 @@ begin
     FScaleMode := Value;
     FScrollPosition := Point(0, 0);
     SizeChanged;
-    if Assigned(FOnScaleChange) then                                            // JD 2002-01-9
-      FOnScaleChange(Self);                                                     // JD 2002-01-9
+    if Assigned(FOnScaleChange) then
+      FOnScaleChange(Self);
     Invalidate;
   end;
 end;
@@ -530,8 +515,8 @@ begin
     Invalidate;
   end else
     ScaleMode := pscUserScaled;
-  if Assigned(FOnScaleChange) then                                              // JD 2002-01-9
-    FOnScaleChange(Self);                                                       // JD 2002-01-9
+  if Assigned(FOnScaleChange) then
+    FOnScaleChange(Self);
 end;
 
 procedure TSynEditPrintPreview.WMEraseBkgnd(var Msg: TWMEraseBkgnd);
@@ -547,7 +532,7 @@ begin
     nW := ClientWidth;
     case Msg.ScrollCode of
       SB_TOP: ScrollHorzTo(0);
-      SB_BOTTOM: ScrollHorzTo(-FVirtualSize.X);
+      SB_BOTTOM: ScrollHorzTo(-FVirtualSize.Width);
       SB_LINEDOWN: ScrollHorzFor(-(nW div 10));
       SB_LINEUP: ScrollHorzFor(nW div 10);
       SB_PAGEDOWN: ScrollHorzFor(-(nW div 2));
@@ -570,7 +555,7 @@ function GetScrollHint: THintWindow;
 begin
   if ScrollHintWnd = nil then begin
     ScrollHintWnd := HintWindowClass.Create(Application);
-    ScrollHintWnd.Visible := FALSE;
+    ScrollHintWnd.Visible := False;
   end;
   Result := ScrollHintWnd;
 end;
@@ -605,7 +590,7 @@ begin
               ScrollHint := GetScrollHint;
               if not ScrollHint.Visible then begin
                 ScrollHint.Color := Application.HintColor;
-                ScrollHint.Visible := TRUE;
+                ScrollHint.Visible := True;
               end;
               s := Format(SYNS_PreviewScrollInfoFmt, [FPageNumber]);
               rc := ScrollHint.CalcHintRect(200, s, nil);
@@ -636,7 +621,7 @@ begin
     nH := ClientHeight;
     case Msg.ScrollCode of
       SB_TOP: ScrollVertTo(0);
-      SB_BOTTOM: ScrollVertTo(-FVirtualSize.Y);
+      SB_BOTTOM: ScrollVertTo(-FVirtualSize.Height);
       SB_LINEDOWN: ScrollVertFor(-(nH div 10));
       SB_LINEUP: ScrollVertFor(nH div 10);
       SB_PAGEDOWN: ScrollVertFor(-(nH div 2));
@@ -646,50 +631,109 @@ begin
   end;
 end;
 
-procedure TSynEditPrintPreview.WMMouseWheel(var Message: TWMMouseWheel);
+// Shared mousewheel function called by both vertical and horizontal wheel message handlers.
+function TSynEditPrintPreview.DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean;
 var
-  bCtrl: Boolean;
-
-  procedure MouseWheelUp;
-  begin
-    if bCtrl and (fPageNumber > 1) then
-      PreviousPage
-    else
-      ScrollVertFor(WHEEL_DELTA);
-  end;
-
-  procedure MouseWheelDown;
-  begin
-    if bCtrl and (fPageNumber < PageCount) then
-      NextPage
-    else
-      ScrollVertFor(-WHEEL_DELTA);
-  end;
-
-var
-  MousePos: TPoint;
   IsNeg: Boolean;
 begin
-  { Find modifiers }
-  bCtrl := GetKeyState(VK_CONTROL) < 0;
-
-  { Find mouse pos and increment accumulator }
-  MousePos:= SmallPointToPoint(Message.Pos);
-  Inc(FWheelAccumulator, Message.WheelDelta);
-
-  { Do actions while accumulated is bigger than delta }
-  while Abs(FWheelAccumulator) >= WHEEL_DELTA do
+  // Note that we do not call inherited as we do all handling here.
+  Result := False;
+  if Assigned(OnMouseWheel) then
+    OnMouseWheel(Self, Shift, WheelDelta, MousePos, Result);
+  if not Result then
   begin
-    IsNeg := FWheelAccumulator < 0;
-    FWheelAccumulator := Abs(FWheelAccumulator) - WHEEL_DELTA;
-    if IsNeg then
+    if not (ssHorizontal in Shift) then
     begin
-      if FWheelAccumulator <> 0 then FWheelAccumulator := -FWheelAccumulator;
-      MouseWheelDown;
+      // Vertical Mouse Wheel
+      Inc(FWheelVAccumulator, WheelDelta);
+      while Abs(FWheelVAccumulator) >= WHEEL_DELTA do
+      begin
+        IsNeg := FWheelVAccumulator < 0;
+        FWheelVAccumulator := Abs(FWheelVAccumulator) - WHEEL_DELTA;
+        if IsNeg then
+        begin
+          // Vertical Mouse Wheel Down;
+          if FWheelVAccumulator <> 0 then FWheelVAccumulator := -FWheelVAccumulator;
+          Result := DoMouseWheelDown(Shift, MousePos);
+          if not Result then
+          begin
+            if (ssCtrl in Shift) and (fPageNumber < PageCount) then
+              NextPage
+            else
+              ScrollVertFor(-WHEEL_DELTA);
+            Result := True;
+          end;
+        end
+        else
+        begin
+          // Vertical Mouse Wheel Up;
+          Result := DoMouseWheelUp(Shift, MousePos);
+          if not Result then
+          begin
+            if (ssCtrl in Shift) and (fPageNumber > 1) then
+              PreviousPage
+            else
+              ScrollVertFor(WHEEL_DELTA);
+            Result := True;
+          end;
+        end;
+      end;
     end
     else
-      MouseWheelUp;
+    begin
+      // Horizontal Mouse Wheel
+      Inc(FWheelHAccumulator, WheelDelta);
+      while Abs(FWheelHAccumulator) >= WHEEL_DELTA do
+      begin
+        IsNeg := FWheelHAccumulator < 0;
+        FWheelHAccumulator := Abs(FWheelHAccumulator) - WHEEL_DELTA;
+        if IsNeg then
+        begin
+          // Horizontal Mouse Wheel Down/Right;
+          if FWheelHAccumulator <> 0 then FWheelHAccumulator := -FWheelHAccumulator;
+          ScrollHorzFor(-WHEEL_DELTA);
+        end
+        else
+        begin
+          // Horizontal Mouse Wheel Up/Left;
+          ScrollHorzFor(WHEEL_DELTA);
+        end;
+        Result := True;
+      end;
+    end;
   end;
+end;
+
+procedure TSynEditPrintPreview.WMMouseWheel(var Message: TWMMouseWheel);
+var
+  Shift: TShiftState;
+  WheelDelta: SmallInt;
+  MousePos: TSmallPoint;
+begin
+  Shift := KeysToShiftState(Message.Keys);
+  // Shift-MouseWheel causes horizonal scrolling.  This is a semi-standard
+  //   used in several products including VsCode and Edge.
+  if ssShift in Shift then
+    Include(Shift, System.Classes.ssHorizontal);
+  WheelDelta := Message.WheelDelta;
+  MousePos := Message.Pos;
+  if DoMouseWheel(Shift, WheelDelta, MousePos) then
+    Message.Result := 1;
+end;
+
+procedure TSynEditPrintPreview.WMMouseHWheel(var Message: TWMMouseWheel);
+var
+  Shift: TShiftState;
+  WheelDelta: SmallInt;
+  MousePos: TSmallPoint;
+begin
+  Shift := KeysToShiftState(Message.Keys);
+  Include(Shift, System.Classes.ssHorizontal);
+  // HWheel directions are reversed from Wheel - retest
+  WheelDelta := - Message.WheelDelta;
+  MousePos := Message.Pos;
+  if DoMouseWheel(Shift, WheelDelta, MousePos) then
+    Message.Result := 1;
 end;
 
 procedure TSynEditPrintPreview.UpdatePreview;
@@ -701,7 +745,7 @@ begin
   OldMode := ScaleMode;
   ScalePercent := 100;
   if Assigned(FSynEditPrint) then
-    FSynEditPrint.UpdatePages(Canvas);
+    FSynEditPrint.InitPrint;
   SizeChanged;
   Invalidate;
   ScaleMode := OldMode;
@@ -760,5 +804,11 @@ function TSynEditPrintPreview.GetPageCount: Integer;
 begin
   Result := SynEditPrint.PageCount;
 end;
+
+initialization
+ TCustomStyleEngine.RegisterStyleHook(TSynEditPrintPreview, TScrollingStyleHook);
+
+finalization
+ TCustomStyleEngine.UnRegisterStyleHook(TSynEditPrintPreview, TScrollingStyleHook);
 
 end.

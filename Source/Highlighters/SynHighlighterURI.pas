@@ -181,25 +181,25 @@ begin
   while CharInSet(Str^, ['A'..'Z', 'a'..'z']) do
   begin
     Result := (Result * 3 + Ord(Str^) div 9) mod 16;
-    inc(Str);
+    Inc(Str);
   end;
 
   if Str^ = ':' then
   begin
     Result := (Result * 3 + Ord(Str^) div 9) mod 16;
-    inc(Str);
+    Inc(Str);
   end;
 
   if Str^ = '/' then
   begin
     Result := (Result * 3 + Ord(Str^) div 9) mod 16;
-    inc(Str);
+    Inc(Str);
   end;
 
   if Str^ = '/' then
   begin
     Result := (Result * 3 + Ord(Str^) div 9) mod 16;
-    inc(Str);
+    Inc(Str);
   end;
 
   fStringLen := Str - fMayBeProtocol;
@@ -207,10 +207,10 @@ end;
 
 procedure TSynURISyn.InitIdent;
 var
-  i: Integer;
+  I: Integer;
 begin
-  for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
-    fIdentFuncTable[i] := AltFunc;
+  for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
+    fIdentFuncTable[I] := AltFunc;
   
   fIdentFuncTable[11] := FuncFtp;
   fIdentFuncTable[5] := FuncGopher;
@@ -235,14 +235,14 @@ begin
   if Length(Token) = fStringLen then
   begin
     Result := True;
-    for i := 1 to fStringLen do
+    for I := 1 to fStringLen do
     begin
-      if Temp^ <> Token[i] then
+      if Temp^ <> Token[I] then
       begin
         Result := False;
-        break;
+        Break;
       end;
-      inc(Temp);
+      Inc(Temp);
     end;
   end
   else
@@ -288,7 +288,7 @@ end;
 procedure TSynURISyn.CRProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
   if fLine[Run] = #10 then
     Inc(Run);
 end;
@@ -296,14 +296,14 @@ end;
 procedure TSynURISyn.LFProc;
 begin
   fTokenID := tkSpace;
-  inc(Run);
+  Inc(Run);
 end;
 
 procedure TSynURISyn.NullProc;
 begin
   if Run < fLineLen + 1 then
   begin
-    inc(Run);
+    Inc(Run);
     fTokenID := tkNullChar;
   end
   else
@@ -312,14 +312,14 @@ end;
 
 procedure TSynURISyn.SpaceProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkSpace;
-  while (FLine[Run] <= #32) and not IsLineEnd(Run) do inc(Run);
+  while (FLine[Run] <= #32) and not IsLineEnd(Run) do Inc(Run);
 end;
 
 procedure TSynURISyn.UnknownProc;
 begin
-  inc(Run);
+  Inc(Run);
   fTokenID := tkUnknown;
 end;
 
@@ -438,7 +438,7 @@ begin
   begin
     fMayBeProtocol := fLine + Run;
     Key := HashKey(fMayBeProtocol);
-    inc(Run, fStringLen);
+    Inc(Run, fStringLen);
 
     if Key <= 15 then
       fTokenID := fIdentFuncTable[Key](Key)
@@ -607,14 +607,14 @@ begin
     else if fLine[Run] = '.' then
       // reject array of dots: "neighbour" dots are not allowed
       if (Run = StartPos) or (DotPos >= 0) and (DotPos = Run - 1) then
-        break
+        Break
       else
         DotPos := Run;
     Inc(Run);
   end;
 
   while (Run > StartPos) and (IsNeverAtEMailAddressEnd(fLine[Run - 1])) do
-    dec(Run);
+    Dec(Run);
 
   while (DotPos >= Run) or (DotPos > -1) and (fLine[DotPos] <> '.') do
     Dec(DotPos);
@@ -643,14 +643,14 @@ begin
     if fLine[Run] = '.' then
       // reject array of dots: "neighbour" dots are not allowed
       if (DotPos >= 0) and (DotPos = Run - 1) and not IsRelativePath then
-        break
+        Break
       else
         DotPos := Run;
-    inc(Run);
+    Inc(Run);
   end;
 
   while (Run > ProtocolEndPos) and IsNeverAtEnd(fLine[Run - 1]) do
-    dec(Run);
+    Dec(Run);
 
   Result := Run > ProtocolEndPos;
 end;
@@ -676,18 +676,18 @@ begin
     if fLine[Run] = '.' then
       // reject array of dots: "neighbour" dots are not allowed
       if (DotPos >= 0) and (DotPos = Run - 1) and not IsRelativePath then
-        break
+        Break
       else
       begin
         DotPos := Run;
         if SecondDotPos = -2 then SecondDotPos := DotPos;
         if SecondDotPos = -1 then SecondDotPos := -2;
       end;
-    inc(Run);
+    Inc(Run);
   end;
 
   while (Run > WWWEndPos) and IsNeverAtEnd(fLine[Run - 1]) do
-    dec(Run);
+    Dec(Run);
 
   Result := (Run > WWWEndPos) and (fLine[WWWEndPos] = '.') and
             (SecondDotPos > WWWEndPos + 1) and (SecondDotPos < Run);
