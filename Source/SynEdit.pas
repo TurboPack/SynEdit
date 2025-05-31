@@ -2055,14 +2055,12 @@ begin
     then
       InvalidateLines(-1, -1);
     InvalidateGutterBand(gbkFold);
-    UpdateScrollbars;
   end;
 
   Exclude(fStateFlags, sfLinesChanging);
   if HandleAllocated then
   begin
-//++ Flicker Reduction
-//    UpdateScrollBars;
+    UpdateScrollBars;
 //-- Flicker Reduction
     //SetBlockBegin(CaretXY);
     if not (eoScrollPastEof in ScrollOptions) then
