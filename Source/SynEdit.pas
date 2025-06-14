@@ -6180,7 +6180,8 @@ begin
     if (eoScrollPastEol in fScrollOptions) and (DC.Column > SRow.Length) then
       WidthToX := TextWidth(SRow) + (DC.Column - SRow.Length) * FCharWidth
     else
-      WidthToX := TextWidth(Copy(SRow, 1, DC.Column - 1));
+      WidthToX :=  ColumnToPixels(SRow, DC.Column);
+      //TextWidth(Copy(SRow, 1, DC.Column - 1));
     if WidthToX < (FLeftChar - 1) * FCharWidth then
       LeftChar := Max(WidthToX div fCharWidth, 1)
     else if WidthToX >= FTextAreaWidth + (LeftChar - 1) * FCharWidth then
