@@ -147,6 +147,9 @@ function IsOpeningBracket(Chr: Char; const Brackets: string): Boolean;
 function BracketAtPos(Idx: Integer; const Brackets, Line: string): Boolean;
 function MatchingBracket(Bracket: Char; const Brackets: string): Char;
 
+// Detect right-to-left characters
+function IsRTLChar(Chr: Char): Boolean; inline;
+
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 {$ENDIF}
@@ -903,6 +906,11 @@ begin
     Result := #0
   else
     Result := Brackets.Chars[Idx xor 1];
+end;
+
+function IsRTLChar(Chr: Char): Boolean;
+begin
+  Result := (Chr >= #$0590) and (Chr <= #$08FF)
 end;
 
 end.

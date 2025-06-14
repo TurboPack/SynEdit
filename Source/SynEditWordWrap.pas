@@ -268,9 +268,15 @@ begin
 end;
 
 procedure TSynWordWrapPlugin.Reset;
+var
+  MinChars: Integer;
 begin
   // Ensure minimum line length
-  FMaxRowWidth := Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth);
+  MinChars := 3;
+  if not (eoTabsToSpaces in Editor.Options) then
+    MinChars := Max(Editor.TabWidth, MinChars);
+
+  FMaxRowWidth := Max(Editor.WrapAreaWidth, MinChars * Editor.CharWidth);
 
   WrapLines;
 end;
@@ -392,10 +398,12 @@ begin
           Inc(P);
         end;
 
-        if (P < PEnd) and (W <= FMaxRowWidth) then
+        if (P < PEnd) and (W < FMaxRowWidth) then
         begin
           // Just in case P is followed by combining characters
-          if (P > PStart) and not (Word((P-1)^) in [9, 32]) then
+          if (P > PStart) and not Editor.IsWordBreakChar((P-1)^) and
+            not Editor.IsWordBreakChar((P)^)
+          then
           begin
             Dec(P);
             Dec(W, CW);
@@ -406,20 +414,31 @@ begin
           while P2 < PEnd do
           begin
             Inc(P2);
-            if Word(P2^) in [9, 65..90, 97..122] then Break;
+            if Editor.IsWordBreakChar(P2^) or
+              (Word(P2^) in [9, 65..90, 97..122])
+            then
+              Break;
           end;
 
           Layout.Create(Editor.TextFormat, P, P2-P, MaxInt, Editor.LineHeight);
           LW := Round(Layout.TextMetrics.width);
 
-          if W + LW >= FMaxRowWidth then
+          if W + LW > FMaxRowWidth then
           begin
             CheckOSError(Layout.IDW.HitTestPoint(FMaxRowWidth - W,
               Editor.LineHeight div 2, IsTrailing, IsInside, HTM));
-            Inc(P, HTM.textPosition);
+            // Will be used in emerency wrapping
+            if (HTM.bidiLevel > 0) or (HTM.textPosition = 0) then
+              // Happens with RTL text
+              Inc(P, MinMax((FMaxRowWidth - W) div Editor.CharWidth, 1, PEnd - P))
+            else
+              Inc(P, HTM.textPosition);
           end
           else
+          begin
             P := P2;
+            PBreak := P;
+          end;
           Inc(W, LW);
         end;
 

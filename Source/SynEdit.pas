@@ -1282,7 +1282,6 @@ begin
     PEnd := P + S.Length;
   end;
 
-
   PStart := P;
   PCol := P + Col - 1;
   Result := 0;
@@ -1294,7 +1293,7 @@ begin
       case P^ of
          #9: Inc(Result, fTabWidth * fCharWidth - Result mod (fTabWidth * fCharWidth));
          #32..#126, #$00A0: Inc(Result, FCharWidth);
-     else
+       else
          Break;
        end;
        Inc(P);
@@ -2882,6 +2881,7 @@ var
     HasTabs: Boolean;
     I: Integer;
   begin
+    // Special case - Empty strings
     if S = '' then
     begin
       FirstChar := 1;
@@ -2889,17 +2889,25 @@ var
       XRowOffset := 0;
       Exit;
     end;
-    FirstChar := PixelsToColumn(PChar(S), S.Length,
-      (FLeftChar - 1) * FCharWidth + 1, True);
-    if FirstChar > S.Length then
+
+    // Get the first char that is displayed given FLeftChar
+    if FLeftChar = 1 then
+      FirstChar := 1
+    else
     begin
-      // nothing to display
-      FirstChar := 1;
-      LastChar := -1;
-      Exit;
+      FirstChar := PixelsToColumn(PChar(S), S.Length,
+        (FLeftChar - 1) * FCharWidth + 1, True);
+      if FirstChar > S.Length then
+      begin
+        // nothing to display - the whole string fits before FLeftChar
+        FirstChar := 1;
+        LastChar := -1;
+        XRowOffset := 0;
+        Exit;
+      end;
     end;
 
-    while (FirstChar > 1) and not (Word(S[FirstChar - 1]) in [9, 32..126]) do
+    while (FirstChar > 1) and not (Word(S[FirstChar - 1]) in [9, 65..90, 97..122]) do
       Dec(FirstChar);
 
     XRowOffset := ColumnToPixels(S, FirstChar);
@@ -2907,7 +2915,7 @@ var
     LastChar := Min(FirstChar + PixelsToColumn(PChar(S) + FirstChar - 1,
       S.Length - FirstChar + 1, ClientWidth - fTextOffset - XRowOffset),
       S.Length);
-    while (LastChar < S.Length) and not (Word(S[LastChar + 1]) in [9, 32..126]) do
+    while (LastChar < S.Length) and not (Word(S[LastChar + 1]) in [9, 65..90, 97..122]) do
       Inc(LastChar);
 
     // If there are tabs *inside* the displayed range we need to make sure
@@ -2928,7 +2936,7 @@ var
     else begin
       // Check for RTL characters which are not safe to optimize
       for I := FirstChar to LastChar do
-        if (S[I] >= #$0590) and (S[I] <= #$08FF) then
+        if IsRTLChar(S[I]) then
         begin
           FirstChar := 1;
           XRowOffset := 0;
@@ -3167,9 +3175,12 @@ begin
         HintColor := clGray;
       Layout.Draw(RT, fGutterWidth + fTextMargin, 0, HintColor);
     end;
-    // Nothig else to do
+    // Nothing else to do
     Exit
   end;
+
+  // Check whether there is space to draw the line
+  if ClientWidth - fTextOffset <= 0 then Exit;
 
   Inc(LinesRect.Left, FTextMargin);
 
@@ -9465,7 +9476,9 @@ begin
       #0..#32, '.', ',', ';', ':', '"', '''', #$00B4, '`',
       #$00B0, '^', '!', '?', '&', '$', '@', #$00A7, '%',
       '#', '~', '[', ']', '(', ')', '{', '}', '<', '>', '-', '=', '+', '*',
-      '/', '\', '|':
+      '/', '\', '|',
+      // Zero-width non joiner and Arabic comma and semicolon
+      #$200C, #$060C, #$061B:
         Result := True;
       else
         Result := False;
