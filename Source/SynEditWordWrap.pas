@@ -358,6 +358,10 @@ var
   IsTrailing, IsInside: BOOL;
   fWorkList: TList<Integer>;
   HTM: TDwriteHitTestMetrics;
+  HasRTL: Boolean; // Whether the line contains RTL characters
+  Idx: Integer;
+  LineMetrics: TArray<DWRITE_LINE_METRICS>;
+  ActualLineCount: Cardinal;
 begin
   CW := Editor.CharWidth;
   TW := Editor.TabWidth * Editor.CharWidth;
@@ -374,6 +378,7 @@ begin
     try
       // Preallocation helps with very long lines
       fWorkList.Capacity := MulDiv(SLine.Length, CW + 1, FMaxRowWidth);
+      HasRTL := False;
       P := PStart;
       PBreak := nil;
       W := 0;
@@ -381,6 +386,7 @@ begin
       begin
         while (P < PEnd) do
         begin
+          HasRTL := HasRTL or IsRTLChar(P^);
           // Special case with space. Keep it on the row even if it does't fit.
           if (P > PStart) and Editor.IsWordBreakChar(P^) then
             PBreak := P + IfThen(P^ = #32, 1, 0);
@@ -396,6 +402,27 @@ begin
             // Keep opening brackets with the next line
             PBreak := P + IfThen(Word(P^) in [40, 91], 0, 1);
           Inc(P);
+        end;
+
+        if HasRTL then
+        begin
+          // Special case - Let DWrite do the word-wrap
+          Layout.Create(Editor.TextFormat, PStart, PEnd - PStart, FMaxRowWidth, Editor.LineHeight);
+          Layout.IDW.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
+          SetLength(LineMetrics, Layout.TextMetrics.lineCount);
+          Layout.IDW.GetLineMetrics(@LineMetrics[0], Length(LineMetrics), ActualLineCount);
+          for Idx := 0 to ActualLineCount - 1 do
+          begin
+            if LineMetrics[Idx].length = 0 then
+              PBreak := PStart + MinMax(FMaxRowWidth div Editor.CharWidth, 1, PEnd - PStart)
+            else
+              PBreak := PStart + LineMetrics[Idx].length;
+            FWorkList.Add(PBreak - PStart);
+            PStart := PBreak;
+            P := PStart;
+            PBreak := nil;
+          end;
+          Continue;
         end;
 
         if (P < PEnd) and (W < FMaxRowWidth) then
