@@ -535,7 +535,6 @@ type
     procedure SizeOrFontChanged(bFont: Boolean);
     procedure ModifiedChanged(Sender: TObject);
     procedure UpdateLastPosX;
-    procedure UpdateScrollBars;
     procedure WriteAddedKeystrokes(Writer: TWriter);
     procedure WriteRemovedKeystrokes(Writer: TWriter);
     procedure SetAdditionalIdentChars(const Value: TSysCharSet);
@@ -819,6 +818,7 @@ type
     procedure UnlockUndo;
     procedure UnregisterCommandHandler(AHandlerProc: THookedCommandEvent);
     function UpdateAction(Action: TBasicAction): Boolean; override;
+    procedure UpdateScrollBars;
     function ValidTextPos(const S: string; Index: Integer; Trailing: Boolean):
         Integer; overload;
     function ValidTextPos(BC: TBufferCoord; Trailing: Boolean): TBufferCoord; overload;

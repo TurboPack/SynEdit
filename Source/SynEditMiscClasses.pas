@@ -643,17 +643,19 @@ type
     constructor Create(Owner: TCustomControl);
     destructor Destroy; override;
     procedure RegisterSpec(Id: TGUID; Spec: TSynIndicatorSpec);
-    function GetSpec(Id: TGUID): TSynIndicatorSpec;
+    function GetSpec(const Id: TGUID): TSynIndicatorSpec;
     procedure Add(Line: Integer; const Indicator: TSynIndicator; Invalidate: Boolean = True);
     // Clears all indicators
     procedure Clear; overload;
     // Clears all indicators with a given Id
-    procedure Clear(Id: TGUID; Invalidate: Boolean = True; Line: Integer = -1);
+    procedure Clear(const Id: TGUID; Invalidate: Boolean = True; Line: Integer = -1);
         overload;
     // Clears just one indicator
     procedure Clear(Line: Integer; const Indicator: TSynIndicator); overload;
     // Returns the indicators of a given line
     function LineIndicators(Line: Integer): TArray<TSynIndicator>;
+    // Get all indicatoros of with a given Id
+    function GetById(const Id: TGUID): TArray<TPair<Integer, TSynIndicator>>;
     // Return the indicator at a given buffer or window position
     function IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var Indicator:
         TSynIndicator): Boolean; overload;
@@ -2878,7 +2880,8 @@ begin
   FList.Clear;
 end;
 
-procedure TSynIndicators.Clear(Id: TGUID; Invalidate: Boolean = True; Line: Integer = -1);
+procedure TSynIndicators.Clear(const Id: TGUID; Invalidate: Boolean = True;
+    Line: Integer = -1);
 
   procedure ProcessLine(ALine: Integer);
   var
@@ -2946,7 +2949,26 @@ begin
   inherited;
 end;
 
-function TSynIndicators.GetSpec(Id: TGUID): TSynIndicatorSpec;
+function TSynIndicators.GetById(
+  const Id: TGUID): TArray<TPair<Integer, TSynIndicator>>;
+var
+  IndicatorList: TList<TPair<Integer, TSynIndicator>>;
+  Line: Integer;
+  Indicator: TSynIndicator;
+begin
+  IndicatorList := TList<TPair<Integer, TSynIndicator>>.Create;
+  try
+    for Line in FList.Keys do
+      for Indicator in FList[Line] do
+        if Indicator.Id = Id then
+          IndicatorList.Add(TPair<Integer, TSynIndicator>.Create(Line, Indicator));
+    Result := IndicatorList.ToArray;
+  finally
+    IndicatorList.Free;
+  end;
+end;
+
+function TSynIndicators.GetSpec(const Id: TGUID): TSynIndicatorSpec;
 begin
   Result := FRegister[Id];
 end;
