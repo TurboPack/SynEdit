@@ -112,6 +112,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetFriendlyLanguageName: UnicodeString; override;
     class function GetLanguageName: string; override;
     function GetRange: Pointer; override;
@@ -520,6 +521,11 @@ begin
     end;
   end;
   inherited;
+end;
+
+class function TSynYAMLSyn.GetCapabilities: TSynHighlighterCapabilities;
+begin
+  Result := inherited GetCapabilities + [hcStructureHighlight];
 end;
 
 function TSynYAMLSyn.GetDefaultAttribute(Index: Integer): TSynHighLighterAttributes;
