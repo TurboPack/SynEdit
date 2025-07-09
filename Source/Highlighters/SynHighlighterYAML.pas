@@ -33,6 +33,7 @@ interface
 uses
   System.SysUtils,
   System.Classes,
+  SynEditCodeFolding,
   Vcl.Graphics,
   SynEditHighlighter;
 
@@ -69,7 +70,7 @@ type
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
 type
-  TSynYAMLSyn = class(TSynCustomHighlighter)
+  TSynYAMLSyn = class(TSynCustomCodeFoldingHighlighter)
   private
     fRange: LongWord;
     fTokenID: TtkTokenKind;
@@ -123,6 +124,9 @@ type
     function GetTokenKind: Integer; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
+    procedure InitFoldRanges(FoldRanges : TSynFoldRanges); override;
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
     property DocDelimiterAttri: TSynHighlighterAttributes read fDocDelimiterAttri write fDocDelimiterAttri;
@@ -631,6 +635,74 @@ end;
 procedure TSynYAMLSyn.ResetRange;
 begin
   LongRec(fRange).Lo := rsUnknown;
+end;
+
+procedure TSynYAMLSyn.InitFoldRanges(FoldRanges: TSynFoldRanges);
+begin
+  inherited;
+  FoldRanges.CodeFoldingMode := cfmIndentation;
+end;
+
+procedure TSynYAMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+
+  function LeftSpaces(const CurLine: string; TabW: Integer): Integer;
+  var
+    p: PWideChar;
+  begin
+    p := PWideChar(CurLine);
+    if Assigned(p) then begin
+      Result := 0;
+      while (p^ >= #1) and (p^ <= #32) do begin
+        if p^ = #9 then
+          Inc(Result, TabW)
+        else
+          Inc(Result);
+        Inc(p);
+      end;
+    end else
+      Result := 0;
+  end;
+
+  function StripComments(const Line: string): string;
+  var
+    Index: Integer;
+  begin
+    Index := Pos('#', Line);
+    if Index = 0 then
+      Result := Line;
+    else
+      Result := Copy(Line, 1, Index - 1);
+  end;
+
+var
+  CurLine: string;
+  TrimmedLine: string;
+  Line: Integer;
+  Indent: Integer;
+  FoldType: Integer;
+begin
+  for Line := FromLine to ToLine do begin
+    CurLine := LinesToScan[Line];
+    TrimmedLine := Trim(StripComments(CurLine));
+
+    // Skip empty lines
+    if TrimmedLine = '' then begin
+      FoldRanges.NoFoldInfo(Line + 1);
+      Continue;
+    end;
+
+    Indent := LeftSpaces(CurLine, TabWidth(LinesToScan));
+
+    // find fold openers
+    if TrimmedLine[Length(TrimmedLine)] = ':' then begin
+      FoldType := 1;
+      FoldRanges.StartFoldRange(Line + 1, FoldType, Indent);
+      Continue;
+    end;
+
+    FoldRanges.StopFoldRange(Line + 1, 1, Indent)
+  end;
 end;
 
 procedure TSynYAMLSyn.SetRange(Value: Pointer);
