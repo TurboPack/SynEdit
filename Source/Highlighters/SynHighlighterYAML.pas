@@ -686,7 +686,7 @@ begin
     CurLine := LinesToScan[Line];
     TrimmedLine := Trim(StripComments(CurLine));
 
-    // Skip empty lines
+    // skip empty lines
     if TrimmedLine = '' then begin
       FoldRanges.NoFoldInfo(Line + 1);
       Continue;
