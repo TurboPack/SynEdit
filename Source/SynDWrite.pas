@@ -1638,6 +1638,7 @@ begin
         then
           Exit;  // Exit if it fails or if biBitCount <> 32
         BitmapInfo.bmiHeader.biCompression := BI_RGB; // set to uncompressed
+        BitmapInfo.bmiHeader.biHeight := -Abs(BitmapInfo.bmiHeader.biHeight); // Force top-down
         SetLength(Buf, IL.Height * IL.Width * 4);
         if GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, @Buf[0], BitmapInfo, DIB_RGB_COLORS) = 0 then
           Exit;
@@ -1655,8 +1656,10 @@ begin
   BitmapProperties := D2D1BitmapProperties(D2D1PixelFormat(
     DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 0, 0);
 
-  CheckOSError(RT.CreateBitmap(D2D1SizeU(IL.Width, IL.Height), @Buf[0],
-                4 * IL.Width, BitmapProperties, Bitmap));
+  if Failed(RT.CreateBitmap(D2D1SizeU(IL.Width, IL.Height), @Buf[0],
+                4 * IL.Width, BitmapProperties, Bitmap))
+  then
+    Exit;
 
   R := Rect(X, Y, X + IL.Width, Y + IL.Height);
   RT.DrawBitmap(Bitmap, @R, 1);

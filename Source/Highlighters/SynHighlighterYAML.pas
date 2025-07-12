@@ -676,7 +676,7 @@ procedure TSynYAMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   begin
     Index := Pos('#', Line);
     if Index = 0 then
-      Result := Line;
+      Result := Line
     else
       Result := Copy(Line, 1, Index - 1);
   end;
