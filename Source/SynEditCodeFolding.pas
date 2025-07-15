@@ -203,8 +203,6 @@ type
     function FoldEndAtLine(Line: Integer; out Index: Integer): Boolean; overload;
     function FoldAroundLineEx(Line: Integer; WantCollapsed, AcceptFromLine,
       AcceptToLine: Boolean; out Index: Integer): Boolean;
-    function CollapsedFoldAroundLine(Line: Integer): Boolean; overload;
-    function CollapsedFoldAroundLine(Line: Integer; out Index: Integer): Boolean; overload;
     function FoldAroundLine(Line: Integer): Boolean; overload;
     function FoldAroundLine(Line: Integer; out Index: Integer): Boolean; overload;
     function FoldHidesLine(Line: Integer): Boolean; overload;
@@ -314,13 +312,6 @@ Uses
 
 { TSynEditFoldRanges }
 
-function TSynFoldRanges.CollapsedFoldAroundLine(Line: Integer): Boolean;
-var
-  Index: Integer;
-begin
-  Result := CollapsedFoldAroundLine(Line, Index);
-end;
-
 function TSynFoldRanges.Collapse(RangeIndex: Integer): Boolean;
 begin
   Result := False;
@@ -342,12 +333,6 @@ begin
   for Index := 0 to  Count -1 do
     fRanges.List[Index].FCollapsed := True;
   AdjustRangeRows;
-end;
-
-function TSynFoldRanges.CollapsedFoldAroundLine(Line: Integer;
-  out Index: Integer): Boolean;
-begin
-  Result := FoldAroundLineEx(Line, True, False, False, Index);
 end;
 
 function TSynFoldRanges.CollapsedFoldStartAtLine(Line: Integer): Boolean;
@@ -508,24 +493,21 @@ begin
 
    // binary search
    if FoldStartAtLine(Line, Index) then
-      Exit(fRanges.List[Index].FFromRow)
-   else
-   begin
-     // Line before first fold
-     if Index = 0 then Exit(Line);
+      Exit(fRanges.List[Index].FFromRow);
 
-     // previous range
-     Range := fRanges[Index - 1];
-     if Range.FCollapsedIndex >= 0 then
-       Range := fRanges[Range.FCollapsedIndex];
-     CollapsedLines := Range.FromLine - Range.FFromRow;
-     if Range.Collapsed then
-     begin
-       Inc(CollapsedLines, Range.ToLine - Range.FromLine);
-       if Line <= Range.ToLine then Exit(Range.FFromRow);
-     end;
-     Result := Line - CollapsedLines;
+   if Index = 0 then Exit(Line);  // Line before first fold range
+
+   // Index > 0 - Check previous range
+   Range := fRanges[Index - 1];
+   if Range.FCollapsedIndex >= 0 then
+     Range := fRanges[Range.FCollapsedIndex];
+   CollapsedLines := Range.FromLine - Range.FFromRow;
+   if Range.Collapsed then
+   begin
+     Inc(CollapsedLines, Range.ToLine - Range.FromLine);
+     if Line <= Range.ToLine then Exit(Range.FFromRow);
    end;
+   Result := Line - CollapsedLines;
 end;
 
 function TSynFoldRanges.FoldRangesForTextRange(FromLine,
@@ -550,31 +532,27 @@ var
   Index: Integer;
   Range: TSynFoldRange;
 begin
-   if Count = 0 then Exit(Row);
+  if Count = 0 then Exit(Row);
 
   // binary search
+  if fRanges.BinarySearch(TSynFoldRange.Create(Row), Index, FRowComparer) then
+  begin
+    // deal with duplicates return the top row
+    while (Index > 0) and (fRanges.List[Index - 1].FFromRow = Row) do
+      Dec(Index);
+    Exit(fRanges.List[Index].FromLine);
+  end;
 
-   if fRanges.BinarySearch(TSynFoldRange.Create(Row), Index, FRowComparer) then
-   begin
-     // deal with duplicates return the top line
-     while (Index > 0) and (fRanges.List[Index - 1].FFromRow = Row) do
-       Dec(Index);
-     Exit(fRanges.List[Index].FromLine);
-   end
-   else
-   begin
-     // Row before first fold
-     if Index = 0 then Exit(Row);
+  if Index = 0 then Exit(Row); // Row before first fold
 
-     // previous range
-     Range := fRanges[Index - 1];
-     if Range.FCollapsedIndex >= 0 then
-       Range := fRanges[Range.FCollapsedIndex];
-     if Range.Collapsed then
-       Result := Range.ToLine + Row - Range.FFromRow
-     else
-       Result := Range.FromLine + Row - Range.FFromRow;
-   end;
+  // Index > 0 - Check previous range
+  Range := fRanges[Index - 1];
+  if Range.FCollapsedIndex >= 0 then
+    Range := fRanges[Range.FCollapsedIndex];
+  if Range.Collapsed then
+    Result := Range.ToLine + Row - Range.FFromRow
+  else
+    Result := Range.FromLine + Row - Range.FFromRow;
 end;
 
 function TSynFoldRanges.FoldsAtLevel(Level: Integer): TArray<Integer>;
