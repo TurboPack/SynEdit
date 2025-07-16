@@ -425,24 +425,67 @@ function TSynFoldRanges.FoldAroundLineEx(Line: Integer;
   WantCollapsed, AcceptFromLine, AcceptToLine: Boolean;
   out Index: Integer): Boolean;
 var
-  i: Integer;
+  I: Integer;
+  Idx: Integer;
 begin
+  Index := -1;
   Result := False;
-  for i := 0 to fRanges.Count - 1 do
-  begin
-    with fRanges.List[i] do
+  if Count = 0 then Exit;
+
+  // binary search
+  if FoldStartAtLine(Line, Idx) and AcceptFromLine then
+    with fRanges.List[Idx] do  // used to avoid copying records
     begin
-      if ((FromLine < Line) or ((FromLine = Line) and AcceptFromLine)) and
-        ((ToLine > Line) or ((ToLine = Line) and AcceptToLine)) and
-        (Collapsed = WantCollapsed) then
+      if WantCollapsed then
       begin
-        Index := i;
-        Result := True;
-      end;
-      if FromLine > Line then
-        Exit;
+        if Collapsed then
+        begin
+          Index := Idx;
+          Exit(True)
+        end
+        else if FCollapsedIndex >= 0 then
+        begin
+          Index := FCollapsedIndex;
+          Exit(True);
+        end;
+      end
+      else if not Collapsed then
+        Exit(True);
     end;
-  end;
+
+  Index := -1;
+  for I := Idx - 1 downto 0 do
+    with fRanges.List[I] do
+      begin
+        if WantCollapsed then
+        begin
+          // Will always exit without examining other ranges
+          // thanks to the FCollapsedIndex optimization
+          if Collapsed and
+            ((ToLine > Line) or ((ToLine = Line) and AcceptToLine)) then
+          begin
+            Index := I;
+            Exit(True);
+          end
+          else if FCollapsedIndex >= 0 then
+            with fRanges.List[FCollapsedIndex] do
+              if ((ToLine > Line) or ((ToLine = Line) and AcceptToLine)) then
+              begin
+                Index := FCollapsedIndex;
+                Exit(True);
+              end
+              else
+                Exit(False)
+          else
+            Exit(False);
+        end
+        else if not Collapsed and
+          ((ToLine > Line) or ((ToLine = Line) and AcceptToLine)) then
+        begin
+          Index := I;
+          Exit(True);
+        end;
+      end;
 end;
 
 function TSynFoldRanges.FoldEndAtLine(Line: Integer;
@@ -489,25 +532,25 @@ var
   CollapsedLines: Integer;
   Range: TSynFoldRange;
 begin
-   if Count = 0 then Exit(Line);
+  if Count = 0 then Exit(Line);
 
-   // binary search
-   if FoldStartAtLine(Line, Index) then
-      Exit(fRanges.List[Index].FFromRow);
+  // binary search
+  if FoldStartAtLine(Line, Index) then
+    Exit(fRanges.List[Index].FFromRow);
 
-   if Index = 0 then Exit(Line);  // Line before first fold range
+  if Index = 0 then Exit(Line);  // Line before first fold range
 
-   // Index > 0 - Check previous range
-   Range := fRanges[Index - 1];
-   if Range.FCollapsedIndex >= 0 then
-     Range := fRanges[Range.FCollapsedIndex];
-   CollapsedLines := Range.FromLine - Range.FFromRow;
-   if Range.Collapsed then
-   begin
-     Inc(CollapsedLines, Range.ToLine - Range.FromLine);
-     if Line <= Range.ToLine then Exit(Range.FFromRow);
-   end;
-   Result := Line - CollapsedLines;
+  // Index > 0 - Check previous range
+  Range := fRanges[Index - 1];
+  if Range.FCollapsedIndex >= 0 then
+    Range := fRanges[Range.FCollapsedIndex];
+  CollapsedLines := Range.FromLine - Range.FFromRow;
+  if Range.Collapsed then
+  begin
+    Inc(CollapsedLines, Range.ToLine - Range.FromLine);
+    if Line <= Range.ToLine then Exit(Range.FFromRow);
+  end;
+  Result := Line - CollapsedLines;
 end;
 
 function TSynFoldRanges.FoldRangesForTextRange(FromLine,
