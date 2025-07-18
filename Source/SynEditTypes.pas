@@ -175,15 +175,16 @@ end;
     // conversion methods
     function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
-    function RowCount: Integer;
     function GetRowLength(aRow: Integer): Integer;
+    function RowCount: Integer;
+    function RowToLine(aRow: Integer): Integer;
+    function LineToRow(aLine: Integer): Integer;
     // plugin notifications
     function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
     function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
     function LinePut(aIndex: Integer; const OldLine: string): Integer;
     // font or size change
     procedure DisplayChanged;
-    // pretty clear, heh?
     procedure Reset;
     property RowLength[RowIndex: Integer]: Integer read GetRowLength;
   end;

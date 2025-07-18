@@ -10091,19 +10091,22 @@ end;
 
 function TCustomSynEdit.LineToRow(aLine: Integer): Integer;
 begin
-  if not UseCodeFolding and not WordWrap then
-    Result := aLine
+  if UseCodeFolding then
+    Result := fAllFoldRanges.FoldLineToRow(aLine)
+  else if WordWrap then
+    Result := fWordWrapPlugin.LineToRow(aLine)
   else
-    Result := BufferToDisplayPos(BufferCoord(1, aLine)).Row;
+    Result := aLine;
 end;
 
 function TCustomSynEdit.RowToLine(aRow: Integer): Integer;
 begin
-  if not UseCodeFolding and not WordWrap then
-    Result := aRow
-  else begin
-    Result := DisplayToBufferPos(DisplayCoord(1, aRow)).Line;
-  end;
+  if UseCodeFolding then
+    Result := fAllFoldRanges.FoldRowToLine(aRow)
+  else if WordWrap then
+    Result := fWordWrapPlugin.RowToLine(aRow)
+  else
+    Result := aRow;
 end;
 
 procedure TCustomSynEdit.SetDisplayXY(const aPos: TDisplayCoord);
