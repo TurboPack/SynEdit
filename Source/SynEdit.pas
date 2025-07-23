@@ -2814,7 +2814,7 @@ var
             not Odd(Row)
           then
             RectF.Offset(0, 1);
-          RT.DrawBitmap(BM, @RectF);
+          RT.DrawBitmap(BM, PD2D1RectF(@RectF));
         end;
         Inc(TabSteps, TabWidth);
       end;

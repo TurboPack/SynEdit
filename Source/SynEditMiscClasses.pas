@@ -1725,7 +1725,8 @@ begin
     rcDest := rcDest.FitInto(Rect(X, Y, X + ScaledW, Y + LineHeight));
 
     BM := D2D1BitmapFromBitmap(FImages, RT);
-    RT.DrawBitmap(BM, @rcDest, 1, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, @rcSrc);
+    RT.DrawBitmap(BM, PD2D1RectF(@rcDest), 1,
+      D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, PD2D1RectF(@rcSrc));
   end;
 end;
 
@@ -2330,7 +2331,7 @@ begin
         RectF := RectF.FitInto(LineRect);
         RectF.Offset(LineRect.Right - RectF.Right, 0);
       end;
-      RT.DrawBitmap(WordWrapGlyph, @RectF, 1000);
+      RT.DrawBitmap(WordWrapGlyph, PD2D1RectF(@RectF), 1000);
     end
     else
     begin
