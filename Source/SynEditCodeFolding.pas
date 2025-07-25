@@ -468,14 +468,11 @@ begin
             Exit(True);
           end
           else if FCollapsedIndex >= 0 then
+          begin
+            Index := FCollapsedIndex;
             with fRanges.List[FCollapsedIndex] do
-              if ((ToLine > Line) or ((ToLine = Line) and AcceptToLine)) then
-              begin
-                Index := FCollapsedIndex;
-                Exit(True);
-              end
-              else
-                Exit(False)
+              Exit((ToLine > Line) or ((ToLine = Line) and AcceptToLine));
+          end
           else
             Exit(False);
         end
