@@ -1,6 +1,6 @@
 # SynEdit
 
-The master branch remains compatible with Delphi 10.1 Berlin or later.
+This branch is for legacy 11Alexandria support only and doesn't have the [latest updates](https://github.com/TurboPack/SynEdit).
 
 ### Table of contents
 1.  [Introduction](#Introduction)
@@ -50,3 +50,4 @@ steps:
 
 4. Open & install the design-time package specific to the IDE being used. The IDE should notify you the components have been
 installed.
+
