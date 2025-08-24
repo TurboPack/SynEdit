@@ -1,7 +1,5 @@
 # TurboPack SynEdit
 
-Updated for **10.4 Sydney** / VER340 / PKG 270
-
 The master branch remains compatible with Delphi 12 Athens or later. You can also access the [11 Alexandira](https://github.com/TurboPack/SynEdit/tree/11Alexandria), [10.3 Rio](https://github.com/TurboPack/SynEdit/releases/tag/103RIO), [10.2 Tokyo](https://github.com/TurboPack/SynEdit/releases/tag/102Tokyo) and [10.1 Berlin](https://github.com/TurboPack/SynEdit/releases/tag/101Berlin) releases. Keep in mind they don't have the latest updates.
 
 ### Table of contents
