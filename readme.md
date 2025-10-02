@@ -9,6 +9,13 @@ The master branch remains compatible with Delphi 12 Athens or later. You can als
 
 ---
 
+## Fork Reason
+
+This fork is only made for one reason, to add a highlighter for the Delphi WebStencils syntax.
+The TurpoPack/SynEdit repository has a pull request to add this component to the package.
+
+I've made this free of charge, as a pay-back effort to the community.
+
 ## Introduction
 
 ![SynEdit](https://raw.githubusercontent.com/TurboPack/SynEdit/master/Doc/SynEdit-1.3.png "TurboPower SynEdit")
