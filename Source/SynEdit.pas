@@ -4128,8 +4128,8 @@ begin
 
   if (Value.Length = 0) and (BB = BE) then Exit;  // nothing to do
 
-  Lines.BeginUpdate;
   IncPaintLock;
+  Lines.BeginUpdate;
   if AddToUndoList then BeginUndoBlock else fUndoRedo.Lock;
   try
     SelectedText := SelectionText(FSelection);
@@ -4145,8 +4145,8 @@ begin
     end;
   finally
     if AddToUndoList then EndUndoBlock else fUndoRedo.UnLock;
-    DecPaintLock;
     Lines.EndUpdate;
+    DecPaintLock;
   end;
 end;
 
