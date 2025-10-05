@@ -630,8 +630,8 @@ type
     procedure SetReadOnly(Value: Boolean); virtual;
     procedure SetWantReturns(Value: Boolean);
     procedure SetSelText(const Value: string);
-    procedure SetSelTextPrimitiveEx(const Value: string;
-      AddToUndoList: Boolean = True; SelectValue: Boolean = False);
+    procedure SetSelTextPrimitiveEx(const Value: string; BB, BE: TBufferCoord;
+        AddToUndoList: Boolean = True; SelectValue: Boolean = False);
     procedure SetTextHint(const Value: string);
     procedure SetWantTabs(Value: Boolean);
     procedure StatusChanged(AChanges: TSynStatusChanges);
@@ -811,6 +811,8 @@ type
     procedure SetCaretAndSelection(const Sel: TSynSelection;
       EnsureVisible: Boolean= True; ForceToMiddle: Boolean = False); overload;
     procedure SetDefaultKeystrokes; virtual;
+    procedure SetSelectionText(const Value: string; Sel: TSynSelection); overload;
+    procedure SetSelectionText(const Value: string; BB, BE: TBufferCoord); overload;
     procedure SetSelWord;
     procedure SetWordBlock(Value: TBufferCoord);
     procedure SurroundSelection(const Before: string; After: string = '');
@@ -4033,7 +4035,7 @@ end;
 
 procedure TCustomSynEdit.SetSelText(const Value: string);
 begin
-  SetSelTextPrimitiveEx(Value, True);
+  SetSelTextPrimitiveEx(Value, BlockBegin, BlockEnd, True);
 end;
 
 // This is really a last minute change and I hope I did it right.
@@ -4043,14 +4045,15 @@ end;
 // To fix this (in the absence of a better idea), I changed the code in
 // DeleteSelection not to trim the string if eoScrollPastEol is not set.
 procedure TCustomSynEdit.SetSelTextPrimitiveEx(const Value: string;
-  AddToUndoList: Boolean = True; SelectValue: Boolean = False);
+  BB, BE: TBufferCoord; AddToUndoList: Boolean = True;
+  SelectValue: Boolean = False);
 {
    Works in two stages:
      -  First deletes selection.
      -  Second inserts text taking into account PasteMode.
 }
 var
-  BB, BE: TBufferCoord;
+  Caret: TBufferCoord;
   TempString, SelectedText: string;
 
   procedure DeleteSelection;
@@ -4069,11 +4072,11 @@ var
         TempString := TempString.TrimRight;
       Lines[BB.Line - 1] := TempString;
     end;
-    CaretXY := BB;
   end;
 
   procedure InsertText;
   var
+    sLine: string;
     sLeftSide: string;
     sRightSide: string;
     NewLines: TArray<string>;
@@ -4088,13 +4091,14 @@ var
 
     if LineCount = 0 then Exit;
 
-    sLeftSide := Copy(LineText, 1, CaretX - 1);
-    if CaretX - 1 > Length(sLeftSide) then
+    sLine := Lines[Caret.Line - 1];
+    sLeftSide := Copy(sLine, 1, Caret.Char - 1);
+    if Caret.Char - 1 > Length(sLeftSide) then
     begin
       sLeftSide := sLeftSide + StringofChar(#32,
-        CaretX - 1 - Length(sLeftSide));
+        Caret.Char - 1 - Length(sLeftSide));
     end;
-    sRightSide := Copy(LineText, CaretX, Length(LineText) - (CaretX - 1));
+    sRightSide := Copy(sLine, Caret.Char, sLine.Length - (Caret.Char - 1));
     if eoTrimTrailingSpaces in Options then
       sRightSide := sRightSide.TrimRight;
 
@@ -4107,24 +4111,21 @@ var
       for I := 0 to LineCount - 1 do
         NewLines[I] := NewLines[I].TrimRight;
 
-    Lines[CaretY -1] := NewLines[0];
+    Lines[Caret.Line - 1] := NewLines[0];
     if LineCount > 1 then
     begin
-      TSynEditStringList(Lines).InsertStrings(CaretY, NewLines, 1);
-      Inc(FSelection.Caret.Line, LineCount - 1);
-      Include(fStatusChanges, scCaretY);
+      TSynEditStringList(Lines).InsertStrings(Caret.Line, NewLines, 1);
+      Inc(Caret.Line, LineCount - 1);
     end;
 
-    FSelection.Caret.Char := 1 + Length(Lines[CaretY - 1]) - Length(sRightSide);
-    StatusChanged([scCaretX]);
-
-    // Force caret reset
-    CaretXY := CaretXY;
+    Caret.Char := 1 + Length(Lines[Caret.Line - 1]) - Length(sRightSide);
   end;
 
 begin
-  BB := BlockBegin;
-  BE := BlockEnd;
+  BB := ValidBC(BB);
+  BE := ValidBC(BE);
+  if BB > BE then
+    BB.Swap(BE);
 
   if (Value.Length = 0) and (BB = BE) then Exit;  // nothing to do
 
@@ -4132,17 +4133,23 @@ begin
   Lines.BeginUpdate;
   if AddToUndoList then BeginUndoBlock else fUndoRedo.Lock;
   try
-    SelectedText := SelectionText(FSelection);
+    SelectedText := SelectionText(TSynSelection.Create(BE, BB, BE));
 
     if SelectedText <> '' then
       DeleteSelection;
+    Caret := BB;
 
     if Length(Value) > 0 then
     begin
       InsertText;
+
       if SelectValue then
-        SetCaretAndSelection(CaretXY, BB, CaretXY);
-    end;
+        SetCaretAndSelection(Caret, BB, Caret)
+      else
+        CaretXY := Caret;
+    end
+    else
+      CaretXY := Caret;
   finally
     if AddToUndoList then EndUndoBlock else fUndoRedo.UnLock;
     Lines.EndUpdate;
@@ -7254,6 +7261,18 @@ begin
   FSelectedColor.Assign(Value);
 end;
 
+procedure TCustomSynEdit.SetSelectionText(const Value: string; BB,
+  BE: TBufferCoord);
+begin
+  SetSelTextPrimitiveEx(Value, BB, BE, True);
+end;
+
+procedure TCustomSynEdit.SetSelectionText(const Value: string;
+  Sel: TSynSelection);
+begin
+  SetSelTextPrimitiveEx(Value, Sel.Start, Sel.Stop, True);
+end;
+
 procedure TCustomSynEdit.SetAdditionalIdentChars(const Value: TSysCharSet);
 begin
   FAdditionalIdentChars := Value;
@@ -8234,7 +8253,7 @@ begin
 
    OldLen := Sel.Length;
    Sel := Before + Sel + After;
-   SetSelTextPrimitiveEx(Sel, True, True);
+   SetSelTextPrimitiveEx(Sel, BlockBegin, BlockEnd, True, True);
    IncPaintLock;
    try
      SelStart := SelStart + Before.Length;

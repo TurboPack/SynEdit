@@ -95,6 +95,7 @@ type
     class function Max(a, b: TBufferCoord): TBufferCoord; static;
     class function Invalid: TBufferCoord; static;
     function IsValid: Boolean;
+    procedure Swap(var Other: TBufferCoord);
   end;
 
   TDisplayCoord = record
@@ -354,6 +355,15 @@ end;
 class operator TBufferCoord.NotEqual(a, b: TBufferCoord): Boolean;
 begin
   Result := (a.Char <> b.Char) or (a.Line <> b.Line);
+end;
+
+procedure TBufferCoord.Swap(var Other: TBufferCoord);
+var
+  Temp: TBufferCoord;
+begin
+  Temp := Other;
+  Other := Self;
+  Self := Temp;
 end;
 
 function TBufferCoord.ToString(ShortForm: Boolean = True): string;
