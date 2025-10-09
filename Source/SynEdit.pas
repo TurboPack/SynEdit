@@ -7474,7 +7474,7 @@ begin
   end;
 
   // Used in Zoom
-  FOrigGutterFontSize := Font.Size;
+  FOrigGutterFontSize := Gutter.Font.Size;
 end;
 
 procedure TCustomSynEdit.LockUndo;
