@@ -654,11 +654,12 @@ type
     procedure Clear(Line: Integer; const Indicator: TSynIndicator); overload;
     // Returns the indicators of a given line
     function LineIndicators(Line: Integer): TArray<TSynIndicator>;
-    // Get all indicatoros of with a given Id
-    function GetById(const Id: TGUID): TArray<TPair<Integer, TSynIndicator>>;
+    // Get all indicatoros of with a given Id or an array of Ids
+    function GetById(const Id: TGUID): TArray<TPair<Integer, TSynIndicator>>; overload;
+    function GetById(const Ids: TArray<TGUID>): TArray<TPair<Integer, TSynIndicator>>; overload;
     // Return the indicator at a given buffer or window position
-    function IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var Indicator:
-        TSynIndicator): Boolean; overload;
+    function IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var Indicator: TSynIndicator): Boolean; overload;
+    function IndicatorAtPos(Pos: TBufferCoord; const Ids: TArray<TGUID>; var Indicator: TSynIndicator): Boolean; overload;
     function IndicatorAtPos(Pos: TBufferCoord; var Indicator: TSynIndicator): Boolean; overload;
     function IndicatorAtMousePos(MousePos: TPoint; const Id: TGUID; var Indicator: TSynIndicator): Boolean; overload;
     function IndicatorAtMousePos(MousePos: TPoint; var Indicator: TSynIndicator): Boolean; overload;
@@ -2952,17 +2953,25 @@ end;
 
 function TSynIndicators.GetById(
   const Id: TGUID): TArray<TPair<Integer, TSynIndicator>>;
+begin
+  Result := GetById([Id]);
+end;
+
+function TSynIndicators.GetById(
+  const Ids: TArray<TGUID>): TArray<TPair<Integer, TSynIndicator>>;
 var
   IndicatorList: TList<TPair<Integer, TSynIndicator>>;
   Line: Integer;
   Indicator: TSynIndicator;
+  Id: TGUID;
 begin
   IndicatorList := TList<TPair<Integer, TSynIndicator>>.Create;
   try
     for Line in FList.Keys do
       for Indicator in FList[Line] do
-        if Indicator.Id = Id then
-          IndicatorList.Add(TPair<Integer, TSynIndicator>.Create(Line, Indicator));
+        for Id in Ids do
+          if Id = Indicator.Id then
+            IndicatorList.Add(TPair<Integer, TSynIndicator>.Create(Line, Indicator));
     Result := IndicatorList.ToArray;
   finally
     IndicatorList.Free;
@@ -2999,23 +3008,31 @@ begin
   Result := IndicatorAtPos(Pos, TGUID.Empty, Indicator);
 end;
 
-function TSynIndicators.IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var
-    Indicator: TSynIndicator): Boolean;
+function TSynIndicators.IndicatorAtPos(Pos: TBufferCoord;
+  const Ids: TArray<TGUID>; var Indicator: TSynIndicator): Boolean;
 var
   LineIndicators:  TArray<TSynIndicator>;
   LIndicator: TSynIndicator;
+  Id: TGUID;
 begin
   Result := False;
   if FList.TryGetValue(Pos.Line, LineIndicators) then
   begin
     for LIndicator in LineIndicators do
-      if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd - 1) and
-       ((Id = TGUID.Empty) or (LIndicator.Id = Id)) then
-      begin
-        Indicator := LIndicator;
-        Exit(True);
-      end;
+      for Id in Ids do
+        if InRange(Pos.Char, LIndicator.CharStart, LIndicator.CharEnd - 1) and
+         ((Id = TGUID.Empty) or (LIndicator.Id = Id)) then
+        begin
+          Indicator := LIndicator;
+          Exit(True);
+        end;
   end;
+end;
+
+function TSynIndicators.IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var
+    Indicator: TSynIndicator): Boolean;
+begin
+  Result := IndicatorAtPos(Pos, [Id], Indicator);
 end;
 
 procedure TSynIndicators.InvalidateIndicator(Line: Integer;  const Indicator: TSynIndicator);
