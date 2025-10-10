@@ -753,7 +753,8 @@ type
     procedure InvalidateGutterBand(Kind: TSynGutterBandKind);
     procedure InvalidateLine(Line: Integer);
     procedure InvalidateLines(FirstLine, LastLine: Integer);
-    procedure InvalidateRange(const BB, BE: TBufferCoord);
+    procedure InvalidateRange(const BB, BE: TBufferCoord); overload;
+    procedure InvalidateRange(const BB, BE: TBufferCoord; const Borders: TRect); overload;
     procedure InvalidateSelection; overload;
     procedure InvalidateSelection(const Sel: TSynSelection); overload;
     function IsBookmark(BookMark: Integer): Boolean;
@@ -8604,7 +8605,8 @@ begin
   UpdateScrollBars;
 end;
 
-procedure TCustomSynEdit.InvalidateRange(const BB, BE: TBufferCoord);
+procedure TCustomSynEdit.InvalidateRange(const BB, BE: TBufferCoord; const
+    Borders: TRect);
 var
   DB, DE: TDisplayCoord;
   P1, P2: TPoint;
@@ -8630,9 +8632,19 @@ begin
       R := Rect(P1.X, fTextHeight * (DB.Row - TopLine), P2.X,
         fTextHeight * (DB.Row - TopLine + 1));
       R.NormalizeRect;
+
+      Dec(R.Left, Borders.Left);
+      Dec(R.Top, Borders.Top);
+      Inc(R.Right, Borders.Right);
+      Inc(R.Bottom, Borders.Bottom);
       InvalidateRect(R, False);
     end;
   end;
+end;
+
+procedure TCustomSynEdit.InvalidateRange(const BB, BE: TBufferCoord);
+begin
+  InvalidateRange(BB, BE, Rect(0, 0, 0, 0));
 end;
 
 procedure TCustomSynEdit.InvalidateRect(const aRect: TRect; aErase: Boolean);

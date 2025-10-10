@@ -3038,7 +3038,7 @@ end;
 procedure TSynIndicators.InvalidateIndicator(Line: Integer;  const Indicator: TSynIndicator);
 begin
   TCustomSynEdit(FOwner).InvalidateRange(BufferCoord(Indicator.CharStart, Line),
-    BufferCoord(Indicator.CharEnd, Line));
+    BufferCoord(Indicator.CharEnd, Line), Rect(0, 0, 1, 0));
 end;
 
 function TSynIndicators.LineIndicators(Line: Integer): TArray<TSynIndicator>;
