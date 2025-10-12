@@ -2394,6 +2394,8 @@ var
 
   procedure DrawMark(aMark: TSynEditMark; var aGutterOff: Integer;
     aMarkRow: Integer);
+  var
+    VOffset: Integer;
   begin
     if (not aMark.InternalImage) and
       Assigned(SynEdit.BookMarkOptions.BookmarkImages) then
@@ -2404,9 +2406,12 @@ var
           aGutterOff := 0
         else if aGutterOff = 0 then
           aGutterOff := SynEdit.BookMarkOptions.Xoffset;
+        vOffset := Max(0, (SynEdit.LineHeight -
+          SynEdit.BookMarkOptions.BookmarkImages.Height) div 2);
         ImageListDraw(RT, SynEdit.BookMarkOptions.BookmarkImages,
           ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
-          (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight, aMark.ImageIndex);
+          (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight +VOffset,
+          aMark.ImageIndex);
         Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
       end;
     end
