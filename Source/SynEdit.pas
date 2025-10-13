@@ -299,9 +299,9 @@ type
     FIndentGuides: TSynIndentGuides;
     fActiveLineColor: TColor;
     fUndoRedo: ISynEditUndo;
-    fBookMarks: array[0..9] of TSynEditMark; // these are just references, fMarkList is the owner
+    FBookmarks: array[0..9] of TSynEditMark; // these are just references, fMarkList is the owner
     FMouseDown: TPoint;
-    fBookMarkOpt: TSynBookMarkOpt;
+    FBookmarkOptions: TSynBookmarkOpt;
     fBorderStyle: TSynBorderStyle;
     fHideSelection: Boolean;
     fOverwriteCaret: TSynEditCaretType;
@@ -396,7 +396,7 @@ type
     procedure SetUseCodeFolding(const Value: Boolean);
     function GetCollapseMarkRect(Row: Integer; Line: Integer = -1): TRect;
     // End of CodeFolding events and private procedures
-    procedure BookMarkOptionsChanged(Sender: TObject);
+    procedure BookmarkOptionsChanged(Sender: TObject);
     function ColumnSelectionStart: TBufferCoord;
     procedure ComputeCaret(X, Y: Integer);
     procedure ComputeScroll(X, Y: Integer);
@@ -658,7 +658,7 @@ type
     function CharIndexToRowCol(Index: Integer; LineBreak: string = SLineBreak): TBufferCoord;
     procedure Clear;
     procedure ClearAll;
-    procedure ClearBookMark(BookMark: Integer);
+    procedure ClearBookmark(Bookmark: Integer);
     procedure DeleteSelections;
     procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar;
       Data: Pointer); virtual;
@@ -685,7 +685,7 @@ type
       Data: Pointer); virtual;
     procedure ExecuteMultiCaretCommand(Command: TSynEditorCommand; AChar: WideChar;
       Data: Pointer; CommandInfo: TSynCommandInfo); virtual;
-    function GetBookMark(BookMark: Integer; var X, Y: Integer): Boolean;
+    function GetBookmark(Bookmark: Integer; var X, Y: Integer): Boolean;
     function GetHighlighterAttriAtRowCol(const XY: TBufferCoord; var Token: string;
       var Attri: TSynHighlighterAttributes): Boolean;
     function GetHighlighterAttriAtRowColEx(const XY: TBufferCoord; var Token: string;
@@ -696,7 +696,7 @@ type
     procedure GetWordBoundaries(XY: TBufferCoord; var BB, BE: TBufferCoord);
     procedure GotoPrevChange;
     procedure GotoNextChange;
-    procedure GotoBookMark(BookMark: Integer); virtual;
+    procedure GotoBookmark(Bookmark: Integer); virtual;
     procedure GotoLineAndCenter(ALine: Integer); virtual;
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
@@ -713,7 +713,7 @@ type
     procedure InvalidateRange(const BB, BE: TBufferCoord; const Borders: TRect); overload;
     procedure InvalidateSelection; overload;
     procedure InvalidateSelection(const Sel: TSynSelection); overload;
-    function IsBookmark(BookMark: Integer): Boolean;
+    function IsBookmark(Bookmark: Integer): Boolean;
     function IsLineMOdified(ALine: Integer): Boolean;
     function IsPointInSelection(const Value: TBufferCoord): Boolean;
     procedure LockUndo;
@@ -761,7 +761,7 @@ type
     procedure SelectAllMatchingText;
     function SelectMatchingText(BackwardSearch: Boolean = False;
       AddSelection: Boolean = False): Boolean;
-    procedure SetBookMark(BookMark: Integer; X: Integer; Y: Integer);
+    procedure SetBookmark(Bookmark: Integer; X: Integer; Y: Integer);
     procedure SetCaretAndSelection(const ptCaret, ptBefore,
       ptAfter: TBufferCoord; EnsureVisible: Boolean= True;
       ForceToMiddle: Boolean = False); overload;
@@ -885,8 +885,8 @@ type
     property UseCodeFolding: Boolean read fUseCodeFolding write SetUseCodeFolding;
     property AllFoldRanges: TSynFoldRanges read fAllFoldRanges;
     // End of CodeFolding
-    property BookMarkOptions: TSynBookMarkOpt
-      read fBookMarkOpt write fBookMarkOpt;
+    property BookmarkOptions: TSynBookmarkOpt
+      read FBookmarkOptions write FBookmarkOptions;
     property BorderStyle: TSynBorderStyle read FBorderStyle write SetBorderStyle
       default bsSingle;
     property ExtraLineSpacing: Integer
@@ -1029,7 +1029,7 @@ type
     // TCustomSynEdit properties
     property CodeFolding;
     property UseCodeFolding;
-    property BookMarkOptions;
+    property BookmarkOptions;
     property BorderStyle;
     property ExtraLineSpacing;
     property DisplayFlowControl;
@@ -1443,8 +1443,8 @@ begin
   fSelectedColor.OnChange := SelectedColorChanged;
   FIndentGuides := TSynIndentGuides.Create(Self);
   FIndentGuides.OnChange := IndentGuidesChanged;
-  fBookMarkOpt := TSynBookMarkOpt.Create(Self);
-  fBookMarkOpt.OnChange := BookMarkOptionsChanged;
+  FBookmarkOptions := TSynBookmarkOpt.Create(Self);
+  FBookmarkOptions.OnChange := BookmarkOptionsChanged;
   fTextMargin := 3;
   // fRightEdge has to be set before FontChanged is called for the first time
   fRightEdge := 80;
@@ -1596,7 +1596,7 @@ begin
   FPlugins := nil;
 
   fMarkList.Free;
-  fBookMarkOpt.Free;
+  FBookmarkOptions.Free;
   fKeyStrokes.Free;
   fKbdHandler.Free;
   fFocusList.Free;
@@ -2321,7 +2321,7 @@ begin
       begin
         if assigned(Allmrk[I]) then
         begin
-          Inc(Offs, BookMarkOptions.XOffset);
+          Inc(Offs, BookmarkOptions.XOffset);
           if X < Offs then
           begin
             Mark := Allmrk[I];
@@ -4887,7 +4887,7 @@ begin
 //-- CodeFolding
 
   fMarkList.Clear; // fMarkList.Clear also frees all bookmarks,
-  FillChar(fBookMarks, sizeof(fBookMarks), 0); // so fBookMarks should be cleared too
+  FillChar(FBookmarks, sizeof(FBookmarks), 0); // so FBookmarks should be cleared too
 
   ClearUndo;
   // invalidate the *whole* client area
@@ -5496,27 +5496,27 @@ begin
       Dec(Line);
 end;
 
-procedure TCustomSynEdit.ClearBookMark(BookMark: Integer);
+procedure TCustomSynEdit.ClearBookmark(Bookmark: Integer);
 begin
-  if (BookMark in [0..9]) and assigned(fBookMarks[BookMark]) then
+  if (Bookmark in [0..9]) and assigned(FBookmarks[Bookmark]) then
   begin
-    DoOnClearBookmark(fBookMarks[BookMark]);
-    FMarkList.Remove(fBookMarks[Bookmark]);
-    fBookMarks[BookMark] := nil;
+    DoOnClearBookmark(FBookmarks[Bookmark]);
+    FMarkList.Remove(FBookmarks[Bookmark]);
+    FBookmarks[Bookmark] := nil;
   end
 end;
 
-procedure TCustomSynEdit.GotoBookMark(BookMark: Integer);
+procedure TCustomSynEdit.GotoBookmark(Bookmark: Integer);
 var
   iNewPos: TBufferCoord;
 begin
-  if (BookMark in [0..9]) and
-     assigned(fBookMarks[BookMark]) and
-     (fBookMarks[BookMark].Line <= fLines.Count)
+  if (Bookmark in [0..9]) and
+     assigned(FBookmarks[Bookmark]) and
+     (FBookmarks[Bookmark].Line <= fLines.Count)
   then
   begin
-    iNewPos.Char := fBookMarks[BookMark].Char;
-    iNewPos.Line := fBookMarks[BookMark].Line;
+    iNewPos.Char := FBookmarks[Bookmark].Char;
+    iNewPos.Line := FBookmarks[Bookmark].Line;
     //call it this way instead to make sure that the caret ends up in the middle
     //if it is off screen (like Delphi does with bookmarks)
     SetCaretAndSelection(iNewPos, iNewPos, iNewPos, True, True);
@@ -5531,11 +5531,11 @@ begin
   SetCaretAndSelection(iNewPos, iNewPos, iNewPos, True, True);
 end;
 
-procedure TCustomSynEdit.SetBookMark(BookMark: Integer; X: Integer; Y: Integer);
+procedure TCustomSynEdit.SetBookmark(Bookmark: Integer; X: Integer; Y: Integer);
 var
   mark: TSynEditMark;
 begin
-  if (BookMark in [0..9]) and (Y >= 1) and (Y <= Max(1, fLines.Count)) then
+  if (Bookmark in [0..9]) and (Y >= 1) and (Y <= Max(1, fLines.Count)) then
   begin
     mark := TSynEditMark.Create(self);
     with mark do
@@ -5545,15 +5545,15 @@ begin
       ImageIndex := Bookmark;
       BookmarkNumber := Bookmark;
       Visible := True;
-      InternalImage := (fBookMarkOpt.BookmarkImages = nil);
+      InternalImage := (FBookmarkOptions.BookmarkImages = nil);
     end;
     DoOnPlaceMark(Mark);
     if (mark <> nil) then
     begin
-      if assigned(fBookMarks[BookMark]) then
-        ClearBookmark(BookMark);
-      fBookMarks[BookMark] := mark;
-      FMarkList.Add(fBookMarks[BookMark]);
+      if assigned(FBookmarks[Bookmark]) then
+        ClearBookmark(Bookmark);
+      FBookmarks[Bookmark] := mark;
+      FMarkList.Add(FBookmarks[Bookmark]);
     end;
   end;
 end;
@@ -5633,7 +5633,7 @@ begin
       fTextMargin := MulDiv(fTextMargin, M, D);
       FCarets.CaretSize := MulDiv(FCarets.CaretSize, M, D);
       fGutter.ChangeScale(M,D);
-      fBookMarkOpt.ChangeScale(M, D);
+      FBookmarkOptions.ChangeScale(M, D);
       fWordWrapGlyph.ChangeScale(M, D);
       // Adjust Font.PixelsPerInch so that Font.Size is correct
       // Delphi should be doing that but it doesn't
@@ -5819,10 +5819,10 @@ begin
       RemoveLinesPointer;
     end;
 
-    if (fBookmarkOpt <> nil) then
-      if (AComponent = fBookmarkOpt.BookmarkImages) then
+    if (FBookmarkOptions <> nil) then
+      if (AComponent = FBookmarkOptions.BookmarkImages) then
       begin
-        fBookmarkOpt.BookmarkImages := nil;
+        FBookmarkOptions.BookmarkImages := nil;
         InvalidateGutterLines(-1, -1);
       end;
   end;
@@ -6837,28 +6837,28 @@ begin
         GotoPrevChange;
       ecGotoMarker0..ecGotoMarker9:
         begin
-          if BookMarkOptions.EnableKeys then
-            GotoBookMark(Command - ecGotoMarker0);
+          if BookmarkOptions.EnableKeys then
+            GotoBookmark(Command - ecGotoMarker0);
         end;
       ecSetMarker0..ecSetMarker9:
         begin
-          if BookMarkOptions.EnableKeys then
+          if BookmarkOptions.EnableKeys then
           begin
             CX := Command - ecSetMarker0;
             if Assigned(Data) then
               Caret := TBufferCoord(Data^)
             else
               Caret := CaretXY;
-            if assigned(fBookMarks[CX]) then
+            if assigned(FBookmarks[CX]) then
             begin
-              moveBkm := (fBookMarks[CX].Line <> Caret.Line);
-              ClearBookMark(CX);
+              moveBkm := (FBookmarks[CX].Line <> Caret.Line);
+              ClearBookmark(CX);
               if moveBkm then
-                SetBookMark(CX, Caret.Char, Caret.Line);
+                SetBookmark(CX, Caret.Char, Caret.Line);
             end
             else
-              SetBookMark(CX, Caret.Char, Caret.Line);
-          end; // if BookMarkOptions.EnableKeys
+              SetBookmark(CX, Caret.Char, Caret.Line);
+          end; // if BookmarkOptions.EnableKeys
         end;
       ecCut:
         begin
@@ -7346,7 +7346,7 @@ begin
   SynFontChanged(self);
 end;
 
-function TCustomSynEdit.GetBookMark(BookMark: Integer; var X, Y: Integer):
+function TCustomSynEdit.GetBookmark(Bookmark: Integer; var X, Y: Integer):
   Boolean;
 var
   i: Integer;
@@ -7354,7 +7354,7 @@ begin
   Result := False;
   if assigned(Marks) then
     for i := 0 to Marks.Count - 1 do
-      if Marks[i].IsBookmark and (Marks[i].BookmarkNumber = BookMark) then
+      if Marks[i].IsBookmark and (Marks[i].BookmarkNumber = Bookmark) then
       begin
         X := Marks[i].Char;
         Y := Marks[i].Line;
@@ -7371,11 +7371,11 @@ begin
     Result := FBrackets;
 end;
 
-function TCustomSynEdit.IsBookmark(BookMark: Integer): Boolean;
+function TCustomSynEdit.IsBookmark(Bookmark: Integer): Boolean;
 var
   x, y: Integer;
 begin
-  Result := GetBookMark(BookMark, x, y);
+  Result := GetBookmark(Bookmark, x, y);
 end;
 
 function TCustomSynEdit.IsChained: Boolean;
@@ -7839,7 +7839,7 @@ begin
   SetCursor(Screen.Cursors[iNewCursor]);
 end;
 
-procedure TCustomSynEdit.BookMarkOptionsChanged(Sender: TObject);
+procedure TCustomSynEdit.BookmarkOptionsChanged(Sender: TObject);
 begin
   InvalidateGutter;
 end;
