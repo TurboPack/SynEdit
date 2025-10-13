@@ -160,6 +160,7 @@ type
     fVisible: Boolean;
     fInternalImage: Boolean;
     fBookmarkNum: Integer;
+    fTag: NativeInt;
     function GetEdit: TCustomSynEdit; virtual;
     procedure SetChar(const Value: Integer); virtual;
     procedure SetImage(const Value: Integer); virtual;
@@ -177,6 +178,7 @@ type
     property Visible: Boolean read fVisible write SetVisible;
     property InternalImage: Boolean read fInternalImage write SetInternalImage;
     property IsBookmark: Boolean read GetIsBookmark;
+    property Tag: NativeInt read fTag write fTag;
   end;
 
   TPlaceMarkEvent = procedure(Sender: TObject; var Mark: TSynEditMark)

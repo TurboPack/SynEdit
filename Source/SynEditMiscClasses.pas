@@ -173,8 +173,9 @@ type
     bands can be set at design time through the Bands property of TSynGutter.
     Custom bands can also be created.  They can be painted using
     OnPaintLines event handler.
-    The width of the Line Numbers and Code Folding band is automatically
-    calculated and not set at design time }
+    The width of the Line Numbers, Track Changes and Code Folding band
+    are calculated from properites of TSynGutter and not set directly at
+    design time }
   TSynGutterBandKind = (gbkCustom, gbkMarks, gbkLineNumbers, gbkFold, gbkMargin,
     gbkTrackChanges);
   TSynGutterBandBackground = (gbbNone, gbbGutter, gbbEditor);
@@ -2498,7 +2499,7 @@ var
           SynEdit.BookMarkOptions.BookmarkImages.Height) div 2);
         ImageListDraw(RT, SynEdit.BookMarkOptions.BookmarkImages,
           ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
-          (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight +VOffset,
+          (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight + VOffset,
           aMark.ImageIndex);
         Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
       end;
