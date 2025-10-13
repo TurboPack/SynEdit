@@ -963,7 +963,7 @@ end;
 
 procedure TSynSelectedColor.Assign(Source: TPersistent);
 begin
-  if (Source <> nil) and (Source is TSynSelectedColor) then
+  if Source is TSynSelectedColor then
   begin
     var Src := TSynSelectedColor(Source);
     FBG := Src.FBG;
@@ -1126,7 +1126,7 @@ procedure TSynGutter.Assign(Source: TPersistent);
 var
   Src: TSynGutter;
 begin
-  if Assigned(Source) and (Source is TSynGutter) then
+  if Source is TSynGutter then
   begin
     BeginUpdate;
     try
@@ -1474,7 +1474,7 @@ procedure TSynBookmarkOpt.Assign(Source: TPersistent);
 var
   Src: TSynBookmarkOpt;
 begin
-  if (Source <> nil) and (Source is TSynBookmarkOpt) then
+  if Source is TSynBookmarkOpt then
   begin
     Src := TSynBookmarkOpt(Source);
     FBookmarkImages := Src.FBookmarkImages;
@@ -1604,7 +1604,7 @@ procedure TSynGlyph.Assign(aSource: TPersistent);
 var
   vSrc: TSynGlyph;
 begin
-  if Assigned(aSource) and (aSource is TSynGlyph) then
+  if aSource is TSynGlyph then
   begin
     vSrc := TSynGlyph(aSource);
     FInternalGlyph.Assign(vSrc.FInternalGlyph);
@@ -2061,7 +2061,7 @@ procedure TSynGutterBand.Assign(Source: TPersistent);
 var
   Src: TSynGutterBand;
 begin
-  if Assigned(Source) and (Source is TSynGutterBand) then
+  if Source is TSynGutterBand then
   begin
     Src := TSynGutterBand(Source);
     FKind := Src.FKind;
@@ -2706,7 +2706,7 @@ end;
 
 procedure TSynTrackChanges.Assign(Source: TPersistent);
 begin
-  if Assigned(Source) and (Source is TSynTrackChanges) then
+  if Source is TSynTrackChanges then
   begin
     var Src := TSynTrackChanges(Source);
     if Assigned(FOwner) then
@@ -2839,7 +2839,7 @@ procedure TSynIndentGuides.Assign(Source: TPersistent);
 var
   Src: TSynIndentGuides;
 begin
-  if (Source <> nil) and (Source is TSynIndentGuides) then
+  if Source is TSynIndentGuides then
   begin
     Src := TSynIndentGuides(Source);
     FVisible := Src.FVisible;
@@ -4058,7 +4058,7 @@ procedure TSynScrollbarAnnItem.Assign(Source: TPersistent);
 var
   Src: TSynScrollbarAnnItem;
 begin
-  if Assigned(Source) and (Source is TSynScrollbarAnnItem) then
+  if Source is TSynScrollbarAnnItem then
   begin
     Src := TSynScrollbarAnnItem(Source);
     FAnnType := Src.AnnType;
