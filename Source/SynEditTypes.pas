@@ -61,6 +61,57 @@ var
 type
   ESynError = class(Exception);
 
+  TSynEditorOption = (
+    eoAutoIndent,              //Will indent the caret on new lines with the same amount of leading white space as the preceding line
+    eoDragDropEditing,         //Allows you to select a block of text and drag it within the document to another location
+    eoDropFiles,               //Allows the editor accept OLE file drops
+    eoEnhanceHomeKey,          //enhances home key positioning, similar to visual studio
+    eoEnhanceEndKey,           //enhances End key positioning, similar to JDeveloper
+    eoGroupUndo,               //When undoing/redoing actions, handle all continous changes of the same kind in one call instead undoing/redoing each command separately
+    eoKeepCaretX,              //When moving through lines w/o Cursor Past EOL, keeps the X position of the cursor
+    eoNoCaret,                 //Makes it so the caret is never visible
+    eoNoSelection,             //Disables selecting text
+    eoRightMouseMovesCursor,   //When clicking with the right mouse for a popup menu, move the cursor to that location
+    eoSmartTabDelete,          //similar to Smart Tabs, but when you delete characters
+    eoSmartTabs,               //When tabbing, the cursor will go to the next non-white space character of the previous line
+    eoSpecialLineDefaultFg,    //disables the foreground text color override when using the OnSpecialLineColor event
+    eoTabIndent,               //When active <Tab> and <Shift><Tab> act as block indent, unindent when text is selected
+    eoTabsToSpaces,            //Converts a tab character to a specified number of space characters
+    eoTrimTrailingSpaces,      //Spaces at the end of lines will be trimmed and not saved
+    eoShowLigatures,           //Shows font ligatures, by default it is disabled
+    eoCopyPlainText,           //Do not include additional clipboard formats when you copy to Clipboard or drag text
+    eoNoHTMLBackground,        //Ignore SynEdit background color when copying in HTML format
+    eoWrapWithRightEdge,       //WordWrap with RightEdge position instead of the whole text area
+    eoBracketsHighlight,       //Enable bracket highlighting
+    eoAccessibility,           //Enable accessibility support
+    eoCompleteBrackets,        //When an opening bracket is entered complete the matching one
+    eoCompleteQuotes           //When an quote char (" ') is entered add a second one
+    );
+  TSynEditorOptions = set of TSynEditorOption;
+
+  TSynEditorScrollOption = (
+    eoDisableScrollArrows,     //Disables the scroll bar arrow buttons when you can't scroll in that direction any more
+    eoHalfPageScroll,          //When scrolling with page-up and page-down commands, only scroll a half page at a time
+    eoHideShowScrollbars,      //if enabled, then the scrollbars will only show when necessary.
+    eoScrollByOneLess,         //Forces scrolling to be one less
+    eoScrollHintFollows,       //The scroll hint follows the mouse when scrolling vertically
+    eoScrollPastEof,           //Allows the cursor to go past the end of file marker
+    eoScrollPastEol,           //Allows the cursor to go past the last character into the white space at the end of a line
+    eoShowScrollHint           //Shows a hint of the visible line numbers when scrolling vertically
+    );
+  TSynEditorScrollOptions = set of TSynEditorScrollOption;
+
+
+const
+  SYNEDIT_DEFAULT_OPTIONS = [
+    eoAutoIndent, eoDragDropEditing, eoKeepCaretX,
+    eoEnhanceHomeKey, eoEnhanceEndKey, eoTabIndent, eoTabsToSpaces,
+    eoSmartTabDelete, eoGroupUndo, eoDropFiles, eoShowLigatures,
+    eoBracketsHighlight, eoAccessibility, eoCompleteBrackets, eoCompleteQuotes];
+  SYNEDIT_DEFAULT_SCROLLOPTIONS =
+    [eoHideShowScrollbars, eoDisableScrollArrows, eoShowScrollHint];
+
+type
   TSynFlowControl = (fcNone, fcContinue, fcBreak, fcExit);
 
   // DOS: CRLF, UNIX: LF, Mac: CR, Unicode: LINE SEPARATOR
@@ -77,6 +128,11 @@ type
   THookedCommandEvent = procedure(Sender: TObject; AfterProcessing: Boolean;
     var Handled: Boolean; var Command: TSynEditorCommand; var AChar: WideChar;
     Data: pointer; HandlerData: pointer) of object;
+
+  TSynEditCaretType = (ctVerticalLine, ctHorizontalLine, ctHalfBlock, ctBlock);
+
+  TSynSpecialChars = (scWhitespace, scControlChars, scEOL);
+  TSynVisibleSpecialChars = set of TSynSpecialChars;
 
   TSynInfoLossEvent = procedure (var Encoding: TEncoding; Cancel: Boolean) of object;
 

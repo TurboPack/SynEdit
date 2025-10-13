@@ -57,6 +57,7 @@ uses
   Vcl.StdActns,
   SynDWrite,
   SynEditTypes,
+  SynEditKeyCmds,
   SynEditKeyConst,
   SynUnicode;
 
@@ -397,7 +398,9 @@ type
   end;
   {$ENDREGION 'TSynGutter'}
 
-  TSynBookMarkOpt = class(TPersistent)
+  {$REGION 'TSynBookmarkOpt'}
+
+  TSynBookmarkOpt = class(TPersistent)
   private
     FBookmarkImages: TCustomImageList;
     FDrawBookmarksFirst: Boolean;
@@ -430,6 +433,10 @@ type
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
+  {$ENDREGION 'TSynBookmarkOpt'}
+
+  {$REGION 'TSynGlyph'}
+
   /// <summary>
   ///   Encapsulates a bitmap that is either loaded from resources or assigned.
   /// </summary>
@@ -458,6 +465,10 @@ type
     property Size: TSize read GetSize;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
+
+  {$ENDREGION 'TSynGlyph'}
+
+  {$REGION 'Multicast events'}
 
   { TSynMethodChain }
 
@@ -497,6 +508,9 @@ type
     property Sender: TObject read FSender write FSender;
   end;
 
+  {$ENDREGION 'Multicast events'}
+
+  {$REGION 'TSynInternalImage'}
   { TSynInternalImage }
 
   /// <summary>
@@ -518,6 +532,8 @@ type
     procedure Draw(RT: ID2D1RenderTarget; Number, X, Y, LineHeight: Integer);
     procedure ChangeScale(M, D: Integer); virtual;
   end;
+
+  {$ENDREGION 'TSynInternalImage'}
 
   {$REGION 'TSynHotKey'}
 
@@ -829,26 +845,98 @@ type
 
   {$ENDREGION 'Scrollbar Annotations'}
 
- {$REGION 'TSynDisplayFlowControl'}
+  {$REGION 'TSynDisplayFlowControl'}
 
- TSynDisplayFlowControl = class(TPersistent)
- private
-   FEnabled: Boolean;
-   FColor: TColor;
- published
-   constructor Create;
-   procedure Assign(aSource: TPersistent); override;
-   property Enabled: Boolean read FEnabled write FEnabled default True;
-   property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed
- end;
+  TSynDisplayFlowControl = class(TPersistent)
+  private
+    FEnabled: Boolean;
+    FColor: TColor;
+  published
+    constructor Create;
+    procedure Assign(aSource: TPersistent); override;
+    property Enabled: Boolean read FEnabled write FEnabled default True;
+    property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed
+  end;
 
- {$ENDREGION 'TSynDisplayFlowControl'}
+   {$ENDREGION 'TSynDisplayFlowControl'}
 
-{$REGION 'TSynEditRedo'}
+  {$REGION 'TSynEditRedo'}
 
   TSynEditRedo = class(TEditAction);
 
-{$ENDREGION 'TSynEditRedo'}
+  {$ENDREGION 'TSynEditRedo'}
+
+  {$REGION 'TSynEditorOptionsContainer'}
+  // Container class for storing/persisting SynEdit options
+  // This class assign compatible with SynEdit
+  TSynEditorOptionsContainer = class(TComponent)
+  private
+    FHideSelection: Boolean;
+    FWantTabs: Boolean;
+    FWordWrap: Boolean;
+    FMaxUndo: Integer;
+    FExtraLineSpacing: Integer;
+    FTabWidth: Integer;
+    FRightEdge: Integer;
+    FSelectedColor: TSynSelectedColor;
+    FIndentGuides: TSynIndentGuides;
+    FDisplayFlowControl: TSynDisplayFlowControl;
+    FRightEdgeColor: TColor;
+    FFont: TFont;
+    FBookmarks: TSynBookmarkOpt;
+    FOverwriteCaret: TSynEditCaretType;
+    FInsertCaret: TSynEditCaretType;
+    FKeystrokes: TSynEditKeyStrokes;
+    FOptions: TSynEditorOptions;
+    FScrollOptions: TSynEditorScrollOptions;
+    FSynGutter: TSynGutter;
+    FColor: TColor;
+    FActiveLineColor: TColor;
+    FVisibleSpecialChars: TSynVisibleSpecialChars;
+    procedure SetBookmarks(const Value: TSynBookmarkOpt);
+    procedure SetFont(const Value: TFont);
+    procedure SetKeystrokes(const Value: TSynEditKeyStrokes);
+    procedure SetSynGutter(const Value: TSynGutter);
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
+    procedure AssignTo(Dest: TPersistent); override;
+  published
+    property Options: TSynEditorOptions read FOptions write FOptions
+      default SYNEDIT_DEFAULT_OPTIONS;
+    property ScrollOptions: TSynEditorScrollOptions read FScrollOptions
+      write FScrollOptions default SYNEDIT_DEFAULT_SCROLLOPTIONS;
+    property BookmarkOptions: TSynBookmarkOpt read FBookmarks write SetBookmarks;
+    property Color: TColor read FColor write FColor default clWindow;
+    property Font: TFont read FFont write SetFont;
+    property ExtraLineSpacing: Integer read FExtraLineSpacing
+      write FExtraLineSpacing default 2;
+    property Gutter: TSynGutter read FSynGutter write SetSynGutter;
+    property RightEdge: Integer read FRightEdge write FRightEdge default 80;
+    property RightEdgeColor: TColor read FRightEdgeColor write FRightEdgeColor
+      default clSilver;
+    property WantTabs: Boolean read FWantTabs write FWantTabs default True;
+    property WordWrap: Boolean read FWordWrap write FWordWrap default False;
+    property InsertCaret: TSynEditCaretType read FInsertCaret
+      write FInsertCaret default ctVerticalLine;
+    property OverwriteCaret: TSynEditCaretType read FOverwriteCaret
+      write FOverwriteCaret default ctBlock;
+    property HideSelection: Boolean read FHideSelection write FHideSelection
+      default False;
+    property MaxUndo: Integer read FMaxUndo write FMaxUndo default 0;
+    property SelectedColor: TSynSelectedColor read FSelectedColor;
+    property IndentGuides: TSynIndentGuides read FIndentGuides;
+    property DisplayFlowControl: TSynDisplayFlowControl read FDisplayFlowControl;
+    property TabWidth: Integer read FTabWidth write FTabWidth default 8;
+    property Keystrokes: TSynEditKeyStrokes read FKeystrokes write SetKeystrokes;
+    property ActiveLineColor: TColor read FActiveLineColor
+      write FActiveLineColor default clNone;
+    property VisibleSpecialChars: TSynVisibleSpecialChars
+      read FVisibleSpecialChars write FVisibleSpecialChars default [];
+  end;
+
+  {$ENDREGION 'TSynEditorOptionsContainer'}
 
 implementation
 
@@ -1363,15 +1451,15 @@ end;
 {$ENDREGION}
 
 
-{$REGION 'TSynBookMarkOpt'}
+{$REGION 'TSynBookmarkOpt'}
 
-procedure TSynBookMarkOpt.ChangeScale(M, D: Integer);
+procedure TSynBookmarkOpt.ChangeScale(M, D: Integer);
 begin
   FLeftMargin := MulDiv(FLeftMargin, M, D);
   FXoffset := MulDiv(FXoffset, M, D);
 end;
 
-constructor TSynBookMarkOpt.Create(AOwner: TComponent);
+constructor TSynBookmarkOpt.Create(AOwner: TComponent);
 begin
   inherited Create;
   FDrawBookmarksFirst := True;
@@ -1382,13 +1470,13 @@ begin
   FXoffset := 12;
 end;
 
-procedure TSynBookMarkOpt.Assign(Source: TPersistent);
+procedure TSynBookmarkOpt.Assign(Source: TPersistent);
 var
-  Src: TSynBookMarkOpt;
+  Src: TSynBookmarkOpt;
 begin
-  if (Source <> nil) and (Source is TSynBookMarkOpt) then
+  if (Source <> nil) and (Source is TSynBookmarkOpt) then
   begin
-    Src := TSynBookMarkOpt(Source);
+    Src := TSynBookmarkOpt(Source);
     FBookmarkImages := Src.FBookmarkImages;
     FDrawBookmarksFirst := Src.FDrawBookmarksFirst;
     FEnableKeys := Src.FEnableKeys;
@@ -1402,7 +1490,7 @@ begin
     inherited Assign(Source);
 end;
 
-procedure TSynBookMarkOpt.SetBookmarkImages(const Value: TCustomImageList);
+procedure TSynBookmarkOpt.SetBookmarkImages(const Value: TCustomImageList);
 begin
   if FBookmarkImages <> Value then
   begin
@@ -1414,7 +1502,7 @@ begin
   end;
 end;
 
-procedure TSynBookMarkOpt.SetDrawBookmarksFirst(Value: Boolean);
+procedure TSynBookmarkOpt.SetDrawBookmarksFirst(Value: Boolean);
 begin
   if Value <> FDrawBookmarksFirst then
   begin
@@ -1424,7 +1512,7 @@ begin
   end;
 end;
 
-procedure TSynBookMarkOpt.SetGlyphsVisible(Value: Boolean);
+procedure TSynBookmarkOpt.SetGlyphsVisible(Value: Boolean);
 begin
   if FGlyphsVisible <> Value then
   begin
@@ -1434,7 +1522,7 @@ begin
   end;
 end;
 
-procedure TSynBookMarkOpt.SetLeftMargin(Value: Integer);
+procedure TSynBookmarkOpt.SetLeftMargin(Value: Integer);
 begin
   if FLeftMargin <> Value then
   begin
@@ -1444,7 +1532,7 @@ begin
   end;
 end;
 
-procedure TSynBookMarkOpt.SetXOffset(Value: Integer);
+procedure TSynBookmarkOpt.SetXOffset(Value: Integer);
 begin
   if FXoffset <> Value then
   begin
@@ -4142,6 +4230,182 @@ begin
 end;
 
 {$ENDREGION 'TSynDisplayFlowControl'}
+
+
+{$REGION 'TSynEditorOptionsContainer'}
+
+procedure TSynEditorOptionsContainer.Assign(Source: TPersistent);
+var
+  PPI: Integer;
+begin
+  if Source is TCustomSynEdit then
+  begin
+    Self.Font.Assign(TCustomSynEdit(Source).Font);
+    Self.BookmarkOptions.Assign(TCustomSynEdit(Source).BookmarkOptions);
+    Self.Gutter.Assign(TCustomSynEdit(Source).Gutter);
+    Self.Keystrokes.Assign(TCustomSynEdit(Source).Keystrokes);
+    Self.SelectedColor.Assign(TCustomSynEdit(Source).SelectedColor);
+    Self.IndentGuides.Assign(TCustomSynEdit(Source).IndentGuides);
+    Self.DisplayFlowControl.Assign(TCustomSynEdit(Source).DisplayFlowControl);
+
+    Self.Color := TCustomSynEdit(Source).Color;
+    Self.Options := TCustomSynEdit(Source).Options;
+    Self.ScrollOptions := TCustomSynEdit(Source).ScrollOptions;
+    Self.ExtraLineSpacing := TCustomSynEdit(Source).ExtraLineSpacing;
+    Self.HideSelection := TCustomSynEdit(Source).HideSelection;
+    Self.InsertCaret := TCustomSynEdit(Source).InsertCaret;
+    Self.OverwriteCaret := TCustomSynEdit(Source).OverwriteCaret;
+    Self.MaxUndo := TCustomSynEdit(Source).MaxUndo;
+    Self.RightEdge := TCustomSynEdit(Source).RightEdge;
+    Self.RightEdgeColor := TCustomSynEdit(Source).RightEdgeColor;
+    Self.TabWidth := TCustomSynEdit(Source).TabWidth;
+    Self.WantTabs := TCustomSynEdit(Source).WantTabs;
+    Self.WordWrap := TCustomSynEdit(Source).WordWrap;
+    Self.ActiveLineColor := TCustomSynEdit(Source).ActiveLineColor;
+    Self.VisibleSpecialChars := TCustomSynEdit(Source).VisibleSpecialChars;
+    // store unscaled
+    PPI := TCustomSynEdit(Source).CurrentPPI;
+    Self.BookmarkOptions.ChangeScale(96, PPI);
+    Self.ExtraLineSpacing := MulDiv(Self.ExtraLineSpacing, 96, PPI);
+  end else if Source is TSynEditorOptionsContainer then
+  begin
+    Self.Font.Assign(TSynEditorOptionsContainer(Source).Font);
+    Self.BookmarkOptions.Assign(TSynEditorOptionsContainer(Source).BookmarkOptions);
+    Self.Gutter.Assign(TSynEditorOptionsContainer(Source).Gutter);
+    Self.Keystrokes.Assign(TSynEditorOptionsContainer(Source).Keystrokes);
+    Self.SelectedColor.Assign(TSynEditorOptionsContainer(Source).SelectedColor);
+    Self.IndentGuides.Assign(TSynEditorOptionsContainer(Source).IndentGuides);
+    Self.DisplayFlowControl.Assign(TSynEditorOptionsContainer(Source).DisplayFlowControl);
+    Self.Color := TSynEditorOptionsContainer(Source).Color;
+    Self.Options := TSynEditorOptionsContainer(Source).Options;
+    Self.ScrollOptions := TSynEditorOptionsContainer(Source).ScrollOptions;
+    Self.ExtraLineSpacing := TSynEditorOptionsContainer(Source).ExtraLineSpacing;
+    Self.HideSelection := TSynEditorOptionsContainer(Source).HideSelection;
+    Self.InsertCaret := TSynEditorOptionsContainer(Source).InsertCaret;
+    Self.OverwriteCaret := TSynEditorOptionsContainer(Source).OverwriteCaret;
+    Self.MaxUndo := TSynEditorOptionsContainer(Source).MaxUndo;
+    Self.RightEdge := TSynEditorOptionsContainer(Source).RightEdge;
+    Self.RightEdgeColor := TSynEditorOptionsContainer(Source).RightEdgeColor;
+    Self.TabWidth := TSynEditorOptionsContainer(Source).TabWidth;
+    Self.WantTabs := TSynEditorOptionsContainer(Source).WantTabs;
+    Self.WordWrap := TSynEditorOptionsContainer(Source).WordWrap;
+    Self.ActiveLineColor := TSynEditorOptionsContainer(Source).ActiveLineColor;
+    Self.VisibleSpecialChars := TSynEditorOptionsContainer(Source).VisibleSpecialChars;
+  end else
+    inherited;
+end;
+
+procedure TSynEditorOptionsContainer.AssignTo(Dest: TPersistent);
+var
+  PPI: Integer;
+begin
+  if Dest is TCustomSynEdit then
+  begin
+    TCustomSynEdit(Dest).BeginUpdate;
+    try
+      TCustomSynEdit(Dest).Font := Self.Font;
+      TCustomSynEdit(Dest).BookmarkOptions.Assign(Self.BookmarkOptions);
+      TCustomSynEdit(Dest).Gutter.Assign(Self.Gutter);
+      TCustomSynEdit(Dest).Keystrokes.Assign(Self.Keystrokes);
+      TCustomSynEdit(Dest).SelectedColor.Assign(Self.SelectedColor);
+      TCustomSynEdit(Dest).IndentGuides.Assign(Self.IndentGuides);
+      TCustomSynEdit(Dest).DisplayFlowControl.Assign(Self.DisplayFlowControl);
+      TCustomSynEdit(Dest).Color := Self.Color;
+      TCustomSynEdit(Dest).Options := Self.Options;
+      TCustomSynEdit(Dest).ScrollOptions := Self.ScrollOptions;
+      TCustomSynEdit(Dest).ExtraLineSpacing := Self.ExtraLineSpacing;
+      TCustomSynEdit(Dest).HideSelection := Self.HideSelection;
+      TCustomSynEdit(Dest).InsertCaret := Self.InsertCaret;
+      TCustomSynEdit(Dest).OverwriteCaret := Self.OverwriteCaret;
+      TCustomSynEdit(Dest).MaxUndo := Self.MaxUndo;
+      TCustomSynEdit(Dest).RightEdge := Self.RightEdge;
+      TCustomSynEdit(Dest).RightEdgeColor := Self.RightEdgeColor;
+      TCustomSynEdit(Dest).TabWidth := Self.TabWidth;
+      TCustomSynEdit(Dest).WantTabs := Self.WantTabs;
+      TCustomSynEdit(Dest).WordWrap := Self.WordWrap;
+      TCustomSynEdit(Dest).ActiveLineColor := Self.ActiveLineColor;
+      TCustomSynEdit(Dest).VisibleSpecialChars := Self.VisibleSpecialChars;
+      // scale for editor PPI
+      PPI := TCustomSynEdit(Dest).CurrentPPI;
+      TCustomSynEdit(Dest).BookmarkOptions.ChangeScale(PPI, 96);
+      TCustomSynEdit(Dest).ExtraLineSpacing :=
+        MulDiv(TCustomSynEdit(Dest).ExtraLineSpacing, PPI, 96);
+    finally
+      TCustomSynEdit(Dest).EndUpdate;
+    end;
+  end else
+    inherited;
+end;
+
+constructor TSynEditorOptionsContainer.Create(AOwner: TComponent);
+begin
+  inherited;
+  FBookmarks := TSynBookMarkOpt.Create(Self);
+  FKeystrokes := TSynEditKeyStrokes.Create(Self);
+  FKeystrokes.ResetDefaults;
+  FSynGutter := TSynGutter.Create;
+  FSynGutter.AssignableBands := False;
+  FSelectedColor := TSynSelectedColor.Create;
+  FIndentGuides := TSynIndentGuides.Create;
+    FActiveLineColor := clNone;
+  FDisplayFlowControl := TSynDisplayFlowControl.Create;
+  FFont := TFont.Create;
+  FFont.Name := DefaultFontName;
+  FFont.Size := 10;
+  {$IF CompilerVersion >= 36}
+  FFont.IsScreenFont := True;
+  {$ENDIF}
+  FColor := clWindow;
+  FOptions := SYNEDIT_DEFAULT_OPTIONS;
+  FScrollOptions := SYNEDIT_DEFAULT_SCROLLOPTIONS;
+  FExtraLineSpacing := 2;
+  FHideSelection := False;
+  FInsertCaret := ctVerticalLine;
+  FOverwriteCaret := ctBlock;
+  FMaxUndo := 0;
+  FRightEdge := 80;
+  FRightEdgeColor := clSilver;
+  FTabWidth := 8;
+  FWantTabs := True;
+end;
+
+destructor TSynEditorOptionsContainer.Destroy;
+begin
+  FBookmarks.Free;
+  FKeystrokes.Free;
+  FSynGutter.Free;
+  FSelectedColor.Free;
+  FIndentGuides.Free;
+  FDisplayFlowControl.Free;
+  FFont.Free;
+  inherited;
+end;
+
+procedure TSynEditorOptionsContainer.SetBookmarks(
+  const Value: TSynBookMarkOpt);
+begin
+  FBookmarks.Assign(Value);
+end;
+
+procedure TSynEditorOptionsContainer.SetFont(const Value: TFont);
+begin
+  FFont.Assign(Value);
+end;
+
+procedure TSynEditorOptionsContainer.SetKeystrokes(
+  const Value: TSynEditKeyStrokes);
+begin
+  FKeystrokes.Assign(Value);
+end;
+
+procedure TSynEditorOptionsContainer.SetSynGutter(const Value: TSynGutter);
+begin
+  FSynGutter.Assign(Value);
+end;
+
+
+
+{$ENDREGION 'TSynEditorOptionsContainer'}
 
 
 end.
