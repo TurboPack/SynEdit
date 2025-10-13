@@ -70,9 +70,6 @@ uses
   SynEditCodeFolding;
 
 const
-  // Max number of book/gutter marks returned from GetEditMarksForLine - that
-  // really should be enough.
-  MAX_MARKS = 16;
   SYNEDIT_DEFAULT_OPTIONS = SynEditTypes.SYNEDIT_DEFAULT_OPTIONS;
   SYNEDIT_DEFAULT_SCROLLOPTIONS = SynEditTypes.SYNEDIT_DEFAULT_SCROLLOPTIONS;
 
@@ -184,7 +181,7 @@ type
   TPlaceMarkEvent = procedure(Sender: TObject; var Mark: TSynEditMark)
     of object;
 
-  TSynEditMarks = array[1..MAX_MARKS] of TSynEditMark;
+  TSynEditMarks = TArray<TSynEditMark>;
 
   { A list of mark objects. Each object cause a litle picture to be drawn in the gutter. }
   TSynEditMarkList = class(TObjectList<TSynEditMark>)
@@ -193,7 +190,7 @@ type
   public
     constructor Create(AOwner: TCustomSynEdit);
     procedure ClearLine(line: Integer);
-    procedure GetMarksForLine(line: Integer; var Marks: TSynEditMarks);
+    procedure GetMarksForLine(Line: Integer; var Marks: TSynEditMarks);
     procedure Place(Mark: TSynEditMark);
   public
     property Edit: TCustomSynEdit read fEdit;
@@ -687,7 +684,7 @@ type
       Data: Pointer); virtual;
     procedure ExecuteMultiCaretCommand(Command: TSynEditorCommand; AChar: WideChar;
       Data: Pointer; CommandInfo: TSynCommandInfo); virtual;
-    function GetBookmark(Bookmark: Integer; var X, Y: Integer): Boolean;
+    function GetBookmark(Bookmark: Integer; var Char, Line: Integer): Boolean;
     function GetHighlighterAttriAtRowCol(const XY: TBufferCoord; var Token: string;
       var Attri: TSynHighlighterAttributes): Boolean;
     function GetHighlighterAttriAtRowColEx(const XY: TBufferCoord; var Token: string;
@@ -2297,11 +2294,10 @@ end;
 
 procedure TCustomSynEdit.DoOnGutterClick(Button: TMouseButton; X, Y: Integer);
 var
-  I: Integer;
   Offs: Integer;
   Line: Integer;
+  Mark, LMark: TSynEditMark;
   Allmrk: TSynEditMarks;
-  Mark: TSynEditMark;
   RowColumn: TDisplayCoord;
   Band: TSynGutterBand;
 begin
@@ -2315,22 +2311,22 @@ begin
       Band.DoClick(Self, Button, X, Y, RowColumn.Row, Line);
     if Assigned(fOnGutterClick) then
     begin
-      // Check gutter marks
-      Marks.GetMarksForLine(Line, Allmrk);
-      Offs := 0;
       Mark := nil;
-      for I := 1 to MAX_MARKS do
+      if Assigned(Band) and (Band.Kind = gbkMarks) then
       begin
-        if assigned(Allmrk[I]) then
+        // Check gutter marks
+        Marks.GetMarksForLine(Line, Allmrk);
+        Offs := Band.LeftX + BookmarkOptions.LeftMargin;
+        for LMark in AllMrk do
         begin
           Inc(Offs, BookmarkOptions.XOffset);
           if X < Offs then
           begin
-            Mark := Allmrk[I];
+            Mark := LMark;
             Break;
           end;
         end;
-      end; //for
+      end;
       fOnGutterClick(Self, Button, X, Y, Line, Mark);
     end;
   end;
@@ -7348,20 +7344,19 @@ begin
   SynFontChanged(self);
 end;
 
-function TCustomSynEdit.GetBookmark(Bookmark: Integer; var X, Y: Integer):
+function TCustomSynEdit.GetBookmark(Bookmark: Integer; var Char, Line: Integer):
   Boolean;
 var
-  i: Integer;
+  Mark: TSynEditMark;
 begin
   Result := False;
-  if assigned(Marks) then
-    for i := 0 to Marks.Count - 1 do
-      if Marks[i].IsBookmark and (Marks[i].BookmarkNumber = Bookmark) then
+  if Assigned(Marks) then
+    for Mark in Marks do
+      if Mark.IsBookmark and (Mark.BookmarkNumber = Bookmark) then
       begin
-        X := Marks[i].Char;
-        Y := Marks[i].Line;
-        Result := True;
-        Exit;
+        Char := Mark.Char;
+        Line := Mark.Line;
+        Exit(True);
       end;
 end;
 
@@ -10253,22 +10248,30 @@ begin
       Delete(i);
 end;
 
-procedure TSynEditMarkList.GetMarksForLine(line: Integer; var marks: TSynEditMarks);
-//Returns up to maxMarks book/gutter marks for a chosen line.
+procedure TSynEditMarkList.GetMarksForLine(Line: Integer; var Marks: TSynEditMarks);
+// Returns the book/gutter marks for a chosen line.
+// Needs to consider BookMarkOptions.DrawBookmarksFirst to return the
+// marks in the correct order
 var
-  cnt: Integer;
-  i: Integer;
+  Mark, Bookmark: TSynEditMark;
 begin
-  FillChar(marks, SizeOf(marks), 0);
-  cnt := 0;
-  for i := 0 to Count - 1 do
-  begin
-    if Items[i].Line = line then
+  Marks := [];
+  Bookmark := nil;
+  for Mark in Edit.Marks do
+    if Mark.Line = Line then
     begin
-      Inc(cnt);
-      marks[cnt] := Items[i];
-      if cnt = MAX_MARKS then Break;
+      if Mark.IsBookmark then
+        Bookmark := Mark
+      else
+        Marks := Marks + [Mark];
     end;
+
+  if Assigned(Bookmark) then
+  begin
+    if Edit.BookmarkOptions.DrawBookmarksFirst then
+      Marks := [Bookmark] + Marks
+    else
+      Marks := Marks + [Bookmark];
   end;
 end;
 

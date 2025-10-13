@@ -2487,36 +2487,32 @@ var
     VOffset: Integer;
   begin
     if (not aMark.InternalImage) and
-      Assigned(SynEdit.BookMarkOptions.BookmarkImages) then
+      Assigned(SynEdit.BookMarkOptions.BookmarkImages) and
+      InRange(aMark.ImageIndex, 0,
+        SynEdit.BookMarkOptions.BookmarkImages.Count - 1) then
     begin
-      if aMark.ImageIndex <= SynEdit.BookMarkOptions.BookmarkImages.Count then
-      begin
-        if aMark.IsBookmark = SynEdit.BookMarkOptions.DrawBookmarksFirst then
-          aGutterOff := 0
-        else if aGutterOff = 0 then
-          aGutterOff := SynEdit.BookMarkOptions.Xoffset;
-        vOffset := Max(0, (SynEdit.LineHeight -
-          SynEdit.BookMarkOptions.BookmarkImages.Height) div 2);
-        ImageListDraw(RT, SynEdit.BookMarkOptions.BookmarkImages,
-          ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
-          (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight + VOffset,
-          aMark.ImageIndex);
-        Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
-      end;
+      if aMark.IsBookmark = SynEdit.BookMarkOptions.DrawBookmarksFirst then
+        aGutterOff := 0
+      else if aGutterOff = 0 then
+        aGutterOff := SynEdit.BookMarkOptions.Xoffset;
+      vOffset := Max(0, (SynEdit.LineHeight -
+        SynEdit.BookMarkOptions.BookmarkImages.Height) div 2);
+      ImageListDraw(RT, SynEdit.BookMarkOptions.BookmarkImages,
+        ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
+        (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight + VOffset,
+        aMark.ImageIndex);
+      Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
     end
-    else
+    else if aMark.InternalImage and (aMark.ImageIndex in [0 .. 9]) then
     begin
-      if aMark.ImageIndex in [0 .. 9] then
+      if aGutterOff = 0 then
       begin
-        if aGutterOff = 0 then
-        begin
-          Gutter.InternalImage.Draw(RT, aMark.ImageIndex,
-            ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
-            (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight,
-            SynEdit.LineHeight);
-        end;
-        Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
+        Gutter.InternalImage.Draw(RT, aMark.ImageIndex,
+          ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
+          (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight,
+          SynEdit.LineHeight);
       end;
+      Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
     end;
   end;
 
@@ -2546,7 +2542,7 @@ begin
       with SynEdit.Marks[cMark] do
         if Visible and (Line >= vFirstLine) and (Line <= vLastLine) and
           (Line <= SynEdit.Lines.Count) and
-          not(SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
+          not (SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
           (Line, Index)) then
         begin
           if IsBookmark <> SynEdit.BookMarkOptions.DrawBookmarksFirst then
@@ -2567,7 +2563,7 @@ begin
             (IsBookmark <> SynEdit.BookMarkOptions.DrawBookmarksFirst) and
             (Line >= vFirstLine) and (Line <= vLastLine) and
             (Line <= SynEdit.Lines.Count) and
-            not(SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
+            not (SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
             (Line, Index)) then
           begin
             vMarkRow := SynEdit.LineToRow(Line);
