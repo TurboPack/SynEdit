@@ -6356,7 +6356,7 @@ var
   SpaceCount1: Integer;
   SpaceCount2: Integer;
   BackCounter: Integer;
-  moveBkm: Boolean;
+  MoveBkm: Boolean;
   WP: TBufferCoord;
   Caret: TBufferCoord;
   CaretNew: TBufferCoord;
@@ -6849,14 +6849,15 @@ begin
               Caret := CaretXY;
             if assigned(FBookmarks[CX]) then
             begin
-              moveBkm := (FBookmarks[CX].Line <> Caret.Line);
+              MoveBkm := (FBookmarks[CX].Line <> Caret.Line);
               ClearBookmark(CX);
-              if moveBkm then
+              if MoveBkm then
                 SetBookmark(CX, Caret.Char, Caret.Line);
             end
             else
               SetBookmark(CX, Caret.Char, Caret.Line);
-          end; // if BookmarkOptions.EnableKeys
+            UpdateScrollBars;
+          end;
         end;
       ecCut:
         begin
