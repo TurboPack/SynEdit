@@ -720,6 +720,9 @@ type
       SelectionCmd: Boolean);
     function BufferToDisplayPos(const BC: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const DC: TDisplayCoord): TBufferCoord;
+    function BufferToPixels(const BC: TBufferCoord): TPoint;
+    function PixelsToBuffer(const P: TPoint): TBufferCoord; overload;
+    function PixelsToBuffer(aX, aY: Integer): TBufferCoord; overload;
     function LineToRow(aLine: Integer): Integer;
     function RowToLine(aRow: Integer): Integer;
     function SelectionToDisplayCoord(var Sel: TSynSelection): TDisplayCoord;
@@ -742,8 +745,10 @@ type
 
     function PixelsToColumn(P: PChar; Len: Integer; aX: Integer; CharBefore:
         Boolean = False): Integer;
-    function PixelsToRowColumn(aX, aY: Integer): TDisplayCoord;
-    function PixelsToNearestRowColumn(aX, aY: Integer): TDisplayCoord;
+    function PixelsToRowColumn(aX, aY: Integer): TDisplayCoord; overload;
+    function PixelsToRowColumn(P: TPoint): TDisplayCoord; overload;
+    function PixelsToNearestRowColumn(aX, aY: Integer): TDisplayCoord; overload;
+    function PixelsToNearestRowColumn(P: TPoint): TDisplayCoord; overload;
     procedure Redo;
     procedure RegisterCommandHandler(const AHandlerProc: THookedCommandEvent;
       AHandlerData: Pointer);
@@ -1118,6 +1123,21 @@ begin
   Result := PixelsToRowColumn(aX, aY);
 end;
 
+function TCustomSynEdit.PixelsToBuffer(const P: TPoint): TBufferCoord;
+begin
+  Result := PixelsToBuffer(P.X, P.Y);
+end;
+
+function TCustomSynEdit.PixelsToRowColumn(P: TPoint): TDisplayCoord;
+begin
+  Result := PixelsToRowColumn(P.X, P.Y);
+end;
+
+function TCustomSynEdit.PixelsToBuffer(aX, aY: Integer): TBufferCoord;
+begin
+  Result := DisplayToBufferPos(PixelsToRowColumn(aX, aY));
+end;
+
 function TCustomSynEdit.PixelsToColumn(P: PChar; Len: Integer; aX: Integer;
   CharBefore: Boolean = False): Integer;
 { Returns the character index at given pixel position aX when the text is
@@ -1197,6 +1217,11 @@ begin
     if (P >= PEnd) and (ax > W) then
       Inc(Result, Round((ax - W) / fCharWidth))
   end;
+end;
+
+function TCustomSynEdit.PixelsToNearestRowColumn(P: TPoint): TDisplayCoord;
+begin
+  Result := PixelsToNearestRowColumn(P.X, P.Y);
 end;
 
 function TCustomSynEdit.PixelsToRowColumn(aX, aY: Integer): TDisplayCoord;
@@ -2079,7 +2104,7 @@ begin
     if bWasSel and (eoDragDropEditing in fOptions)
       and (X >= fGutterWidth + fTextMargin)
       and ([ssAlt, ssLeft] * Shift = [ssLeft])
-      and IsPointInSelection(DisplayToBufferPos(PixelsToRowColumn(X, Y))) then
+      and IsPointInSelection(PixelsToBuffer(X, Y)) then
     begin
       if DragDetect(Handle, Point(X,Y)) then begin
         DataObject := TSynEditDataObject.Create(Self);
@@ -2106,7 +2131,7 @@ begin
 
   if (ssDouble in Shift) or (Button = mbMiddle) or ((Button = mbRight)
     and (not (eoRightMouseMovesCursor in Options) or (SelAvail and
-    IsPointInSelection(DisplayToBufferPos(PixelsToRowColumn(X, Y))))))
+    IsPointInSelection(PixelsToBuffer(X, Y)))))
   then
     Exit;
 
@@ -2203,7 +2228,7 @@ var
 begin
   GetCursorPos( iMousePos );
   iMousePos := ScreenToClient( iMousePos );
-  DC := PixelsToRowColumn( iMousePos.X, iMousePos.Y );
+  DC := PixelsToRowColumn(iMousePos);
   DC.Row := MinMax(DC.Row, 1, DisplayRowCount);
   if not (eoScrollPastEol in fScrollOptions) then
     DC.Column := MinMax(DC.Column, 1, RowLength[DC.Row] + 1);
@@ -3849,7 +3874,7 @@ begin
       Sel.Start := Sel.Caret;
       Sel.Stop := Sel.Caret;
       Sel.CaretAtEOL := False;
-      Sel.LastPosX := RowColumnToPixels(BufferToDisplayPos(Sel.Caret)).X - fTextOffset;
+      Sel.LastPosX := BufferToPixels(Sel.Caret).X - fTextOffset;
 
       SelList.Add(Sel);
 
@@ -4229,7 +4254,7 @@ var
   Pt: TPoint;
 begin
   Pt := ScreenToClient(MousePt);
-  vNewPos := PixelsToNearestRowColumn(Pt.X, Pt.Y);
+  vNewPos := PixelsToNearestRowColumn(Pt);
   InternalCaretXY := DisplayToBufferPos(vNewPos);
   ComputeScroll(Pt.X, Pt.Y);
 end;
@@ -4422,7 +4447,7 @@ begin
   else
     BC := BlockBegin;
 
-  PosPix := RowColumnToPixels(BufferToDisplayPos(BC));
+  PosPix := BufferToPixels(BC);
   // Font is set in WMIMENotify
   SetImeCompositionWindow(nil, PosPix.X, PosPix.Y);
 end;
@@ -7806,7 +7831,7 @@ var
 begin
   GetCursorPos(ptCursor);
   ptCursor := ScreenToClient(ptCursor);
-  ptRowCol := PixelsToRowColumn(ptCursor.X, ptCursor.Y);
+  ptRowCol := PixelsToRowColumn(ptCursor);
   ptLineCol := DisplayToBufferPos(ptRowCol);
   if (ptCursor.X < fGutterWidth) then
   begin
@@ -9260,6 +9285,11 @@ begin
     Result.Row := fAllFoldRanges.FoldLineToRow(Result.Row)
 end;
 
+function TCustomSynEdit.BufferToPixels(const BC: TBufferCoord): TPoint;
+begin
+  Result := RowColumnToPixels(BufferToDisplayPos(BC));
+end;
+
 function TCustomSynEdit.DisplayToBufferPos(const DC: TDisplayCoord): TBufferCoord;
 // DisplayToBufferPos takes a position on screen and transfrom it
 // into a position of text
@@ -9520,7 +9550,7 @@ begin
   end;
 
   { inside the editor, get the word under the mouse pointer }
-  aPos := DisplayToBufferPos(PixelsToRowColumn(Point.X, Point.Y));
+  aPos := PixelsToBuffer(Point);
   Result := True;
 end;
 
@@ -9691,7 +9721,7 @@ var
 begin
   if MousePos.X <= fGutterWidth then
   begin
-    RowColumn := PixelsToRowColumn(MousePos.X, MousePos.Y);
+    RowColumn := PixelsToRowColumn(MousePos);
     Line := RowToLine(RowColumn.Row);
 
     if Line <= Lines.Count then
