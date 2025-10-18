@@ -680,8 +680,8 @@ type
         string = '()[]{}<>'; AdjustMatchingPos: Boolean = True): TBufferCoord;
         virtual;
     function ExecuteAction(Action: TBasicAction): Boolean; override;
-    procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar;
-      Data: Pointer); virtual;
+    procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar = #0;
+      Data : Pointer = nil); virtual;
     procedure ExecuteMultiCaretCommand(Command: TSynEditorCommand; AChar: WideChar;
       Data: Pointer; CommandInfo: TSynCommandInfo); virtual;
     function GetBookmark(Bookmark: Integer; var Char, Line: Integer): Boolean;
@@ -5951,7 +5951,7 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
       begin
         if InsertMode and (CaretX <= Len) and
           (Line[CaretX] = FAutoCompleteChar) then
-          ExecuteCommand(ecDeleteChar, WideNull, nil);
+          ExecuteCommand(ecDeleteChar);
         FAutoCompleteChar := #0;
       end
       else
@@ -5966,7 +5966,7 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
           // Auto-complete brackets if the next Char is not an
           // opening bracket
           TmpChar := MatchingBracket(Chr, Brackets);
-          ExecuteCommand(ecChar, TmpChar, nil);
+          ExecuteCommand(ecChar, TmpChar);
           FAutoCompleteChar := TmpChar;
           CaretX := CaretX - 1;
         end
@@ -5984,7 +5984,7 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
             not IsIdentChar(CharRight) and
             not CharInSet(CharLeft, ['"', '''']) then
           begin
-            ExecuteCommand(ecChar, Chr, nil);
+            ExecuteCommand(ecChar, Chr);
             FAutoCompleteChar := Chr;
             CaretX := CaretX - 1;
           end;
