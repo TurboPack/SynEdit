@@ -3673,9 +3673,6 @@ procedure TCustomSynEdit.InternalCommandHook(Sender: TObject;
   AfterProcessing: Boolean; var Handled: Boolean;
   var Command: TSynEditorCommand; var AChar: WideChar; Data,
   HandlerData: Pointer);
-var
-  Spaces: string;
-  I: Integer;
 begin
   if not AfterProcessing and (Command <> ecChar) then
     FAutoCompleteChar := #0;
@@ -3707,13 +3704,6 @@ begin
 
     if Length(FPasteArray) = 0 then
       FPasteArray := [GetClipboardText];
-
-    if eoTabsToSpaces in Options then
-    begin
-      Spaces := StringOfChar(#32, TabWidth);
-      for I := 0 to Length(FPasteArray) - 1 do
-        FPasteArray[I] := StringReplace(FPasteArray[I], #9, Spaces, [rfReplaceAll]);
-    end;
   end
   else if AfterProcessing and (Command = ecPaste) then
   begin
@@ -4090,6 +4080,10 @@ var
     if eoTrimTrailingSpaces in Options then
       for I := 0 to LineCount - 1 do
         NewLines[I] := NewLines[I].TrimRight;
+
+    if eoTabsToSpaces in Options then
+      for I := 0 to LineCount - 1 do
+        NewLines[I] := ExpandTabs(NewLines[I], TabWidth);
 
     Lines[Caret.Line - 1] := NewLines[0];
     if LineCount > 1 then
