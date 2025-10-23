@@ -761,7 +761,8 @@ type
     function SearchReplace(const ASearch, AReplace: string;
       AOptions: TSynSearchOptions; const Start, Stop: TBufferCoord): Integer; overload;
     procedure SelectAll;
-    function SelectionText(Sel: TSynSelection): string;
+    function SelectionText(BB, BE: TBufferCoord): string; overload;
+    function SelectionText(const Sel: TSynSelection): string; overload;
     procedure SelectAllMatchingText;
     function SelectMatchingText(BackwardSearch: Boolean = False;
       AddSelection: Boolean = False): Boolean;
@@ -1701,8 +1702,13 @@ begin
     Result := SelectionText(FSelection);
 end;
 
-function TCustomSynEdit.SelectionText(Sel: TSynSelection): string;
 
+function TCustomSynEdit.SelectionText(const Sel: TSynSelection): string;
+begin
+  Result := SelectionText(Sel.Start, Sel.Stop);
+end;
+
+function TCustomSynEdit.SelectionText(BB, BE: TBufferCoord): string;
   procedure CopyAndForward(const S: string; Index, Count: Integer; var P:
     PWideChar);
   var
@@ -1728,19 +1734,22 @@ var
   I: Integer;
   P: PWideChar;
 begin
-  if Sel.IsEmpty then
+  if BB = BE then
     Result := ''
-  else begin
-    Sel.Normalize;
-    ColFrom := Sel.Start.Char;
-    First := Sel.Start.Line - 1;
+  else
+  begin
+    if BB > BE then
+      BB.Swap(BE);
+    ColFrom := BB.Char;
+    First := BB.Line - 1;
     //
-    ColTo := Sel.Stop.Char;
-    Last := Sel.Stop.Line - 1;
+    ColTo := BE.Char;
+    Last := BE.Line - 1;
 
     if (First = Last) then
       Result := Copy(Lines[First], ColFrom, ColTo - ColFrom)
-    else begin
+    else
+    begin
       // step1: calculate total length of result string
       TotalLen := Max(0, Length(Lines[First]) - ColFrom + 1);
       for i := First + 1 to Last - 1 do
