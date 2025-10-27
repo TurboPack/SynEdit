@@ -1532,7 +1532,7 @@ function WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
 function ScaledWicBitmap(Source: IWICBitmap;
   const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
 procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList; X, Y,
-    Index: Integer);
+    Index: Integer; ScaleF: Single = 1);
 function IsFontMonospacedAndValid(Font: TFont): Boolean;
 function FontFamilyName(Font: IDWriteFont): string;
 /// <summary>
@@ -1615,7 +1615,7 @@ begin
 end;
 
 procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList;
-  X, Y, Index: Integer);
+  X, Y, Index: Integer; ScaleF: Single = 1);
 var
   Bitmap: ID2D1Bitmap;
   BitmapInfo: TBitmapInfo;
@@ -1664,7 +1664,7 @@ begin
   then
     Exit;
 
-  R := Rect(X, Y, X + IL.Width, Y + IL.Height);
+  R := RectF(X, Y, X + IL.Width * ScaleF, Y + IL.Height * ScaleF).Round;
   RT.DrawBitmap(Bitmap, PD2D1RectF(@R), 1);
 end;
 

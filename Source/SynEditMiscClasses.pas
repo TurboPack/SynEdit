@@ -1812,7 +1812,7 @@ begin
 
     rcSrc := Rect(Number * FWidth, 0, (Number + 1) * FWidth, FHeight);
     rcDest := Rect(0, 0, ScaledW, ScaledH);
-    rcDest := rcDest.FitInto(Rect(X, Y, X + ScaledW, Y + LineHeight));
+    rcDest := rcDest.FitInto(Rect(X, Y, X + ScaledW, Y + LineHeight)).Round;
 
     BM := D2D1BitmapFromBitmap(FImages, RT);
     RT.DrawBitmap(BM, PD2D1RectF(@rcDest), 1,
@@ -2485,6 +2485,7 @@ var
     aMarkRow: Integer);
   var
     VOffset: Integer;
+    ScaleF: Single;
   begin
     if (not aMark.InternalImage) and
       Assigned(SynEdit.BookMarkOptions.BookmarkImages) and
@@ -2497,10 +2498,11 @@ var
         aGutterOff := SynEdit.BookMarkOptions.Xoffset;
       vOffset := Max(0, (SynEdit.LineHeight -
         SynEdit.BookMarkOptions.BookmarkImages.Height) div 2);
+      ScaleF := Min(SynEdit.LineHeight/SynEdit.BookMarkOptions.BookmarkImages.Height, 1);
       ImageListDraw(RT, SynEdit.BookMarkOptions.BookmarkImages,
         ClipR.Left + SynEdit.BookMarkOptions.LeftMargin + aGutterOff,
         (aMarkRow - SynEdit.TopLine) * SynEdit.LineHeight + VOffset,
-        aMark.ImageIndex);
+        aMark.ImageIndex, ScaleF);
       Inc(aGutterOff, SynEdit.BookMarkOptions.Xoffset);
     end
     else if aMark.InternalImage and (aMark.ImageIndex in [0 .. 9]) then
