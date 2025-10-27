@@ -6987,7 +6987,7 @@ begin
     end;
   finally
     DecPaintLock;
-    DoOnPaintTransient(ttBefore);
+    DoOnPaintTransient(ttAfter);
   end;
 end;
 
