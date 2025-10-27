@@ -5755,6 +5755,7 @@ end;
 
 procedure TCustomSynEdit.LinesHookChanged;
 begin
+  if UseCodeFolding then FullFoldScan;
   Invalidate;
   UpdateScrollBars;
 end;
