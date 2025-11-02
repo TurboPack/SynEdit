@@ -354,7 +354,7 @@ begin
   FKeywords.Sorted := True;
 
   BlockOpenerRE := CompiledRegEx(
-     '^(def|class|while|for|if|else|elif|try|except|with'+
+     '^(def|class|while|for|if|else|elif|try|except|finally|with|match|case'+
      '|(async[ \t]+def)|(async[ \t]+with)|(async[ \t]+for))\b');
 
   fRange := rsUnknown;
