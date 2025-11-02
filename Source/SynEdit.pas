@@ -9136,13 +9136,18 @@ var
   DoTransient: Boolean;
   Plugin: TSynEditPlugin;
 begin
-  if (TransientType=ttBefore) then
-    Inc(FPaintTransientLock)
+  DoTransient := (FPaintTransientPlugins or Assigned(fOnPaintTransient)) and
+    (fPaintLock = 0);
+  if TransientType = ttBefore then
+  begin
+    DoTransient := DoTransient and (FPaintTransientLock = 0);
+    Inc(FPaintTransientLock);
+  end
   else
+  begin
     Dec(FPaintTransientLock);
-
-  DoTransient := (FPaintTransientLock = 0) or (fPaintLock = 0) and
-    (FPaintTransientPlugins or Assigned(fOnPaintTransient));
+    DoTransient := DoTransient and (FPaintTransientLock = 0);
+  end;
 
   if DoTransient then
   begin
