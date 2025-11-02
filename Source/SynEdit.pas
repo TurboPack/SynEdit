@@ -9136,8 +9136,7 @@ var
   DoTransient: Boolean;
   Plugin: TSynEditPlugin;
 begin
-  DoTransient := (FPaintTransientPlugins or Assigned(fOnPaintTransient)) and
-    (fPaintLock = 0);
+  DoTransient := (FPaintTransientPlugins or Assigned(fOnPaintTransient));
   if TransientType = ttBefore then
   begin
     DoTransient := DoTransient and (FPaintTransientLock = 0);
