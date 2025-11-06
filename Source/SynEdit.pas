@@ -8147,38 +8147,37 @@ begin
   begin
     BracketPos := CaretXY;
 
+    Indicators.Clear(BracketsHighlight.MatchingBracketsIndicatorID);
+    Indicators.Clear(BracketsHighlight.UnbalancedBracketIndicatorID);
+
     // Do not highlight inside comments and strings
     if Assigned(fHighlighter) and GetHighlighterAttriAtRowCol(BracketPos, Token, Attri) and
       ((Attri = fHighlighter.CommentAttribute) or (Attri = fHighlighter.StringAttribute))
     then
       Exit;
 
-    Indicators.Clear(BracketsHighlight.MatchingBracketsIndicatorID);
-    Indicators.Clear(BracketsHighlight.UnbalancedBracketIndicatorID);
-
     BracketPos := CaretXY;
     MatchingBracketPos := GetMatchingBracketEnhanced(BracketPos, Brackets, False);
 
-    if MatchingBracketPos.IsValid then
+    if MatchingBracketPos = BufferCoord(-1, -1) then
+      // no bracket at caret
+      Exit
+    else if MatchingBracketPos.IsValid then
     begin
-      // We have a bracket at BracketPos
-      if MatchingBracketPos.Char = 0 then
-      begin
-        // The bracket at BracketPos is unbalanced
-        Indicator := TSynIndicator.Create(fBracketsHighlight.UnbalancedBracketIndicatorID,
-          BracketPos.Char, BracketPos.Char + 1);
-        Indicators.Add(BracketPos.Line, Indicator);
-      end
-      else
-      begin
-        // Matching pair of brackets
-        Indicator := TSynIndicator.Create(fBracketsHighlight.MatchingBracketsIndicatorID,
-          BracketPos.Char, BracketPos.Char + 1);
-        Indicators.Add(BracketPos.Line, Indicator);
-        Indicator := TSynIndicator.Create(fBracketsHighlight.MatchingBracketsIndicatorID,
-          MatchingBracketPos.Char, MatchingBracketPos.Char + 1);
-        Indicators.Add(MatchingBracketPos.Line, Indicator);
-      end;
+      // Matching pair of brackets
+      Indicator := TSynIndicator.Create(fBracketsHighlight.MatchingBracketsIndicatorID,
+        BracketPos.Char, BracketPos.Char + 1);
+      Indicators.Add(BracketPos.Line, Indicator);
+      Indicator := TSynIndicator.Create(fBracketsHighlight.MatchingBracketsIndicatorID,
+        MatchingBracketPos.Char, MatchingBracketPos.Char + 1);
+      Indicators.Add(MatchingBracketPos.Line, Indicator);
+    end
+    else {if MatchingBracketPos = BufferCoord(0,0)}
+    begin
+      // The bracket at BracketPos is unbalanced
+      Indicator := TSynIndicator.Create(fBracketsHighlight.UnbalancedBracketIndicatorID,
+        BracketPos.Char, BracketPos.Char + 1);
+      Indicators.Add(BracketPos.Line, Indicator);
     end;
   end;
 end;
@@ -9029,7 +9028,6 @@ function TCustomSynEdit.GetMatchingBracketEnhanced(var BracketPos: TBufferCoord;
    If AdjustMatchingPos and there is a match, the matching pair of positions
    will be both either inside or outside the brackets.
 }
-
 var
   Line: string;
   HasBracket, IsPreviousChar, IsOpenChar, IsOutside: Boolean;
