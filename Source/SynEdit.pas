@@ -131,7 +131,7 @@ type
 type
 // use scAll to update a statusbar when another TCustomSynEdit got the focus
   TSynStatusChange = (scAll, scCaretX, scCaretY, scLeftChar, scTopLine,
-    scInsertMode, scModified, scSelection, scReadOnly);
+    scInsertMode, scModified, scSelection, scReadOnly, scLinesChanged);
   TSynStatusChanges = set of TSynStatusChange;
 
   TContextHelpEvent = procedure(Sender: TObject; word: string)
@@ -2030,6 +2030,8 @@ end;
 
 procedure TCustomSynEdit.LinesChanging(Sender: TObject);
 begin
+  IncPaintLock;
+
   Include(fStateFlags, sfLinesChanging);
 end;
 
@@ -2049,19 +2051,14 @@ begin
   end;
 
   Exclude(fStateFlags, sfLinesChanging);
-  if HandleAllocated then
-  begin
-    UpdateScrollBars;
-//-- Flicker Reduction
-    //SetBlockBegin(CaretXY);
-    if not (eoScrollPastEof in ScrollOptions) then
-      TopLine := TopLine;
-  end;
-  HighlightBrackets;
   DoChange;
 
   if Assigned(FUIAutomationProvider) then
     (FUIAutomationProvider as TSynUIAutomationProvider).RaiseTextChangedEvent;
+
+  Include(fStatusChanges, scLinesChanged);
+
+  DecPaintLock;
 end;
 
 procedure TCustomSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
@@ -4459,9 +4456,11 @@ procedure TCustomSynEdit.UpdateScrollBars;
 begin
   if not HandleAllocated or (PaintLock <> 0) then
     Include(fStateFlags, sfScrollbarChanged)
-  else begin
+  else
+  begin
     // In case TopLine is not valid when not eoScollPastEOF in Options
-    TopLine := TopLine;
+    if not (eoScrollPastEof in ScrollOptions) then
+      TopLine := TopLine;
 
     Exclude(fStateFlags, sfScrollbarChanged);
 
@@ -9194,7 +9193,7 @@ end;
 
 procedure TCustomSynEdit.DoOnStatusChange(Changes: TSynStatusChanges);
 begin
-  if Changes * [scCaretX, scCaretY] <> [] then
+  if Changes * [scCaretX, scCaretY, scLinesChanged] <> [] then
     HighlightBrackets;
 
   if (Changes * [scCaretX, scCaretY, scSelection] <> [])
