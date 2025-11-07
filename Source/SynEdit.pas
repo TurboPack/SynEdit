@@ -4109,7 +4109,6 @@ begin
 
   if (Value.Length = 0) and (BB = BE) then Exit;  // nothing to do
 
-  IncPaintLock;
   Lines.BeginUpdate;
   if AddToUndoList then BeginUndoBlock else fUndoRedo.Lock;
   try
@@ -4133,7 +4132,6 @@ begin
   finally
     if AddToUndoList then EndUndoBlock else fUndoRedo.UnLock;
     Lines.EndUpdate;
-    DecPaintLock;
   end;
 end;
 
@@ -5098,13 +5096,11 @@ begin
     Exit;
 
   DoOnPaintTransient(ttBefore);
-  IncPaintLock;
   Lines.BeginUpdate;
   try
     FUndoRedo.Redo(Self);
   finally
     Lines.EndUpdate;
-    DecPaintLock;
     DoOnPaintTransient(ttAfter);
   end;
 end;
@@ -5474,13 +5470,11 @@ begin
     Exit;
 
   DoOnPaintTransient(ttBefore);
-  IncPaintLock;
   Lines.BeginUpdate;
   try
     FUndoRedo.Undo(Self);
   finally
     Lines.EndUpdate;
-    DecPaintLock;
     DoOnPaintTransient(ttAfter);
   end;
 end;
