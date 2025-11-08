@@ -516,6 +516,7 @@ type
     FIgnoreNextChar: Boolean;
     FCharCodeString: string;
     FStateRead: Boolean;
+    fGutterWidth: Integer;
     function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPoint): Boolean; override;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -589,15 +590,13 @@ type
     procedure SetWantTabs(Value: Boolean);
     procedure StatusChanged(AChanges: TSynStatusChanges);
     // If the translations requires Data, memory will be allocated for it via a
-    // GetMem call.  The client must call FreeMem on Data if it is not NIL.
+    // GetMem call. The client must call FreeMem on Data if it is not NIL.
     function TranslateKeyCode(Code: word; Shift: TShiftState;
       var Data: Pointer): TSynEditorCommand;
+    procedure Updated; override;
     procedure UpdateMouseCursor; virtual;
-    property FLastPosX: Integer read FSelection.LastPosX write FSelection.LastPosX;
-    property CaretAtEOL: Boolean read FSelection.CaretAtEOL write FSelection.CaretAtEOL;
-  protected
-    fGutterWidth: Integer;
     procedure CalcTextAreaWidth;
+    procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
     procedure DoBlockIndent;
     procedure DoBlockUnindent;
     procedure DoContextPopup(MousePos: TPoint; var Handled: Boolean); override;
@@ -632,10 +631,13 @@ type
     procedure ExecCmdCopyOrMoveLine(const Command: TSynEditorCommand);
     procedure ExecCmdCaseChange(const Cmd: TSynEditorCommand);
 
+    property CaretAtEOL: Boolean read FSelection.CaretAtEOL
+      write FSelection.CaretAtEOL;
+    property FLastPosX: Integer read FSelection.LastPosX
+      write FSelection.LastPosX;
     property InternalCaretX: Integer write InternalSetCaretX;
     property InternalCaretY: Integer write InternalSetCaretY;
     property InternalCaretXY: TBufferCoord write InternalSetCaretXY;
-    procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -4423,6 +4425,30 @@ begin
   end;
 end;
 
+procedure TCustomSynEdit.Updated;
+begin
+  inherited;
+
+  // Sync with FSelections
+  if (fStatusChanges * [scCaretX, scCaretY, scSelection] <> []) or
+    (sfCaretChanged in fStateFlags)
+  then
+    FSelections.ActiveSelection := FSelection;
+
+  // Update scrollbars and carets
+  if HandleAllocated then
+  begin
+    if sfScrollbarChanged in fStateFlags then
+      UpdateScrollbars;
+    if sfCaretChanged in fStateFlags then
+      UpdateCarets;
+  end;
+
+  // Process status changes
+  if fStatusChanges <> [] then
+    DoOnStatusChange(fStatusChanges);
+end;
+
 procedure TCustomSynEdit.UpdateIME;
 var
   BC: TBufferCoord;
@@ -7271,28 +7297,7 @@ begin
   Assert(FUpdateCount > 0);
   Dec(FUpdateCount);
   if FUpdateCount = 0 then
-  begin
     Updated;
-
-    // Sync with FSelections
-    if (fStatusChanges * [scCaretX, scCaretY, scSelection] <> []) or
-      (sfCaretChanged in fStateFlags)
-    then
-      FSelections.ActiveSelection := FSelection;
-
-    // Update scrollbars and carets
-    if HandleAllocated then
-    begin
-      if sfScrollbarChanged in fStateFlags then
-        UpdateScrollbars;
-      if sfCaretChanged in fStateFlags then
-        UpdateCarets;
-    end;
-
-    // Process status changes
-    if fStatusChanges <> [] then
-      DoOnStatusChange(fStatusChanges);
-  end;
 end;
 
 procedure TCustomSynEdit.AddKey(Command: TSynEditorCommand;
