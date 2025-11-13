@@ -8149,8 +8149,6 @@ end;
 
 procedure TCustomSynEdit.HighlightBrackets;
 var
-  Token: string;
-  Attri: TSynHighlighterAttributes;
   BracketPos,
   MatchingBracketPos: TBufferCoord;
   Indicator: TSynIndicator;
@@ -8161,12 +8159,6 @@ begin
 
     Indicators.Clear(BracketsHighlight.MatchingBracketsIndicatorID);
     Indicators.Clear(BracketsHighlight.UnbalancedBracketIndicatorID);
-
-    // Do not highlight inside comments and strings
-    if Assigned(fHighlighter) and GetHighlighterAttriAtRowCol(BracketPos, Token, Attri) and
-      ((Attri = fHighlighter.CommentAttribute) or (Attri = fHighlighter.StringAttribute))
-    then
-      Exit;
 
     BracketPos := CaretXY;
     MatchingBracketPos := GetMatchingBracketEnhanced(BracketPos, Brackets, False);
@@ -8954,16 +8946,34 @@ end;
 
 function TCustomSynEdit.GetMatchingBracketEx(const APoint: TBufferCoord;
   Brackets: string): TBufferCoord;
+/// <summary>
+///   Find a bracket matching the one at APoint
+///   Skips strings and comments
+/// </summary>
+/// <returns>
+///  BufferCoord(-1, -1) if APoint is not a bracket.
+///  BufferCoord(0, 0) if BracketPos contains an unbalanced bracket.
+///  The matching bracket position if there is a match
+/// </returns>
+
+  function InStringOrComment(const BC: TBufferCoord): Boolean;
+  var
+    Token: string;
+    Attr: TSynHighlighterAttributes;
+  begin
+    Result := GetHighlighterAttriAtRowCol(BC, Token, Attr) and
+      ((Attr = fHighlighter.CommentAttribute) or
+      (Attr = fHighlighter.StringAttribute));
+  end;
+
 var
   Line: string;
   Index, PosX, PosY, Len, Increment: Integer;
   Test, BracketInc, BracketDec: Char;
   NumBrackets: Integer;
-  SDummy: string;
-  Attr: TSynHighlighterAttributes;
   P: TBufferCoord;
 begin
-  Result := TBufferCoord.Invalid;
+  if InStringOrComment(APoint) then Exit(BufferCoord(-1, -1));
 
   // Get char at caret
   PosX := APoint.Char;
@@ -8972,7 +8982,9 @@ begin
   // Check position is valid
   if not InRange(PosY, 1, Lines.Count) then Exit;
   Line := Lines[PosY - 1];
-  if not BracketAtPos(PosX, Brackets, Line) then Exit;
+  if not BracketAtPos(PosX, Brackets, Line) then Exit(BufferCoord(-1, -1));
+
+  Result := BufferCoord(0, 0);
 
   Test := Line[PosX];
   // is it one of the recognized brackets?
@@ -9000,10 +9012,7 @@ begin
       P.Line := PosY;
       if ((Test = BracketInc) or (Test = BracketDec)) and
         // not inside strings and comments
-        not (GetHighlighterAttriAtRowCol(BufferCoord(PosX, PosY), SDummy, Attr)
-         and ((Attr = Highlighter.StringAttribute) or
-         (Attr = Highlighter.CommentAttribute)))
-      then
+        not InStringOrComment(P) then
       begin
         if Test = BracketInc then
           Inc(NumBrackets)
@@ -9032,14 +9041,23 @@ end;
 
 function TCustomSynEdit.GetMatchingBracketEnhanced(var BracketPos: TBufferCoord;
   Brackets: string = '()[]{}<>'; AdjustMatchingPos: Boolean = True): TBufferCoord;
-{
-   If there is a bracket on the left of BracketPos.Char it is used instead.
-   On Exit BracketPos points at the position of the bracket used for matching.
-   Returns BufferCoord(-1, -1) if BracketPos is not a bracket.
-   Returns BufferCoord(0, 0) if BracketPos contains an unbalanced bracket.
-   If AdjustMatchingPos and there is a match, the matching pair of positions
-   will be both either inside or outside the brackets.
-}
+/// <summary>
+///  Find a bracket matching the one at BracketPos
+///  If there is a bracket on the left of BracketPos.Char it is used instead.
+/// </summary>
+/// <param name="BracketPos">
+///  On Entry the editor position to check
+///  On Exit it points at the position of the bracket used for matching.
+/// </param>
+/// <param name="AdjustMatchingPos">
+///  If True and there is a match, the matching pair of positions
+///  will be both either inside or outside the brackets.
+/// </param>
+/// <returns>
+///  BufferCoord(-1, -1) if BracketPos is not a bracket.
+///  BufferCoord(0, 0) if BracketPos contains an unbalanced bracket.
+///  The matching Bracket position if there is a mathching bracket
+/// </returns>
 var
   Line: string;
   HasBracket, IsPreviousChar, IsOpenChar, IsOutside: Boolean;
