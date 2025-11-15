@@ -5971,11 +5971,14 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
     Result := True;
   end;
 
-  procedure AutoCompleteBracketsAndQuotes(Chr: Char; InString: Boolean);
+  procedure AutoCompleteBracketsAndQuotes(Chr: Char);
   var
     Len: Integer;
     Line: string;
     CharRight, CharLeft, TmpChar: WideChar;
+    InString, InComment: Boolean;
+    Token: string;
+    Attri: TSynHighlighterAttributes;
   begin
     if (fOptions * [eoCompleteBrackets, eoCompleteQuotes] <> []) and
       (FSelections.Count = 1) and (FSelection.IsEmpty) then
@@ -6009,8 +6012,20 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
         else if (eoCompleteQuotes in fOptions) and
           CharInSet(Chr, ['"', '''']) then
         begin
-          // Auto-complete quotes if not inside a string, the previous char
-          // is not a quote and the next char is not an identifier or quote
+          // Auto-complete quotes if
+          // - not inside a string,
+          // - the previous char is not a quote
+          // - the next char is not an identifier or quote
+          // - not inside conmment and Chr is single quote
+          //   (e.g. when typing don't inside a comment)
+          InString := (CaretX > 1) and
+            GetHighlighterAttriAtRowCol(BufferCoord(CaretX - 1, CaretY),
+            Token, Attri) and (Attri = fHighlighter.StringAttribute);
+
+          InComment := (CaretX > 1) and
+            GetHighlighterAttriAtRowCol(BufferCoord(CaretX - 1, CaretY),
+            Token, Attri) and (Attri = fHighlighter.CommentAttribute);
+
           CharLeft := ' ';
           if CaretX > 2 then
             CharLeft := Line[CaretX - 2];
@@ -6018,7 +6033,8 @@ procedure TCustomSynEdit.InsertCharAtCursor(const AChar: string);
           if not InString and
             not CharInSet(CharLeft, ['"', '''']) and
             not IsIdentChar(CharRight) and
-            not CharInSet(CharLeft, ['"', '''']) then
+            not CharInSet(CharLeft, ['"', '''']) and
+            not (InComment and (Chr = '''')) then
           begin
             ExecuteCommand(ecChar, Chr);
             FAutoCompleteChar := Chr;
@@ -6034,9 +6050,6 @@ var
   SpaceBuffer: string;
   Len, CaretXNew: Integer;
   OldRow: Integer;
-  InString: Boolean;
-  Token: string;
-  Attri: TSynHighlighterAttributes;
 begin
   if ReadOnly or ((AChar.Length = 1)
   and ((AChar[1] < #32) or (AChar[1] = #127))) // #127 is Ctrl+Backspace
@@ -6060,11 +6073,6 @@ begin
   begin
     // This is to set fCaretXY correctly
     OldRow := BufferToDisplayPos(BufferCoord(Max(CaretX - 1, 1), CaretY)).Row;
-
-    // for Autocomplete quotes check whether typing occurs inside a string
-    InString := (CaretX > 1) and Assigned(fHighlighter) and
-      GetHighlighterAttriAtRowCol(BufferCoord(CaretX - 1, CaretY), Token, Attri) and
-      (Attri = fHighlighter.StringAttribute);
 
     SLine := LineText;
     Len := SLine.Length;
@@ -6097,7 +6105,7 @@ begin
     SetCaretInRow(BufferCoord(CaretXNew + AChar.Length, CaretY), OldRow);
 
     if AChar.Length = 1 then
-      AutoCompleteBracketsAndQuotes(AChar[1], InString);
+      AutoCompleteBracketsAndQuotes(AChar[1]);
 
     if not CaretInView then
       LeftChar := LeftChar + Min(25, FTextAreaWidth div FCharWidth);
