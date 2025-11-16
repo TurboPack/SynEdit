@@ -6068,8 +6068,8 @@ begin
     Attri := nil;
     if (CaretX > 1) then
       GetHighlighterAttriAtRowCol(BufferCoord(CaretX - 1, CaretY), Token, Attri);
-    InString := Attri = fHighlighter.StringAttribute;
-    InComment := Attri = fHighlighter.CommentAttribute;
+    InString := Assigned(fHighLighter) and (Attri = fHighlighter.StringAttribute);
+    InComment := Assigned(fHighLighter) and (Attri = fHighlighter.CommentAttribute);
 
     // This is to set fCaretXY correctly
     OldRow := BufferToDisplayPos(BufferCoord(Max(CaretX - 1, 1), CaretY)).Row;
