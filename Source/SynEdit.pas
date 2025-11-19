@@ -2153,10 +2153,10 @@ begin
   end;
 
   if (X < fGutterWidth) then
-    Include(fStateFlags, sfPossibleGutterClick);
-  if (sfPossibleGutterClick in fStateFlags) and (Button = mbRight) then
   begin
-    DoOnGutterClick(Button, X, Y)
+    Include(fStateFlags, sfPossibleGutterClick);
+    if Button = mbRight then
+      DoOnGutterClick(Button, X, Y)
   end;
 
   SetFocus;
@@ -9454,6 +9454,7 @@ end;
 
 procedure TCustomSynEdit.QuadrupleClick;
 begin
+  MouseCapture := False;
   if not (eoNoSelection in fOptions) then
     SelectAll;
   if Assigned(fOnQudrupleClick) then
