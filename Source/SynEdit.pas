@@ -3432,7 +3432,7 @@ begin
     Inc(LastPt.Char, Length(Lines[LastPt.Line - 1]))
   else
     LastPt.Line  := 1;
-  SetCaretAndSelection(LastPt, BufferCoord(1, 1), LastPt);
+  SetCaretAndSelection(LastPt, BufferCoord(1, 1), LastPt, False);
 end;
 
 procedure TCustomSynEdit.SelectAllMatchingText;
