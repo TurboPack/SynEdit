@@ -668,8 +668,8 @@ type
     procedure ClearAll;
     procedure ClearBookmark(Bookmark: Integer);
     procedure DeleteSelections;
-    procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar;
-      Data: Pointer); virtual;
+    procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar = #0;
+      Data: Pointer = nil); virtual;
     procedure ClearUndo;
     procedure ClearTrackChanges;
     procedure MarkSaved;
@@ -3419,13 +3419,15 @@ end;
 
 procedure TCustomSynEdit.PasteFromClipboard;
 begin
-  CommandProcessor(ecPaste, ' ', nil);
+  CommandProcessor(ecPaste);
 end;
 
 procedure TCustomSynEdit.SelectAll;
 var
   LastPt: TBufferCoord;
 begin
+  FSelections.Clear;
+
   LastPt.Char := 1;
   LastPt.Line := Lines.Count;
   if LastPt.Line > 0 then
@@ -4802,7 +4804,7 @@ end;
 procedure TCustomSynEdit.WMKillFocus(var Msg: TWMKillFocus);
 begin
   inherited;
-  CommandProcessor(ecLostFocus, #0, nil);
+  CommandProcessor(ecLostFocus);
 
   //Added check for focused to prevent caret disappearing problem
   if not (Focused or FAlwaysShowCaret) then
@@ -4855,7 +4857,7 @@ end;
 
 procedure TCustomSynEdit.WMSetFocus(var Msg: TWMSetFocus);
 begin
-  CommandProcessor(ecGotFocus, #0, nil);
+  CommandProcessor(ecGotFocus);
 
   InitializeCaret;
   if FHideSelection and not FSelections.IsEmpty then
@@ -7091,7 +7093,7 @@ end;
 procedure TCustomSynEdit.DeleteSelections;
 begin
   if not FSelections.IsEmpty then
-    CommandProcessor(ecDeleteSelections, ' ', nil);
+    CommandProcessor(ecDeleteSelections);
 end;
 
 procedure TCustomSynEdit.ClearTrackChanges;
@@ -8768,19 +8770,19 @@ begin
     if Result then
     begin
       if Action is TEditCut then
-        CommandProcessor(ecCut, ' ', nil)
+        CommandProcessor(ecCut)
       else if Action is TEditCopy then
-        CommandProcessor(ecCopy, ' ', nil)
+        CommandProcessor(ecCopy)
       else if Action is TEditPaste then
-        CommandProcessor(ecPaste, ' ', nil)
+        CommandProcessor(ecPaste)
       else if Action is TEditDelete then
         DeleteSelections
       else if Action is TEditUndo then
-        CommandProcessor(ecUndo, ' ', nil)
+        CommandProcessor(ecUndo)
       else if Action is TSynEditRedo then
-        CommandProcessor(ecRedo, ' ', nil)
+        CommandProcessor(ecRedo)
       else if Action is TEditSelectAll then
-        CommandProcessor(ecSelectAll, ' ', nil);
+        CommandProcessor(ecSelectAll);
     end
   end
   else if Action is TSearchAction then
