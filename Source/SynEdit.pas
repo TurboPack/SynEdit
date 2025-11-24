@@ -120,9 +120,8 @@ type
   TZoomEvent = procedure(Sender: TObject; const NewFontSize,
     OrigFontSize: Integer) of object;
 
-  TSynStateFlag = (sfCaretChanged, sfScrollbarChanged, sfLinesChanging,
-    sfIgnoreNextChar, sfPossibleGutterClick,
-    sfOleDragSource, sfGutterDragging);
+  TSynStateFlag = (sfCaretChanged, sfScrollbarChanged, sfIgnoreNextChar,
+                   sfPossibleGutterClick, sfOleDragSource, sfGutterDragging);
 
   TSynStateFlags = set of TSynStateFlag;
 
@@ -2021,17 +2020,13 @@ end;
 procedure TCustomSynEdit.LinesChanging(Sender: TObject);
 begin
   BeginUpdate;
-
-  Include(fStateFlags, sfLinesChanging);
 end;
 
 procedure TCustomSynEdit.LinesChanged(Sender: TObject);
 begin
   DoLinesChanged;
 
-  if (sfLinesChanging in fStateFlags) and UseCodeFolding and
-    fAllFoldRanges.StopScanning(fLines)
-  then
+  if UseCodeFolding and fAllFoldRanges.StopScanning(fLines) then
   begin
     if FIndentGuides.Visible and FIndentGuides.StructureHighlight and
       Assigned(fHighlighter) and (hcStructureHighlight in fHighlighter.Capabilities)
@@ -2040,7 +2035,6 @@ begin
     InvalidateGutterBand(gbkFold);
   end;
 
-  Exclude(fStateFlags, sfLinesChanging);
   DoChange;
 
   if Assigned(FUIAutomationProvider) then
@@ -9943,10 +9937,10 @@ begin
   AdjustedToLine := Max(Min(ToLine, Lines.Count - 1), FromLine);
   fAllFoldRanges.StartScanning;
   ScanForFoldRanges(fAllFoldRanges, fLines, FromLine, AdjustedToLine);
-  {  StopScanning recreates AllFoldRanges.
-     Normally at this point (sfLinesChanging in fStateFlags) = True
+  {  StopScanning recreates AllFoldRanges if needed.
+     Normally at this point Lines.Updating = True
      and StopScanning will be called when LinesChanged is executed }
-  if not (sfLinesChanging in fStateFlags) and fAllFoldRanges.StopScanning(fLines) then
+  if not Lines.Updating and fAllFoldRanges.StopScanning(fLines) then
   begin
     InvalidateGutterBand(gbkFold);
     if FIndentGuides.Visible and FIndentGuides.StructureHighlight and
