@@ -144,6 +144,7 @@ contains
   SynOmniSetupDialog in '..\..\..\Source\SynOmniSetupDialog.pas' {SynOmniSynSetup},
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
-  SynURIOpener in '..\..\..\Source\SynURIOpener.pas';
+  SynURIOpener in '..\..\..\Source\SynURIOpener.pas',
+  SynHighlighterDelphi in '..\..\..\Source\Highlighters\SynHighlighterDelphi.pas';
 
 end.
