@@ -1,35 +1,47 @@
 object Form1: TForm1
   Left = 142
   Top = 175
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   Caption = 'Print example'
-  ClientHeight = 438
-  ClientWidth = 637
+  ClientHeight = 657
+  ClientWidth = 965
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Menu = MainMenu1
   WindowState = wsMaximized
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 20
   object SynEdit: TSynEdit
     Left = 0
-    Top = 23
-    Width = 637
-    Height = 415
+    Top = 35
+    Width = 965
+    Height = 622
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Consolas'
     Font.Pitch = fpFixed
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 0
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
@@ -56,17 +68,19 @@ object Form1: TForm1
       end>
     Highlighter = SynPasSyn
     ScrollbarAnnotations = <>
-    SelectedColor.Alpha = 0.400000005960464500
-    VisibleSpecialChars = []
   end
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 637
-    Height = 23
+    Width = 965
+    Height = 35
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     AutoSize = True
-    ButtonHeight = 23
-    ButtonWidth = 24
+    ButtonHeight = 35
+    ButtonWidth = 36
     Caption = 'ToolBar1'
     Images = MenuImages
     Indent = 5
@@ -74,59 +88,91 @@ object Form1: TForm1
     object ToolButton1: TToolButton
       Left = 5
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = FileOpenCmd
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton2: TToolButton
-      Left = 29
+      Left = 41
       Top = 0
-      Width = 8
+      Width = 12
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Caption = 'ToolButton2'
       ImageIndex = 1
       ImageName = 'Item2'
       Style = tbsSeparator
     end
     object ToolButton8: TToolButton
-      Left = 37
+      Left = 53
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = FilePageSetup
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton3: TToolButton
-      Left = 61
+      Left = 89
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = FilePrinterSetupCmd
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton4: TToolButton
-      Left = 85
+      Left = 125
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = FilePrintPreviewCmd
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton5: TToolButton
-      Left = 109
+      Left = 161
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = FilePrintCmd
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton6: TToolButton
-      Left = 133
+      Left = 197
       Top = 0
-      Width = 8
+      Width = 12
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Caption = 'ToolButton6'
       ImageIndex = 4
       ImageName = 'Item5'
       Style = tbsSeparator
     end
     object ToolButton7: TToolButton
-      Left = 141
+      Left = 209
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = FileExitCmd
       ParentShowHint = False
       ShowHint = True
@@ -389,8 +435,8 @@ object Form1: TForm1
         Name = 'Item6'
       end>
     ImageCollection = ImageCollection
-    Width = 17
-    Height = 17
+    Width = 26
+    Height = 26
     Left = 120
     Top = 272
   end

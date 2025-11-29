@@ -8,7 +8,7 @@ Software distributed under the License is distributed on an "AS IS" basis,
 WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
 the specific language governing rights and limitations under the License.
 
-The Original Code is: frmMainMDI.pas, released 2000-09-08.
+The Original Code is: dmCommands.pas, released 2000-09-08.
 
 The Original Code is part of the EditAppDemos project, written by
 Michael Hieke for the SynEdit component suite.
@@ -27,55 +27,54 @@ If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 -------------------------------------------------------------------------------}
 
-unit frmMainMDI;
-
-{$I SynEdit.inc}
+unit dmSpellCheckCommands;
 
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, Menus, uEditAppIntfs, StdActns, ComCtrls, System.Actions, EditAppMain;
+  System.SysUtils, System.Classes, SynEditHighlighter, SynEditCodeFolding,
+  SynHighlighterPas, SynSpellCheck, Vcl.StdActns, System.Actions, Vcl.ActnList;
 
 type
-  TMDIMainForm = class(TMainForm)
-    actlWindow: TActionList;
-    actWindowTileHorz: TWindowTileHorizontal;
-    actWindowTileVert: TWindowTileVertical;
-    actWindowArrange: TWindowArrange;
-    actWindowCascade: TWindowCascade;
-    mWindow: TMenuItem;
-    miWindowCascade: TMenuItem;
-    miWindowTile: TMenuItem;
-    miWindowTileVert: TMenuItem;
-    miWindowArrange: TMenuItem;
-    procedure FormCreate(Sender: TObject);
-  protected
-    function DoCreateEditor(AFileName: string): IEditor; override;
+  TCommandsDataModule = class(TDataModule)
+    SynPasSyn1: TSynPasSyn;
+    SynSpellCheck: TSynSpellCheck;
+    ActionList1: TActionList;
+    EditCut1: TEditCut;
+    EditCopy1: TEditCopy;
+    EditPaste1: TEditPaste;
+    EditSelectAll1: TEditSelectAll;
+    EditUndo1: TEditUndo;
+    EditDelete1: TEditDelete;
+    actSynSpellCheckFile: TSynSpellCheckFile;
+    actSynSpellCheckLine: TSynSpellCheckLine;
+    actSynSpellCheckSelection: TSynSpellCheckSelection;
+    actSynSpellCheckWord: TSynSpellCheckWord;
+    actSynSpellClearErrors: TSynSpellClearErrors;
+    actSynSpellCheckAsYouType: TSynSpellCheckAsYouType;
+    actSynSpellErrorAdd: TSynSpellErrorAdd;
+    actSynSpellErrorIgnoreOnce: TSynSpellErrorIgnoreOnce;
+    actSynSpellErrorIgnore: TSynSpellErrorIgnore;
+    actSynSpellErrorDelete: TSynSpellErrorDelete;
+    procedure DataModuleCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
   end;
 
 var
-  MDIMainForm: TMDIMainForm;
+  CommandsDataModule: TCommandsDataModule;
 
 implementation
 
-{$R *.DFM}
+{%CLASSGROUP 'Vcl.Controls.TControl'}
 
-{ TMDIMainForm }
+{$R *.dfm}
 
-function TMDIMainForm.DoCreateEditor(AFileName: string): IEditor;
+procedure TCommandsDataModule.DataModuleCreate(Sender: TObject);
 begin
-  if GI_EditorFactory <> nil then
-    Result := GI_EditorFactory.CreateMDIChild(Self)
-  else
-    Result := nil;
-end;
-
-procedure TMDIMainForm.FormCreate(Sender: TObject);
-begin
-  inherited;
-  CmdLineOpenFiles(True);
+  SynSpellCheck.LanguageCode := 'en-US';
 end;
 
 end.
-

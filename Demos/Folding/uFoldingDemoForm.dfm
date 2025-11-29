@@ -1,23 +1,32 @@
-object Form1: TForm1
+object FoldingDemoForm: TFoldingDemoForm
   Left = 0
   Top = 0
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   Caption = 'Folding Demo'
-  ClientHeight = 402
-  ClientWidth = 635
+  ClientHeight = 603
+  ClientWidth = 962
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'Tahoma'
   Font.Style = []
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 21
   object ActionMainMenuBar1: TActionMainMenuBar
     Left = 0
     Top = 0
-    Width = 635
-    Height = 25
+    Width = 962
+    Height = 39
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     UseSystemFont = False
     ActionManager = ActionManager1
     Caption = 'ActionMainMenuBar1'
@@ -28,20 +37,24 @@ object Form1: TForm1
     ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -12
+    Font.Height = -18
     Font.Name = 'Segoe UI'
     Font.Style = []
     Spacing = 0
   end
   object SynEdit1: TSynEdit
     Left = 0
-    Top = 25
-    Width = 635
-    Height = 377
+    Top = 39
+    Width = 962
+    Height = 564
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Consolas'
     Font.Pitch = fpFixed
     Font.Style = []
@@ -49,6 +62,9 @@ object Form1: TForm1
     PopupMenu = PopupActionBar1
     TabOrder = 1
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -13
@@ -118,11 +134,8 @@ object Form1: TForm1
         'You can find technical information about the implementation of c' +
         'ode folding'
       'in the unit SynEditCodeFolding.pas.')
-    Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabIndent, eoTabsToSpaces, eoTrimTrailingSpaces]
     ScrollbarAnnotations = <>
-    SelectedColor.Alpha = 0.400000005960464500
     TabWidth = 4
-    VisibleSpecialChars = []
   end
   object ActionManager1: TActionManager
     ActionBars = <

@@ -5,8 +5,8 @@ program SpellCheck;
 
 uses
   Vcl.Forms,
-  Unit1 in 'Unit1.pas' {Form1},
-  dmCommands in 'dmCommands.pas' {CommandsDataModule: TDataModule};
+  SpellCheckMain in 'SpellCheckMain.pas' {Form1},
+  dmSpellCheckCommands in 'dmSpellCheckCommands.pas' {CommandsDataModule: TDataModule};
 
 {$R *.res}
 

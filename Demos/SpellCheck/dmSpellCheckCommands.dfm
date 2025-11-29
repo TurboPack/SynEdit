@@ -1,19 +1,25 @@
 object CommandsDataModule: TCommandsDataModule
   OnCreate = DataModuleCreate
-  Height = 480
-  Width = 640
+  Height = 720
+  Width = 960
+  PixelsPerInch = 144
   object SynPasSyn1: TSynPasSyn
-    Left = 32
-    Top = 24
+    Left = 48
+    Top = 36
   end
   object SynSpellCheck: TSynSpellCheck
+    AttributesChecked.Strings = (
+      'Comment'
+      'Text'
+      'String'
+      'Documentation')
     CheckAsYouType = False
-    Left = 120
-    Top = 24
+    Left = 180
+    Top = 36
   end
   object ActionList1: TActionList
-    Left = 32
-    Top = 112
+    Left = 48
+    Top = 168
     object EditCut1: TEditCut
       Category = 'Edit'
       Caption = 'Cu&t'

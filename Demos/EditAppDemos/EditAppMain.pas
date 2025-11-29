@@ -27,7 +27,7 @@ If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 -------------------------------------------------------------------------------}
 
-unit frmMain;
+unit EditAppMain;
 
 {$I SynEdit.inc}
 
@@ -111,7 +111,7 @@ implementation
 {$R *.DFM}
 
 uses
-  IniFiles, dmCommands;
+  IniFiles, dmWorkbookCommands;
 
 { TMainForm }
 

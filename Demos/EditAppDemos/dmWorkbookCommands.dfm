@@ -1,16 +1,17 @@
 object CommandsDataModule: TCommandsDataModule
   OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
-  Height = 276
-  Width = 420
+  Height = 414
+  Width = 630
+  PixelsPerInch = 144
   object dlgFileOpen: TOpenDialog
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
-    Left = 20
-    Top = 16
+    Left = 30
+    Top = 24
   end
   object actlMain: TActionList
-    Left = 20
-    Top = 168
+    Left = 30
+    Top = 252
     object actFileSave: TAction
       Category = 'File'
       Caption = '&Save'
@@ -137,16 +138,16 @@ object CommandsDataModule: TCommandsDataModule
     InvalidAttri.Foreground = clRed
     NumberAttri.Foreground = clBlue
     StringAttri.Foreground = clBlue
-    Left = 172
-    Top = 12
+    Left = 258
+    Top = 18
   end
   object SynPasSyn1: TSynPasSyn
     CommentAttri.Foreground = clGreen
     IdentifierAttri.Foreground = clNavy
     NumberAttri.Foreground = clBlue
     StringAttri.Foreground = clBlue
-    Left = 252
-    Top = 12
+    Left = 378
+    Top = 18
   end
   object SynSQLSyn1: TSynSQLSyn
     DefaultFilter = 'SQL files (*.sql)|*.sql'
@@ -155,12 +156,12 @@ object CommandsDataModule: TCommandsDataModule
     NumberAttri.Foreground = clBlue
     StringAttri.Foreground = clBlue
     SQLDialect = sqlSybase
-    Left = 328
-    Top = 12
+    Left = 492
+    Top = 18
   end
   object dlgFileSave: TSaveDialog
     Options = [ofHideReadOnly, ofPathMustExist, ofEnableSizing]
-    Left = 20
-    Top = 68
+    Left = 30
+    Top = 102
   end
 end

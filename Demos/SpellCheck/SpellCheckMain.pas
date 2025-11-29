@@ -1,10 +1,10 @@
-unit Unit1;
+unit SpellCheckMain;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, dmCommands, SynEdit, Vcl.Menus;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, dmSpellCheckCommands, SynEdit, Vcl.Menus;
 
 type
   TForm1 = class(TForm)

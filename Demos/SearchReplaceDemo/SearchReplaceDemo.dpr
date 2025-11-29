@@ -31,7 +31,7 @@ program SearchReplaceDemo;
 
 uses
   Forms,
-  frmMain in 'frmMain.pas' {SearchReplaceDemoForm},
+  SearchReplaceMain in 'SearchReplaceMain.pas' {SearchReplaceDemoForm},
   dlgSearchText in 'dlgSearchText.pas' {TextSearchDialog},
   dlgReplaceText in 'dlgReplaceText.pas' {TextReplaceDialog},
   dlgConfirmReplace in 'dlgConfirmReplace.pas' {ConfirmReplaceDialog},

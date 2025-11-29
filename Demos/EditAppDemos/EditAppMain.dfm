@@ -1,39 +1,48 @@
 object MainForm: TMainForm
   Left = 186
   Top = 133
-  ClientHeight = 287
-  ClientWidth = 498
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
+  ClientHeight = 431
+  ClientWidth = 756
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Menu = mnuMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 20
   object StatusBar: TStatusBar
     Left = 0
-    Top = 268
-    Width = 498
-    Height = 19
+    Top = 402
+    Width = 756
+    Height = 29
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Action = actUpdateStatusBarPanels
     Panels = <
       item
         Alignment = taCenter
-        Width = 84
+        Width = 126
       end
       item
         Alignment = taCenter
-        Width = 72
+        Width = 108
       end
       item
         Alignment = taCenter
-        Width = 84
+        Width = 126
       end
       item
-        Width = 50
+        Width = 75
       end>
   end
   object mnuMain: TMainMenu
@@ -76,13 +85,10 @@ object MainForm: TMainForm
         Caption = '-'
       end
       object miFileSave: TMenuItem
-        Action = CommandsDataModule.actFileSave
       end
       object miFileSaveAs: TMenuItem
-        Action = CommandsDataModule.actFileSaveAs
       end
       object miFileClose: TMenuItem
-        Action = CommandsDataModule.actFileClose
       end
       object miFileCloseAll: TMenuItem
         Action = actFileCloseAll
@@ -91,7 +97,6 @@ object MainForm: TMainForm
         Caption = '-'
       end
       object miFilePrint: TMenuItem
-        Action = CommandsDataModule.actFilePrint
       end
       object N1: TMenuItem
         Caption = '-'
@@ -103,43 +108,32 @@ object MainForm: TMainForm
     object mEdit: TMenuItem
       Caption = '&Edit'
       object miEditUndo: TMenuItem
-        Action = CommandsDataModule.actEditUndo
       end
       object miEditRedo: TMenuItem
-        Action = CommandsDataModule.actEditRedo
       end
       object N2: TMenuItem
         Caption = '-'
       end
       object miEditCut: TMenuItem
-        Action = CommandsDataModule.actEditCut
       end
       object miEditCopy: TMenuItem
-        Action = CommandsDataModule.actEditCopy
       end
       object miEditPaste: TMenuItem
-        Action = CommandsDataModule.actEditPaste
       end
       object miEditDelete: TMenuItem
-        Action = CommandsDataModule.actEditDelete
       end
       object miEditSelectAll: TMenuItem
-        Action = CommandsDataModule.actEditSelectAll
       end
       object N3: TMenuItem
         Caption = '-'
       end
       object miEditFind: TMenuItem
-        Action = CommandsDataModule.actSearchFind
       end
       object miEditFindNext: TMenuItem
-        Action = CommandsDataModule.actSearchFindNext
       end
       object miEditFindPrev: TMenuItem
-        Action = CommandsDataModule.actSearchFindPrev
       end
       object miEditReplace: TMenuItem
-        Action = CommandsDataModule.actSearchReplace
       end
     end
     object mView: TMenuItem

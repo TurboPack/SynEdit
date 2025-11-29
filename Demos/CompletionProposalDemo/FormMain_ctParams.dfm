@@ -1,32 +1,44 @@
 object Form1: TForm1
   Left = 256
   Top = 122
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   Caption = 'Form1'
-  ClientHeight = 502
-  ClientWidth = 738
+  ClientHeight = 753
+  ClientWidth = 1116
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 20
   object SynTest: TSynEdit
-    Left = 416
-    Top = 8
-    Width = 321
-    Height = 497
+    Left = 624
+    Top = 12
+    Width = 482
+    Height = 746
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Courier New'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 0
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
@@ -49,8 +61,6 @@ object Form1: TForm1
       'See the source file execute event'
       'for more information.')
     ScrollbarAnnotations = <>
-    SelectedColor.Alpha = 0.449999988079071000
-    VisibleSpecialChars = []
     RemovedKeystrokes = <
       item
         Command = ecContextHelp
@@ -63,18 +73,25 @@ object Form1: TForm1
       end>
   end
   object SynEdit1: TSynEdit
-    Left = 6
-    Top = 96
-    Width = 401
-    Height = 401
+    Left = 9
+    Top = 144
+    Width = 602
+    Height = 602
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Courier New'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 1
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
@@ -101,8 +118,6 @@ object Form1: TForm1
       ''
       'TestFunction(Min(a, b), SomeVar, Another)')
     ScrollbarAnnotations = <>
-    SelectedColor.Alpha = 0.449999988079071000
-    VisibleSpecialChars = []
     RemovedKeystrokes = <
       item
         Command = ecContextHelp
@@ -115,10 +130,14 @@ object Form1: TForm1
       end>
   end
   object Button3: TButton
-    Left = 8
-    Top = 40
-    Width = 75
-    Height = 25
+    Left = 12
+    Top = 60
+    Width = 113
+    Height = 38
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'Font'
     TabOrder = 2
     OnClick = Button3Click

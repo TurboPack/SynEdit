@@ -1,37 +1,54 @@
 object PageSetupDlg: TPageSetupDlg
   Left = 196
   Top = 169
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   BorderStyle = bsDialog
   Caption = 'Page Setup'
-  ClientHeight = 397
-  ClientWidth = 632
+  ClientHeight = 596
+  ClientWidth = 957
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -12
+  Font.Height = -18
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
-  TextHeight = 15
+  PixelsPerInch = 144
+  TextHeight = 25
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 632
-    Height = 397
+    Width = 957
+    Height = 596
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     ActivePage = Margins
     Align = alClient
     TabOrder = 2
     OnChange = PageControlChange
     object Margins: TTabSheet
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Caption = 'Margins && Options'
       object Image1: TImage
-        Left = 275
-        Top = 10
+        Left = 413
+        Top = 15
         Width = 223
         Height = 292
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         AutoSize = True
         Picture.Data = {
           07544269746D617036800000424D36800000000000007600000028000000DF00
@@ -1063,165 +1080,257 @@ object PageSetupDlg: TPageSetupDlg
           FFF0}
       end
       object Label1: TLabel
-        Left = 10
-        Top = 44
-        Width = 23
-        Height = 15
+        Left = 15
+        Top = 66
+        Width = 33
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Left:'
       end
       object Label2: TLabel
-        Left = 10
-        Top = 69
-        Width = 31
-        Height = 15
+        Left = 15
+        Top = 104
+        Width = 46
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Right:'
       end
       object Label3: TLabel
-        Left = 10
-        Top = 94
-        Width = 23
-        Height = 15
+        Left = 15
+        Top = 141
+        Width = 33
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Top:'
       end
       object Label4: TLabel
-        Left = 10
-        Top = 119
-        Width = 43
-        Height = 15
+        Left = 15
+        Top = 179
+        Width = 64
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Bottom:'
       end
       object Label5: TLabel
-        Left = 10
-        Top = 14
-        Width = 30
-        Height = 15
+        Left = 15
+        Top = 21
+        Width = 44
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Units:'
       end
       object Label6: TLabel
-        Left = 10
-        Top = 174
-        Width = 41
-        Height = 15
+        Left = 15
+        Top = 261
+        Width = 61
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Header:'
       end
       object Label7: TLabel
-        Left = 10
-        Top = 199
-        Width = 37
-        Height = 15
+        Left = 15
+        Top = 299
+        Width = 56
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Footer:'
       end
       object Label8: TLabel
-        Left = 10
-        Top = 224
-        Width = 96
-        Height = 15
+        Left = 15
+        Top = 336
+        Width = 141
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'HFInternalMargin:'
       end
       object Label9: TLabel
-        Left = 10
-        Top = 249
-        Width = 93
-        Height = 15
+        Left = 15
+        Top = 374
+        Width = 136
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'LeftHFTextIndent:'
       end
       object Label10: TLabel
-        Left = 10
-        Top = 274
-        Width = 101
-        Height = 15
+        Left = 15
+        Top = 411
+        Width = 149
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'RightHFTextIndent:'
       end
       object Label11: TLabel
-        Left = 10
-        Top = 144
-        Width = 33
-        Height = 15
+        Left = 15
+        Top = 216
+        Width = 49
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Gutter'
       end
       object CBMirrorMargins: TCheckBox
-        Left = 10
-        Top = 300
-        Width = 97
-        Height = 17
+        Left = 15
+        Top = 450
+        Width = 146
+        Height = 26
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Mirror margins'
         TabOrder = 0
       end
       object EditLeft: TEdit
-        Left = 110
-        Top = 40
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 60
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 1
       end
       object EditRight: TEdit
-        Left = 110
-        Top = 65
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 98
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 2
       end
       object EditTop: TEdit
-        Left = 110
-        Top = 90
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 135
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 3
       end
       object EditBottom: TEdit
-        Left = 110
-        Top = 115
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 173
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 4
       end
       object EditGutter: TEdit
-        Left = 110
-        Top = 140
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 210
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 5
       end
       object EditHeader: TEdit
-        Left = 110
-        Top = 170
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 255
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 6
       end
       object EditFooter: TEdit
-        Left = 110
-        Top = 195
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 293
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 7
       end
       object EditHFInternalMargin: TEdit
-        Left = 110
-        Top = 220
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 330
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 8
       end
       object EditLeftHFTextIndent: TEdit
-        Left = 110
-        Top = 245
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 368
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 9
       end
       object EditRightHFTextIndent: TEdit
-        Left = 110
-        Top = 270
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 405
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         TabOrder = 10
       end
       object CBUnits: TComboBox
-        Left = 110
-        Top = 10
-        Width = 151
-        Height = 23
+        Left = 165
+        Top = 15
+        Width = 227
+        Height = 33
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Style = csDropDownList
         TabOrder = 11
         OnChange = CBUnitsChange
@@ -1232,85 +1341,129 @@ object PageSetupDlg: TPageSetupDlg
           'Thousandths Of Inches')
       end
       object CBLineNumbers: TCheckBox
-        Left = 10
-        Top = 320
-        Width = 97
-        Height = 17
+        Left = 15
+        Top = 480
+        Width = 146
+        Height = 26
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Line numbers'
         TabOrder = 12
       end
       object CBLineNumbersInMargin: TCheckBox
-        Left = 10
-        Top = 340
-        Width = 156
-        Height = 17
+        Left = 15
+        Top = 510
+        Width = 234
+        Height = 26
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Line numbers in margin'
         TabOrder = 13
       end
       object CBHighlight: TCheckBox
-        Left = 185
-        Top = 300
-        Width = 81
-        Height = 17
+        Left = 278
+        Top = 450
+        Width = 121
+        Height = 26
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Syntax print'
         TabOrder = 14
       end
       object CBColors: TCheckBox
-        Left = 185
-        Top = 320
-        Width = 76
-        Height = 17
+        Left = 278
+        Top = 480
+        Width = 114
+        Height = 26
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Use colors'
         TabOrder = 15
       end
       object CBWrap: TCheckBox
-        Left = 185
-        Top = 339
-        Width = 76
-        Height = 17
+        Left = 278
+        Top = 509
+        Width = 114
+        Height = 25
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Wrap lines'
         TabOrder = 16
       end
     end
     object HeaderFooter: TTabSheet
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Caption = 'Header && Footer'
       ImageIndex = 1
       object GroupBox1: TGroupBox
-        Left = 5
-        Top = 30
-        Width = 611
-        Height = 161
+        Left = 8
+        Top = 45
+        Width = 916
+        Height = 242
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Header'
         TabOrder = 0
         object Label12: TLabel
-          Left = 10
-          Top = 15
-          Width = 20
-          Height = 15
+          Left = 15
+          Top = 23
+          Width = 29
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Left'
         end
         object Label13: TLabel
-          Left = 210
-          Top = 15
-          Width = 35
-          Height = 15
+          Left = 315
+          Top = 23
+          Width = 51
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Center'
         end
         object Label14: TLabel
-          Left = 410
-          Top = 15
-          Width = 28
-          Height = 15
+          Left = 615
+          Top = 23
+          Width = 42
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Right'
         end
         object REHeaderLeft: TRichEdit
-          Left = 10
-          Top = 30
-          Width = 191
-          Height = 56
+          Left = 15
+          Top = 45
+          Width = 287
+          Height = 84
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -12
+          Font.Height = -18
           Font.Name = 'Segoe UI'
           Font.Style = []
           ParentFont = False
@@ -1321,14 +1474,18 @@ object PageSetupDlg: TPageSetupDlg
           OnSelectionChange = REHeaderLeftSelectionChange
         end
         object REHeaderCenter: TRichEdit
-          Left = 210
-          Top = 30
-          Width = 191
-          Height = 56
+          Left = 315
+          Top = 45
+          Width = 287
+          Height = 84
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Alignment = taCenter
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -12
+          Font.Height = -18
           Font.Name = 'Segoe UI'
           Font.Style = []
           ParentFont = False
@@ -1339,14 +1496,18 @@ object PageSetupDlg: TPageSetupDlg
           OnSelectionChange = REHeaderLeftSelectionChange
         end
         object REHeaderRight: TRichEdit
-          Left = 410
-          Top = 30
-          Width = 191
-          Height = 56
+          Left = 615
+          Top = 45
+          Width = 287
+          Height = 84
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Alignment = taRightJustify
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -12
+          Font.Height = -18
           Font.Name = 'Segoe UI'
           Font.Style = []
           ParentFont = False
@@ -1357,74 +1518,110 @@ object PageSetupDlg: TPageSetupDlg
           OnSelectionChange = REHeaderLeftSelectionChange
         end
         object CBHeaderMirror: TCheckBox
-          Left = 410
-          Top = 95
-          Width = 97
-          Height = 17
+          Left = 615
+          Top = 143
+          Width = 146
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Mirror position'
           TabOrder = 4
           OnEnter = CBFooterLineEnter
         end
         object GroupBox2: TGroupBox
-          Left = 10
-          Top = 90
-          Width = 391
-          Height = 61
+          Left = 15
+          Top = 135
+          Width = 587
+          Height = 92
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Appearance'
           TabOrder = 3
           object PBHeaderLine: TPaintBox
-            Left = 85
-            Top = 20
-            Width = 25
-            Height = 25
+            Left = 128
+            Top = 30
+            Width = 37
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             OnPaint = PBHeaderLinePaint
           end
           object PBHeaderShadow: TPaintBox
-            Left = 275
-            Top = 20
-            Width = 25
-            Height = 25
+            Left = 413
+            Top = 30
+            Width = 37
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             OnPaint = PBHeaderLinePaint
           end
           object CBHeaderLine: TCheckBox
-            Left = 8
-            Top = 19
-            Width = 73
-            Height = 17
+            Left = 12
+            Top = 29
+            Width = 110
+            Height = 25
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Line under'
             TabOrder = 0
           end
           object CBHeaderBox: TCheckBox
-            Left = 8
-            Top = 39
-            Width = 48
-            Height = 17
+            Left = 12
+            Top = 59
+            Width = 72
+            Height = 25
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Box'
             TabOrder = 1
           end
           object CBHeaderShadow: TCheckBox
-            Left = 209
-            Top = 19
-            Width = 62
-            Height = 17
+            Left = 314
+            Top = 29
+            Width = 93
+            Height = 25
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Shadow'
             TabOrder = 2
           end
           object HeaderLineColorBtn: TButton
-            Left = 120
-            Top = 20
-            Width = 75
-            Height = 25
+            Left = 180
+            Top = 30
+            Width = 113
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Line color'
             TabOrder = 3
             OnClick = HeaderLineColorBtnClick
             OnEnter = CBFooterLineEnter
           end
           object HeaderShadowColorBtn: TButton
-            Left = 310
-            Top = 20
-            Width = 75
-            Height = 25
+            Left = 465
+            Top = 30
+            Width = 113
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Shadow color'
             TabOrder = 4
             OnClick = HeaderShadowColorBtnClick
@@ -1433,41 +1630,61 @@ object PageSetupDlg: TPageSetupDlg
         end
       end
       object GroupBox3: TGroupBox
-        Left = 5
-        Top = 200
-        Width = 611
-        Height = 161
+        Left = 8
+        Top = 300
+        Width = 916
+        Height = 242
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         Caption = 'Footer'
         TabOrder = 1
         object Label15: TLabel
-          Left = 10
-          Top = 15
-          Width = 20
-          Height = 15
+          Left = 15
+          Top = 23
+          Width = 29
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Left'
         end
         object Label16: TLabel
-          Left = 210
-          Top = 15
-          Width = 35
-          Height = 15
+          Left = 315
+          Top = 23
+          Width = 51
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Center'
         end
         object Label17: TLabel
-          Left = 410
-          Top = 15
-          Width = 28
-          Height = 15
+          Left = 615
+          Top = 23
+          Width = 42
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Right'
         end
         object REFooterLeft: TRichEdit
-          Left = 10
-          Top = 30
-          Width = 191
-          Height = 56
+          Left = 15
+          Top = 45
+          Width = 287
+          Height = 84
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -12
+          Font.Height = -18
           Font.Name = 'Segoe UI'
           Font.Style = []
           ParentFont = False
@@ -1478,14 +1695,18 @@ object PageSetupDlg: TPageSetupDlg
           OnSelectionChange = REHeaderLeftSelectionChange
         end
         object REFooterCenter: TRichEdit
-          Left = 210
-          Top = 30
-          Width = 191
-          Height = 56
+          Left = 315
+          Top = 45
+          Width = 287
+          Height = 84
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Alignment = taCenter
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -12
+          Font.Height = -18
           Font.Name = 'Segoe UI'
           Font.Style = []
           ParentFont = False
@@ -1496,14 +1717,18 @@ object PageSetupDlg: TPageSetupDlg
           OnSelectionChange = REHeaderLeftSelectionChange
         end
         object REFooterRight: TRichEdit
-          Left = 410
-          Top = 30
-          Width = 191
-          Height = 56
+          Left = 615
+          Top = 45
+          Width = 287
+          Height = 84
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Alignment = taRightJustify
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -12
+          Font.Height = -18
           Font.Name = 'Segoe UI'
           Font.Style = []
           ParentFont = False
@@ -1514,77 +1739,113 @@ object PageSetupDlg: TPageSetupDlg
           OnSelectionChange = REHeaderLeftSelectionChange
         end
         object CBFooterMirror: TCheckBox
-          Left = 410
-          Top = 95
-          Width = 97
-          Height = 17
+          Left = 615
+          Top = 143
+          Width = 146
+          Height = 25
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Mirror position'
           TabOrder = 4
           OnEnter = CBFooterLineEnter
         end
         object GroupBox4: TGroupBox
-          Left = 10
-          Top = 90
-          Width = 391
-          Height = 61
+          Left = 15
+          Top = 135
+          Width = 587
+          Height = 92
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'Appearance'
           TabOrder = 3
           object PBFooterLine: TPaintBox
-            Left = 85
-            Top = 20
-            Width = 25
-            Height = 25
+            Left = 128
+            Top = 30
+            Width = 37
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             OnPaint = PBHeaderLinePaint
           end
           object PBFooterShadow: TPaintBox
-            Left = 275
-            Top = 20
-            Width = 25
-            Height = 25
+            Left = 413
+            Top = 30
+            Width = 37
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             OnPaint = PBHeaderLinePaint
           end
           object CBFooterLine: TCheckBox
-            Left = 8
-            Top = 19
-            Width = 73
-            Height = 17
+            Left = 12
+            Top = 29
+            Width = 110
+            Height = 25
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Line above'
             TabOrder = 0
             OnEnter = CBFooterLineEnter
           end
           object CBFooterBox: TCheckBox
-            Left = 8
-            Top = 39
-            Width = 48
-            Height = 17
+            Left = 12
+            Top = 59
+            Width = 72
+            Height = 25
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Box'
             TabOrder = 1
             OnEnter = CBFooterLineEnter
           end
           object CBFooterShadow: TCheckBox
-            Left = 209
-            Top = 24
-            Width = 62
-            Height = 17
+            Left = 314
+            Top = 36
+            Width = 93
+            Height = 26
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Shadow'
             TabOrder = 2
             OnEnter = CBFooterLineEnter
           end
           object FooterLineColorBtn: TButton
-            Left = 120
-            Top = 20
-            Width = 75
-            Height = 25
+            Left = 180
+            Top = 30
+            Width = 113
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Line color'
             TabOrder = 3
             OnClick = FooterLineColorBtnClick
             OnEnter = CBFooterLineEnter
           end
           object FooterShadowColorBtn: TButton
-            Left = 310
-            Top = 20
-            Width = 75
-            Height = 25
+            Left = 465
+            Top = 30
+            Width = 113
+            Height = 38
+            Margins.Left = 5
+            Margins.Top = 5
+            Margins.Right = 5
+            Margins.Bottom = 5
             Caption = 'Shadow color'
             TabOrder = 4
             OnClick = FooterShadowColorBtnClick
@@ -1595,9 +1856,15 @@ object PageSetupDlg: TPageSetupDlg
       object ToolBar1: TToolBar
         Left = 0
         Top = 0
-        Width = 624
-        Height = 24
+        Width = 949
+        Height = 35
+        Margins.Left = 5
+        Margins.Top = 5
+        Margins.Right = 5
+        Margins.Bottom = 5
         AutoSize = True
+        ButtonHeight = 33
+        ButtonWidth = 35
         Caption = 'ToolBar1'
         EdgeBorders = [ebBottom]
         Images = ImageList1
@@ -1606,78 +1873,122 @@ object PageSetupDlg: TPageSetupDlg
         object ToolButton1: TToolButton
           Left = 5
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = PageNumCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton2: TToolButton
-          Left = 28
+          Left = 40
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = PagesCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton3: TToolButton
-          Left = 51
+          Left = 75
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = TimeCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton4: TToolButton
-          Left = 74
+          Left = 110
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = DateCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton11: TToolButton
-          Left = 97
+          Left = 145
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = TitleCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton12: TToolButton
-          Left = 120
+          Left = 180
           Top = 0
-          Width = 6
+          Width = 9
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'ToolButton12'
           ImageIndex = 9
           Style = tbsSeparator
         end
         object ToolButton6: TToolButton
-          Left = 126
+          Left = 189
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = FontCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton10: TToolButton
-          Left = 149
+          Left = 224
           Top = 0
-          Width = 8
+          Width = 12
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Caption = 'ToolButton10'
           ImageIndex = 8
           Style = tbsSeparator
         end
         object ToolButton7: TToolButton
-          Left = 157
+          Left = 236
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = BoldCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton8: TToolButton
-          Left = 180
+          Left = 271
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = ItalicCmd
           ParentShowHint = False
           ShowHint = True
         end
         object ToolButton9: TToolButton
-          Left = 203
+          Left = 306
           Top = 0
+          Margins.Left = 5
+          Margins.Top = 5
+          Margins.Right = 5
+          Margins.Bottom = 5
           Action = UnderlineCmd
           ParentShowHint = False
           ShowHint = True
@@ -1686,20 +1997,28 @@ object PageSetupDlg: TPageSetupDlg
     end
   end
   object OKBtn: TButton
-    Left = 534
-    Top = 320
-    Width = 75
-    Height = 25
+    Left = 801
+    Top = 480
+    Width = 113
+    Height = 38
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'OK'
     Default = True
     ModalResult = 1
     TabOrder = 0
   end
   object CancelBtn: TButton
-    Left = 534
-    Top = 350
-    Width = 75
-    Height = 25
+    Left = 801
+    Top = 525
+    Width = 113
+    Height = 38
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Cancel = True
     Caption = 'Cancel'
     ModalResult = 2
