@@ -23,12 +23,16 @@ If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 -------------------------------------------------------------------------------}
 unit frmEditor;
+
 {$I SynEdit.inc}
+
 interface
+
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Menus,
   uEditAppIntfs, SynEdit, SynEditTypes, SynEditMiscProcs,
   SynEditMiscClasses, SynEditSearch, SynUnicode;
+
 type
   TEditorKind = (ekBorderless, ekInTabsheet, ekMDIChild);
   TEditor = class;
@@ -133,12 +137,18 @@ type
     constructor Create(AForm: TEditorForm);
     procedure DoSetFileName(AFileName: string);
   end;
+
 implementation
+
 {$R *.DFM}
+
 uses
-  ComCtrls, dmCommands, dlgSearchText, dlgReplaceText, dlgConfirmReplace;
+  ComCtrls, dmWorkbookCommands, dlgSearchText, dlgReplaceText, dlgConfirmReplace,
+  System.Types;
+
 const
   WM_DELETETHIS  =  WM_USER + 42;
+
 var
   gbSearchBackwards: Boolean;
   gbSearchCaseSensitive: Boolean;
@@ -158,7 +168,9 @@ resourcestring
   SEditorCaption = 'Editor';
   SAskSaveChanges = 'The text in the "%s" file has changed.'#13#10#13#10 +
                     'Do you want to save the modifications?';
+
 { TEditor }
+
 constructor TEditor.Create(AForm: TEditorForm);
 begin
   Assert(AForm <> nil);
@@ -166,11 +178,13 @@ begin
   fForm := AForm;
   fUntitledNumber := -1;
 end;
+
 procedure TEditor.Activate;
 begin
   if fForm <> nil then
     fForm.DoActivate;
 end;
+
 function TEditor.AskSaveChanges: Boolean;
 begin
   if fForm <> nil then
@@ -178,10 +192,12 @@ begin
   else
     Result := True;
 end;
+
 function TEditor.CanClose: Boolean;
 begin
   Result := fForm <> nil;
 end;
+
 procedure TEditor.Close;
 begin
   if (fFileName <> '') and (CommandsDataModule <> nil) then
@@ -191,6 +207,7 @@ begin
   if fForm <> nil then
     fForm.Close;
 end;
+
 procedure TEditor.DoSetFileName(AFileName: string);
 begin
   if AFileName <> fFileName then begin
@@ -201,6 +218,7 @@ begin
     end;
   end;
 end;
+
 function TEditor.GetCaretPos: TPoint;
 begin
   if fForm <> nil then
@@ -208,6 +226,7 @@ begin
   else
     Result := Point(-1, -1);
 end;
+
 function TEditor.GetEditorState: string;
 begin
   if fForm <> nil then begin
@@ -220,10 +239,12 @@ begin
   end else
     Result := '';
 end;
+
 function TEditor.GetFileName: string;
 begin
   Result := fFileName;
 end;
+
 function TEditor.GetFileTitle: string;
 begin
   if fFileName <> '' then
@@ -234,6 +255,7 @@ begin
     Result := SNonameFileTitle + IntToStr(fUntitledNumber);
   end;
 end;
+
 function TEditor.GetModified: Boolean;
 begin
   if fForm <> nil then
@@ -241,6 +263,7 @@ begin
   else
     Result := False;
 end;
+
 procedure TEditor.OpenFile(AFileName: string);
 begin
   fFileName := AFileName;
@@ -253,41 +276,50 @@ begin
     fForm.DoUpdateHighlighter;
   end;
 end;
+
 // IEditCommands implementation
 function TEditor.CanCopy: Boolean;
 begin
   Result := (fForm <> nil) and fHasSelection;
 end;
+
 function TEditor.CanCut: Boolean;
 begin
   Result := (fForm <> nil) and fHasSelection and not fIsReadOnly;
 end;
+
 function TEditor.CanPaste: Boolean;
 begin
   Result := (fForm <> nil) and fForm.SynEditor.CanPaste;
 end;
+
 function TEditor.CanRedo: Boolean;
 begin
   Result := (fForm <> nil) and fForm.SynEditor.CanRedo;
 end;
+
 function TEditor.CanSelectAll: Boolean;
 begin
   Result := fForm <> nil;
 end;
+
 function TEditor.CanUndo: Boolean;
 begin
   Result := (fForm <> nil) and fForm.SynEditor.CanUndo;
 end;
+
 procedure TEditor.ExecCopy;
 begin
   if fForm <> nil then
     fForm.SynEditor.CopyToClipboard;
 end;
+
 procedure TEditor.ExecCut;
 begin
   if fForm <> nil then
     fForm.SynEditor.CutToClipboard;
 end;
+
 procedure TEditor.ExecDelete;
 begin
   if fForm <> nil then

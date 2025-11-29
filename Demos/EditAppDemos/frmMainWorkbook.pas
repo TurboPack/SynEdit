@@ -35,7 +35,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  frmMain, ComCtrls, ActnList, Menus, uEditAppIntfs;
+  ComCtrls, ActnList, Menus, uEditAppIntfs, EditAppMain, System.Actions;
 
 type
   TWorkbookMainForm = class(TMainForm)

@@ -31,7 +31,7 @@ program HighlighterDemo;
 
 uses
   Forms,
-  uMain in 'uMain.pas' {Form1};
+  uHighlighterMain in 'uHighlighterMain.pas' {Form1};
 
 begin
   Application.Initialize;

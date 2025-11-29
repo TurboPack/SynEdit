@@ -31,7 +31,7 @@ program SimpleIDEDemo;
 
 uses
   Forms,
-  frmMain in 'frmMain.pas' {SimpleIDEMainForm},
+  SimpleIdeMain in 'SimpleIdeMain.pas' {SimpleIDEMainForm},
   uSimpleIDEDebugger in 'uSimpleIDEDebugger.pas';
 
 {$R *.RES}

@@ -2,7 +2,7 @@ program MarkdownViewerDemo;
 
 uses
   Vcl.Forms,
-  frmMain in 'frmMain.pas' {Form1},
+  frmMarkdownMain in 'frmMarkdownMain.pas' {Form1},
   SynMarkdownViewer in 'SynMarkdownViewer.pas';
 
 {$R *.res}

@@ -1,4 +1,4 @@
-unit Unit1;
+unit uFoldingDemoForm;
 
 interface
 
@@ -11,7 +11,7 @@ uses
   SynEditHighlighter, SynHighlighterCpp, SynEditCodeFolding;
 
 type
-  TForm1 = class(TForm)
+  TFoldingDemoForm = class(TForm)
     ActionManager1: TActionManager;
     ActionMainMenuBar1: TActionMainMenuBar;
     PopupActionBar1: TPopupActionBar;
@@ -107,7 +107,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  FoldingDemoForm: TFoldingDemoForm;
 
 implementation
 
@@ -118,24 +118,24 @@ uses
 
 {$R *.dfm}
 
-procedure TForm1.actCodeFoldingExecute(Sender: TObject);
+procedure TFoldingDemoForm.actCodeFoldingExecute(Sender: TObject);
 begin
   SynEdit1.UseCodeFolding := actCodeFolding.Checked;
 end;
 
-procedure TForm1.actCPPExecute(Sender: TObject);
+procedure TFoldingDemoForm.actCPPExecute(Sender: TObject);
 begin
   SynEditPythonBehaviour1.Editor := nil;
   SynEdit1.OnScanForFoldRanges := ScanForFoldRanges;
   SynEdit1.Highlighter := SynCppSyn1;
 end;
 
-procedure TForm1.actFoldExecute(Sender: TObject);
+procedure TFoldingDemoForm.actFoldExecute(Sender: TObject);
 begin
   SynEdit1.ExecuteCommand(TAction(Sender).Tag, ' ', nil);
 end;
 
-procedure TForm1.actFoldShapeSizeExecute(Sender: TObject);
+procedure TFoldingDemoForm.actFoldShapeSizeExecute(Sender: TObject);
 var
   S: string;
   Size: Integer;
@@ -146,17 +146,17 @@ begin
     SynEdit1.CodeFolding.GutterShapeSize := Size;
 end;
 
-procedure TForm1.actFoldUpdate(Sender: TObject);
+procedure TFoldingDemoForm.actFoldUpdate(Sender: TObject);
 begin
   TAction(Sender).Enabled := SynEdit1.UseCodeFolding;
 end;
 
-procedure TForm1.actGutterLinesExecute(Sender: TObject);
+procedure TFoldingDemoForm.actGutterLinesExecute(Sender: TObject);
 begin
   Synedit1.Gutter.ShowLineNumbers := actGutterLines.Checked;
 end;
 
-procedure TForm1.ActionManager1Update(Action: TBasicAction;
+procedure TFoldingDemoForm.ActionManager1Update(Action: TBasicAction;
   var Handled: Boolean);
 begin
   actCodeFolding.Checked := SynEdit1.UseCodeFolding;
@@ -164,21 +164,21 @@ begin
   actShowCollapsedMarks.Checked := SynEdit1.CodeFolding.ShowHintMark;
 end;
 
-procedure TForm1.actJavaScriptExecute(Sender: TObject);
+procedure TFoldingDemoForm.actJavaScriptExecute(Sender: TObject);
 begin
   SynEditPythonBehaviour1.Editor := nil;
   SynEdit1.OnScanForFoldRanges := nil;
   SynEdit1.Highlighter := SynJScriptSyn1;
 end;
 
-procedure TForm1.actPythonExecute(Sender: TObject);
+procedure TFoldingDemoForm.actPythonExecute(Sender: TObject);
 begin
   SynEditPythonBehaviour1.Editor := Synedit1;
   SynEditPythonBehaviour1.Editor := nil;
   SynEdit1.Highlighter := SynPythonSyn1;
 end;
 
-procedure TForm1.ActSaveExecute(Sender: TObject);
+procedure TFoldingDemoForm.ActSaveExecute(Sender: TObject);
 begin
   if FileName = '' then
     FileSaveAs1.Execute
@@ -186,28 +186,28 @@ begin
     SynEdit1.Lines.SaveToFile(FileName);
 end;
 
-procedure TForm1.actShowCollapsedLinesExecute(Sender: TObject);
+procedure TFoldingDemoForm.actShowCollapsedLinesExecute(Sender: TObject);
 begin
   SynEdit1.CodeFolding.ShowCollapsedLine := TAction(Sender).Checked;
 end;
 
-procedure TForm1.DialogFontEdit1BeforeExecute(Sender: TObject);
+procedure TFoldingDemoForm.DialogFontEdit1BeforeExecute(Sender: TObject);
 begin
   DialogFontEdit1.Dialog.Font := SynEdit1.Font;
 end;
 
-procedure TForm1.DialogFontEdit1FontDialogApply(Sender: TObject; Wnd: HWND);
+procedure TFoldingDemoForm.DialogFontEdit1FontDialogApply(Sender: TObject; Wnd: HWND);
 begin
  SynEdit1.Font.Assign(DialogFontEdit1.Dialog.Font);
 end;
 
-procedure TForm1.DialogPrintDlg1Accept(Sender: TObject);
+procedure TFoldingDemoForm.DialogPrintDlg1Accept(Sender: TObject);
 begin
   SynEditPrint1.SynEdit := SynEdit1;
   SynEditPrint1.Print;
 end;
 
-procedure TForm1.FileOpen1Accept(Sender: TObject);
+procedure TFoldingDemoForm.FileOpen1Accept(Sender: TObject);
 begin
   FileName := FileOpen1.Dialog.FileName;
   SynEdit1.Lines.LoadFromFile(FileName);
@@ -223,13 +223,13 @@ begin
   SynEdit1.UseCodeFolding := actCodeFolding.Checked;
 end;
 
-procedure TForm1.FileSaveAs1Accept(Sender: TObject);
+procedure TFoldingDemoForm.FileSaveAs1Accept(Sender: TObject);
 begin
   FileName := FileSaveAs1.Dialog.FileName;
   SynEdit1.Lines.SaveToFile(FileName);
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TFoldingDemoForm.FormCreate(Sender: TObject);
 begin
   Highlighters := TStringList.Create;
   GetHighlighters(Self, Highlighters, False);
@@ -251,12 +251,12 @@ begin
   actUnfoldLevel3.Tag :=  ecUnfoldLevel3;
 end;
 
-procedure TForm1.FormDestroy(Sender: TObject);
+procedure TFoldingDemoForm.FormDestroy(Sender: TObject);
 begin
  Highlighters.Free;
 end;
 
-procedure TForm1.ScanForFoldRanges(Sender: TObject;
+procedure TFoldingDemoForm.ScanForFoldRanges(Sender: TObject;
   TopFoldRanges: TSynFoldRanges; LinesToScan: TStrings; FromLine,
   ToLine: Integer);
 var
@@ -382,7 +382,7 @@ begin
   end; // while Line
 end;
 
-procedure TForm1.actShowCollapsedMarksExecute(Sender: TObject);
+procedure TFoldingDemoForm.actShowCollapsedMarksExecute(Sender: TObject);
 begin
   SynEdit1.CodeFolding.ShowHintMark := TAction(Sender).Checked;
 end;

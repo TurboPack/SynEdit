@@ -1,14 +1,18 @@
 object EditorForm: TEditorForm
   Left = 338
   Top = 199
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   ActiveControl = SynEditor
   Caption = 'Editor'
-  ClientHeight = 287
-  ClientWidth = 448
+  ClientHeight = 431
+  ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OnActivate = FormActivate
@@ -17,16 +21,21 @@ object EditorForm: TEditorForm
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
   OnShow = FormShow
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 20
   object SynEditor: TSynEdit
     Left = 0
     Top = 0
-    Width = 448
-    Height = 287
+    Width = 681
+    Height = 431
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Courier New'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
@@ -35,6 +44,9 @@ object EditorForm: TEditorForm
     OnEnter = SynEditorEnter
     OnExit = SynEditorExit
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
@@ -56,11 +68,8 @@ object EditorForm: TEditorForm
         Kind = gbkMargin
         Width = 2
       end>
-    Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
     ScrollbarAnnotations = <>
     SearchEngine = SynEditSearch1
-    SelectedColor.Alpha = 0.400000005960464500
-    VisibleSpecialChars = []
     OnChange = SynEditorChange
     OnReplaceText = SynEditorReplaceText
     OnStatusChange = SynEditorStatusChange
@@ -79,31 +88,24 @@ object EditorForm: TEditorForm
     Left = 92
     Top = 28
     object lmiEditUndo: TMenuItem
-      Action = CommandsDataModule.actEditUndo
     end
     object lmiEditRedo: TMenuItem
-      Action = CommandsDataModule.actEditRedo
     end
     object N2: TMenuItem
       Caption = '-'
     end
     object lmiEditCut: TMenuItem
-      Action = CommandsDataModule.actEditCut
     end
     object lmiEditCopy: TMenuItem
-      Action = CommandsDataModule.actEditCopy
     end
     object lmiEditPaste: TMenuItem
-      Action = CommandsDataModule.actEditPaste
     end
     object lmiEditDelete: TMenuItem
-      Action = CommandsDataModule.actEditDelete
     end
     object N1: TMenuItem
       Caption = '-'
     end
     object lmiEditSelectAll: TMenuItem
-      Action = CommandsDataModule.actEditSelectAll
     end
   end
   object SynEditSearch1: TSynEditSearch

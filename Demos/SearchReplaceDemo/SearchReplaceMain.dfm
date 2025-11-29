@@ -1,32 +1,44 @@
 object SearchReplaceDemoForm: TSearchReplaceDemoForm
   Left = 100
   Top = 122
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   Caption = 'Search and replace demo'
-  ClientHeight = 557
-  ClientWidth = 830
+  ClientHeight = 836
+  ClientWidth = 1254
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OnCreate = FormCreate
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 20
   object SynEditor: TSynEdit
     Left = 0
-    Top = 26
-    Width = 830
-    Height = 512
+    Top = 37
+    Width = 1254
+    Height = 770
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Courier New'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 0
     OnMouseDown = SynEditorMouseDown
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
@@ -49,10 +61,7 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
         Kind = gbkMargin
         Width = 2
       end>
-    Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
     ScrollbarAnnotations = <>
-    SelectedColor.Alpha = 0.400000005960464500
-    VisibleSpecialChars = []
     OnProcessCommand = SynEditorProcessCommand
     OnReplaceText = SynEditorReplaceText
     RemovedKeystrokes = <
@@ -69,61 +78,99 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
   object ToolBarMain: TToolBar
     Left = 0
     Top = 0
-    Width = 830
-    Height = 26
+    Width = 1254
+    Height = 37
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     AutoSize = True
     BorderWidth = 1
+    ButtonHeight = 33
+    ButtonWidth = 35
     Caption = 'Standard'
     Images = VirtualImageList
     TabOrder = 1
     object ToolButtonFileOpen: TToolButton
       Left = 0
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionFileOpen
     end
     object ToolButtonSeparator1: TToolButton
-      Left = 23
+      Left = 35
       Top = 0
-      Width = 8
+      Width = 12
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       ImageIndex = 1
       ImageName = 'Item2'
       Style = tbsSeparator
     end
     object ToolButtonSearch: TToolButton
-      Left = 31
+      Left = 47
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionSearch
     end
     object ToolButtonSearchNext: TToolButton
-      Left = 54
+      Left = 82
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionSearchNext
     end
     object ToolButtonSearchPrev: TToolButton
-      Left = 77
+      Left = 117
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionSearchPrev
     end
     object ToolButtonSeparator2: TToolButton
-      Left = 100
+      Left = 152
       Top = 0
-      Width = 8
+      Width = 12
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Caption = 'ToolButtonSeparator2'
       ImageIndex = 4
       ImageName = 'Item5'
       Style = tbsSeparator
     end
     object ToolButtonSearchReplace: TToolButton
-      Left = 108
+      Left = 164
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionSearchReplace
     end
   end
   object Statusbar: TStatusBar
     Left = 0
-    Top = 538
-    Width = 830
-    Height = 19
+    Top = 807
+    Width = 1254
+    Height = 29
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Panels = <>
     SimplePanel = True
   end
@@ -285,6 +332,8 @@ object SearchReplaceDemoForm: TSearchReplaceDemoForm
         Name = 'Item5'
       end>
     ImageCollection = ImageCollection
+    Width = 24
+    Height = 24
     Left = 216
     Top = 48
   end

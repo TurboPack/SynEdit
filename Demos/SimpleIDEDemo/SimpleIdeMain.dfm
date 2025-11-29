@@ -1,97 +1,147 @@
 object SimpleIDEMainForm: TSimpleIDEMainForm
   Left = 108
   Top = 107
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   Caption = 'Simple IDE Demo'
-  ClientHeight = 582
-  ClientWidth = 877
+  ClientHeight = 873
+  ClientWidth = 1325
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -17
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   Menu = MainMenu
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  TextHeight = 13
+  PixelsPerInch = 144
+  TextHeight = 20
   object ToolBarDebug: TToolBar
     Left = 0
     Top = 0
-    Width = 877
-    Height = 30
+    Width = 1325
+    Height = 41
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     AutoSize = True
     BorderWidth = 2
+    ButtonHeight = 33
+    ButtonWidth = 35
     Caption = 'Debug'
     Images = vilActions
     TabOrder = 0
     object ToolButtonRun: TToolButton
       Left = 0
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionDebugRun
       ImageName = 'Item1'
     end
     object ToolButtonStep: TToolButton
-      Left = 23
+      Left = 35
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionDebugStep
       ImageName = 'Item2'
     end
     object ToolButtonGotoCursor: TToolButton
-      Left = 46
+      Left = 70
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionDebugGotoCursor
       ImageName = 'Item3'
     end
     object ToolButtonPause: TToolButton
-      Left = 69
+      Left = 105
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionDebugPause
       ImageName = 'Item4'
     end
     object ToolButtonStop: TToolButton
-      Left = 92
+      Left = 140
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionDebugStop
       ImageName = 'Item5'
     end
     object ToolButtonSeparator: TToolButton
-      Left = 115
+      Left = 175
       Top = 0
-      Width = 8
+      Width = 12
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Caption = 'ToolButtonSeparator'
       ImageIndex = 5
       ImageName = 'Item6'
       Style = tbsSeparator
     end
     object ToolButtonToggleBreakpoint: TToolButton
-      Left = 123
+      Left = 187
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionToggleBreakpoint
       ImageName = 'Item6'
     end
     object ToolButtonClearAllBreakpoints: TToolButton
-      Left = 146
+      Left = 222
       Top = 0
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
       Action = ActionClearAllBreakpoints
       ImageName = 'Item7'
     end
   end
   object SynEditor: TSynEdit
     Left = 0
-    Top = 30
-    Width = 877
-    Height = 533
+    Top = 41
+    Width = 1325
+    Height = 804
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Courier New'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     TabOrder = 1
     CodeFolding.ShowCollapsedLine = True
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
@@ -121,18 +171,19 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
         Width = 2
       end>
     Highlighter = SynPasSyn
-    Options = [eoAutoIndent, eoKeepCaretX, eoScrollByOneLess, eoSmartTabs, eoTabsToSpaces, eoTrimTrailingSpaces]
     ReadOnly = True
     ScrollbarAnnotations = <>
-    SelectedColor.Alpha = 0.400000005960464500
-    VisibleSpecialChars = []
     OnSpecialLineColors = SynEditorSpecialLineColors
   end
   object Statusbar: TStatusBar
     Left = 0
-    Top = 563
-    Width = 877
-    Height = 19
+    Top = 845
+    Width = 1325
+    Height = 28
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Panels = <>
     SimplePanel = True
     SimpleText = ' Ready'
@@ -368,6 +419,8 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
         Name = 'Item7'
       end>
     ImageCollection = icActions
+    Width = 24
+    Height = 24
     Left = 40
     Top = 248
   end
@@ -481,8 +534,8 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
         Name = 'Item6'
       end>
     ImageCollection = icGutterGlyphs
-    Width = 11
-    Height = 14
+    Width = 17
+    Height = 21
     Left = 160
     Top = 244
   end

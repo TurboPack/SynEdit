@@ -31,11 +31,11 @@ program EditAppMDI;
 
 uses
   Forms,
-  frmMain in 'frmMain.pas' {MainForm},
+  EditAppMain in 'EditAppMain.pas' {MainForm},
   frmMainMDI in 'frmMainMDI.pas' {MDIMainForm},
   uEditAppIntfs in 'uEditAppIntfs.pas',
   frmEditor in 'frmEditor.pas' {EditorForm},
-  dmCommands in 'dmCommands.pas' {CommandsDataModule: TDataModule},
+  dmWorkbookCommands in 'dmWorkbookCommands.pas' {CommandsDataModule: TDataModule},
   uHighlighterProcs in '..\uHighlighterProcs.pas',
   dlgSearchText in '..\SearchReplaceDemo\dlgSearchText.pas' {TextSearchDialog},
   dlgReplaceText in '..\SearchReplaceDemo\dlgReplaceText.pas' {TextReplaceDialog},

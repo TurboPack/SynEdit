@@ -1,36 +1,49 @@
 object Form1: TForm1
   Left = 0
   Top = 0
+  Margins.Left = 5
+  Margins.Top = 5
+  Margins.Right = 5
+  Margins.Bottom = 5
   Caption = 'Form1'
-  ClientHeight = 599
-  ClientWidth = 806
+  ClientHeight = 899
+  ClientWidth = 1218
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -12
+  Font.Height = -18
   Font.Name = 'Segoe UI'
   Font.Style = []
-  TextHeight = 15
+  PixelsPerInch = 144
+  TextHeight = 25
   object SynEdit: TSynEdit
     Left = 0
     Top = 0
-    Width = 806
-    Height = 599
+    Width = 1218
+    Height = 899
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -20
     Font.Name = 'Consolas'
     Font.Style = []
     Font.Quality = fqClearTypeNatural
     PopupMenu = pmnuEditor
     TabOrder = 0
     UseCodeFolding = False
+    BookMarkOptions.LeftMargin = 3
+    BookMarkOptions.Xoffset = 18
+    ExtraLineSpacing = 3
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
     Gutter.Font.Height = -11
     Gutter.Font.Name = 'Consolas'
     Gutter.Font.Style = []
+    Gutter.Font.Quality = fqClearTypeNatural
     Gutter.ShowLineNumbers = True
     Gutter.Bands = <
       item
@@ -2196,8 +2209,7 @@ object Form1: TForm1
       
         '    FNextNodeToSelect: PVirtualNode;             // Next tree no' +
         'de that we would like to select if the current one gets de')
-    Options = [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing, eoDropFiles, eoEnhanceHomeKey, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoKeepCaretX, eoRightMouseMovesCursor, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoShowLigatures]
-    SelectedColor.Alpha = 0.400000005960464500
+    ScrollbarAnnotations = <>
   end
   object pmnuEditor: TPopupMenu
     OnPopup = pmnuEditorPopup

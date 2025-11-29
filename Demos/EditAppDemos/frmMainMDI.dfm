@@ -1,10 +1,42 @@
 inherited MDIMainForm: TMDIMainForm
+  Margins.Left = 8
+  Margins.Top = 8
+  Margins.Right = 8
+  Margins.Bottom = 8
   Caption = 'Multiple Document Edit Demo'
+  ClientHeight = 621
+  ClientWidth = 1134
+  Font.Height = -26
   FormStyle = fsMDIForm
-  OldCreateOrder = True
   WindowMenu = mWindow
-  PixelsPerInch = 96
-  TextHeight = 13
+  StyleElements = [seFont, seClient, seBorder]
+  PixelsPerInch = 144
+  TextHeight = 32
+  inherited StatusBar: TStatusBar
+    Top = 578
+    Width = 1134
+    Height = 43
+    Margins.Left = 8
+    Margins.Top = 8
+    Margins.Right = 8
+    Margins.Bottom = 8
+    Panels = <
+      item
+        Alignment = taCenter
+        Width = 189
+      end
+      item
+        Alignment = taCenter
+        Width = 162
+      end
+      item
+        Alignment = taCenter
+        Width = 189
+      end
+      item
+        Width = 113
+      end>
+  end
   inherited mnuMain: TMainMenu
     object mWindow: TMenuItem
       Caption = '&Window'
