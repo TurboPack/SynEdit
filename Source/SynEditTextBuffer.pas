@@ -508,7 +508,10 @@ end;
 
 procedure TSynEditStringList.Insert(Index: Integer; const S: string);
 begin
-  InsertStrings(Index, [S]);
+  if Pos(#10, S) > 0 then
+    InsertText(Index, S)
+  else
+    InsertStrings(Index, [S]);
 end;
 
 procedure TSynEditStringList.InsertItem(Index: Integer; const S: string);

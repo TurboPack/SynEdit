@@ -35,30 +35,32 @@ unit SynEditOptionsDialog;
 interface
 
 uses
-  Windows,
-  Messages,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ComCtrls,
-  CommCtrl,
-  Registry,
-  ExtCtrls,
-  Buttons,
-  ImgList,
-  Menus,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.ImageList,
+  System.Win.Registry,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Winapi.CommCtrl,
+  Vcl.ExtCtrls,
+  Vcl.Buttons,
+  Vcl.ImgList,
+  Vcl.Menus,
+  SynEditTypes,
   SynEdit,
   SynEditHighlighter,
   SynEditMiscClasses,
   SynEditKeyCmds,
-  Classes,
-  SysUtils, System.ImageList;
+  System.Classes,
+  System.SysUtils;
 
 type
   TColorPopup = (cpGutter, cpRightEdge);
-  
+
   TSynEditorOptionsUserCommand = procedure(AUserCommand: Integer;
                                            var ADescription: string) of object;
 
@@ -71,8 +73,6 @@ type
   //      where ecSomeCommand is the command that you want to add
 
   TSynEditorOptionsAllUserCommands = procedure(ACommands: TStrings) of object;
-
-  TSynEditorOptionsContainer = class;
 
   TfmEditorOptionsDialog = class(TForm)
     PageControl1: TPageControl;
@@ -267,81 +267,12 @@ type
     property UseExtendedStrings: Boolean read GetExtended write SetExtended;
   end;
 
-  //This class is assignable to a SynEdit without modifying key properties that affect function
-  TSynEditorOptionsContainer = class(TComponent)
-  private
-    FHideSelection: Boolean;
-    FWantTabs: Boolean;
-    FWordWrap: Boolean;
-    FMaxUndo: Integer;
-    FExtraLineSpacing: Integer;
-    FTabWidth: Integer;
-    FRightEdge: Integer;
-    FSelectedColor: TSynSelectedColor;
-    FIndentGuides: TSynIndentGuides;
-    FDisplayFlowControl: TSynDisplayFlowControl;
-    FRightEdgeColor: TColor;
-    FFont: TFont;
-    FBookmarks: TSynBookMarkOpt;
-    FOverwriteCaret: TSynEditCaretType;
-    FInsertCaret: TSynEditCaretType;
-    FKeystrokes: TSynEditKeyStrokes;
-    FOptions: TSynEditorOptions;
-    FScrollOptions: TSynEditorScrollOptions;
-    FSynGutter: TSynGutter;
-    FColor: TColor;
-    FActiveLineColor: TColor;
-    FVisibleSpecialChars: TSynVisibleSpecialChars;
-    procedure SetBookMarks(const Value: TSynBookMarkOpt);
-    procedure SetFont(const Value: TFont);
-    procedure SetKeystrokes(const Value: TSynEditKeyStrokes);
-    procedure SetSynGutter(const Value: TSynGutter);
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
-    procedure Assign(Source: TPersistent); override;
-    procedure AssignTo(Dest: TPersistent); override;
-  published
-    property Options: TSynEditorOptions read FOptions write FOptions
-      default SYNEDIT_DEFAULT_OPTIONS;
-    property ScrollOptions: TSynEditorScrollOptions read FScrollOptions
-      write FScrollOptions default SYNEDIT_DEFAULT_SCROLLOPTIONS;
-    property BookMarkOptions: TSynBookMarkOpt read FBookmarks write SetBookMarks;
-    property Color: TColor read FColor write FColor default clWindow;
-    property Font: TFont read FFont write SetFont;
-    property ExtraLineSpacing: Integer read FExtraLineSpacing
-      write FExtraLineSpacing default 2;
-    property Gutter: TSynGutter read FSynGutter write SetSynGutter;
-    property RightEdge: Integer read FRightEdge write FRightEdge
-      default 80;
-    property RightEdgeColor: TColor read FRightEdgeColor write FRightEdgeColor
-      default clSilver;
-    property WantTabs: Boolean read FWantTabs write FWantTabs default True;
-    property WordWrap: Boolean read FWordWrap write FWordWrap default False;
-    property InsertCaret: TSynEditCaretType read FInsertCaret
-      write FInsertCaret default ctVerticalLine;
-    property OverwriteCaret: TSynEditCaretType read FOverwriteCaret
-      write FOverwriteCaret default ctBlock;
-    property HideSelection: Boolean read FHideSelection write FHideSelection
-      default False;
-    property MaxUndo: Integer read FMaxUndo write FMaxUndo default 0;
-    property SelectedColor: TSynSelectedColor read FSelectedColor;
-    property IndentGuides: TSynIndentGuides read FIndentGuides;
-    property DisplayFlowControl: TSynDisplayFlowControl read FDisplayFlowControl;
-    property TabWidth: Integer read FTabWidth write FTabWidth default 8;
-    property Keystrokes: TSynEditKeyStrokes read FKeystrokes write SetKeystrokes;
-    property ActiveLineColor: TColor read FActiveLineColor
-      write FActiveLineColor default clNone;
-    property VisibleSpecialChars: TSynVisibleSpecialChars
-      read FVisibleSpecialChars write FVisibleSpecialChars default [];
-  end;
-
 implementation
 
 {$R *.dfm}
 
 uses
-  Types,
+  System.Types,
   SynEditKeyConst,
   SynEditMiscProcs;
 
@@ -394,177 +325,6 @@ end;
 procedure TSynEditOptionsDialog.SetExtended(const Value: Boolean);
 begin
   FForm.UseExtendedStrings := Value;
-end;
-
-{ TSynEditorOptionsContainer }
-
-procedure TSynEditorOptionsContainer.Assign(Source: TPersistent);
-var
-  PPI: Integer;
-begin
-  if Source is TCustomSynEdit then
-  begin
-    Self.Font.Assign(TCustomSynEdit(Source).Font);
-    Self.BookmarkOptions.Assign(TCustomSynEdit(Source).BookmarkOptions);
-    Self.Gutter.Assign(TCustomSynEdit(Source).Gutter);
-    Self.Keystrokes.Assign(TCustomSynEdit(Source).Keystrokes);
-    Self.SelectedColor.Assign(TCustomSynEdit(Source).SelectedColor);
-    Self.IndentGuides.Assign(TCustomSynEdit(Source).IndentGuides);
-    Self.DisplayFlowControl.Assign(TCustomSynEdit(Source).DisplayFlowControl);
-
-    Self.Color := TCustomSynEdit(Source).Color;
-    Self.Options := TCustomSynEdit(Source).Options;
-    Self.ScrollOptions := TCustomSynEdit(Source).ScrollOptions;
-    Self.ExtraLineSpacing := TCustomSynEdit(Source).ExtraLineSpacing;
-    Self.HideSelection := TCustomSynEdit(Source).HideSelection;
-    Self.InsertCaret := TCustomSynEdit(Source).InsertCaret;
-    Self.OverwriteCaret := TCustomSynEdit(Source).OverwriteCaret;
-    Self.MaxUndo := TCustomSynEdit(Source).MaxUndo;
-    Self.RightEdge := TCustomSynEdit(Source).RightEdge;
-    Self.RightEdgeColor := TCustomSynEdit(Source).RightEdgeColor;
-    Self.TabWidth := TCustomSynEdit(Source).TabWidth;
-    Self.WantTabs := TCustomSynEdit(Source).WantTabs;
-    Self.WordWrap := TCustomSynEdit(Source).WordWrap;
-    Self.ActiveLineColor := TCustomSynEdit(Source).ActiveLineColor;
-    Self.VisibleSpecialChars := TCustomSynEdit(Source).VisibleSpecialChars;
-    // store unscaled
-    PPI := TCustomSynEdit(Source).CurrentPPI;
-    Self.BookMarkOptions.ChangeScale(96, PPI);
-    Self.ExtraLineSpacing := MulDiv(Self.ExtraLineSpacing, 96, PPI);
-  end else if Source is TSynEditorOptionsContainer then
-  begin
-    Self.Font.Assign(TSynEditorOptionsContainer(Source).Font);
-    Self.BookmarkOptions.Assign(TSynEditorOptionsContainer(Source).BookmarkOptions);
-    Self.Gutter.Assign(TSynEditorOptionsContainer(Source).Gutter);
-    Self.Keystrokes.Assign(TSynEditorOptionsContainer(Source).Keystrokes);
-    Self.SelectedColor.Assign(TSynEditorOptionsContainer(Source).SelectedColor);
-    Self.IndentGuides.Assign(TSynEditorOptionsContainer(Source).IndentGuides);
-    Self.DisplayFlowControl.Assign(TSynEditorOptionsContainer(Source).DisplayFlowControl);
-    Self.Color := TSynEditorOptionsContainer(Source).Color;
-    Self.Options := TSynEditorOptionsContainer(Source).Options;
-    Self.ScrollOptions := TSynEditorOptionsContainer(Source).ScrollOptions;
-    Self.ExtraLineSpacing := TSynEditorOptionsContainer(Source).ExtraLineSpacing;
-    Self.HideSelection := TSynEditorOptionsContainer(Source).HideSelection;
-    Self.InsertCaret := TSynEditorOptionsContainer(Source).InsertCaret;
-    Self.OverwriteCaret := TSynEditorOptionsContainer(Source).OverwriteCaret;
-    Self.MaxUndo := TSynEditorOptionsContainer(Source).MaxUndo;
-    Self.RightEdge := TSynEditorOptionsContainer(Source).RightEdge;
-    Self.RightEdgeColor := TSynEditorOptionsContainer(Source).RightEdgeColor;
-    Self.TabWidth := TSynEditorOptionsContainer(Source).TabWidth;
-    Self.WantTabs := TSynEditorOptionsContainer(Source).WantTabs;
-    Self.WordWrap := TSynEditorOptionsContainer(Source).WordWrap;
-    Self.ActiveLineColor := TSynEditorOptionsContainer(Source).ActiveLineColor;
-    Self.VisibleSpecialChars := TSynEditorOptionsContainer(Source).VisibleSpecialChars;
-  end else
-    inherited;
-end;
-
-procedure TSynEditorOptionsContainer.AssignTo(Dest: TPersistent);
-var
-  PPI: Integer;
-begin
-  if Dest is TCustomSynEdit then
-  begin
-    TCustomSynEdit(Dest).BeginUpdate;
-    try
-      TCustomSynEdit(Dest).Font := Self.Font;
-      TCustomSynEdit(Dest).BookmarkOptions.Assign(Self.BookmarkOptions);
-      TCustomSynEdit(Dest).Gutter.Assign(Self.Gutter);
-      TCustomSynEdit(Dest).Keystrokes.Assign(Self.Keystrokes);
-      TCustomSynEdit(Dest).SelectedColor.Assign(Self.SelectedColor);
-      TCustomSynEdit(Dest).IndentGuides.Assign(Self.IndentGuides);
-      TCustomSynEdit(Dest).DisplayFlowControl.Assign(Self.DisplayFlowControl);
-      TCustomSynEdit(Dest).Color := Self.Color;
-      TCustomSynEdit(Dest).Options := Self.Options;
-      TCustomSynEdit(Dest).ScrollOptions := Self.ScrollOptions;
-      TCustomSynEdit(Dest).ExtraLineSpacing := Self.ExtraLineSpacing;
-      TCustomSynEdit(Dest).HideSelection := Self.HideSelection;
-      TCustomSynEdit(Dest).InsertCaret := Self.InsertCaret;
-      TCustomSynEdit(Dest).OverwriteCaret := Self.OverwriteCaret;
-      TCustomSynEdit(Dest).MaxUndo := Self.MaxUndo;
-      TCustomSynEdit(Dest).RightEdge := Self.RightEdge;
-      TCustomSynEdit(Dest).RightEdgeColor := Self.RightEdgeColor;
-      TCustomSynEdit(Dest).TabWidth := Self.TabWidth;
-      TCustomSynEdit(Dest).WantTabs := Self.WantTabs;
-      TCustomSynEdit(Dest).WordWrap := Self.WordWrap;
-      TCustomSynEdit(Dest).ActiveLineColor := Self.ActiveLineColor;
-      TCustomSynEdit(Dest).VisibleSpecialChars := Self.VisibleSpecialChars;
-      // scale for editor PPI
-      PPI := TCustomSynEdit(Dest).CurrentPPI;
-      TCustomSynEdit(Dest).BookMarkOptions.ChangeScale(PPI, 96);
-      TCustomSynEdit(Dest).ExtraLineSpacing :=
-        MulDiv(TCustomSynEdit(Dest).ExtraLineSpacing, PPI, 96);
-    finally
-      TCustomSynEdit(Dest).EndUpdate;
-    end;
-  end else
-    inherited;
-end;
-
-
-constructor TSynEditorOptionsContainer.Create(AOwner: TComponent);
-begin
-  inherited;
-  FBookmarks := TSynBookMarkOpt.Create(Self);
-  FKeystrokes := TSynEditKeyStrokes.Create(Self);
-  FSynGutter := TSynGutter.Create;
-  FSynGutter.AssignableBands := False;
-  FSelectedColor := TSynSelectedColor.Create;
-  FIndentGuides := TSynIndentGuides.Create;
-  FDisplayFlowControl := TSynDisplayFlowControl.Create;
-  FFont := TFont.Create;
-  FFont.Name := DefaultFontName;
-  FFont.Size := 10;
-  {$if CompilerVersion >= 36}
-  FFont.IsScreenFont := True;
-  {$endif}
-  FColor:= clWindow;
-  FKeystrokes.ResetDefaults;
-  FOptions := SYNEDIT_DEFAULT_OPTIONS;
-  FScrollOptions := SYNEDIT_DEFAULT_SCROLLOPTIONS;
-  FExtraLineSpacing := 2;
-  FHideSelection := False;
-  FInsertCaret := ctVerticalLine;
-  FOverwriteCaret := ctBlock;
-  FMaxUndo := 0;
-  FRightEdge := 80;
-  FRightEdgeColor := clSilver;
-  FTabWidth := 8;
-  FWantTabs := True;
-end;
-
-destructor TSynEditorOptionsContainer.Destroy;
-begin
-  FBookMarks.Free;
-  FKeyStrokes.Free;
-  FSynGutter.Free;
-  FSelectedColor.Free;
-  FIndentGuides.Free;
-  FDisplayFlowControl.Free;
-  FFont.Free;
-  inherited;
-end;
-
-procedure TSynEditorOptionsContainer.SetBookMarks(
-  const Value: TSynBookMarkOpt);
-begin
-  FBookmarks.Assign(Value);
-end;
-
-procedure TSynEditorOptionsContainer.SetFont(const Value: TFont);
-begin
-  FFont.Assign(Value);
-end;
-
-procedure TSynEditorOptionsContainer.SetKeystrokes(
-  const Value: TSynEditKeyStrokes);
-begin
-  FKeystrokes.Assign(Value);
-end;
-
-procedure TSynEditorOptionsContainer.SetSynGutter(const Value: TSynGutter);
-begin
-  FSynGutter.Assign(Value);
 end;
 
 { TfmEditorOptionsDialog }

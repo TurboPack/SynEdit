@@ -47,7 +47,7 @@ type
   TLineIndex = 0..MaxIndex;
   TRowIndex = 0..MaxIndex;
 
-  // fLineOffsets[n] is the index of the first row of the [n+1]th line.
+  // fLineOffsets[n] is the 0-based first row of the [n+1]th 0-based line.
   // e.g. Starting row of first line (0) is 0. Starting row of second line (1)
   // is fLineOffsets[0]. Clear?
 
@@ -58,25 +58,30 @@ type
     FLineCount: Integer;
     FEditor: TCustomSynEdit;
     FMaxRowWidth: Integer;
-  protected
+
     procedure WrapLine(const Index: Integer; out RowLengths: TArray<Integer>);
     procedure WrapLines;
     function ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean = False): Integer;
     procedure TrimArrays;
-    property Editor: TCustomSynEdit read FEditor;
-  public
-    constructor Create(aOwner: TCustomSynEdit);
-    destructor Destroy; override;
-    { ISynEditBufferPlugin }
+
+    { ISynEditBufferPlugin Interface}
+    // conversion methods
     function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
-    function RowCount: Integer;
     function GetRowLength(aRow: Integer): Integer;
+    function RowCount: Integer;
+    function RowToLine(aRow: Integer): Integer;
+    function LineToRow(aLine: Integer): Integer;
+    // plugin notifications
     function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
     function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
     function LinePut(aIndex: Integer; const OldLine: string): Integer;
-    procedure Reset;
+    // font or size change
     procedure DisplayChanged;
+    procedure Reset;
+  public
+    constructor Create(aOwner: TCustomSynEdit);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -151,45 +156,37 @@ end;
 
 procedure TSynWordWrapPlugin.DisplayChanged;
 begin
-  if Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth) <> FMaxRowWidth then
+  if Max(FEditor.WrapAreaWidth, 2 * FEditor.CharWidth) <> FMaxRowWidth then
     Reset;
 end;
 
 function TSynWordWrapPlugin.DisplayToBufferPos(
   const aPos: TDisplayCoord): TBufferCoord;
 var
-  cLine: Integer;
   cRow: Integer;
+  FirstRow: Integer;  // 0-based first row of line
 begin
   Assert(aPos.Column > 0);
   Assert(aPos.Row > 0);
-  if aPos.Row > FRowLengths.Count then
+
+  Result.Line := RowToLine(aPos.Row);
+  if Result.Line > FLineCount then
   begin
     // beyond EOF
     Result.Char := aPos.Column;
-    Result.Line := aPos.Row - FRowLengths.Count + FLineCount;
     Exit;
   end;
-  //Optimized loop start point but could use binary search
-  for cLine := Min(aPos.Row - 2, FLineCount - 2) downto 0 do
-    if aPos.Row > FLineOffsets[cLine] then
-    begin
-      Result.Line := cLine + 2;
-      if aPos.Row = FLineOffsets[cLine + 1] then //last row of line
-        Result.Char := aPos.Column
-      else
-        Result.Char := Min(aPos.Column, FRowLengths[aPos.Row - 1] + 1);
-      for cRow := FLineOffsets[cLine] to aPos.Row - 2 do
-        Inc(Result.Char, FRowLengths[cRow]);
-      Exit;
-    end;
-  // first line
-  Result.Line := 1;
-  if aPos.Row = FLineOffsets[0] then //last row of line
+
+  if aPos.Row = FLineOffsets[Result.Line - 1] then //last row of line
+    // Only allow positions beyond EOL in the last row of a line
     Result.Char := aPos.Column
   else
     Result.Char := Min(aPos.Column, FRowLengths[aPos.Row - 1] + 1);
-  for cRow := 0 to aPos.Row - 2 do
+  if Result.Line = 1 then
+    FirstRow := 0
+  else
+    FirstRow := FLineOffsets[Result.Line - 2];
+  for cRow := FirstRow to aPos.Row - 2 do
     Inc(Result.Char, FRowLengths[cRow]);
 end;
 
@@ -253,6 +250,18 @@ begin
     Inc(FLineOffsets.List[cLine], Result);
 end;
 
+function TSynWordWrapPlugin.LineToRow(aLine: Integer): Integer;
+begin
+  Assert(aLine > 0);
+  if FLineCount < aLine then
+    Exit(FRowLengths.Count + (aLine - FLineCount));
+
+  if aLine = 1 then
+    Result := 1
+  else
+    Result := FLineOffsets[aLine - 2] + 1;
+end;
+
 function TSynWordWrapPlugin.LinePut(aIndex: Integer; const OldLine: string): Integer;
 var
   cLine: Integer;
@@ -268,9 +277,15 @@ begin
 end;
 
 procedure TSynWordWrapPlugin.Reset;
+var
+  MinChars: Integer;
 begin
   // Ensure minimum line length
-  FMaxRowWidth := Max(Editor.WrapAreaWidth, 2 * Editor.CharWidth);
+  MinChars := 3;
+  if not (eoTabsToSpaces in FEditor.Options) then
+    MinChars := Max(FEditor.TabWidth, MinChars);
+
+  FMaxRowWidth := Max(FEditor.WrapAreaWidth, MinChars * FEditor.CharWidth);
 
   WrapLines;
 end;
@@ -306,20 +321,20 @@ var
   RowLengths: TArray<TArray<Integer>>;
 begin
   FLineOffsets.Clear;
-  FLineOffsets.Capacity := Editor.Lines.Count;
+  FLineOffsets.Capacity := FEditor.Lines.Count;
   FRowLengths.Clear;
-  FRowLengths.Capacity := Editor.Lines.Count;
+  FRowLengths.Capacity := FEditor.Lines.Count;
 
-  if (Editor.Lines.Count = 0) or (FMaxRowWidth < Editor.CharWidth) then
+  if (FEditor.Lines.Count = 0) or (FMaxRowWidth < FEditor.CharWidth) then
     Exit;
 
-  SetLength(RowLengths, Editor.Lines.Count);
-  TParallel.&For(0, Editor.Lines.Count - 1, procedure(I: Integer)
+  SetLength(RowLengths, FEditor.Lines.Count);
+  TParallel.&For(0, FEditor.Lines.Count - 1, procedure(I: Integer)
   begin
     WrapLine(I, RowLengths[I]);
   end);
 
-  for cLine := 0 to Editor.Lines.Count - 1 do
+  for cLine := 0 to FEditor.Lines.Count - 1 do
   begin
     FRowLengths.AddRange(RowLengths[cLine]);
     FLineOffsets.Add(FRowLengths.Count);
@@ -333,6 +348,22 @@ begin
     Assert(Result = FLineOffsets[FLineCount - 1])
   else
     Assert(Result = 0);
+end;
+
+function TSynWordWrapPlugin.RowToLine(aRow: Integer): Integer;
+var
+  cLine: Integer;
+begin
+  Assert(aRow > 0);
+  if aRow > FRowLengths.Count then
+    // beyond EOF
+    Exit(FLineCount + aRow - FRowLengths.Count);
+  //Optimized loop start point but could use binary search
+  for cLine := Min(aRow, FLineCount) - 2 downto 0 do
+    if aRow > FLineOffsets[cLine] then
+      Exit(cLine + 2);
+  // first line
+  Result := 1;
 end;
 
 procedure TSynWordWrapPlugin.TrimArrays;
@@ -352,10 +383,14 @@ var
   IsTrailing, IsInside: BOOL;
   fWorkList: TList<Integer>;
   HTM: TDwriteHitTestMetrics;
+  HasRTL: Boolean; // Whether the line contains RTL characters
+  Idx: Integer;
+  LineMetrics: TArray<DWRITE_LINE_METRICS>;
+  ActualLineCount: Cardinal;
 begin
-  CW := Editor.CharWidth;
-  TW := Editor.TabWidth * Editor.CharWidth;
-  SLine := Editor.Lines[Index];
+  CW := FEditor.CharWidth;
+  TW := FEditor.TabWidth * FEditor.CharWidth;
+  SLine := FEditor.Lines[Index];
 
   PStart := PChar(SLine);
   PEnd := PStart + SLine.Length;
@@ -368,6 +403,7 @@ begin
     try
       // Preallocation helps with very long lines
       fWorkList.Capacity := MulDiv(SLine.Length, CW + 1, FMaxRowWidth);
+      HasRTL := False;
       P := PStart;
       PBreak := nil;
       W := 0;
@@ -375,8 +411,9 @@ begin
       begin
         while (P < PEnd) do
         begin
+          HasRTL := HasRTL or IsRTLChar(P^);
           // Special case with space. Keep it on the row even if it does't fit.
-          if (P > PStart) and Editor.IsWordBreakChar(P^) then
+          if (P > PStart) and FEditor.IsWordBreakChar(P^) then
             PBreak := P + IfThen(P^ = #32, 1, 0);
           case P^ of
              #9: Inc(W, TW - W mod TW);
@@ -386,16 +423,39 @@ begin
           end;
           if W > FMaxRowWidth then
             Break;
-          if (P > PStart) and Editor.IsWordBreakChar(P^) then
+          if (P > PStart) and FEditor.IsWordBreakChar(P^) then
             // Keep opening brackets with the next line
             PBreak := P + IfThen(Word(P^) in [40, 91], 0, 1);
           Inc(P);
         end;
 
-        if (P < PEnd) and (W <= FMaxRowWidth) then
+        if HasRTL then
+        begin
+          // Special case - Let DWrite do the word-wrap
+          Layout.Create(FEditor.TextFormat, PStart, PEnd - PStart, FMaxRowWidth, FEditor.LineHeight);
+          Layout.IDW.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
+          SetLength(LineMetrics, Layout.TextMetrics.lineCount);
+          Layout.IDW.GetLineMetrics(@LineMetrics[0], Length(LineMetrics), ActualLineCount);
+          for Idx := 0 to ActualLineCount - 1 do
+          begin
+            if LineMetrics[Idx].length = 0 then
+              PBreak := PStart + MinMax(FMaxRowWidth div FEditor.CharWidth, 1, PEnd - PStart)
+            else
+              PBreak := PStart + LineMetrics[Idx].length;
+            FWorkList.Add(PBreak - PStart);
+            PStart := PBreak;
+            P := PStart;
+            PBreak := nil;
+          end;
+          Continue;
+        end;
+
+        if (P < PEnd) and (W < FMaxRowWidth) then
         begin
           // Just in case P is followed by combining characters
-          if (P > PStart) and not (Word((P-1)^) in [9, 32]) then
+          if (P > PStart) and not FEditor.IsWordBreakChar((P-1)^) and
+            not FEditor.IsWordBreakChar((P)^)
+          then
           begin
             Dec(P);
             Dec(W, CW);
@@ -406,20 +466,31 @@ begin
           while P2 < PEnd do
           begin
             Inc(P2);
-            if Word(P2^) in [9, 65..90, 97..122] then Break;
+            if FEditor.IsWordBreakChar(P2^) or
+              (Word(P2^) in [9, 65..90, 97..122])
+            then
+              Break;
           end;
 
-          Layout.Create(Editor.TextFormat, P, P2-P, MaxInt, Editor.LineHeight);
+          Layout.Create(FEditor.TextFormat, P, P2-P, MaxInt, FEditor.LineHeight);
           LW := Round(Layout.TextMetrics.width);
 
-          if W + LW >= FMaxRowWidth then
+          if W + LW > FMaxRowWidth then
           begin
             CheckOSError(Layout.IDW.HitTestPoint(FMaxRowWidth - W,
-              Editor.LineHeight div 2, IsTrailing, IsInside, HTM));
-            Inc(P, HTM.textPosition);
+              FEditor.LineHeight div 2, IsTrailing, IsInside, HTM));
+            // Will be used in emerency wrapping
+            if (HTM.bidiLevel > 0) or (HTM.textPosition = 0) then
+              // Happens with RTL text
+              Inc(P, MinMax((FMaxRowWidth - W) div FEditor.CharWidth, 1, PEnd - P))
+            else
+              Inc(P, HTM.textPosition);
           end
           else
+          begin
             P := P2;
+            PBreak := P;
+          end;
           Inc(W, LW);
         end;
 

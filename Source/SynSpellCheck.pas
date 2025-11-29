@@ -372,7 +372,6 @@ uses
   SynDWrite,
   SynEditMiscProcs,
   SynEditHighlighter,
-  SynHighlighterURI,
   SynEditTextBuffer;
 
 resourcestring
@@ -710,7 +709,7 @@ begin
   SLine := Editor.Lines[Line - 1];
   if SLine = '' then Exit;
 
-  if Assigned(Editor.Highlighter) and not (Editor.Highlighter is TSynUriSyn) then
+  if Assigned(Editor.Highlighter) and not (Editor.Highlighter.ClassName = 'TSynUriSyn') then
   begin
     if Line > 1 then
       Editor.Highlighter.SetRange(TSynEditStringList(Editor.Lines).Ranges[Line - 2])
