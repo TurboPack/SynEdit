@@ -182,7 +182,7 @@ var
 implementation
 
 uses
-  RichEdit, ShellAPI, Messages;
+  RichEdit, ShellAPI, Messages, UITypes;
 
 {$R *.DFM}
 
