@@ -676,7 +676,7 @@ begin
   InitPrint;
 
   if Printer.PrinterIndex < 0 then
-    raise ESynError.CreateRes(@SYNS_NoPrinter);
+    raise ESynError.CreateRes(Pointer(@SYNS_NoPrinter));
 
   PrinterName := Printer.Printers[Printer.PrinterIndex];
 

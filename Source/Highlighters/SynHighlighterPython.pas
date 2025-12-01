@@ -180,12 +180,13 @@ const
   // No need to localise keywords!
 
   // List of keywords
-  KEYWORDCOUNT = 29;
+  KEYWORDCOUNT = 31;
   KEYWORDS: array [1..KEYWORDCOUNT] of string =
     (
     'and',
     'assert',
     'break',
+    'case',
     'class',
     'continue',
     'def',
@@ -203,6 +204,7 @@ const
     'in',
     'is',
     'lambda',
+    'match',
     'not',
     'or',
     'pass',
@@ -354,7 +356,7 @@ begin
   FKeywords.Sorted := True;
 
   BlockOpenerRE := CompiledRegEx(
-     '^(def|class|while|for|if|else|elif|try|except|with'+
+     '^(def|class|while|for|if|else|elif|try|except|finally|with|match|case'+
      '|(async[ \t]+def)|(async[ \t]+with)|(async[ \t]+for))\b');
 
   fRange := rsUnknown;

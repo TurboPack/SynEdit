@@ -39,6 +39,7 @@ contains
   SynEditActionsResource in '..\..\..\Source\SynEditActionsResource.pas' {SynEditActions: TDataModule},
   SynEditPropertyReg in '..\..\..\Source\SynEditPropertyReg.pas',
   SynEditReg in '..\..\..\Source\SynEditReg.pas',
-  SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas';
+  SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas',
+  SynDelphiIDEImporter in '..\..\..\Source\DesignTimeEditors\SynDelphiIDEImporter.pas';
 
 end.

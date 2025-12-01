@@ -114,6 +114,7 @@
         <DCCReference Include="..\..\..\Source\SynEditPropertyReg.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditReg.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterManager.pas"/>
+        <DCCReference Include="..\..\..\Source\DesignTimeEditors\SynDelphiIDEImporter.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

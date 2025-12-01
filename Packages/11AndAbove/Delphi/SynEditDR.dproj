@@ -246,6 +246,7 @@
         <DCCReference Include="..\..\..\Source\SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
         <DCCReference Include="..\..\..\Source\SynURIOpener.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDelphi.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
