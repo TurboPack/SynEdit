@@ -21,7 +21,7 @@ type
     tkSpace, tkString, tkUnknown, tkFloat, tkHex, tkDirec, tkChar, tkType);
 
   TSynDelphiSyn = class(TSynCustomCodeFoldingHighlighter)
-  private
+  strict private
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
     fAsmStart: Boolean;
@@ -38,13 +38,12 @@ type
     fIdentifierAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
     fTypeAttri: TSynHighlighterAttributes;
-
-    class var
-      // Regex for Code Folding
-      fRE_BlockBegin: TRegEx;
-      fRE_BlockEnd: TRegEx;
-      fRE_Code: TRegEx;
-      fRE_Implementation: TRegEx;
+  strict private class var
+    // Regex for Code Folding
+    fRE_BlockBegin: TRegEx;
+    fRE_BlockEnd: TRegEx;
+    fRE_Code: TRegEx;
+    fRE_Implementation: TRegEx;
 
     // Parsers
     procedure AddressOpProc;
@@ -69,16 +68,15 @@ type
     procedure SymbolProc;
     procedure UnknownProc;
 
-    // Keyword handling
-    function IsKeyword(const AKeyword: string): Boolean;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
-  protected
+  strict protected
     function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
+    function IsKeyword(const AKeyword: string): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     class constructor Create;
@@ -290,7 +288,7 @@ function TSynDelphiSyn.IsKeyword(const AKeyword: string): Boolean;
 var
   L, H, I, C: Integer;
 begin
-  Result := False;
+  Result := inherited IsKeyword(AKeyword);
   L := Low(DelphiKeywords);
   H := High(DelphiKeywords);
   while L <= H do
