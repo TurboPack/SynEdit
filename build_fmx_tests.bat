@@ -1,12 +1,13 @@
 @echo off
+where msbuild >nul 2>&1 || (echo Error: msbuild not found. Run rsvars.bat first. & exit /b 1)
+
 echo ========================================
 echo  Building FMX SynEdit Tests
 echo ========================================
 
-call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat"
-
 echo.
 echo Compiling Tests\FMX\FMXSynEditTests.dproj...
+cd /d "%~dp0"
 msbuild Tests\FMX\FMXSynEditTests.dproj /t:Build /p:Config=Debug /p:Platform=Win32 /v:minimal /nologo
 if %ERRORLEVEL% NEQ 0 (
     echo.

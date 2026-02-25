@@ -51,3 +51,17 @@ __recovery/
 Packages/Sydney/CBuilder/Win64/
 Packages/Sydney/cpp/
 *.o
+*.a
+*.d
+
+# Dev-only scripts #
+####################
+build.bat
+build_verbose.bat
+build_cpp.bat
+build_cpp_verbose.bat
+build_cpp_delphi_only.bat
+build_cpp_group.bat
+build_cpp_win64_test.bat
+build.ps1
+check_env.bat

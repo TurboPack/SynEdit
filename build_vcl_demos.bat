@@ -1,5 +1,5 @@
 @echo off
-call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat"
+where msbuild >nul 2>&1 || (echo Error: msbuild not found. Run rsvars.bat first. & exit /b 1)
 set PLATFORM=
 set FAIL=0
 set EXTRA_PATHS=..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters
@@ -22,7 +22,7 @@ for %%D in (
     echo ============================================
     echo   Building: %%~nD
     echo ============================================
-    cd /d "D:\Documents\SynEdit"
+    cd /d "%~dp0"
     msbuild %%D /t:Build /p:Config=Release /p:Platform=Win32 /p:DCC_UnitSearchPath="%EXTRA_PATHS%" /p:DCC_IncludePath="%EXTRA_PATHS%" /v:minimal /nologo
     if errorlevel 1 (
         echo   FAILED: %%~nD
