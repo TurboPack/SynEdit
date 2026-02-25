@@ -3,7 +3,9 @@ program FMXFeaturesDemo;
 uses
   System.StartUpCopy,
   FMX.Forms,
-  uFMXFeaturesMain in 'uFMXFeaturesMain.pas' {FMXFeaturesForm};
+  uFMXFeaturesMain in 'uFMXFeaturesMain.pas' {FMXFeaturesForm},
+  dlgFMXSearchText in 'dlgFMXSearchText.pas' {FMXSearchTextDialog},
+  dlgFMXReplaceText in 'dlgFMXReplaceText.pas' {FMXReplaceTextDialog};
 
 begin
   Application.Initialize;

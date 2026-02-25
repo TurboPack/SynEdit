@@ -74,6 +74,14 @@
             <Form>FMXFeaturesForm</Form>
             <FormType>fmx</FormType>
         </DCCReference>
+        <DCCReference Include="dlgFMXSearchText.pas">
+            <Form>FMXSearchTextDialog</Form>
+            <FormType>fmx</FormType>
+        </DCCReference>
+        <DCCReference Include="dlgFMXReplaceText.pas">
+            <Form>FMXReplaceTextDialog</Form>
+            <FormType>fmx</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

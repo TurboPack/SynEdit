@@ -14,9 +14,15 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.StdCtrls, FMX.Layouts,
   FMX.ListBox, FMX.Controls.Presentation, FMX.Memo, FMX.Edit,
-  FMX.SpinBox, FMX.Colors,
+  FMX.SpinBox, FMX.Colors, FMX.Dialogs,
   SynEdit,
-  SynEditHighlighter;
+  SynEditTypes,
+  SynEditHighlighter,
+  FMX.SynCompletionProposal,
+  FMX.SynSpellCheck,
+  FMX.SynEditPrint,
+  dlgFMXSearchText,
+  dlgFMXReplaceText;
 
 type
   TFMXFeaturesForm = class(TForm)
@@ -50,6 +56,21 @@ type
     LabelPosInfo: TLabel;
     LabelLinesInfo: TLabel;
     LabelModInfo: TLabel;
+    LabelCodeFolding: TLabel;
+    ChkCodeFolding: TCheckBox;
+    BtnFoldAll: TButton;
+    BtnUnfoldAll: TButton;
+    LabelSearchReplace: TLabel;
+    BtnSearch: TButton;
+    BtnReplace: TButton;
+    LabelCompletion: TLabel;
+    BtnCompletion: TButton;
+    LabelSpellCheckCaption: TLabel;
+    ChkSpellCheck: TCheckBox;
+    BtnCheckFile: TButton;
+    LabelSpellStatus: TLabel;
+    LabelPrintCaption: TLabel;
+    BtnPrint: TButton;
     Splitter1: TSplitter;
     MemoLog: TMemo;
     SplitterBottom: TSplitter;
@@ -69,15 +90,32 @@ type
     procedure SpinTabWidthChange(Sender: TObject);
     procedure SpinRightEdgeChange(Sender: TObject);
     procedure ComboActiveColorChange(Sender: TObject);
+    procedure ChkCodeFoldingChange(Sender: TObject);
+    procedure BtnFoldAllClick(Sender: TObject);
+    procedure BtnUnfoldAllClick(Sender: TObject);
+    procedure BtnSearchClick(Sender: TObject);
+    procedure BtnReplaceClick(Sender: TObject);
+    procedure BtnCompletionClick(Sender: TObject);
+    procedure ChkSpellCheckChange(Sender: TObject);
+    procedure BtnCheckFileClick(Sender: TObject);
+    procedure BtnPrintClick(Sender: TObject);
   private
     FEditor: TFMXSynEdit;
     FHighlighters: TList;
     FUpdatingControls: Boolean;
+    FSearchEngine: TSynEditSearchCustom;
+    FRegexSearch: TSynEditSearchCustom;
+    FSearchDialog: TFMXSearchTextDialog;
+    FReplaceDialog: TFMXReplaceTextDialog;
+    FCompletion: TSynFMXCompletionProposal;
+    FSpellCheck: TSynFMXSpellCheck;
+    FPrintComponent: TSynFMXEditPrint;
     procedure CreateHighlighters;
     procedure EditorChange(Sender: TObject);
     procedure EditorStatusChange(Sender: TObject);
     procedure UpdateStatusLabels;
     procedure LogEvent(const Msg: string);
+    procedure SpellCheckComplete(Sender: TObject);
   end;
 
 var
@@ -88,7 +126,8 @@ implementation
 {$R *.fmx}
 
 uses
-  SynEditTypes,
+  SynEditSearch,
+  SynEditRegexSearch,
   SynHighlighterDelphi,
   SynHighlighterCpp,
   SynHighlighterJava,
@@ -120,6 +159,45 @@ begin
   FEditor.TabWidth := 2;
   FEditor.OnChange := EditorChange;
   FEditor.OnStatusChange := EditorStatusChange;
+
+  // Search engines
+  FSearchEngine := TSynEditSearch.Create(Self);
+  FRegexSearch := TSynEditRegexSearch.Create(Self);
+  FEditor.SearchEngine := FSearchEngine;
+
+  // Completion proposal
+  FCompletion := TSynFMXCompletionProposal.Create(Self);
+  FCompletion.Editor := FEditor;
+  FCompletion.EndOfTokenChr := '()[]. ';
+  FCompletion.Options := [scoLimitToMatchedText, scoUseInsertList];
+  // Populate with sample Delphi keywords
+  FCompletion.InsertList.AddStrings(
+    ['begin', 'end', 'procedure', 'function', 'var', 'const', 'type',
+     'class', 'interface', 'implementation', 'uses', 'unit', 'program',
+     'if', 'then', 'else', 'for', 'while', 'repeat', 'until', 'do',
+     'try', 'except', 'finally', 'raise', 'with', 'case', 'of',
+     'array', 'record', 'string', 'integer', 'boolean', 'True', 'False',
+     'nil', 'inherited', 'override', 'virtual', 'abstract', 'property',
+     'private', 'protected', 'public', 'published']);
+  FCompletion.ItemList.AddStrings(
+    ['begin', 'end', 'procedure', 'function', 'var', 'const', 'type',
+     'class', 'interface', 'implementation', 'uses', 'unit', 'program',
+     'if', 'then', 'else', 'for', 'while', 'repeat', 'until', 'do',
+     'try', 'except', 'finally', 'raise', 'with', 'case', 'of',
+     'array', 'record', 'string', 'integer', 'boolean', 'True', 'False',
+     'nil', 'inherited', 'override', 'virtual', 'abstract', 'property',
+     'private', 'protected', 'public', 'published']);
+
+  // Spell check
+  FSpellCheck := TSynFMXSpellCheck.Create(Self);
+  FSpellCheck.Editor := FEditor;
+  FSpellCheck.OnCheckComplete := SpellCheckComplete;
+  {$IFDEF MSWINDOWS}
+  FSpellCheck.Provider := TSynWindowsSpellProvider.Create('en-US');
+  {$ENDIF}
+
+  // Printing
+  FPrintComponent := TSynFMXEditPrint.Create(Self);
 
   // Load first highlighter's sample
   if ComboHL.Count > 0 then
@@ -498,6 +576,138 @@ begin
   MemoLog.Lines.Add(FormatDateTime('hh:nn:ss.zzz', Now) + '  ' + Msg);
   // Auto-scroll to bottom
   MemoLog.GoToTextEnd;
+end;
+
+// --- Code Folding ---
+
+procedure TFMXFeaturesForm.ChkCodeFoldingChange(Sender: TObject);
+begin
+  if FUpdatingControls then Exit;
+  FEditor.UseCodeFolding := ChkCodeFolding.IsChecked;
+  if ChkCodeFolding.IsChecked then
+    LogEvent('Code folding enabled')
+  else
+    LogEvent('Code folding disabled');
+end;
+
+procedure TFMXFeaturesForm.BtnFoldAllClick(Sender: TObject);
+begin
+  FEditor.CollapseAll;
+  LogEvent('Fold All');
+end;
+
+procedure TFMXFeaturesForm.BtnUnfoldAllClick(Sender: TObject);
+begin
+  FEditor.UncollapseAll;
+  LogEvent('Unfold All');
+end;
+
+// --- Search / Replace ---
+
+procedure TFMXFeaturesForm.BtnSearchClick(Sender: TObject);
+var
+  Count: Integer;
+begin
+  if FSearchDialog = nil then
+    FSearchDialog := TFMXSearchTextDialog.Create(Self);
+
+  if FSearchDialog.ShowModal = mrOk then
+  begin
+    // Swap search engine based on regex option
+    if FSearchDialog.IsRegex then
+      FEditor.SearchEngine := FRegexSearch
+    else
+      FEditor.SearchEngine := FSearchEngine;
+
+    Count := FEditor.SearchReplace(FSearchDialog.GetSearchText, '',
+      FSearchDialog.SearchOptions);
+    if Count = 0 then
+      LogEvent('Search: not found')
+    else
+      LogEvent(Format('Search: %d match(es)', [Count]));
+  end;
+end;
+
+procedure TFMXFeaturesForm.BtnReplaceClick(Sender: TObject);
+var
+  Count: Integer;
+begin
+  if FReplaceDialog = nil then
+    FReplaceDialog := TFMXReplaceTextDialog.Create(Self);
+
+  if FReplaceDialog.ShowModal in [mrOk, mrAll] then
+  begin
+    // Swap search engine based on regex option
+    if FReplaceDialog.IsRegex then
+      FEditor.SearchEngine := FRegexSearch
+    else
+      FEditor.SearchEngine := FSearchEngine;
+
+    Count := FEditor.SearchReplace(FReplaceDialog.GetSearchText,
+      FReplaceDialog.GetReplaceText, FReplaceDialog.SearchOptions);
+    if Count = 0 then
+      LogEvent('Replace: not found')
+    else
+      LogEvent(Format('Replace: %d replacement(s)', [Count]));
+  end;
+end;
+
+// --- Completion ---
+
+procedure TFMXFeaturesForm.BtnCompletionClick(Sender: TObject);
+begin
+  FCompletion.Activate;
+  LogEvent('Completion activated');
+end;
+
+// --- Spell Check ---
+
+procedure TFMXFeaturesForm.ChkSpellCheckChange(Sender: TObject);
+begin
+  if FUpdatingControls then Exit;
+  FSpellCheck.Enabled := ChkSpellCheck.IsChecked;
+  if ChkSpellCheck.IsChecked then
+  begin
+    FSpellCheck.CheckFile;
+    LogEvent('Spell check enabled');
+  end
+  else
+  begin
+    FSpellCheck.ClearErrors;
+    LabelSpellStatus.Text := 'Spell check: disabled';
+    LogEvent('Spell check disabled');
+  end;
+end;
+
+procedure TFMXFeaturesForm.BtnCheckFileClick(Sender: TObject);
+begin
+  FSpellCheck.CheckFile;
+  LogEvent(Format('Spell check: %d error(s) found', [FSpellCheck.Errors.Count]));
+  if FSpellCheck.Errors.Count = 0 then
+    LabelSpellStatus.Text := 'Spell check: no errors'
+  else
+    LabelSpellStatus.Text := Format('Spell check: %d error(s)',
+      [FSpellCheck.Errors.Count]);
+end;
+
+procedure TFMXFeaturesForm.SpellCheckComplete(Sender: TObject);
+begin
+  if FSpellCheck.Errors.Count = 0 then
+    LabelSpellStatus.Text := 'Spell check: no errors'
+  else
+    LabelSpellStatus.Text := Format('Spell check: %d error(s)',
+      [FSpellCheck.Errors.Count]);
+  LogEvent(Format('Spell check complete: %d error(s)',
+    [FSpellCheck.Errors.Count]));
+end;
+
+// --- Printing ---
+
+procedure TFMXFeaturesForm.BtnPrintClick(Sender: TObject);
+begin
+  FPrintComponent.SetSynEdit(FEditor);
+  FPrintComponent.Print;
+  LogEvent('Print');
 end;
 
 end.
