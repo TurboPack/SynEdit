@@ -23,7 +23,7 @@ SynEdit is a syntax highlighting edit control, not based on the Windows common c
 - **66 language highlighters** (Delphi, C++, Python, JavaScript, HTML, XML, SQL, and many more)
 - **189 Omni highlighter configurations** for additional languages via INI-based definitions
 - **VCL editor** (`TCustomSynEdit`) — full-featured Windows editor with DirectWrite rendering, code folding, completion proposals, printing, spell check, OLE drag-drop, and accessibility
-- **FMX editor** (`TCustomFMXSynEdit`) — cross-platform editor with FMX Canvas rendering, syntax highlighting, keyboard input, selection, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, and plugin support
+- **FMX editor** (`TCustomFMXSynEdit`) — cross-platform editor with FMX Canvas rendering, syntax highlighting, keyboard input, selection, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, plugin support, printing (abstract provider), and spell check (abstract provider)
 
 All highlighters are shared between VCL and FMX — write once, highlight everywhere.
 
@@ -35,7 +35,7 @@ See [What's new.md](What's%20new.md) for detailed information on recent addition
 
 - **TSynDelphiSyn** — Modern Delphi highlighter with multiline string literals, code folding, and Delphi 13 keyword support
 - **IDE Settings Importer** — Design-time tool to import your Delphi IDE color scheme and editor preferences into SynEdit components
-- **FMX Editor** — Cross-platform FireMonkey editor with syntax highlighting, clipboard, undo/redo, and file I/O
+- **FMX Editor** — Cross-platform FireMonkey editor with syntax highlighting, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, printing, spell check, and plugin support
 
 ---
 
@@ -162,6 +162,16 @@ Test project: `Tests/FMX/FMXSynEditTests.dproj`
 
 - Delphi 12+ (RAD Studio 12+)
 - Packages must be built in dependency order (see [ARCHITECTURE.md](ARCHITECTURE.md#building))
+
+### Build Scripts
+
+| Script | Description |
+|--------|-------------|
+| `build_delphi.bat` | Build all Delphi packages (shared + VCL + FMX) |
+| `build_all_win32.bat` | Build all packages for Win32 (Delphi + C++ Builder) |
+| `build_vcl_demos.bat` | Build all VCL demo applications |
+| `build_fmx_demo.bat` | Build FMX demo applications |
+| `build_fmx_tests.bat` | Build FMX DUnitX test suite |
 
 ### Quick Build (Delphi command line)
 

@@ -197,8 +197,10 @@ to be used by both VCL and FMX editors.
 | Input | Windows messages (`WM_KEYDOWN`, etc.) | FMX event overrides (`KeyDown`, etc.) |
 | Clipboard | Windows API | `IFMXClipboardService` |
 | Drag-drop | OLE `IDropTarget`/`IDropSource` | FMX `DragEnter`/`DragDrop` |
+| Completion | `Vcl.SynCompletionProposal` (native popup) | `FMX.SynCompletionProposal` (`TPopup`-based) |
+| Printing | Windows GDI/printer API | Abstract provider (`FMX.SynEditPrint`) |
+| Spell check | Windows COM (`Vcl.SynSpellCheck`) | Abstract provider (`FMX.SynSpellCheck`) |
 | Accessibility | Windows UI Automation | Not yet implemented |
-| Printing | Windows GDI/printer API | Not applicable |
 
 ### FMX Message Handler Mapping
 
