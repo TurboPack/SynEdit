@@ -24,6 +24,11 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64x' and '$(Base)'=='true') or '$(Base_Win64x)'!=''">
+        <Base_Win64x>true</Base_Win64x>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
         <Cfg_1>true</Cfg_1>
         <CfgParent>Base</CfgParent>
@@ -54,9 +59,10 @@
         <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
+        <DCC_UsePackage>SynEditSharedDR;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_UnitSearchPath>..\..\..\Source\VCL;..\..\..\Source;..\..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DllSuffix>$(Auto)</DllSuffix>
         <DynamicRTL>true</DynamicRTL>
@@ -88,6 +94,13 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
         <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
         <PackageImports>adortl;bindcomp;bindcompdbx;bindcompfmx;bindcompvcl;bindengine;CloudService;CustomIPTransport;DataSnapClient;DataSnapCommon;DataSnapConnectors;DatasnapConnectorsFreePascal;DataSnapFireDAC;DataSnapIndy10ServerTransport;DataSnapNativeClient;DataSnapProviderClient;DataSnapServer;DataSnapServerMidas;dbexpress;dbrtl;dbxcds;DbxClientDriver;DbxCommonDriver;DBXDb2Driver;DBXFirebirdDriver;DBXInformixDriver;DBXInterBaseDriver;DBXMSSQLDriver;DBXMySQLDriver;DBXOdbcDriver;DBXOracleDriver;DBXSqliteDriver;DBXSybaseASADriver;DBXSybaseASEDriver;dsnap;dsnapcon;dsnapxml;emsclient;emsclientfiredac;FireDAC;FireDACADSDriver;FireDACASADriver;FireDACCommon;FireDACCommonDriver;FireDACDb2Driver;FireDACDBXDriver;FireDACDSDriver;FireDACIBDriver;FireDACInfxDriver;FireDACMSAccDriver;FireDACMSSQLDriver;FireDACMySQLDriver;FireDACODBCDriver;FireDACOracleDriver;FireDACPgDriver;FireDACSqliteDriver;fmx;fmxase;fmxdae;fmxFireDAC;fmxobj;FMXTee;FmxTeeUI;ibxpress;IndyCore;IndyIPClient;IndyIPCommon;IndyIPServer;IndyProtocols;IndySystem;inet;inetdb;inetdbxpress;Intraweb;MetropolisUILiveTile;RESTBackendComponents;RESTComponents;rtl;soapmidas;soaprtl;soapserver;Tee;TeeDB;TeeUI;tethering;vcl;vclactnband;vcldb;vcldsnap;vclFireDAC;vclib;vclie;vclimg;VCLRESTComponents;vclribbon;VclSmp;vcltouch;vclx;xmlrtl;$(PackageImports)</PackageImports>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64x)'!=''">
+        <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
+        <ILINK_LibraryPath>$(BDSCOMMONDIR)\Dcp\Win64x\Release;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <PackageImports>rtl;vcl;vclactnband;vcldb;vclimg;vclx;xmlrtl;SynEditSharedCR;$(PackageImports)</PackageImports>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -329,7 +342,7 @@
                 <Platform value="OSXARM64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
-                <Platform value="Win64x">False</Platform>
+                <Platform value="Win64x">True</Platform>
                 <Platform value="iOSDevice64">False</Platform>
                 <Platform value="iOSSimARM64">False</Platform>
             </Platforms>
