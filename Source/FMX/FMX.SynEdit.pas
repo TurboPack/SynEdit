@@ -126,6 +126,9 @@ type
     procedure MoveCaretVert(DY: Integer; SelectionCmd: Boolean);
     procedure MoveCaretAndSelection(const NewCaret: TBufferCoord;
       SelectionCmd: Boolean);
+    // Range scanning for multi-line highlighters
+    procedure ScanRanges;
+    function ScanFrom(Index: Integer): Integer;
     // Command processing
     procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar);
   protected
@@ -926,11 +929,58 @@ begin
   end;
 end;
 
+{ --- Range scanning --- }
+
+procedure TCustomFMXSynEdit.ScanRanges;
+var
+  I: Integer;
+begin
+  if Assigned(FHighlighter) and (FLines.Count > 0) then
+  begin
+    FHighlighter.ResetRange;
+    I := 0;
+    repeat
+      FHighlighter.SetLine(FLines[I], I);
+      FHighlighter.NextToEol;
+      TSynEditStringList(FLines).Ranges[I] := FHighlighter.GetRange;
+      Inc(I);
+    until I >= FLines.Count;
+  end;
+end;
+
+function TCustomFMXSynEdit.ScanFrom(Index: Integer): Integer;
+var
+  iRange: TSynEditRange;
+begin
+  Result := Index;
+  if Result >= FLines.Count then Exit;
+
+  if Result = 0 then
+    FHighlighter.ResetRange
+  else
+    FHighlighter.SetRange(TSynEditStringList(FLines).Ranges[Result - 1]);
+
+  repeat
+    FHighlighter.SetLine(FLines[Result], Result);
+    FHighlighter.NextToEol;
+    iRange := FHighlighter.GetRange;
+    if TSynEditStringList(FLines).Ranges[Result] = iRange then
+      Exit;
+    TSynEditStringList(FLines).Ranges[Result] := iRange;
+    Inc(Result);
+  until Result = FLines.Count;
+  Dec(Result);
+end;
+
 { --- Command execution --- }
 
 procedure TCustomFMXSynEdit.ExecuteCommand(Command: TSynEditorCommand;
   AChar: WideChar);
+var
+  FirstAffectedLine: Integer;
 begin
+  FirstAffectedLine := -1;
+
   if FUndoRedo <> nil then
     FUndoRedo.CommandProcessed := Command;
 
@@ -1039,6 +1089,7 @@ begin
     ecChar:
       if not FReadOnly then
       begin
+        FirstAffectedLine := FCaretY - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1051,6 +1102,7 @@ begin
     ecDeleteChar:
       if not FReadOnly then
       begin
+        FirstAffectedLine := FCaretY - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1064,6 +1116,7 @@ begin
     ecDeleteLastChar:
       if not FReadOnly then
       begin
+        FirstAffectedLine := FCaretY - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1077,6 +1130,7 @@ begin
     ecLineBreak:
       if not FReadOnly then
       begin
+        FirstAffectedLine := FCaretY - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1089,6 +1143,7 @@ begin
     ecTab:
       if not FReadOnly then
       begin
+        FirstAffectedLine := FCaretY - 1;
         if eoTabsToSpaces in FOptions then
         begin
           var Spaces := FTabWidth - ((FCaretX - 1) mod FTabWidth);
@@ -1119,16 +1174,39 @@ begin
 
     // Clipboard
     ecCopy:     CopyToClipboard;
-    ecCut:      CutToClipboard;
-    ecPaste:    PasteFromClipboard;
+    ecCut:
+      begin
+        FirstAffectedLine := FCaretY - 1;
+        CutToClipboard;
+      end;
+    ecPaste:
+      begin
+        FirstAffectedLine := FCaretY - 1;
+        PasteFromClipboard;
+      end;
 
     // Undo/Redo
-    ecUndo:     Undo;
-    ecRedo:     Redo;
+    ecUndo:
+      begin
+        Undo;
+        // Undo can affect any lines, so do a full rescan
+        ScanRanges;
+      end;
+    ecRedo:
+      begin
+        Redo;
+        // Redo can affect any lines, so do a full rescan
+        ScanRanges;
+      end;
 
     // Selection
     ecSelectAll: SelectAll;
   end;
+
+  // Incremental range scan after text mutations
+  if (FirstAffectedLine >= 0) and Assigned(FHighlighter) and
+    (FLines.Count > 0) then
+    ScanFrom(Max(0, FirstAffectedLine));
 
   // Reset caret blink after any command
   FCaretBlinkOn := True;
@@ -1618,6 +1696,7 @@ begin
     FBlockEnd := BufferCoord(1, 1);
     FTopLine := 1;
     FLeftChar := 1;
+    ScanRanges;
   finally
     EndUpdate;
   end;
@@ -1723,6 +1802,7 @@ begin
   if FHighlighter <> Value then
   begin
     FHighlighter := Value;
+    ScanRanges;
     Repaint;
   end;
 end;
@@ -1836,6 +1916,7 @@ begin
   FBlockEnd := BufferCoord(1, 1);
   FTopLine := 1;
   FLeftChar := 1;
+  ScanRanges;
   RecalcSizes;
   Repaint;
 end;
