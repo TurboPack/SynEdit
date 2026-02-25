@@ -276,6 +276,145 @@ object FMXFeaturesForm: TFMXFeaturesForm
         Size.PlatformDefault = False
         Text = 'Modified: No'
       end
+      object LabelCodeFolding: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 590.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Code Folding'
+      end
+      object ChkCodeFolding: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 612.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Enable Code Folding'
+        OnChange = ChkCodeFoldingChange
+      end
+      object BtnFoldAll: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 638.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Fold All'
+        OnClick = BtnFoldAllClick
+      end
+      object BtnUnfoldAll: TButton
+        Position.X = 140.000000000000000000
+        Position.Y = 638.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Unfold All'
+        OnClick = BtnUnfoldAllClick
+      end
+      object LabelSearchReplace: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 690.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Search / Replace'
+      end
+      object BtnSearch: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 712.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Find...'
+        OnClick = BtnSearchClick
+      end
+      object BtnReplace: TButton
+        Position.X = 140.000000000000000000
+        Position.Y = 712.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Replace...'
+        OnClick = BtnReplaceClick
+      end
+      object LabelCompletion: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 760.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Completion'
+      end
+      object BtnCompletion: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 782.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Show Completion (Ctrl+Space)'
+        OnClick = BtnCompletionClick
+      end
+      object LabelSpellCheckCaption: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 830.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Spell Check'
+      end
+      object ChkSpellCheck: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 852.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Enable Spell Check'
+        OnChange = ChkSpellCheckChange
+      end
+      object BtnCheckFile: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 878.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Check File'
+        OnClick = BtnCheckFileClick
+      end
+      object LabelSpellStatus: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 910.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Spell check: idle'
+      end
+      object LabelPrintCaption: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 946.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Printing'
+      end
+      object BtnPrint: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 968.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Print...'
+        OnClick = BtnPrintClick
+      end
     end
   end
   object Splitter1: TSplitter
