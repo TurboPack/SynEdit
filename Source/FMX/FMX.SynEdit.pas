@@ -723,21 +723,7 @@ begin
           Style := [];
         end;
 
-        // Check if this token is within selection
-        if (SelStart > 0) and (SelEnd > SelStart) then
-        begin
-          var TokStart := TokenPos + 1; // 1-based
-          var TokEnd := TokenPos + Length(Token); // 1-based, inclusive
-          if (TokStart < SelEnd) and (TokEnd >= SelStart) then
-          begin
-            ForeColor := TColorToAlphaColor(FSelectedColor.Foreground);
-            if ForeColor = TAlphaColors.Null then
-              ForeColor := TAlphaColors.White;
-            BackColor := TAlphaColors.Null;
-          end;
-        end;
-
-        // Paint the token
+        // Paint the token, splitting at selection boundaries
         X := FTextAreaLeft + (TokenPos + 1 - FLeftChar) * FCharWidth;
         // Clip to visible area
         if X < FTextAreaLeft then
@@ -749,27 +735,103 @@ begin
         end;
 
         if (Token <> '') and (X < Width) then
-          Renderer.PaintToken(Canvas, X, Y, Token, ForeColor,
-            BackColor, Style);
+        begin
+          var TokStart := TokenPos + 1; // 1-based
+          var TokLen := Length(Token);
+
+          if (SelStart > 0) and (SelEnd > SelStart) and
+            (TokStart < SelEnd) and (TokStart + TokLen > SelStart) then
+          begin
+            // Token overlaps selection - render in up to 3 parts
+            var SelFore := TColorToAlphaColor(FSelectedColor.Foreground);
+            if SelFore = TAlphaColors.Null then
+              SelFore := TAlphaColors.White;
+
+            // Part before selection
+            if TokStart < SelStart then
+            begin
+              var PreLen := SelStart - TokStart;
+              Renderer.PaintToken(Canvas, X, Y,
+                Copy(Token, 1, PreLen), ForeColor, BackColor, Style);
+              X := X + PreLen * FCharWidth;
+              Token := Copy(Token, PreLen + 1, MaxInt);
+              TokStart := SelStart;
+              TokLen := Length(Token);
+            end;
+
+            // Selected part
+            var SelPartLen := Min(SelEnd, TokStart + TokLen) - TokStart;
+            if SelPartLen > 0 then
+            begin
+              Renderer.PaintToken(Canvas, X, Y,
+                Copy(Token, 1, SelPartLen), SelFore,
+                TAlphaColors.Null, Style);
+              X := X + SelPartLen * FCharWidth;
+              Token := Copy(Token, SelPartLen + 1, MaxInt);
+            end;
+
+            // Part after selection
+            if Token <> '' then
+              Renderer.PaintToken(Canvas, X, Y,
+                Token, ForeColor, BackColor, Style);
+          end
+          else
+            // Token entirely outside selection
+            Renderer.PaintToken(Canvas, X, Y, Token, ForeColor,
+              BackColor, Style);
+        end;
 
         FHighlighter.Next;
       end;
     end
     else if SLine <> '' then
     begin
-      // No highlighter - paint plain text
+      // No highlighter - paint plain text, splitting at selection
       SExpanded := ExpandTabs(SLine, FTabWidth);
       X := FTextAreaLeft;
       var VisText := Copy(SExpanded, FLeftChar, FCharsInWindow + 1);
-      ForeColor := TAlphaColors.Black;
-      if (SelStart > 0) and (SelEnd > SelStart) then
+      var VisStart := FLeftChar; // 1-based position of first visible char
+      var VisLen := Length(VisText);
+
+      if (SelStart > 0) and (SelEnd > SelStart) and
+        (VisStart < SelEnd) and (VisStart + VisLen > SelStart) then
       begin
-        ForeColor := TColorToAlphaColor(FSelectedColor.Foreground);
-        if ForeColor = TAlphaColors.Null then
-          ForeColor := TAlphaColors.Black;
-      end;
-      Renderer.PaintToken(Canvas, X, Y, VisText, ForeColor,
-        TAlphaColors.Null, []);
+        var SelFore := TColorToAlphaColor(FSelectedColor.Foreground);
+        if SelFore = TAlphaColors.Null then
+          SelFore := TAlphaColors.White;
+
+        // Part before selection
+        if VisStart < SelStart then
+        begin
+          var PreLen := SelStart - VisStart;
+          Renderer.PaintToken(Canvas, X, Y,
+            Copy(VisText, 1, PreLen), TAlphaColors.Black,
+            TAlphaColors.Null, []);
+          X := X + PreLen * FCharWidth;
+          VisText := Copy(VisText, PreLen + 1, MaxInt);
+          VisStart := SelStart;
+          VisLen := Length(VisText);
+        end;
+
+        // Selected part
+        var SelPartLen := Min(SelEnd, VisStart + VisLen) - VisStart;
+        if SelPartLen > 0 then
+        begin
+          Renderer.PaintToken(Canvas, X, Y,
+            Copy(VisText, 1, SelPartLen), SelFore,
+            TAlphaColors.Null, []);
+          X := X + SelPartLen * FCharWidth;
+          VisText := Copy(VisText, SelPartLen + 1, MaxInt);
+        end;
+
+        // Part after selection
+        if VisText <> '' then
+          Renderer.PaintToken(Canvas, X, Y,
+            VisText, TAlphaColors.Black, TAlphaColors.Null, []);
+      end
+      else
+        Renderer.PaintToken(Canvas, X, Y, VisText, TAlphaColors.Black,
+          TAlphaColors.Null, []);
     end;
   end;
 end;
