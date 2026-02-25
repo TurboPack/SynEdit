@@ -169,7 +169,8 @@ begin
   FCompletion := TSynFMXCompletionProposal.Create(Self);
   FCompletion.Editor := FEditor;
   FCompletion.EndOfTokenChr := '()[]. ';
-  FCompletion.Options := [scoLimitToMatchedText, scoUseInsertList];
+  FCompletion.Options := [scoLimitToMatchedText, scoUseInsertList,
+    scoCompleteWithTab, scoCompleteWithEnter];
   // Populate with sample Delphi keywords
   FCompletion.InsertList.AddStrings(
     ['begin', 'end', 'procedure', 'function', 'var', 'const', 'type',
