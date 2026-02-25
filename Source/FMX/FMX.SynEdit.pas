@@ -276,6 +276,25 @@ type
       read FOnScanForFoldRanges write FOnScanForFoldRanges;
   end;
 
+  TPlugInHandler = (phLinesInserted, phLinesDeleted, phLinePut, phAfterPaint);
+  TPlugInHandlers = set of TPlugInHandler;
+
+  TSynFMXEditPlugin = class(TObject)
+  private
+    FOwner: TCustomFMXSynEdit;
+    FHandlers: TPlugInHandlers;
+  public
+    constructor Create(AOwner: TCustomFMXSynEdit); virtual;
+    destructor Destroy; override;
+    procedure AfterPaint(Canvas: TCanvas; const AClip: TRectF;
+      FirstLine, LastLine: Integer); virtual;
+    procedure LinesInserted(FirstLine, Count: Integer); virtual;
+    procedure LinesDeleted(FirstLine, Count: Integer); virtual;
+    procedure LinePut(aIndex: Integer; const OldLine: string); virtual;
+    property Owner: TCustomFMXSynEdit read FOwner;
+    property Handlers: TPlugInHandlers read FHandlers;
+  end;
+
   TFMXSynEdit = class(TCustomFMXSynEdit)
   published
     property Align;
@@ -329,7 +348,6 @@ uses
   FMX.SynEditTypes,
   FMX.SynEditUndo,
   FMX.SynUnicode,
-  FMX.SynEditPlugins,
   SynEditKeyConst,
   SynEditStrConst;
 
@@ -2557,8 +2575,6 @@ var
   ptStart, ptEnd: TBufferCoord;
   bBackward, bFromCursor, bPrompt, bReplace, bReplaceAll: Boolean;
   sReplace: string;
-  nEOLCount, I: Integer;
-
   function ProcessTextRange(const AStart: TBufferCoord;
     var AEnd: TBufferCoord): Integer;
   var
@@ -2689,18 +2705,6 @@ begin
   bFromCursor := not (ssoEntireScope in AOptions);
   sReplace := FSearchEngine.PreprocessReplaceExpression(AReplace);
 
-  // Count line ends in replacement
-  nEOLCount := 0;
-  I := 1;
-  repeat
-    I := Pos(#13#10, sReplace, I);
-    if I <> 0 then
-    begin
-      I := I + 2;
-      Inc(nEOLCount);
-    end;
-  until I = 0;
-
   // Initialize search engine
   FSearchEngine.Options := AOptions;
   FSearchEngine.Pattern := ASearch;
@@ -2773,6 +2777,36 @@ begin
     if phAfterPaint in Plugin.Handlers then
       Plugin.AfterPaint(Canvas, AClip, FirstLine, LastLine);
   end;
+end;
+
+{ TSynFMXEditPlugin }
+
+constructor TSynFMXEditPlugin.Create(AOwner: TCustomFMXSynEdit);
+begin
+  inherited Create;
+  FOwner := AOwner;
+end;
+
+destructor TSynFMXEditPlugin.Destroy;
+begin
+  inherited;
+end;
+
+procedure TSynFMXEditPlugin.AfterPaint(Canvas: TCanvas; const AClip: TRectF;
+  FirstLine, LastLine: Integer);
+begin
+end;
+
+procedure TSynFMXEditPlugin.LinesInserted(FirstLine, Count: Integer);
+begin
+end;
+
+procedure TSynFMXEditPlugin.LinesDeleted(FirstLine, Count: Integer);
+begin
+end;
+
+procedure TSynFMXEditPlugin.LinePut(aIndex: Integer; const OldLine: string);
+begin
 end;
 
 end.
