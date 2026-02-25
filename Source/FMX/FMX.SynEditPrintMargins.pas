@@ -46,9 +46,13 @@ unit FMX.SynEditPrintMargins;
 interface
 
 uses
+  System.Types,
   System.Classes,
   System.SysUtils,
   System.Math,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
   FMX.Graphics,
   FMX.TextLayout,
   FMX.SynEditPrintTypes,

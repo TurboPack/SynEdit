@@ -156,30 +156,18 @@ end;
 
 function TSynFMXPrinterInfo.IsAvailable: Boolean;
 begin
-{$IFDEF MSWINDOWS}
   try
-    Result := TPrinterService.Current <> nil;
-    if Result then
-      Result := TPrinterService.Current.Count > 0;
+    Result := PrinterAssigned and (Printer.Count > 0);
   except
     Result := False;
   end;
-{$ELSE}
-  try
-    Result := TPrinterService.Current <> nil;
-    if Result then
-      Result := TPrinterService.Current.Count > 0;
-  except
-    Result := False;
-  end;
-{$ENDIF}
 end;
 
 procedure TSynFMXPrinterInfo.UpdateInfo;
 {$IFDEF MSWINDOWS}
 var
-  Prn: TPrinter;
   DC: HDC;
+  DeviceName: string;
 {$ENDIF}
 begin
   FIsUpdated := True;
@@ -192,38 +180,34 @@ begin
   end;
 
   try
-    Prn := Printer;
-    if Prn = nil then
-    begin
-      FillDefault;
-      Exit;
-    end;
-
-    DC := Prn.Canvas.Handle;
+    DeviceName := Printer.ActivePrinter.Title;
+    DC := CreateDC('WINSPOOL', PChar(DeviceName), nil, nil);
     if DC = 0 then
     begin
       FillDefault;
       Exit;
     end;
 
-    FPhysicalWidth := GetDeviceCaps(DC, Winapi.Windows.PHYSICALWIDTH);
-    FPhysicalHeight := GetDeviceCaps(DC, Winapi.Windows.PHYSICALHEIGHT);
-    FPrintableWidth := GetDeviceCaps(DC, HORZRES);
-    FPrintableHeight := GetDeviceCaps(DC, VERTRES);
-    FLeftGutter := GetDeviceCaps(DC, Winapi.Windows.PHYSICALOFFSETX);
-    FTopGutter := GetDeviceCaps(DC, Winapi.Windows.PHYSICALOFFSETY);
-    FRightGutter := FPhysicalWidth - FPrintableWidth - FLeftGutter;
-    FBottomGutter := FPhysicalHeight - FPrintableHeight - FTopGutter;
-    FXPixPerInch := GetDeviceCaps(DC, LOGPIXELSX);
-    FYPixPerInch := GetDeviceCaps(DC, LOGPIXELSY);
-    FXPixPerMM := FXPixPerInch / mmPerInch;
-    FYPixPerMM := FYPixPerInch / mmPerInch;
+    try
+      FPhysicalWidth := GetDeviceCaps(DC, Winapi.Windows.PHYSICALWIDTH);
+      FPhysicalHeight := GetDeviceCaps(DC, Winapi.Windows.PHYSICALHEIGHT);
+      FPrintableWidth := GetDeviceCaps(DC, HORZRES);
+      FPrintableHeight := GetDeviceCaps(DC, VERTRES);
+      FLeftGutter := GetDeviceCaps(DC, Winapi.Windows.PHYSICALOFFSETX);
+      FTopGutter := GetDeviceCaps(DC, Winapi.Windows.PHYSICALOFFSETY);
+      FRightGutter := FPhysicalWidth - FPrintableWidth - FLeftGutter;
+      FBottomGutter := FPhysicalHeight - FPrintableHeight - FTopGutter;
+      FXPixPerInch := GetDeviceCaps(DC, LOGPIXELSX);
+      FYPixPerInch := GetDeviceCaps(DC, LOGPIXELSY);
+      FXPixPerMM := FXPixPerInch / mmPerInch;
+      FYPixPerMM := FYPixPerInch / mmPerInch;
+    finally
+      DeleteDC(DC);
+    end;
   except
     FillDefault;
   end;
 {$ELSE}
-  { Non-Windows platforms: use defaults.
-    Future enhancement: query platform-specific printer APIs. }
   FillDefault;
 {$ENDIF}
 end;

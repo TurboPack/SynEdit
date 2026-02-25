@@ -68,6 +68,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynEditMiscProcs,
+  FMX.SynEdit,
   FMX.SynEditPrintTypes,
   FMX.SynEditPrintHeaderFooter,
   FMX.SynEditPrinterInfo,
@@ -112,22 +113,6 @@ type
     FirstRow: Integer;
     LastLine: Integer;
     LastRow: Integer;
-  end;
-
-  { Forward declaration }
-  TCustomFMXSynEdit = class;
-
-  { Minimal forward reference to avoid circular dependency with FMX.SynEdit.
-    Users pass their actual SynEdit instance via the SynEdit property. }
-  TCustomFMXSynEdit = class(TComponent)
-  public
-    function GetHighlighter: TSynCustomHighlighter; virtual; abstract;
-    function GetFont: TFont; virtual; abstract;
-    function GetTabWidth: Integer; virtual; abstract;
-    function GetLines: TStrings; virtual; abstract;
-    function GetSelAvail: Boolean; virtual; abstract;
-    function GetBlockBegin: TBufferCoord; virtual; abstract;
-    function GetBlockEnd: TBufferCoord; virtual; abstract;
   end;
 
   { Main FMX print controller }
@@ -263,6 +248,7 @@ type
 implementation
 
 uses
+  System.Math.Vectors,
 {$IFDEF MSWINDOWS}
   FMX.Printer,
 {$ENDIF}
@@ -332,7 +318,7 @@ end;
 
 procedure TSynFMXPrintProvider.BeginDoc(const ATitle: string);
 begin
-  Printer.ActivePrinter.Title := ATitle;
+  Printer.Title := ATitle;
   Printer.BeginDoc;
   FPageWidth := Round(Printer.PageWidth);
   FPageHeight := Round(Printer.PageHeight);
@@ -654,7 +640,7 @@ var
   TokenPos: Integer;
   Attr: TSynHighlighterAttributes;
   BkgColor, FontColor: TColor;
-  AlphaBkg, AlphaFont, AlphaToken: TAlphaColor;
+  AlphaBkg, AlphaFont: TAlphaColor;
   TextRect: TRectF;
   Layout: TTextLayout;
   iSelStart, iSelLen: Integer;
@@ -727,17 +713,6 @@ begin
               iSelLen := MaxInt;
             if TokenPos - iSelStart >= iSelLen then Break;
           end;
-
-          Attr := FHighlighter.GetTokenAttribute;
-          if Assigned(Attr) then
-          begin
-            if FColors and (Attr.Foreground <> TColors.SysNone) then
-              AlphaToken := ColorToAlpha(Attr.Foreground)
-            else
-              AlphaToken := AlphaFont;
-          end
-          else
-            AlphaToken := AlphaFont;
 
           FHighlighter.Next;
         end;
@@ -919,17 +894,22 @@ begin
 end;
 
 procedure TSynFMXEditPrint.SetSynEdit(AEditor: TComponent);
-{ Sets Lines, Font, Highlighter, TabWidth from a SynEdit component.
-  Uses RTTI-free approach: checks for published properties by typecasting.
-  This is compatible with TCustomFMXSynEdit from FMX.SynEdit. }
+var
+  Ed: TCustomFMXSynEdit;
 begin
-  { We use a lightweight approach: the caller passes the SynEdit and
-    we access it through its public interface. For a full integration,
-    the FMX.SynEdit unit would provide a helper method. Here we accept
-    basic TComponent and use the abstract base class if available,
-    otherwise the user can set properties directly. }
   FPagesCounted := False;
   FRangesOK := False;
+  if AEditor is TCustomFMXSynEdit then
+  begin
+    Ed := TCustomFMXSynEdit(AEditor);
+    FHighlighter := Ed.Highlighter;
+    FTabWidth := Ed.TabWidth;
+    FLines.Assign(Ed.Lines);
+    FFont.Assign(Ed.Font);
+    FSelAvail := Ed.SelAvail;
+    FBlockBegin := Ed.BlockBegin;
+    FBlockEnd := Ed.BlockEnd;
+  end;
 end;
 
 procedure TSynFMXEditPrint.LoadFromStream(AStream: TStream);
