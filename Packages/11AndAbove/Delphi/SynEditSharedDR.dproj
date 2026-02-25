@@ -1,0 +1,269 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <Base>True</Base>
+        <AppType>Package</AppType>
+        <Config Condition="'$(Config)'==''">Release</Config>
+        <FrameworkType>None</FrameworkType>
+        <MainSource>SynEditSharedDR.dpk</MainSource>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+        <ProjectName Condition="'$(ProjectName)'==''">SynEditSharedDR</ProjectName>
+        <ProjectVersion>20.3</ProjectVersion>
+        <TargetedPlatforms>3</TargetedPlatforms>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+        <Cfg_1_Win32>true</Cfg_1_Win32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win64)'!=''">
+        <Cfg_1_Win64>true</Cfg_1_Win64>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
+        <Cfg_2_Win64>true</Cfg_2_Win64>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>SynEditSharedDR</SanitizedProjectName>
+        <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
+        <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+        <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_Description>TurboPack SynEdit Shared runtime package</DCC_Description>
+        <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_Define>SYN_SHARED;$(DCC_Define)</DCC_Define>
+        <DCC_Namespace>System;Xml;Data;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
+        <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_WriteableConstants>true</DCC_WriteableConstants>
+        <DllSuffix>$(Auto)</DllSuffix>
+        <GenDll>true</GenDll>
+        <GenPackage>true</GenPackage>
+        <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
+        <SkipResGeneration>false</SkipResGeneration>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1031</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <Icon_MainIcon>SynEditDR.ico</Icon_MainIcon>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <Icon_MainIcon>SynEditDR.ico</Icon_MainIcon>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_DebugInformation>0</DCC_DebugInformation>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <DCC_Optimize>false</DCC_Optimize>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <ItemGroup>
+        <DelphiCompile Include="$(MainSource)">
+            <MainSource>MainSource</MainSource>
+        </DelphiCompile>
+        <DCCReference Include="rtl.dcp"/>
+        <DCCReference Include="..\..\..\Source\SynEditTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditStrConst.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditKeyConst.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditKeyCmds.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditHighlighter.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditCodeFolding.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditTextBuffer.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditMiscProcs.pas"/>
+        <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditSearch.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditRegexSearch.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditWildcardSearch.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterBaan.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterBat.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCAC.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCache.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCobol.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCPM.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCpp.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCS.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCss.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDelphi.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDfm.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDml.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDOT.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDWS.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterEiffel.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterFortran.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterFoxpro.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGalaxy.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGeneral.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGWS.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHaskell.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHC11.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHP48.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHtml.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterIDL.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterIni.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterInno.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJava.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJScript.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJSON.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKix.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterM3.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterOmni.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPerl.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPHP.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterProgress.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPython.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRC.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRexx.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRuby.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSDD.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSml.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSQL.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterST.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTclTk.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTeX.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterUNIXShellScript.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterUnreal.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterURI.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVB.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVBScript.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas"/>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+        <Borland.ProjectType>Package</Borland.ProjectType>
+        <BorlandProject>
+            <Delphi.Personality>
+                <Source>
+                    <Source Name="MainSource">SynEditSharedDR.dpk</Source>
+                </Source>
+                <Excluded_Packages/>
+                <VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+                    <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+                    <VersionInfo Name="MajorVer">1</VersionInfo>
+                    <VersionInfo Name="MinorVer">0</VersionInfo>
+                    <VersionInfo Name="Release">0</VersionInfo>
+                    <VersionInfo Name="Build">0</VersionInfo>
+                    <VersionInfo Name="Debug">False</VersionInfo>
+                    <VersionInfo Name="PreRelease">False</VersionInfo>
+                    <VersionInfo Name="Special">False</VersionInfo>
+                    <VersionInfo Name="Private">False</VersionInfo>
+                    <VersionInfo Name="DLL">False</VersionInfo>
+                    <VersionInfo Name="Locale">1031</VersionInfo>
+                    <VersionInfo Name="CodePage">1252</VersionInfo>
+                </VersionInfo>
+                <VersionInfoKeys>
+                    <VersionInfoKeys Name="CompanyName"/>
+                    <VersionInfoKeys Name="FileDescription"/>
+                    <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="InternalName"/>
+                    <VersionInfoKeys Name="LegalCopyright"/>
+                    <VersionInfoKeys Name="LegalTrademarks"/>
+                    <VersionInfoKeys Name="OriginalFilename"/>
+                    <VersionInfoKeys Name="ProductName"/>
+                    <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="Comments"/>
+                </VersionInfoKeys>
+            </Delphi.Personality>
+            <ModelSupport>False</ModelSupport>
+            <Platforms>
+                <Platform value="Android">False</Platform>
+                <Platform value="Android64">False</Platform>
+                <Platform value="Linux64">False</Platform>
+                <Platform value="OSX64">False</Platform>
+                <Platform value="OSXARM64">False</Platform>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">True</Platform>
+                <Platform value="Win64x">False</Platform>
+                <Platform value="iOSDevice64">False</Platform>
+                <Platform value="iOSSimARM64">False</Platform>
+            </Platforms>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+    <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+    <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
+</Project>

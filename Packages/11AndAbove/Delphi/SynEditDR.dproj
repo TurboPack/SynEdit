@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
@@ -63,13 +63,13 @@
         <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_Description>TurboPack SynEdit Delphi runtime package</DCC_Description>
+        <DCC_Description>TurboPack SynEdit Delphi VCL runtime package</DCC_Description>
         <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
-        <DCC_UnitSearchPath>..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source\VCL;..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_WriteableConstants>true</DCC_WriteableConstants>
         <DllSuffix>$(Auto)</DllSuffix>
         <GenDll>true</GenDll>
@@ -126,127 +126,56 @@
         <DCCReference Include="vcldb.dcp"/>
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="rtl.dcp"/>
-        <DCCReference Include="..\..\..\Source\SynAccessibility.pas"/>
-        <DCCReference Include="..\..\..\Source\SynAutoCorrect.pas"/>
-        <DCCReference Include="..\..\..\Source\SynAutoCorrectEditor.pas">
-            <Form>frmAutoCorrectEditor</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynCompletionProposal.pas"/>
-        <DCCReference Include="..\..\..\Source\SynDBEdit.pas"/>
-        <DCCReference Include="..\..\..\Source\SynDWrite.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEdit.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditCodeFolding.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditDataObject.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditDragDrop.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditExport.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditHighlighter.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditKbdHandler.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditKeyCmdEditor.pas">
-            <Form>SynEditKeystrokeEditorForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynEditKeyCmds.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditKeyCmdsEditor.pas">
-            <Form>SynEditKeystrokesEditorForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynEditKeyConst.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditMiscClasses.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditMiscProcs.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditOptionsDialog.pas">
-            <Form>fmEditorOptionsDialog</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynEditPlugins.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditPrint.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditPrinterInfo.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditPrintHeaderFooter.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditPrintMargins.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditPrintMarginsDialog.pas">
+        <DCCReference Include="SynEditSharedDR.dcp"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEdit.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynUnicode.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDWrite.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditMiscClasses.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditScrollBars.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyConst.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKbdHandler.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditUndo.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynCompletionProposal.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditDragDrop.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditDataObject.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAccessibility.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPlugins.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrint.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrinterInfo.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrintHeaderFooter.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrintMargins.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrintMarginsDialog.pas">
             <Form>SynEditPrintMarginsDlg</Form>
         </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynEditPrintPreview.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditPrintTypes.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditPythonBehaviour.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditRegexSearch.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditScrollBars.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditSearch.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditStrConst.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditTextBuffer.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditTypes.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditUndo.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditWordWrap.pas"/>
-        <DCCReference Include="..\..\..\Source\SynExportHTML.pas"/>
-        <DCCReference Include="..\..\..\Source\SynExportRTF.pas"/>
-        <DCCReference Include="..\..\..\Source\SynExportTeX.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterBaan.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterBat.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCAC.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCache.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCobol.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCPM.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCpp.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCS.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCss.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDfm.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDml.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDOT.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDWS.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterEiffel.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterFortran.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterFoxpro.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGalaxy.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGeneral.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGWS.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHaskell.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHC11.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHP48.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHtml.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterIDL.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterIni.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterInno.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJava.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJScript.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJSON.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKix.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterM3.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterOmni.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPerl.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPHP.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterProgress.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPython.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRC.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRexx.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRuby.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSDD.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSml.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSQL.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterST.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTclTk.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTeX.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterUNIXShellScript.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterUnreal.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterURI.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVB.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVBScript.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas"/>
-        <DCCReference Include="..\..\..\Source\SynMacroRecorder.pas"/>
-        <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrintPreview.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrintTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditExport.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportHTML.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportRTF.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportTeX.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPythonBehaviour.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDBEdit.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrect.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrectEditor.pas">
+            <Form>frmAutoCorrectEditor</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynURIOpener.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas">
             <Form>SynOmniSynSetup</Form>
         </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynSpellCheck.pas"/>
-        <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
-        <DCCReference Include="..\..\..\Source\SynURIOpener.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDelphi.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditWordWrap.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditOptionsDialog.pas">
+            <Form>fmEditorOptionsDialog</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdEditor.pas">
+            <Form>SynEditKeystrokeEditorForm</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdsEditor.pas">
+            <Form>SynEditKeystrokesEditorForm</Form>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

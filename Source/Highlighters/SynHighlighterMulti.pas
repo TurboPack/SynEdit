@@ -11,7 +11,7 @@ the specific language governing rights and limitations under the License.
 The Original Code is: SynHighlighterMulti.pas, released 2000-06-23.
 The Original Code is based on mwMultiSyn.pas by Willo van der Merwe, part of the
 mwEdit component suite.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
 Contributors.txt file.
@@ -43,8 +43,10 @@ unit SynHighlighterMulti;
 interface
 
 uses
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Winapi.Windows,
   System.Win.Registry,
+  {$ENDIF}
   System.RegularExpressions,
   SynEditTypes,
   SynEditHighlighter,
@@ -221,8 +223,10 @@ type
     function UpdateRangeProcs: Boolean;
     property CurrScheme: Integer read fCurrScheme write fCurrScheme;
     property CurrLine: string read fLineStr;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    {$ENDIF}
     function IsIdentChar(AChar: WideChar): Boolean; override;
   published
     property Schemes: TSchemes read fSchemes write SetSchemes;
@@ -238,7 +242,7 @@ implementation
 uses
   System.SysUtils,
   System.Math,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditMiscProcs,
   SynEditStrConst;
 
@@ -640,6 +644,7 @@ begin
   fSampleSource := Value;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynMultiSyn.LoadFromRegistry(RootKey: HKEY;
   Key: string): Boolean;
 var
@@ -698,6 +703,7 @@ begin
     r.Free;
   end;
 end;
+{$ENDIF}
 
 function TSynMultiSyn.GetRange: Pointer;
 begin

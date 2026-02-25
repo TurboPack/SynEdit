@@ -44,7 +44,7 @@ unit SynHighlighterFortran;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

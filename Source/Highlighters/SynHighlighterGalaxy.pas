@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterGalaxy.pas, released 2000-04-07.
 The Original Code is based on the mkGalaxySyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Martijn van der Kooij.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -45,8 +45,11 @@ unit SynHighlighterGalaxy;
 interface
 
 uses
-  Windows,
-  Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
+  SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
   SysUtils, Classes;
@@ -99,8 +102,10 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    {$ENDIF}
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -117,7 +122,9 @@ type
 implementation
 
 uses
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
+  {$ENDIF}
   SynEditStrConst;
 
 function TSynGalaxySyn.IsIdentChar(AChar: WideChar): Boolean;
@@ -386,6 +393,7 @@ begin
   Result := SYNS_LangGalaxy;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynGalaxySyn.LoadFromRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   r: TRegistry;
@@ -423,6 +431,7 @@ begin
     r.Free;
   end;
 end;
+{$ENDIF}
 
 class function TSynGalaxySyn.GetFriendlyLanguageName: string;
 begin

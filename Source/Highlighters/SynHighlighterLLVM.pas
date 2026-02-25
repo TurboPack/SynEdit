@@ -35,7 +35,7 @@ unit SynHighlighterLLVM;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

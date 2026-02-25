@@ -43,7 +43,7 @@ unit SynHighlighterRuby;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

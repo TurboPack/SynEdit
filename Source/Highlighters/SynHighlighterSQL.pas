@@ -51,7 +51,7 @@ uses
   System.Classes,
   System.Generics.Defaults,
   System.Generics.Collections,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter;
 
@@ -204,7 +204,9 @@ type
 implementation
 
 uses
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
+  {$ENDIF}
   System.Character,
   SynEditMiscProcs,
   SynEditStrConst;

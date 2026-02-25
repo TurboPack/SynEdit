@@ -9,8 +9,8 @@ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
 the specific language governing rights and limitations under the License.
 
 The Original Code is: SynHighlighterURI.pas, released 2003-04-10.
-The initial author of this file is Maël Hörz.
-Unicode translation by Maël Hörz.
+The initial author of this file is Maï¿½l Hï¿½rz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -28,7 +28,7 @@ of this file under either the MPL or the GPL.
 -------------------------------------------------------------------------------}
 {
 @abstract(Provides an URI syntax highlighter for SynEdit)
-@author(Maël Hörz)
+@author(Maï¿½l Hï¿½rz)
 @created(2003)
 @lastmod(2004-03-19)
 http://www.mh-net.de.vu
@@ -68,8 +68,10 @@ unit SynHighlighterURI;
 interface
 
 uses
-  Windows,
-  Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

@@ -36,11 +36,16 @@ unit SynEditMiscProcs;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
+  {$ENDIF}
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
+  Vcl.Graphics,
+  {$ENDIF}
+  System.UITypes,
   System.Math,
   System.Classes,
   System.RegularExpressions,
-  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode;
@@ -119,27 +124,31 @@ function CalcFCS(const ABuf; ABufSize: Cardinal): Word;
 function DeleteTypePrefixAndSynSuffix(s: string): string;
 function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 // In Windows Vista or later use the Consolas font
 function DefaultFontName: string;
 
 function GetCorrectFontWeight(Font: TFont): Integer;
+{$ENDIF}
 
 // Calculates the difference between two lines
 // Returns the starting point of the difference and the lengths of the change
 procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen:
     Integer);
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 // Tests whether a color is dark
 function IsColorDark(AColor: TColor): Boolean;
+
+// Converts TColor to an HTML color string
+function ColorToHTML(Color: TColor): string;
+{$ENDIF}
 
 // Substitutes control characters with Unicode control pictures
 procedure SubstituteControlChars(var Input: string);
 
 // Returns a compiled regular expression
 function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TRegEx;
-
-// Converts TColor to an HTML color string
-function ColorToHTML(Color: TColor): string;
 
 // Bracket functions (Brackets have the form '()[]{}')
 function IsBracket(Chr: Char; const Brackets: string): Boolean;
@@ -157,13 +166,15 @@ function GrowCollection(OldCapacity, NewCount: Integer): Integer;
 implementation
 
 uses
-  System.UITypes,
   System.SysUtils,
   System.RegularExpressionsCore,
-  SynHighlighterMulti,
-  Winapi.D2D1,
-  Vcl.Forms,
-  SynDWrite;
+  SynHighlighterMulti
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
+  ,Winapi.D2D1
+  ,Vcl.Forms
+  ,SynDWrite
+  {$ENDIF}
+  ;
 
 function MinMax(x, mi, ma: Integer): Integer;
 begin
@@ -750,6 +761,7 @@ begin
   Result := Integer(Res);
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function DefaultFontName: string;
 begin
   if CheckWin32Version(6) then
@@ -794,6 +806,7 @@ begin
     ReleaseDC(0, DC);
   end;
 end;
+{$ENDIF}
 
 {$IF CompilerVersion <= 32}
 function GrowCollection(OldCapacity, NewCount: Integer): Integer;
@@ -834,6 +847,7 @@ begin
   end;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function IsColorDark(AColor: TColor): Boolean;
 var
   ACol: Longint;
@@ -842,6 +856,7 @@ begin
   Result := ((2.99 * GetRValue(ACol) + 5.87 * GetGValue(ACol) +
                  1.14 * GetBValue(ACol)) < $400);
 end;
+{$ENDIF}
 
 procedure SubstituteControlChars(var Input: string);
 const
@@ -871,6 +886,7 @@ begin
   {$ENDIF}
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function ColorToHTML(Color: TColor): string;
 var
   R: TColorRef;
@@ -878,6 +894,7 @@ begin
   R := ColorToRGB(Color);
   Result := Format('#%.2x%.2x%.2x', [GetRValue(R), GetGValue(R), GetBValue(R)]);
 end;
+{$ENDIF}
 
 function IsBracket(Chr: Char; const Brackets: string): Boolean;
 begin

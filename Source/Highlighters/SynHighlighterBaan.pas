@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterBaan.pas, released 2000-04-21.
 The Original Code is based on the mwBaanSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is "riceball".
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -44,7 +44,13 @@ unit SynHighlighterBaan;
 interface
 
 uses
-  Windows, Messages, Controls, Graphics, Registry,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows, Winapi.Messages,
+  {$ENDIF}
+  System.UITypes,
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
+  Registry,
+  {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

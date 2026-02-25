@@ -13,7 +13,7 @@ The Original Code is based on the mwGeneralSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Martin Waldenburg.
 Portions written by Martin Waldenburg are copyright 1999 Martin Waldenburg.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -44,8 +44,10 @@ unit SynHighlighterGeneral;
 interface
 
 uses
-  Windows,
-  Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
@@ -137,8 +139,10 @@ type
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    {$ENDIF}
     property OnGetTokenAttribute: TGetTokenAttributeEvent read fOnGetTokenAttribute write fOnGetTokenAttribute;
     property StringMultiLine: Boolean read FStringMultiLine write FStringMultiLine;
   published
@@ -170,7 +174,9 @@ type
 implementation
 
 uses
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
+  {$ENDIF}
   SynEditStrConst;
 
 function TSynGeneralSyn.IsIdentChar(AChar: WideChar): Boolean;
@@ -717,6 +723,7 @@ begin
   Result := SYNS_LangGeneral;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynGeneralSyn.LoadFromRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   Reg: TRegistry;
@@ -749,6 +756,7 @@ begin
       Result := False;
   finally Reg.Free; end;
 end;
+{$ENDIF}
 
 function TSynGeneralSyn.GetStringDelim: TStringDelim;
 begin

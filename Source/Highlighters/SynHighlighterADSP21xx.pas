@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterADSP21xx.pas, released 2000-04-17.
 The Original Code is based on the wbADSP21xxSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Wynand Breytenbach.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -43,7 +43,7 @@ unit SynHighlighterADSP21xx;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
@@ -295,8 +295,10 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function UseUserSettings(settingIndex: Integer): Boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
+    {$ENDIF}
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -320,8 +322,12 @@ type
 implementation
 
 uses
-  Windows,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
+  {$ENDIF}
   SynEditStrConst;
 
 const
@@ -2489,6 +2495,7 @@ begin
   fRange:= rsUnknown;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 procedure TSynADSP21xxSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
@@ -2595,6 +2602,7 @@ begin  // UseUserSettings
     end;
   finally StrLst.Free; end;
 end;
+{$ENDIF}
 
 function TSynADSP21xxSyn.IsFilterStored: Boolean;
 begin

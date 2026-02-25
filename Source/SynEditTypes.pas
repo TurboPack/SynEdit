@@ -12,7 +12,7 @@ The Original Code is: SynEditTypes.pas, released 2000-04-07.
 The Original Code is based on parts of mwCustomEdit.pas by Martin Waldenburg,
 part of the mwEdit component suite.
 Portions created by Martin Waldenburg are Copyright (C) 1998 Martin Waldenburg.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -41,18 +41,55 @@ unit SynEditTypes;
 interface
 
 uses
-  Winapi.Windows,
-  Winapi.Messages,
   System.Types,
   System.Math,
-  Vcl.Controls,
   System.SysUtils,
-  System.Classes;
+  System.Classes,
+  System.UITypes;
 
 const
   DefaultBrackets = '()[]{}';
 
+  { Color constants - aliases for TColors.* to allow shared code to use the
+    traditional cl* names without depending on Vcl.Graphics }
+  clBlack = TColors.Black;
+  clMaroon = TColors.Maroon;
+  clGreen = TColors.Green;
+  clOlive = TColors.Olive;
+  clNavy = TColors.Navy;
+  clPurple = TColors.Purple;
+  clTeal = TColors.Teal;
+  clGray = TColors.Gray;
+  clSilver = TColors.Silver;
+  clRed = TColors.Red;
+  clLime = TColors.Lime;
+  clYellow = TColors.Yellow;
+  clBlue = TColors.Blue;
+  clFuchsia = TColors.Fuchsia;
+  clAqua = TColors.Aqua;
+  clLtGray = TColors.LtGray;
+  clDkGray = TColors.DkGray;
+  clWhite = TColors.White;
+  clSkyBlue = TColors.LegacySkyBlue;
+  clNone = TColors.SysNone;
+  clWindow = TColors.SysWindow;
+  clWindowText = TColors.SysWindowText;
+  clGrayText = TColors.SysGrayText;
+  clHighlight = TColors.SysHighlight;
+  clHighlightText = TColors.SysHighlightText;
+
+  { Font style constants - re-exported from System.UITypes where they are
+    scoped enums, so shared code can use unqualified fsBold etc. }
+  fsBold = System.UITypes.TFontStyle.fsBold;
+  fsItalic = System.UITypes.TFontStyle.fsItalic;
+  fsUnderline = System.UITypes.TFontStyle.fsUnderline;
+  fsStrikeOut = System.UITypes.TFontStyle.fsStrikeOut;
+
 type
+  { Re-export font types so shared code doesn't need Vcl.Graphics }
+  TFontStyle = System.UITypes.TFontStyle;
+  TFontStyles = System.UITypes.TFontStyles;
+
   TSynAlignment = TAlignment;
 
 var
@@ -189,15 +226,6 @@ type
 
   TSynSelectionArray = TArray<TSynSelection>;
 
-  (*  Helper methods for TControl - for backwward compatibility *)
-  {$IF CompilerVersion <= 32}
-  TControlHelper = class helper for TControl
-  public
-    function CurrentPPI: Integer;
-    function FCurrentPPI: Integer;
-  end;
-  {$ENDIF}
-
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 function BufferCoord(AChar, ALine: Integer): TBufferCoord;
 
@@ -211,18 +239,6 @@ TCaretShape = record
   constructor Create(AWidth, AHeight: Integer; AOffset: TPoint);
 end;
 
-
-{ ************************* For ScrollBars ********************************}
-
-  ISynEditScrollBars = interface
-    function UpdateScrollBars: Boolean;
-    function GetIsScrolling: Boolean;
-    procedure WMHScroll(var AMsg: TWMScroll);
-    procedure WMVScroll(var AMsg: TWMScroll);
-    procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
-      MousePos: TPoint);
-    property IsScrolling: Boolean read GetIsScrolling;
-  end;
 
 { ************************* For Word Wrap ********************************}
 
@@ -261,6 +277,44 @@ end;
     // for undo/redo of adding a character past EOL and repositioning the caret
     );
 
+{ ******************** Multicast event chains ****************************}
+
+  ESynMethodChain = class(Exception);
+  TSynExceptionEvent = procedure(Sender: TObject; E: Exception;
+    var DoContinue: Boolean) of object;
+
+  TSynMethodChain = class(TObject)
+  private
+    FNotifyProcs: TList;
+    FExceptionHandler: TSynExceptionEvent;
+  protected
+    procedure DoFire(const AEvent: TMethod); virtual; abstract;
+    function DoHandleException(E: Exception): Boolean; virtual;
+    property ExceptionHandler: TSynExceptionEvent read FExceptionHandler
+      write FExceptionHandler;
+  public
+    constructor Create; virtual;
+    destructor Destroy; override;
+    procedure Add(AEvent: TMethod);
+    procedure Remove(AEvent: TMethod);
+    procedure Fire;
+  end;
+
+  TSynNotifyEventChain = class(TSynMethodChain)
+  private
+    FSender: TObject;
+  protected
+    procedure DoFire(const AEvent: TMethod); override;
+  public
+    constructor CreateEx(ASender: TObject);
+    procedure Add(AEvent: TNotifyEvent);
+    procedure Remove(AEvent: TNotifyEvent);
+    property ExceptionHandler;
+    property Sender: TObject read FSender write FSender;
+  end;
+
+{ ************************* For Undo Redo ********************************}
+
   TSynEditUndoItem = class(TObject)
   public
     ChangeStartPos: TBufferCoord;
@@ -291,8 +345,8 @@ end;
        store/restore editor caret and selection
        We need to pass the Editor so that they works with chained SynEdits
     }
-    procedure BeginBlock(Editor: TControl);
-    procedure EndBlock(Editor: TControl);
+    procedure BeginBlock(Editor: TObject);
+    procedure EndBlock(Editor: TObject);
     { Lock disables undo/redo - useful if you are about to do a large number of
       changes and planning to clear undo afterwards }
     procedure Lock;
@@ -302,8 +356,8 @@ end;
       cannot be grouped with the current one }
     procedure AddGroupBreak;
     {Note: Undo/Redo are not reentrant}
-    procedure Undo(Editor: TControl);
-    procedure Redo(Editor: TControl);
+    procedure Undo(Editor: TObject);
+    procedure Redo(Editor: TObject);
     {TrackChanges stuff}
     procedure BufferSaved(Lines: TStrings);
     procedure ClearTrackChanges(Lines: TStrings);
@@ -326,13 +380,165 @@ end;
     property InsideUndoRedo: Boolean read GetInsideUndoRedo;
   end;
 
+{ *************************** Search Engine ********************************}
+
+  TSynIsWordBreakFunction = function(C: WideChar): Boolean of object;
+
+  TSynEditSearchCustom = class(TComponent)
+  protected
+    FIsWordBreakFunction: TSynIsWordBreakFunction;
+    function GetPattern: string; virtual; abstract;
+    procedure SetPattern(const Value: string); virtual; abstract;
+    function GetLength(Index: Integer): Integer; virtual; abstract;
+    function GetResult(Index: Integer): Integer; virtual; abstract;
+    function GetResultCount: Integer; virtual; abstract;
+    procedure SetOptions(const Value: TSynSearchOptions); virtual; abstract;
+  public
+    function FindAll(const NewText: string; StartChar: Integer = 1;
+      EndChar: Integer = 0): Integer; virtual; abstract;
+    function PreprocessReplaceExpression(const AReplace: string): string; virtual;
+    function Replace(const aOccurrence, aReplacement: string): string;
+      virtual; abstract;
+    property Pattern: string read GetPattern write SetPattern;
+    property ResultCount: Integer read GetResultCount;
+    property Results[Index: Integer]: Integer read GetResult;
+    property Lengths[Index: Integer]: Integer read GetLength;
+    property Options: TSynSearchOptions write SetOptions;
+    property IsWordBreakFunction: TSynIsWordBreakFunction write FIsWordBreakFunction;
+  end;
+
 implementation
 Uses
-{$IF CompilerVersion <= 32}
-  Vcl.Forms,
-{$ENDIF}
   SynEditStrConst,
   SynUnicode;
+
+{ TSynEditSearchCustom }
+
+function TSynEditSearchCustom.PreprocessReplaceExpression(const AReplace
+  : string): string;
+begin
+  Result := AReplace;
+end;
+
+{$REGION 'TSynMethodChain'}
+
+procedure TSynMethodChain.Add(AEvent: TMethod);
+begin
+  if not Assigned(@AEvent) then
+    raise ESynMethodChain.CreateFmt
+      ('%s.Entry: the parameter `AEvent'' must be specified.', [ClassName]);
+
+  with FNotifyProcs, AEvent do
+  begin
+    Add(Code);
+    Add(Data);
+  end
+end;
+
+constructor TSynMethodChain.Create;
+begin
+  inherited;
+  FNotifyProcs := TList.Create;
+end;
+
+destructor TSynMethodChain.Destroy;
+begin
+  FNotifyProcs.Free;
+  inherited;
+end;
+
+function TSynMethodChain.DoHandleException(E: Exception): Boolean;
+begin
+  if not Assigned(FExceptionHandler) then
+    raise E
+  else
+    try
+      Result := True;
+      FExceptionHandler(Self, E, Result);
+    except
+      raise ESynMethodChain.CreateFmt
+        ('%s.DoHandleException: MUST NOT occur any kind of exception in ' +
+        'ExceptionHandler', [ClassName]);
+    end;
+end;
+
+procedure TSynMethodChain.Fire;
+var
+  AMethod: TMethod;
+  I: Integer;
+begin
+  I := 0;
+  with FNotifyProcs, AMethod do
+    while I < Count do
+      try
+        repeat
+          Code := Items[I];
+          Inc(I);
+          Data := Items[I];
+          Inc(I);
+
+          DoFire(AMethod)
+        until I >= Count;
+      except
+        on E: Exception do
+          if not DoHandleException(E) then
+            I := MaxInt;
+      end;
+end;
+
+procedure TSynMethodChain.Remove(AEvent: TMethod);
+var
+  I: Integer;
+begin
+  if not Assigned(@AEvent) then
+    raise ESynMethodChain.CreateFmt
+      ('%s.Remove: the parameter `AEvent'' must be specified.', [ClassName]);
+
+  with FNotifyProcs, AEvent do
+  begin
+    I := Count - 1;
+    while I > 0 do
+      if Items[I] <> Data then
+        Dec(I, 2)
+      else
+      begin
+        Dec(I);
+        if Items[I] = Code then
+        begin
+          Delete(I);
+          Delete(I);
+        end;
+        Dec(I);
+      end;
+  end;
+end;
+
+{$ENDREGION}
+
+{$REGION 'TSynNotifyEventChain'}
+
+procedure TSynNotifyEventChain.Add(AEvent: TNotifyEvent);
+begin
+  inherited Add(TMethod(AEvent));
+end;
+
+constructor TSynNotifyEventChain.CreateEx(ASender: TObject);
+begin
+  inherited Create;
+  FSender := ASender;
+end;
+
+procedure TSynNotifyEventChain.DoFire(const AEvent: TMethod);
+begin
+  TNotifyEvent(AEvent)(FSender);
+end;
+
+procedure TSynNotifyEventChain.Remove(AEvent: TNotifyEvent);
+begin
+  inherited Remove(TMethod(AEvent));
+end;
+
+{$ENDREGION}
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 begin
@@ -485,22 +691,6 @@ class operator TDisplayCoord.NotEqual(a, b: TDisplayCoord): Boolean;
 begin
   Result := (a.Row <> b.Row) or (a.Column <> b.Column);
 end;
-
-{$IF CompilerVersion <= 32}
-{ TControlHelper }
-
-function TControlHelper.CurrentPPI: Integer;
-begin
-  Result := Screen.PixelsPerInch;
-end;
-
-function TControlHelper.FCurrentPPI: Integer;
-begin
-  Result := Screen.PixelsPerInch;
-end;
-{$ENDIF}
-
-
 
 { TSynSelection }
 

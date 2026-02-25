@@ -10,7 +10,7 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is: SynHighlighterRC.pas, released 2004-06-12.
 The initial author of this file is Yiannis Mandravellos.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -33,8 +33,10 @@ unit SynHighlighterRC;
 interface
 
 uses
-  Windows, Controls,
-  Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
@@ -99,8 +101,10 @@ type
    procedure Next; override;
    procedure SetRange(value: Pointer); override;
    procedure ResetRange; override;
+   {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
    function UseUserSettings(SettingIndex: Integer): Boolean; override;
    procedure EnumUserSettings(Settings: TStrings); override;
+   {$ENDIF}
   published
    property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
    property DirecAttri: TSynHighlighterAttributes read fDirecAttri write fDirecAttri;
@@ -491,6 +495,7 @@ begin
   fRange := TRangeState(Value);
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 procedure TSynRCSyn.EnumUserSettings(Settings: TStrings);
 begin
   // ** ??
@@ -500,6 +505,7 @@ function TSynRCSyn.UseUserSettings(SettingIndex: Integer): Boolean;
 begin
   Result := False;
 end;
+{$ENDIF}
 
 class function TSynRCSyn.GetCapabilities: TSynHighlighterCapabilities;
 begin

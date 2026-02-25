@@ -44,7 +44,7 @@ unit SynHighlighterBat;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

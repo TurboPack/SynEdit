@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterHP48.pas, released 2000-06-23.
 The Original Code is based on the cbHPSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Cyrille de Brebisson.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -43,9 +43,13 @@ unit SynHighlighterHP48;
 interface
 
 uses
-  Windows,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
-  Graphics,
+  {$ENDIF}
+  System.UITypes,
   SynEditHighlighter,
   SynUnicode,
   SysUtils,
@@ -170,8 +174,10 @@ type
     function GetRange: Pointer; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    {$ENDIF}
     procedure Assign(Source: TPersistent); override;
     property AsmKeyWords: TSpeedStringList read FAsmKeyWords;
     property SAsmFoField: TSpeedStringList read FSAsmNoField;
@@ -797,6 +803,7 @@ begin
     Inc(Run);
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynHP48Syn.LoadFromRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   r: TRegistry;
@@ -835,6 +842,7 @@ begin
   finally r.Free;
   end;
 end;
+{$ENDIF}
 
 procedure TSynHP48Syn.Assign(Source: TPersistent);
 var

@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
@@ -57,15 +57,15 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
-        <DCC_UnitSearchPath>..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source\VCL;..\..\..\Source;..\..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DllSuffix>$(Auto)</DllSuffix>
         <DynamicRTL>true</DynamicRTL>
-        <ILINK_Description>TurboPack SynEdit CBuilder runtime package</ILINK_Description>
+        <ILINK_Description>TurboPack SynEdit CBuilder VCL runtime package</ILINK_Description>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
         <ILINK_GenerateLibFile>true</ILINK_GenerateLibFile>
-        <ILINK_LibraryPath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <ILINK_LibraryPath>..\..\..\Source\VCL\;..\..\..\Source\Highlighters\;..\..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\release\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
-        <IncludePath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(IncludePath)</IncludePath>
+        <IncludePath>..\..\..\Source\VCL\;..\..\..\Source\Highlighters\;..\..\..\Source\;$(IncludePath)</IncludePath>
         <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
         <Multithreaded>true</Multithreaded>
         <ProjectType>CppPackage</ProjectType>
@@ -146,6 +146,9 @@
         <PackageImport Include="rtl.bpi">
             <BuildOrder>1</BuildOrder>
         </PackageImport>
+        <PackageImport Include="SynEditSharedCR.bpi">
+            <BuildOrder>2</BuildOrder>
+        </PackageImport>
         <CppCompile Include="SynEditCR.cpp">
             <BuildOrder>0</BuildOrder>
         </CppCompile>
@@ -170,327 +173,125 @@
         <PackageImport Include="xmlrtl.bpi">
             <BuildOrder>113</BuildOrder>
         </PackageImport>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas">
-            <BuildOrder>53</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas">
-            <BuildOrder>54</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas">
-            <BuildOrder>55</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterBaan.pas">
-            <BuildOrder>56</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterBat.pas">
-            <BuildOrder>57</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCAC.pas">
-            <BuildOrder>58</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCache.pas">
-            <BuildOrder>59</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCobol.pas">
-            <BuildOrder>60</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCPM.pas">
-            <BuildOrder>61</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCpp.pas">
-            <BuildOrder>62</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCS.pas">
-            <BuildOrder>63</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCss.pas">
-            <BuildOrder>64</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDfm.pas">
-            <BuildOrder>65</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDml.pas">
-            <BuildOrder>66</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDOT.pas">
-            <BuildOrder>67</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDWS.pas">
-            <BuildOrder>68</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterEiffel.pas">
-            <BuildOrder>69</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterFortran.pas">
-            <BuildOrder>70</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterFoxpro.pas">
-            <BuildOrder>71</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGalaxy.pas">
-            <BuildOrder>72</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGeneral.pas">
-            <BuildOrder>73</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGWS.pas">
-            <BuildOrder>74</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHaskell.pas">
-            <BuildOrder>75</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHC11.pas">
-            <BuildOrder>76</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHP48.pas">
-            <BuildOrder>77</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHtml.pas">
-            <BuildOrder>78</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterIDL.pas">
-            <BuildOrder>79</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterIni.pas">
-            <BuildOrder>80</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterInno.pas">
-            <BuildOrder>81</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJava.pas">
-            <BuildOrder>82</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJScript.pas">
-            <BuildOrder>83</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJSON.pas">
-            <BuildOrder>84</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterKix.pas">
-            <BuildOrder>85</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas">
-            <BuildOrder>86</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas">
-            <BuildOrder>87</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterM3.pas">
-            <BuildOrder>88</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas">
-            <BuildOrder>90</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas">
-            <BuildOrder>91</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas">
-            <BuildOrder>92</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas">
-            <BuildOrder>93</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPerl.pas">
-            <BuildOrder>94</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPHP.pas">
-            <BuildOrder>95</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterProgress.pas">
-            <BuildOrder>96</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPython.pas">
-            <BuildOrder>97</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRC.pas">
-            <BuildOrder>98</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRexx.pas">
-            <BuildOrder>99</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRuby.pas">
-            <BuildOrder>100</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSDD.pas">
-            <BuildOrder>101</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSml.pas">
-            <BuildOrder>102</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSQL.pas">
-            <BuildOrder>103</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterST.pas">
-            <BuildOrder>104</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterTclTk.pas">
-            <BuildOrder>105</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterTeX.pas">
-            <BuildOrder>106</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterUNIXShellScript.pas">
-            <BuildOrder>107</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterUnreal.pas">
-            <BuildOrder>108</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterURI.pas">
-            <BuildOrder>109</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVB.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEdit.pas">
             <BuildOrder>110</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVBScript.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditTypes.pas">
+            <BuildOrder>110</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynDWrite.pas">
             <BuildOrder>111</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditMiscClasses.pas">
             <BuildOrder>112</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditScrollBars.pas">
             <BuildOrder>113</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditKeyConst.pas">
+            <BuildOrder>113</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditKbdHandler.pas">
+            <BuildOrder>113</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditUndo.pas">
+            <BuildOrder>113</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynCompletionProposal.pas">
             <BuildOrder>114</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynAutoCorrect.pas">
-            <BuildOrder>110</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynAutoCorrectEditor.pas">
-            <Form>frmAutoCorrectEditor</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>110</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynCompletionProposal.pas">
-            <BuildOrder>110</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynDBEdit.pas">
-            <BuildOrder>110</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynDWrite.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditDragDrop.pas">
             <BuildOrder>114</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEdit.pas">
-            <BuildOrder>110</BuildOrder>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditDataObject.pas">
+            <BuildOrder>114</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditCodeFolding.pas">
-            <BuildOrder>111</BuildOrder>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynAccessibility.pas">
+            <BuildOrder>114</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditDataObject.pas">
-            <BuildOrder>112</BuildOrder>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPlugins.pas">
+            <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditDragDrop.pas">
-            <BuildOrder>113</BuildOrder>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPrint.pas">
+            <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditExport.pas">
-            <BuildOrder>113</BuildOrder>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPrinterInfo.pas">
+            <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditHighlighter.pas">
-            <BuildOrder>113</BuildOrder>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPrintHeaderFooter.pas">
+            <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditKbdHandler.pas">
-            <BuildOrder>113</BuildOrder>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPrintMargins.pas">
+            <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditKeyCmdEditor.pas">
-            <Form>SynEditKeystrokeEditorForm</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditKeyCmds.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditKeyCmdsEditor.pas">
-            <Form>SynEditKeystrokesEditorForm</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditKeyConst.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditMiscClasses.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditMiscProcs.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditOptionsDialog.pas">
-            <Form>fmEditorOptionsDialog</Form>
-            <FormType>dfm</FormType>
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPlugins.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPrint.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPrinterInfo.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPrintHeaderFooter.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPrintMargins.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPrintMarginsDialog.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPrintMarginsDialog.pas">
             <Form>SynEditPrintMarginsDlg</Form>
             <FormType>dfm</FormType>
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPrintPreview.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPrintTypes.pas">
-            <BuildOrder>113</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPythonBehaviour.pas">
-            <BuildOrder>114</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditRegexSearch.pas">
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditScrollBars.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPrintPreview.pas">
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditSearch.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPrintTypes.pas">
             <BuildOrder>115</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditStrConst.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditTextBuffer.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditTypes.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditUndo.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditWildcardSearch.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditWordWrap.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynExportHTML.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynExportRTF.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynExportTeX.pas">
-            <BuildOrder>115</BuildOrder>
-        </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynMacroRecorder.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditExport.pas">
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynUnicode.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynExportHTML.pas">
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynURIOpener.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynExportRTF.pas">
             <BuildOrder>116</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynExportTeX.pas">
+            <BuildOrder>116</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPythonBehaviour.pas">
+            <BuildOrder>116</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynDBEdit.pas">
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas">
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynAutoCorrect.pas">
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynAutoCorrectEditor.pas">
+            <Form>frmAutoCorrectEditor</Form>
+            <FormType>dfm</FormType>
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas">
+            <BuildOrder>118</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynURIOpener.pas">
+            <BuildOrder>118</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas">
+            <Form>SynOmniSynSetup</Form>
+            <FormType>dfm</FormType>
+            <BuildOrder>118</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditWordWrap.pas">
+            <BuildOrder>119</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditOptionsDialog.pas">
+            <Form>fmEditorOptionsDialog</Form>
+            <FormType>dfm</FormType>
+            <BuildOrder>119</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdEditor.pas">
+            <Form>SynEditKeystrokeEditorForm</Form>
+            <FormType>dfm</FormType>
+            <BuildOrder>119</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdsEditor.pas">
+            <Form>SynEditKeystrokesEditorForm</Form>
+            <FormType>dfm</FormType>
+            <BuildOrder>119</BuildOrder>
         </DelphiCompile>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

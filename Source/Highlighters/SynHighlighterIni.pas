@@ -45,7 +45,7 @@ interface
 uses
   System.Classes,
   System.RegularExpressions,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynEditCodeFolding,

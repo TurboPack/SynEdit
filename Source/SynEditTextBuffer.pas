@@ -12,7 +12,7 @@
   The Original Code is based on parts of mwCustomEdit.pas by Martin Waldenburg,
   part of the mwEdit component suite.
   Portions created by Martin Waldenburg are Copyright (C) 1998 Martin Waldenburg.
-  Unicode translation by Maël Hörz.
+  Unicode translation by Maï¿½l Hï¿½rz.
   All Rights Reserved.
 
   Contributors to the SynEdit and mwEdit projects are listed in the
@@ -627,6 +627,7 @@ begin
   S := GetTextStr;
 
   Cancel := False;
+  {$IFDEF MSWINDOWS}
   if (Encoding = TEncoding.ANSI) and Assigned(FOnInfoLoss) and not IsAnsiOnly(S)
   then
   begin
@@ -636,6 +637,7 @@ begin
     if Encoding <> TEncoding.ANSI then
       SetEncoding(Encoding);
   end;
+  {$ENDIF}
 
   Buffer := Encoding.GetBytes(S);
   if WriteBOM then

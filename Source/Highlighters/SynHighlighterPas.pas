@@ -13,7 +13,7 @@ The Original Code is based on the mwPasSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Martin Waldenburg.
 Portions created by Martin Waldenburg are Copyright (C) 1998 Martin Waldenburg.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -48,9 +48,13 @@ unit SynHighlighterPas;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
+  {$ENDIF}
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   System.Win.Registry,
-  Vcl.Graphics,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
@@ -185,8 +189,10 @@ type
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function UseUserSettings(VersionIndex: Integer): Boolean; override;
     procedure EnumUserSettings(DelphiVersions: TStrings); override;
+    {$ENDIF}
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
@@ -1169,6 +1175,7 @@ begin
   fRange:= rsUnknown;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
 
   procedure LoadKeyVersions(const Key, Prefix: string);
@@ -1341,6 +1348,7 @@ function TSynPasSyn.UseUserSettings(VersionIndex: Integer): Boolean;
 begin
   Result := ReadDelphiSettings(VersionIndex);
 end;
+{$ENDIF}
 
 function TSynPasSyn.GetSampleSource: string;                                   
 begin

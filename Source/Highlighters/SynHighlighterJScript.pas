@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterJScript.pas, released 2000-04-14.
 The Original Code is based on the mwJScript.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Tony de Buys.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -44,8 +44,10 @@ unit SynHighlighterJScript;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   System.Win.Registry,
+  {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
   SysUtils,

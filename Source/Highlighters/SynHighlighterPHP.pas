@@ -45,8 +45,10 @@ unit SynHighlighterPHP;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   System.Win.Registry,
+  {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
   SysUtils,
@@ -182,8 +184,11 @@ implementation
 
 uses
   SynEditMiscProcs,
-  SynEditStrConst,
-  Windows;
+  SynEditStrConst
+  {$IFDEF MSWINDOWS}
+  , Winapi.Windows
+  {$ENDIF}
+  ;
 
 const
 

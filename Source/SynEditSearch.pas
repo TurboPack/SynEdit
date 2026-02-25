@@ -39,7 +39,6 @@ interface
 
 uses
   SynEditTypes,
-  SynEditMiscClasses,
   SynUnicode,
   Classes;
 
@@ -96,8 +95,7 @@ type
 implementation
 
 uses
-  Windows,
-  SysUtils;
+  System.SysUtils;
 
 constructor TSynEditSearch.Create(aOwner: TComponent);
 begin
@@ -258,7 +256,7 @@ begin
     if CaseSensitive then
       Pat := CasedPat
     else
-      Pat := SysUtils.AnsiLowerCase(CasedPat);
+      Pat := System.SysUtils.AnsiLowerCase(CasedPat);
     fShiftInitialized := False;
   end;
   fCount := 0;
@@ -272,7 +270,7 @@ begin
     if fCaseSensitive then
       Pat := CasedPat
     else
-      Pat := SysUtils.AnsiLowerCase(CasedPat);
+      Pat := System.SysUtils.AnsiLowerCase(CasedPat);
     fShiftInitialized := False;
   end;
 end;
@@ -303,7 +301,7 @@ begin
   if CaseSensitive then
     FTextToSearch := NewText
   else
-    FTextToSearch := SysUtils.AnsiLowerCase(NewText);
+    FTextToSearch := System.SysUtils.AnsiLowerCase(NewText);
   FLineStart := PWideChar(FTextToSearch);
 
   if Backwards then

@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterCpp.pas, released 2000-04-10.
 The Original Code is based on the dcjCppSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Trier.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -44,7 +44,7 @@ unit SynHighlighterCpp;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SysUtils,
@@ -165,8 +165,10 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function UseUserSettings(settingIndex: Integer): Boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
+    {$ENDIF}
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
     property NewPreprocesorStyle: Boolean read FNewPreprocesorStyle write SetNewPreprocesorStyle;
 //++ CodeFolding
@@ -194,8 +196,12 @@ type
 implementation
 
 uses
-  Windows,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
+  {$ENDIF}
   SynEditStrConst,
   SynEditMiscProcs;
 
@@ -1476,6 +1482,7 @@ begin
   fRange := TRangeState(Value);
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 procedure TSynCppSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
@@ -1642,6 +1649,7 @@ function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
 begin
   Result := ReadCPPBSettings(settingIndex);
 end; { TSynCppSyn.UseUserSettings }
+{$ENDIF}
 
 function TSynCppSyn.IsFilterStored: Boolean;
 begin

@@ -44,7 +44,7 @@ unit SynHighlighterCAC;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

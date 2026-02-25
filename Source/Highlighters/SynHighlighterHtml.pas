@@ -49,7 +49,7 @@ interface
 {$I SynEdit.inc}
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterTclTk.pas, released 2000-05-05.
 The Original Code is based on the siTclTkSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Igor Shitikov.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -43,9 +43,13 @@ unit SynHighlighterTclTk;
 interface
 
 uses
-  Windows,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
-  Graphics,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
@@ -125,8 +129,10 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    {$ENDIF}
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -715,6 +721,7 @@ begin
   Result := SYNS_LangTclTk;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynTclTkSyn.LoadFromRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   r: TRegistry;
@@ -752,6 +759,7 @@ begin
     r.Free;
   end;
 end;
+{$ENDIF}
 
 function TSynTclTkSyn.IsKeywordListStored: Boolean;
 var

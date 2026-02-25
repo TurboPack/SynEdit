@@ -44,7 +44,7 @@ unit SynHighlighterDfm;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

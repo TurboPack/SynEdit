@@ -34,7 +34,7 @@ unit SynHighlighterTeX;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,

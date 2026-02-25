@@ -10,7 +10,7 @@ unit SynHighlighterDelphi;
 interface
 
 uses
-  SysUtils, Classes, Graphics, SynEditTypes, SynEditHighlighter,
+  SysUtils, Classes, System.UITypes, SynEditTypes, SynEditHighlighter,
   SynEditCodeFolding, SynEditStrConst, System.Math, System.RegularExpressions;
 
 type

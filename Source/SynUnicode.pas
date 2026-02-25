@@ -33,16 +33,13 @@ unit SynUnicode;
 interface
 
 uses
-  Windows,
-  Messages,
-  Controls,
-  Forms,
-  Graphics,
-  Clipbrd,
-  Types,
-  Classes,
-  SysUtils,
-  TypInfo,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.Types,
+  System.Classes,
+  System.SysUtils,
+  System.TypInfo,
   SynEditTypes;
 
 const
@@ -84,30 +81,39 @@ type
   TSynEncoding = (seUTF8, seUTF16LE, seUTF16BE, seAnsi);
   TSynEncodings = set of TSynEncoding;
 
+{$IFDEF MSWINDOWS}
 function IsAnsiOnly(const WS: string): Boolean;
+{$ENDIF}
 function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: Integer = $4000): Boolean; overload;
 function IsUTF8(const FileName: string; out WithBOM: Boolean; BytesToCheck: Integer = $4000): Boolean; overload;
 function IsUTF8(const Bytes: TBytes; Start: Integer = 0; BytesToCheck: Integer = $4000): Boolean; overload;
 function GetEncoding(const FileName: string; out WithBOM: Boolean): TEncoding; overload;
 function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding; overload;
 
+{$IFDEF MSWINDOWS}
+{$IFNDEF SYN_SHARED}
 function ClipboardProvidesText: Boolean;
 function GetClipboardText: string;
 procedure SetClipboardText(const Text: string);
+{$ENDIF ~SYN_SHARED}
 
 { misc functions }
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
 
 var
   UserLocaleName: array [0..LOCALE_NAME_MAX_LENGTH - 1] of Char;
+{$ENDIF}
 
 implementation
 
 uses
-  SynEditTextBuffer,
-  Math,
-  SysConst,
-  RTLConsts;
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
+  Vcl.Clipbrd,
+  {$ENDIF}
+  System.Math,
+  System.SysConst,
+  System.RTLConsts,
+  SynEditTextBuffer;
 
 // exchanges in each character of the given string the low order and high order
 // byte to go from LSB to MSB and vice versa.
@@ -119,11 +125,12 @@ begin
   P := PWord(Str);
   while P^ <> 0 do
   begin
-    P^ := MakeWord(HiByte(P^), LoByte(P^));
+    P^ := Swap(P^);
     Inc(P);
   end;
 end;
 
+{$IFDEF MSWINDOWS}
 function IsAnsiOnly(const WS: string): Boolean;
 var
   UsedDefaultChar: BOOL;
@@ -132,6 +139,7 @@ begin
     nil, @UsedDefaultChar);
   Result := not UsedDefaultChar;
 end;
+{$ENDIF}
 
 function IsUTF8(const FileName: string; out WithBOM: Boolean; BytesToCheck: Integer): Boolean;
 var
@@ -354,6 +362,8 @@ begin
   end;
 end;
 
+{$IFDEF MSWINDOWS}
+{$IFNDEF SYN_SHARED}
 function ClipboardProvidesText: Boolean;
 begin
   Result := IsClipboardFormatAvailable(CF_UNICODETEXT);
@@ -368,6 +378,7 @@ procedure SetClipboardText(const Text: string);
 begin
   Clipboard.AsText := Text;
 end;
+{$ENDIF ~SYN_SHARED}
 
 function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
 var
@@ -377,10 +388,13 @@ begin
     @UsedDefaultChar);
   Result := not UsedDefaultChar;
 end;
+{$ENDIF}
 
+{$IFDEF MSWINDOWS}
 initialization
   Assert(TOSVersion.Check(6), 'Unsupported Windows version.  Windows Vista or higher required');
   if LCIDToLocaleName(GetUserDefaultLCID, UserLocaleName, LOCALE_NAME_MAX_LENGTH, 0) = 0 then
     RaiseLastOSError;
+{$ENDIF}
 
 end.
