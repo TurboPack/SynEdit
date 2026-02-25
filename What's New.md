@@ -1,8 +1,65 @@
-# **TSynDelphiSyn & IDE Settings Importer**
+# What's New in SynEdit
+
+---
+
+## **FMX Cross-Platform Editor**
+
+SynEdit now supports **FireMonkey (FMX)** alongside VCL through a three-layer architecture that shares highlighters and core logic between both frameworks.
+
+### Three-Layer Architecture
+
+The codebase has been restructured into three layers:
+
+- **Shared** (`Source/`) — Platform-independent units: 66 highlighters, text buffer, types, key commands. These are consumed by both VCL and FMX.
+- **VCL** (`Source/VCL/`, `Vcl.*` prefix) — Windows-specific: DirectWrite rendering, OLE drag-drop, printing, accessibility.
+- **FMX** (`Source/FMX/`, `FMX.*` prefix) — Cross-platform: FMX Canvas rendering, FMX scrollbars, FMX clipboard.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical reference.
+
+### FMX Editor (`TCustomFMXSynEdit`)
+
+**Unit:** `Source\FMX\FMX.SynEdit.pas`
+
+**Inheritance:** `TControl`
+
+A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
+
+* **Syntax highlighting** — All 66 shared highlighters work out of the box.
+* **Keyboard input** — Full text editing with insert/overwrite modes.
+* **Selection** — Mouse and keyboard selection with correct split-token rendering at selection boundaries.
+* **Clipboard** — Cut, Copy, Paste via `IFMXClipboardService`.
+* **Undo/Redo** — Full undo/redo stack.
+* **File I/O** — `LoadFromFile`, `SaveToFile`, `LoadFromStream`, `SaveToStream`.
+* **Range scanning** — Incremental re-scanning for multi-line highlighters (XML, HTML, Delphi, etc.).
+* **Scrolling** — FMX `TScrollBar`-based scrolling with mouse wheel support.
+* **Gutter** — Line numbers with configurable width.
+* **Right edge** — Configurable right margin indicator.
+* **Active line highlighting** — Configurable active line background color.
+* **Editor options** — Auto indent, smart tabs, tabs-to-spaces, and more via `TSynEditorOptions`.
+
+### New Packages
+
+Five new packages support the three-layer architecture:
+
+| Package | Description |
+| :---- | :---- |
+| SynEditSharedDR / SynEditSharedCR | Shared runtime — types, text buffer, 66 highlighters |
+| SynEditFMXDR / SynEditFMXCR | FMX runtime — FMX editor and supporting units |
+| SynEditFMXDD / SynEditFMXCD | FMX designtime — component registration |
+
+Build order: Shared → VCL/FMX Runtime → VCL/FMX Designtime.
+
+### FMX Demo
+
+A HighlighterDemo (`Demos/FMX/HighlighterDemo/`) showcases 13 language highlighters (Delphi, C++, Java, Python, JavaScript, HTML, XML, CSS, SQL, JSON, C#, INI, Batch) with a consistent color scheme.
+
+---
+
+## **TSynDelphiSyn & IDE Settings Importer**
 
 A new updated Delphi syntax highlighter for SynEdit (TSynDelphiSyn) and a design-time tool (SynDelphiIDEImporter) to synchronize your SynEdit components with your current Delphi IDE configuration.
 
-## **1\. TSynDelphiSyn Component**
+## **TSynDelphiSyn Component**
 
 **Unit:** `Source\Highlighters\SynHighlighterDelphi.pas`
 
