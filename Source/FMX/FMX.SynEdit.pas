@@ -34,10 +34,21 @@ uses
   SynEditHighlighter,
   SynEditTextBuffer,
   SynEditMiscProcs,
+  SynEditCodeFolding,
   FMX.SynEditMiscClasses;
 
 type
   TCustomFMXSynEdit = class;
+  TSynFMXEditPlugin = class;
+
+  TSynReplaceAction = (raCancel, raSkip, raReplace, raReplaceAll);
+
+  TReplaceTextEvent = procedure(Sender: TObject; const ASearch, AReplace:
+    string; Line, Column: Integer; var Action: TSynReplaceAction) of object;
+
+  TScanForFoldRangesEvent = procedure(Sender: TObject;
+    FoldRanges: TSynFoldRanges; LinesToScan: TStrings;
+    FromLine: Integer; ToLine: Integer) of object;
 
   TCustomFMXSynEdit = class(TControl)
   private
@@ -76,6 +87,17 @@ type
     FCaretBlinkOn: Boolean;
     FLastPosX: Integer;
     FUpdateCount: Integer;
+    // Code folding
+    FUseCodeFolding: Boolean;
+    FCodeFolding: TSynCodeFolding;
+    FAllFoldRanges: TSynFoldRanges;
+    FOnScanForFoldRanges: TScanForFoldRangesEvent;
+    // Search/Replace
+    FSearchEngine: TSynEditSearchCustom;
+    FOnReplaceText: TReplaceTextEvent;
+    FOnSearchNotFound: TNotifyEvent;
+    // Plugins
+    FPlugins: TList;
     // Private methods
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure SetTabWidth(Value: Integer);
@@ -120,7 +142,6 @@ type
     procedure DoDeleteLastChar;
     procedure DoInsertLine;
     procedure DoDeleteSelection;
-    procedure SetSelectedTextPrimitive(const Value: string);
     // Navigation helpers
     procedure MoveCaretHorz(DX: Integer; SelectionCmd: Boolean);
     procedure MoveCaretVert(DY: Integer; SelectionCmd: Boolean);
@@ -129,9 +150,27 @@ type
     // Range scanning for multi-line highlighters
     procedure ScanRanges;
     function ScanFrom(Index: Integer): Integer;
-    // Command processing
-    procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar);
+    // Code folding private
+    procedure SetUseCodeFolding(const Value: Boolean);
+    procedure OnCodeFoldingChange(Sender: TObject);
+    procedure ReScanForFoldRanges(FromLine, ToLine: Integer);
+    procedure FullFoldScan;
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine, ToLine: Integer);
+    procedure PaintFoldGutter(Canvas: TCanvas; FirstRow, LastRow: Integer);
+    // Search/Replace private
+    procedure SetSearchEngine(Value: TSynEditSearchCustom);
+    function DoOnReplaceText(const ASearch, AReplace: string;
+      Line, Column: Integer): TSynReplaceAction;
+    // Row/Line mapping
+    function LineToRow(aLine: Integer): Integer;
+    function RowToLine(aRow: Integer): Integer;
+    function GetDisplayRowCount: Integer;
+    // Plugin hooks
+    procedure DoPluginAfterPaint(Canvas: TCanvas; const AClip: TRectF;
+      FirstLine, LastLine: Integer);
   protected
+    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure Paint; override;
     procedure Resize; override;
     procedure DoEnter; override;
@@ -166,8 +205,28 @@ type
       ABlockEnd: TBufferCoord);
     procedure BeginUpdate; reintroduce;
     procedure EndUpdate; reintroduce;
+    procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar);
+    procedure SetSelectedTextPrimitive(const Value: string);
     function PixelToBufferCoord(X, Y: Single): TBufferCoord;
     function BufferCoordToPixel(const BC: TBufferCoord): TPointF;
+    // Code folding public methods
+    procedure CollapseAll;
+    procedure UncollapseAll;
+    procedure CollapseNearest;
+    procedure UncollapseNearest;
+    procedure Collapse(FoldRangeIndex: Integer; Invalidate: Boolean = True);
+    procedure Uncollapse(FoldRangeIndex: Integer; Invalidate: Boolean = True);
+    procedure CollapseLevel(Level: Integer);
+    procedure UncollapseLevel(Level: Integer);
+    // Search/Replace
+    function SearchReplace(const ASearch, AReplace: string;
+      AOptions: TSynSearchOptions): Integer;
+    // Plugin management
+    procedure RegisterPlugin(APlugin: TSynFMXEditPlugin);
+    procedure UnregisterPlugin(APlugin: TSynFMXEditPlugin);
+    property CodeFolding: TSynCodeFolding read FCodeFolding write FCodeFolding;
+    property UseCodeFolding: Boolean read FUseCodeFolding write SetUseCodeFolding;
+    property AllFoldRanges: TSynFoldRanges read FAllFoldRanges;
     property Lines: TSynEditStringList read FLines;
     property LineCount: Integer read GetLineCount;
     property CaretX: Integer read FCaretX write SetCaretX;
@@ -204,9 +263,17 @@ type
       write SetActiveLineColor default clNone;
     property Options: TSynEditorOptions read FOptions write SetOptions
       default SYNEDIT_DEFAULT_OPTIONS;
+    property SearchEngine: TSynEditSearchCustom read FSearchEngine
+      write SetSearchEngine;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnStatusChange: TNotifyEvent read FOnStatusChange
       write FOnStatusChange;
+    property OnReplaceText: TReplaceTextEvent read FOnReplaceText
+      write FOnReplaceText;
+    property OnSearchNotFound: TNotifyEvent read FOnSearchNotFound
+      write FOnSearchNotFound;
+    property OnScanForFoldRanges: TScanForFoldRangesEvent
+      read FOnScanForFoldRanges write FOnScanForFoldRanges;
   end;
 
   TFMXSynEdit = class(TCustomFMXSynEdit)
@@ -244,8 +311,14 @@ type
     property RightEdgeColor;
     property ActiveLineColor;
     property Options;
+    property CodeFolding;
+    property UseCodeFolding;
+    property SearchEngine;
     property OnChange;
     property OnStatusChange;
+    property OnReplaceText;
+    property OnSearchNotFound;
+    property OnScanForFoldRanges;
   end;
 
 implementation
@@ -256,7 +329,9 @@ uses
   FMX.SynEditTypes,
   FMX.SynEditUndo,
   FMX.SynUnicode,
-  SynEditKeyConst;
+  FMX.SynEditPlugins,
+  SynEditKeyConst,
+  SynEditStrConst;
 
 { Expand tabs in a string to spaces }
 function ExpandTabs(const S: string; TabWidth: Integer): string;
@@ -341,11 +416,22 @@ begin
   FCaretTimer.Enabled := False;
   FCaretTimer.OnTimer := CaretTimerHandler;
 
+  // Code folding
+  FCodeFolding := TSynCodeFolding.Create;
+  FCodeFolding.OnChange := OnCodeFoldingChange;
+  FAllFoldRanges := TSynFoldRanges.Create;
+
+  // Plugins
+  FPlugins := TList.Create;
+
   UpdateGutterWidth;
 end;
 
 destructor TCustomFMXSynEdit.Destroy;
 begin
+  FPlugins.Free;
+  FCodeFolding.Free;
+  FAllFoldRanges.Free;
   FCaretTimer.Free;
   FUndoRedo := nil;
   FScrollBars := nil;
@@ -393,10 +479,16 @@ procedure TCustomFMXSynEdit.UpdateGutterWidth;
 var
   DigitCount: Integer;
   LineCount: Integer;
+  FoldWidth: Single;
 begin
   LineCount := Max(FLines.Count, 1);
   DigitCount := Max(2, Length(IntToStr(LineCount)));
   FGutterWidth := Round((DigitCount + 1) * FCharWidth) + 4;
+  if FUseCodeFolding then
+  begin
+    FoldWidth := FCodeFolding.GutterShapeSize + 8;
+    FGutterWidth := FGutterWidth + FoldWidth;
+  end;
   FTextAreaLeft := FGutterWidth;
 end;
 
@@ -419,7 +511,7 @@ var
   MaxTop: Integer;
 begin
   if Value < 1 then Value := 1;
-  MaxTop := Max(1, FLines.Count - FLinesInWindow + 1);
+  MaxTop := Max(1, GetDisplayRowCount - FLinesInWindow + 1);
   if not (eoScrollPastEof in FScrollOptions) then
     Value := Min(Value, MaxTop);
   if FTopLine <> Value then
@@ -442,12 +534,15 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.EnsureCursorPosVisible;
+var
+  CaretRow: Integer;
 begin
-  // Vertical
-  if FCaretY < FTopLine then
-    TopLine := FCaretY
-  else if FCaretY >= FTopLine + FLinesInWindow then
-    TopLine := FCaretY - FLinesInWindow + 1;
+  // Vertical - use display rows when code folding is active
+  CaretRow := LineToRow(FCaretY);
+  if CaretRow < FTopLine then
+    TopLine := CaretRow
+  else if CaretRow >= FTopLine + FLinesInWindow then
+    TopLine := CaretRow - FLinesInWindow + 1;
   // Horizontal
   if FCaretX < FLeftChar then
     LeftChar := FCaretX
@@ -510,13 +605,16 @@ end;
 function TCustomFMXSynEdit.BufferCoordToPixel(const BC: TBufferCoord): TPointF;
 begin
   Result.X := FTextAreaLeft + (BC.Char - FLeftChar) * FCharWidth;
-  Result.Y := (BC.Line - FTopLine) * FLineHeight;
+  Result.Y := (LineToRow(BC.Line) - FTopLine) * FLineHeight;
 end;
 
 function TCustomFMXSynEdit.PixelToBufferCoord(X, Y: Single): TBufferCoord;
+var
+  Row: Integer;
 begin
   Result.Char := Max(1, FLeftChar + Round((X - FTextAreaLeft) / FCharWidth));
-  Result.Line := Max(1, Min(FTopLine + Trunc(Y / FLineHeight), FLines.Count));
+  Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+  Result.Line := Max(1, Min(RowToLine(Row), FLines.Count));
 end;
 
 { --- Paint --- }
@@ -543,7 +641,7 @@ begin
   if FLineHeight <= 0 then Exit;
 
   FirstLine := FTopLine;
-  LastLine := Min(FTopLine + FLinesInWindow, FLines.Count);
+  LastLine := Min(FTopLine + FLinesInWindow, GetDisplayRowCount);
 
   PaintGutter(Canvas, FirstLine, LastLine);
   PaintTextLines(Canvas, FirstLine, LastLine);
@@ -558,6 +656,9 @@ begin
         TColorToAlphaColor(FRightEdgeColor));
   end;
 
+  // Plugin AfterPaint hooks
+  DoPluginAfterPaint(Canvas, LocalRect, RowToLine(FirstLine), RowToLine(LastLine));
+
   if FCaretVisible and FCaretBlinkOn then
     PaintCaret(Canvas);
 end;
@@ -566,10 +667,12 @@ procedure TCustomFMXSynEdit.PaintGutter(Canvas: TCanvas;
   FirstLine, LastLine: Integer);
 var
   Renderer: TSynFMXRenderer;
+  Row: Integer;
   Line: Integer;
   Y: Single;
   R: TRectF;
   NumStr: string;
+  NumberWidth: Single;
 begin
   Renderer := TSynFMXRenderer(FRenderer);
 
@@ -581,21 +684,33 @@ begin
   Renderer.DrawLine(Canvas, FGutterWidth - 1, 0, FGutterWidth - 1, Height,
     TAlphaColors.Lightgray);
 
-  // Line numbers
-  for Line := FirstLine to LastLine do
+  // Calculate number area width (excluding fold gutter)
+  if FUseCodeFolding then
+    NumberWidth := FGutterWidth - FCodeFolding.GutterShapeSize - 8
+  else
+    NumberWidth := FGutterWidth;
+
+  // Line numbers (iterate display rows)
+  for Row := FirstLine to LastLine do
   begin
-    Y := (Line - FTopLine) * FLineHeight;
+    Line := RowToLine(Row);
+    if Line > FLines.Count then Break;
+    Y := (Row - FTopLine) * FLineHeight;
     NumStr := IntToStr(Line);
-    R := RectF(2, Y, FGutterWidth - 4, Y + FLineHeight);
+    R := RectF(2, Y, NumberWidth - 4, Y + FLineHeight);
     Renderer.PaintLineNumber(Canvas, R, NumStr, TAlphaColors.Gray);
   end;
+
+  // Fold gutter shapes
+  if FUseCodeFolding then
+    PaintFoldGutter(Canvas, FirstLine, LastLine);
 end;
 
 procedure TCustomFMXSynEdit.PaintTextLines(Canvas: TCanvas;
   FirstLine, LastLine: Integer);
 var
   Renderer: TSynFMXRenderer;
-  Line: Integer;
+  Row, Line: Integer;
   Y, X: Single;
   SLine, SExpanded: string;
   TokenPos: Integer;
@@ -619,9 +734,10 @@ begin
     SelBC2 := Tmp;
   end;
 
-  for Line := FirstLine to LastLine do
+  for Row := FirstLine to LastLine do
   begin
-    Y := (Line - FTopLine) * FLineHeight;
+    Line := RowToLine(Row);
+    Y := (Row - FTopLine) * FLineHeight;
 
     // Active line highlight
     if (FActiveLineColor <> clNone) and (Line = FCaretY) and
@@ -866,6 +982,8 @@ end;
 
 procedure TCustomFMXSynEdit.LinesChanged(Sender: TObject);
 begin
+  if FUseCodeFolding and FAllFoldRanges.StopScanning(FLines) then
+    UpdateGutterWidth;
   UpdateGutterWidth;
   UpdateScrollBars;
   if FUpdateCount = 0 then
@@ -1311,6 +1429,18 @@ begin
 
     // Selection
     ecSelectAll: SelectAll;
+
+    // Code folding
+    ecFoldAll: CollapseAll;
+    ecUnfoldAll: UncollapseAll;
+    ecFoldNearest: CollapseNearest;
+    ecUnfoldNearest: UncollapseNearest;
+    ecFoldLevel1: CollapseLevel(1);
+    ecUnfoldLevel1: UncollapseLevel(1);
+    ecFoldLevel2: CollapseLevel(2);
+    ecUnfoldLevel2: UncollapseLevel(2);
+    ecFoldLevel3: CollapseLevel(3);
+    ecUnfoldLevel3: UncollapseLevel(3);
   end;
 
   // Incremental range scan after text mutations
@@ -1807,6 +1937,8 @@ begin
     FTopLine := 1;
     FLeftChar := 1;
     ScanRanges;
+    if FUseCodeFolding then
+      FullFoldScan;
   finally
     EndUpdate;
   end;
@@ -1845,6 +1977,8 @@ procedure TCustomFMXSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Single);
 var
   BC: TBufferCoord;
+  Row, Line, Index: Integer;
+  FoldGutterLeft: Single;
 begin
   inherited;
   if not IsFocused then
@@ -1852,6 +1986,25 @@ begin
 
   if Button = TMouseButton.mbLeft then
   begin
+    // Check for fold gutter click
+    if FUseCodeFolding then
+    begin
+      FoldGutterLeft := FGutterWidth - FCodeFolding.GutterShapeSize - 8;
+      if (X >= FoldGutterLeft) and (X < FGutterWidth) then
+      begin
+        Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+        Line := RowToLine(Row);
+        if FAllFoldRanges.FoldStartAtLine(Line, Index) then
+        begin
+          if FAllFoldRanges.Ranges[Index].Collapsed then
+            Uncollapse(Index)
+          else
+            Collapse(Index);
+        end;
+        Exit;
+      end;
+    end;
+
     BC := PixelToBufferCoord(X, Y);
     if ssShift in Shift then
     begin
@@ -1911,8 +2064,14 @@ procedure TCustomFMXSynEdit.SetHighlighter(const Value: TSynCustomHighlighter);
 begin
   if FHighlighter <> Value then
   begin
+    if FHighlighter <> nil then
+      FHighlighter.RemoveFreeNotification(Self);
     FHighlighter := Value;
+    if FHighlighter <> nil then
+      FHighlighter.FreeNotification(Self);
     ScanRanges;
+    if FUseCodeFolding then
+      FullFoldScan;
     Repaint;
   end;
 end;
@@ -2044,6 +2203,576 @@ end;
 function TCustomFMXSynEdit.GetCanRedo: Boolean;
 begin
   Result := (FUndoRedo <> nil) and FUndoRedo.CanRedo;
+end;
+
+{ --- Notification --- }
+
+procedure TCustomFMXSynEdit.Notification(AComponent: TComponent;
+  Operation: TOperation);
+begin
+  inherited;
+  if Operation = opRemove then
+  begin
+    if AComponent = FHighlighter then
+      FHighlighter := nil;
+    if AComponent = FSearchEngine then
+      FSearchEngine := nil;
+  end;
+end;
+
+{ --- Row/Line mapping --- }
+
+function TCustomFMXSynEdit.LineToRow(aLine: Integer): Integer;
+begin
+  if FUseCodeFolding then
+    Result := FAllFoldRanges.FoldLineToRow(aLine)
+  else
+    Result := aLine;
+end;
+
+function TCustomFMXSynEdit.RowToLine(aRow: Integer): Integer;
+begin
+  if FUseCodeFolding then
+    Result := FAllFoldRanges.FoldRowToLine(aRow)
+  else
+    Result := aRow;
+end;
+
+function TCustomFMXSynEdit.GetDisplayRowCount: Integer;
+begin
+  if FUseCodeFolding then
+    Result := LineToRow(FLines.Count)
+  else
+    Result := FLines.Count;
+end;
+
+{ --- Code Folding --- }
+
+procedure TCustomFMXSynEdit.SetUseCodeFolding(const Value: Boolean);
+var
+  ValidValue: Boolean;
+begin
+  if csLoading in ComponentState then
+  begin
+    FUseCodeFolding := Value;
+    Exit;
+  end;
+
+  ValidValue := Value and ((Assigned(FHighlighter) and
+    (FHighlighter is TSynCustomCodeFoldingHighlighter))
+      or Assigned(FOnScanForFoldRanges));
+
+  if FUseCodeFolding <> ValidValue then
+  begin
+    FAllFoldRanges.Reset;
+    FUseCodeFolding := ValidValue;
+    if ValidValue then
+    begin
+      if FHighlighter is TSynCustomCodeFoldingHighlighter then
+      begin
+        TSynCustomCodeFoldingHighlighter(FHighlighter).InitFoldRanges(FAllFoldRanges);
+        FAllFoldRanges.AdjustRangesProc :=
+          TSynCustomCodeFoldingHighlighter(FHighlighter).AdjustFoldRanges;
+      end
+      else
+        FAllFoldRanges.AdjustRangesProc := nil;
+      FullFoldScan;
+    end
+    else
+      FAllFoldRanges.AdjustRangesProc := nil;
+
+    UpdateGutterWidth;
+    RecalcSizes;
+    Repaint;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.OnCodeFoldingChange(Sender: TObject);
+begin
+  UpdateGutterWidth;
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.FullFoldScan;
+begin
+  if FUseCodeFolding then
+    ReScanForFoldRanges(0, FLines.Count - 1);
+end;
+
+procedure TCustomFMXSynEdit.ReScanForFoldRanges(FromLine, ToLine: Integer);
+var
+  AdjustedToLine: Integer;
+begin
+  AdjustedToLine := Max(Min(ToLine, FLines.Count - 1), FromLine);
+  FAllFoldRanges.StartScanning;
+  ScanForFoldRanges(FAllFoldRanges, FLines, FromLine, AdjustedToLine);
+  if not FLines.Updating and FAllFoldRanges.StopScanning(FLines) then
+  begin
+    UpdateGutterWidth;
+    UpdateScrollBars;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+begin
+  if FHighlighter is TSynCustomCodeFoldingHighlighter then
+    TSynCustomCodeFoldingHighlighter(FHighlighter).ScanForFoldRanges(
+      FoldRanges, LinesToScan, FromLine, ToLine);
+
+  if Assigned(FOnScanForFoldRanges) then
+    FOnScanForFoldRanges(Self, FoldRanges, LinesToScan, FromLine, ToLine);
+end;
+
+procedure TCustomFMXSynEdit.PaintFoldGutter(Canvas: TCanvas;
+  FirstRow, LastRow: Integer);
+var
+  Renderer: TSynFMXRenderer;
+  Row, Line, Index: Integer;
+  Y, X, FoldLeft: Single;
+  ShapeSize: Single;
+  rcFold: TRectF;
+  FoldRange: TSynFoldRange;
+  Margin: Single;
+  LinesColor: TAlphaColor;
+begin
+  Renderer := TSynFMXRenderer(FRenderer);
+  ShapeSize := FCodeFolding.GutterShapeSize;
+  FoldLeft := FGutterWidth - ShapeSize - 4;
+  Margin := 2;
+  LinesColor := TColorToAlphaColor(FCodeFolding.FolderBarLinesColor);
+
+  for Row := FirstRow to LastRow do
+  begin
+    Line := RowToLine(Row);
+    if Line > FLines.Count then Break;
+
+    Y := (Row - FTopLine) * FLineHeight;
+    rcFold := RectF(
+      FoldLeft,
+      Y + (FLineHeight - ShapeSize) / 2,
+      FoldLeft + ShapeSize,
+      Y + (FLineHeight + ShapeSize) / 2);
+
+    // Fold start at this line?
+    if FAllFoldRanges.FoldStartAtLine(Line, Index) then
+    begin
+      FoldRange := FAllFoldRanges.Ranges[Index];
+
+      // Draw square
+      Canvas.Stroke.Color := LinesColor;
+      Canvas.Stroke.Thickness := 1;
+      Canvas.DrawRect(rcFold, 0, 0, AllCorners, 1.0);
+
+      // Draw horizontal minus sign
+      X := rcFold.Left + ShapeSize / 2;
+      Renderer.DrawLine(Canvas,
+        rcFold.Left + Margin, rcFold.Top + ShapeSize / 2,
+        rcFold.Right - Margin, rcFold.Top + ShapeSize / 2,
+        LinesColor);
+
+      if FoldRange.Collapsed then
+      begin
+        // Draw vertical plus sign
+        Renderer.DrawLine(Canvas,
+          X, rcFold.Top + Margin,
+          X, rcFold.Bottom - Margin,
+          LinesColor);
+      end
+      else
+      begin
+        // Draw line from bottom of square to bottom of row
+        Renderer.DrawLine(Canvas,
+          X, rcFold.Bottom,
+          X, Y + FLineHeight,
+          LinesColor);
+      end;
+    end
+    else
+    begin
+      X := rcFold.Left + ShapeSize / 2;
+
+      // Fold end at this line?
+      if FAllFoldRanges.FoldEndAtLine(Line, Index) then
+      begin
+        // L-connector: vertical line from top, then horizontal to right
+        Renderer.DrawLine(Canvas,
+          X, Y,
+          X, Y + FLineHeight / 2,
+          LinesColor);
+        Renderer.DrawLine(Canvas,
+          X, Y + FLineHeight / 2,
+          rcFold.Right, Y + FLineHeight / 2,
+          LinesColor);
+      end;
+
+      // Line through fold body?
+      if FAllFoldRanges.FoldAroundLine(Line, Index) then
+      begin
+        Renderer.DrawLine(Canvas,
+          X, Y,
+          X, Y + FLineHeight,
+          LinesColor);
+      end;
+    end;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.Collapse(FoldRangeIndex: Integer; Invalidate: Boolean);
+var
+  Range: TSynFoldRange;
+begin
+  if not FUseCodeFolding then Exit;
+
+  if FAllFoldRanges.Collapse(FoldRangeIndex) then
+  begin
+    Range := FAllFoldRanges[FoldRangeIndex];
+    // Extract caret from fold
+    if (FCaretY > Range.FromLine) and (FCaretY <= Range.ToLine) then
+      CaretXY := BufferCoord(Length(FLines[Range.FromLine - 1]) + 1, Range.FromLine);
+    if Invalidate then
+    begin
+      UpdateScrollBars;
+      Repaint;
+    end;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.Uncollapse(FoldRangeIndex: Integer; Invalidate: Boolean);
+begin
+  if not FUseCodeFolding then Exit;
+
+  FAllFoldRanges.UnCollapse(FoldRangeIndex);
+  if Invalidate then
+  begin
+    UpdateScrollBars;
+    Repaint;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.CollapseAll;
+begin
+  if not FUseCodeFolding then Exit;
+  FAllFoldRanges.CollapseAll;
+
+  // Surface caret from hidden folds
+  var Index: Integer;
+  while FAllFoldRanges.FoldHidesLine(FCaretY, Index) do
+  begin
+    var Range := FAllFoldRanges[Index];
+    CaretXY := BufferCoord(Length(FLines[Range.FromLine - 1]) + 1, Range.FromLine);
+  end;
+
+  EnsureCursorPosVisible;
+  UpdateScrollBars;
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.UncollapseAll;
+var
+  I: Integer;
+begin
+  if not FUseCodeFolding then Exit;
+  for I := FAllFoldRanges.Count - 1 downto 0 do
+    FAllFoldRanges.UnCollapse(I);
+
+  UpdateScrollBars;
+  EnsureCursorPosVisible;
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.CollapseNearest;
+var
+  Index: Integer;
+begin
+  if not FUseCodeFolding then Exit;
+  if FAllFoldRanges.FoldAroundLineEx(FCaretY, False, True, True, Index) then
+    Collapse(Index);
+  EnsureCursorPosVisible;
+end;
+
+procedure TCustomFMXSynEdit.UncollapseNearest;
+var
+  Index: Integer;
+begin
+  if not FUseCodeFolding then Exit;
+  if FAllFoldRanges.CollapsedFoldStartAtLine(FCaretY, Index) then
+    Uncollapse(Index);
+  EnsureCursorPosVisible;
+end;
+
+procedure TCustomFMXSynEdit.CollapseLevel(Level: Integer);
+begin
+  if not FUseCodeFolding then Exit;
+  FAllFoldRanges.CollapseLevel(Level);
+
+  // Surface caret
+  var Index: Integer;
+  while FAllFoldRanges.FoldHidesLine(FCaretY, Index) do
+  begin
+    var Range := FAllFoldRanges[Index];
+    CaretXY := BufferCoord(Length(FLines[Range.FromLine - 1]) + 1, Range.FromLine);
+  end;
+
+  EnsureCursorPosVisible;
+  UpdateScrollBars;
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.UncollapseLevel(Level: Integer);
+begin
+  if not FUseCodeFolding then Exit;
+  FAllFoldRanges.UnCollapseLevel(Level);
+
+  EnsureCursorPosVisible;
+  UpdateScrollBars;
+  Repaint;
+end;
+
+{ --- Search/Replace --- }
+
+procedure TCustomFMXSynEdit.SetSearchEngine(Value: TSynEditSearchCustom);
+begin
+  if FSearchEngine <> Value then
+  begin
+    if FSearchEngine <> nil then
+      FSearchEngine.RemoveFreeNotification(Self);
+    FSearchEngine := Value;
+    if FSearchEngine <> nil then
+      FSearchEngine.FreeNotification(Self);
+  end;
+end;
+
+function TCustomFMXSynEdit.DoOnReplaceText(const ASearch, AReplace: string;
+  Line, Column: Integer): TSynReplaceAction;
+begin
+  Result := raCancel;
+  if Assigned(FOnReplaceText) then
+    FOnReplaceText(Self, ASearch, AReplace, Line, Column, Result);
+end;
+
+function TCustomFMXSynEdit.SearchReplace(const ASearch, AReplace: string;
+  AOptions: TSynSearchOptions): Integer;
+var
+  ptStart, ptEnd: TBufferCoord;
+  bBackward, bFromCursor, bPrompt, bReplace, bReplaceAll: Boolean;
+  sReplace: string;
+  nEOLCount, I: Integer;
+
+  function ProcessTextRange(const AStart: TBufferCoord;
+    var AEnd: TBufferCoord): Integer;
+  var
+    lnStart, lnEnd, nInLine, nFound, nSearchLen, nReplaceLen, n: Integer;
+    iResultOffset: Integer;
+    CurrentLine: Integer;
+    Line: string;
+    nAction: TSynReplaceAction;
+  begin
+    Result := 0;
+    if bBackward then
+      CurrentLine := AEnd.Line
+    else
+      CurrentLine := AStart.Line;
+
+    while (CurrentLine >= AStart.Line) and (CurrentLine <= AEnd.Line) do
+    begin
+      Line := FLines[CurrentLine - 1];
+      if CurrentLine = AStart.Line then
+        lnStart := AStart.Char
+      else
+        lnStart := 1;
+
+      if CurrentLine = AEnd.Line then
+        lnEnd := AEnd.Char
+      else
+        lnEnd := Length(Line) + 1;
+
+      if lnEnd <= lnStart then
+      begin
+        if bBackward then Dec(CurrentLine) else Inc(CurrentLine);
+        Continue;
+      end;
+
+      nInLine := FSearchEngine.FindAll(Line, lnStart, lnEnd);
+      iResultOffset := 0;
+      if bBackward then
+        n := FSearchEngine.ResultCount - 1
+      else
+        n := 0;
+
+      while nInLine > 0 do
+      begin
+        nFound := FSearchEngine.Results[n] + iResultOffset;
+        nSearchLen := FSearchEngine.Lengths[n];
+        if bBackward then Dec(n) else Inc(n);
+        Dec(nInLine);
+        Inc(Result);
+
+        // Select the found text
+        if bBackward then
+          SetCaretAndSelection(
+            BufferCoord(nFound, CurrentLine),
+            BufferCoord(nFound + nSearchLen, CurrentLine),
+            BufferCoord(nFound, CurrentLine))
+        else
+          SetCaretAndSelection(
+            BufferCoord(nFound + nSearchLen, CurrentLine),
+            BufferCoord(nFound, CurrentLine),
+            BufferCoord(nFound + nSearchLen, CurrentLine));
+
+        // If search only, return after first find
+        if not (bReplace or bReplaceAll) then Exit;
+
+        // Prompt for replace
+        if bPrompt and Assigned(FOnReplaceText) then
+        begin
+          nAction := DoOnReplaceText(ASearch, sReplace, CurrentLine, nFound);
+          if nAction = raCancel then
+          begin
+            Dec(Result);
+            Exit;
+          end;
+        end
+        else
+          nAction := raReplace;
+
+        if nAction = raSkip then
+          Dec(Result)
+        else
+        begin
+          if nAction = raReplaceAll then
+          begin
+            bReplaceAll := True;
+            bPrompt := False;
+          end;
+
+          // Perform replacement
+          var SelText := FSearchEngine.Replace(
+            Copy(FLines[CurrentLine - 1], nFound, nSearchLen), sReplace);
+
+          var SLine := FLines[CurrentLine - 1];
+          System.Delete(SLine, nFound, nSearchLen);
+          System.Insert(SelText, SLine, nFound);
+          FLines[CurrentLine - 1] := SLine;
+          nReplaceLen := Length(SelText);
+
+          if not bBackward then
+          begin
+            FCaretX := nFound + nReplaceLen;
+            if nSearchLen <> nReplaceLen then
+            begin
+              Inc(iResultOffset, nReplaceLen - nSearchLen);
+              if CurrentLine = AEnd.Line then
+                Inc(AEnd.Char, nReplaceLen - nSearchLen);
+            end;
+          end;
+        end;
+
+        if not bReplaceAll then Exit;
+      end;
+
+      if bBackward then Dec(CurrentLine) else Inc(CurrentLine);
+    end;
+  end;
+
+begin
+  if not Assigned(FSearchEngine) then
+    raise Exception.Create('No search engine has been assigned');
+
+  Result := 0;
+  if Length(ASearch) = 0 then Exit;
+
+  bBackward := ssoBackwards in AOptions;
+  bPrompt := ssoPrompt in AOptions;
+  bReplace := ssoReplace in AOptions;
+  bReplaceAll := ssoReplaceAll in AOptions;
+  bFromCursor := not (ssoEntireScope in AOptions);
+  sReplace := FSearchEngine.PreprocessReplaceExpression(AReplace);
+
+  // Count line ends in replacement
+  nEOLCount := 0;
+  I := 1;
+  repeat
+    I := Pos(#13#10, sReplace, I);
+    if I <> 0 then
+    begin
+      I := I + 2;
+      Inc(nEOLCount);
+    end;
+  until I = 0;
+
+  // Initialize search engine
+  FSearchEngine.Options := AOptions;
+  FSearchEngine.Pattern := ASearch;
+
+  BeginUpdate;
+  try
+    if not (ssoSelectedOnly in AOptions) then
+    begin
+      ptStart.Char := 1;
+      ptStart.Line := 1;
+      ptEnd.Line := FLines.Count;
+      if ptEnd.Line > 0 then
+        ptEnd.Char := Length(FLines[ptEnd.Line - 1]) + 1
+      else
+        ptEnd.Char := 1;
+      if bFromCursor then
+      begin
+        if bBackward then
+          ptEnd := GetCaretXY
+        else
+          ptStart := GetCaretXY;
+      end;
+      Result := ProcessTextRange(ptStart, ptEnd);
+    end
+    else if GetSelAvail then
+    begin
+      ptStart := FBlockBegin;
+      ptEnd := FBlockEnd;
+      if ptStart > ptEnd then
+      begin
+        var Tmp := ptStart;
+        ptStart := ptEnd;
+        ptEnd := Tmp;
+      end;
+      Result := ProcessTextRange(ptStart, ptEnd);
+    end;
+
+    // Notify if not found
+    if (Result = 0) and not (bReplace or bReplaceAll) and
+      Assigned(FOnSearchNotFound) then
+      FOnSearchNotFound(Self);
+  finally
+    EndUpdate;
+    FSearchEngine.IsWordBreakFunction := nil;
+  end;
+end;
+
+{ --- Plugin support --- }
+
+procedure TCustomFMXSynEdit.RegisterPlugin(APlugin: TSynFMXEditPlugin);
+begin
+  if FPlugins.IndexOf(APlugin) < 0 then
+    FPlugins.Add(APlugin);
+end;
+
+procedure TCustomFMXSynEdit.UnregisterPlugin(APlugin: TSynFMXEditPlugin);
+begin
+  FPlugins.Remove(APlugin);
+end;
+
+procedure TCustomFMXSynEdit.DoPluginAfterPaint(Canvas: TCanvas;
+  const AClip: TRectF; FirstLine, LastLine: Integer);
+var
+  I: Integer;
+  Plugin: TSynFMXEditPlugin;
+begin
+  for I := 0 to FPlugins.Count - 1 do
+  begin
+    Plugin := TSynFMXEditPlugin(FPlugins[I]);
+    if phAfterPaint in Plugin.Handlers then
+      Plugin.AfterPaint(Canvas, AClip, FirstLine, LastLine);
+  end;
 end;
 
 end.

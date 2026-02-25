@@ -66,25 +66,7 @@ type
       default True;
   end;
 
-  { Search engine interface - matches VCL version }
-  TSynEditSearchCustom = class(TComponent)
-  protected
-    function GetPattern: string; virtual; abstract;
-    procedure SetPattern(const Value: string); virtual; abstract;
-    function GetLength(Index: Integer): Integer; virtual; abstract;
-    function GetResult(Index: Integer): Integer; virtual; abstract;
-    function GetResultCount: Integer; virtual; abstract;
-    procedure SetOptions(const Value: TSynSearchOptions); virtual; abstract;
-  public
-    function FindAll(const NewText: string): Integer; virtual; abstract;
-    function Replace(const aOccurrence, aReplacement: string): string;
-      virtual; abstract;
-    property Pattern: string read GetPattern write SetPattern;
-    property ResultCount: Integer read GetResultCount;
-    property Results[Index: Integer]: Integer read GetResult;
-    property Lengths[Index: Integer]: Integer read GetLength;
-    property Options: TSynSearchOptions write SetOptions;
-  end;
+  { TSynEditSearchCustom is now in the shared SynEditTypes.pas unit }
 
 implementation
 
