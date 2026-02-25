@@ -14,7 +14,7 @@ through a three-layer architecture.
 │  Vcl.SynEdit.pas         │  │  FMX.SynEdit.pas          │
 │  Vcl.SynDWrite.pas       │  │  FMX.SynEditRenderer.pas  │
 │  Vcl.SynEditMiscClasses  │  │  FMX.SynEditMiscClasses   │
-│  (36 units)              │  │  (11 units)               │
+│  (36 units)              │  │  (18 units)               │
 └────────────┬─────────────┘  └────────────┬──────────────┘
              │                              │
              └──────────┬──────────────────-┘
@@ -111,8 +111,15 @@ SynEdit/
       FMX.SynEditKeyConst.pas     FMX key constant mapping
       FMX.SynEditKbdHandler.pas   FMX keyboard/mouse event chains
       FMX.SynEditUndo.pas         FMX undo/redo system
+      FMX.SynEditPlugins.pas      FMX editor plugin base class
       FMX.SynUnicode.pas          FMX clipboard (IFMXClipboardService)
       FMX.SynCompletionProposal   FMX code completion (TPopup-based)
+      FMX.SynEditPrint.pas        FMX printing (abstract provider)
+      FMX.SynEditPrintHeaderFooter FMX print headers/footers
+      FMX.SynEditPrintMargins.pas FMX print margin settings
+      FMX.SynEditPrintTypes.pas   FMX print type definitions
+      FMX.SynEditPrinterInfo.pas  FMX printer info (abstract provider)
+      FMX.SynSpellCheck.pas       FMX spell check (abstract provider)
       FMX.SynEditReg.pas          FMX component registration
   Packages/
     11AndAbove/
@@ -131,9 +138,12 @@ SynEdit/
         SynEditFMXCD.cbproj       FMX C++ designtime package
         SynEditCBuilder.groupproj All C++ packages
   Demos/
-    VCL/                          VCL demo applications
-    FMX/                          FMX demo applications
-    uHighlighterProcs.pas         Shared demo helper
+    VCL/                          9 VCL demo applications
+    FMX/
+      HighlighterDemo/            Browse 13 highlighters
+      EditApp/                    Single-document editor with menus and file I/O
+      FeaturesDemo/               Feature showcase with search, folding, completion
+    uHighlighterProcs.pas         Shared demo helper (highlighter detection)
     SynEditDemosGroup.groupproj   All demos
 ```
 

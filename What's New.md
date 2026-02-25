@@ -30,6 +30,12 @@ A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
 * **Clipboard** — Cut, Copy, Paste via `IFMXClipboardService`.
 * **Undo/Redo** — Full undo/redo stack.
 * **File I/O** — `LoadFromFile`, `SaveToFile`, `LoadFromStream`, `SaveToStream`.
+* **Code folding** — Collapse and expand foldable regions.
+* **Search/Replace** — `SearchReplace` method with options for case, whole word, regex, selection-only, and replace all.
+* **Completion proposals** — `TFMXSynCompletionProposal` popup with keyboard navigation, filtering, and customizable display.
+* **Plugin support** — `TSynFMXEditPlugin` base class for extending the editor via `OnCommand` hooks.
+* **Printing** — `TFMXSynEditPrint` with abstract provider interface for platform-specific rendering.
+* **Spell check** — `TFMXSynSpellCheck` with abstract provider interface for pluggable spell-check backends.
 * **Range scanning** — Incremental re-scanning for multi-line highlighters (XML, HTML, Delphi, etc.).
 * **Scrolling** — FMX `TScrollBar`-based scrolling with mouse wheel support.
 * **Gutter** — Line numbers with configurable width.
@@ -49,9 +55,13 @@ Five new packages support the three-layer architecture:
 
 Build order: Shared → VCL/FMX Runtime → VCL/FMX Designtime.
 
-### FMX Demo
+### FMX Demos
 
-A HighlighterDemo (`Demos/FMX/HighlighterDemo/`) showcases 13 language highlighters (Delphi, C++, Java, Python, JavaScript, HTML, XML, CSS, SQL, JSON, C#, INI, Batch) with a consistent color scheme.
+Three FMX demos are included in `Demos/FMX/`:
+
+* **HighlighterDemo** — Browse 13 language highlighters (Delphi, C++, Java, Python, JavaScript, HTML, XML, CSS, SQL, JSON, C#, INI, Batch) with a consistent color scheme.
+* **EditApp** — Single-document editor with menus (File/Edit), status bar, file I/O, clipboard, undo/redo, and automatic highlighter detection from file extension.
+* **FeaturesDemo** — Comprehensive feature showcase with a controls panel, editor options toggles, search/replace dialogs, completion proposals, code folding, clipboard buttons, active line color picker, and a timestamped event log.
 
 ---
 

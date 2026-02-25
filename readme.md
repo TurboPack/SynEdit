@@ -22,7 +22,7 @@ SynEdit is a syntax highlighting edit control, not based on the Windows common c
 - **66 language highlighters** (Delphi, C++, Python, JavaScript, HTML, XML, SQL, and many more)
 - **189 Omni highlighter configurations** for additional languages via INI-based definitions
 - **VCL editor** (`TCustomSynEdit`) — full-featured Windows editor with DirectWrite rendering, code folding, completion proposals, printing, spell check, OLE drag-drop, and accessibility
-- **FMX editor** (`TCustomFMXSynEdit`) — cross-platform editor with FMX Canvas rendering, syntax highlighting, keyboard input, selection, clipboard, undo/redo, and file I/O
+- **FMX editor** (`TCustomFMXSynEdit`) — cross-platform editor with FMX Canvas rendering, syntax highlighting, keyboard input, selection, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, and plugin support
 
 All highlighters are shared between VCL and FMX — write once, highlight everywhere.
 
@@ -45,7 +45,7 @@ SynEdit uses a **three-layer architecture**:
 ```
 ┌────────────────────┐  ┌────────────────────┐
 │  Source/VCL/        │  │  Source/FMX/        │
-│  36 Vcl.* units     │  │  11 FMX.* units     │
+│  36 Vcl.* units     │  │  18 FMX.* units     │
 └─────────┬──────────┘  └─────────┬──────────┘
           └──────┬───────────────-┘
                  │ uses
@@ -136,6 +136,8 @@ To manually install into your IDE:
 | Demo | Description |
 |------|-------------|
 | HighlighterDemo | Browse 13 language highlighters with syntax coloring |
+| EditApp | Single-document editor with menus, file I/O, clipboard, undo/redo, and auto highlighter detection |
+| FeaturesDemo | Comprehensive feature showcase with options panel, search/replace, completion proposals, code folding, and event log |
 
 ---
 
