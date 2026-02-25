@@ -708,7 +708,7 @@ procedure TFMXFeaturesForm.BtnPrintClick(Sender: TObject);
 begin
   FPrintComponent.SetSynEdit(FEditor);
   FPrintComponent.Print;
-  LogEvent('Print');
+  LogEvent('Print done');
 end;
 
 end.

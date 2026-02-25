@@ -823,6 +823,8 @@ var
   Page, Copy: Integer;
   Title: string;
   Provider: ISynPrintProvider;
+  SaveState: TCanvasSaveState;
+  ScaleX, ScaleY: Single;
 begin
   if FSelectedOnly and not FSelAvail then
     Exit;
@@ -859,13 +861,36 @@ begin
     for Copy := 1 to FCopies do
     begin
       Provider.BeginDoc(Title);
+
+      { Compute scale from ACTUAL canvas dimensions vs our 96-PPI layout.
+        The CreateDC-based PrinterInfo may report wrong DPI or paper size
+        (e.g. 300 DPI A4 when the FMX printer is actually 600 DPI Letter).
+        Using the real page dimensions from the provider gives the correct
+        scale regardless of PrinterInfo accuracy. }
+      ScaleX := Provider.PageWidth /
+        (FPrinterInfo.PhysicalWidth * 96.0 / FPrinterInfo.XPixPerInch);
+      ScaleY := Provider.PageHeight /
+        (FPrinterInfo.PhysicalHeight * 96.0 / FPrinterInfo.YPixPerInch);
       try
         for Page := StartPage to EndPage do
         begin
           if FAbort then Break;
           if Page > StartPage then
             Provider.NewPage;
-          PrintPage(Provider.Canvas, Page);
+
+          if Provider.Canvas.BeginScene then
+          try
+            SaveState := Provider.Canvas.SaveState;
+            try
+              Provider.Canvas.SetMatrix(
+                TMatrix.CreateScaling(ScaleX, ScaleY));
+              PrintPage(Provider.Canvas, Page);
+            finally
+              Provider.Canvas.RestoreState(SaveState);
+            end;
+          finally
+            Provider.Canvas.EndScene;
+          end;
         end;
       finally
         Provider.EndDoc;
