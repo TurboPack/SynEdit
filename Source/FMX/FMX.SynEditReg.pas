@@ -15,12 +15,16 @@ implementation
 uses
   System.Classes,
   FMX.SynEdit,
+  FMX.SynCompletionProposal,
+  FMX.SynSpellCheck,
+  FMX.SynEditPrint,
   SynEditHighlighter,
   SynEditStrConst;
 
 procedure Register;
 begin
-  RegisterComponents('SynEdit FMX', [TFMXSynEdit]);
+  RegisterComponents('SynEdit FMX', [TFMXSynEdit,
+    TSynFMXCompletionProposal, TSynFMXSpellCheck, TSynFMXEditPrint]);
 end;
 
 end.

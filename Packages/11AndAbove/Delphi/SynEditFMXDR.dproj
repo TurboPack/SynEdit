@@ -148,6 +148,13 @@
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditUndo.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEdit.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynCompletionProposal.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPlugins.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynSpellCheck.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrintTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrinterInfo.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrintMargins.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrintHeaderFooter.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrint.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

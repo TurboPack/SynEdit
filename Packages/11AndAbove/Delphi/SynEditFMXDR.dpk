@@ -45,6 +45,13 @@ contains
   FMX.SynEditKbdHandler in '..\..\..\Source\FMX\FMX.SynEditKbdHandler.pas',
   FMX.SynEditUndo in '..\..\..\Source\FMX\FMX.SynEditUndo.pas',
   FMX.SynEdit in '..\..\..\Source\FMX\FMX.SynEdit.pas',
-  FMX.SynCompletionProposal in '..\..\..\Source\FMX\FMX.SynCompletionProposal.pas';
+  FMX.SynCompletionProposal in '..\..\..\Source\FMX\FMX.SynCompletionProposal.pas',
+  FMX.SynEditPlugins in '..\..\..\Source\FMX\FMX.SynEditPlugins.pas',
+  FMX.SynSpellCheck in '..\..\..\Source\FMX\FMX.SynSpellCheck.pas',
+  FMX.SynEditPrintTypes in '..\..\..\Source\FMX\FMX.SynEditPrintTypes.pas',
+  FMX.SynEditPrinterInfo in '..\..\..\Source\FMX\FMX.SynEditPrinterInfo.pas',
+  FMX.SynEditPrintMargins in '..\..\..\Source\FMX\FMX.SynEditPrintMargins.pas',
+  FMX.SynEditPrintHeaderFooter in '..\..\..\Source\FMX\FMX.SynEditPrintHeaderFooter.pas',
+  FMX.SynEditPrint in '..\..\..\Source\FMX\FMX.SynEditPrint.pas';
 
 end.
