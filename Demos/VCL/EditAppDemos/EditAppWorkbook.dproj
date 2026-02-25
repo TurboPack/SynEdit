@@ -132,7 +132,7 @@
             <Form>CommandsDataModule</Form>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
-        <DCCReference Include="..\uHighlighterProcs.pas"/>
+        <DCCReference Include="..\..\uHighlighterProcs.pas"/>
         <DCCReference Include="..\SearchReplaceDemo\dlgSearchText.pas">
             <Form>TextSearchDialog</Form>
         </DCCReference>

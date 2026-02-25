@@ -36,7 +36,7 @@ uses
   uEditAppIntfs in 'uEditAppIntfs.pas',
   frmEditor in 'frmEditor.pas' {EditorForm},
   dmWorkbookCommands in 'dmWorkbookCommands.pas' {CommandsDataModule: TDataModule},
-  uHighlighterProcs in '..\uHighlighterProcs.pas',
+  uHighlighterProcs in '..\..\uHighlighterProcs.pas',
   dlgSearchText in '..\SearchReplaceDemo\dlgSearchText.pas' {TextSearchDialog},
   dlgReplaceText in '..\SearchReplaceDemo\dlgReplaceText.pas' {TextReplaceDialog},
   dlgConfirmReplace in '..\SearchReplaceDemo\dlgConfirmReplace.pas' {ConfirmReplaceDialog};

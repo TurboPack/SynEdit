@@ -28,6 +28,7 @@ interface
 uses
   {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Winapi.Windows,
+  Vcl.Graphics,
   System.Win.Registry,
   {$ENDIF}
   System.SysUtils,
