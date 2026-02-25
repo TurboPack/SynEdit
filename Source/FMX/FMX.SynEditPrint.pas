@@ -638,7 +638,6 @@ var
   LayoutRowCount: Integer;
   Token: string;
   TokenPos: Integer;
-  Attr: TSynHighlighterAttributes;
   BkgColor, FontColor: TColor;
   AlphaBkg, AlphaFont: TAlphaColor;
   TextRect: TRectF;
