@@ -196,7 +196,7 @@ begin
   raise ESynEditStringList.CreateFmt(SListIndexOutOfBounds, [Index]);
 end;
 
-constructor TSynEditStringList.Create;
+constructor TSynEditStringList.Create(TextWidthFunc: TTextWidthFunc);
 begin
   inherited Create;
   FFileFormat := sffDos;
