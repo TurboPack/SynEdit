@@ -33,6 +33,7 @@ type
     property SearchOptions: TSynSearchOptions read FSearchOptions;
     function GetSearchText: string;
     function GetOptions: TSynSearchOptions;
+    function IsRegex: Boolean;
   end;
 
 implementation
@@ -70,6 +71,11 @@ begin
     Include(Result, ssoWholeWord);
   if rbBackward.IsChecked then
     Include(Result, ssoBackwards);
+end;
+
+function TFMXSearchTextDialog.IsRegex: Boolean;
+begin
+  Result := cbRegex.IsChecked;
 end;
 
 end.
