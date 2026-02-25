@@ -730,6 +730,7 @@ begin
             ForeColor := TColorToAlphaColor(FSelectedColor.Foreground);
             if ForeColor = TAlphaColors.Null then
               ForeColor := TAlphaColors.White;
+            BackColor := TAlphaColors.Null;
           end;
         end;
 

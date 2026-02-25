@@ -23,6 +23,9 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
   FMX.Types,
   FMX.Graphics,
   FMX.TextLayout;
@@ -67,9 +70,27 @@ function TColorToAlphaColor(AColor: TColor): TAlphaColor;
 implementation
 
 function TColorToAlphaColor(AColor: TColor): TAlphaColor;
+{$IFDEF MSWINDOWS}
+var
+  RGB: Cardinal;
+{$ENDIF}
 begin
-  if (AColor = TColors.SysNone) or (Integer(AColor) < 0) then
+  if AColor = TColors.SysNone then
     Exit(TAlphaColors.Null);
+  if Integer(AColor) < 0 then
+  begin
+    {$IFDEF MSWINDOWS}
+    // Resolve Windows system color via GetSysColor
+    RGB := GetSysColor(Integer(AColor) and $FF);
+    Result := $FF000000 or
+      ((RGB and $FF) shl 16) or
+      (RGB and $FF00) or
+      ((RGB shr 16) and $FF);
+    {$ELSE}
+    Result := TAlphaColors.Null;
+    {$ENDIF}
+    Exit;
+  end;
   // TColor = $00BBGGRR -> TAlphaColor = $AARRGGBB
   Result := $FF000000 or
     (Cardinal(AColor and $FF) shl 16) or
