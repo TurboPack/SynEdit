@@ -43,11 +43,10 @@ uses
   FMX.StdCtrls,
   FMX.Graphics,
   SynEditTypes,
-  SynEditKeyCmds;
+  SynEditKeyCmds,
+  FMX.SynEdit;
 
 type
-  TCustomFMXSynEdit = class;
-
   TSynCompletionType = (ctCode, ctParams);
 
   TSynCompletionOption = (scoLimitToMatchedText, scoCaseSensitive,
@@ -164,7 +163,6 @@ type
       EndToken: WideChar);
     procedure FormCancel(Sender: TObject);
     function GetCurrentInput: string;
-    function GetCurrentString: string;
   protected
     procedure Notification(AComponent: TComponent;
       Operation: TOperation); override;
@@ -202,7 +200,6 @@ type
 implementation
 
 uses
-  FMX.SynEdit,
   FMX.Platform,
   FMX.Forms,
   FMX.TextLayout,
@@ -533,7 +530,7 @@ constructor TSynFMXCompletionProposal.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FOptions := DefaultProposalOptions;
-  FShortCut := ShortCut(Ord(' '), [ssCtrl]);
+  FShortCut := Ord(' ') or scCtrl;
   FEndOfTokenChr := DefaultEndOfTokenChr;
   FTriggerChars := '.';
   FTimerInterval := 0;
@@ -571,10 +568,8 @@ begin
   if FEditor <> nil then
   begin
     FEditor.RemoveFreeNotification(Self);
-    // Remove our key handler from the old editor
-    // (We hook into KeyDown via the editor's OnKeyDown-like mechanism.
-    //  Since TCustomFMXSynEdit does not have a command-handler chain like VCL,
-    //  we intercept at the editor level.)
+    if FEditor is TCustomFMXSynEdit then
+      TCustomFMXSynEdit(FEditor).OnKeyDown := nil;
   end;
 
   FEditor := Value;
@@ -583,10 +578,10 @@ begin
   if FEditor <> nil then
   begin
     FEditor.FreeNotification(Self);
-    // Set the popup parent so it renders within the correct form context
     if FEditor is TCustomFMXSynEdit then
     begin
       Ed := TCustomFMXSynEdit(FEditor);
+      Ed.OnKeyDown := EditorKeyDown;
       FForm.Parent := Ed;
       FForm.IsOpen := False;
     end;
@@ -612,11 +607,6 @@ begin
   if Assigned(FTimer) then
     FTimer.Enabled := False;
   Activate;
-end;
-
-function TSynFMXCompletionProposal.GetCurrentString: string;
-begin
-  Result := FForm.CurrentString;
 end;
 
 function TSynFMXCompletionProposal.GetCurrentInput: string;
@@ -804,7 +794,11 @@ begin
   else
   begin
     // Popup is not open -- check for shortcut to activate
-    ShortCutToKey(FShortCut, ShortCutKey, ShortCutShift);
+    ShortCutKey := FShortCut and not (scShift or scCtrl or scAlt);
+    ShortCutShift := [];
+    if FShortCut and scShift <> 0 then Include(ShortCutShift, ssShift);
+    if FShortCut and scCtrl <> 0 then Include(ShortCutShift, ssCtrl);
+    if FShortCut and scAlt <> 0 then Include(ShortCutShift, ssAlt);
     if (Key = ShortCutKey) and (Shift = ShortCutShift) then
     begin
       Key := 0;
