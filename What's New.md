@@ -63,6 +63,10 @@ Three FMX demos are included in `Demos/FMX/`:
 * **EditApp** — Single-document editor with menus (File/Edit), status bar, file I/O, clipboard, undo/redo, and automatic highlighter detection from file extension.
 * **FeaturesDemo** — Comprehensive feature showcase with a controls panel, editor options toggles, search/replace dialogs, completion proposals, code folding, clipboard buttons, active line color picker, and a timestamped event log.
 
+### Test Suite
+
+A DUnitX test suite (`Tests/FMX/FMXSynEditTests.dproj`) provides 80 tests across 9 fixtures: Buffer, Caret, CodeFolding, Commands, Content, Highlighter, Options, Search, and UndoRedo. Tests run headless without requiring a form or visual surface.
+
 ---
 
 ## **TSynDelphiSyn & IDE Settings Importer**

@@ -11,7 +11,8 @@ Compatible with Delphi 12 Athens or later. You can also access the [11 Alexandri
 4. [Package Names](#package-names)
 5. [Installation](#installation)
 6. [Demos](#demos)
-7. [Building from Source](#building-from-source)
+7. [Testing](#testing)
+8. [Building from Source](#building-from-source)
 
 ---
 
@@ -138,6 +139,20 @@ To manually install into your IDE:
 | HighlighterDemo | Browse 13 language highlighters with syntax coloring |
 | EditApp | Single-document editor with menus, file I/O, clipboard, undo/redo, and auto highlighter detection |
 | FeaturesDemo | Comprehensive feature showcase with options panel, search/replace, completion proposals, code folding, and event log |
+
+---
+
+## Testing
+
+The FMX editor has a DUnitX test suite with 80 tests across 9 fixtures covering buffer operations, caret movement, code folding, editor commands, content/file I/O, highlighter assignment, editor options, search/replace, and undo/redo.
+
+Tests run headless — no form or visual surface required.
+
+```
+build_fmx_tests.bat
+```
+
+Test project: `Tests/FMX/FMXSynEditTests.dproj`
 
 ---
 

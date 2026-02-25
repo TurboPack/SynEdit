@@ -145,6 +145,10 @@ SynEdit/
       FeaturesDemo/               Feature showcase with search, folding, completion
     uHighlighterProcs.pas         Shared demo helper (highlighter detection)
     SynEditDemosGroup.groupproj   All demos
+  Tests/
+    FMX/
+      FMXSynEditTests.dproj        DUnitX test project (80 tests, 9 fixtures)
+      TestFMXSynEdit*.pas           Test fixtures (buffer, caret, folding, etc.)
 ```
 
 ## Package Dependencies
