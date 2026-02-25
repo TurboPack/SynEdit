@@ -551,7 +551,7 @@ begin
   CancelCompletion;
   Editor := nil;  // unhook
   FreeAndNil(FTimer);
-  FForm.Free;
+  FreeAndNil(FForm);
   FInsertList.Free;
   FItemList.Free;
   inherited;
@@ -582,11 +582,14 @@ begin
     begin
       Ed := TCustomFMXSynEdit(FEditor);
       Ed.OnKeyDown := EditorKeyDown;
-      FForm.Parent := Ed;
-      FForm.IsOpen := False;
+      if FForm <> nil then
+      begin
+        FForm.Parent := Ed;
+        FForm.IsOpen := False;
+      end;
     end;
   end
-  else
+  else if FForm <> nil then
     FForm.Parent := nil;
 end;
 
@@ -594,11 +597,17 @@ procedure TSynFMXCompletionProposal.Notification(AComponent: TComponent;
   Operation: TOperation);
 begin
   inherited;
-  if (Operation = opRemove) and (AComponent = FEditor) then
+  if Operation = opRemove then
   begin
-    CancelCompletion;
-    FEditor := nil;
-    FForm.Parent := nil;
+    if AComponent = FEditor then
+    begin
+      CancelCompletion;
+      FEditor := nil;
+      if FForm <> nil then
+        FForm.Parent := nil;
+    end
+    else if AComponent = FForm then
+      FForm := nil;
   end;
 end;
 
@@ -982,7 +991,7 @@ end;
 procedure TSynFMXCompletionProposal.Deactivate;
 begin
   FActive := False;
-  if FForm.IsOpen then
+  if (FForm <> nil) and FForm.IsOpen then
     FForm.IsOpen := False;
   if Assigned(FTimer) then
     FTimer.Enabled := False;
@@ -995,7 +1004,7 @@ end;
 
 function TSynFMXCompletionProposal.IsActive: Boolean;
 begin
-  Result := FActive and FForm.IsOpen;
+  Result := FActive and (FForm <> nil) and FForm.IsOpen;
 end;
 
 end.
