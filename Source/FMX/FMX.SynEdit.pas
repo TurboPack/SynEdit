@@ -136,6 +136,7 @@ type
     procedure Resize; override;
     procedure DoEnter; override;
     procedure DoExit; override;
+    procedure DialogKey(var Key: Word; Shift: TShiftState); override;
     procedure KeyDown(var Key: Word; var KeyChar: WideChar;
       Shift: TShiftState); override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
@@ -896,6 +897,24 @@ begin
   if Cond then Result := TrueVal else Result := FalseVal;
 end;
 
+procedure TCustomFMXSynEdit.DialogKey(var Key: Word; Shift: TShiftState);
+begin
+  // Intercept Tab/Shift+Tab: execute as editor command instead of focus navigation
+  if Key = vkTab then
+  begin
+    if IsFocused then
+    begin
+      if ssShift in Shift then
+        ExecuteCommand(ecShiftTab, #0)
+      else
+        ExecuteCommand(ecTab, #0);
+    end;
+    Key := 0;
+    Exit;
+  end;
+  inherited;
+end;
+
 procedure TCustomFMXSynEdit.KeyDown(var Key: Word; var KeyChar: WideChar;
   Shift: TShiftState);
 var
@@ -1228,6 +1247,35 @@ begin
             InsertCharAtCursor(#9);
           finally
             FUndoRedo.EndBlock(Self);
+          end;
+        end;
+      end;
+    ecShiftTab:
+      if not FReadOnly then
+      begin
+        // Remove up to TabWidth spaces from the beginning of the current line
+        FirstAffectedLine := FCaretY - 1;
+        if (FCaretY >= 1) and (FCaretY <= FLines.Count) then
+        begin
+          var Line := FLines[FCaretY - 1];
+          var SpacesToRemove := 0;
+          var MaxRemove := FTabWidth;
+          while (SpacesToRemove < MaxRemove) and (SpacesToRemove < Length(Line))
+            and (Line[SpacesToRemove + 1] = ' ') do
+            Inc(SpacesToRemove);
+          // If no spaces found, try removing a single tab
+          if (SpacesToRemove = 0) and (Length(Line) > 0) and (Line[1] = #9) then
+            SpacesToRemove := 1;
+          if SpacesToRemove > 0 then
+          begin
+            FUndoRedo.BeginBlock(Self);
+            try
+              FLines[FCaretY - 1] := Copy(Line, SpacesToRemove + 1);
+              // Adjust caret
+              SetCaretX(Max(1, FCaretX - SpacesToRemove));
+            finally
+              FUndoRedo.EndBlock(Self);
+            end;
           end;
         end;
       end;
