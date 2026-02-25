@@ -282,7 +282,7 @@ begin
       end;
       FBlockChangeNumber := 0;
       AddGroupBreak;
-      if FBlockStartModified xor GetModified and Assigned(FOnModifiedChanged) then
+      if (FBlockStartModified xor GetModified) and Assigned(FOnModifiedChanged) then
         FOnModifiedChanged(Self);
     end;
   end;
