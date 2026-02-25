@@ -23,6 +23,7 @@ uses
 type
   { FMX scrollbar interface - uses FMX events instead of WM_SCROLL }
   ISynEditScrollBars = interface
+    ['{F3A7B2C1-D4E5-4F60-A1B2-C3D4E5F67890}']
     function UpdateScrollBars: Boolean;
     function GetIsScrolling: Boolean;
     procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
