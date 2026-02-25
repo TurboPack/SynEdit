@@ -966,14 +966,12 @@ begin
   // Get the current word fragment at the caret
   CurrentInput := GetCurrentInput;
 
-  // Calculate popup position from caret pixel coordinates.
-  // BufferCoordToPixel returns coordinates in the editor's local space.
-  // We add one line height so the popup appears below the caret line.
+  // BufferCoordToPixel returns editor-local coordinates.
+  // Add one line height so the popup appears below the caret line,
+  // then convert to screen coordinates (Placement = Absolute).
   Pt := Ed.BufferCoordToPixel(Ed.CaretXY);
-  if Ed.LinesInWindow > 0 then
-    Pt.Y := Pt.Y + Ed.Height / Ed.LinesInWindow // approximate line height
-  else
-    Pt.Y := Pt.Y + 18; // fallback
+  Pt.Y := Pt.Y + Ed.LineHeight;
+  Pt := Ed.LocalToScreen(Pt);
 
   X := Round(Pt.X);
   Y := Round(Pt.Y);

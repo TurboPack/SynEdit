@@ -243,6 +243,7 @@ type
     property Text: string read GetText write SetText;
     property SelText: string read GetSelText;
     property SelAvail: Boolean read GetSelAvail;
+    property LineHeight: Single read FLineHeight;
     property LinesInWindow: Integer read FLinesInWindow;
     property CharsInWindow: Integer read FCharsInWindow;
     property MaxScrollWidth: Integer read GetMaxScrollWidth;
