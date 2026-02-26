@@ -379,9 +379,41 @@ object FMXFeaturesForm: TFMXFeaturesForm
         Text = 'Enable Spell Check'
         OnChange = ChkSpellCheckChange
       end
-      object BtnCheckFile: TButton
+      object LabelProvider: TLabel
         Position.X = 8.000000000000000000
         Position.Y = 878.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Provider:'
+      end
+      object ComboProvider: TComboBox
+        Position.X = 8.000000000000000000
+        Position.Y = 898.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        OnChange = ComboProviderChange
+      end
+      object LabelLanguage: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 926.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Language:'
+      end
+      object ComboLanguage: TComboBox
+        Position.X = 8.000000000000000000
+        Position.Y = 946.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        OnChange = ComboLanguageChange
+      end
+      object BtnCheckFile: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 974.000000000000000000
         Size.Width = 260.000000000000000000
         Size.Height = 28.000000000000000000
         Size.PlatformDefault = False
@@ -390,7 +422,7 @@ object FMXFeaturesForm: TFMXFeaturesForm
       end
       object LabelSpellStatus: TLabel
         Position.X = 8.000000000000000000
-        Position.Y = 910.000000000000000000
+        Position.Y = 1006.000000000000000000
         Size.Width = 260.000000000000000000
         Size.Height = 18.000000000000000000
         Size.PlatformDefault = False
@@ -398,7 +430,7 @@ object FMXFeaturesForm: TFMXFeaturesForm
       end
       object LabelPrintCaption: TLabel
         Position.X = 8.000000000000000000
-        Position.Y = 946.000000000000000000
+        Position.Y = 1042.000000000000000000
         Size.Width = 260.000000000000000000
         Size.Height = 18.000000000000000000
         Size.PlatformDefault = False
@@ -408,7 +440,7 @@ object FMXFeaturesForm: TFMXFeaturesForm
       end
       object BtnPrint: TButton
         Position.X = 8.000000000000000000
-        Position.Y = 968.000000000000000000
+        Position.Y = 1064.000000000000000000
         Size.Width = 260.000000000000000000
         Size.Height = 28.000000000000000000
         Size.PlatformDefault = False

@@ -67,6 +67,10 @@ type
     BtnCompletion: TButton;
     LabelSpellCheckCaption: TLabel;
     ChkSpellCheck: TCheckBox;
+    LabelProvider: TLabel;
+    ComboProvider: TComboBox;
+    LabelLanguage: TLabel;
+    ComboLanguage: TComboBox;
     BtnCheckFile: TButton;
     LabelSpellStatus: TLabel;
     LabelPrintCaption: TLabel;
@@ -97,6 +101,8 @@ type
     procedure BtnReplaceClick(Sender: TObject);
     procedure BtnCompletionClick(Sender: TObject);
     procedure ChkSpellCheckChange(Sender: TObject);
+    procedure ComboProviderChange(Sender: TObject);
+    procedure ComboLanguageChange(Sender: TObject);
     procedure BtnCheckFileClick(Sender: TObject);
     procedure BtnPrintClick(Sender: TObject);
   private
@@ -110,7 +116,9 @@ type
     FCompletion: TSynFMXCompletionProposal;
     FSpellCheck: TSynFMXSpellCheck;
     FPrintComponent: TSynFMXEditPrint;
+    FDictionariesPath: string;
     procedure CreateHighlighters;
+    procedure PopulateLanguageCombo;
     procedure EditorChange(Sender: TObject);
     procedure EditorStatusChange(Sender: TObject);
     procedure UpdateStatusLabels;
@@ -126,6 +134,7 @@ implementation
 {$R *.fmx}
 
 uses
+  System.IOUtils,
   SynEditSearch,
   SynEditRegexSearch,
   SynHighlighterDelphi,
@@ -193,9 +202,16 @@ begin
   FSpellCheck := TSynFMXSpellCheck.Create(Self);
   FSpellCheck.Editor := FEditor;
   FSpellCheck.OnCheckComplete := SpellCheckComplete;
+
+  // Provider / Language combos
+  FDictionariesPath := ExtractFilePath(ParamStr(0)) + '..\..\..\..\..\Dictionaries';
+  ComboProvider.Items.Add('Hunspell (Built-in)');
   {$IFDEF MSWINDOWS}
-  FSpellCheck.Provider := TSynWindowsSpellProvider.Create('en-US');
+  ComboProvider.Items.Add('Windows');
   {$ENDIF}
+  ComboProvider.ItemIndex := 0;
+  PopulateLanguageCombo;
+  ComboLanguageChange(nil);
 
   // Printing
   FPrintComponent := TSynFMXEditPrint.Create(Self);
@@ -662,6 +678,100 @@ begin
 end;
 
 // --- Spell Check ---
+
+procedure TFMXFeaturesForm.PopulateLanguageCombo;
+var
+  Files: TStringDynArray;
+  FileName, Stem: string;
+  {$IFDEF MSWINDOWS}
+  Langs: TArray<string>;
+  Lang: string;
+  {$ENDIF}
+  I: Integer;
+begin
+  FUpdatingControls := True;
+  try
+    ComboLanguage.Items.Clear;
+
+    if ComboProvider.ItemIndex = 0 then
+    begin
+      // Hunspell — scan for .dic files
+      if TDirectory.Exists(FDictionariesPath) then
+      begin
+        Files := TDirectory.GetFiles(FDictionariesPath, '*.dic');
+        for FileName in Files do
+        begin
+          Stem := TPath.GetFileNameWithoutExtension(FileName);
+          ComboLanguage.Items.Add(Stem);
+        end;
+      end;
+      // Auto-select en_US
+      for I := 0 to ComboLanguage.Items.Count - 1 do
+        if ComboLanguage.Items[I] = 'en_US' then
+        begin
+          ComboLanguage.ItemIndex := I;
+          Break;
+        end;
+    end
+    {$IFDEF MSWINDOWS}
+    else
+    begin
+      // Windows spell checker
+      Langs := TSynWindowsSpellProvider.SupportedLanguages;
+      for Lang in Langs do
+        ComboLanguage.Items.Add(Lang);
+      // Auto-select en-US
+      for I := 0 to ComboLanguage.Items.Count - 1 do
+        if ComboLanguage.Items[I] = 'en-US' then
+        begin
+          ComboLanguage.ItemIndex := I;
+          Break;
+        end;
+    end;
+    {$ENDIF}
+
+    // Fallback: select first if nothing matched
+    if (ComboLanguage.ItemIndex < 0) and (ComboLanguage.Items.Count > 0) then
+      ComboLanguage.ItemIndex := 0;
+  finally
+    FUpdatingControls := False;
+  end;
+end;
+
+procedure TFMXFeaturesForm.ComboProviderChange(Sender: TObject);
+begin
+  if FUpdatingControls then Exit;
+  PopulateLanguageCombo;
+  ComboLanguageChange(nil);
+  LogEvent('Provider: ' + ComboProvider.Items[ComboProvider.ItemIndex]);
+end;
+
+procedure TFMXFeaturesForm.ComboLanguageChange(Sender: TObject);
+var
+  Language: string;
+begin
+  if FUpdatingControls then Exit;
+  if ComboLanguage.ItemIndex < 0 then Exit;
+
+  Language := ComboLanguage.Items[ComboLanguage.ItemIndex];
+
+  if ComboProvider.ItemIndex = 0 then
+    FSpellCheck.Provider := TSynHunspellProvider.Create(FDictionariesPath, Language)
+  {$IFDEF MSWINDOWS}
+  else
+    FSpellCheck.Provider := TSynWindowsSpellProvider.Create(Language)
+  {$ENDIF}
+  ;
+
+  LogEvent('Language: ' + Language);
+
+  // Re-check if spell check is enabled
+  if FSpellCheck.Enabled then
+  begin
+    FSpellCheck.CheckFile;
+    LogEvent(Format('Spell check: %d error(s) found', [FSpellCheck.Errors.Count]));
+  end;
+end;
 
 procedure TFMXFeaturesForm.ChkSpellCheckChange(Sender: TObject);
 begin
