@@ -29,9 +29,16 @@ uses
   SynEditMiscProcs,
   FMX.SynEdit;
 
-{$REGION 'Spell Error Record'}
+{$REGION 'Spell Check Token Types'}
 
 type
+  TSynSpellCheckToken = (sctComment, sctString, sctIdentifier);
+  TSynSpellCheckTokens = set of TSynSpellCheckToken;
+
+{$ENDREGION 'Spell Check Token Types'}
+
+{$REGION 'Spell Error Record'}
+
   TSynSpellError = record
     Line: Integer;       // 1-based line
     StartChar: Integer;  // 1-based char
@@ -299,6 +306,7 @@ type
     FUnderlineColor: TAlphaColor;
     FPaintPlugin: TSynFMXSpellPaintPlugin;
     FOnCheckComplete: TNotifyEvent;
+    FCheckTokens: TSynSpellCheckTokens;
     procedure SetEditor(Value: TComponent);
     procedure SetLanguage(const Value: string);
     procedure SetEnabled(Value: Boolean);
@@ -309,6 +317,7 @@ type
     function GetEditorBlockEnd: TBufferCoord;
     procedure DoCheckText(const AText: string; ALine: Integer;
       AStartOffset: Integer = 0);
+    procedure DoCheckLine(ALine: Integer);
     procedure InvalidateEditor;
   protected
     procedure Notification(AComponent: TComponent;
@@ -329,6 +338,8 @@ type
     property Editor: TComponent read FEditor write SetEditor;
     property Language: string read FLanguage write SetLanguage;
     property Enabled: Boolean read FEnabled write SetEnabled default True;
+    property CheckTokens: TSynSpellCheckTokens read FCheckTokens
+      write FCheckTokens default [sctComment, sctString, sctIdentifier];
     property OnCheckComplete: TNotifyEvent read FOnCheckComplete
       write FOnCheckComplete;
   end;
@@ -343,7 +354,13 @@ uses
   {$ENDIF}
   System.Rtti,
   System.Character,
-  System.IOUtils;
+  System.IOUtils,
+  SynEditHighlighter,
+  SynEditTextBuffer;
+
+type
+  TSynHighlighterAccess = class(TSynCustomHighlighter);
+
 
 { ---------------------------------------------------------------------------- }
 { Local helper: identify word break characters (matching FMX.SynEdit logic)    }
@@ -1418,6 +1435,7 @@ begin
   FEnabled := True;
   FLanguage := 'en-US';
   FUnderlineColor := TAlphaColors.Red;
+  FCheckTokens := [sctComment, sctString, sctIdentifier];
   FProvider := nil;
   FEditor := nil;
 end;
@@ -1568,6 +1586,71 @@ begin
   end;
 end;
 
+procedure TSynFMXSpellCheck.DoCheckLine(ALine: Integer);
+var
+  Ed: TCustomFMXSynEdit;
+  HL: TSynCustomHighlighter;
+  Attr, DefComment, DefString, DefIdent: TSynHighlighterAttributes;
+  LineText, Token: string;
+  TokenPos: Integer;
+  ShouldCheck: Boolean;
+begin
+  LineText := GetLineText(ALine);
+  if LineText = '' then
+    Exit;
+
+  // If the editor has a highlighter and we have token filters, use them
+  if (FEditor is TCustomFMXSynEdit) then
+  begin
+    Ed := TCustomFMXSynEdit(FEditor);
+    HL := Ed.Highlighter;
+    if Assigned(HL) and (FCheckTokens <> []) then
+    begin
+      // Cache default attributes for comparison
+      DefComment := TSynHighlighterAccess(HL).GetDefaultAttribute(SYN_ATTR_COMMENT);
+      DefString := TSynHighlighterAccess(HL).GetDefaultAttribute(SYN_ATTR_STRING);
+      DefIdent := TSynHighlighterAccess(HL).GetDefaultAttribute(SYN_ATTR_IDENTIFIER);
+
+      // Set up highlighter range from previous line
+      if ALine <= 1 then
+        HL.ResetRange
+      else
+        HL.SetRange(Ed.Lines.Ranges[ALine - 2]); // 0-based index
+
+      HL.SetLine(LineText, ALine - 1);
+
+      while not HL.GetEol do
+      begin
+        Attr := HL.GetTokenAttribute;
+        ShouldCheck := False;
+
+        if Assigned(Attr) then
+        begin
+          if (sctComment in FCheckTokens) and (Attr = DefComment) then
+            ShouldCheck := True
+          else if (sctString in FCheckTokens) and (Attr = DefString) then
+            ShouldCheck := True
+          else if (sctIdentifier in FCheckTokens) and (Attr = DefIdent) then
+            ShouldCheck := True;
+        end;
+
+        if ShouldCheck then
+        begin
+          Token := HL.GetToken;
+          TokenPos := HL.GetTokenPos; // 0-based
+          DoCheckText(Token, ALine, TokenPos);
+        end;
+
+        HL.Next;
+      end;
+      Exit;
+    end;
+  end;
+
+  // Fallback: no highlighter — check entire line
+  DoCheckText(LineText, ALine);
+end;
+
 procedure TSynFMXSpellCheck.InvalidateEditor;
 begin
   if FEditor is TCustomFMXSynEdit then
@@ -1576,7 +1659,6 @@ end;
 
 procedure TSynFMXSpellCheck.CheckLine(ALine: Integer);
 var
-  LineText: string;
   I: Integer;
 begin
   if not FEnabled or not Assigned(FEditor) or not Assigned(FProvider) then
@@ -1587,8 +1669,7 @@ begin
     if FErrors[I].Line = ALine then
       FErrors.Delete(I);
 
-  LineText := GetLineText(ALine);
-  DoCheckText(LineText, ALine);
+  DoCheckLine(ALine);
 
   InvalidateEditor;
 
@@ -1607,7 +1688,7 @@ begin
 
   LC := GetLineCount;
   for I := 1 to LC do
-    DoCheckText(GetLineText(I), I);
+    DoCheckLine(I);
 
   InvalidateEditor;
 
@@ -1618,8 +1699,8 @@ end;
 procedure TSynFMXSpellCheck.CheckSelection;
 var
   BB, BE: TBufferCoord;
-  Line: Integer;
-  LineText: string;
+  Line, I: Integer;
+  Err: TSynSpellError;
 begin
   if not FEnabled or not Assigned(FEditor) or not Assigned(FProvider) then
     Exit;
@@ -1635,36 +1716,18 @@ begin
     Exit;
   end;
 
-  if BB.Line = BE.Line then
+  // Check each line in the selection using highlighter-aware logic
+  for Line := BB.Line to BE.Line do
+    DoCheckLine(Line);
+
+  // Remove errors that fall outside the selection bounds
+  for I := FErrors.Count - 1 downto 0 do
   begin
-    // Single-line selection
-    LineText := GetLineText(BB.Line);
-    if (BB.Char >= 1) and (BE.Char >= 1) and (BB.Char <= Length(LineText) + 1) then
-    begin
-      LineText := Copy(LineText, BB.Char, BE.Char - BB.Char);
-      DoCheckText(LineText, BB.Line, BB.Char - 1);
-    end;
-  end
-  else
-  begin
-    // Multi-line selection
-    // First line: from BB.Char to end of line
-    LineText := GetLineText(BB.Line);
-    if BB.Char >= 1 then
-    begin
-      LineText := Copy(LineText, BB.Char, MaxInt);
-      DoCheckText(LineText, BB.Line, BB.Char - 1);
-    end;
-    // Middle lines: full lines
-    for Line := BB.Line + 1 to BE.Line - 1 do
-      DoCheckText(GetLineText(Line), Line);
-    // Last line: from start to BE.Char
-    if BE.Char > 1 then
-    begin
-      LineText := GetLineText(BE.Line);
-      LineText := Copy(LineText, 1, BE.Char - 1);
-      DoCheckText(LineText, BE.Line);
-    end;
+    Err := FErrors[I];
+    if (Err.Line = BB.Line) and (Err.StartChar < BB.Char) then
+      FErrors.Delete(I)
+    else if (Err.Line = BE.Line) and (Err.EndChar > BE.Char) then
+      FErrors.Delete(I);
   end;
 
   InvalidateEditor;

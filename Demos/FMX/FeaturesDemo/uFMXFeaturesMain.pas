@@ -198,9 +198,10 @@ begin
      'nil', 'inherited', 'override', 'virtual', 'abstract', 'property',
      'private', 'protected', 'public', 'published']);
 
-  // Spell check
+  // Spell check (disabled by default — matches unchecked ChkSpellCheck)
   FSpellCheck := TSynFMXSpellCheck.Create(Self);
   FSpellCheck.Editor := FEditor;
+  FSpellCheck.Enabled := False;
   FSpellCheck.OnCheckComplete := SpellCheckComplete;
 
   // Provider / Language combos
