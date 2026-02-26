@@ -744,6 +744,11 @@ var
   LineR: TRectF;
   Token: string;
   SelBC1, SelBC2: TBufferCoord;
+  HasTabs: Boolean;
+  ColMap: TArray<Integer>; // maps raw char index (0-based) to expanded column
+  J, ExpandedCol: Integer;
+  RawTokenPos, RawTokenLen: Integer;
+  ExpandedTokenPos, ExpandedTokenLen: Integer;
 begin
   Renderer := TSynFMXRenderer(FRenderer);
 
@@ -773,9 +778,28 @@ begin
 
     if Line > FLines.Count then Continue;
     SLine := FLines[Line - 1];
+    HasTabs := Pos(#9, SLine) > 0;
     SExpanded := ExpandTabs(SLine, FTabWidth);
 
-    // Calculate selection range for this line
+    // Build raw-to-expanded column map for lines with tabs
+    if HasTabs then
+    begin
+      SetLength(ColMap, Length(SLine) + 1); // index 0..Length(SLine)
+      ExpandedCol := 0;
+      for J := 0 to Length(SLine) - 1 do
+      begin
+        ColMap[J] := ExpandedCol;
+        if SLine[J + 1] = #9 then
+        begin
+          repeat Inc(ExpandedCol) until (ExpandedCol mod FTabWidth) = 0;
+        end
+        else
+          Inc(ExpandedCol);
+      end;
+      ColMap[Length(SLine)] := ExpandedCol; // past-end sentinel
+    end;
+
+    // Calculate selection range for this line (in expanded columns)
     SelStart := 0;
     SelEnd := 0;
     if (SelBC1 <> SelBC2) then
@@ -788,18 +812,32 @@ begin
       end
       else if (Line = SelBC1.Line) and (Line = SelBC2.Line) then
       begin
-        SelStart := SelBC1.Char;
-        SelEnd := SelBC2.Char;
+        if HasTabs then
+        begin
+          SelStart := ColMap[Min(SelBC1.Char - 1, Length(SLine))] + 1;
+          SelEnd := ColMap[Min(SelBC2.Char - 1, Length(SLine))] + 1;
+        end
+        else
+        begin
+          SelStart := SelBC1.Char;
+          SelEnd := SelBC2.Char;
+        end;
       end
       else if Line = SelBC1.Line then
       begin
-        SelStart := SelBC1.Char;
+        if HasTabs then
+          SelStart := ColMap[Min(SelBC1.Char - 1, Length(SLine))] + 1
+        else
+          SelStart := SelBC1.Char;
         SelEnd := Length(SExpanded) + 1;
       end
       else if Line = SelBC2.Line then
       begin
         SelStart := 1;
-        SelEnd := SelBC2.Char;
+        if HasTabs then
+          SelEnd := ColMap[Min(SelBC2.Char - 1, Length(SLine))] + 1
+        else
+          SelEnd := SelBC2.Char;
       end;
     end;
 
@@ -829,16 +867,29 @@ begin
 
       while not FHighlighter.GetEol do
       begin
-        TokenPos := FHighlighter.GetTokenPos; // 0-based
+        RawTokenPos := FHighlighter.GetTokenPos; // 0-based raw
         Token := FHighlighter.GetToken;
+        RawTokenLen := Length(Token);
         Attr := FHighlighter.GetTokenAttribute;
 
-        // Expand tabs in token
-        if Pos(#9, Token) > 0 then
-          Token := ExpandTabs(Token, FTabWidth);
+        // Convert raw positions to expanded visual columns
+        if HasTabs then
+        begin
+          ExpandedTokenPos := ColMap[RawTokenPos];
+          ExpandedTokenLen := ColMap[Min(RawTokenPos + RawTokenLen, Length(SLine))]
+            - ExpandedTokenPos;
+          // Replace token text with expanded version for rendering
+          Token := Copy(SExpanded, ExpandedTokenPos + 1, ExpandedTokenLen);
+        end
+        else
+        begin
+          ExpandedTokenPos := RawTokenPos;
+          ExpandedTokenLen := RawTokenLen;
+        end;
+        TokenPos := ExpandedTokenPos; // now in visual columns
 
         // Skip tokens entirely before visible area
-        if TokenPos + Length(Token) < FLeftChar - 1 then
+        if TokenPos + ExpandedTokenLen < FLeftChar - 1 then
         begin
           FHighlighter.Next;
           Continue;
@@ -876,7 +927,7 @@ begin
 
         if (Token <> '') and (X < Width) then
         begin
-          var TokStart := TokenPos + 1; // 1-based
+          var TokStart := TokenPos + 1; // 1-based expanded
           var TokLen := Length(Token);
 
           if (SelStart > 0) and (SelEnd > SelStart) and
