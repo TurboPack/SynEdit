@@ -45,9 +45,17 @@ type
     fMouseDownChain: TMethodList;
     fMouseUpChain: TMethodList;
     fMouseCursorChain: TMethodList;
+    fInKeyDown: Boolean;
+    fInKeyUp: Boolean;
+    fInKeyPress: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
+    procedure ExecuteKeyDown(Sender: TObject; var Key: Word;
+      var KeyChar: WideChar; Shift: TShiftState);
+    procedure ExecuteKeyUp(Sender: TObject; var Key: Word;
+      var KeyChar: WideChar; Shift: TShiftState);
+    procedure ExecuteKeyPress(Sender: TObject; var Key: Char);
     procedure AddKeyDownHandler(aHandler: TKeyEvent);
     procedure RemoveKeyDownHandler(aHandler: TKeyEvent);
     procedure AddKeyUpHandler(aHandler: TKeyEvent);
@@ -134,6 +142,65 @@ begin
   fMouseUpChain.Free;
   fMouseCursorChain.Free;
   inherited;
+end;
+
+procedure TSynEditKbdHandler.ExecuteKeyDown(Sender: TObject; var Key: Word;
+  var KeyChar: WideChar; Shift: TShiftState);
+var
+  idx: Integer;
+begin
+  if fInKeyDown then
+    Exit;
+  fInKeyDown := True;
+  try
+    for idx := fKeyDownChain.Count - 1 downto 0 do
+    begin
+      TKeyEvent(fKeyDownChain[idx])(Sender, Key, KeyChar, Shift);
+      if (Key = 0) and (KeyChar = #0) then
+        Exit;
+    end;
+  finally
+    fInKeyDown := False;
+  end;
+end;
+
+procedure TSynEditKbdHandler.ExecuteKeyUp(Sender: TObject; var Key: Word;
+  var KeyChar: WideChar; Shift: TShiftState);
+var
+  idx: Integer;
+begin
+  if fInKeyUp then
+    Exit;
+  fInKeyUp := True;
+  try
+    for idx := fKeyUpChain.Count - 1 downto 0 do
+    begin
+      TKeyEvent(fKeyUpChain[idx])(Sender, Key, KeyChar, Shift);
+      if (Key = 0) and (KeyChar = #0) then
+        Exit;
+    end;
+  finally
+    fInKeyUp := False;
+  end;
+end;
+
+procedure TSynEditKbdHandler.ExecuteKeyPress(Sender: TObject; var Key: Char);
+var
+  idx: Integer;
+begin
+  if fInKeyPress then
+    Exit;
+  fInKeyPress := True;
+  try
+    for idx := fKeyPressChain.Count - 1 downto 0 do
+    begin
+      TKeyPressEvent(fKeyPressChain[idx])(Sender, Key);
+      if Key = #0 then
+        Exit;
+    end;
+  finally
+    fInKeyPress := False;
+  end;
 end;
 
 procedure TSynEditKbdHandler.AddKeyDownHandler(aHandler: TKeyEvent);

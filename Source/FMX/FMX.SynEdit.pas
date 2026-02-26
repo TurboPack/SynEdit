@@ -35,6 +35,7 @@ uses
   SynEditTextBuffer,
   SynEditMiscProcs,
   SynEditCodeFolding,
+  FMX.SynEditKbdHandler,
   FMX.SynEditMiscClasses;
 
 type
@@ -96,6 +97,8 @@ type
     FSearchEngine: TSynEditSearchCustom;
     FOnReplaceText: TReplaceTextEvent;
     FOnSearchNotFound: TNotifyEvent;
+    // Keyboard handler chain
+    FKbdHandler: TSynEditKbdHandler;
     // Plugins
     FPlugins: TList;
     // Private methods
@@ -225,6 +228,9 @@ type
     // Plugin management
     procedure RegisterPlugin(APlugin: TSynFMXEditPlugin);
     procedure UnregisterPlugin(APlugin: TSynFMXEditPlugin);
+    // Keyboard handler chain
+    procedure AddKeyDownHandler(aHandler: TKeyEvent);
+    procedure RemoveKeyDownHandler(aHandler: TKeyEvent);
     property CodeFolding: TSynCodeFolding read FCodeFolding write FCodeFolding;
     property UseCodeFolding: Boolean read FUseCodeFolding write SetUseCodeFolding;
     property AllFoldRanges: TSynFoldRanges read FAllFoldRanges;
@@ -444,6 +450,9 @@ begin
   FCodeFolding.OnChange := OnCodeFoldingChange;
   FAllFoldRanges := TSynFoldRanges.Create;
 
+  // Keyboard handler chain
+  FKbdHandler := TSynEditKbdHandler.Create;
+
   // Plugins
   FPlugins := TList.Create;
 
@@ -453,6 +462,7 @@ end;
 destructor TCustomFMXSynEdit.Destroy;
 begin
   FPlugins.Free;
+  FKbdHandler.Free;
   FCodeFolding.Free;
   FAllFoldRanges.Free;
   FCaretTimer.Free;
@@ -1113,6 +1123,11 @@ var
   Cmd: TSynEditorCommand;
 begin
   inherited;
+
+  // Dispatch to keyboard handler chain (plugins, completion proposal, etc.)
+  FKbdHandler.ExecuteKeyDown(Self, Key, KeyChar, Shift);
+  if (Key = 0) and (KeyChar = #0) then
+    Exit;
 
   // Map key to command
   Cmd := ecNone;
@@ -2824,6 +2839,16 @@ end;
 procedure TCustomFMXSynEdit.UnregisterPlugin(APlugin: TSynFMXEditPlugin);
 begin
   FPlugins.Remove(APlugin);
+end;
+
+procedure TCustomFMXSynEdit.AddKeyDownHandler(aHandler: TKeyEvent);
+begin
+  FKbdHandler.AddKeyDownHandler(aHandler);
+end;
+
+procedure TCustomFMXSynEdit.RemoveKeyDownHandler(aHandler: TKeyEvent);
+begin
+  FKbdHandler.RemoveKeyDownHandler(aHandler);
 end;
 
 procedure TCustomFMXSynEdit.DoPluginAfterPaint(Canvas: TCanvas;

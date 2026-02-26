@@ -569,7 +569,7 @@ begin
   begin
     FEditor.RemoveFreeNotification(Self);
     if FEditor is TCustomFMXSynEdit then
-      TCustomFMXSynEdit(FEditor).OnKeyDown := nil;
+      TCustomFMXSynEdit(FEditor).RemoveKeyDownHandler(EditorKeyDown);
   end;
 
   FEditor := Value;
@@ -581,7 +581,7 @@ begin
     if FEditor is TCustomFMXSynEdit then
     begin
       Ed := TCustomFMXSynEdit(FEditor);
-      Ed.OnKeyDown := EditorKeyDown;
+      Ed.AddKeyDownHandler(EditorKeyDown);
       if FForm <> nil then
       begin
         FForm.Parent := Ed;
