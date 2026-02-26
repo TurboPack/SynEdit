@@ -636,13 +636,14 @@ var
   LineText: string;
   YPos: Integer;
   LayoutRowCount: Integer;
-  Token: string;
-  TokenPos: Integer;
-  BkgColor, FontColor: TColor;
+  Attr: TSynHighlighterAttributes;
+  TokenColor: TAlphaColor;
+  TokenFont: TFont;
+  BoldFont, ItalicFont, BoldItalicFont: TFont;
+  BkgColor: TColor;
   AlphaBkg, AlphaFont: TAlphaColor;
-  TextRect: TRectF;
   Layout: TTextLayout;
-  iSelStart, iSelLen: Integer;
+  SaveState: TCanvasSaveState;
 begin
   DoPrintStatus(psNewPage, PageNumber, FAbort);
   if FAbort then Exit;
@@ -659,9 +660,7 @@ begin
     BkgColor := TColors.White;
 
   AlphaBkg := ColorToAlpha(BkgColor);
-
-  FontColor := TColors.Black;
-  AlphaFont := ColorToAlpha(FontColor);
+  AlphaFont := ColorToAlpha(TColors.Black);
 
   { Clear background }
   Canvas.Fill.Color := AlphaBkg;
@@ -688,36 +687,10 @@ begin
       { Measure wrapped row count }
       LayoutRowCount := MeasureLineRows(LineText);
 
-      { Syntax highlighting }
-      if FSynOK then
-      begin
-        FHighlighter.SetRange(FLines.Objects[I]);
-        FHighlighter.SetLine(LineText, I + 1);
-
-        { Render token by token }
-        while not FHighlighter.GetEol do
-        begin
-          Token := FHighlighter.GetToken;
-          TokenPos := FHighlighter.GetTokenPos;
-
-          if FSelectedOnly then
-          begin
-            if I = FBlockBegin.Line - 1 then
-              iSelStart := FBlockBegin.Char
-            else
-              iSelStart := 1;
-            if I = FBlockEnd.Line - 1 then
-              iSelLen := FBlockEnd.Char - iSelStart
-            else
-              iSelLen := MaxInt;
-            if TokenPos - iSelStart >= iSelLen then Break;
-          end;
-
-          FHighlighter.Next;
-        end;
-      end;
-
-      { Render the full line text using FMX text layout }
+      { Create text layout for rendering }
+      BoldFont := nil;
+      ItalicFont := nil;
+      BoldItalicFont := nil;
       Layout := TTextLayoutManager.DefaultTextLayout.Create;
       try
         Layout.BeginUpdate;
@@ -726,29 +699,92 @@ begin
           Layout.Text := LineText;
           Layout.MaxSize := TPointF.Create(FMaxWidth, FLineHeight * LayoutRowCount);
           Layout.WordWrap := FWrap;
+          Layout.Color := AlphaFont;
+
+          { Apply syntax highlighting color and style attributes }
+          if FHighlight and FSynOK then
+          begin
+            FHighlighter.SetRange(FLines.Objects[I]);
+            FHighlighter.SetLine(LineText, I + 1);
+
+            while not FHighlighter.GetEol do
+            begin
+              Attr := FHighlighter.GetTokenAttribute;
+              if Assigned(Attr) then
+              begin
+                if FColors then
+                begin
+                  TokenColor := ColorToAlpha(Attr.Foreground);
+                  if TokenColor = TAlphaColors.Null then
+                    TokenColor := AlphaFont;
+                end
+                else
+                  TokenColor := AlphaFont;
+
+                { Select font variant matching token style }
+                if ([fsBold, fsItalic] * Attr.Style = [fsBold, fsItalic]) then
+                begin
+                  if BoldItalicFont = nil then
+                  begin
+                    BoldItalicFont := TFont.Create;
+                    BoldItalicFont.Assign(FFont);
+                    BoldItalicFont.Style := FFont.Style +
+                      [TFontStyle.fsBold, TFontStyle.fsItalic];
+                  end;
+                  TokenFont := BoldItalicFont;
+                end
+                else if fsBold in Attr.Style then
+                begin
+                  if BoldFont = nil then
+                  begin
+                    BoldFont := TFont.Create;
+                    BoldFont.Assign(FFont);
+                    BoldFont.Style := FFont.Style + [TFontStyle.fsBold];
+                  end;
+                  TokenFont := BoldFont;
+                end
+                else if fsItalic in Attr.Style then
+                begin
+                  if ItalicFont = nil then
+                  begin
+                    ItalicFont := TFont.Create;
+                    ItalicFont.Assign(FFont);
+                    ItalicFont.Style := FFont.Style + [TFontStyle.fsItalic];
+                  end;
+                  TokenFont := ItalicFont;
+                end
+                else
+                  TokenFont := FFont;
+
+                Layout.AddAttribute(
+                  TTextRange.Create(FHighlighter.GetTokenPos,
+                    Length(FHighlighter.GetToken)),
+                  TTextAttribute.Create(TokenFont, TokenColor));
+              end;
+              FHighlighter.Next;
+            end;
+          end;
         finally
           Layout.EndUpdate;
         end;
+
+        { Position and render the layout }
+        Layout.TopLeft := TPointF.Create(FMargins.PLeft, YPos);
 
         { Handle page boundary clipping for wrapped lines }
         if (I = FPages[PageNumber - 1].FirstLine) and
            (FPages[PageNumber - 1].FirstRow > 1) then
         begin
-          { Line continues from previous page - clip top rows }
-          Canvas.IntersectClipRect(RectF(FMargins.PLeft, YPos,
-            FMargins.PRight, FMargins.PTop + FMaxRowCount * FLineHeight));
+          { Line continues from previous page - offset and clip top rows }
+          Layout.TopLeft := TPointF.Create(FMargins.PLeft,
+            YPos - Pred(FPages[PageNumber - 1].FirstRow) * FLineHeight);
+          SaveState := Canvas.SaveState;
           try
+            Canvas.IntersectClipRect(RectF(FMargins.PLeft, YPos,
+              FMargins.PRight, FMargins.PTop + FMaxRowCount * FLineHeight));
             Layout.RenderLayout(Canvas);
-            Canvas.FillText(
-              RectF(FMargins.PLeft,
-                YPos - Pred(FPages[PageNumber - 1].FirstRow) * FLineHeight,
-                FMargins.PRight,
-                YPos + LayoutRowCount * FLineHeight),
-              LineText, False, 1.0, [],
-              TTextAlign.Leading, TTextAlign.Leading);
           finally
-            { FMX canvas clip rect is restored by SaveState/RestoreState
-              but for simplicity we let the canvas manage it }
+            Canvas.RestoreState(SaveState);
           end;
           LayoutRowCount := LayoutRowCount - FPages[PageNumber - 1].FirstRow + 1;
         end
@@ -756,25 +792,25 @@ begin
                 (FPages[PageNumber - 1].LastRow < LayoutRowCount) then
         begin
           { Line continues onto next page - clip bottom rows }
-          TextRect := RectF(FMargins.PLeft, YPos, FMargins.PRight,
-            YPos + FPages[PageNumber - 1].LastRow * FLineHeight);
-          Canvas.Font.Assign(FFont);
-          Canvas.Fill.Color := AlphaFont;
-          Canvas.FillText(TextRect, LineText, FWrap, 1.0, [],
-            TTextAlign.Leading, TTextAlign.Leading);
+          SaveState := Canvas.SaveState;
+          try
+            Canvas.IntersectClipRect(RectF(FMargins.PLeft, YPos,
+              FMargins.PRight, YPos + FPages[PageNumber - 1].LastRow * FLineHeight));
+            Layout.RenderLayout(Canvas);
+          finally
+            Canvas.RestoreState(SaveState);
+          end;
         end
         else
         begin
           { Normal line - render fully }
-          TextRect := RectF(FMargins.PLeft, YPos, FMargins.PRight,
-            YPos + LayoutRowCount * FLineHeight);
-          Canvas.Font.Assign(FFont);
-          Canvas.Fill.Color := AlphaFont;
-          Canvas.FillText(TextRect, LineText, FWrap, 1.0, [],
-            TTextAlign.Leading, TTextAlign.Leading);
+          Layout.RenderLayout(Canvas);
         end;
       finally
         Layout.Free;
+        BoldFont.Free;
+        ItalicFont.Free;
+        BoldItalicFont.Free;
       end;
     end;
 
