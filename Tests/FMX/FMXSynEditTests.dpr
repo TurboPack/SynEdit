@@ -17,7 +17,8 @@ uses
   TestFMXSynEditSearch in 'TestFMXSynEditSearch.pas',
   TestFMXSynEditCodeFolding in 'TestFMXSynEditCodeFolding.pas',
   TestFMXSynEditHighlighter in 'TestFMXSynEditHighlighter.pas',
-  TestFMXSynEditCommands in 'TestFMXSynEditCommands.pas';
+  TestFMXSynEditCommands in 'TestFMXSynEditCommands.pas',
+  TestFMXSynSpellCheck in 'TestFMXSynSpellCheck.pas';
 
 var
   Runner: ITestRunner;
