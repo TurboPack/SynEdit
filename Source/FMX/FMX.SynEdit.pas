@@ -287,7 +287,8 @@ type
   protected
     FHandlers: TPlugInHandlers;
   public
-    constructor Create(AOwner: TCustomFMXSynEdit); virtual;
+    constructor Create(AOwner: TCustomFMXSynEdit;
+      AHandlers: TPlugInHandlers = []); virtual;
     destructor Destroy; override;
     procedure AfterPaint(Canvas: TCanvas; const AClip: TRectF;
       FirstLine, LastLine: Integer); virtual;
@@ -2784,14 +2785,20 @@ end;
 
 { TSynFMXEditPlugin }
 
-constructor TSynFMXEditPlugin.Create(AOwner: TCustomFMXSynEdit);
+constructor TSynFMXEditPlugin.Create(AOwner: TCustomFMXSynEdit;
+  AHandlers: TPlugInHandlers);
 begin
   inherited Create;
   FOwner := AOwner;
+  FHandlers := AHandlers;
+  if Assigned(AOwner) then
+    AOwner.RegisterPlugin(Self);
 end;
 
 destructor TSynFMXEditPlugin.Destroy;
 begin
+  if Assigned(FOwner) then
+    FOwner.UnregisterPlugin(Self);
   inherited;
 end;
 

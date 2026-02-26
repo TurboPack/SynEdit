@@ -1370,16 +1370,12 @@ end;
 constructor TSynFMXSpellPaintPlugin.Create(AOwner: TCustomFMXSynEdit;
   ASpellCheck: TSynFMXSpellCheck);
 begin
-  inherited Create(AOwner);
+  inherited Create(AOwner, [phAfterPaint]);
   FSpellCheck := ASpellCheck;
-  FHandlers := [phAfterPaint];
-  AOwner.RegisterPlugin(Self);
 end;
 
 destructor TSynFMXSpellPaintPlugin.Destroy;
 begin
-  if Assigned(Owner) then
-    Owner.UnregisterPlugin(Self);
   inherited;
 end;
 
