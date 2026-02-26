@@ -114,6 +114,7 @@ type
     function GetLineCount: Integer;
     function GetCanUndo: Boolean;
     function GetCanRedo: Boolean;
+    function GetModified: Boolean;
     function GetMaxScrollWidth: Integer;
     function GetCaretXY: TBufferCoord;
     procedure SetCaretXY(const Value: TBufferCoord);
@@ -236,7 +237,7 @@ type
     property BlockEnd: TBufferCoord read FBlockEnd;
     property TopLine: Integer read FTopLine write SetTopLine;
     property LeftChar: Integer read FLeftChar write SetLeftChar;
-    property Modified: Boolean read GetCanUndo; // simplified: modified = can undo
+    property Modified: Boolean read GetModified;
     property InsertMode: Boolean read FInsertMode write FInsertMode;
     property CanUndo: Boolean read GetCanUndo;
     property CanRedo: Boolean read GetCanRedo;
@@ -2225,6 +2226,11 @@ end;
 function TCustomFMXSynEdit.GetCanRedo: Boolean;
 begin
   Result := (FUndoRedo <> nil) and FUndoRedo.CanRedo;
+end;
+
+function TCustomFMXSynEdit.GetModified: Boolean;
+begin
+  Result := (FUndoRedo <> nil) and FUndoRedo.Modified;
 end;
 
 { --- Notification --- }
