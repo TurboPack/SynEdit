@@ -3,11 +3,14 @@ unit TestFMXSynEditBugFixes;
 interface
 
 uses
+  System.Classes,
+  System.UITypes,
+  FMX.Types,
   DUnitX.TestFramework,
   FMX.SynEdit;
 
 type
-  { Tests for the 6 blocking bugs identified in the FMX port review }
+  { Tests for blocking bugs identified in the FMX port review }
 
   [TestFixture]
   TTestPluginRegistration = class
@@ -83,17 +86,59 @@ type
     procedure TestExpandTabsMidColumn;
   end;
 
+  [TestFixture]
+  TTestKeyboardHandlerChain = class
+  private
+    FEditor: TFMXSynEdit;
+    FHandlerCalled: Boolean;
+    FHandlerKey: Word;
+    FUserHandlerCalled: Boolean;
+    procedure KeyDownHandler(Sender: TObject; var Key: Word;
+      var KeyChar: WideChar; Shift: TShiftState);
+    procedure ConsumingKeyDownHandler(Sender: TObject; var Key: Word;
+      var KeyChar: WideChar; Shift: TShiftState);
+    procedure UserOnKeyDown(Sender: TObject; var Key: Word;
+      var KeyChar: WideChar; Shift: TShiftState);
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+    [Test]
+    procedure TestAddKeyDownHandlerIsCalled;
+    [Test]
+    procedure TestRemoveKeyDownHandler;
+    [Test]
+    procedure TestMultipleHandlersBothCalled;
+    [Test]
+    procedure TestConsumingHandlerStopsChain;
+    [Test]
+    procedure TestOnKeyDownPreservedWithHandler;
+  end;
+
 implementation
 
 uses
   System.Types,
   System.SysUtils,
-  System.Classes,
   FMX.Graphics,
-  FMX.Types,
   SynEditTypes,
   SynEditKeyCmds,
   SynEditTextBuffer;
+
+type
+  // Helper to access protected KeyDown for testing
+  TTestFMXSynEdit = class(TFMXSynEdit)
+  public
+    procedure DoKeyDown(var Key: Word; var KeyChar: WideChar;
+      Shift: TShiftState);
+  end;
+
+procedure TTestFMXSynEdit.DoKeyDown(var Key: Word; var KeyChar: WideChar;
+  Shift: TShiftState);
+begin
+  KeyDown(Key, KeyChar, Shift);
+end;
 
 { ---- Bug 1: Plugin auto-registration ---- }
 
@@ -385,10 +430,162 @@ begin
       [FEditor.MaxScrollWidth]));
 end;
 
+{ ---- Bug 7: Keyboard handler chain ---- }
+
+procedure TTestKeyboardHandlerChain.Setup;
+begin
+  FEditor := TTestFMXSynEdit.Create(nil);
+  FHandlerCalled := False;
+  FHandlerKey := 0;
+  FUserHandlerCalled := False;
+end;
+
+procedure TTestKeyboardHandlerChain.TearDown;
+begin
+  FEditor.Free;
+end;
+
+procedure TTestKeyboardHandlerChain.KeyDownHandler(Sender: TObject;
+  var Key: Word; var KeyChar: WideChar; Shift: TShiftState);
+begin
+  FHandlerCalled := True;
+  FHandlerKey := Key;
+end;
+
+procedure TTestKeyboardHandlerChain.ConsumingKeyDownHandler(Sender: TObject;
+  var Key: Word; var KeyChar: WideChar; Shift: TShiftState);
+begin
+  FHandlerCalled := True;
+  FHandlerKey := Key;
+  // Consume the key
+  Key := 0;
+  KeyChar := #0;
+end;
+
+procedure TTestKeyboardHandlerChain.UserOnKeyDown(Sender: TObject;
+  var Key: Word; var KeyChar: WideChar; Shift: TShiftState);
+begin
+  FUserHandlerCalled := True;
+end;
+
+procedure TTestKeyboardHandlerChain.TestAddKeyDownHandlerIsCalled;
+var
+  Key: Word;
+  KeyChar: WideChar;
+begin
+  FEditor.AddKeyDownHandler(KeyDownHandler);
+  try
+    // Simulate a key press through KeyDown
+    Key := vkReturn;
+    KeyChar := #0;
+    TTestFMXSynEdit(FEditor).DoKeyDown(Key, KeyChar, []);
+    Assert.IsTrue(FHandlerCalled,
+      'KeyDown handler should have been called');
+    Assert.AreEqual(Word(vkReturn), FHandlerKey,
+      'Handler should receive the correct key');
+  finally
+    FEditor.RemoveKeyDownHandler(KeyDownHandler);
+  end;
+end;
+
+procedure TTestKeyboardHandlerChain.TestRemoveKeyDownHandler;
+var
+  Key: Word;
+  KeyChar: WideChar;
+begin
+  FEditor.AddKeyDownHandler(KeyDownHandler);
+  FEditor.RemoveKeyDownHandler(KeyDownHandler);
+  Key := vkReturn;
+  KeyChar := #0;
+  TTestFMXSynEdit(FEditor).DoKeyDown(Key, KeyChar, []);
+  Assert.IsFalse(FHandlerCalled,
+    'Removed handler should not be called');
+end;
+
+procedure TTestKeyboardHandlerChain.TestMultipleHandlersBothCalled;
+var
+  Key: Word;
+  KeyChar: WideChar;
+begin
+  // Register the same non-consuming handler twice to verify both fire
+  FEditor.AddKeyDownHandler(KeyDownHandler);
+  FEditor.AddKeyDownHandler(KeyDownHandler);
+  try
+    FHandlerCalled := False;
+    Key := vkReturn;
+    KeyChar := #0;
+    TTestFMXSynEdit(FEditor).DoKeyDown(Key, KeyChar, []);
+    Assert.IsTrue(FHandlerCalled,
+      'Handler should be called when multiple handlers registered');
+  finally
+    FEditor.RemoveKeyDownHandler(KeyDownHandler);
+    FEditor.RemoveKeyDownHandler(KeyDownHandler);
+  end;
+end;
+
+procedure TTestKeyboardHandlerChain.TestConsumingHandlerStopsChain;
+var
+  Key: Word;
+  KeyChar: WideChar;
+begin
+  // Add a non-consuming handler first (it runs last since chain is LIFO)
+  FEditor.AddKeyDownHandler(KeyDownHandler);
+  // Add a consuming handler second (it runs first in LIFO order)
+  FEditor.AddKeyDownHandler(ConsumingKeyDownHandler);
+  try
+    FHandlerCalled := False;
+    Key := vkReturn;
+    KeyChar := #0;
+    TTestFMXSynEdit(FEditor).DoKeyDown(Key, KeyChar, []);
+    // The consuming handler should have been called
+    Assert.IsTrue(FHandlerCalled,
+      'Consuming handler should have been called');
+    // Key should be consumed (set to 0)
+    Assert.AreEqual(Word(0), Key,
+      'Key should be consumed by handler');
+  finally
+    FEditor.RemoveKeyDownHandler(ConsumingKeyDownHandler);
+    FEditor.RemoveKeyDownHandler(KeyDownHandler);
+  end;
+end;
+
+procedure TTestKeyboardHandlerChain.TestOnKeyDownPreservedWithHandler;
+var
+  Key: Word;
+  KeyChar: WideChar;
+begin
+  // This is the key test: assigning OnKeyDown and adding a handler
+  // should NOT destroy the OnKeyDown handler
+  FEditor.OnKeyDown := UserOnKeyDown;
+  FEditor.AddKeyDownHandler(KeyDownHandler);
+  try
+    Assert.IsTrue(Assigned(FEditor.OnKeyDown),
+      'OnKeyDown should still be assigned after AddKeyDownHandler');
+
+    // Simulate a key press
+    Key := vkReturn;
+    KeyChar := #0;
+    TTestFMXSynEdit(FEditor).DoKeyDown(Key, KeyChar, []);
+
+    Assert.IsTrue(FHandlerCalled,
+      'Chain handler should have been called');
+    // The OnKeyDown fires via inherited KeyDown, which is called first
+    Assert.IsTrue(FUserHandlerCalled,
+      'User OnKeyDown handler should still be called');
+  finally
+    FEditor.RemoveKeyDownHandler(KeyDownHandler);
+  end;
+
+  // After removing chain handler, OnKeyDown should still be intact
+  Assert.IsTrue(Assigned(FEditor.OnKeyDown),
+    'OnKeyDown should still be assigned after RemoveKeyDownHandler');
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestPluginRegistration);
   TDUnitX.RegisterTestFixture(TTestModifiedProperty);
   TDUnitX.RegisterTestFixture(TTestTextBufferNilWidthFunc);
   TDUnitX.RegisterTestFixture(TTestTabExpansion);
+  TDUnitX.RegisterTestFixture(TTestKeyboardHandlerChain);
 
 end.
