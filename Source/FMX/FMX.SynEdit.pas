@@ -243,6 +243,7 @@ type
     property Text: string read GetText write SetText;
     property SelText: string read GetSelText;
     property SelAvail: Boolean read GetSelAvail;
+    property CharWidth: Single read FCharWidth;
     property LineHeight: Single read FLineHeight;
     property LinesInWindow: Integer read FLinesInWindow;
     property CharsInWindow: Integer read FCharsInWindow;
@@ -283,6 +284,7 @@ type
   TSynFMXEditPlugin = class(TObject)
   private
     FOwner: TCustomFMXSynEdit;
+  protected
     FHandlers: TPlugInHandlers;
   public
     constructor Create(AOwner: TCustomFMXSynEdit); virtual;
