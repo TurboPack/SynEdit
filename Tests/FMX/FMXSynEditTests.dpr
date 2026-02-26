@@ -18,7 +18,8 @@ uses
   TestFMXSynEditCodeFolding in 'TestFMXSynEditCodeFolding.pas',
   TestFMXSynEditHighlighter in 'TestFMXSynEditHighlighter.pas',
   TestFMXSynEditCommands in 'TestFMXSynEditCommands.pas',
-  TestFMXSynSpellCheck in 'TestFMXSynSpellCheck.pas';
+  TestFMXSynSpellCheck in 'TestFMXSynSpellCheck.pas',
+  TestFMXSynEditBugFixes in 'TestFMXSynEditBugFixes.pas';
 
 var
   Runner: ITestRunner;

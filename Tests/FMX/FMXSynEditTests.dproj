@@ -80,6 +80,7 @@
         <DCCReference Include="TestFMXSynEditHighlighter.pas"/>
         <DCCReference Include="TestFMXSynEditCommands.pas"/>
         <DCCReference Include="TestFMXSynSpellCheck.pas"/>
+        <DCCReference Include="TestFMXSynEditBugFixes.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
