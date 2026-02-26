@@ -580,7 +580,7 @@ begin
   Result := 1;
   for I := 0 to FLines.Count - 1 do
   begin
-    Len := Length(FLines[I]);
+    Len := Length(ExpandTabs(FLines[I], FTabWidth));
     if Len > Result then
       Result := Len;
   end;
@@ -1056,8 +1056,8 @@ end;
 
 procedure TCustomFMXSynEdit.LinesChanged(Sender: TObject);
 begin
-  if FUseCodeFolding and FAllFoldRanges.StopScanning(FLines) then
-    UpdateGutterWidth;
+  if FUseCodeFolding then
+    FAllFoldRanges.StopScanning(FLines);
   UpdateGutterWidth;
   UpdateScrollBars;
   if FUpdateCount = 0 then
