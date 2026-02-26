@@ -384,7 +384,10 @@ begin
   begin
     if sfTextWidthUnknown in FList^[Index].FFlags then
     begin
-      Result := FTextWidthFunc(FList^[Index].FString);
+      if Assigned(FTextWidthFunc) then
+        Result := FTextWidthFunc(FList^[Index].FString)
+      else
+        Result := Length(FList^[Index].FString);
       FList^[Index].FTextWidth := Result;
       Exclude(FList^[Index].FFlags, sfTextWidthUnknown);
     end
@@ -411,7 +414,10 @@ begin
       PRec := @FList^[I];
       if sfTextWidthUnknown in PRec^.FFlags then
       begin
-        PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
+        if Assigned(FTextWidthFunc) then
+          PRec^.FTextWidth := FTextWidthFunc(PRec^.FString)
+        else
+          PRec^.FTextWidth := Length(PRec^.FString);
         Exclude(PRec^.FFlags, sfTextWidthUnknown);
       end;
       repeat
@@ -671,7 +677,10 @@ begin
       // Optimization:  We calculate text width here, thus
       // in most cases avoiding to recalc FMaxWidth the hard way
       OldWidth := FTextWidth;
-      FTextWidth := FTextWidthFunc(FString);
+      if Assigned(FTextWidthFunc) then
+        FTextWidth := FTextWidthFunc(FString)
+      else
+        FTextWidth := Length(FString);
       Exclude(FFlags, sfTextWidthUnknown);
       if (FMaxWidth = OldWidth) and (OldWidth > FTextWidth) then
         FMaxWidth := -1
