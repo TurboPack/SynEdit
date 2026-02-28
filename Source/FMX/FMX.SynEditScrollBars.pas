@@ -69,6 +69,7 @@ begin
   FVScrollBar.Orientation := TOrientation.Vertical;
   FVScrollBar.Align := TAlignLayout.Right;
   FVScrollBar.Width := 16;
+  FVScrollBar.Visible := False;
   FVScrollBar.SmallChange := 1;
   FVScrollBar.OnChange := VScrollChange;
 
@@ -77,6 +78,7 @@ begin
   FHScrollBar.Orientation := TOrientation.Horizontal;
   FHScrollBar.Align := TAlignLayout.Bottom;
   FHScrollBar.Height := 16;
+  FHScrollBar.Visible := False;
   FHScrollBar.SmallChange := 1;
   FHScrollBar.OnChange := HScrollChange;
 end;
@@ -118,8 +120,8 @@ begin
       Inc(MaxLines, VisLines - 1);
     MaxCols := FEditor.MaxScrollWidth;
 
-    ShowVert := MaxLines > VisLines;
-    ShowHorz := MaxCols > VisCols;
+    ShowVert := (VisLines > 0) and (MaxLines > VisLines);
+    ShowHorz := (VisCols > 0) and (MaxCols > VisCols);
 
     // Vertical
     FVScrollBar.Visible := ShowVert;

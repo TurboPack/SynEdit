@@ -499,6 +499,7 @@ procedure TCustomFMXSynEdit.RecalcSizes;
 var
   SB: ISynEditScrollBars;
   HScrollHeight, VScrollWidth: Single;
+  NewHScrollHeight, NewVScrollWidth: Single;
 begin
   if (Width <= 0) or (Height <= 0) then Exit;
   UpdateGutterWidth;
@@ -523,6 +524,19 @@ begin
   else
     FCharsInWindow := 1;
   UpdateScrollBars;
+  // Recalculate if scrollbar visibility changed after UpdateScrollBars
+  if (FScrollBars <> nil) and Supports(FScrollBars, ISynEditScrollBars, SB) then
+  begin
+    NewHScrollHeight := SB.GetVisibleHScrollBarHeight;
+    NewVScrollWidth := SB.GetVisibleVScrollBarWidth;
+    if (NewHScrollHeight <> HScrollHeight) or (NewVScrollWidth <> VScrollWidth) then
+    begin
+      if FLineHeight > 0 then
+        FLinesInWindow := Max(1, Trunc((Height - NewHScrollHeight) / FLineHeight));
+      if FCharWidth > 0 then
+        FCharsInWindow := Max(1, Trunc((Width - FGutterWidth - NewVScrollWidth) / FCharWidth));
+    end;
+  end;
 end;
 
 procedure TCustomFMXSynEdit.UpdateGutterWidth;
