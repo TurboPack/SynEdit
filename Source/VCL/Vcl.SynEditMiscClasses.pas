@@ -1891,12 +1891,23 @@ procedure TSynGutterBand.DoClick(Sender: TObject; Button: TMouseButton;
   X, Y, Row, Line: Integer);
 var
   SynEdit: TCustomSynEdit;
-  Index: Integer;
+  Index, I, BmkX, BmkY: Integer;
   rcFold: TRect;
 begin
-  if Visible and (FKind = gbkFold) then
+  SynEdit := TCustomSynEdit(Editor);
+
+  if Visible and (FKind = gbkMarks) then
   begin
-    SynEdit := TCustomSynEdit(Editor);
+    // Click on marks band clears bookmark on that line
+    for I := 0 to 9 do
+      if SynEdit.GetBookmark(I, BmkX, BmkY) and (BmkY = Line) then
+      begin
+        SynEdit.ClearBookmark(I);
+        Break;
+      end;
+  end
+  else if Visible and (FKind = gbkFold) then
+  begin
     if SynEdit.AllFoldRanges.FoldStartAtLine(Line, Index) then
     begin
       rcFold := FoldShapeRect(Row, Line);

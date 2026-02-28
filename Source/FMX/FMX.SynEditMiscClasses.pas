@@ -327,14 +327,29 @@ procedure TSynFMXGutterBand.DoClick(Button: TMouseButton; X, Y: Single;
   Row, Line: Integer);
 var
   Editor: TCustomFMXSynEdit;
-  Index: Integer;
+  Index, I, BmkX, BmkY: Integer;
 begin
   if Assigned(FOnClick) then
     FOnClick(Self, Button, X, Y, Row, Line);
 
-  if FKind = gbkFold then
+  Editor := TCustomFMXSynEdit(FGutter.Owner);
+
+  if FKind = gbkMarks then
   begin
-    Editor := TCustomFMXSynEdit(FGutter.Owner);
+    // Click on marks band clears bookmark on that line
+    for I := 0 to 9 do
+      if Editor.IsBookmarkSet(I) then
+      begin
+        Editor.GetBookmark(I, BmkX, BmkY);
+        if BmkY = Line then
+        begin
+          Editor.ClearBookmark(I);
+          Break;
+        end;
+      end;
+  end
+  else if FKind = gbkFold then
+  begin
     if Editor.UseCodeFolding and
       Editor.AllFoldRanges.FoldStartAtLine(Line, Index) then
     begin
