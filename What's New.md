@@ -67,7 +67,7 @@ Three FMX demos are included in `Demos/FMX/`:
 
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **288 tests**, 25 fixtures:
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **290 tests**, 25 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -79,10 +79,10 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | Highlighter | 5 | Assignment, free notification, switching |
 | Options | 10 | Default options, read-only, tab width, right edge |
 | Search | 9 | Case, whole-word, regex, replace, replace-all |
-| UndoRedo | 8 | Availability, restore, multiple undo/redo |
+| UndoRedo | 9 | Availability, restore, multiple undo/redo, redo caret |
 | SpellCheck | 20 | Hunspell provider, suffix/prefix rules, suggest |
 | WindowsSpellCheck | 11 | Windows spell-check COM provider |
-| SpellCheckComponent | 16 | TSynSpellCheck component integration |
+| SpellCheckComponent | 17 | TSynSpellCheck component integration, selection dedup |
 | BugFixes | 23 | Plugin registration, Modified, nil width, tabs, keyboard chain |
 | AutoIndentTabs | 4 | Tab preservation, mixed whitespace, disable option |
 | PixelToBufferCoord | 4 | Click mapping at/near char boundaries, gutter clamp |
