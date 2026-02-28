@@ -65,7 +65,26 @@ Three FMX demos are included in `Demos/FMX/`:
 
 ### Test Suite
 
-A DUnitX test suite (`Tests/FMX/FMXSynEditTests.dproj`) provides 80 tests across 9 fixtures: Buffer, Caret, CodeFolding, Commands, Content, Highlighter, Options, Search, and UndoRedo. Tests run headless without requiring a form or visual surface.
+A DUnitX test suite (`Tests/FMX/FMXSynEditTests.dproj`) provides **186 tests** across **16 fixtures** running headless without a form or visual surface. `FailsOnNoAsserts` is enabled and every test uses exact-value assertions.
+
+| Fixture | Tests | Coverage area |
+| :------ | ----: | :------------ |
+| Buffer | 11 | Line add/delete/insert, text property |
+| Caret | 9 | Positioning, SelectAll, GetTextRange |
+| CodeFolding | 7 | Fold detection, collapse/uncollapse, levels |
+| Commands | 12 | Char insert/delete, line break, tab, navigation |
+| Content | 8 | Text get/set, multi-line, stream round-trip |
+| Highlighter | 5 | Assignment, free notification, switching |
+| Options | 9 | Default options, read-only, tab width, right edge |
+| Search | 9 | Case, whole-word, regex, replace, replace-all |
+| UndoRedo | 8 | Availability, restore, multiple undo/redo |
+| SpellCheck | 21 | Hunspell provider, suffix/prefix rules, suggest |
+| BugFixes | 23 | Plugin registration, Modified, nil width, tabs, keyboard chain |
+| Selection | 18 | ecSel* commands, accumulation, collapse, replace, line-boundary |
+| Clipboard | 10 | Copy/cut/paste, read-only guards, undo support |
+| Editing | 12 | Line joining, overwrite mode, OnChange, BeginUpdate |
+| Renderer | 11 | TColorToAlphaColor byte-swap, SysNone, metrics |
+| CompletionProposal | 12 | AddItem/ClearList, filtering, position, MoveLine |
 
 ---
 

@@ -144,9 +144,9 @@ To manually install into your IDE:
 
 ## Testing
 
-The FMX editor has a DUnitX test suite with 80 tests across 9 fixtures covering buffer operations, caret movement, code folding, editor commands, content/file I/O, highlighter assignment, editor options, search/replace, and undo/redo.
+The FMX editor has a DUnitX test suite with **186 tests** across **16 fixtures** covering buffer operations, caret movement, code folding, editor commands, content/file I/O, highlighter assignment, editor options, search/replace, undo/redo, spell check, bug-fix regressions, selection commands, clipboard, editing edge cases, color conversion, and completion proposal logic.
 
-Tests run headless — no form or visual surface required.
+Tests run headless — no form or visual surface required. `FailsOnNoAsserts` is enabled and every test uses exact-value assertions.
 
 ```
 build_fmx_tests.bat

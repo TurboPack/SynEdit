@@ -147,8 +147,12 @@ SynEdit/
     SynEditDemosGroup.groupproj   All demos
   Tests/
     FMX/
-      FMXSynEditTests.dproj        DUnitX test project (80 tests, 9 fixtures)
-      TestFMXSynEdit*.pas           Test fixtures (buffer, caret, folding, etc.)
+      FMXSynEditTests.dproj        DUnitX test project (186 tests, 16 fixtures)
+      TestFMXSynEdit*.pas           Test fixtures (buffer, caret, folding, commands,
+                                     content, highlighter, options, search, undo/redo,
+                                     selection, clipboard, editing, renderer,
+                                     completion proposal, bug fixes)
+      TestFMXSynSpellCheck.pas      Spell check provider tests
 ```
 
 ## Package Dependencies
