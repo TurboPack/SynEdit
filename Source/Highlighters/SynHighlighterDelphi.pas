@@ -44,6 +44,7 @@ type
     fRE_BlockEnd: TRegEx;
     fRE_Code: TRegEx;
     fRE_Implementation: TRegEx;
+    fRE_Begin: TRegEx;
 
     // Parsers
     procedure AddressOpProc;
@@ -143,10 +144,11 @@ class constructor TSynDelphiSyn.Create;
 begin
   // These are now initialized ONCE for the entire application lifetime
   // and are scoped specifically to TSynDelphiSyn.
-  FRE_BlockBegin := TRegEx.Create('\b(begin|record|class|case|try)\b', [roIgnoreCase]);
+  FRE_BlockBegin := TRegEx.Create('\b(begin|record|class(?!\s+(var|function|procedure|constructor|destructor|operator)\b)|case|try)\b', [roIgnoreCase]);
   FRE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
   FRE_Code := TRegEx.Create('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
   FRE_Implementation := TRegEx.Create('^implementation\b', [roIgnoreCase]);
+  FRE_Begin := TRegEx.Create('\bbegin\b', [roIgnoreCase]);
 end;
 
 constructor TSynDelphiSyn.Create(AOwner: TComponent);
@@ -684,10 +686,10 @@ procedure TSynDelphiSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
 var
   CurLine: string;
   Line: Integer;
+  PendingProcLine: Integer;
 
   function IsStartKeyword(const S: string): Boolean;
   begin
-    // Simple check for folding start blocks
     Result := fRE_BlockBegin.IsMatch(S);
   end;
 
@@ -697,6 +699,7 @@ var
   end;
 
 begin
+  PendingProcLine := -1;
   for Line := FromLine to ToLine do
   begin
     CurLine := Trim(LinesToScan[Line]);
@@ -713,17 +716,33 @@ begin
       FoldRanges.StopFoldRange(Line + 1, FoldRegionType)
     // Implementation section
     else if fRE_Implementation.IsMatch(CurLine) then
-      FoldRanges.StartFoldRange(Line + 1, 18) // FT_Implementation
-    // Procedure/Function headers
+      FoldRanges.StartFoldRange(Line + 1, 18)
+    // Procedure/Function headers - defer fold until begin is found
     else if fRE_Code.IsMatch(CurLine) then
-      FoldRanges.StartFoldRange(Line + 1, 16) // FT_CodeDeclaration
-    // Standard Blocks (begin..end)
+      PendingProcLine := Line + 1
+    // Standard Blocks
     else
     begin
       if IsStartKeyword(CurLine) then
-        FoldRanges.StartFoldRange(Line + 1, 1)
+      begin
+        if (PendingProcLine >= 0) and fRE_Begin.IsMatch(CurLine) then
+        begin
+          // begin after procedure/function: fold from the header line
+          FoldRanges.StartFoldRange(PendingProcLine, 1);
+          PendingProcLine := -1;
+        end
+        else
+        begin
+          // record/class/case/try or standalone begin
+          FoldRanges.StartFoldRange(Line + 1, 1);
+          PendingProcLine := -1;
+        end;
+      end
       else if IsEndKeyword(CurLine) then
+      begin
         FoldRanges.StopFoldRange(Line + 1, 1);
+        PendingProcLine := -1;
+      end;
     end;
   end;
 end;
