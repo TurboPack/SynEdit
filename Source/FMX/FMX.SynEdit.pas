@@ -666,7 +666,7 @@ function TCustomFMXSynEdit.PixelToBufferCoord(X, Y: Single): TBufferCoord;
 var
   Row: Integer;
 begin
-  Result.Char := Max(1, FLeftChar + Round((X - FTextAreaLeft) / FCharWidth));
+  Result.Char := Max(1, FLeftChar + Trunc((X - FTextAreaLeft) / FCharWidth));
   Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
   Result.Line := Max(1, Min(RowToLine(Row), FLines.Count));
 end;
