@@ -67,7 +67,7 @@ Three FMX demos are included in `Demos/FMX/`:
 
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **319 tests**, 27 fixtures:
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **349 tests**, 28 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -98,6 +98,8 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | HTMLFolding | 11 | Tag pairs, void elements, comments, multi-line tags |
 | XMLFolding | 14 | Elements, namespaces, PI/CDATA/DOCTYPE, multi-line tags |
 | CSSFolding | 13 | Brace folding, nested @media, comments, strings |
+| Bookmarks | 15 | Set/clear/goto, toggle, mark list, line clamp |
+| Gutter | 15 | Band order/visibility, auto-width, BandAtX, fold sync |
 
 **VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **47 tests**, 3 fixtures:
 
