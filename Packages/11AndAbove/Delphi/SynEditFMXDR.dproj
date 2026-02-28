@@ -159,6 +159,7 @@
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrintMargins.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrintHeaderFooter.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrint.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditWordWrap.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -56,6 +56,7 @@ contains
   FMX.SynEditPrinterInfo in '..\..\..\Source\FMX\FMX.SynEditPrinterInfo.pas',
   FMX.SynEditPrintMargins in '..\..\..\Source\FMX\FMX.SynEditPrintMargins.pas',
   FMX.SynEditPrintHeaderFooter in '..\..\..\Source\FMX\FMX.SynEditPrintHeaderFooter.pas',
-  FMX.SynEditPrint in '..\..\..\Source\FMX\FMX.SynEditPrint.pas';
+  FMX.SynEditPrint in '..\..\..\Source\FMX\FMX.SynEditPrint.pas',
+  FMX.SynEditWordWrap in '..\..\..\Source\FMX\FMX.SynEditWordWrap.pas';
 
 end.

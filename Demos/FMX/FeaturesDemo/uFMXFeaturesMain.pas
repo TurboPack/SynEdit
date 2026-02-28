@@ -110,8 +110,10 @@ type
     procedure ComboLanguageChange(Sender: TObject);
     procedure BtnCheckFileClick(Sender: TObject);
     procedure BtnPrintClick(Sender: TObject);
+    procedure ChkWordWrapChange(Sender: TObject);
   private
     FEditor: TFMXSynEdit;
+    ChkWordWrap: TCheckBox;
     FHighlighters: TList;
     FUpdatingControls: Boolean;
     FSearchEngine: TSynEditSearchCustom;
@@ -218,6 +220,16 @@ begin
   ComboProvider.ItemIndex := 0;
   PopulateLanguageCombo;
   ComboLanguageChange(nil);
+
+  // Word Wrap checkbox (programmatic - placed after code folding buttons)
+  ChkWordWrap := TCheckBox.Create(Self);
+  ChkWordWrap.Parent := ScrollBox1;
+  ChkWordWrap.Position.X := 8;
+  ChkWordWrap.Position.Y := 668;
+  ChkWordWrap.Size.Width := 260;
+  ChkWordWrap.Size.Height := 22;
+  ChkWordWrap.Text := 'Word Wrap';
+  ChkWordWrap.OnChange := ChkWordWrapChange;
 
   // Printing
   FPrintComponent := TSynFMXEditPrint.Create(Self);
@@ -601,12 +613,44 @@ begin
   MemoLog.GoToTextEnd;
 end;
 
+// --- Word Wrap ---
+
+procedure TFMXFeaturesForm.ChkWordWrapChange(Sender: TObject);
+begin
+  if FUpdatingControls then Exit;
+  FEditor.WordWrap := ChkWordWrap.IsChecked;
+  // Sync code folding checkbox (mutually exclusive)
+  if FEditor.WordWrap then
+  begin
+    FUpdatingControls := True;
+    try
+      ChkCodeFolding.IsChecked := False;
+    finally
+      FUpdatingControls := False;
+    end;
+  end;
+  if ChkWordWrap.IsChecked then
+    LogEvent('Word wrap enabled')
+  else
+    LogEvent('Word wrap disabled');
+end;
+
 // --- Code Folding ---
 
 procedure TFMXFeaturesForm.ChkCodeFoldingChange(Sender: TObject);
 begin
   if FUpdatingControls then Exit;
   FEditor.UseCodeFolding := ChkCodeFolding.IsChecked;
+  // Sync word wrap checkbox (mutually exclusive)
+  if FEditor.UseCodeFolding then
+  begin
+    FUpdatingControls := True;
+    try
+      ChkWordWrap.IsChecked := False;
+    finally
+      FUpdatingControls := False;
+    end;
+  end;
   if ChkCodeFolding.IsChecked then
     LogEvent('Code folding enabled')
   else

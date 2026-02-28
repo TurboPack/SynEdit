@@ -115,13 +115,13 @@ begin
   try
     VisLines := FEditor.LinesInWindow;
     VisCols := FEditor.CharsInWindow;
-    MaxLines := FEditor.LineCount;
+    MaxLines := FEditor.DisplayRowCount;
     if eoScrollPastEof in FEditor.ScrollOptions then
       Inc(MaxLines, VisLines - 1);
     MaxCols := FEditor.MaxScrollWidth;
 
     ShowVert := (VisLines > 0) and (MaxLines > VisLines);
-    ShowHorz := (VisCols > 0) and (MaxCols > VisCols);
+    ShowHorz := (VisCols > 0) and (MaxCols > VisCols) and not FEditor.WordWrap;
 
     // Vertical
     FVScrollBar.Visible := ShowVert;

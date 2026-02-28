@@ -36,7 +36,8 @@ uses
   SynEditMiscProcs,
   SynEditCodeFolding,
   FMX.SynEditKbdHandler,
-  FMX.SynEditMiscClasses;
+  FMX.SynEditMiscClasses,
+  FMX.SynEditWordWrap;
 
 type
   TCustomFMXSynEdit = class;
@@ -88,6 +89,9 @@ type
     FCaretBlinkOn: Boolean;
     FLastPosX: Integer;
     FUpdateCount: Integer;
+    // Word wrap
+    FWordWrap: Boolean;
+    FWordWrapHelper: TFMXWordWrapHelper;
     // Code folding
     FUseCodeFolding: Boolean;
     FCodeFolding: TSynCodeFolding;
@@ -171,6 +175,9 @@ type
     procedure SetSearchEngine(Value: TSynEditSearchCustom);
     function DoOnReplaceText(const ASearch, AReplace: string;
       Line, Column: Integer): TSynReplaceAction;
+    // Word wrap private
+    procedure SetWordWrap(Value: Boolean);
+    function GetWrapAreaWidth: Integer;
     // Row/Line mapping
     function LineToRow(aLine: Integer): Integer;
     function RowToLine(aRow: Integer): Integer;
@@ -238,6 +245,7 @@ type
     procedure RemoveKeyDownHandler(aHandler: TKeyEvent);
     property CodeFolding: TSynCodeFolding read FCodeFolding write FCodeFolding;
     property UseCodeFolding: Boolean read FUseCodeFolding write SetUseCodeFolding;
+    property WordWrap: Boolean read FWordWrap write SetWordWrap default False;
     property AllFoldRanges: TSynFoldRanges read FAllFoldRanges;
     property Lines: TSynEditStringList read FLines;
     property LineCount: Integer read GetLineCount;
@@ -260,6 +268,7 @@ type
     property LinesInWindow: Integer read FLinesInWindow;
     property CharsInWindow: Integer read FCharsInWindow;
     property MaxScrollWidth: Integer read GetMaxScrollWidth;
+    property DisplayRowCount: Integer read GetDisplayRowCount;
     property SelectedColor: TSynSelectedColor read FSelectedColor;
     property UndoRedo: ISynEditUndo read FUndoRedo;
     property ScrollOptions: TSynEditorScrollOptions read FScrollOptions
@@ -348,6 +357,7 @@ type
     property Options;
     property CodeFolding;
     property UseCodeFolding;
+    property WordWrap;
     property SearchEngine;
     property OnChange;
     property OnStatusChange;
@@ -466,6 +476,7 @@ end;
 
 destructor TCustomFMXSynEdit.Destroy;
 begin
+  FWordWrapHelper.Free;
   FPlugins.Free;
   FKbdHandler.Free;
   FCodeFolding.Free;
@@ -539,6 +550,16 @@ begin
         FCharsInWindow := Max(1, Trunc((Width - FGutterWidth - NewVScrollWidth) / FCharWidth));
     end;
   end;
+  // Re-wrap if word wrap width changed
+  if FWordWrap and Assigned(FWordWrapHelper) then
+  begin
+    var NewWrapWidth := GetWrapAreaWidth;
+    if NewWrapWidth <> FWordWrapHelper.MaxCharsPerRow then
+    begin
+      FWordWrapHelper.SetWrapWidth(NewWrapWidth, FTabWidth);
+      FWordWrapHelper.Reset(FLines);
+    end;
+  end;
 end;
 
 procedure TCustomFMXSynEdit.UpdateGutterWidth;
@@ -590,6 +611,7 @@ end;
 
 procedure TCustomFMXSynEdit.SetLeftChar(Value: Integer);
 begin
+  if FWordWrap then Value := 1;
   if Value < 1 then Value := 1;
   if FLeftChar <> Value then
   begin
@@ -602,18 +624,32 @@ end;
 procedure TCustomFMXSynEdit.EnsureCursorPosVisible;
 var
   CaretRow: Integer;
+  DC: TDisplayCoord;
 begin
-  // Vertical - use display rows when code folding is active
-  CaretRow := LineToRow(FCaretY);
-  if CaretRow < FTopLine then
-    TopLine := CaretRow
-  else if CaretRow >= FTopLine + FLinesInWindow then
-    TopLine := CaretRow - FLinesInWindow + 1;
-  // Horizontal
-  if FCaretX < FLeftChar then
-    LeftChar := FCaretX
-  else if FCaretX >= FLeftChar + FCharsInWindow then
-    LeftChar := FCaretX - FCharsInWindow + 1;
+  if FWordWrap and Assigned(FWordWrapHelper) then
+  begin
+    DC := FWordWrapHelper.BufferToDisplayPos(BufferCoord(FCaretX, FCaretY));
+    CaretRow := DC.Row;
+    if CaretRow < FTopLine then
+      TopLine := CaretRow
+    else if CaretRow >= FTopLine + FLinesInWindow then
+      TopLine := CaretRow - FLinesInWindow + 1;
+    // No horizontal scrolling in word wrap mode
+  end
+  else
+  begin
+    // Vertical - use display rows when code folding is active
+    CaretRow := LineToRow(FCaretY);
+    if CaretRow < FTopLine then
+      TopLine := CaretRow
+    else if CaretRow >= FTopLine + FLinesInWindow then
+      TopLine := CaretRow - FLinesInWindow + 1;
+    // Horizontal
+    if FCaretX < FLeftChar then
+      LeftChar := FCaretX
+    else if FCaretX >= FLeftChar + FCharsInWindow then
+      LeftChar := FCaretX - FCharsInWindow + 1;
+  end;
 end;
 
 function TCustomFMXSynEdit.GetMaxScrollWidth: Integer;
@@ -673,18 +709,43 @@ end;
 { --- Coordinate conversion --- }
 
 function TCustomFMXSynEdit.BufferCoordToPixel(const BC: TBufferCoord): TPointF;
+var
+  DC: TDisplayCoord;
 begin
-  Result.X := FTextAreaLeft + (BC.Char - FLeftChar) * FCharWidth;
-  Result.Y := (LineToRow(BC.Line) - FTopLine) * FLineHeight;
+  if FWordWrap and Assigned(FWordWrapHelper) then
+  begin
+    DC := FWordWrapHelper.BufferToDisplayPos(BC);
+    Result.X := FTextAreaLeft + (DC.Column - 1) * FCharWidth;
+    Result.Y := (DC.Row - FTopLine) * FLineHeight;
+  end
+  else
+  begin
+    Result.X := FTextAreaLeft + (BC.Char - FLeftChar) * FCharWidth;
+    Result.Y := (LineToRow(BC.Line) - FTopLine) * FLineHeight;
+  end;
 end;
 
 function TCustomFMXSynEdit.PixelToBufferCoord(X, Y: Single): TBufferCoord;
 var
-  Row: Integer;
+  Row, Col: Integer;
+  DC: TDisplayCoord;
 begin
-  Result.Char := Max(1, FLeftChar + Trunc((X - FTextAreaLeft) / FCharWidth));
-  Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
-  Result.Line := Max(1, Min(RowToLine(Row), FLines.Count));
+  if FWordWrap and Assigned(FWordWrapHelper) then
+  begin
+    Col := Max(1, 1 + Trunc((X - FTextAreaLeft) / FCharWidth));
+    Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+    DC.Column := Col;
+    DC.Row := Row;
+    Result := FWordWrapHelper.DisplayToBufferPos(DC);
+    Result.Line := Max(1, Min(Result.Line, FLines.Count));
+    Result.Char := Max(1, Result.Char);
+  end
+  else
+  begin
+    Result.Char := Max(1, FLeftChar + Trunc((X - FTextAreaLeft) / FCharWidth));
+    Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+    Result.Line := Max(1, Min(RowToLine(Row), FLines.Count));
+  end;
 end;
 
 { --- Paint --- }
@@ -766,6 +827,12 @@ begin
     Line := RowToLine(Row);
     if Line > FLines.Count then Break;
     Y := (Row - FTopLine) * FLineHeight;
+    // In word wrap mode, only show line number on the first display row of each line
+    if FWordWrap and Assigned(FWordWrapHelper) then
+    begin
+      if FWordWrapHelper.LineToRow(Line) <> Row then
+        Continue; // continuation row - skip line number
+    end;
     NumStr := IntToStr(Line);
     R := RectF(2, Y, NumberWidth - 4, Y + FLineHeight);
     Renderer.PaintLineNumber(Canvas, R, NumStr, TAlphaColors.Gray);
@@ -780,7 +847,7 @@ procedure TCustomFMXSynEdit.PaintTextLines(Canvas: TCanvas;
   FirstLine, LastLine: Integer);
 var
   Renderer: TSynFMXRenderer;
-  Row, Line: Integer;
+  Row, Line, PrevLine: Integer;
   Y, X: Single;
   SLine, SExpanded: string;
   TokenPos: Integer;
@@ -796,8 +863,19 @@ var
   J, ExpandedCol: Integer;
   RawTokenPos, RawTokenLen: Integer;
   ExpandedTokenPos, ExpandedTokenLen: Integer;
+  // Word wrap per-row variables
+  IsWrapping: Boolean;
+  EffLeftChar: Integer;     // effective left char for this row (1-based expanded)
+  EffCharsInWin: Integer;   // effective chars visible in this row
+  RowExpandedStart: Integer; // 0-based expanded column where this row starts
+  RowExpandedEnd: Integer;   // 0-based expanded column where this row ends
+  RowBufferStart: Integer;   // 1-based raw char where this row starts
+  RowBufferLen: Integer;     // raw char count for this row
+  WrapBC: TBufferCoord;
 begin
   Renderer := TSynFMXRenderer(FRenderer);
+  IsWrapping := FWordWrap and Assigned(FWordWrapHelper);
+  PrevLine := -1;
 
   // Normalize selection
   SelBC1 := FBlockBegin;
@@ -828,22 +906,56 @@ begin
     HasTabs := Pos(#9, SLine) > 0;
     SExpanded := ExpandTabs(SLine, FTabWidth);
 
-    // Build raw-to-expanded column map for lines with tabs
-    if HasTabs then
+    // Build raw-to-expanded column map (once per buffer line)
+    if Line <> PrevLine then
     begin
-      SetLength(ColMap, Length(SLine) + 1); // index 0..Length(SLine)
-      ExpandedCol := 0;
-      for J := 0 to Length(SLine) - 1 do
+      if HasTabs then
       begin
-        ColMap[J] := ExpandedCol;
-        if SLine[J + 1] = #9 then
+        SetLength(ColMap, Length(SLine) + 1); // index 0..Length(SLine)
+        ExpandedCol := 0;
+        for J := 0 to Length(SLine) - 1 do
         begin
-          repeat Inc(ExpandedCol) until (ExpandedCol mod FTabWidth) = 0;
-        end
-        else
-          Inc(ExpandedCol);
+          ColMap[J] := ExpandedCol;
+          if SLine[J + 1] = #9 then
+          begin
+            repeat Inc(ExpandedCol) until (ExpandedCol mod FTabWidth) = 0;
+          end
+          else
+            Inc(ExpandedCol);
+        end;
+        ColMap[Length(SLine)] := ExpandedCol; // past-end sentinel
       end;
-      ColMap[Length(SLine)] := ExpandedCol; // past-end sentinel
+    end;
+
+    // Compute effective viewport for this row
+    if IsWrapping then
+    begin
+      // Get the buffer position where this wrapped row starts
+      WrapBC := FWordWrapHelper.DisplayToBufferPos(DisplayCoord(1, Row));
+      RowBufferStart := WrapBC.Char;
+      RowBufferLen := FWordWrapHelper.GetRowLength(Row);
+      // Compute expanded column range
+      if HasTabs then
+      begin
+        RowExpandedStart := ColMap[Min(RowBufferStart - 1, Length(SLine))];
+        RowExpandedEnd := ColMap[Min(RowBufferStart - 1 + RowBufferLen, Length(SLine))];
+      end
+      else
+      begin
+        RowExpandedStart := RowBufferStart - 1;
+        RowExpandedEnd := RowBufferStart - 1 + RowBufferLen;
+      end;
+      EffLeftChar := RowExpandedStart + 1; // 1-based
+      EffCharsInWin := RowExpandedEnd - RowExpandedStart;
+    end
+    else
+    begin
+      RowExpandedStart := 0;
+      RowExpandedEnd := Length(SExpanded);
+      RowBufferStart := 1;
+      RowBufferLen := Length(SLine);
+      EffLeftChar := FLeftChar;
+      EffCharsInWin := FCharsInWindow;
     end;
 
     // Calculate selection range for this line (in expanded columns)
@@ -888,13 +1000,13 @@ begin
       end;
     end;
 
-    // Paint selection background
+    // Paint selection background (clipped to row viewport)
     if SelStart <> SelEnd then
     begin
       var SelX1: Single := FTextAreaLeft +
-        (Max(SelStart, FLeftChar) - FLeftChar) * FCharWidth;
+        (Max(SelStart, EffLeftChar) - EffLeftChar) * FCharWidth;
       var SelX2: Single := FTextAreaLeft +
-        (Min(SelEnd, FLeftChar + FCharsInWindow) - FLeftChar) * FCharWidth;
+        (Min(SelEnd, EffLeftChar + EffCharsInWin) - EffLeftChar) * FCharWidth;
       if SelX2 > SelX1 then
       begin
         LineR := RectF(SelX1, Y, SelX2, Y + FLineHeight);
@@ -906,11 +1018,15 @@ begin
     // Paint tokens with highlighter
     if (FHighlighter <> nil) and (SLine <> '') then
     begin
-      if Line > 1 then
-        FHighlighter.SetRange(TSynEditStringList(FLines).Ranges[Line - 2])
-      else
-        FHighlighter.ResetRange;
-      FHighlighter.SetLine(SLine, Line);
+      // Only re-initialize highlighter when line changes
+      if Line <> PrevLine then
+      begin
+        if Line > 1 then
+          FHighlighter.SetRange(TSynEditStringList(FLines).Ranges[Line - 2])
+        else
+          FHighlighter.ResetRange;
+        FHighlighter.SetLine(SLine, Line);
+      end;
 
       while not FHighlighter.GetEol do
       begin
@@ -933,16 +1049,16 @@ begin
           ExpandedTokenPos := RawTokenPos;
           ExpandedTokenLen := RawTokenLen;
         end;
-        TokenPos := ExpandedTokenPos; // now in visual columns
+        TokenPos := ExpandedTokenPos; // now in visual columns (0-based)
 
         // Skip tokens entirely before visible area
-        if TokenPos + ExpandedTokenLen < FLeftChar - 1 then
+        if TokenPos + ExpandedTokenLen < EffLeftChar - 1 then
         begin
           FHighlighter.Next;
           Continue;
         end;
         // Stop if past visible area
-        if TokenPos >= FLeftChar + FCharsInWindow - 1 then
+        if TokenPos >= EffLeftChar + EffCharsInWin - 1 then
           Break;
 
         // Determine colors
@@ -962,14 +1078,14 @@ begin
         end;
 
         // Paint the token, splitting at selection boundaries
-        X := FTextAreaLeft + (TokenPos + 1 - FLeftChar) * FCharWidth;
+        X := FTextAreaLeft + (TokenPos + 1 - EffLeftChar) * FCharWidth;
         // Clip to visible area
         if X < FTextAreaLeft then
         begin
           var Skip := Trunc((FTextAreaLeft - X) / FCharWidth);
           Token := Copy(Token, Skip + 1, MaxInt);
           TokenPos := TokenPos + Skip;
-          X := FTextAreaLeft + (TokenPos + 1 - FLeftChar) * FCharWidth;
+          X := FTextAreaLeft + (TokenPos + 1 - EffLeftChar) * FCharWidth;
         end;
 
         if (Token <> '') and (X < Width) then
@@ -1027,8 +1143,8 @@ begin
       // No highlighter - paint plain text, splitting at selection
       SExpanded := ExpandTabs(SLine, FTabWidth);
       X := FTextAreaLeft;
-      var VisText := Copy(SExpanded, FLeftChar, FCharsInWindow + 1);
-      var VisStart := FLeftChar; // 1-based position of first visible char
+      var VisText := Copy(SExpanded, EffLeftChar, EffCharsInWin + 1);
+      var VisStart := EffLeftChar; // 1-based position of first visible char
       var VisLen := Length(VisText);
 
       if (SelStart > 0) and (SelEnd > SelStart) and
@@ -1071,6 +1187,8 @@ begin
         Renderer.PaintToken(Canvas, X, Y, VisText, TAlphaColors.Black,
           TAlphaColors.Null, []);
     end;
+
+    PrevLine := Line;
   end;
 end;
 
@@ -1104,6 +1222,8 @@ end;
 procedure TCustomFMXSynEdit.LinesChanged(Sender: TObject);
 begin
   FMaxScrollWidthValid := False;
+  if FWordWrap and Assigned(FWordWrapHelper) then
+    FWordWrapHelper.Reset(FLines);
   if FUseCodeFolding then
     FAllFoldRanges.StopScanning(FLines);
   UpdateGutterWidth;
@@ -1626,26 +1746,53 @@ procedure TCustomFMXSynEdit.MoveCaretVert(DY: Integer; SelectionCmd: Boolean);
 var
   NewCaret: TBufferCoord;
   LineLen: Integer;
+  DC: TDisplayCoord;
 begin
-  NewCaret := GetCaretXY;
-  Inc(NewCaret.Line, DY);
-  NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.Count)));
-
-  // Sticky column
-  if (eoKeepCaretX in FOptions) and (FLastPosX >= 0) then
-    NewCaret.Char := FLastPosX
-  else
-    FLastPosX := NewCaret.Char;
-
-  // Clamp to line length
-  if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.Count) then
+  if FWordWrap and Assigned(FWordWrapHelper) then
   begin
-    LineLen := Length(FLines[NewCaret.Line - 1]);
-    if not (eoScrollPastEol in FScrollOptions) then
-      NewCaret.Char := Min(NewCaret.Char, LineLen + 1);
-  end;
+    // In word wrap mode, move between display rows
+    DC := FWordWrapHelper.BufferToDisplayPos(GetCaretXY);
+    // Sticky column tracks display column
+    if (eoKeepCaretX in FOptions) and (FLastPosX >= 0) then
+      DC.Column := FLastPosX
+    else
+      FLastPosX := DC.Column;
+    Inc(DC.Row, DY);
+    DC.Row := Max(1, Min(DC.Row, FWordWrapHelper.RowCount));
+    NewCaret := FWordWrapHelper.DisplayToBufferPos(DC);
+    NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.Count)));
+    NewCaret.Char := Max(1, NewCaret.Char);
+    // Clamp to line length
+    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.Count) then
+    begin
+      LineLen := Length(FLines[NewCaret.Line - 1]);
+      if not (eoScrollPastEol in FScrollOptions) then
+        NewCaret.Char := Min(NewCaret.Char, LineLen + 1);
+    end;
+    MoveCaretAndSelection(NewCaret, SelectionCmd);
+  end
+  else
+  begin
+    NewCaret := GetCaretXY;
+    Inc(NewCaret.Line, DY);
+    NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.Count)));
 
-  MoveCaretAndSelection(NewCaret, SelectionCmd);
+    // Sticky column
+    if (eoKeepCaretX in FOptions) and (FLastPosX >= 0) then
+      NewCaret.Char := FLastPosX
+    else
+      FLastPosX := NewCaret.Char;
+
+    // Clamp to line length
+    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.Count) then
+    begin
+      LineLen := Length(FLines[NewCaret.Line - 1]);
+      if not (eoScrollPastEol in FScrollOptions) then
+        NewCaret.Char := Min(NewCaret.Char, LineLen + 1);
+    end;
+
+    MoveCaretAndSelection(NewCaret, SelectionCmd);
+  end;
 end;
 
 procedure TCustomFMXSynEdit.MoveCaretAndSelection(const NewCaret: TBufferCoord;
@@ -2232,6 +2379,11 @@ begin
   begin
     FTabWidth := Value;
     FMaxScrollWidthValid := False;
+    if FWordWrap and Assigned(FWordWrapHelper) then
+    begin
+      FWordWrapHelper.SetWrapWidth(GetWrapAreaWidth, FTabWidth);
+      FWordWrapHelper.Reset(FLines);
+    end;
     Repaint;
   end;
 end;
@@ -2380,7 +2532,9 @@ end;
 
 function TCustomFMXSynEdit.LineToRow(aLine: Integer): Integer;
 begin
-  if FUseCodeFolding then
+  if FWordWrap and Assigned(FWordWrapHelper) then
+    Result := FWordWrapHelper.LineToRow(aLine)
+  else if FUseCodeFolding then
     Result := FAllFoldRanges.FoldLineToRow(aLine)
   else
     Result := aLine;
@@ -2388,7 +2542,9 @@ end;
 
 function TCustomFMXSynEdit.RowToLine(aRow: Integer): Integer;
 begin
-  if FUseCodeFolding then
+  if FWordWrap and Assigned(FWordWrapHelper) then
+    Result := FWordWrapHelper.RowToLine(aRow)
+  else if FUseCodeFolding then
     Result := FAllFoldRanges.FoldRowToLine(aRow)
   else
     Result := aRow;
@@ -2396,10 +2552,43 @@ end;
 
 function TCustomFMXSynEdit.GetDisplayRowCount: Integer;
 begin
-  if FUseCodeFolding then
+  if FWordWrap and Assigned(FWordWrapHelper) then
+    Result := FWordWrapHelper.RowCount
+  else if FUseCodeFolding then
     Result := LineToRow(FLines.Count)
   else
     Result := FLines.Count;
+end;
+
+{ --- Word Wrap --- }
+
+function TCustomFMXSynEdit.GetWrapAreaWidth: Integer;
+begin
+  if FCharWidth > 0 then
+    Result := Max(1, Trunc((Width - FGutterWidth) / FCharWidth))
+  else
+    Result := 80;
+end;
+
+procedure TCustomFMXSynEdit.SetWordWrap(Value: Boolean);
+begin
+  if FWordWrap = Value then Exit;
+  // Mutually exclusive with code folding
+  if Value and FUseCodeFolding then Exit;
+  FWordWrap := Value;
+  if FWordWrap then
+  begin
+    FWordWrapHelper := TFMXWordWrapHelper.Create;
+    FWordWrapHelper.SetWrapWidth(GetWrapAreaWidth, FTabWidth);
+    FWordWrapHelper.Reset(FLines);
+    FLeftChar := 1;
+  end
+  else
+    FreeAndNil(FWordWrapHelper);
+  RecalcSizes;
+  UpdateScrollBars;
+  EnsureCursorPosVisible;
+  Repaint;
 end;
 
 { --- Code Folding --- }
@@ -2414,7 +2603,9 @@ begin
     Exit;
   end;
 
-  ValidValue := Value and ((Assigned(FHighlighter) and
+  // Mutually exclusive with word wrap
+  ValidValue := Value and not FWordWrap and
+    ((Assigned(FHighlighter) and
     (FHighlighter is TSynCustomCodeFoldingHighlighter))
       or Assigned(FOnScanForFoldRanges));
 
