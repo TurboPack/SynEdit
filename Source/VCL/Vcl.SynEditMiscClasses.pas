@@ -57,6 +57,7 @@ uses
   Vcl.StdActns,
   SynDWrite,
   SynEditTypes,
+  SynEditSelections,
   SynEditKeyCmds,
   SynEditKeyConst,
   SynUnicode;
@@ -658,67 +659,24 @@ type
 
   {$REGION 'TSynSelections'}
 
-  TSynSelStorage = record
-    Selections: TArray<TSynSelection>;
-    BaseIndex, ActiveIndex :Integer;
-    procedure Clear;
-  end;
-
-  // Keeps the selections and is responsible for showing the carets
-  TSynSelections = class
-  private
-    FOwner: TPersistent;
-    FSelections: TList<TSynSelection>;
-    FBaseSelIndex: Integer;
-    FActiveSelIndex: Integer;
-    function GetCount: Integer;
-    function GetActiveSelection: TSynSelection;
-    function GetBaseSelection: TSynSelection;
-    procedure SetActiveSelection(const Value: TSynSelection);
-    procedure SetBaseSelection(const Value: TSynSelection);
-    function GetSelection(Index: Integer): TSynSelection;
-    procedure SetActiveSelIndex(const Index: Integer);
-    procedure CaretsChanged;
-    function GetIsEmpty: Boolean;
+  // TSynSelStorage and TSynSelectionsBase are now in shared SynEditSelections.pas
+  // TSynSelections inherits all logic from TSynSelectionsBase and provides
+  // thin VCL-specific overrides.
+  TSynSelections = class(TSynSelectionsBase)
+  protected
+    procedure CaretsChanged; override;
+    procedure DoInvalidateSelection(const Sel: TSynSelection); override;
+    procedure DoRestoreSelection(const Sel: TSynSelection;
+      EnsureVisible: Boolean); override;
+    function GetLineText(ALine: Integer): string; override;
+    function GetWordWrap: Boolean; override;
+    function GetScrollPastEOL: Boolean; override;
+    function GetRowLength(ARow: Integer): Integer; override;
+    function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord; override;
+    function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord; override;
+    function SelectionToDisplayRow(var Sel: TSynSelection): Integer; override;
   public
-    type
-      TKeepSelection = (ksKeepBase, ksKeepActive);
     constructor Create(Owner: TPersistent);
-    destructor Destroy; override;
-    procedure Clear(KeepSelection: TKeepSelection = ksKeepActive);
-    function AddCaret(const ACaret: TBufferCoord; IsBase: Boolean = False): Boolean;
-    procedure DeleteSelection(Index: Integer);
-    function FindCaret(const ACaret: TBufferCoord): Integer;
-    function FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
-    procedure MouseSelection(const Sel: TSynSelection);
-    procedure ColumnSelection(Anchor, ACaret: TBufferCoord; LastPosX: Integer = 0);
-    procedure Merge;
-    function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
-    function RowHasCaret(ARow, ALine: Integer): Boolean;
-    // Invalidate
-    procedure InvalidateSelection(Index: Integer);
-    procedure InvalidateAll;
-    //Storing and Restoring
-    procedure Store(out SelStorage: TSynSelStorage);
-    procedure Restore(const [Ref] SelStorage: TSynSelStorage); overload;
-    procedure Restore(const [Ref] Sel: TSynSelection; EnsureVisible: Boolean = True); overload;
-    // Adjust selections in response to editing events
-    // Should only used by Synedit
-    procedure LinesInserted(FirstLine, aCount: Integer);
-    procedure LinesDeleted(FirstLine, aCount: Integer);
-    procedure LinePut(aIndex: Integer; const OldLine: string);
-    // properties
-    property BaseSelectionIndex: Integer read FBaseSelIndex;
-    // The last selection entered
-    // Non-multicursor commands operate on the active selection
-    property ActiveSelection: TSynSelection read GetActiveSelection write SetActiveSelection;
-    // The selection that is kept when you clear multiple cursors
-    // It the first one as in VS Code
-    property BaseSelection: TSynSelection read GetBaseSelection write SetBaseSelection;
-    property Count: Integer read GetCount;
-    property ActiveSelIndex: Integer read FActiveSelIndex write SetActiveSelIndex;
-    property IsEmpty: Boolean read GetIsEmpty;
-    property Selection[Index: Integer]: TSynSelection read GetSelection; default;
   end;
 
   {$ENDREGION 'TSynSelections'}
@@ -3235,37 +3193,9 @@ end;
 
 {$REGION 'TSynSelections'}
 
-function TSynSelections.AddCaret(const ACaret: TBufferCoord; IsBase: Boolean): Boolean;
-// If a selection has the same caret or contains the caret then remove it.
-// Otherwise add a new selection
-// Returns True if a new selection was added
-var
-  Sel: TSynSelection;
-  Index: Integer;
+constructor TSynSelections.Create(Owner: TPersistent);
 begin
-  Result := False;
-  if FindSelection(ACaret, Index) then
-  begin
-    DeleteSelection(Index);
-    Restore(FSelections[FActiveSelIndex], False);
-  end
-  else if (Index > 0) and (FSelections[Index - 1].Caret = ACaret) then
-  begin
-    DeleteSelection(Index - 1);
-    Restore(FSelections[FActiveSelIndex], False);
-  end
-  else
-  begin
-    // ACaret is not included in any selection
-    Sel := TSynSelection.Create(ACaret, ACaret, ACaret);
-    FSelections.Insert(Index, Sel);
-    FActiveSelIndex := Index;
-    if IsBase then
-      FBaseSelIndex := Index
-    else if FBaseSelIndex >= Index then
-      Inc(FBaseSelIndex);
-    Result := True;
-  end;
+  inherited Create(Owner);
 end;
 
 procedure TSynSelections.CaretsChanged;
@@ -3274,457 +3204,12 @@ begin
     TCustomSynEdit(FOwner).StateFlags + [sfCaretChanged, sfScrollbarChanged];
 end;
 
-procedure TSynSelections.Clear(KeepSelection: TKeepSelection);
-var
-  Index: Integer;
+procedure TSynSelections.DoInvalidateSelection(const Sel: TSynSelection);
 begin
-  if FSelections.Count = 1 then Exit;
-
-  if (KeepSelection = ksKeepBase) and (FActiveSelIndex <> FBaseSelIndex) then
-    Restore(BaseSelection);
-
-  for Index := FSelections.Count - 1 downto 0 do
-    if not (((KeepSelection = ksKeepBase) and (Index = FBaseSelIndex)) or
-      ((KeepSelection = ksKeepActive) and (Index = FActiveSelIndex)))
-    then
-      DeleteSelection(Index);
-
-  Assert (FSelections.Count = 1);
-  FBaseSelIndex := 0;
-  FActiveSelIndex := 0;
-  CaretsChanged;
-end;
-
-procedure TSynSelections.ColumnSelection(Anchor, ACaret: TBufferCoord;
-    LastPosX: Integer);
-
-  procedure SetLineSelection(Index, Line, FromChar, ToChar: Integer; ScrollPastEOL: Boolean);
-  var
-    LineString: string;
-    Len: Integer;
-  begin
-    LineString := TCustomSynEdit(FOwner).Lines[Line - 1];
-    Len := LineString.Length;
-    if not ScrollPastEOL then
-      ToChar :=  EnsureRange(ToChar, 1, Len + 1);
-    FromChar := EnsureRange(FromChar, 1, Len + 1);
-    FSelections.List[Index].Caret := BufferCoord(ToChar, Line);
-    FSelections.List[Index].Start := BufferCoord(FromChar, Line);
-    FSelections.List[Index].Stop := BufferCoord(Min(ToChar, Len + 1), Line);
-    FSelections.List[Index].LastPosX := LastPosX;
-    InvalidateSelection(Index);
-  end;
-
-  procedure SetRowSelection(Index, Row, FromChar, ToChar: Integer; ScrollPastEOL: Boolean);
-  var
-    Len: Integer;
-  begin
-    Len := TCustomSynEdit(FOwner).RowLength[Row];
-    if not ScrollPastEOL then
-      ToChar :=  EnsureRange(ToChar, 1, Len + 1);
-    FromChar := EnsureRange(FromChar, 1, Len + 1);
-    FSelections.List[Index].Caret :=
-      TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(ToChar, Row));
-    FSelections.List[Index].Start :=
-      TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(FromChar, Row));
-    FSelections.List[Index].Stop :=
-      TCustomSynEdit(FOwner).DisplayToBufferPos(DisplayCoord(Min(ToChar, Len + 1), Row));
-    FSelections.List[Index].LastPosX := LastPosX;
-    InvalidateSelection(Index);
-  end;
-
-var
-  DC: TDisplayCoord;
-  FromChar, ToChar: Integer;
-  FromRow, ToRow: Integer;
-  Line, Row: Integer;
-  Index: Integer;
-  Increment: Integer;
-  ScrollPastEOL: Boolean;
-begin
-  Clear;
-  InvalidateSelection(0);
-
-
-  ScrollPastEOL := eoScrollPastEol in TCustomSynEdit(FOwner).ScrollOptions;
-
-  if TCustomSynEdit(FOwner).WordWrap then
-  begin
-    DC := TCustomSynEdit(FOwner).BufferToDisplayPos(Anchor);
-    FromChar := DC.Column;
-    FromRow := DC.Row;
-    DC := TCustomSynEdit(FOwner).BufferToDisplayPos(ACaret);
-    ToChar := DC.Column;
-    ToRow := DC.Row;
-
-    SetRowSelection(0, FromRow, FromChar, ToChar, ScrollPastEOL);
-
-    Increment := Sign(ToRow - FromRow);
-
-    Row := FromRow;
-    while Row <> ToRow do
-    begin
-      Row := Row + Increment;
-      if Increment > 0 then
-        Index := FSelections.Add(TSynSelection.Invalid)
-      else
-      begin
-        FSelections.Insert(0, TSynSelection.Invalid);
-        Index := 0;
-      end;
-      SetRowSelection(Index, Row, FromChar, ToChar, ScrollPastEOL);
-    end;
-  end
-  else
-  begin
-    FromChar := Anchor.Char;
-    ToChar := ACaret.Char;
-    SetLineSelection(0, Anchor.Line, FromChar, ToChar, ScrollPastEOL);
-
-    Increment := Sign(ACaret.Line - Anchor.Line);
-
-    Line := Anchor.Line;
-    while Line <> ACaret.Line do
-    begin
-      Line := Line + Increment;
-      if Increment > 0 then
-        Index := FSelections.Add(TSynSelection.Invalid)
-      else
-      begin
-        FSelections.Insert(0, TSynSelection.Invalid);
-        Index := 0;
-      end;
-      SetLineSelection(Index, Line, FromChar, ToChar, ScrollPastEOL);
-    end;
-  end;
-
-  if Increment >= 0 then
-  begin
-    FBaseSelIndex := 0;
-    FActiveSelIndex := FSelections.Count - 1
-  end
-  else
-  begin
-    FBaseSelIndex := FSelections.Count -1;
-    FActiveSelIndex := 0;
-  end;
-
-  Restore(ActiveSelection, False);
-  CaretsChanged;
-end;
-
-constructor TSynSelections.Create(Owner: TPersistent);
-begin
-  inherited Create;
-  FOwner := Owner;
-  FSelections := TList<TSynSelection>.Create(TComparer<TSynSelection>.Construct(
-    function(const L, R: TSynSelection): Integer
-    begin
-      if L.Normalized.Start < R.Normalized.Start then
-        Result := -1
-      else if L.Normalized.Start = R.Normalized.Start then
-        Result := 0
-      else
-        Result := 1;
-    end));
-end;
-
-procedure TSynSelections.DeleteSelection(Index: Integer);
-var
-  Sel: TSynSelection;
-begin
-  // Leave at least one selection
-  if FSelections.Count <= 1 then Exit;
-
-  Sel := FSelections[Index];
   TCustomSynEdit(FOwner).InvalidateSelection(Sel);
-  FSelections.Delete(Index);
-
-  if Index = FActiveSelIndex then
-  begin
-    if Index >= FSelections.Count then
-      FActiveSelIndex := FSelections.Count - 1;
-  end
-  else if FActiveSelIndex > Index then
-    Dec(FActiveSelIndex);
-
-  if FBaseSelIndex = Index then
-    // Base becomes the last one as in VS Code
-    FBaseSelIndex := FSelections.Count - 1
-  else if FBaseSelIndex > Index then
-    Dec(FBaseSelIndex);
-
-  CaretsChanged;
 end;
 
-destructor TSynSelections.Destroy;
-begin
-  FSelections.Free;
-  inherited;
-end;
-
-function TSynSelections.FindCaret(const ACaret: TBufferCoord): Integer;
-var
-  Index: Integer;
-begin
-  if FSelections.Count = 0 then Exit(-1);
-
-  if FindSelection(ACaret, Index) then
-  begin
-    if FSelections[Index].Caret = ACaret then
-      Result := Index
-    else
-      Result := -1;
-  end
-  else if (Index > 0) and (FSelections[Index - 1].Caret = ACaret) then
-    Result := Index - 1
-  else
-    Result := -1;
-end;
-
-function TSynSelections.FindSelection(const BC: TBufferCoord; var Index: Integer): Boolean;
-begin
-  if FSelections.BinarySearch(TSynSelection.Create(BC, BC, BC), Index) then
-    Exit(True);
-
-  if Index = 0 then
-    // BC is before the start of the top selection
-    Exit(False);
-
-  Result := FSelections[Index - 1].Contains(BC);
-  if Result then
-    Dec(Index)
-end;
-
-function TSynSelections.GetActiveSelection: TSynSelection;
-begin
-  Result := FSelections[FActiveSelIndex];
-end;
-
-function TSynSelections.GetBaseSelection: TSynSelection;
-begin
-  Result := FSelections[FBaseSelIndex];
-end;
-
-function TSynSelections.GetCount: Integer;
-begin
-  Result := FSelections.Count;
-end;
-
-function TSynSelections.GetIsEmpty: Boolean;
-var
-  Index: Integer;
-begin
-  Result := True;
-  for Index := 0 to FSelections.Count - 1 do
-    if not FSelections.List[Index].IsEmpty then
-      Exit(False);
-end;
-
-function TSynSelections.GetSelection(Index: Integer): TSynSelection;
-begin
-  Result := FSelections[Index];
-end;
-
-procedure TSynSelections.InvalidateAll;
-var
-  Index: Integer;
-begin
-  for Index := 0 to FSelections.Count - 1 do
-    InvalidateSelection(Index);
-end;
-
-procedure TSynSelections.InvalidateSelection(Index: Integer);
-begin
-  TCustomSynEdit(FOwner).InvalidateSelection(FSelections[Index]);
-end;
-
-procedure TSynSelections.LinePut(aIndex: Integer; const OldLine: string);
-var
-  I: Integer;
-  Line: string;
-  OldLen, NewLen: Integer;
-  StartPos: Integer;
-  Delta: Integer;
-begin
-  if FSelections.Count <= 1 then Exit;
-
-  Line := TCustomSynEdit(FOwner).Lines[aIndex];
-  LineDiff(Line, OldLine, StartPos, OldLen, NewLen);
-  Delta := NewLen - OldLen;
-
-  for I := FActiveSelIndex + 1 to Count - 1 do
-  begin
-    with FSelections.List[I] do
-    begin
-      if (Start.Line > aIndex + 1) and (Stop.Line > aIndex + 1) then
-          Exit;
-
-      if Caret.Line = aIndex + 1 then Inc(Caret.Char, Delta);
-      if Start.Line = aIndex + 1 then Inc(Start.Char, Delta);
-      if Stop.Line = aIndex + 1 then Inc(Stop.Char, Delta);
-    end;
-  end;
-end;
-
-procedure TSynSelections.LinesDeleted(FirstLine, aCount: Integer);
-var
-  I: Integer;
-  MinBC: TBufferCoord;
-begin
-  if FSelections.Count <= 1 then Exit;
-
-  for I := FActiveSelIndex + 1 to Count - 1 do
-    with FSelections.List[I] do
-    begin
-      if Caret.Line >= FirstLine + 1 then Dec(Caret.Line, aCount);
-      if Start.Line >= FirstLine + 1 then Dec(Start.Line, aCount);
-      if Stop.Line >= FirstLine + 1 then Dec(Stop.Line, aCount);
-
-      if (Start.Line < FirstLine + 1) and (Stop.Line < FirstLine + 1) then
-      begin
-        FSelections.List[I] := TSynSelection.Invalid;
-        Continue;
-      end;
-
-      MinBC := BufferCoord(FirstLine + 1, 1);
-      Caret := TBufferCoord.Max(Caret, MinBC);
-      Start := TBufferCoord.Max(Start, MinBC);
-      Stop := TBufferCoord.Max(Stop, MinBC);
-    end;
-end;
-
-procedure TSynSelections.LinesInserted(FirstLine, aCount: Integer);
-var
-  I: Integer;
-begin
-  if FSelections.Count <= 1 then Exit;
-
-  for I := FActiveSelIndex + 1 to Count - 1 do
-    with FSelections.List[I] do
-    begin
-      // FirstLine is 0-based
-      if Caret.Line >= FirstLine + 1 then Inc(Caret.Line, aCount);
-      if Start.Line >= FirstLine + 1 then Inc(Start.Line, aCount);
-      if Stop.Line >= FirstLine + 1 then Inc(Stop.Line, aCount);
-    end;
-end;
-
-procedure TSynSelections.Merge;
-// It is executed after the execution of a multi-selection command
-// It removes invalid selections and merges overllapping selections
-
-  function DoMerge(const Sel, NextSel: TSynSelection): TSynSelection;
-  var
-    Caret, Start, Stop: TBufferCoord;
-  begin
-    Start := TBufferCoord.Min(
-      TBufferCoord.Min(Sel.Start, Sel.Stop),
-      TBufferCoord.Min(NextSel.Start, NextSel.Stop));
-    Stop := TBufferCoord.Max(
-      TBufferCoord.Max(Sel.Start, Sel.Stop),
-      TBufferCoord.Max(NextSel.Start, NextSel.Stop));
-
-    if NextSel.Caret = TBufferCoord.Min(NextSel.Start, NextSel.Stop) then
-      Caret := Start
-    else
-      Caret := Stop;
-
-    Result := TSynSelection.Create(Caret, Start, Stop);
-    Result.LastPosX := Sel.LastPosX;
-    Result.CaretAtEOL := Sel.CaretAtEOL
-  end;
-
-var
-  Sel, NextSel: TSynSelection;
-  I: Integer;
-  BC: TBufferCoord;
-begin
-  if FSelections.Count = 1 then Exit;
-
-  // Remove Invalid
-  for I := Count - 1 downto 0 do
-    if not FSelections.List[I].IsValid then
-      DeleteSelection(I);
-
-  // Selections should be sorted in increasing order of the normalized Start.
-  // Merge is concequtive selections overlap.
-
-  NextSel := FSelections.List[Count - 1];  // last selection
-  for I := Count - 2 downto 0 do
-  begin
-    Sel := FSelections.List[I];
-
-    if (Sel = NextSel) or Sel.Intersects(NextSel) then
-    begin
-      Sel := DoMerge(Sel, NextSel);
-      FSelections.List[I] := Sel;
-      DeleteSelection(I + 1);
-    end;
-    NextSel := Sel;
-  end;
-
-  // Process the case of one invalid selection
-  if (FSelections.Count = 1) and not FSelections.List[0].IsValid then
-  begin
-    BC := BufferCoord(1, 1);
-    FSelections.List[0] := TSynSelection.Create(BC, BC, BC);
-  end;
-
-  // Activate the current selection
-  Restore(ActiveSelection, False);
-end;
-
-procedure TSynSelections.MouseSelection(const Sel: TSynSelection);
-// Mouse selection works differently than selection with the keyboard
-// All other selections overlapping with the active selection get removed
-// as in VS Code and Visual Studio.
-begin
-  // Exit if there are no other selections
-  if FSelections.Count <= 1 then Exit;
-
-  for var Index := FSelections.Count - 1 downto 0 do
-  begin
-    // Sel will become the active selection
-    if Index = FActiveSelIndex then
-      Continue;
-    if Sel.Intersects(fSelections.List[Index]) then
-      DeleteSelection(Index);
-  end;
-end;
-
-function TSynSelections.PartSelectionsForRow(
-  const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
-// Provides a list of canditates for partial selection of a Row
-var
-  Sel: TSynSelection;
-begin
-  Result := [];
-  for var Index := 0 to FSelections.Count - 1  do
-  begin
-    Sel := FSelections.List[Index].Normalized;
-    if Sel.Stop < RowStart then
-      Continue
-    else if Sel.Start > RowEnd then
-      Exit
-    else if not Sel.IsEmpty then
-      Result := Result + [Sel];
-  end;
-end;
-
-procedure TSynSelections.Restore(const [Ref] SelStorage: TSynSelStorage);
-begin
-  InvalidateAll;
-  FSelections.Clear;
-  FSelections.AddRange(SelStorage.Selections);
-  FActiveSelIndex := SelStorage.ActiveIndex;
-  FBaseSelIndex := SelStorage.BaseIndex;
-  InvalidateAll;
-  Restore(ActiveSelection);
-  CaretsChanged;
-end;
-
-procedure TSynSelections.Restore(const [Ref] Sel: TSynSelection;
+procedure TSynSelections.DoRestoreSelection(const Sel: TSynSelection;
   EnsureVisible: Boolean);
 var
   TrimTrailingActive: Boolean;
@@ -3739,64 +3224,39 @@ begin
       [eoTrimTrailingSpaces];
 end;
 
-function TSynSelections.RowHasCaret(ARow, ALine: Integer): Boolean;
-// Used in painting the active line
-
-  function IsCaretOnRow(Sel: TSynSelection): Boolean;
-  begin
-    if TCustomSynEdit(FOwner).WordWrap then
-      Result := TCustomSynEdit(FOwner).SelectionToDisplayCoord(Sel).Row = ARow
-    else
-      Result := Sel.Caret.Line = ALine;
-  end;
-
-var
-  Sel: TSynSelection;
-  Index: Integer;
+function TSynSelections.GetLineText(ALine: Integer): string;
 begin
-  // Find first selection that may contain the caret
-  FindSelection(BufferCoord(1, ALine), Index);
-
-  Result := False;
-  while Index < FSelections.Count do
-  begin
-    Sel := FSelections[Index].Normalized;
-    if Sel.Start.Line > ALine then Break;
-    Result := IsCaretOnRow(Sel);
-    if Result then Break;
-    Inc(Index);
-  end;
+  Result := TCustomSynEdit(FOwner).Lines[ALine - 1];
 end;
 
-procedure TSynSelections.SetActiveSelection(const Value: TSynSelection);
+function TSynSelections.GetWordWrap: Boolean;
 begin
-  FSelections[FActiveSelIndex] := Value;
+  Result := TCustomSynEdit(FOwner).WordWrap;
 end;
 
-procedure TSynSelections.SetActiveSelIndex(const Index: Integer);
-var
-  Sel: TSynSelection;
+function TSynSelections.GetScrollPastEOL: Boolean;
 begin
-  Assert(InRange(Index, 0, Count - 1));
-  if Index <> FActiveSelIndex then
-  begin
-    FActiveSelIndex := Index;
-    Sel := ActiveSelection;
-    if Sel.IsValid then
-      Restore(ActiveSelection, False);
-  end;
+  Result := eoScrollPastEol in TCustomSynEdit(FOwner).ScrollOptions;
 end;
 
-procedure TSynSelections.SetBaseSelection(const Value: TSynSelection);
+function TSynSelections.GetRowLength(ARow: Integer): Integer;
 begin
-  FSelections[FBaseSelIndex] := Value;
+  Result := TCustomSynEdit(FOwner).RowLength[ARow];
 end;
 
-procedure TSynSelections.Store(out SelStorage: TSynSelStorage);
+function TSynSelections.BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord;
 begin
-  SelStorage.Selections := FSelections.ToArray;
-  SelStorage.BaseIndex := FBaseSelIndex;
-  SelStorage.ActiveIndex := FActiveSelIndex;
+  Result := TCustomSynEdit(FOwner).BufferToDisplayPos(P);
+end;
+
+function TSynSelections.DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord;
+begin
+  Result := TCustomSynEdit(FOwner).DisplayToBufferPos(P);
+end;
+
+function TSynSelections.SelectionToDisplayRow(var Sel: TSynSelection): Integer;
+begin
+  Result := TCustomSynEdit(FOwner).SelectionToDisplayCoord(Sel).Row;
 end;
 
 {$ENDREGION 'TSynSelections'}
@@ -3857,13 +3317,6 @@ begin
 end;
 
 {$ENDREGION 'TSynCarets'}
-
-{ TSynSelStorage }
-
-procedure TSynSelStorage.Clear;
-begin
-  Selections := [];
-end;
 
 {$REGION 'Scrollbar Annotations'}
 

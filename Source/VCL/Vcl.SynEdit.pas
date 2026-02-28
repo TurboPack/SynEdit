@@ -62,6 +62,7 @@ uses
   Vcl.SynEditTypes,
   SynEditKeyConst,
   SynEditMiscProcs,
+  SynEditSelections,
   SynEditMiscClasses,
   SynEditTextBuffer,
   SynDWrite,

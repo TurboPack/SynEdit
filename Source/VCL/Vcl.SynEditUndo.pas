@@ -33,6 +33,7 @@ interface
 uses
   SynEdit,
   SynEditTypes,
+  SynEditSelections,
   SynEditKeyCmds;
 
 { Factory Method}
