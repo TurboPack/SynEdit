@@ -489,8 +489,8 @@ begin
           TSynLinePutUndoItem(LastItem).GroupWith(TSynLinePutUndoItem(Item));
     until not FKeepGoing;
 
-    if not (Item is TSynCaretAndSelectionUndoItem) then
-      Ed.CaretXY := Item.FCaret;
+    if not (LastItem is TSynCaretAndSelectionUndoItem) then
+      Ed.CaretXY := LastItem.FCaret;
 
     if (OldModified xor GetModified) and Assigned(FOnModifiedChanged) then
       FOnModifiedChanged(Self);

@@ -436,7 +436,7 @@ begin
       Layout.EndUpdate;
     end;
     TotalHeight := Layout.TextHeight;
-    if TotalHeight <= 0 then
+    if (TotalHeight <= 0) or (FLineHeight <= 0) then
       Result := 1
     else
       Result := Max(1, Round(TotalHeight / FLineHeight));
@@ -593,10 +593,10 @@ begin
   DoPrintStatus(psNewPage, PageNumber, FAbort);
   if FAbort then Exit;
 
-  if FPages.Count < PageNumber then Exit;
+  if (PageNumber < 1) or (FPages.Count < PageNumber) then Exit;
 
   { Determine background and font colors }
-  if FColors and FSynOK then
+  if FColors and FSynOK and Assigned(FHighlighter.WhitespaceAttribute) then
     BkgColor := FHighlighter.WhitespaceAttribute.Background
   else
     BkgColor := FDefaultBG;

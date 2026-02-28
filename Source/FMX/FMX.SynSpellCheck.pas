@@ -442,6 +442,11 @@ begin
     Exit;
   end;
 
+  // Clear existing errors for lines in the selection before re-checking
+  for I := FErrors.Count - 1 downto 0 do
+    if (FErrors[I].Line >= BB.Line) and (FErrors[I].Line <= BE.Line) then
+      FErrors.Delete(I);
+
   // Check each line in the selection using highlighter-aware logic
   for Line := BB.Line to BE.Line do
     DoCheckLine(Line);
