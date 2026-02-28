@@ -97,7 +97,6 @@ type
     FOnValidate: TValidateEvent;
     FOnCancel: TNotifyEvent;
     FEndOfTokenChr: string;
-    FMouseWheelAccumulator: Integer;
     procedure SetCurrentString(const Value: string);
     procedure SetPosition(Value: Integer);
     procedure ScrollBarChanged(Sender: TObject);
@@ -230,8 +229,6 @@ begin
   FMatchText := True;
   FCompleteWithTab := True;
   FCompleteWithEnter := True;
-  FMouseWheelAccumulator := 0;
-
   // Default FMX-friendly colors
   FClBackground := TAlphaColorRec.White;
   FClText := TAlphaColorRec.Black;
@@ -383,14 +380,14 @@ end;
 
 procedure TSynFMXCompletionProposalForm.MouseWheel(Shift: TShiftState;
   WheelDelta: Integer; var Handled: Boolean);
-var
-  Delta: Integer;
+const
+  { On Windows, WHEEL_DELTA is 120 units per notch.  On macOS/Linux FMX
+    reports smaller deltas (often 1-10 per event).  Use Sign() for
+    platform-independent direction detection. }
+  SCROLL_LINES = 3;
 begin
-  Inc(FMouseWheelAccumulator, WheelDelta);
-  Delta := FMouseWheelAccumulator div 120;
-  FMouseWheelAccumulator := FMouseWheelAccumulator mod 120;
-  if Delta <> 0 then
-    MoveLine(-Delta * 3);
+  if WheelDelta <> 0 then
+    MoveLine(-Sign(WheelDelta) * SCROLL_LINES);
   Handled := True;
 end;
 

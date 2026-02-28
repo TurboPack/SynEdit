@@ -141,6 +141,38 @@ type
     procedure TestScrollBarsHiddenInitially;
   end;
 
+  { Tests for cross-platform fixes (issues 13-15) }
+  [TestFixture]
+  TTestCrossPlatformFixes = class
+  private
+    FEditor: TFMXSynEdit;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+    { Issue 13: Selection colors should not use Windows system colors }
+    [Test]
+    procedure TestSelectionBGNotSystemColor;
+    [Test]
+    procedure TestSelectionFGNotSystemColor;
+    [Test]
+    procedure TestSelectionBGIsExplicitARGB;
+    [Test]
+    procedure TestSelectionFGIsExplicitARGB;
+    { Issue 15: BlockBegin/BlockEnd should be writable }
+    [Test]
+    procedure TestBlockBeginWritable;
+    [Test]
+    procedure TestBlockEndWritable;
+    [Test]
+    procedure TestBlockBeginResetsBlockEnd;
+    [Test]
+    procedure TestBlockBeginClampsToMin;
+    [Test]
+    procedure TestSetSelectionViaProperties;
+  end;
+
   [TestFixture]
   TTestKeyboardHandlerChain = class
   private
@@ -180,7 +212,8 @@ uses
   FMX.Graphics,
   SynEditTypes,
   SynEditKeyCmds,
-  SynEditTextBuffer;
+  SynEditTextBuffer,
+  FMX.SynEditMiscClasses;
 
 type
   // Helper to access protected KeyDown for testing
@@ -199,6 +232,9 @@ end;
 { ---- Bug 1: Plugin auto-registration ---- }
 
 type
+  { Access class to reach protected DoPluginAfterPaint for testing }
+  TFMXSynEditAccess = class(TCustomFMXSynEdit);
+
   TTestPlugin = class(TSynFMXEditPlugin)
   public
     AfterPaintCalled: Boolean;
@@ -283,20 +319,18 @@ end;
 procedure TTestPluginRegistration.TestPluginAfterPaintDispatch;
 var
   Plugin: TTestPlugin;
+  Helper: TFMXSynEditAccess;
 begin
-  // This tests that DoPluginAfterPaint actually dispatches to plugins
-  // with phAfterPaint in their Handlers
+  // Tests that DoPluginAfterPaint actually dispatches to registered plugins
   Plugin := TTestPlugin.Create(FEditor, [phAfterPaint]);
   try
-    Assert.IsFalse(Plugin.AfterPaintCalled);
-    // Call the dispatch method directly (it's private, so we test
-    // indirectly via Paint which calls DoPluginAfterPaint)
-    // Since we're headless, Repaint is a no-op, but we can verify
-    // the plugin is registered and has correct handlers
-    Assert.IsTrue(phAfterPaint in Plugin.Handlers,
-      'Plugin should have phAfterPaint handler');
-    Assert.IsTrue(Plugin.Owner = FEditor,
-      'Plugin owner should be the editor');
+    Assert.IsFalse(Plugin.AfterPaintCalled,
+      'AfterPaint should not be called before dispatch');
+    // DoPluginAfterPaint is protected; use a cast to access it
+    Helper := TFMXSynEditAccess(FEditor);
+    Helper.DoPluginAfterPaint(nil, TRectF.Empty, 1, 1);
+    Assert.IsTrue(Plugin.AfterPaintCalled,
+      'AfterPaint should be called after DoPluginAfterPaint dispatch');
   finally
     Plugin.Free;
   end;
@@ -816,6 +850,105 @@ begin
     'LinesInWindow should not change when adding lines that still fit');
 end;
 
+{ ---- Cross-platform fixes (issues 13-15) ---- }
+
+procedure TTestCrossPlatformFixes.Setup;
+begin
+  FEditor := TFMXSynEdit.Create(nil);
+  FEditor.Text := 'hello world' + sLineBreak + 'second line';
+end;
+
+procedure TTestCrossPlatformFixes.TearDown;
+begin
+  FEditor.Free;
+end;
+
+procedure TTestCrossPlatformFixes.TestSelectionBGNotSystemColor;
+begin
+  // Issue 13: Default selection background should NOT be a system color
+  // (system colors have the SystemColor flag bit set and rely on platform
+  // APIs to resolve, which may fail on non-Windows FMX targets)
+  Assert.AreNotEqual(TColor(TColors.SysHighlight),
+    FEditor.SelectedColor.Background,
+    'Default selection BG should not be clHighlight system color');
+end;
+
+procedure TTestCrossPlatformFixes.TestSelectionFGNotSystemColor;
+begin
+  Assert.AreNotEqual(TColor(TColors.SysHighlightText),
+    FEditor.SelectedColor.Foreground,
+    'Default selection FG should not be clHighlightText system color');
+end;
+
+procedure TTestCrossPlatformFixes.TestSelectionBGIsExplicitARGB;
+begin
+  // TColor uses BGR format where system colors have negative values (high bit
+  // set).  Explicit colors are non-negative (>= 0).  Verify the default is
+  // not a system color so TColorToAlphaColor can convert it on any platform.
+  Assert.IsTrue(Integer(FEditor.SelectedColor.Background) >= 0,
+    'Selection BG should be a non-negative TColor (not a system color)');
+end;
+
+procedure TTestCrossPlatformFixes.TestSelectionFGIsExplicitARGB;
+begin
+  Assert.IsTrue(Integer(FEditor.SelectedColor.Foreground) >= 0,
+    'Selection FG should be a non-negative TColor (not a system color)');
+end;
+
+procedure TTestCrossPlatformFixes.TestBlockBeginWritable;
+var
+  BB: TBufferCoord;
+begin
+  // Issue 15: BlockBegin should be writable
+  BB := BufferCoord(3, 1);
+  FEditor.BlockBegin := BB;
+  Assert.AreEqual(3, FEditor.BlockBegin.Char);
+  Assert.AreEqual(1, FEditor.BlockBegin.Line);
+end;
+
+procedure TTestCrossPlatformFixes.TestBlockEndWritable;
+var
+  BE: TBufferCoord;
+begin
+  FEditor.BlockBegin := BufferCoord(1, 1);
+  BE := BufferCoord(6, 1);
+  FEditor.BlockEnd := BE;
+  Assert.AreEqual(6, FEditor.BlockEnd.Char);
+  Assert.AreEqual(1, FEditor.BlockEnd.Line);
+end;
+
+procedure TTestCrossPlatformFixes.TestBlockBeginResetsBlockEnd;
+begin
+  // Setting BlockBegin should also reset BlockEnd to the same value
+  // (matching VCL behavior — starting a new selection)
+  FEditor.BlockBegin := BufferCoord(1, 1);
+  FEditor.BlockEnd := BufferCoord(6, 1);
+  // Now set a new BlockBegin — BlockEnd should be reset
+  FEditor.BlockBegin := BufferCoord(3, 2);
+  Assert.AreEqual(FEditor.BlockBegin.Char, FEditor.BlockEnd.Char,
+    'BlockEnd.Char should equal BlockBegin.Char after SetBlockBegin');
+  Assert.AreEqual(FEditor.BlockBegin.Line, FEditor.BlockEnd.Line,
+    'BlockEnd.Line should equal BlockBegin.Line after SetBlockBegin');
+end;
+
+procedure TTestCrossPlatformFixes.TestBlockBeginClampsToMin;
+begin
+  // Setting BlockBegin with invalid coordinates should clamp to 1
+  FEditor.BlockBegin := BufferCoord(-5, 0);
+  Assert.IsTrue(FEditor.BlockBegin.Char >= 1, 'BlockBegin.Char should be >= 1');
+  Assert.IsTrue(FEditor.BlockBegin.Line >= 1, 'BlockBegin.Line should be >= 1');
+end;
+
+procedure TTestCrossPlatformFixes.TestSetSelectionViaProperties;
+begin
+  // Test setting selection entirely via BlockBegin/BlockEnd properties
+  FEditor.BlockBegin := BufferCoord(1, 1);
+  FEditor.BlockEnd := BufferCoord(6, 1);
+  Assert.IsTrue(FEditor.SelAvail, 'Selection should be available');
+  Assert.AreEqual('hello', FEditor.SelText,
+    'Selected text should be "hello"');
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestPluginRegistration);
   TDUnitX.RegisterTestFixture(TTestModifiedProperty);
@@ -825,5 +958,6 @@ initialization
   TDUnitX.RegisterTestFixture(TTestPixelToBufferCoord);
   TDUnitX.RegisterTestFixture(TTestScrollBarSizing);
   TDUnitX.RegisterTestFixture(TTestKeyboardHandlerChain);
+  TDUnitX.RegisterTestFixture(TTestCrossPlatformFixes);
 
 end.

@@ -27,6 +27,15 @@ uses
   SynEditKeyCmds,
   SynEditKeyConst;
 
+const
+  { Cross-platform selection color defaults.
+    TColors.SysHighlight/SysHighlightText are system colors (negative TColor
+    values) that resolve via GetSysColor on Windows.  On non-Windows FMX
+    targets TColorToAlphaColor returns TAlphaColors.Null for system colors.
+    Use explicit TColor values (BGR format) that work on all platforms. }
+  clDefaultSelectionBG = TColors.Dodgerblue;  // $FF901E in BGR
+  clDefaultSelectionFG = TColors.White;       // $FFFFFF in BGR
+
 type
   { Selected text color }
   TSynSelectedColor = class(TPersistent)
@@ -45,8 +54,8 @@ type
     procedure Assign(Source: TPersistent); override;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   published
-    property Background: TColor read FBG write SetBG default clHighlight;
-    property Foreground: TColor read FFG write SetFG default clHighlightText;
+    property Background: TColor read FBG write SetBG;
+    property Foreground: TColor read FFG write SetFG;
     property Opacity: Byte read FOpacity write SetOpacity default 255;
     property FillWholeLines: Boolean read FFillWholeLines write SetFillWholeLines
       default True;
@@ -61,8 +70,8 @@ implementation
 constructor TSynSelectedColor.Create;
 begin
   inherited;
-  FBG := clHighlight;
-  FFG := clHighlightText;
+  FBG := clDefaultSelectionBG;
+  FFG := clDefaultSelectionFG;
   FOpacity := 255;
   FFillWholeLines := True;
 end;

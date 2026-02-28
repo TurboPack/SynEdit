@@ -128,6 +128,8 @@ type
     procedure SetText(const Value: string);
     function GetSelText: string;
     function GetSelAvail: Boolean;
+    procedure SetBlockBegin(Value: TBufferCoord);
+    procedure SetBlockEnd(Value: TBufferCoord);
     // Internal helpers
     procedure FontChanged(Sender: TObject);
     procedure LinesChanged(Sender: TObject);
@@ -173,10 +175,10 @@ type
     function LineToRow(aLine: Integer): Integer;
     function RowToLine(aRow: Integer): Integer;
     function GetDisplayRowCount: Integer;
-    // Plugin hooks
+  protected
+    // Plugin hooks (protected for testability)
     procedure DoPluginAfterPaint(Canvas: TCanvas; const AClip: TRectF;
       FirstLine, LastLine: Integer);
-  protected
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure Paint; override;
     procedure Resize; override;
@@ -242,8 +244,8 @@ type
     property CaretX: Integer read FCaretX write SetCaretX;
     property CaretY: Integer read FCaretY write SetCaretY;
     property CaretXY: TBufferCoord read GetCaretXY write SetCaretXY;
-    property BlockBegin: TBufferCoord read FBlockBegin;
-    property BlockEnd: TBufferCoord read FBlockEnd;
+    property BlockBegin: TBufferCoord read FBlockBegin write SetBlockBegin;
+    property BlockEnd: TBufferCoord read FBlockEnd write SetBlockEnd;
     property TopLine: Integer read FTopLine write SetTopLine;
     property LeftChar: Integer read FLeftChar write SetLeftChar;
     property Modified: Boolean read GetModified;
@@ -1948,6 +1950,29 @@ begin
   FBlockBegin := GetCaretXY;
   FBlockEnd := FBlockBegin;
   Repaint;
+end;
+
+procedure TCustomFMXSynEdit.SetBlockBegin(Value: TBufferCoord);
+begin
+  Value.Line := Max(Value.Line, 1);
+  Value.Char := Max(Value.Char, 1);
+  if (FBlockBegin.Char <> Value.Char) or (FBlockBegin.Line <> Value.Line) then
+  begin
+    FBlockBegin := Value;
+    FBlockEnd := Value;
+    Repaint;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.SetBlockEnd(Value: TBufferCoord);
+begin
+  Value.Line := Max(Value.Line, 1);
+  Value.Char := Max(Value.Char, 1);
+  if (FBlockEnd.Char <> Value.Char) or (FBlockEnd.Line <> Value.Line) then
+  begin
+    FBlockEnd := Value;
+    Repaint;
+  end;
 end;
 
 procedure TCustomFMXSynEdit.SetCaretAndSelection(const ACaretXY, ABlockBegin,
