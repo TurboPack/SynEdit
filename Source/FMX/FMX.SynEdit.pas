@@ -108,6 +108,8 @@ type
     FMarkList: TSynFMXEditMarkList;
     FOnPlaceBookmark: TNotifyEvent;
     FOnClearBookmark: TNotifyEvent;
+    // Gutter
+    FGutter: TSynFMXGutter;
     // Plugins
     FPlugins: TList;
     // Cached max scroll width
@@ -175,7 +177,8 @@ type
     procedure FullFoldScan;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings; FromLine, ToLine: Integer);
-    procedure PaintFoldGutter(Canvas: TCanvas; FirstRow, LastRow: Integer);
+    // Gutter
+    procedure GutterChanged(Sender: TObject);
     // Search/Replace private
     procedure SetSearchEngine(Value: TSynEditSearchCustom);
     function DoOnReplaceText(const ASearch, AReplace: string;
@@ -183,9 +186,6 @@ type
     // Word wrap private
     procedure SetWordWrap(Value: Boolean);
     function GetWrapAreaWidth: Integer;
-    // Row/Line mapping
-    function LineToRow(aLine: Integer): Integer;
-    function RowToLine(aRow: Integer): Integer;
     function GetDisplayRowCount: Integer;
   protected
     // Plugin hooks (protected for testability)
@@ -254,6 +254,9 @@ type
     // Keyboard handler chain
     procedure AddKeyDownHandler(aHandler: TKeyEvent);
     procedure RemoveKeyDownHandler(aHandler: TKeyEvent);
+    // Row/Line mapping
+    function LineToRow(aLine: Integer): Integer;
+    function RowToLine(aRow: Integer): Integer;
     property CodeFolding: TSynCodeFolding read FCodeFolding write FCodeFolding;
     property UseCodeFolding: Boolean read FUseCodeFolding write SetUseCodeFolding;
     property WordWrap: Boolean read FWordWrap write SetWordWrap default False;
@@ -281,6 +284,9 @@ type
     property MaxScrollWidth: Integer read GetMaxScrollWidth;
     property DisplayRowCount: Integer read GetDisplayRowCount;
     property Marks: TSynFMXEditMarkList read FMarkList;
+    property Gutter: TSynFMXGutter read FGutter;
+    property GutterWidth: Single read FGutterWidth;
+    property Renderer: TObject read FRenderer;
     property SelectedColor: TSynSelectedColor read FSelectedColor;
     property UndoRedo: ISynEditUndo read FUndoRedo;
     property ScrollOptions: TSynEditorScrollOptions read FScrollOptions
@@ -372,6 +378,7 @@ type
     property ActiveLineColor;
     property Options;
     property CodeFolding;
+    property Gutter;
     property UseCodeFolding;
     property WordWrap;
     property SearchEngine;
@@ -489,6 +496,10 @@ begin
   // Bookmarks
   FMarkList := TSynFMXEditMarkList.Create;
 
+  // Gutter
+  FGutter := TSynFMXGutter.Create(Self);
+  FGutter.OnChange := GutterChanged;
+
   // Plugins
   FPlugins := TList.Create;
 
@@ -499,6 +510,7 @@ destructor TCustomFMXSynEdit.Destroy;
 begin
   FWordWrapHelper.Free;
   FPlugins.Free;
+  FGutter.Free;
   FMarkList.Free;
   FKbdHandler.Free;
   FCodeFolding.Free;
@@ -585,22 +597,20 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.UpdateGutterWidth;
-var
-  DigitCount: Integer;
-  LineCount: Integer;
-  FoldWidth: Single;
 begin
-  LineCount := Max(FLines.Count, 1);
-  DigitCount := Max(2, Length(IntToStr(LineCount)));
-  FGutterWidth := Round((DigitCount + 1) * FCharWidth) + 4;
-  // Always reserve space for bookmark indicators
-  FGutterWidth := FGutterWidth + Round(FLineHeight);
-  if FUseCodeFolding then
-  begin
-    FoldWidth := FCodeFolding.GutterShapeSize + 8;
-    FGutterWidth := FGutterWidth + FoldWidth;
-  end;
+  FGutterWidth := FGutter.RealGutterWidth;
   FTextAreaLeft := FGutterWidth;
+end;
+
+procedure TCustomFMXSynEdit.GutterChanged(Sender: TObject);
+var
+  OldWidth: Single;
+begin
+  OldWidth := FGutterWidth;
+  UpdateGutterWidth;
+  if FGutterWidth <> OldWidth then
+    RecalcSizes;
+  Repaint;
 end;
 
 procedure TCustomFMXSynEdit.Resize;
@@ -822,86 +832,50 @@ procedure TCustomFMXSynEdit.PaintGutter(Canvas: TCanvas;
   FirstLine, LastLine: Integer);
 var
   Renderer: TSynFMXRenderer;
-  Row: Integer;
-  Line: Integer;
-  Y: Single;
-  R: TRectF;
-  NumStr: string;
-  NumberWidth: Single;
-  BookmarkAreaLeft: Single;
   I: Integer;
-  Mark: TSynFMXEditMark;
-  CX, CY, Radius: Single;
+  Band: TSynFMXGutterBand;
+  BandR: TRectF;
+  BandLeft, BandW: Single;
+  GutterColor: TAlphaColor;
+  SaveState: TCanvasSaveState;
 begin
+  if not FGutter.Visible then Exit;
   Renderer := TSynFMXRenderer(FRenderer);
+  GutterColor := TColorToAlphaColor(FGutter.Color);
 
-  // Gutter background
-  R := RectF(0, 0, FGutterWidth, Height);
-  Renderer.FillRect(Canvas, R, TAlphaColors.Whitesmoke);
-
-  // Gutter border
-  Renderer.DrawLine(Canvas, FGutterWidth - 1, 0, FGutterWidth - 1, Height,
-    TAlphaColors.Lightgray);
-
-  // Calculate number area width (excluding bookmark area and fold gutter)
-  NumberWidth := FGutterWidth;
-  if FUseCodeFolding then
-    NumberWidth := NumberWidth - FCodeFolding.GutterShapeSize - 8;
-  NumberWidth := NumberWidth - Round(FLineHeight);
-  BookmarkAreaLeft := NumberWidth;
-
-  // Line numbers (iterate display rows)
-  for Row := FirstLine to LastLine do
+  // Paint gutter background for bands with gbbGutter background
+  BandLeft := 0;
+  for I := 0 to FGutter.Bands.Count - 1 do
   begin
-    Line := RowToLine(Row);
-    if Line > FLines.Count then Break;
-    Y := (Row - FTopLine) * FLineHeight;
-    // In word wrap mode, only show line number on the first display row of each line
-    if FWordWrap and Assigned(FWordWrapHelper) then
+    Band := FGutter.Bands[I];
+    BandW := Band.RealWidth;
+    if (BandW > 0) and (Band.Background = gbbGutter) then
     begin
-      if FWordWrapHelper.LineToRow(Line) <> Row then
-        Continue; // continuation row - skip line number
+      BandR := RectF(BandLeft, 0, BandLeft + BandW, Height);
+      Renderer.FillRect(Canvas, BandR, GutterColor);
     end;
-    NumStr := IntToStr(Line);
-    R := RectF(2, Y, NumberWidth - 4, Y + FLineHeight);
-    Renderer.PaintLineNumber(Canvas, R, NumStr, TAlphaColors.Gray);
+    BandLeft := BandLeft + BandW;
   end;
 
-  // Bookmark indicators
-  if (FMarkList <> nil) and (FMarkList.Count > 0) then
+  // Paint each band
+  BandLeft := 0;
+  for I := 0 to FGutter.Bands.Count - 1 do
   begin
-    for Row := FirstLine to LastLine do
+    Band := FGutter.Bands[I];
+    BandW := Band.RealWidth;
+    if BandW > 0 then
     begin
-      Line := RowToLine(Row);
-      if Line > FLines.Count then Break;
-      Y := (Row - FTopLine) * FLineHeight;
-
-      for I := 0 to FMarkList.Count - 1 do
-      begin
-        Mark := FMarkList[I];
-        if Mark.Visible and Mark.IsBookmark and (Mark.Line = Line) then
-        begin
-          // Draw filled circle with bookmark number
-          CX := BookmarkAreaLeft + FCharWidth;
-          CY := Y + FLineHeight / 2;
-          Radius := FLineHeight / 2 - 1;
-          Canvas.Fill.Color := TAlphaColors.Dodgerblue;
-          Canvas.FillEllipse(
-            RectF(CX - Radius, CY - Radius, CX + Radius, CY + Radius), 1.0);
-          // Draw bookmark number
-          Renderer.PaintToken(Canvas,
-            CX - FCharWidth / 2, Y,
-            IntToStr(Mark.BookmarkNumber),
-            TAlphaColors.White, TAlphaColors.Null, [fsBold]);
-          Break; // one indicator per line
-        end;
+      BandR := RectF(BandLeft, 0, BandLeft + BandW, Height);
+      SaveState := Canvas.SaveState;
+      try
+        Canvas.IntersectClipRect(BandR);
+        Band.PaintLines(Canvas, BandR, FirstLine, LastLine);
+      finally
+        Canvas.RestoreState(SaveState);
       end;
     end;
+    BandLeft := BandLeft + BandW;
   end;
-
-  // Fold gutter shapes
-  if FUseCodeFolding then
-    PaintFoldGutter(Canvas, FirstLine, LastLine);
 end;
 
 procedure TCustomFMXSynEdit.PaintTextLines(Canvas: TCanvas;
@@ -2446,8 +2420,8 @@ procedure TCustomFMXSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Single);
 var
   BC: TBufferCoord;
-  Row, Line, Index: Integer;
-  FoldGutterLeft: Single;
+  Row, Line: Integer;
+  Band: TSynFMXGutterBand;
 begin
   inherited;
   if not IsFocused then
@@ -2455,23 +2429,15 @@ begin
 
   if Button = TMouseButton.mbLeft then
   begin
-    // Check for fold gutter click
-    if FUseCodeFolding then
+    // Check for gutter click
+    if X < FGutterWidth then
     begin
-      FoldGutterLeft := FGutterWidth - FCodeFolding.GutterShapeSize - 8;
-      if (X >= FoldGutterLeft) and (X < FGutterWidth) then
-      begin
-        Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
-        Line := RowToLine(Row);
-        if FAllFoldRanges.FoldStartAtLine(Line, Index) then
-        begin
-          if FAllFoldRanges.Ranges[Index].Collapsed then
-            Uncollapse(Index)
-          else
-            Collapse(Index);
-        end;
-        Exit;
-      end;
+      Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+      Line := RowToLine(Row);
+      Band := FGutter.BandAtX(X);
+      if Assigned(Band) then
+        Band.DoClick(Button, X, Y, Row, Line);
+      Exit;
     end;
 
     BC := PixelToBufferCoord(X, Y);
@@ -2800,6 +2766,11 @@ begin
     else
       FAllFoldRanges.AdjustRangesProc := nil;
 
+    // Toggle fold band visibility
+    var FoldBand := FGutter.Bands.BandByKind(gbkFold);
+    if Assigned(FoldBand) then
+      FoldBand.Visible := ValidValue;
+
     UpdateGutterWidth;
     RecalcSizes;
     Repaint;
@@ -2841,100 +2812,6 @@ begin
 
   if Assigned(FOnScanForFoldRanges) then
     FOnScanForFoldRanges(Self, FoldRanges, LinesToScan, FromLine, ToLine);
-end;
-
-procedure TCustomFMXSynEdit.PaintFoldGutter(Canvas: TCanvas;
-  FirstRow, LastRow: Integer);
-var
-  Renderer: TSynFMXRenderer;
-  Row, Line, Index: Integer;
-  Y, X, FoldLeft: Single;
-  ShapeSize: Single;
-  rcFold: TRectF;
-  FoldRange: TSynFoldRange;
-  Margin: Single;
-  LinesColor: TAlphaColor;
-begin
-  Renderer := TSynFMXRenderer(FRenderer);
-  ShapeSize := FCodeFolding.GutterShapeSize;
-  FoldLeft := FGutterWidth - ShapeSize - 4;
-  Margin := 2;
-  LinesColor := TColorToAlphaColor(FCodeFolding.FolderBarLinesColor);
-
-  for Row := FirstRow to LastRow do
-  begin
-    Line := RowToLine(Row);
-    if Line > FLines.Count then Break;
-
-    Y := (Row - FTopLine) * FLineHeight;
-    rcFold := RectF(
-      FoldLeft,
-      Y + (FLineHeight - ShapeSize) / 2,
-      FoldLeft + ShapeSize,
-      Y + (FLineHeight + ShapeSize) / 2);
-
-    // Fold start at this line?
-    if FAllFoldRanges.FoldStartAtLine(Line, Index) then
-    begin
-      FoldRange := FAllFoldRanges.Ranges[Index];
-
-      // Draw square
-      Canvas.Stroke.Color := LinesColor;
-      Canvas.Stroke.Thickness := 1;
-      Canvas.DrawRect(rcFold, 0, 0, AllCorners, 1.0);
-
-      // Draw horizontal minus sign
-      X := rcFold.Left + ShapeSize / 2;
-      Renderer.DrawLine(Canvas,
-        rcFold.Left + Margin, rcFold.Top + ShapeSize / 2,
-        rcFold.Right - Margin, rcFold.Top + ShapeSize / 2,
-        LinesColor);
-
-      if FoldRange.Collapsed then
-      begin
-        // Draw vertical plus sign
-        Renderer.DrawLine(Canvas,
-          X, rcFold.Top + Margin,
-          X, rcFold.Bottom - Margin,
-          LinesColor);
-      end
-      else
-      begin
-        // Draw line from bottom of square to bottom of row
-        Renderer.DrawLine(Canvas,
-          X, rcFold.Bottom,
-          X, Y + FLineHeight,
-          LinesColor);
-      end;
-    end
-    else
-    begin
-      X := rcFold.Left + ShapeSize / 2;
-
-      // Fold end at this line?
-      if FAllFoldRanges.FoldEndAtLine(Line, Index) then
-      begin
-        // L-connector: vertical line from top, then horizontal to right
-        Renderer.DrawLine(Canvas,
-          X, Y,
-          X, Y + FLineHeight / 2,
-          LinesColor);
-        Renderer.DrawLine(Canvas,
-          X, Y + FLineHeight / 2,
-          rcFold.Right, Y + FLineHeight / 2,
-          LinesColor);
-      end;
-
-      // Line through fold body?
-      if FAllFoldRanges.FoldAroundLine(Line, Index) then
-      begin
-        Renderer.DrawLine(Canvas,
-          X, Y,
-          X, Y + FLineHeight,
-          LinesColor);
-      end;
-    end;
-  end;
 end;
 
 procedure TCustomFMXSynEdit.Collapse(FoldRangeIndex: Integer; Invalidate: Boolean);

@@ -94,6 +94,7 @@
         <DCCReference Include="TestSynHighlighterCSSFolding.pas"/>
         <DCCReference Include="TestFMXSynEditWordWrap.pas"/>
         <DCCReference Include="TestFMXSynEditBookmarks.pas"/>
+        <DCCReference Include="TestFMXSynEditGutter.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

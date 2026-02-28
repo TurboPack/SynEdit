@@ -32,7 +32,8 @@ uses
   TestSynHighlighterXMLFolding in 'TestSynHighlighterXMLFolding.pas',
   TestSynHighlighterCSSFolding in 'TestSynHighlighterCSSFolding.pas',
   TestFMXSynEditWordWrap in 'TestFMXSynEditWordWrap.pas',
-  TestFMXSynEditBookmarks in 'TestFMXSynEditBookmarks.pas';
+  TestFMXSynEditBookmarks in 'TestFMXSynEditBookmarks.pas',
+  TestFMXSynEditGutter in 'TestFMXSynEditGutter.pas';
 
 var
   Runner: ITestRunner;
