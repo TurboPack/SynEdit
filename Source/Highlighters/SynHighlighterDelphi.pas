@@ -43,6 +43,7 @@ type
     fRE_BlockBegin: TRegEx;
     fRE_BlockEnd: TRegEx;
     fRE_Code: TRegEx;
+    fRE_Interface: TRegEx;
     fRE_Implementation: TRegEx;
     fRE_Begin: TRegEx;
 
@@ -147,6 +148,7 @@ begin
   FRE_BlockBegin := TRegEx.Create('\b(begin|record|class(?!\s+(var|function|procedure|constructor|destructor|operator)\b)|case|try)\b', [roIgnoreCase]);
   FRE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
   FRE_Code := TRegEx.Create('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
+  FRE_Interface := TRegEx.Create('^interface\b', [roIgnoreCase]);
   FRE_Implementation := TRegEx.Create('^implementation\b', [roIgnoreCase]);
   FRE_Begin := TRegEx.Create('\bbegin\b', [roIgnoreCase]);
 end;
@@ -687,6 +689,7 @@ var
   CurLine: string;
   Line: Integer;
   PendingProcLine: Integer;
+  HasImplementation: Boolean;
 
   function IsStartKeyword(const S: string): Boolean;
   begin
@@ -700,6 +703,7 @@ var
 
 begin
   PendingProcLine := -1;
+  HasImplementation := False;
   for Line := FromLine to ToLine do
   begin
     CurLine := Trim(LinesToScan[Line]);
@@ -714,9 +718,15 @@ begin
       FoldRanges.StartFoldRange(Line + 1, FoldRegionType)
     else if CurLine.ToUpper.StartsWith('{$ENDREGION') then
       FoldRanges.StopFoldRange(Line + 1, FoldRegionType)
-    // Implementation section
-    else if fRE_Implementation.IsMatch(CurLine) then
+    // Interface section
+    else if fRE_Interface.IsMatch(CurLine) then
       FoldRanges.StartFoldRange(Line + 1, 18)
+    // Implementation section (closes interface fold, opens implementation)
+    else if fRE_Implementation.IsMatch(CurLine) then
+    begin
+      FoldRanges.StopStartFoldRange(Line + 1, 18);
+      HasImplementation := True;
+    end
     // Procedure/Function headers - defer fold until begin is found
     else if fRE_Code.IsMatch(CurLine) then
       PendingProcLine := Line + 1
@@ -740,7 +750,11 @@ begin
       end
       else if IsEndKeyword(CurLine) then
       begin
-        FoldRanges.StopFoldRange(Line + 1, 1);
+        // end. closes implementation section; end; closes block
+        if HasImplementation and CurLine.ToUpper.StartsWith('END.') then
+          FoldRanges.StopFoldRange(Line + 1, 18)
+        else
+          FoldRanges.StopFoldRange(Line + 1, 1);
         PendingProcLine := -1;
       end;
     end;

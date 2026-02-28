@@ -77,6 +77,14 @@ type
     [Test]
     procedure TestRegionDoesNotInterfereWithBeginEnd;
 
+    { Interface/Implementation folding }
+    [Test]
+    procedure TestInterfaceSectionFolds;
+    [Test]
+    procedure TestImplementationSectionFolds;
+    [Test]
+    procedure TestProgramEndDotClosesBeginFold;
+
     { Mixed scenarios }
     [Test]
     procedure TestRecordThenProcedure;
@@ -413,6 +421,12 @@ begin
     'end.';                                    // line 23
   ScanText(SampleSource);
 
+  // interface (line 2) folds to line 9 (before implementation)
+  Idx := FindFoldAtLine(2);
+  Assert.IsTrue(Idx >= 0, 'Interface fold should exist at line 2');
+  Assert.AreEqual(9, FFoldRanges[Idx].ToLine,
+    'Interface fold should close before implementation');
+
   // TMyRecord = record (line 4) folds to end; (line 6)
   Idx := FindFoldAtLine(4);
   Assert.IsTrue(Idx >= 0, 'TMyRecord fold should exist at line 4');
@@ -428,6 +442,12 @@ begin
   // procedure Save; (line 8) must NOT have a fold — it is a declaration
   Assert.AreEqual(-1, FindFoldAtLine(8),
     'procedure Save; declaration must not fold');
+
+  // implementation (line 10) folds to end. (line 23)
+  Idx := FindFoldAtLine(10);
+  Assert.IsTrue(Idx >= 0, 'Implementation fold should exist at line 10');
+  Assert.AreEqual(23, FFoldRanges[Idx].ToLine,
+    'Implementation fold should close at end.');
 
   // procedure Test (line 11) should fold to end; (line 22)
   Idx := FindFoldAtLine(11);
@@ -510,6 +530,70 @@ begin
   Assert.IsTrue(FindFoldAtLine(2) >= 0, 'begin..end fold should exist');
   Assert.AreEqual(4, FFoldRanges[FindFoldAtLine(2)].ToLine,
     'begin..end fold should close at line 4');
+end;
+
+{ --- Interface/Implementation folding --- }
+
+procedure TTestDelphiFolding.TestInterfaceSectionFolds;
+begin
+  ScanText(
+    'unit Foo;'                   + sLineBreak +   // line 1
+    'interface'                   + sLineBreak +   // line 2
+    'type'                        + sLineBreak +   // line 3
+    '  TBar = record'             + sLineBreak +   // line 4
+    '    X: Integer;'            + sLineBreak +   // line 5
+    '  end;'                      + sLineBreak +   // line 6
+    'implementation'              + sLineBreak +   // line 7
+    'end.'                                          // line 8
+  );
+  // Interface section folds from line 2 to line 6 (before implementation)
+  Assert.IsTrue(FindFoldAtLine(2) >= 0,
+    'Interface fold should exist at line 2');
+  Assert.AreEqual(6, FFoldRanges[FindFoldAtLine(2)].ToLine,
+    'Interface fold should close before implementation');
+  // Implementation section folds from line 7 to line 8
+  Assert.IsTrue(FindFoldAtLine(7) >= 0,
+    'Implementation fold should exist at line 7');
+  Assert.AreEqual(8, FFoldRanges[FindFoldAtLine(7)].ToLine,
+    'Implementation fold should close at end.');
+end;
+
+procedure TTestDelphiFolding.TestImplementationSectionFolds;
+begin
+  ScanText(
+    'unit Foo;'                   + sLineBreak +   // line 1
+    'interface'                   + sLineBreak +   // line 2
+    'implementation'              + sLineBreak +   // line 3
+    'procedure Bar;'              + sLineBreak +   // line 4
+    'begin'                       + sLineBreak +   // line 5
+    'end;'                        + sLineBreak +   // line 6
+    'end.'                                          // line 7
+  );
+  // Implementation section folds from line 3 to line 7
+  Assert.IsTrue(FindFoldAtLine(3) >= 0,
+    'Implementation fold should exist');
+  Assert.AreEqual(7, FFoldRanges[FindFoldAtLine(3)].ToLine,
+    'Implementation fold should close at end.');
+  // Procedure fold still works inside implementation
+  Assert.IsTrue(FindFoldAtLine(4) >= 0,
+    'Procedure fold should exist at line 4');
+  Assert.AreEqual(6, FFoldRanges[FindFoldAtLine(4)].ToLine,
+    'Procedure fold should close at end;');
+end;
+
+procedure TTestDelphiFolding.TestProgramEndDotClosesBeginFold;
+begin
+  // In a program (no interface/implementation), end. closes begin
+  ScanText(
+    'program Foo;'                + sLineBreak +   // line 1
+    'begin'                       + sLineBreak +   // line 2
+    '  WriteLn;'                 + sLineBreak +   // line 3
+    'end.'                                          // line 4
+  );
+  Assert.IsTrue(FindFoldAtLine(2) >= 0,
+    'begin fold should exist');
+  Assert.AreEqual(4, FFoldRanges[FindFoldAtLine(2)].ToLine,
+    'begin fold should close at end.');
 end;
 
 { --- Mixed scenarios --- }
