@@ -63,6 +63,8 @@ type
     { CheckSelection }
     [Test]
     procedure TestCheckSelectionFallback;
+    [Test]
+    procedure TestCheckSelectionClearsDuplicates;
   end;
 
 implementation
@@ -70,7 +72,8 @@ implementation
 uses
   System.SysUtils,
   System.Classes,
-  System.Generics.Collections;
+  System.Generics.Collections,
+  SynEditTypes;
 
 type
   TMockSpellProvider = class(TInterfacedObject, ISynSpellCheckProvider)
@@ -347,6 +350,33 @@ begin
   FSpellCheck.CheckSelection;
   Assert.IsTrue(FSpellCheck.Errors.Count > 0,
     'CheckSelection with no selection should fall back to CheckFile');
+end;
+
+procedure TTestFMXSynSpellCheckComponent.TestCheckSelectionClearsDuplicates;
+var
+  CountAfterFirst, CountAfterSecond: Integer;
+begin
+  // Set up text with misspelled words on lines 2 and 3
+  FEditor.Lines.Clear;
+  FEditor.Lines.Add('hello world');         // line 1 - valid
+  FEditor.Lines.Add('baaad wrold');         // line 2 - 2 errors
+  FEditor.Lines.Add('quik foxx');           // line 3 - 2 errors
+  FEditor.Lines.Add('the fox');             // line 4 - valid
+
+  // Select lines 2-3 and check
+  FEditor.SetCaretAndSelection(
+    BufferCoord(1, 2),
+    BufferCoord(1, 2),
+    BufferCoord(10, 3));
+  FSpellCheck.CheckSelection;
+  CountAfterFirst := FSpellCheck.Errors.Count;
+  Assert.IsTrue(CountAfterFirst > 0, 'Should find errors in selection');
+
+  // Re-check same selection — errors should NOT accumulate
+  FSpellCheck.CheckSelection;
+  CountAfterSecond := FSpellCheck.Errors.Count;
+  Assert.AreEqual(CountAfterFirst, CountAfterSecond,
+    'Re-checking same selection should not duplicate errors');
 end;
 
 initialization

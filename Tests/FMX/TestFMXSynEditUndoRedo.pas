@@ -32,6 +32,8 @@ type
     procedure TestClearAllResetsUndo;
     [Test]
     procedure TestMultipleUndoRedo;
+    [Test]
+    procedure TestRedoCaretPosition;
   end;
 
 implementation
@@ -128,6 +130,37 @@ begin
   // Redo 'X'
   FEditor.Redo;
   Assert.AreEqual('XAB', FEditor.Lines[0]);
+end;
+
+procedure TTestFMXSynEditUndoRedo.TestRedoCaretPosition;
+begin
+  // Type two characters on separate lines, undo both, redo both
+  // Verify caret ends at the last redone item's position
+  FEditor.Text := 'Line1' + #13#10 + 'Line2';
+  // Type 'A' at start of line 1
+  FEditor.CaretXY := BufferCoord(1, 1);
+  FEditor.ExecuteCommand(ecChar, 'A');
+  Assert.AreEqual('ALine1', FEditor.Lines[0]);
+  Assert.AreEqual(2, FEditor.CaretX, 'Caret should be at 2 after typing A');
+  // Type 'B' at start of line 2
+  FEditor.CaretXY := BufferCoord(1, 2);
+  FEditor.ExecuteCommand(ecChar, 'B');
+  Assert.AreEqual('BLine2', FEditor.Lines[1]);
+  Assert.AreEqual(2, FEditor.CaretX, 'Caret should be at 2 after typing B');
+  // Undo both
+  FEditor.Undo;
+  FEditor.Undo;
+  Assert.AreEqual('Line1', FEditor.Lines[0]);
+  Assert.AreEqual('Line2', FEditor.Lines[1]);
+  // Redo first (A on line 1)
+  FEditor.Redo;
+  Assert.AreEqual('ALine1', FEditor.Lines[0]);
+  Assert.AreEqual(1, FEditor.CaretY, 'Caret should be on line 1 after first redo');
+  // Redo second (B on line 2)
+  FEditor.Redo;
+  Assert.AreEqual('BLine2', FEditor.Lines[1]);
+  Assert.AreEqual(2, FEditor.CaretY, 'Caret should be on line 2 after second redo');
+  Assert.AreEqual(2, FEditor.CaretX, 'Caret X should be 2 after redoing B');
 end;
 
 initialization
