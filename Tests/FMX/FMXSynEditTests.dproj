@@ -95,6 +95,7 @@
         <DCCReference Include="TestFMXSynEditWordWrap.pas"/>
         <DCCReference Include="TestFMXSynEditBookmarks.pas"/>
         <DCCReference Include="TestFMXSynEditGutter.pas"/>
+        <DCCReference Include="TestFMXSynEditMultiCaret.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

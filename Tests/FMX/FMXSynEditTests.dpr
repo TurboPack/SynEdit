@@ -33,7 +33,8 @@ uses
   TestSynHighlighterCSSFolding in 'TestSynHighlighterCSSFolding.pas',
   TestFMXSynEditWordWrap in 'TestFMXSynEditWordWrap.pas',
   TestFMXSynEditBookmarks in 'TestFMXSynEditBookmarks.pas',
-  TestFMXSynEditGutter in 'TestFMXSynEditGutter.pas';
+  TestFMXSynEditGutter in 'TestFMXSynEditGutter.pas',
+  TestFMXSynEditMultiCaret in 'TestFMXSynEditMultiCaret.pas';
 
 var
   Runner: ITestRunner;
