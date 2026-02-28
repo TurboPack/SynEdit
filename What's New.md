@@ -67,7 +67,7 @@ Three FMX demos are included in `Demos/FMX/`:
 
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **277 tests**, 22 fixtures:
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **288 tests**, 25 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -84,6 +84,9 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | WindowsSpellCheck | 11 | Windows spell-check COM provider |
 | SpellCheckComponent | 16 | TSynSpellCheck component integration |
 | BugFixes | 23 | Plugin registration, Modified, nil width, tabs, keyboard chain |
+| AutoIndentTabs | 4 | Tab preservation, mixed whitespace, disable option |
+| PixelToBufferCoord | 4 | Click mapping at/near char boundaries, gutter clamp |
+| ScrollBarSizing | 3 | LinesInWindow/CharsInWindow delta, scrollbar hidden |
 | Selection | 18 | ecSel* commands, accumulation, collapse, replace, line-boundary |
 | Clipboard | 10 | Copy/cut/paste, read-only guards, undo support |
 | Editing | 12 | Line joining, overwrite mode, OnChange, BeginUpdate |
