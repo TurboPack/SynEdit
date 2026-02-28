@@ -25,9 +25,16 @@ ScanForFoldRanges  is called after the standard highlighter scanning has
 taken place so one can use the Range information stored inside
 LinesToScan, which is a TSynEditStringList, to avoid duplicating effort.
 
-Initally two hightlighters have been converted SynHighlighterJScript and
-SynHighlighterPython, to serve as examples of adding code folding
-support to brace-based and indentation-based languagges.
+The following highlighters have been converted:
+
+| Highlighter | Fold strategy |
+| :---------- | :------------ |
+| SynHighlighterJScript | Brace-based (`{` / `}`) |
+| SynHighlighterPython | Indentation-based |
+| SynHighlighterDelphi | Keyword-based (`begin`/`end`, `class`, `record`, `try`, `case`, `interface`/`implementation`, `{$REGION}`/`{$ENDREGION}`). Procedures and functions fold from the header line, not the `begin` line. `class var`, `class function`, etc. are excluded from opening folds. |
+| SynHighlighterHTML | Tag-based (paired open/close tags). Void elements (`br`, `hr`, `img`, `input`, etc.) and self-closing tags are excluded. Multi-line tags and quoted `>` in attributes are handled correctly. |
+| SynHighlighterXML | Tag-based (paired open/close tags). Processing instructions, CDATA, comments, and DOCTYPE are excluded. Multi-line tag state is tracked across lines so that self-closing tags spanning multiple lines do not create spurious folds. |
+| SynHighlighterCSS | Brace-based (`{` / `}`) with comment and string awareness. Multi-line `/* */` comments are tracked across lines. Braces inside strings (with backslash escape support) are ignored. Supports nested `@media` / `@supports` blocks. |
 
 Alternatively, code folding support can be provided just by implementing
 the SynEdit OnScanForFoldRangesEvent event.
