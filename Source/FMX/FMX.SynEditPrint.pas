@@ -252,66 +252,11 @@ uses
 {$IFDEF MSWINDOWS}
   FMX.Printer,
 {$ENDIF}
-  SynUnicode;
+  SynUnicode,
+  FMX.SynEditRenderer;
 
 resourcestring
   SYNS_FMXNoPrinter = 'No printer available';
-
-{ Helper: convert TColor to TAlphaColor }
-function ColorToAlpha(AColor: TColor): TAlphaColor;
-begin
-  if Integer(AColor) < 0 then
-    Result := TAlphaColors.Null
-  else
-    Result := TAlphaColor($FF000000 or
-      (Cardinal(AColor and $FF) shl 16) or
-      (Cardinal(AColor and $FF00)) or
-      (Cardinal(AColor shr 16) and $FF));
-end;
-
-{ Measure text height using a temporary FMX TTextLayout }
-function MeasureLineHeight(AFont: TFont; TabWidth: Integer): Integer;
-var
-  Layout: TTextLayout;
-begin
-  Layout := TTextLayoutManager.DefaultTextLayout.Create;
-  try
-    Layout.BeginUpdate;
-    try
-      Layout.Font.Assign(AFont);
-      Layout.Text := 'Wg';
-      Layout.MaxSize := TPointF.Create(10000, 10000);
-    finally
-      Layout.EndUpdate;
-    end;
-    Result := Round(Layout.TextHeight);
-    if Result < 1 then
-      Result := Round(AFont.Size * 1.5);
-  finally
-    Layout.Free;
-  end;
-end;
-
-{ Measure text width }
-function MeasureTextWidth(AFont: TFont; const AText: string): Single;
-var
-  Layout: TTextLayout;
-begin
-  Layout := TTextLayoutManager.DefaultTextLayout.Create;
-  try
-    Layout.BeginUpdate;
-    try
-      Layout.Font.Assign(AFont);
-      Layout.Text := AText;
-      Layout.MaxSize := TPointF.Create(10000, 10000);
-    finally
-      Layout.EndUpdate;
-    end;
-    Result := Layout.TextWidth;
-  finally
-    Layout.Free;
-  end;
-end;
 
 {$IFDEF MSWINDOWS}
 { TSynFMXPrintProvider }
@@ -510,7 +455,7 @@ end;
 procedure TSynFMXEditPrint.InitPrint;
 begin
   FPrinterInfo.UpdateInfo;
-  FLineHeight := MeasureLineHeight(FFont, FTabWidth);
+  FLineHeight := MeasureTextHeight(FFont, 'Wg');
   FMargins.InitPage(FFont, FTabWidth, 1, FPrinterInfo, FLineNumbers,
     FLineNumbersInMargin, FLines.Count - 1 + FLineOffset);
   FSynOK := FHighlight and Assigned(FHighlighter) and (FLines.Count > 0);
@@ -625,7 +570,7 @@ begin
     FMargins.PLeft, YPos + FLineHeight);
 
   Canvas.Font.Assign(FFont);
-  Canvas.Fill.Color := ColorToAlpha(TColors.Black);
+  Canvas.Fill.Color := TColorToAlphaColor(TColors.Black);
   Canvas.FillText(R, AStr, False, 1.0, [],
     TTextAlign.Trailing, TTextAlign.Leading);
 end;
@@ -659,8 +604,8 @@ begin
   if Integer(BkgColor) < 0 then
     BkgColor := TColors.White;
 
-  AlphaBkg := ColorToAlpha(BkgColor);
-  AlphaFont := ColorToAlpha(TColors.Black);
+  AlphaBkg := TColorToAlphaColor(BkgColor);
+  AlphaFont := TColorToAlphaColor(TColors.Black);
 
   { Clear background }
   Canvas.Fill.Color := AlphaBkg;
@@ -714,7 +659,7 @@ begin
               begin
                 if FColors then
                 begin
-                  TokenColor := ColorToAlpha(Attr.Foreground);
+                  TokenColor := TColorToAlphaColor(Attr.Foreground);
                   if TokenColor = TAlphaColors.Null then
                     TokenColor := AlphaFont;
                 end

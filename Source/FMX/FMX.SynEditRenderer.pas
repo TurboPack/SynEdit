@@ -67,6 +67,12 @@ type
 { Converts TColor ($00BBGGRR) to TAlphaColor ($AARRGGBB) }
 function TColorToAlphaColor(AColor: TColor): TAlphaColor;
 
+{ Measure text height using a temporary FMX TTextLayout }
+function MeasureTextHeight(AFont: TFont; const AText: string): Integer;
+
+{ Measure text width using a temporary FMX TTextLayout }
+function MeasureTextWidth(AFont: TFont; const AText: string): Single;
+
 implementation
 
 function TColorToAlphaColor(AColor: TColor): TAlphaColor;
@@ -96,6 +102,48 @@ begin
     (Cardinal(AColor and $FF) shl 16) or
     (Cardinal(AColor and $FF00)) or
     (Cardinal(AColor shr 16) and $FF);
+end;
+
+function MeasureTextHeight(AFont: TFont; const AText: string): Integer;
+var
+  Layout: TTextLayout;
+begin
+  Layout := TTextLayoutManager.DefaultTextLayout.Create;
+  try
+    Layout.BeginUpdate;
+    try
+      Layout.Font.Assign(AFont);
+      Layout.Text := AText;
+      Layout.MaxSize := TPointF.Create(10000, 10000);
+    finally
+      Layout.EndUpdate;
+    end;
+    Result := Round(Layout.TextHeight);
+    if Result < 1 then
+      Result := Round(AFont.Size * 1.5);
+  finally
+    Layout.Free;
+  end;
+end;
+
+function MeasureTextWidth(AFont: TFont; const AText: string): Single;
+var
+  Layout: TTextLayout;
+begin
+  Layout := TTextLayoutManager.DefaultTextLayout.Create;
+  try
+    Layout.BeginUpdate;
+    try
+      Layout.Font.Assign(AFont);
+      Layout.Text := AText;
+      Layout.MaxSize := TPointF.Create(10000, 10000);
+    finally
+      Layout.EndUpdate;
+    end;
+    Result := Layout.TextWidth;
+  finally
+    Layout.Free;
+  end;
 end;
 
 { TSynFMXRenderer }

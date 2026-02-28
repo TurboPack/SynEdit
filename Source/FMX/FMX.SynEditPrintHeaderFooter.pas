@@ -163,19 +163,8 @@ type
 implementation
 
 uses
-  SynEditMiscProcs;
-
-{ Helper: convert TColor to TAlphaColor }
-function ColorToAlpha(AColor: TColor): TAlphaColor;
-begin
-  if Integer(AColor) < 0 then
-    Result := TAlphaColors.Null
-  else
-    Result := TAlphaColor($FF000000 or
-      (Cardinal(AColor and $FF) shl 16) or
-      (Cardinal(AColor and $FF00)) or
-      (Cardinal(AColor shr 16) and $FF));
-end;
+  SynEditMiscProcs,
+  FMX.SynEditRenderer;
 
 { Helper: extract first element from a delimited string }
 function GetFirstEl(var Value: string; Delim: WideChar): string;
@@ -187,50 +176,6 @@ begin
     P := Length(Value) + 1;
   Result := Copy(Value, 1, P - 1);
   System.Delete(Value, 1, P);
-end;
-
-{ Measure text height using the FMX text layout engine }
-function MeasureTextHeight(AFont: TFont; const AText: string): Integer;
-var
-  Layout: TTextLayout;
-begin
-  Layout := TTextLayoutManager.DefaultTextLayout.Create;
-  try
-    Layout.BeginUpdate;
-    try
-      Layout.Font.Assign(AFont);
-      Layout.Text := AText;
-      Layout.MaxSize := TPointF.Create(10000, 10000);
-    finally
-      Layout.EndUpdate;
-    end;
-    Result := Round(Layout.TextHeight);
-    if Result < 1 then
-      Result := Round(AFont.Size * 1.5);
-  finally
-    Layout.Free;
-  end;
-end;
-
-{ Measure text width }
-function MeasureTextWidth(AFont: TFont; const AText: string): Single;
-var
-  Layout: TTextLayout;
-begin
-  Layout := TTextLayoutManager.DefaultTextLayout.Create;
-  try
-    Layout.BeginUpdate;
-    try
-      Layout.Font.Assign(AFont);
-      Layout.Text := AText;
-      Layout.MaxSize := TPointF.Create(10000, 10000);
-    finally
-      Layout.EndUpdate;
-    end;
-    Result := Layout.TextWidth;
-  finally
-    Layout.Free;
-  end;
 end;
 
 { THeaderFooterItem }
@@ -627,8 +572,8 @@ var
 begin
   if FrameTypes = [] then Exit;
 
-  AlphaShaded := ColorToAlpha(FShadedColor);
-  AlphaLine := ColorToAlpha(FLineColor);
+  AlphaShaded := TColorToAlphaColor(FShadedColor);
+  AlphaLine := TColorToAlphaColor(FLineColor);
 
   with FMargins do
   begin
@@ -718,7 +663,7 @@ begin
       FMargins.PRightHFTextIndent, Y + FLineHeights[CurLine - 1]);
 
     Canvas.Font.Assign(AItem.Font);
-    Canvas.Fill.Color := ColorToAlpha(TColors.Black);
+    Canvas.Fill.Color := TColorToAlphaColor(TColors.Black);
     Canvas.FillText(TextRect, AStr, False, 1.0, [], HAlign,
       TTextAlign.Trailing);
   end;
