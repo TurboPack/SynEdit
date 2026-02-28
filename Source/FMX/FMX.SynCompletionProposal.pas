@@ -303,69 +303,64 @@ var
 begin
   inherited;
 
-  Canvas.BeginScene;
+  // Fill background
+  R := LocalRect;
+  Canvas.Fill.Kind := TBrushKind.Solid;
+  Canvas.Fill.Color := FClBackground;
+  Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity);
+
+  // Draw a border
+  Canvas.Stroke.Kind := TBrushKind.Solid;
+  Canvas.Stroke.Color := TAlphaColorRec.Gray;
+  Canvas.Stroke.Thickness := 1;
+  Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity);
+
+  // Calculate visible lines
+  AvailableWidth := Width - FScrollBar.Width;
+  FLinesInWindow := Max(1, Trunc((Height - 2) / FItemHeight));
+
+  TopIdx := GetTopIndex;
+
+  // Create a text layout for drawing
+  Layout := TTextLayoutManager.DefaultTextLayout.Create;
   try
-    // Fill background
-    R := LocalRect;
-    Canvas.Fill.Kind := TBrushKind.Solid;
-    Canvas.Fill.Color := FClBackground;
-    Canvas.FillRect(R, 0, 0, AllCorners, AbsoluteOpacity);
+    Layout.Font.Assign(FFont);
+    Layout.HorizontalAlign := TTextAlign.Leading;
+    Layout.VerticalAlign := TTextAlign.Center;
+    Layout.WordWrap := False;
+    Layout.Trimming := TTextTrimming.Character;
 
-    // Draw a border
-    Canvas.Stroke.Kind := TBrushKind.Solid;
-    Canvas.Stroke.Color := TAlphaColorRec.Gray;
-    Canvas.Stroke.Thickness := 1;
-    Canvas.DrawRect(R, 0, 0, AllCorners, AbsoluteOpacity);
+    for I := 0 to FLinesInWindow - 1 do
+    begin
+      ItemIdx := TopIdx + I;
+      if ItemIdx >= FAssignedList.Count then
+        Break;
 
-    // Calculate visible lines
-    AvailableWidth := Width - FScrollBar.Width;
-    FLinesInWindow := Max(1, Trunc((Height - 2) / FItemHeight));
+      TextR := RectF(FMargin, 1 + FItemHeight * I,
+        AvailableWidth - FMargin, 1 + FItemHeight * (I + 1));
 
-    TopIdx := GetTopIndex;
-
-    // Create a text layout for drawing
-    Layout := TTextLayoutManager.DefaultTextLayout.Create;
-    try
-      Layout.Font.Assign(FFont);
-      Layout.HorizontalAlign := TTextAlign.Leading;
-      Layout.VerticalAlign := TTextAlign.Center;
-      Layout.WordWrap := False;
-      Layout.Trimming := TTextTrimming.Character;
-
-      for I := 0 to FLinesInWindow - 1 do
+      // Draw selection highlight
+      if ItemIdx = FPosition then
       begin
-        ItemIdx := TopIdx + I;
-        if ItemIdx >= FAssignedList.Count then
-          Break;
+        Canvas.Fill.Color := FClSelect;
+        Canvas.FillRect(RectF(1, 1 + FItemHeight * I,
+          AvailableWidth, 1 + FItemHeight * (I + 1)),
+          0, 0, AllCorners, AbsoluteOpacity);
+        TextColor := FClSelectText;
+      end
+      else
+        TextColor := FClText;
 
-        TextR := RectF(FMargin, 1 + FItemHeight * I,
-          AvailableWidth - FMargin, 1 + FItemHeight * (I + 1));
+      ItemText := FAssignedList[ItemIdx];
 
-        // Draw selection highlight
-        if ItemIdx = FPosition then
-        begin
-          Canvas.Fill.Color := FClSelect;
-          Canvas.FillRect(RectF(1, 1 + FItemHeight * I,
-            AvailableWidth, 1 + FItemHeight * (I + 1)),
-            0, 0, AllCorners, AbsoluteOpacity);
-          TextColor := FClSelectText;
-        end
-        else
-          TextColor := FClText;
-
-        ItemText := FAssignedList[ItemIdx];
-
-        Layout.Text := ItemText;
-        Layout.Color := TextColor;
-        Layout.MaxSize := PointF(TextR.Width, TextR.Height);
-        Layout.TopLeft := TextR.TopLeft;
-        Layout.RenderLayout(Canvas);
-      end;
-    finally
-      Layout.Free;
+      Layout.Text := ItemText;
+      Layout.Color := TextColor;
+      Layout.MaxSize := PointF(TextR.Width, TextR.Height);
+      Layout.TopLeft := TextR.TopLeft;
+      Layout.RenderLayout(Canvas);
     end;
   finally
-    Canvas.EndScene;
+    Layout.Free;
   end;
 end;
 
