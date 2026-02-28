@@ -27,7 +27,8 @@ uses
   TestFMXSynEditEditing in 'TestFMXSynEditEditing.pas',
   TestFMXSynEditRenderer in 'TestFMXSynEditRenderer.pas',
   TestFMXSynEditCompletionProposal in 'TestFMXSynEditCompletionProposal.pas',
-  TestSynHighlighterDelphiFolding in 'TestSynHighlighterDelphiFolding.pas';
+  TestSynHighlighterDelphiFolding in 'TestSynHighlighterDelphiFolding.pas',
+  TestSynHighlighterHTMLFolding in 'TestSynHighlighterHTMLFolding.pas';
 
 var
   Runner: ITestRunner;

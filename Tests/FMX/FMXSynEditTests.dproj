@@ -89,6 +89,7 @@
         <DCCReference Include="TestFMXSynEditRenderer.pas"/>
         <DCCReference Include="TestFMXSynEditCompletionProposal.pas"/>
         <DCCReference Include="TestSynHighlighterDelphiFolding.pas"/>
+        <DCCReference Include="TestSynHighlighterHTMLFolding.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterHTML.pas, released 2000-04-10.
 The Original Code is based on the hkHTMLSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Hideo Koiso.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 HTML5 tags added by CodehunterWorks
 All Rights Reserved.
 
@@ -52,6 +52,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
+  SynEditCodeFolding,
   SynUnicode,
   SysUtils,
   Classes;
@@ -85,7 +86,7 @@ const
     ('&Psi;'),           { ?        }  { greek capital psi }
     ('&Omega;'),         { O        }  { greek capital omega }
     ('&alpha;'),         { a        }  { greek small alpha }
-    ('&beta;'),          { ß        }  { greek small beta }
+    ('&beta;'),          { ï¿½        }  { greek small beta }
     ('&gamma;'),         { ?        }  { greek small gamma }
     ('&delta;'),         { d        }  { greek small delta }
     ('&epsilon;'),       { e        }  { greek small epsilon }
@@ -95,7 +96,7 @@ const
     ('&iota;'),          { ?        }  { greek small iota }
     ('&kappa;'),         { ?        }  { greek small kappa }
     ('&lambda;'),        { ?        }  { greek small lambda }
-    ('&mu;'),            { µ        }  { greek small mu }
+    ('&mu;'),            { ï¿½        }  { greek small mu }
     ('&nu;'),            { ?        }  { greek small nu }
     ('&xi;'),            { ?        }  { greek small xi }
     ('&omicron;'),       { ?        }  { greek small omicron }
@@ -112,8 +113,8 @@ const
     ('&thetasym;'),      { ?        }  { greek small theta symbol }
     ('&upsih;'),         { ?        }  { greek upsilon with hook symbol }
     ('&piv;'),           { ?        }  { greek pi symbol }
-    ('&bull;'),          { •        }  { bullet }
-    ('&hellip;'),        { …        }  { horizontal ellipsis }
+    ('&bull;'),          { ï¿½        }  { bullet }
+    ('&hellip;'),        { ï¿½        }  { horizontal ellipsis }
     ('&prime;'),         { '        }  { prime }
     ('&Prime;'),         { "        }  { double prime }
     ('&oline;'),         { ?        }  { overline, = spacing overscore }
@@ -121,7 +122,7 @@ const
     ('&weierp;'),        { P        }  { script capital P }
     ('&image;'),         { I        }  { imaginary part }
     ('&real;'),          { R        }  { real part }
-    ('&trade;'),         { ™        }  { trademark sign }
+    ('&trade;'),         { ï¿½        }  { trademark sign }
     ('&alefsym;'),       { ?        }  { first transfinite cardinal }
     ('&larr;'),          { ?        }  { leftwards arrow }
     ('&uarr;'),          { ?        }  { upwards arrow }
@@ -137,7 +138,7 @@ const
     ('&forall;'),        { ?        }  { for all }
     ('&part;'),          { ?        }  { partial differential }
     ('&exist;'),         { ?        }  { there exists }
-    ('&empty;'),         { Ø        }  { empty set }
+    ('&empty;'),         { ï¿½        }  { empty set }
     ('&nabla;'),         { ?        }  { backward difference }
     ('&isin;'),          { ?        }  { element of }
     ('&notin;'),         { ?        }  { not an element of }
@@ -158,7 +159,7 @@ const
     ('&there4;'),        { ?        }  { therefore }
     ('&sim;'),           { ~        }  { similar to = tilde operator }
     ('&cong;'),          { ?        }  { approximately equal to }
-    ('&asymp;'),         { ˜        }  { almost euqal to }
+    ('&asymp;'),         { ï¿½        }  { almost euqal to }
     ('&ne;'),            { ?        }  { not equal to }
     ('&equiv;'),         { =        }  { identical to }
     ('&le;'),            { =        }  { less-than or equal to }
@@ -171,7 +172,7 @@ const
     ('&oplus;'),         { ?        }  { circled plus }
     ('&otimes;'),        { ?        }  { circled times }
     ('&perp;'),          { ?        }  { orthogonal to = perpendicular }
-    ('&sdot;'),          { ·        }  { dot operator }
+    ('&sdot;'),          { ï¿½        }  { dot operator }
     ('&lceil;'),         { ?        }  { left ceiling }
     ('&rceil;'),         { ?        }  { right ceiling }
     ('&lfloor;'),        { ?        }  { left floor }
@@ -183,23 +184,23 @@ const
     ('&clubs;'),         { ?        }  { black club suit }
     ('&hearts;'),        { ?        }  { black heart suit }
     ('&diams;'),         { ?        }  { black diamond suit }
-    ('&lsquo;'),         { ‘        }  { left single quote  }
-    ('&rsquo;'),         { ’        }  { right single quote }
-    ('&sbquo;'),         { ‚        }  { single low-9 quote }
-    ('&ldquo;'),         { “        }  { left double quote }
-    ('&rdquo;'),         { ”        }  { right double quote }
-    ('&bdquo;'),         { „        }  { double low-9 quote }
-    ('&dagger;'),        { †        }  { dagger }
-    ('&Dagger;'),        { ‡        }  { double dagger }
-    ('&permil;'),        { ‰        }  { per mill sign }
-    ('&lsaquo;'),        { ‹        }  { single left-pointing angle quote }
-    ('&rsaquo;'),        { ›        }  { single right-pointing angle quote }
+    ('&lsquo;'),         { ï¿½        }  { left single quote  }
+    ('&rsquo;'),         { ï¿½        }  { right single quote }
+    ('&sbquo;'),         { ï¿½        }  { single low-9 quote }
+    ('&ldquo;'),         { ï¿½        }  { left double quote }
+    ('&rdquo;'),         { ï¿½        }  { right double quote }
+    ('&bdquo;'),         { ï¿½        }  { double low-9 quote }
+    ('&dagger;'),        { ï¿½        }  { dagger }
+    ('&Dagger;'),        { ï¿½        }  { double dagger }
+    ('&permil;'),        { ï¿½        }  { per mill sign }
+    ('&lsaquo;'),        { ï¿½        }  { single left-pointing angle quote }
+    ('&rsaquo;'),        { ï¿½        }  { single right-pointing angle quote }
     ('&quot;'),          { &#034; " }  { double quotation mark }
     ('&amp;'),           { &#038; & }  { ampersand }
     ('&lt;'),            { &#060; < }  { less-than sign }
     ('&gt;'),            { >        }  { greater-than sign }
-    ('&ndash;'),         { &#150; – }  { en dash }
-    ('&mdash;'),         { &#151; — }  { em dash }
+    ('&ndash;'),         { &#150; ï¿½ }  { en dash }
+    ('&mdash;'),         { &#151; ï¿½ }  { em dash }
     ('&nbsp;'),          { &#160;   }  { nonbreaking space }
     ('&thinsp;'),        {          }  { thin space }
     ('&ensp;'),          {          }  { en space }
@@ -207,108 +208,108 @@ const
     ('&iexcl;'),         { &#161; ! }  { inverted exclamation }
     ('&cent;'),          { &#162; c }  { cent sign }
     ('&pound;'),         { &#163; L }  { pound sterling }
-    ('&curren;'),        { &#164; ¤ }  { general currency sign }
+    ('&curren;'),        { &#164; ï¿½ }  { general currency sign }
     ('&yen;'),           { &#165; Y }  { yen sign }
-    ('&brvbar;'),        { &#166; ¦ }  { broken vertical bar }
-    ('&brkbar;'),        { &#166; ¦ }  { broken vertical bar }
-    ('&sect;'),          { &#167; § }  { section sign }
-    ('&uml;'),           { &#168; ¨ }  { umlaut }
-    ('&die;'),           { &#168; ¨ }  { umlaut }
-    ('&copy;'),          { &#169; © }  { copyright }
+    ('&brvbar;'),        { &#166; ï¿½ }  { broken vertical bar }
+    ('&brkbar;'),        { &#166; ï¿½ }  { broken vertical bar }
+    ('&sect;'),          { &#167; ï¿½ }  { section sign }
+    ('&uml;'),           { &#168; ï¿½ }  { umlaut }
+    ('&die;'),           { &#168; ï¿½ }  { umlaut }
+    ('&copy;'),          { &#169; ï¿½ }  { copyright }
     ('&ordf;'),          { &#170; a }  { feminine ordinal }
-    ('&laquo;'),         { &#171; « }  { left angle quote }
-    ('&not;'),           { &#172; ¬ }  { not sign }
-    ('&shy;'),           { &#173; ­ }  { soft hyphen }
-    ('&reg;'),           { &#174; ® }  { registered trademark }
-    ('&macr;'),          { &#175; — }  { macron accent }
-    ('&hibar;'),         { &#175; — }  { macron accent }
-    ('&deg;'),           { &#176; ° }  { degree sign }
-    ('&plusmn;'),        { &#177; ± }  { plus or minus }
+    ('&laquo;'),         { &#171; ï¿½ }  { left angle quote }
+    ('&not;'),           { &#172; ï¿½ }  { not sign }
+    ('&shy;'),           { &#173; ï¿½ }  { soft hyphen }
+    ('&reg;'),           { &#174; ï¿½ }  { registered trademark }
+    ('&macr;'),          { &#175; ï¿½ }  { macron accent }
+    ('&hibar;'),         { &#175; ï¿½ }  { macron accent }
+    ('&deg;'),           { &#176; ï¿½ }  { degree sign }
+    ('&plusmn;'),        { &#177; ï¿½ }  { plus or minus }
     ('&sup2;'),          { &#178; 2 }  { superscript two }
     ('&sup3;'),          { &#179; 3 }  { superscript three }
-    ('&acute;'),         { &#180; ´ }  { acute accent }
-    ('&micro;'),         { &#181; µ }  { micro sign }
-    ('&para;'),          { &#182; ¶ }  { paragraph sign }
-    ('&middot;'),        { &#183; · }  { middle dot }
-    ('&cedil;'),         { &#184; ¸ }  { cedilla }
+    ('&acute;'),         { &#180; ï¿½ }  { acute accent }
+    ('&micro;'),         { &#181; ï¿½ }  { micro sign }
+    ('&para;'),          { &#182; ï¿½ }  { paragraph sign }
+    ('&middot;'),        { &#183; ï¿½ }  { middle dot }
+    ('&cedil;'),         { &#184; ï¿½ }  { cedilla }
     ('&sup1;'),          { &#185; 1 }  { superscript one }
     ('&ordm;'),          { &#186; o }  { masculine ordinal }
-    ('&raquo;'),         { &#187; » }  { right angle quote }
+    ('&raquo;'),         { &#187; ï¿½ }  { right angle quote }
     ('&frac14;'),        { &#188; 1 }  { one-fourth }
     ('&frac12;'),        { &#189; 1 }  { one-half }
     ('&frac34;'),        { &#190; 3 }  { three-fourths }
     ('&iquest;'),        { &#191; ? }  { inverted question mark }
     ('&Agrave;'),        { &#192; A }  { uppercase A, grave accent }
-    ('&Aacute;'),        { &#193; Á }  { uppercase A, acute accent }
-    ('&Acirc;'),         { &#194; Â }  { uppercase A, circumflex accent }
+    ('&Aacute;'),        { &#193; ï¿½ }  { uppercase A, acute accent }
+    ('&Acirc;'),         { &#194; ï¿½ }  { uppercase A, circumflex accent }
     ('&Atilde;'),        { &#195; A }  { uppercase A, tilde }
-    ('&Auml;'),          { &#196; Ä }  { uppercase A, umlaut }
+    ('&Auml;'),          { &#196; ï¿½ }  { uppercase A, umlaut }
     ('&Aring;'),         { &#197; A }  { uppercase A, ring }
     ('&AElig;'),         { &#198; A }  { uppercase AE }
-    ('&Ccedil;'),        { &#199; Ç }  { uppercase C, cedilla }
+    ('&Ccedil;'),        { &#199; ï¿½ }  { uppercase C, cedilla }
     ('&Egrave;'),        { &#200; E }  { uppercase E, grave accent }
-    ('&Eacute;'),        { &#201; É }  { uppercase E, acute accent }
+    ('&Eacute;'),        { &#201; ï¿½ }  { uppercase E, acute accent }
     ('&Ecirc;'),         { &#202; E }  { uppercase E, circumflex accent }
-    ('&Euml;'),          { &#203; Ë }  { uppercase E, umlaut }
+    ('&Euml;'),          { &#203; ï¿½ }  { uppercase E, umlaut }
     ('&Igrave;'),        { &#204; I }  { uppercase I, grave accent }
-    ('&Iacute;'),        { &#205; Í }  { uppercase I, acute accent }
-    ('&Icirc;'),         { &#206; Î }  { uppercase I, circumflex accent }
+    ('&Iacute;'),        { &#205; ï¿½ }  { uppercase I, acute accent }
+    ('&Icirc;'),         { &#206; ï¿½ }  { uppercase I, circumflex accent }
     ('&Iuml;'),          { &#207; I }  { uppercase I, umlaut }
     ('&ETH;'),           { &#208; ? }  { uppercase Eth, Icelandic }
     ('&Ntilde;'),        { &#209; N }  { uppercase N, tilde }
     ('&Ograve;'),        { &#210; O }  { uppercase O, grave accent }
-    ('&Oacute;'),        { &#211; Ó }  { uppercase O, acute accent }
-    ('&Ocirc;'),         { &#212; Ô }  { uppercase O, circumflex accent }
+    ('&Oacute;'),        { &#211; ï¿½ }  { uppercase O, acute accent }
+    ('&Ocirc;'),         { &#212; ï¿½ }  { uppercase O, circumflex accent }
     ('&Otilde;'),        { &#213; O }  { uppercase O, tilde }
-    ('&Ouml;'),          { &#214; Ö }  { uppercase O, umlaut }
-    ('&times;'),         { &#215; × }  { multiplication sign }
+    ('&Ouml;'),          { &#214; ï¿½ }  { uppercase O, umlaut }
+    ('&times;'),         { &#215; ï¿½ }  { multiplication sign }
     ('&Oslash;'),        { &#216; O }  { uppercase O, slash }
     ('&Ugrave;'),        { &#217; U }  { uppercase U, grave accent }
-    ('&Uacute;'),        { &#218; Ú }  { uppercase U, acute accent }
+    ('&Uacute;'),        { &#218; ï¿½ }  { uppercase U, acute accent }
     ('&Ucirc;'),         { &#219; U }  { uppercase U, circumflex accent }
-    ('&Uuml;'),          { &#220; Ü }  { uppercase U, umlaut }
-    ('&Yacute;'),        { &#221; Ý }  { uppercase Y, acute accent }
+    ('&Uuml;'),          { &#220; ï¿½ }  { uppercase U, umlaut }
+    ('&Yacute;'),        { &#221; ï¿½ }  { uppercase Y, acute accent }
     ('&THORN;'),         { &#222; ? }  { uppercase THORN, Icelandic }
-    ('&szlig;'),         { &#223; ß }  { lowercase sharps, German }
-    ('&agrave;'),        { &#224; à }  { lowercase a, grave accent }
-    ('&aacute;'),        { &#225; á }  { lowercase a, acute accent }
-    ('&acirc;'),         { &#226; â }  { lowercase a, circumflex accent }
-    ('&atilde;'),        { &#227; ã }  { lowercase a, tilde }
-    ('&auml;'),          { &#228; ä }  { lowercase a, umlaut }
-    ('&aring;'),         { &#229; å }  { lowercase a, ring }
+    ('&szlig;'),         { &#223; ï¿½ }  { lowercase sharps, German }
+    ('&agrave;'),        { &#224; ï¿½ }  { lowercase a, grave accent }
+    ('&aacute;'),        { &#225; ï¿½ }  { lowercase a, acute accent }
+    ('&acirc;'),         { &#226; ï¿½ }  { lowercase a, circumflex accent }
+    ('&atilde;'),        { &#227; ï¿½ }  { lowercase a, tilde }
+    ('&auml;'),          { &#228; ï¿½ }  { lowercase a, umlaut }
+    ('&aring;'),         { &#229; ï¿½ }  { lowercase a, ring }
     ('&aelig;'),         { &#230; a }  { lowercase ae }
-    ('&ccedil;'),        { &#231; ç }  { lowercase c, cedilla }
+    ('&ccedil;'),        { &#231; ï¿½ }  { lowercase c, cedilla }
     ('&egrave;'),        { &#232; e }  { lowercase e, grave accent }
-    ('&eacute;'),        { &#233; é }  { lowercase e, acute accent }
-    ('&ecirc;'),         { &#234; ê }  { lowercase e, circumflex accent }
-    ('&euml;'),          { &#235; ë }  { lowercase e, umlaut }
+    ('&eacute;'),        { &#233; ï¿½ }  { lowercase e, acute accent }
+    ('&ecirc;'),         { &#234; ï¿½ }  { lowercase e, circumflex accent }
+    ('&euml;'),          { &#235; ï¿½ }  { lowercase e, umlaut }
     ('&igrave;'),        { &#236; i }  { lowercase i, grave accent }
-    ('&iacute;'),        { &#237; í }  { lowercase i, acute accent }
-    ('&icirc;'),         { &#238; î }  { lowercase i, circumflex accent }
+    ('&iacute;'),        { &#237; ï¿½ }  { lowercase i, acute accent }
+    ('&icirc;'),         { &#238; ï¿½ }  { lowercase i, circumflex accent }
     ('&iuml;'),          { &#239; i }  { lowercase i, umlaut }
     ('&eth;'),           { &#240; ? }  { lowercase eth, Icelandic }
-    ('&ntilde;'),        { &#241; ñ }  { lowercase n, tilde }
+    ('&ntilde;'),        { &#241; ï¿½ }  { lowercase n, tilde }
     ('&ograve;'),        { &#242; o }  { lowercase o, grave accent }
-    ('&oacute;'),        { &#243; ó }  { lowercase o, acute accent }
-    ('&ocirc;'),         { &#244; ô }  { lowercase o, circumflex accent }
+    ('&oacute;'),        { &#243; ï¿½ }  { lowercase o, acute accent }
+    ('&ocirc;'),         { &#244; ï¿½ }  { lowercase o, circumflex accent }
     ('&otilde;'),        { &#245; o }  { lowercase o, tilde }
-    ('&ouml;'),          { &#246; ö }  { lowercase o, umlaut }
-    ('&divide;'),        { &#247; ÷ }  { division sign }
+    ('&ouml;'),          { &#246; ï¿½ }  { lowercase o, umlaut }
+    ('&divide;'),        { &#247; ï¿½ }  { division sign }
     ('&oslash;'),        { &#248; o }  { lowercase o, slash }
     ('&ugrave;'),        { &#249; u }  { lowercase u, grave accent }
-    ('&uacute;'),        { &#250; ú }  { lowercase u, acute accent }
+    ('&uacute;'),        { &#250; ï¿½ }  { lowercase u, acute accent }
     ('&ucirc;'),         { &#251; u }  { lowercase u, circumflex accent }
-    ('&uuml;'),          { &#252; ü }  { lowercase u, umlaut }
-    ('&yacute;'),        { &#253; ý }  { lowercase y, acute accent }
+    ('&uuml;'),          { &#252; ï¿½ }  { lowercase u, umlaut }
+    ('&yacute;'),        { &#253; ï¿½ }  { lowercase y, acute accent }
     ('&thorn;'),         { &#254; ? }  { lowercase thorn, Icelandic }
     ('&yuml;'),          { &#255; y }  { lowercase y, umlaut }
-    ('&euro;'),          { €        }  { euro sign }
-    ('&OElig;'),         { Œ        }  { capital ligature OE }
-    ('&oelig;'),         { œ        }  { small ligature oe }
-    ('&scaron;'),        { š        }  { small S with caron }
-    ('&Scaron;'),        { Š        }  { capital S with caron }
-    ('&fnof;'),          { ƒ        }  { function }
-    ('&circ;')           { ˆ        }  { circumflex accent }
+    ('&euro;'),          { ï¿½        }  { euro sign }
+    ('&OElig;'),         { ï¿½        }  { capital ligature OE }
+    ('&oelig;'),         { ï¿½        }  { small ligature oe }
+    ('&scaron;'),        { ï¿½        }  { small S with caron }
+    ('&Scaron;'),        { ï¿½        }  { capital S with caron }
+    ('&fnof;'),          { ï¿½        }  { function }
+    ('&circ;')           { ï¿½        }  { circumflex accent }
   );
 
 
@@ -322,7 +323,7 @@ type
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
   TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
 
-  TSynHTMLSyn = class(TSynCustomHighlighter)
+  TSynHTMLSyn = class(TSynCustomCodeFoldingHighlighter)
   private
     fAndCode: Integer;
     fRange: TRangeState;
@@ -375,6 +376,8 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
   published
     property AndAttri: TSynHighlighterAttributes read fAndAttri write fAndAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -1211,6 +1214,140 @@ end;
 class function TSynHTMLSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangHTML;
+end;
+
+// =============================================================================
+//   Code Folding Support
+// =============================================================================
+
+function IsVoidElement(const TagName: string): Boolean;
+const
+  VoidElements: array[0..13] of string = (
+    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+    'link', 'meta', 'param', 'source', 'track', 'wbr');
+var
+  LowerName: string;
+  I: Integer;
+begin
+  LowerName := TagName.ToLower;
+  for I := Low(VoidElements) to High(VoidElements) do
+    if LowerName = VoidElements[I] then
+      Exit(True);
+  Result := False;
+end;
+
+procedure CountHtmlTags(const S: string; out Opens, Closes: Integer);
+{ Scan a single line for HTML opening and closing tags.
+  - Void elements (br, hr, img, input, etc.) are excluded from opens.
+  - Self-closing tags (<br/>) are excluded from opens.
+  - Comments (<!-- -->) and DOCTYPE are ignored.
+  - Handles quoted attribute values (won't be confused by > inside quotes). }
+var
+  I, Len: Integer;
+  InTag, IsClosing, SelfClose: Boolean;
+  TagName: string;
+  InQuote: WideChar;
+begin
+  Opens := 0;
+  Closes := 0;
+  I := 1;
+  Len := Length(S);
+  InTag := False;
+  IsClosing := False;
+  InQuote := #0;
+
+  while I <= Len do
+  begin
+    if InQuote <> #0 then
+    begin
+      if S[I] = InQuote then
+        InQuote := #0;
+      Inc(I);
+    end
+    else if InTag then
+    begin
+      if S[I] = '>' then
+      begin
+        SelfClose := (I > 1) and (S[I - 1] = '/');
+        if IsClosing then
+          Inc(Closes)
+        else if not SelfClose and not IsVoidElement(TagName) then
+          Inc(Opens);
+        InTag := False;
+        Inc(I);
+      end
+      else if (S[I] = '"') or (S[I] = '''') then
+      begin
+        InQuote := S[I];
+        Inc(I);
+      end
+      else
+        Inc(I);
+    end
+    else if (S[I] = '<') then
+    begin
+      IsClosing := False;
+      TagName := '';
+      Inc(I);
+      // Skip comments <!-- and DOCTYPE <!
+      if (I <= Len) and (S[I] = '!') then
+      begin
+        // Not a regular tag â€” skip until >
+        while (I <= Len) and (S[I] <> '>') do
+          Inc(I);
+        if I <= Len then Inc(I); // skip >
+        Continue;
+      end;
+      // Check for closing tag
+      if (I <= Len) and (S[I] = '/') then
+      begin
+        IsClosing := True;
+        Inc(I);
+      end;
+      // Read tag name
+      while (I <= Len) and (CharInSet(S[I], ['A'..'Z', 'a'..'z', '0'..'9', '-'])) do
+      begin
+        TagName := TagName + S[I];
+        Inc(I);
+      end;
+      if TagName <> '' then
+        InTag := True
+      // else: bare < without tag name, ignore
+    end
+    else
+      Inc(I);
+  end;
+
+  // Tags that span to next line (no > found): count the open if non-void
+  if InTag and not IsClosing and (TagName <> '') and not IsVoidElement(TagName) then
+    Inc(Opens);
+end;
+
+procedure TSynHTMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+var
+  Line: Integer;
+  CurLine: string;
+  Opens, Closes: Integer;
+begin
+  for Line := FromLine to ToLine do
+  begin
+    CurLine := LinesToScan[Line];
+    if Trim(CurLine) = '' then
+    begin
+      FoldRanges.NoFoldInfo(Line + 1);
+      Continue;
+    end;
+
+    CountHtmlTags(CurLine, Opens, Closes);
+
+    if Opens > Closes then
+      FoldRanges.StartFoldRange(Line + 1, 1)
+    else if Closes > Opens then
+      FoldRanges.StopFoldRange(Line + 1, 1)
+    else
+      FoldRanges.NoFoldInfo(Line + 1);
+  end;
 end;
 
 initialization
