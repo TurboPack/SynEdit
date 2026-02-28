@@ -19,6 +19,8 @@ uses
   TestFMXSynEditHighlighter in 'TestFMXSynEditHighlighter.pas',
   TestFMXSynEditCommands in 'TestFMXSynEditCommands.pas',
   TestFMXSynSpellCheck in 'TestFMXSynSpellCheck.pas',
+  TestFMXSynWindowsSpellCheck in 'TestFMXSynWindowsSpellCheck.pas',
+  TestFMXSynSpellCheckComponent in 'TestFMXSynSpellCheckComponent.pas',
   TestFMXSynEditBugFixes in 'TestFMXSynEditBugFixes.pas',
   TestFMXSynEditSelection in 'TestFMXSynEditSelection.pas',
   TestFMXSynEditClipboard in 'TestFMXSynEditClipboard.pas',

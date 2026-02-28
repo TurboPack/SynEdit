@@ -80,6 +80,8 @@
         <DCCReference Include="TestFMXSynEditHighlighter.pas"/>
         <DCCReference Include="TestFMXSynEditCommands.pas"/>
         <DCCReference Include="TestFMXSynSpellCheck.pas"/>
+        <DCCReference Include="TestFMXSynWindowsSpellCheck.pas"/>
+        <DCCReference Include="TestFMXSynSpellCheckComponent.pas"/>
         <DCCReference Include="TestFMXSynEditBugFixes.pas"/>
         <DCCReference Include="TestFMXSynEditSelection.pas"/>
         <DCCReference Include="TestFMXSynEditClipboard.pas"/>
