@@ -26,6 +26,8 @@ type
     ['{F3A7B2C1-D4E5-4F60-A1B2-C3D4E5F67890}']
     function UpdateScrollBars: Boolean;
     function GetIsScrolling: Boolean;
+    function GetVisibleVScrollBarWidth: Single;
+    function GetVisibleHScrollBarHeight: Single;
     procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPointF);
     property IsScrolling: Boolean read GetIsScrolling;

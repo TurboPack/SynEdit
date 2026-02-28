@@ -46,6 +46,8 @@ type
     constructor Create(AEditor: TControl);
     function UpdateScrollBars: Boolean;
     function GetIsScrolling: Boolean;
+    function GetVisibleVScrollBarWidth: Single;
+    function GetVisibleHScrollBarHeight: Single;
     procedure DoMouseWheel(Shift: TShiftState; WheelDelta: Integer;
       MousePos: TPointF);
   end;
@@ -146,6 +148,22 @@ end;
 function TSynFMXScrollBars.GetIsScrolling: Boolean;
 begin
   Result := FIsScrolling;
+end;
+
+function TSynFMXScrollBars.GetVisibleVScrollBarWidth: Single;
+begin
+  if FVScrollBar.Visible then
+    Result := FVScrollBar.Width
+  else
+    Result := 0;
+end;
+
+function TSynFMXScrollBars.GetVisibleHScrollBarHeight: Single;
+begin
+  if FHScrollBar.Visible then
+    Result := FHScrollBar.Height
+  else
+    Result := 0;
 end;
 
 procedure TSynFMXScrollBars.DoMouseWheel(Shift: TShiftState;
