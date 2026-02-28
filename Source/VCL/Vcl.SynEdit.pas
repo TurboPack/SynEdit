@@ -1251,14 +1251,8 @@ begin
 end;
 
 function TCustomSynEdit.ColumnSelectionStart: TBufferCoord;
-  // With eoScrollPastEol in an empty selection (Selection.Start = Selection.Stop)
-  // Selection.Caret may be different to both, if it is past eol.
-  // In that case prefer the Caret.
 begin
-  if Selections.BaseSelection.IsEmpty then
-    Result := Selections.BaseSelection.Caret
-  else
-    Result := Selections.BaseSelection.Start;
+  Result := FSelections.ColumnSelectionStart;
 end;
 
 function TCustomSynEdit.ColumnToPixels(const S: string; Col: Integer): Integer;
@@ -7008,8 +7002,6 @@ end;
 procedure TCustomSynEdit.ExecuteMultiCaretCommand(Command: TSynEditorCommand;
   AChar: WideChar; Data: Pointer; CommandInfo: TSynCommandInfo);
 var
-  OldActiveSelIndex: Integer;
-  I: Integer;
   OldTopLine, OldLeftChar: Integer;
 begin
   DoOnPaintTransient(ttBefore);
@@ -7021,26 +7013,15 @@ begin
       BeginUndoBlock;
     end;
 
-    OldActiveSelIndex := Selections.ActiveSelIndex;
     OldLeftChar := LeftChar;
     OldTopLine := TopLine;
 
-    for I := 0 to FSelections.Count -1 do
-    begin
-      // Make the current selection active
-      Selections.ActiveSelIndex := I;
-
-      if not FSelection.IsValid then Continue;
-
-      ExecuteCommand(Command, AChar, Data);
-      Selections.ActiveSelection := FSelection;
-    end;
-
-    // Restore Active Selection
-    Selections.ActiveSelIndex := OldActiveSelIndex;
-
-    // Merge Selections
-    FSelections.Merge;
+    FSelections.ForEachSelection(
+      procedure(Sel: TSynSelection)
+      begin
+        ExecuteCommand(Command, AChar, Data);
+        Selections.ActiveSelection := FSelection;
+      end);
 
     TopLine := OldTopLine;
     LeftChar := OldLeftChar;

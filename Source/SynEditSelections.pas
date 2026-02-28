@@ -85,11 +85,15 @@ type
     // Invalidation
     procedure InvalidateSelection(Index: Integer);
     procedure InvalidateAll;
+    // Column selection anchor
+    function ColumnSelectionStart: TBufferCoord;
     // Store/Restore
     procedure Store(out SelStorage: TSynSelStorage);
     procedure Restore(const [Ref] SelStorage: TSynSelStorage); overload;
     procedure Restore(const [Ref] Sel: TSynSelection;
       EnsureVisible: Boolean = True); overload;
+    // Multi-caret command execution
+    procedure ForEachSelection(const Callback: TProc<TSynSelection>);
     // Line-change adjustment
     procedure LinesInserted(FirstLine, aCount: Integer);
     procedure LinesDeleted(FirstLine, aCount: Integer);
@@ -190,6 +194,38 @@ begin
   FBaseSelIndex := 0;
   FActiveSelIndex := 0;
   CaretsChanged;
+end;
+
+function TSynSelectionsBase.ColumnSelectionStart: TBufferCoord;
+begin
+  if FSelections[FBaseSelIndex].IsEmpty then
+    Result := FSelections[FBaseSelIndex].Caret
+  else
+    Result := FSelections[FBaseSelIndex].Start;
+end;
+
+procedure TSynSelectionsBase.ForEachSelection(
+  const Callback: TProc<TSynSelection>);
+var
+  OldActiveSelIndex, I: Integer;
+begin
+  OldActiveSelIndex := FActiveSelIndex;
+
+  for I := 0 to FSelections.Count - 1 do
+  begin
+    ActiveSelIndex := I;
+    if FSelections[I].IsValid then
+      Callback(FSelections[I]);
+  end;
+
+  // Restore Active Selection (bounds-safe)
+  if OldActiveSelIndex < FSelections.Count then
+    ActiveSelIndex := OldActiveSelIndex
+  else
+    ActiveSelIndex := FSelections.Count - 1;
+
+  // Merge overlapping selections
+  Merge;
 end;
 
 procedure TSynSelectionsBase.ColumnSelection(Anchor, ACaret: TBufferCoord;

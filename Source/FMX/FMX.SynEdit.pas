@@ -1534,10 +1534,7 @@ end;
 
 function TCustomFMXSynEdit.ColumnSelectionStart: TBufferCoord;
 begin
-  if FSelections.BaseSelection.IsEmpty then
-    Result := FSelections.BaseSelection.Caret
-  else
-    Result := FSelections.BaseSelection.Start;
+  Result := FSelections.ColumnSelectionStart;
 end;
 
 procedure TCustomFMXSynEdit.CommandProcessor(Command: TSynEditorCommand;
@@ -1565,38 +1562,22 @@ end;
 procedure TCustomFMXSynEdit.ExecuteMultiCaretCommand(
   Command: TSynEditorCommand; AChar: WideChar);
 var
-  OldActiveSelIndex: Integer;
-  I: Integer;
   OldTopLine, OldLeftChar: Integer;
 begin
   BeginUpdate;
   try
     FUndoRedo.BeginBlock(Self);
     try
-      OldActiveSelIndex := FSelections.ActiveSelIndex;
       OldLeftChar := LeftChar;
       OldTopLine := TopLine;
 
-      for I := 0 to FSelections.Count - 1 do
-      begin
-        FSelections.ActiveSelIndex := I;
-        FSelection := FSelections.ActiveSelection;
-
-        if not FSelection.IsValid then Continue;
-
-        ExecuteCommand(Command, AChar);
-        FSelections.ActiveSelection := FSelection;
-      end;
-
-      // Restore Active Selection
-      if OldActiveSelIndex < FSelections.Count then
-        FSelections.ActiveSelIndex := OldActiveSelIndex
-      else
-        FSelections.ActiveSelIndex := FSelections.Count - 1;
-      FSelection := FSelections.ActiveSelection;
-
-      // Merge overlapping selections
-      FSelections.Merge;
+      FSelections.ForEachSelection(
+        procedure(Sel: TSynSelection)
+        begin
+          FSelection := FSelections.ActiveSelection;
+          ExecuteCommand(Command, AChar);
+          FSelections.ActiveSelection := FSelection;
+        end);
       FSelection := FSelections.ActiveSelection;
 
       TopLine := OldTopLine;
