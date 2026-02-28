@@ -19,7 +19,12 @@ uses
   TestFMXSynEditHighlighter in 'TestFMXSynEditHighlighter.pas',
   TestFMXSynEditCommands in 'TestFMXSynEditCommands.pas',
   TestFMXSynSpellCheck in 'TestFMXSynSpellCheck.pas',
-  TestFMXSynEditBugFixes in 'TestFMXSynEditBugFixes.pas';
+  TestFMXSynEditBugFixes in 'TestFMXSynEditBugFixes.pas',
+  TestFMXSynEditSelection in 'TestFMXSynEditSelection.pas',
+  TestFMXSynEditClipboard in 'TestFMXSynEditClipboard.pas',
+  TestFMXSynEditEditing in 'TestFMXSynEditEditing.pas',
+  TestFMXSynEditRenderer in 'TestFMXSynEditRenderer.pas',
+  TestFMXSynEditCompletionProposal in 'TestFMXSynEditCompletionProposal.pas';
 
 var
   Runner: ITestRunner;
@@ -36,7 +41,7 @@ begin
     Runner.AddLogger(Logger);
     NUnitLogger := TDUnitXXMLNUnitFileLogger.Create(TDUnitX.Options.XMLOutputFile);
     Runner.AddLogger(NUnitLogger);
-    Runner.FailsOnNoAsserts := False;
+    Runner.FailsOnNoAsserts := True;
     Results := Runner.Execute;
     if not Results.AllPassed then
       System.ExitCode := 1;

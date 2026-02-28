@@ -68,7 +68,7 @@ begin
   FEditor.Text := 'Hello World';
   FEditor.SearchEngine := FSearchEngine;
   Count := FEditor.SearchReplace('World', '', [ssoEntireScope]);
-  Assert.IsTrue(Count > 0, 'Should find "World" in text');
+  Assert.AreEqual(1, Count, 'Should find exactly 1 "World" in text');
 end;
 
 procedure TTestFMXSynEditSearch.TestSearchNoMatch;
@@ -100,7 +100,7 @@ begin
   FEditor.SearchEngine := FSearchEngine;
   // 'hello' without case-sensitive should match 'Hello'
   Count := FEditor.SearchReplace('hello', '', [ssoEntireScope]);
-  Assert.IsTrue(Count > 0, 'Case-insensitive search should match different case');
+  Assert.AreEqual(1, Count, 'Case-insensitive search should match different case');
 end;
 
 procedure TTestFMXSynEditSearch.TestSearchWholeWord;
@@ -145,7 +145,7 @@ begin
   FEditor.Text := 'abc 123 def 456';
   FEditor.SearchEngine := FRegexEngine;
   Count := FEditor.SearchReplace('\d+', '', [ssoEntireScope]);
-  Assert.IsTrue(Count > 0, 'Regex should find digit sequence');
+  Assert.AreEqual(1, Count, 'Search without replace should find first match');
 end;
 
 procedure TTestFMXSynEditSearch.TestRegexReplace;

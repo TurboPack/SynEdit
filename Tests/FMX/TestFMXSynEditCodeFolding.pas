@@ -75,25 +75,24 @@ end;
 procedure TTestFMXSynEditCodeFolding.TestFoldRangesDetected;
 begin
   SetupFoldableContent;
-  Assert.IsTrue(FEditor.AllFoldRanges.Count > 0,
-    'Fold ranges should be detected in JSON with braces/brackets');
+  // JSON sample has 2 fold regions: outer {} and inner []
+  Assert.AreEqual(2, FEditor.AllFoldRanges.Count,
+    'Should detect 2 fold ranges (braces and brackets) in JSON');
 end;
 
 procedure TTestFMXSynEditCodeFolding.TestCollapseAll;
 var
   I: Integer;
-  AnyCollapsed: Boolean;
+  CollapsedCount: Integer;
 begin
   SetupFoldableContent;
   FEditor.CollapseAll;
-  AnyCollapsed := False;
+  CollapsedCount := 0;
   for I := 0 to FEditor.AllFoldRanges.Count - 1 do
     if FEditor.AllFoldRanges[I].Collapsed then
-    begin
-      AnyCollapsed := True;
-      Break;
-    end;
-  Assert.IsTrue(AnyCollapsed, 'At least one fold range should be collapsed');
+      Inc(CollapsedCount);
+  Assert.AreEqual(FEditor.AllFoldRanges.Count, CollapsedCount,
+    'All fold ranges should be collapsed after CollapseAll');
 end;
 
 procedure TTestFMXSynEditCodeFolding.TestUncollapseAll;
@@ -126,19 +125,20 @@ end;
 procedure TTestFMXSynEditCodeFolding.TestCollapseLevel;
 var
   I: Integer;
-  AnyCollapsed: Boolean;
+  CollapsedCount: Integer;
 begin
   SetupFoldableContent;
   // Level 1 = outermost folds
   FEditor.CollapseLevel(1);
-  AnyCollapsed := False;
+  CollapsedCount := 0;
   for I := 0 to FEditor.AllFoldRanges.Count - 1 do
     if FEditor.AllFoldRanges[I].Collapsed then
-    begin
-      AnyCollapsed := True;
-      Break;
-    end;
-  Assert.IsTrue(AnyCollapsed, 'CollapseLevel(1) should collapse top-level folds');
+      Inc(CollapsedCount);
+  Assert.IsTrue(CollapsedCount >= 1,
+    'CollapseLevel(1) should collapse at least one fold range');
+  // Verify not all ranges collapsed (inner range is level 2)
+  Assert.IsTrue(CollapsedCount < FEditor.AllFoldRanges.Count,
+    'CollapseLevel(1) should not collapse nested (level 2) ranges');
 end;
 
 procedure TTestFMXSynEditCodeFolding.TestUncollapseLevel;

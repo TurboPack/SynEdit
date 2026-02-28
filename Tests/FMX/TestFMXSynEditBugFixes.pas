@@ -173,12 +173,12 @@ begin
   // Creating a plugin with an owner should auto-register it
   Plugin := TTestPlugin.Create(FEditor, [phAfterPaint]);
   try
-    // Verify it was registered by checking the plugin list is non-empty
-    // We verify indirectly: unregister should not raise, and a second
-    // unregister attempt should be harmless (not found = no-op)
+    // Verify it was registered: unregister should succeed without error
     FEditor.UnregisterPlugin(Plugin);
     // Re-register manually to confirm the API works
     FEditor.RegisterPlugin(Plugin);
+    Assert.IsTrue(Plugin.Owner = FEditor,
+      'Plugin should be owned by the editor after registration');
   finally
     // Destructor will auto-unregister
     Plugin.Free;
@@ -387,26 +387,23 @@ begin
   // Tab at column 0 expands to 8 spaces, "AB" is 2 chars = 10 visual columns
   FEditor.Text := #9'AB';
   // MaxScrollWidth should use expanded length (10), not raw length (3)
-  Assert.IsTrue(FEditor.MaxScrollWidth >= 10,
-    Format('MaxScrollWidth should be >= 10 for tab+AB, got %d',
-      [FEditor.MaxScrollWidth]));
+  Assert.AreEqual(11, FEditor.MaxScrollWidth,
+    'MaxScrollWidth should be 11 for tab(8)+AB(2)+1');
 end;
 
 procedure TTestTabExpansion.TestMaxScrollWidthNoTabs;
 begin
   FEditor.Text := 'ABCDEFGHIJ'; // 10 chars, no tabs
-  Assert.IsTrue(FEditor.MaxScrollWidth >= 10,
-    Format('MaxScrollWidth should be >= 10 for 10-char line, got %d',
-      [FEditor.MaxScrollWidth]));
+  Assert.AreEqual(11, FEditor.MaxScrollWidth,
+    'MaxScrollWidth should be 11 for 10-char line+1');
 end;
 
 procedure TTestTabExpansion.TestMaxScrollWidthMixedLines;
 begin
   // Line 1: 5 chars. Line 2: tab(8) + 5 = 13 visual.
   FEditor.Text := 'Hello' + sLineBreak + #9'World';
-  Assert.IsTrue(FEditor.MaxScrollWidth >= 13,
-    Format('MaxScrollWidth should be >= 13 for tab line, got %d',
-      [FEditor.MaxScrollWidth]));
+  Assert.AreEqual(14, FEditor.MaxScrollWidth,
+    'MaxScrollWidth should be 14 for tab(8)+World(5)+1');
 end;
 
 procedure TTestTabExpansion.TestExpandTabsAtColumnBoundary;
@@ -414,9 +411,8 @@ begin
   // "12345678\tX" - tab at column 8 should expand to 8 spaces (next tab stop)
   // Total: 8 + 8 + 1 = 17 visual columns
   FEditor.Text := '12345678'#9'X';
-  Assert.IsTrue(FEditor.MaxScrollWidth >= 17,
-    Format('MaxScrollWidth should be >= 17 for tab at boundary, got %d',
-      [FEditor.MaxScrollWidth]));
+  Assert.AreEqual(18, FEditor.MaxScrollWidth,
+    'MaxScrollWidth should be 18 for 8chars+tab(8)+X(1)+1');
 end;
 
 procedure TTestTabExpansion.TestExpandTabsMidColumn;
@@ -425,9 +421,8 @@ begin
   // Total: 3 + 5 + 1 = 9 visual columns (but "123" occupies cols 0-2,
   // tab fills cols 3-7, X at col 8 = 9 visual columns)
   FEditor.Text := '123'#9'X';
-  Assert.IsTrue(FEditor.MaxScrollWidth >= 9,
-    Format('MaxScrollWidth should be >= 9 for mid-column tab, got %d',
-      [FEditor.MaxScrollWidth]));
+  Assert.AreEqual(10, FEditor.MaxScrollWidth,
+    'MaxScrollWidth should be 10 for 123(3)+tab(5)+X(1)+1');
 end;
 
 { ---- Bug 7: Keyboard handler chain ---- }

@@ -122,13 +122,9 @@ begin
   FEditor.Text := 'Hello';
   FEditor.CaretXY := BufferCoord(1, 1);
   FEditor.ExecuteCommand(ecTab, #0);
-  // Tab should insert spaces, not a tab character
-  Assert.IsFalse(FEditor.Lines[0].Contains(#9),
-    'With eoTabsToSpaces, tab should not insert tab character');
-  Assert.IsTrue(FEditor.Lines[0].EndsWith('Hello'),
-    'Original text should still be present after tab');
-  Assert.IsTrue(Length(FEditor.Lines[0]) > 5,
-    'Line should be longer after inserting spaces');
+  // Tab at position 1 with default TabWidth inserts spaces to next tab stop
+  Assert.AreEqual('        Hello', FEditor.Lines[0],
+    'Tab should insert spaces before text');
 end;
 
 procedure TTestFMXSynEditCommands.TestEcTabInsertsTabChar;
@@ -137,7 +133,7 @@ begin
   FEditor.Text := 'Hello';
   FEditor.CaretXY := BufferCoord(1, 1);
   FEditor.ExecuteCommand(ecTab, #0);
-  Assert.IsTrue(FEditor.Lines[0].Contains(#9),
+  Assert.AreEqual(#9'Hello', FEditor.Lines[0],
     'Without eoTabsToSpaces, tab should insert tab character');
 end;
 
@@ -146,7 +142,7 @@ begin
   FEditor.Text := '    Indented';
   FEditor.CaretXY := BufferCoord(5, 1);
   FEditor.ExecuteCommand(ecShiftTab, #0);
-  Assert.IsTrue(Length(FEditor.Lines[0]) < Length('    Indented'),
+  Assert.AreEqual('Indented', FEditor.Lines[0],
     'Shift-Tab should remove indentation');
 end;
 

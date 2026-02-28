@@ -204,7 +204,8 @@ var
   Suggestions: TArray<string>;
 begin
   Suggestions := FProvider.Suggest('helo');
-  Assert.IsTrue(Length(Suggestions) > 0, '"helo" should produce suggestions');
+  Assert.IsTrue(Length(Suggestions) >= 3,
+    '"helo" should produce at least 3 suggestions, got ' + IntToStr(Length(Suggestions)));
 end;
 
 procedure TTestFMXSynHunspellProvider.TestSuggestMaxCount;
@@ -212,6 +213,8 @@ var
   Suggestions: TArray<string>;
 begin
   Suggestions := FProvider.Suggest('helo');
+  Assert.IsTrue(Length(Suggestions) > 0,
+    'Should return at least 1 suggestion');
   Assert.IsTrue(Length(Suggestions) <= 10,
     'Should return at most 10 suggestions, got ' + IntToStr(Length(Suggestions)));
 end;
