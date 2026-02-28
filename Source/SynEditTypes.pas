@@ -380,6 +380,31 @@ end;
     property InsideUndoRedo: Boolean read GetInsideUndoRedo;
   end;
 
+{ ************************** Selected Color *********************************}
+
+  TSynSelectedColor = class(TPersistent)
+  private
+    FBG: TColor;
+    FFG: TColor;
+    FOnChange: TNotifyEvent;
+    FOpacity: Byte;
+    FFillWholeLines: Boolean;
+    procedure SetBG(Value: TColor);
+    procedure SetFG(Value: TColor);
+    procedure SetOpacity(Value: Byte);
+    procedure SetFillWholeLines(const Value: Boolean);
+  public
+    constructor Create;
+    procedure Assign(Source: TPersistent); override;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+  published
+    property Background: TColor read FBG write SetBG default clHighLight;
+    property Foreground: TColor read FFG write SetFG default clHighLightText;
+    property Opacity: Byte read FOpacity write SetOpacity default 115;
+    property FillWholeLines: Boolean read FFillWholeLines write SetFillWholeLines
+      default True;
+  end;
+
 { *************************** Search Engine ********************************}
 
   TSynIsWordBreakFunction = function(C: WideChar): Boolean of object;
@@ -411,6 +436,75 @@ implementation
 Uses
   SynEditStrConst,
   SynUnicode;
+
+{$REGION 'TSynSelectedColor'}
+
+constructor TSynSelectedColor.Create;
+begin
+  inherited Create;
+  FBG := clHighLight;
+  FFG := clHighLightText;
+  FFillWholeLines := True;
+  FOpacity := 115;
+end;
+
+procedure TSynSelectedColor.Assign(Source: TPersistent);
+begin
+  if Source is TSynSelectedColor then
+  begin
+    var Src := TSynSelectedColor(Source);
+    FBG := Src.FBG;
+    FFG := Src.FFG;
+    FOpacity := Src.Opacity;
+    FFillWholeLines := Src.FillWholeLines;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end
+  else
+    inherited Assign(Source);
+end;
+
+procedure TSynSelectedColor.SetBG(Value: TColor);
+begin
+  if FBG <> Value then
+  begin
+    FBG := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
+end;
+
+procedure TSynSelectedColor.SetFG(Value: TColor);
+begin
+  if FFG <> Value then
+  begin
+    FFG := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
+end;
+
+procedure TSynSelectedColor.SetOpacity(Value: Byte);
+begin
+  if FOpacity <> Value then
+  begin
+    FOpacity := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
+end;
+
+procedure TSynSelectedColor.SetFillWholeLines(const Value: Boolean);
+begin
+  if FFillWholeLines <> Value then
+  begin
+    FFillWholeLines := Value;
+    if Assigned(FOnChange) then
+      FOnChange(Self);
+  end;
+end;
+
+{$ENDREGION}
 
 { TSynEditSearchCustom }
 

@@ -471,6 +471,9 @@ begin
   FOptions := SYNEDIT_DEFAULT_OPTIONS;
   FScrollOptions := SYNEDIT_DEFAULT_SCROLLOPTIONS;
   FSelectedColor := TSynSelectedColor.Create;
+  FSelectedColor.Background := clDefaultSelectionBG;
+  FSelectedColor.Foreground := clDefaultSelectionFG;
+  FSelectedColor.Opacity := 255;
 
   CanFocus := True;
   TabStop := True;
