@@ -24,6 +24,7 @@ uses
   FMX.Graphics,
   FMX.Controls,
   SynEditTypes,
+  SynEditSelections,
   SynEditKeyCmds,
   SynEditKeyConst;
 
@@ -179,6 +180,24 @@ type
   end;
 
   { TSynEditSearchCustom is now in the shared SynEditTypes.pas unit }
+
+  { FMX multi-selection support — thin subclass of shared TSynSelectionsBase }
+  TSynFMXSelections = class(TSynSelectionsBase)
+  protected
+    procedure CaretsChanged; override;
+    procedure DoInvalidateSelection(const Sel: TSynSelection); override;
+    procedure DoRestoreSelection(const Sel: TSynSelection;
+      EnsureVisible: Boolean); override;
+    function GetLineText(ALine: Integer): string; override;
+    function GetWordWrap: Boolean; override;
+    function GetScrollPastEOL: Boolean; override;
+    function GetRowLength(ARow: Integer): Integer; override;
+    function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord; override;
+    function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord; override;
+    function SelectionToDisplayRow(var Sel: TSynSelection): Integer; override;
+  public
+    constructor Create(Owner: TObject);
+  end;
 
 implementation
 
@@ -696,6 +715,68 @@ begin
     if Assigned(FOnChange) then
       FOnChange(Self);
   end;
+end;
+
+{ TSynFMXSelections }
+
+constructor TSynFMXSelections.Create(Owner: TObject);
+begin
+  inherited Create(Owner);
+end;
+
+procedure TSynFMXSelections.CaretsChanged;
+begin
+  TCustomFMXSynEdit(FOwner).Repaint;
+end;
+
+procedure TSynFMXSelections.DoInvalidateSelection(const Sel: TSynSelection);
+begin
+  TCustomFMXSynEdit(FOwner).Repaint;
+end;
+
+procedure TSynFMXSelections.DoRestoreSelection(const Sel: TSynSelection;
+  EnsureVisible: Boolean);
+begin
+  TCustomFMXSynEdit(FOwner).SetCaretAndSelection(
+    Sel.Caret, Sel.Start, Sel.Stop);
+end;
+
+function TSynFMXSelections.GetLineText(ALine: Integer): string;
+begin
+  Result := TCustomFMXSynEdit(FOwner).Lines[ALine - 1];
+end;
+
+function TSynFMXSelections.GetWordWrap: Boolean;
+begin
+  Result := TCustomFMXSynEdit(FOwner).WordWrap;
+end;
+
+function TSynFMXSelections.GetScrollPastEOL: Boolean;
+begin
+  Result := eoScrollPastEol in TCustomFMXSynEdit(FOwner).ScrollOptions;
+end;
+
+function TSynFMXSelections.GetRowLength(ARow: Integer): Integer;
+begin
+  Result := TCustomFMXSynEdit(FOwner).GetRowLength(ARow);
+end;
+
+function TSynFMXSelections.BufferToDisplayPos(
+  const P: TBufferCoord): TDisplayCoord;
+begin
+  Result := TCustomFMXSynEdit(FOwner).BufferToDisplayPos(P);
+end;
+
+function TSynFMXSelections.DisplayToBufferPos(
+  const P: TDisplayCoord): TBufferCoord;
+begin
+  Result := TCustomFMXSynEdit(FOwner).DisplayToBufferPos(P);
+end;
+
+function TSynFMXSelections.SelectionToDisplayRow(
+  var Sel: TSynSelection): Integer;
+begin
+  Result := BufferToDisplayPos(Sel.Caret).Row;
 end;
 
 end.

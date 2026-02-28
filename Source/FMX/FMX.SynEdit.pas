@@ -30,6 +30,7 @@ uses
   FMX.TextLayout,
   FMX.Platform,
   SynEditTypes,
+  SynEditSelections,
   SynEditKeyCmds,
   SynEditHighlighter,
   SynEditTextBuffer,
@@ -60,10 +61,8 @@ type
     FTabWidth: Integer;
     FReadOnly: Boolean;
     FInsertMode: Boolean;
-    FCaretX: Integer;
-    FCaretY: Integer;
-    FBlockBegin: TBufferCoord;
-    FBlockEnd: TBufferCoord;
+    FSelection: TSynSelection;
+    FSelections: TSynFMXSelections;
     FTopLine: Integer;
     FLeftChar: Integer;
     FRightEdge: Integer;
@@ -87,7 +86,6 @@ type
     FCaretTimer: TTimer;
     FCaretVisible: Boolean;
     FCaretBlinkOn: Boolean;
-    FLastPosX: Integer;
     FUpdateCount: Integer;
     // Word wrap
     FWordWrap: Boolean;
@@ -133,8 +131,12 @@ type
     function GetCanRedo: Boolean;
     function GetModified: Boolean;
     function GetMaxScrollWidth: Integer;
+    function GetCaretX: Integer;
+    function GetCaretY: Integer;
     function GetCaretXY: TBufferCoord;
     procedure SetCaretXY(const Value: TBufferCoord);
+    function GetBlockBegin: TBufferCoord;
+    function GetBlockEnd: TBufferCoord;
     function GetText: string;
     procedure SetText(const Value: string);
     function GetSelText: string;
@@ -183,6 +185,12 @@ type
     procedure SetSearchEngine(Value: TSynEditSearchCustom);
     function DoOnReplaceText(const ASearch, AReplace: string;
       Line, Column: Integer): TSynReplaceAction;
+    // Multi-caret private
+    function ColumnSelectionStart: TBufferCoord;
+    procedure ExecuteMultiCaretCommand(Command: TSynEditorCommand;
+      AChar: WideChar);
+    procedure SelectAllMatchingText;
+    procedure CaretsAtLineEnds;
     // Word wrap private
     procedure SetWordWrap(Value: Boolean);
     function GetWrapAreaWidth: Integer;
@@ -226,6 +234,7 @@ type
       ABlockEnd: TBufferCoord);
     procedure BeginUpdate; reintroduce;
     procedure EndUpdate; reintroduce;
+    procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar);
     procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar);
     procedure SetSelectedTextPrimitive(const Value: string);
     function PixelToBufferCoord(X, Y: Single): TBufferCoord;
@@ -254,20 +263,24 @@ type
     // Keyboard handler chain
     procedure AddKeyDownHandler(aHandler: TKeyEvent);
     procedure RemoveKeyDownHandler(aHandler: TKeyEvent);
-    // Row/Line mapping
+    // Row/Line mapping and coordinate conversion
     function LineToRow(aLine: Integer): Integer;
     function RowToLine(aRow: Integer): Integer;
+    function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord;
+    function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord;
+    function GetRowLength(ARow: Integer): Integer;
     property CodeFolding: TSynCodeFolding read FCodeFolding write FCodeFolding;
     property UseCodeFolding: Boolean read FUseCodeFolding write SetUseCodeFolding;
     property WordWrap: Boolean read FWordWrap write SetWordWrap default False;
     property AllFoldRanges: TSynFoldRanges read FAllFoldRanges;
     property Lines: TSynEditStringList read FLines;
     property LineCount: Integer read GetLineCount;
-    property CaretX: Integer read FCaretX write SetCaretX;
-    property CaretY: Integer read FCaretY write SetCaretY;
+    property CaretX: Integer read GetCaretX write SetCaretX;
+    property CaretY: Integer read GetCaretY write SetCaretY;
     property CaretXY: TBufferCoord read GetCaretXY write SetCaretXY;
-    property BlockBegin: TBufferCoord read FBlockBegin write SetBlockBegin;
-    property BlockEnd: TBufferCoord read FBlockEnd write SetBlockEnd;
+    property BlockBegin: TBufferCoord read GetBlockBegin write SetBlockBegin;
+    property BlockEnd: TBufferCoord read GetBlockEnd write SetBlockEnd;
+    property Selections: TSynFMXSelections read FSelections;
     property TopLine: Integer read FTopLine write SetTopLine;
     property LeftChar: Integer read FLeftChar write SetLeftChar;
     property Modified: Boolean read GetModified;
@@ -400,7 +413,8 @@ uses
   FMX.SynEditUndo,
   FMX.SynUnicode,
   SynEditKeyConst,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynEditSearch;
 
 { Expand tabs in a string to spaces }
 function ExpandTabs(const S: string; TabWidth: Integer): string;
@@ -446,10 +460,9 @@ begin
   FFont.OnChanged := FontChanged;
   FTabWidth := 8;
   FInsertMode := True;
-  FCaretX := 1;
-  FCaretY := 1;
-  FBlockBegin := BufferCoord(1, 1);
-  FBlockEnd := BufferCoord(1, 1);
+  FSelection := TSynSelection.Create(BufferCoord(1, 1), BufferCoord(1, 1),
+    BufferCoord(1, 1));
+  FSelection.LastPosX := -1;
   FTopLine := 1;
   FLeftChar := 1;
   FRightEdge := 80;
@@ -458,7 +471,6 @@ begin
   FOptions := SYNEDIT_DEFAULT_OPTIONS;
   FScrollOptions := SYNEDIT_DEFAULT_SCROLLOPTIONS;
   FSelectedColor := TSynSelectedColor.Create;
-  FLastPosX := -1;
 
   CanFocus := True;
   TabStop := True;
@@ -496,6 +508,10 @@ begin
   // Bookmarks
   FMarkList := TSynFMXEditMarkList.Create;
 
+  // Multi-selection
+  FSelections := TSynFMXSelections.Create(Self);
+  FSelections.AddCaret(FSelection.Caret, True);
+
   // Gutter
   FGutter := TSynFMXGutter.Create(Self);
   FGutter.OnChange := GutterChanged;
@@ -511,6 +527,7 @@ begin
   FWordWrapHelper.Free;
   FPlugins.Free;
   FGutter.Free;
+  FSelections.Free;
   FMarkList.Free;
   FKbdHandler.Free;
   FCodeFolding.Free;
@@ -662,7 +679,7 @@ var
 begin
   if FWordWrap and Assigned(FWordWrapHelper) then
   begin
-    DC := FWordWrapHelper.BufferToDisplayPos(BufferCoord(FCaretX, FCaretY));
+    DC := FWordWrapHelper.BufferToDisplayPos(BufferCoord(FSelection.Caret.Char, FSelection.Caret.Line));
     CaretRow := DC.Row;
     if CaretRow < FTopLine then
       TopLine := CaretRow
@@ -673,16 +690,16 @@ begin
   else
   begin
     // Vertical - use display rows when code folding is active
-    CaretRow := LineToRow(FCaretY);
+    CaretRow := LineToRow(FSelection.Caret.Line);
     if CaretRow < FTopLine then
       TopLine := CaretRow
     else if CaretRow >= FTopLine + FLinesInWindow then
       TopLine := CaretRow - FLinesInWindow + 1;
     // Horizontal
-    if FCaretX < FLeftChar then
-      LeftChar := FCaretX
-    else if FCaretX >= FLeftChar + FCharsInWindow then
-      LeftChar := FCaretX - FCharsInWindow + 1;
+    if FSelection.Caret.Char < FLeftChar then
+      LeftChar := FSelection.Caret.Char
+    else if FSelection.Caret.Char >= FLeftChar + FCharsInWindow then
+      LeftChar := FSelection.Caret.Char - FCharsInWindow + 1;
   end;
 end;
 
@@ -913,8 +930,8 @@ begin
   PrevLine := -1;
 
   // Normalize selection
-  SelBC1 := FBlockBegin;
-  SelBC2 := FBlockEnd;
+  SelBC1 := FSelection.Start;
+  SelBC2 := FSelection.Stop;
   if SelBC1 > SelBC2 then
   begin
     var Tmp := SelBC1;
@@ -928,7 +945,7 @@ begin
     Y := (Row - FTopLine) * FLineHeight;
 
     // Active line highlight
-    if (FActiveLineColor <> clNone) and (Line = FCaretY) and
+    if (FActiveLineColor <> clNone) and FSelections.RowHasCaret(Row, Line) and
       (SelBC1 = SelBC2) then
     begin
       LineR := RectF(FTextAreaLeft, Y, Width, Y + FLineHeight);
@@ -993,14 +1010,13 @@ begin
       EffCharsInWin := FCharsInWindow;
     end;
 
-    // Calculate selection range for this line (in expanded columns)
+    // Calculate primary selection range for this line (for token foreground)
     SelStart := 0;
     SelEnd := 0;
     if (SelBC1 <> SelBC2) then
     begin
       if (Line > SelBC1.Line) and (Line < SelBC2.Line) then
       begin
-        // Entire line selected
         SelStart := 1;
         SelEnd := Length(SExpanded) + 1;
       end
@@ -1035,18 +1051,52 @@ begin
       end;
     end;
 
-    // Paint selection background (clipped to row viewport)
-    if SelStart <> SelEnd then
+    // Paint selection backgrounds for all selections (multi-caret)
     begin
-      var SelX1: Single := FTextAreaLeft +
-        (Max(SelStart, EffLeftChar) - EffLeftChar) * FCharWidth;
-      var SelX2: Single := FTextAreaLeft +
-        (Min(SelEnd, EffLeftChar + EffCharsInWin) - EffLeftChar) * FCharWidth;
-      if SelX2 > SelX1 then
+      var RowStart := BufferCoord(1, Line);
+      var RowEnd := BufferCoord(Length(SLine) + 1, Line);
+      var PartSels := FSelections.PartSelectionsForRow(RowStart, RowEnd);
+      for var PS in PartSels do
       begin
-        LineR := RectF(SelX1, Y, SelX2, Y + FLineHeight);
-        Renderer.FillRect(Canvas, LineR,
-          TColorToAlphaColor(FSelectedColor.Background));
+        var PSNorm := PS.Normalized;
+        // Clip selection to current line boundaries
+        var ClipStart, ClipEnd: Integer;
+        if PSNorm.Start.Line < Line then
+          ClipStart := 1
+        else
+          ClipStart := PSNorm.Start.Char;
+        if PSNorm.Stop.Line > Line then
+          ClipEnd := Length(SLine) + 1
+        else
+          ClipEnd := PSNorm.Stop.Char;
+        var PSStart, PSEnd: Integer;
+        if HasTabs then
+        begin
+          PSStart := ColMap[Min(ClipStart - 1, Length(SLine))] + 1;
+          PSEnd := ColMap[Min(ClipEnd - 1, Length(SLine))] + 1;
+        end
+        else
+        begin
+          PSStart := ClipStart;
+          PSEnd := ClipEnd;
+        end;
+        if PSStart <> PSEnd then
+        begin
+          var SelX1: Single := FTextAreaLeft +
+            (Max(PSStart, EffLeftChar) - EffLeftChar) * FCharWidth;
+          var SelX2: Single := FTextAreaLeft +
+            (Min(PSEnd, EffLeftChar + EffCharsInWin) - EffLeftChar) * FCharWidth;
+          // Extend selection to right edge for fully-selected lines
+          if FSelectedColor.FillWholeLines and
+            (PSEnd > Length(SExpanded)) then
+            SelX2 := Width;
+          if SelX2 > SelX1 then
+          begin
+            LineR := RectF(SelX1, Y, SelX2, Y + FLineHeight);
+            Renderer.FillRect(Canvas, LineR,
+              TColorToAlphaColor(FSelectedColor.Background));
+          end;
+        end;
       end;
     end;
 
@@ -1232,23 +1282,21 @@ var
   Renderer: TSynFMXRenderer;
   Pt: TPointF;
   R: TRectF;
+  I: Integer;
 begin
   Renderer := TSynFMXRenderer(FRenderer);
-  Pt := BufferCoordToPixel(BufferCoord(FCaretX, FCaretY));
-  if (Pt.X >= FTextAreaLeft) and (Pt.X < Width) and
-    (Pt.Y >= 0) and (Pt.Y < Height) then
+  for I := 0 to FSelections.Count - 1 do
   begin
-    if FInsertMode then
+    Pt := BufferCoordToPixel(FSelections[I].Caret);
+    if (Pt.X >= FTextAreaLeft) and (Pt.X < Width) and
+      (Pt.Y >= 0) and (Pt.Y < Height) then
     begin
-      // Vertical line caret
-      R := RectF(Pt.X, Pt.Y, Pt.X + 2, Pt.Y + FLineHeight);
-    end
-    else
-    begin
-      // Block caret
-      R := RectF(Pt.X, Pt.Y, Pt.X + FCharWidth, Pt.Y + FLineHeight);
+      if FInsertMode then
+        R := RectF(Pt.X, Pt.Y, Pt.X + 2, Pt.Y + FLineHeight)
+      else
+        R := RectF(Pt.X, Pt.Y, Pt.X + FCharWidth, Pt.Y + FLineHeight);
+      Renderer.FillRect(Canvas, R, TAlphaColors.Black);
     end;
-    Renderer.FillRect(Canvas, R, TAlphaColors.Black);
   end;
 end;
 
@@ -1328,7 +1376,7 @@ begin
   // Character input
   if (KeyChar >= #32) and (Shift * [ssCtrl, ssAlt] = []) then
   begin
-    ExecuteCommand(ecChar, KeyChar);
+    CommandProcessor(ecChar, KeyChar);
     KeyChar := #0;
     Exit;
   end;
@@ -1338,17 +1386,27 @@ begin
     vkLeft:
       if ssCtrl in Shift then
         Cmd := IfThen(ssShift in Shift, ecSelWordLeft, ecWordLeft)
+      else if Shift * [ssAlt, ssShift] = [ssAlt, ssShift] then
+        Cmd := ecSelColumnLeft
       else
         Cmd := IfThen(ssShift in Shift, ecSelLeft, ecLeft);
     vkRight:
       if ssCtrl in Shift then
         Cmd := IfThen(ssShift in Shift, ecSelWordRight, ecWordRight)
+      else if Shift * [ssAlt, ssShift] = [ssAlt, ssShift] then
+        Cmd := ecSelColumnRight
       else
         Cmd := IfThen(ssShift in Shift, ecSelRight, ecRight);
     vkUp:
-      Cmd := IfThen(ssShift in Shift, ecSelUp, ecUp);
+      if Shift * [ssAlt, ssShift] = [ssAlt, ssShift] then
+        Cmd := ecSelColumnUp
+      else
+        Cmd := IfThen(ssShift in Shift, ecSelUp, ecUp);
     vkDown:
-      Cmd := IfThen(ssShift in Shift, ecSelDown, ecDown);
+      if Shift * [ssAlt, ssShift] = [ssAlt, ssShift] then
+        Cmd := ecSelColumnDown
+      else
+        Cmd := IfThen(ssShift in Shift, ecSelDown, ecDown);
     vkHome:
       if ssCtrl in Shift then
         Cmd := IfThen(ssShift in Shift, ecSelEditorTop, ecEditorTop)
@@ -1357,6 +1415,8 @@ begin
     vkEnd:
       if ssCtrl in Shift then
         Cmd := IfThen(ssShift in Shift, ecSelEditorBottom, ecEditorBottom)
+      else if ssAlt in Shift then
+        Cmd := ecCaretsAtLineEnds
       else
         Cmd := IfThen(ssShift in Shift, ecSelLineEnd, ecLineEnd);
     vkPrior:
@@ -1373,12 +1433,17 @@ begin
       Cmd := ecTab;
     vkInsert:
       Cmd := ecToggleMode;
+    vkEscape:
+      Cmd := ecCancelSelections;
     Ord('A'):
       if ssCtrl in Shift then Cmd := ecSelectAll;
     Ord('C'):
       if ssCtrl in Shift then Cmd := ecCopy;
     Ord('V'):
       if ssCtrl in Shift then Cmd := ecPaste;
+    Ord('W'):
+      if Shift * [ssCtrl, ssShift] = [ssCtrl, ssShift] then
+        Cmd := ecSelMatchingText;
     Ord('X'):
       if ssCtrl in Shift then Cmd := ecCut;
     Ord('Z'):
@@ -1393,8 +1458,6 @@ begin
       if ssCtrl in Shift then Cmd := ecRedo;
     Ord('0')..Ord('9'):
       // Bookmarks: Ctrl+N = goto, Ctrl+Shift+N = set/toggle
-      // Note: Ctrl+Shift+0 may be intercepted by Windows for input language
-      // switching and never reach the application. Bookmarks 1-9 are reliable.
       if ssCtrl in Shift then
       begin
         if ssShift in Shift then
@@ -1406,7 +1469,7 @@ begin
 
   if Cmd <> ecNone then
   begin
-    ExecuteCommand(Cmd, #0);
+    CommandProcessor(Cmd, #0);
     Key := 0;
     KeyChar := #0;
   end;
@@ -1466,6 +1529,185 @@ end;
 
 { --- Command execution --- }
 
+function TCustomFMXSynEdit.ColumnSelectionStart: TBufferCoord;
+begin
+  if FSelections.BaseSelection.IsEmpty then
+    Result := FSelections.BaseSelection.Caret
+  else
+    Result := FSelections.BaseSelection.Start;
+end;
+
+procedure TCustomFMXSynEdit.CommandProcessor(Command: TSynEditorCommand;
+  AChar: WideChar);
+var
+  CommandInfo: TSynCommandInfo;
+begin
+  if (Command <> ecNone) and (Command < ecUserFirst) then
+  begin
+    if not SynCommandsInfo.TryGetValue(Command, CommandInfo)
+      or (CommandInfo.CommandKind in [ckStandard, ckSingleCaret])
+      or (FSelections.Count = 1)
+    then
+    begin
+      if SynCommandsInfo.TryGetValue(Command, CommandInfo)
+        and (CommandInfo.CommandKind = ckSingleCaret) and (FSelections.Count > 1) then
+        FSelections.Clear(TSynSelectionsBase.TKeepSelection.ksKeepBase);
+      ExecuteCommand(Command, AChar);
+    end
+    else
+      ExecuteMultiCaretCommand(Command, AChar);
+  end;
+end;
+
+procedure TCustomFMXSynEdit.ExecuteMultiCaretCommand(
+  Command: TSynEditorCommand; AChar: WideChar);
+var
+  OldActiveSelIndex: Integer;
+  I: Integer;
+  OldTopLine, OldLeftChar: Integer;
+begin
+  BeginUpdate;
+  try
+    FUndoRedo.BeginBlock(Self);
+    try
+      OldActiveSelIndex := FSelections.ActiveSelIndex;
+      OldLeftChar := LeftChar;
+      OldTopLine := TopLine;
+
+      for I := 0 to FSelections.Count - 1 do
+      begin
+        FSelections.ActiveSelIndex := I;
+        FSelection := FSelections.ActiveSelection;
+
+        if not FSelection.IsValid then Continue;
+
+        ExecuteCommand(Command, AChar);
+        FSelections.ActiveSelection := FSelection;
+      end;
+
+      // Restore Active Selection
+      if OldActiveSelIndex < FSelections.Count then
+        FSelections.ActiveSelIndex := OldActiveSelIndex
+      else
+        FSelections.ActiveSelIndex := FSelections.Count - 1;
+      FSelection := FSelections.ActiveSelection;
+
+      // Merge overlapping selections
+      FSelections.Merge;
+      FSelection := FSelections.ActiveSelection;
+
+      TopLine := OldTopLine;
+      LeftChar := OldLeftChar;
+
+      EnsureCursorPosVisible;
+    finally
+      FUndoRedo.EndBlock(Self);
+    end;
+  finally
+    EndUpdate;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.SelectAllMatchingText;
+var
+  Engine: TSynEditSearchCustom;
+  SearchOptions: TSynSearchOptions;
+  Line: Integer;
+  ResNo: Integer;
+  SelList: TList<TSynSelection>;
+  Sel: TSynSelection;
+  SelStorage: TSynSelStorage;
+  LineText: string;
+begin
+  if FSelection.IsEmpty then Exit;
+  if FSelection.Start.Line <> FSelection.Stop.Line then Exit;
+
+  Engine := TSynEditSearch.Create(Self);
+  SelList := TList<TSynSelection>.Create;
+  try
+    SelStorage.BaseIndex := 0;
+    SelStorage.ActiveIndex := 0;
+
+    Engine.Pattern := GetTextRange(FSelection.Normalized.Start,
+      FSelection.Normalized.Stop);
+    SearchOptions := [ssoMatchCase];
+    Engine.Options := SearchOptions;
+
+    for Line := 0 to FLines.Count - 1 do
+    begin
+      LineText := FLines[Line];
+      if LineText.Length < Engine.Pattern.Length then Continue;
+
+      Engine.FindAll(LineText);
+      for ResNo := 0 to Engine.ResultCount - 1 do
+      begin
+        Sel.Start := BufferCoord(Engine.Results[ResNo], Line + 1);
+        Sel.Stop := BufferCoord(Sel.Start.Char + Engine.Lengths[ResNo],
+          Line + 1);
+        Sel.Caret := Sel.Stop;
+        Sel.CaretAtEOL := False;
+        Sel.LastPosX := 0;
+        SelList.Add(Sel);
+
+        // Track which match is the current selection
+        if (Sel.Start = FSelection.Normalized.Start) and
+          (Sel.Stop = FSelection.Normalized.Stop) then
+        begin
+          SelStorage.BaseIndex := SelList.Count - 1;
+          SelStorage.ActiveIndex := SelList.Count - 1;
+        end;
+      end;
+    end;
+
+    if SelList.Count = 0 then Exit;
+
+    SelStorage.Selections := SelList.ToArray;
+    FSelections.Restore(SelStorage);
+    FSelection := FSelections.ActiveSelection;
+    Repaint;
+  finally
+    SelList.Free;
+    Engine.Free;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.CaretsAtLineEnds;
+var
+  SelList: TList<TSynSelection>;
+  Sel: TSynSelection;
+  Line: Integer;
+  LineText: string;
+  SelStorage: TSynSelStorage;
+begin
+  FSelections.Clear;
+
+  SelList := TList<TSynSelection>.Create;
+  try
+    for Line := BlockBegin.Line to BlockEnd.Line do
+    begin
+      if (Line < 1) or (Line > FLines.Count) then Continue;
+      LineText := FLines[Line - 1];
+      Sel.Caret := BufferCoord(LineText.Length + 1, Line);
+      Sel.Start := Sel.Caret;
+      Sel.Stop := Sel.Caret;
+      Sel.CaretAtEOL := False;
+      Sel.LastPosX := 0;
+      SelList.Add(Sel);
+    end;
+
+    if SelList.Count = 0 then Exit;
+
+    SelStorage.Selections := SelList.ToArray;
+    SelStorage.BaseIndex := SelList.Count - 1;
+    SelStorage.ActiveIndex := SelList.Count - 1;
+    FSelections.Restore(SelStorage);
+    FSelection := FSelections.ActiveSelection;
+    Repaint;
+  finally
+    SelList.Free;
+  end;
+end;
+
 procedure TCustomFMXSynEdit.ExecuteCommand(Command: TSynEditorCommand;
   AChar: WideChar);
 var
@@ -1477,15 +1719,45 @@ begin
     FUndoRedo.CommandProcessed := Command;
 
   case Command of
-    // Navigation
-    ecLeft:       MoveCaretHorz(-1, False);
-    ecSelLeft:    MoveCaretHorz(-1, True);
-    ecRight:      MoveCaretHorz(1, False);
-    ecSelRight:   MoveCaretHorz(1, True);
-    ecUp:         MoveCaretVert(-1, False);
-    ecSelUp:      MoveCaretVert(-1, True);
-    ecDown:       MoveCaretVert(1, False);
-    ecSelDown:    MoveCaretVert(1, True);
+    // Navigation (including column selection)
+    ecLeft, ecSelLeft, ecSelColumnLeft:
+      begin
+        if not FSelection.IsEmpty and (Command = ecLeft) then
+          CaretXY := FSelection.Normalized.Start
+        else
+        begin
+          var Anchor := ColumnSelectionStart;
+          MoveCaretHorz(-1, Command = ecSelLeft);
+          if Command = ecSelColumnLeft then
+            FSelections.ColumnSelection(Anchor, CaretXY, FSelection.LastPosX);
+        end;
+      end;
+    ecRight, ecSelRight, ecSelColumnRight:
+      begin
+        if not FSelection.IsEmpty and (Command = ecRight) then
+          CaretXY := FSelection.Normalized.Stop
+        else
+        begin
+          var Anchor := ColumnSelectionStart;
+          MoveCaretHorz(1, Command = ecSelRight);
+          if Command = ecSelColumnRight then
+            FSelections.ColumnSelection(Anchor, CaretXY, FSelection.LastPosX);
+        end;
+      end;
+    ecUp, ecSelUp, ecSelColumnUp:
+      begin
+        var Anchor := ColumnSelectionStart;
+        MoveCaretVert(-1, Command = ecSelUp);
+        if Command = ecSelColumnUp then
+          FSelections.ColumnSelection(Anchor, CaretXY, FSelection.LastPosX);
+      end;
+    ecDown, ecSelDown, ecSelColumnDown:
+      begin
+        var Anchor := ColumnSelectionStart;
+        MoveCaretVert(1, Command = ecSelDown);
+        if Command = ecSelColumnDown then
+          FSelections.ColumnSelection(Anchor, CaretXY, FSelection.LastPosX);
+      end;
     ecPageUp:
       begin
         TopLine := TopLine - FLinesInWindow;
@@ -1507,22 +1779,22 @@ begin
         MoveCaretVert(FLinesInWindow, True);
       end;
     ecLineStart:
-      MoveCaretAndSelection(BufferCoord(1, FCaretY), False);
+      MoveCaretAndSelection(BufferCoord(1, FSelection.Caret.Line), False);
     ecSelLineStart:
-      MoveCaretAndSelection(BufferCoord(1, FCaretY), True);
+      MoveCaretAndSelection(BufferCoord(1, FSelection.Caret.Line), True);
     ecLineEnd:
       begin
         var LineLen := 0;
-        if (FCaretY >= 1) and (FCaretY <= FLines.Count) then
-          LineLen := Length(FLines[FCaretY - 1]);
-        MoveCaretAndSelection(BufferCoord(LineLen + 1, FCaretY), False);
+        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
+          LineLen := Length(FLines[FSelection.Caret.Line - 1]);
+        MoveCaretAndSelection(BufferCoord(LineLen + 1, FSelection.Caret.Line), False);
       end;
     ecSelLineEnd:
       begin
         var LineLen := 0;
-        if (FCaretY >= 1) and (FCaretY <= FLines.Count) then
-          LineLen := Length(FLines[FCaretY - 1]);
-        MoveCaretAndSelection(BufferCoord(LineLen + 1, FCaretY), True);
+        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
+          LineLen := Length(FLines[FSelection.Caret.Line - 1]);
+        MoveCaretAndSelection(BufferCoord(LineLen + 1, FSelection.Caret.Line), True);
       end;
     ecEditorTop:
       MoveCaretAndSelection(BufferCoord(1, 1), False);
@@ -1581,7 +1853,7 @@ begin
     ecChar:
       if not FReadOnly then
       begin
-        FirstAffectedLine := FCaretY - 1;
+        FirstAffectedLine := FSelection.Caret.Line - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1594,7 +1866,7 @@ begin
     ecDeleteChar:
       if not FReadOnly then
       begin
-        FirstAffectedLine := FCaretY - 1;
+        FirstAffectedLine := FSelection.Caret.Line - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1608,7 +1880,7 @@ begin
     ecDeleteLastChar:
       if not FReadOnly then
       begin
-        FirstAffectedLine := FCaretY - 1;
+        FirstAffectedLine := FSelection.Caret.Line - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1622,7 +1894,7 @@ begin
     ecLineBreak:
       if not FReadOnly then
       begin
-        FirstAffectedLine := FCaretY - 1;
+        FirstAffectedLine := FSelection.Caret.Line - 1;
         FUndoRedo.BeginBlock(Self);
         try
           if GetSelAvail then
@@ -1635,10 +1907,10 @@ begin
     ecTab:
       if not FReadOnly then
       begin
-        FirstAffectedLine := FCaretY - 1;
+        FirstAffectedLine := FSelection.Caret.Line - 1;
         if eoTabsToSpaces in FOptions then
         begin
-          var Spaces := FTabWidth - ((FCaretX - 1) mod FTabWidth);
+          var Spaces := FTabWidth - ((FSelection.Caret.Char - 1) mod FTabWidth);
           FUndoRedo.BeginBlock(Self);
           try
             if GetSelAvail then
@@ -1665,10 +1937,10 @@ begin
       if not FReadOnly then
       begin
         // Remove up to TabWidth spaces from the beginning of the current line
-        FirstAffectedLine := FCaretY - 1;
-        if (FCaretY >= 1) and (FCaretY <= FLines.Count) then
+        FirstAffectedLine := FSelection.Caret.Line - 1;
+        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
         begin
-          var Line := FLines[FCaretY - 1];
+          var Line := FLines[FSelection.Caret.Line - 1];
           var SpacesToRemove := 0;
           var MaxRemove := FTabWidth;
           while (SpacesToRemove < MaxRemove) and (SpacesToRemove < Length(Line))
@@ -1681,9 +1953,9 @@ begin
           begin
             FUndoRedo.BeginBlock(Self);
             try
-              FLines[FCaretY - 1] := Copy(Line, SpacesToRemove + 1);
+              FLines[FSelection.Caret.Line - 1] := Copy(Line, SpacesToRemove + 1);
               // Adjust caret
-              SetCaretX(Max(1, FCaretX - SpacesToRemove));
+              SetCaretX(Max(1, FSelection.Caret.Char - SpacesToRemove));
             finally
               FUndoRedo.EndBlock(Self);
             end;
@@ -1697,12 +1969,12 @@ begin
     ecCopy:     CopyToClipboard;
     ecCut:
       begin
-        FirstAffectedLine := FCaretY - 1;
+        FirstAffectedLine := FSelection.Caret.Line - 1;
         CutToClipboard;
       end;
     ecPaste:
       begin
-        FirstAffectedLine := FCaretY - 1;
+        FirstAffectedLine := FSelection.Caret.Line - 1;
         PasteFromClipboard;
       end;
 
@@ -1745,14 +2017,27 @@ begin
         begin
           var BX, BY: Integer;
           GetBookmark(BmIdx, BX, BY);
-          if BY = FCaretY then
+          if BY = FSelection.Caret.Line then
             ClearBookmark(BmIdx)
           else
-            SetBookmark(BmIdx, FCaretX, FCaretY);
+            SetBookmark(BmIdx, FSelection.Caret.Char, FSelection.Caret.Line);
         end
         else
-          SetBookmark(BmIdx, FCaretX, FCaretY);
+          SetBookmark(BmIdx, FSelection.Caret.Char, FSelection.Caret.Line);
       end;
+
+    // Multi-caret commands
+    ecCancelSelections:
+      begin
+        if FSelections.Count = 1 then
+          CaretXY := CaretXY  // collapses selection
+        else
+          FSelections.Clear(TSynSelectionsBase.TKeepSelection.ksKeepBase);
+      end;
+    ecSelMatchingText:
+      SelectAllMatchingText;
+    ecCaretsAtLineEnds:
+      CaretsAtLineEnds;
   end;
 
   // Incremental range scan after text mutations
@@ -1803,7 +2088,7 @@ begin
     end;
   end;
 
-  FLastPosX := -1;
+  FSelection.LastPosX := -1;
   MoveCaretAndSelection(NewCaret, SelectionCmd);
 end;
 
@@ -1818,10 +2103,10 @@ begin
     // In word wrap mode, move between display rows
     DC := FWordWrapHelper.BufferToDisplayPos(GetCaretXY);
     // Sticky column tracks display column
-    if (eoKeepCaretX in FOptions) and (FLastPosX >= 0) then
-      DC.Column := FLastPosX
+    if (eoKeepCaretX in FOptions) and (FSelection.LastPosX >= 0) then
+      DC.Column := FSelection.LastPosX
     else
-      FLastPosX := DC.Column;
+      FSelection.LastPosX := DC.Column;
     Inc(DC.Row, DY);
     DC.Row := Max(1, Min(DC.Row, FWordWrapHelper.RowCount));
     NewCaret := FWordWrapHelper.DisplayToBufferPos(DC);
@@ -1843,10 +2128,10 @@ begin
     NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.Count)));
 
     // Sticky column
-    if (eoKeepCaretX in FOptions) and (FLastPosX >= 0) then
-      NewCaret.Char := FLastPosX
+    if (eoKeepCaretX in FOptions) and (FSelection.LastPosX >= 0) then
+      NewCaret.Char := FSelection.LastPosX
     else
-      FLastPosX := NewCaret.Char;
+      FSelection.LastPosX := NewCaret.Char;
 
     // Clamp to line length
     if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.Count) then
@@ -1866,19 +2151,19 @@ begin
   if SelectionCmd then
   begin
     // If no selection exists yet, start selection from current caret
-    if FBlockBegin = FBlockEnd then
-      FBlockBegin := GetCaretXY;
-    FBlockEnd := NewCaret;
+    if FSelection.Start = FSelection.Stop then
+      FSelection.Start := GetCaretXY;
+    FSelection.Stop := NewCaret;
   end
   else
   begin
     // Clear selection
-    FBlockBegin := NewCaret;
-    FBlockEnd := NewCaret;
+    FSelection.Start := NewCaret;
+    FSelection.Stop := NewCaret;
   end;
 
-  FCaretX := NewCaret.Char;
-  FCaretY := NewCaret.Line;
+  FSelection.Caret.Char := NewCaret.Char;
+  FSelection.Caret.Line := NewCaret.Line;
   EnsureCursorPosVisible;
   Repaint;
 end;
@@ -1890,28 +2175,28 @@ var
   SLine: string;
 begin
   // Ensure we have enough lines
-  while FLines.Count < FCaretY do
+  while FLines.Count < FSelection.Caret.Line do
     FLines.Add('');
 
-  SLine := FLines[FCaretY - 1];
+  SLine := FLines[FSelection.Caret.Line - 1];
 
   // Pad line if caret is past end
-  while Length(SLine) < FCaretX - 1 do
+  while Length(SLine) < FSelection.Caret.Char - 1 do
     SLine := SLine + ' ';
 
   if FInsertMode then
-    System.Insert(AChar, SLine, FCaretX)
+    System.Insert(AChar, SLine, FSelection.Caret.Char)
   else
   begin
-    if FCaretX <= Length(SLine) then
-      SLine[FCaretX] := AChar
+    if FSelection.Caret.Char <= Length(SLine) then
+      SLine[FSelection.Caret.Char] := AChar
     else
       SLine := SLine + AChar;
   end;
 
-  FLines[FCaretY - 1] := SLine;
-  Inc(FCaretX);
-  FLastPosX := -1;
+  FLines[FSelection.Caret.Line - 1] := SLine;
+  Inc(FSelection.Caret.Char);
+  FSelection.LastPosX := -1;
   EnsureCursorPosVisible;
 end;
 
@@ -1919,19 +2204,19 @@ procedure TCustomFMXSynEdit.DoDeleteChar;
 var
   SLine: string;
 begin
-  if (FCaretY < 1) or (FCaretY > FLines.Count) then Exit;
-  SLine := FLines[FCaretY - 1];
+  if (FSelection.Caret.Line < 1) or (FSelection.Caret.Line > FLines.Count) then Exit;
+  SLine := FLines[FSelection.Caret.Line - 1];
 
-  if FCaretX <= Length(SLine) then
+  if FSelection.Caret.Char <= Length(SLine) then
   begin
-    System.Delete(SLine, FCaretX, 1);
-    FLines[FCaretY - 1] := SLine;
+    System.Delete(SLine, FSelection.Caret.Char, 1);
+    FLines[FSelection.Caret.Line - 1] := SLine;
   end
-  else if FCaretY < FLines.Count then
+  else if FSelection.Caret.Line < FLines.Count then
   begin
     // Join with next line
-    FLines[FCaretY - 1] := SLine + FLines[FCaretY];
-    FLines.Delete(FCaretY);
+    FLines[FSelection.Caret.Line - 1] := SLine + FLines[FSelection.Caret.Line];
+    FLines.Delete(FSelection.Caret.Line);
   end;
 end;
 
@@ -1939,29 +2224,29 @@ procedure TCustomFMXSynEdit.DoDeleteLastChar;
 var
   SLine: string;
 begin
-  if (FCaretX > 1) then
+  if (FSelection.Caret.Char > 1) then
   begin
-    if (FCaretY >= 1) and (FCaretY <= FLines.Count) then
+    if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
     begin
-      SLine := FLines[FCaretY - 1];
-      if FCaretX - 1 <= Length(SLine) then
+      SLine := FLines[FSelection.Caret.Line - 1];
+      if FSelection.Caret.Char - 1 <= Length(SLine) then
       begin
-        System.Delete(SLine, FCaretX - 1, 1);
-        FLines[FCaretY - 1] := SLine;
+        System.Delete(SLine, FSelection.Caret.Char - 1, 1);
+        FLines[FSelection.Caret.Line - 1] := SLine;
       end;
-      Dec(FCaretX);
+      Dec(FSelection.Caret.Char);
     end;
   end
-  else if FCaretY > 1 then
+  else if FSelection.Caret.Line > 1 then
   begin
     // Join with previous line
-    var PrevLen := Length(FLines[FCaretY - 2]);
-    FLines[FCaretY - 2] := FLines[FCaretY - 2] + FLines[FCaretY - 1];
-    FLines.Delete(FCaretY - 1);
-    Dec(FCaretY);
-    FCaretX := PrevLen + 1;
+    var PrevLen := Length(FLines[FSelection.Caret.Line - 2]);
+    FLines[FSelection.Caret.Line - 2] := FLines[FSelection.Caret.Line - 2] + FLines[FSelection.Caret.Line - 1];
+    FLines.Delete(FSelection.Caret.Line - 1);
+    Dec(FSelection.Caret.Line);
+    FSelection.Caret.Char := PrevLen + 1;
   end;
-  FLastPosX := -1;
+  FSelection.LastPosX := -1;
   EnsureCursorPosVisible;
 end;
 
@@ -1969,14 +2254,14 @@ procedure TCustomFMXSynEdit.DoInsertLine;
 var
   SLine, LeftPart, RightPart, Indent: string;
 begin
-  if (FCaretY < 1) then Exit;
+  if (FSelection.Caret.Line < 1) then Exit;
 
-  while FLines.Count < FCaretY do
+  while FLines.Count < FSelection.Caret.Line do
     FLines.Add('');
 
-  SLine := FLines[FCaretY - 1];
-  LeftPart := Copy(SLine, 1, FCaretX - 1);
-  RightPart := Copy(SLine, FCaretX, MaxInt);
+  SLine := FLines[FSelection.Caret.Line - 1];
+  LeftPart := Copy(SLine, 1, FSelection.Caret.Char - 1);
+  RightPart := Copy(SLine, FSelection.Caret.Char, MaxInt);
 
   // Auto-indent: copy leading whitespace (spaces and tabs)
   Indent := '';
@@ -1988,11 +2273,11 @@ begin
     Indent := Copy(SLine, 1, I - 1);
   end;
 
-  FLines[FCaretY - 1] := LeftPart;
-  FLines.Insert(FCaretY, Indent + RightPart);
-  Inc(FCaretY);
-  FCaretX := Length(Indent) + 1;
-  FLastPosX := -1;
+  FLines[FSelection.Caret.Line - 1] := LeftPart;
+  FLines.Insert(FSelection.Caret.Line, Indent + RightPart);
+  Inc(FSelection.Caret.Line);
+  FSelection.Caret.Char := Length(Indent) + 1;
+  FSelection.LastPosX := -1;
   EnsureCursorPosVisible;
 end;
 
@@ -2003,8 +2288,8 @@ var
 begin
   if not GetSelAvail then Exit;
 
-  SelBC1 := FBlockBegin;
-  SelBC2 := FBlockEnd;
+  SelBC1 := FSelection.Start;
+  SelBC2 := FSelection.Stop;
   if SelBC1 > SelBC2 then
   begin
     var Tmp := SelBC1;
@@ -2031,11 +2316,11 @@ begin
         SelBC2.Line - SelBC1.Line);
   end;
 
-  FCaretX := SelBC1.Char;
-  FCaretY := SelBC1.Line;
-  FBlockBegin := BufferCoord(FCaretX, FCaretY);
-  FBlockEnd := FBlockBegin;
-  FLastPosX := -1;
+  FSelection.Caret.Char := SelBC1.Char;
+  FSelection.Caret.Line := SelBC1.Line;
+  FSelection.Start := BufferCoord(FSelection.Caret.Char, FSelection.Caret.Line);
+  FSelection.Stop := FSelection.Start;
+  FSelection.LastPosX := -1;
 end;
 
 procedure TCustomFMXSynEdit.SetSelectedTextPrimitive(const Value: string);
@@ -2052,35 +2337,35 @@ begin
     if Length(Lines) = 1 then
     begin
       // Single line insert
-      while FLines.Count < FCaretY do
+      while FLines.Count < FSelection.Caret.Line do
         FLines.Add('');
-      var SLine := FLines[FCaretY - 1];
-      System.Insert(Value, SLine, FCaretX);
-      FLines[FCaretY - 1] := SLine;
-      Inc(FCaretX, Length(Value));
+      var SLine := FLines[FSelection.Caret.Line - 1];
+      System.Insert(Value, SLine, FSelection.Caret.Char);
+      FLines[FSelection.Caret.Line - 1] := SLine;
+      Inc(FSelection.Caret.Char, Length(Value));
     end
     else
     begin
       // Multi-line insert
-      while FLines.Count < FCaretY do
+      while FLines.Count < FSelection.Caret.Line do
         FLines.Add('');
-      var SLine := FLines[FCaretY - 1];
-      var LeftPart := Copy(SLine, 1, FCaretX - 1);
-      var RightPart := Copy(SLine, FCaretX, MaxInt);
+      var SLine := FLines[FSelection.Caret.Line - 1];
+      var LeftPart := Copy(SLine, 1, FSelection.Caret.Char - 1);
+      var RightPart := Copy(SLine, FSelection.Caret.Char, MaxInt);
 
-      FLines[FCaretY - 1] := LeftPart + Lines[0];
+      FLines[FSelection.Caret.Line - 1] := LeftPart + Lines[0];
       for var I := 1 to Length(Lines) - 1 do
-        FLines.Insert(FCaretY - 1 + I, Lines[I]);
+        FLines.Insert(FSelection.Caret.Line - 1 + I, Lines[I]);
       // Append right part to last line
-      var LastIdx := FCaretY - 1 + Length(Lines) - 1;
+      var LastIdx := FSelection.Caret.Line - 1 + Length(Lines) - 1;
       FLines[LastIdx] := FLines[LastIdx] + RightPart;
-      FCaretY := LastIdx + 1;
-      FCaretX := Length(Lines[Length(Lines) - 1]) + 1;
+      FSelection.Caret.Line := LastIdx + 1;
+      FSelection.Caret.Char := Length(Lines[Length(Lines) - 1]) + 1;
     end;
 
-    FBlockBegin := BufferCoord(FCaretX, FCaretY);
-    FBlockEnd := FBlockBegin;
-    FLastPosX := -1;
+    FSelection.Start := BufferCoord(FSelection.Caret.Char, FSelection.Caret.Line);
+    FSelection.Stop := FSelection.Start;
+    FSelection.LastPosX := -1;
     EnsureCursorPosVisible;
   finally
     FUndoRedo.EndBlock(Self);
@@ -2091,7 +2376,7 @@ end;
 
 function TCustomFMXSynEdit.GetSelAvail: Boolean;
 begin
-  Result := FBlockBegin <> FBlockEnd;
+  Result := FSelection.Start <> FSelection.Stop;
 end;
 
 function TCustomFMXSynEdit.GetSelText: string;
@@ -2101,8 +2386,8 @@ begin
   Result := '';
   if not GetSelAvail then Exit;
 
-  SelBC1 := FBlockBegin;
-  SelBC2 := FBlockEnd;
+  SelBC1 := FSelection.Start;
+  SelBC2 := FSelection.Stop;
   if SelBC1 > SelBC2 then
   begin
     var Tmp := SelBC1;
@@ -2148,19 +2433,19 @@ procedure TCustomFMXSynEdit.SelectAll;
 begin
   if FLines.Count > 0 then
   begin
-    FBlockBegin := BufferCoord(1, 1);
+    FSelection.Start := BufferCoord(1, 1);
     var LastLine := FLines.Count;
-    FBlockEnd := BufferCoord(Length(FLines[LastLine - 1]) + 1, LastLine);
-    FCaretX := FBlockEnd.Char;
-    FCaretY := FBlockEnd.Line;
+    FSelection.Stop := BufferCoord(Length(FLines[LastLine - 1]) + 1, LastLine);
+    FSelection.Caret.Char := FSelection.Stop.Char;
+    FSelection.Caret.Line := FSelection.Stop.Line;
     Repaint;
   end;
 end;
 
 procedure TCustomFMXSynEdit.ClearSelection;
 begin
-  FBlockBegin := GetCaretXY;
-  FBlockEnd := FBlockBegin;
+  FSelection.Start := GetCaretXY;
+  FSelection.Stop := FSelection.Start;
   Repaint;
 end;
 
@@ -2168,10 +2453,11 @@ procedure TCustomFMXSynEdit.SetBlockBegin(Value: TBufferCoord);
 begin
   Value.Line := Max(Value.Line, 1);
   Value.Char := Max(Value.Char, 1);
-  if (FBlockBegin.Char <> Value.Char) or (FBlockBegin.Line <> Value.Line) then
+  if (FSelection.Start.Char <> Value.Char) or (FSelection.Start.Line <> Value.Line) then
   begin
-    FBlockBegin := Value;
-    FBlockEnd := Value;
+    FSelection.Start := Value;
+    FSelection.Stop := Value;
+    FSelections.ActiveSelection := FSelection;
     Repaint;
   end;
 end;
@@ -2180,9 +2466,10 @@ procedure TCustomFMXSynEdit.SetBlockEnd(Value: TBufferCoord);
 begin
   Value.Line := Max(Value.Line, 1);
   Value.Char := Max(Value.Char, 1);
-  if (FBlockEnd.Char <> Value.Char) or (FBlockEnd.Line <> Value.Line) then
+  if (FSelection.Stop.Char <> Value.Char) or (FSelection.Stop.Line <> Value.Line) then
   begin
-    FBlockEnd := Value;
+    FSelection.Stop := Value;
+    FSelections.ActiveSelection := FSelection;
     Repaint;
   end;
 end;
@@ -2190,10 +2477,11 @@ end;
 procedure TCustomFMXSynEdit.SetCaretAndSelection(const ACaretXY, ABlockBegin,
   ABlockEnd: TBufferCoord);
 begin
-  FBlockBegin := ABlockBegin;
-  FBlockEnd := ABlockEnd;
-  FCaretX := ACaretXY.Char;
-  FCaretY := ACaretXY.Line;
+  FSelection.Start := ABlockBegin;
+  FSelection.Stop := ABlockEnd;
+  FSelection.Caret.Char := ACaretXY.Char;
+  FSelection.Caret.Line := ACaretXY.Line;
+  FSelections.ActiveSelection := FSelection;
   EnsureCursorPosVisible;
   Repaint;
 end;
@@ -2292,10 +2580,10 @@ begin
     end;
     FUndoRedo.Clear;
     FUndoRedo.Modified := False;
-    FCaretX := 1;
-    FCaretY := 1;
-    FBlockBegin := BufferCoord(1, 1);
-    FBlockEnd := BufferCoord(1, 1);
+    FSelection.Caret.Char := 1;
+    FSelection.Caret.Line := 1;
+    FSelection.Start := BufferCoord(1, 1);
+    FSelection.Stop := BufferCoord(1, 1);
     FTopLine := 1;
     FLeftChar := 1;
     ScanRanges;
@@ -2324,10 +2612,10 @@ begin
     end;
     FUndoRedo.Clear;
     FUndoRedo.Modified := False;
-    FCaretX := 1;
-    FCaretY := 1;
-    FBlockBegin := BufferCoord(1, 1);
-    FBlockEnd := BufferCoord(1, 1);
+    FSelection.Caret.Char := 1;
+    FSelection.Caret.Line := 1;
+    FSelection.Start := BufferCoord(1, 1);
+    FSelection.Stop := BufferCoord(1, 1);
     // Clear all bookmarks
     for var I := 0 to 9 do
       FBookmarks[I] := nil;
@@ -2441,19 +2729,40 @@ begin
     end;
 
     BC := PixelToBufferCoord(X, Y);
-    if ssShift in Shift then
+    if Shift * [ssAlt, ssShift] = [ssAlt, ssShift] then
     begin
-      // Extend selection
-      FBlockEnd := BC;
+      // Alt+Shift+Click: column selection from anchor to click
+      FSelection.Caret.Char := BC.Char;
+      FSelection.Caret.Line := BC.Line;
+      FSelections.ColumnSelection(ColumnSelectionStart, BC, FSelection.LastPosX);
+      FSelection := FSelections.ActiveSelection;
+    end
+    else if ssAlt in Shift then
+    begin
+      // Alt+Click: add/toggle caret
+      FSelections.AddCaret(BC);
+      FSelection := FSelections.ActiveSelection;
+    end
+    else if ssShift in Shift then
+    begin
+      // Shift+Click: extend selection
+      FSelection.Stop := BC;
+      FSelection.Caret.Char := BC.Char;
+      FSelection.Caret.Line := BC.Line;
+      FSelections.ActiveSelection := FSelection;
     end
     else
     begin
-      FBlockBegin := BC;
-      FBlockEnd := BC;
+      // Normal click: single caret
+      FSelection.Start := BC;
+      FSelection.Stop := BC;
+      FSelection.Caret.Char := BC.Char;
+      FSelection.Caret.Line := BC.Line;
+      FSelection.LastPosX := -1;
+      FSelections.ActiveSelection := FSelection;
+      if FSelections.Count > 1 then
+        FSelections.Clear(TSynSelectionsBase.TKeepSelection.ksKeepActive);
     end;
-    FCaretX := BC.Char;
-    FCaretY := BC.Line;
-    FLastPosX := -1;
     FCaretBlinkOn := True;
     Repaint;
   end;
@@ -2467,9 +2776,22 @@ begin
   if ssLeft in Shift then
   begin
     BC := PixelToBufferCoord(X, Y);
-    FBlockEnd := BC;
-    FCaretX := BC.Char;
-    FCaretY := BC.Line;
+    if Shift * [ssAlt, ssShift] = [ssAlt, ssShift] then
+    begin
+      // Alt+Shift+Drag: column selection
+      FSelection.Caret.Char := BC.Char;
+      FSelection.Caret.Line := BC.Line;
+      FSelections.ColumnSelection(ColumnSelectionStart, BC, FSelection.LastPosX);
+      FSelection := FSelections.ActiveSelection;
+    end
+    else
+    begin
+      FSelection.Stop := BC;
+      FSelection.Caret.Char := BC.Char;
+      FSelection.Caret.Line := BC.Line;
+      FSelections.ActiveSelection := FSelection;
+      FSelections.MouseSelection(FSelection);
+    end;
     EnsureCursorPosVisible;
     Repaint;
   end;
@@ -2534,10 +2856,11 @@ end;
 procedure TCustomFMXSynEdit.SetCaretX(Value: Integer);
 begin
   if Value < 1 then Value := 1;
-  if FCaretX <> Value then
+  if FSelection.Caret.Char <> Value then
   begin
-    FCaretX := Value;
-    FLastPosX := -1;
+    FSelection.Caret.Char := Value;
+    FSelection.LastPosX := -1;
+    FSelections.ActiveSelection := FSelection;
     EnsureCursorPosVisible;
     Repaint;
   end;
@@ -2546,26 +2869,50 @@ end;
 procedure TCustomFMXSynEdit.SetCaretY(Value: Integer);
 begin
   if Value < 1 then Value := 1;
-  if FCaretY <> Value then
+  if FSelection.Caret.Line <> Value then
   begin
-    FCaretY := Value;
+    FSelection.Caret.Line := Value;
+    FSelections.ActiveSelection := FSelection;
     EnsureCursorPosVisible;
     Repaint;
   end;
 end;
 
+function TCustomFMXSynEdit.GetCaretX: Integer;
+begin
+  Result := FSelection.Caret.Char;
+end;
+
+function TCustomFMXSynEdit.GetCaretY: Integer;
+begin
+  Result := FSelection.Caret.Line;
+end;
+
+function TCustomFMXSynEdit.GetBlockBegin: TBufferCoord;
+begin
+  Result := FSelection.Start;
+end;
+
+function TCustomFMXSynEdit.GetBlockEnd: TBufferCoord;
+begin
+  Result := FSelection.Stop;
+end;
+
 function TCustomFMXSynEdit.GetCaretXY: TBufferCoord;
 begin
-  Result := BufferCoord(FCaretX, FCaretY);
+  Result := FSelection.Caret;
 end;
 
 procedure TCustomFMXSynEdit.SetCaretXY(const Value: TBufferCoord);
 begin
-  FCaretX := Max(1, Value.Char);
-  FCaretY := Max(1, Value.Line);
-  FBlockBegin := Value;
-  FBlockEnd := Value;
-  FLastPosX := -1;
+  FSelection.Caret.Char := Max(1, Value.Char);
+  FSelection.Caret.Line := Max(1, Value.Line);
+  FSelection.Start := Value;
+  FSelection.Stop := Value;
+  FSelection.LastPosX := -1;
+  FSelections.ActiveSelection := FSelection;
+  if FSelections.Count > 1 then
+    FSelections.Clear(TSynSelectionsBase.TKeepSelection.ksKeepActive);
   EnsureCursorPosVisible;
   Repaint;
 end;
@@ -2620,10 +2967,10 @@ end;
 procedure TCustomFMXSynEdit.SetText(const Value: string);
 begin
   FLines.Text := Value;
-  FCaretX := 1;
-  FCaretY := 1;
-  FBlockBegin := BufferCoord(1, 1);
-  FBlockEnd := BufferCoord(1, 1);
+  FSelection.Caret.Char := 1;
+  FSelection.Caret.Line := 1;
+  FSelection.Start := BufferCoord(1, 1);
+  FSelection.Stop := BufferCoord(1, 1);
   FTopLine := 1;
   FLeftChar := 1;
   ScanRanges;
@@ -2686,6 +3033,38 @@ begin
     Result := FAllFoldRanges.FoldRowToLine(aRow)
   else
     Result := aRow;
+end;
+
+function TCustomFMXSynEdit.BufferToDisplayPos(
+  const P: TBufferCoord): TDisplayCoord;
+begin
+  if FWordWrap and Assigned(FWordWrapHelper) then
+    Result := FWordWrapHelper.BufferToDisplayPos(P)
+  else
+    Result := DisplayCoord(P.Char, LineToRow(P.Line));
+end;
+
+function TCustomFMXSynEdit.DisplayToBufferPos(
+  const P: TDisplayCoord): TBufferCoord;
+begin
+  if FWordWrap and Assigned(FWordWrapHelper) then
+    Result := FWordWrapHelper.DisplayToBufferPos(P)
+  else
+    Result := BufferCoord(P.Column, RowToLine(P.Row));
+end;
+
+function TCustomFMXSynEdit.GetRowLength(ARow: Integer): Integer;
+begin
+  if FWordWrap and Assigned(FWordWrapHelper) then
+    Result := FWordWrapHelper.GetRowLength(ARow)
+  else
+  begin
+    var Line := RowToLine(ARow);
+    if (Line >= 1) and (Line <= FLines.Count) then
+      Result := FLines[Line - 1].Length
+    else
+      Result := 0;
+  end;
 end;
 
 function TCustomFMXSynEdit.GetDisplayRowCount: Integer;
@@ -2824,7 +3203,7 @@ begin
   begin
     Range := FAllFoldRanges[FoldRangeIndex];
     // Extract caret from fold
-    if (FCaretY > Range.FromLine) and (FCaretY <= Range.ToLine) then
+    if (FSelection.Caret.Line > Range.FromLine) and (FSelection.Caret.Line <= Range.ToLine) then
       CaretXY := BufferCoord(Length(FLines[Range.FromLine - 1]) + 1, Range.FromLine);
     if Invalidate then
     begin
@@ -2853,7 +3232,7 @@ begin
 
   // Surface caret from hidden folds
   var Index: Integer;
-  while FAllFoldRanges.FoldHidesLine(FCaretY, Index) do
+  while FAllFoldRanges.FoldHidesLine(FSelection.Caret.Line, Index) do
   begin
     var Range := FAllFoldRanges[Index];
     CaretXY := BufferCoord(Length(FLines[Range.FromLine - 1]) + 1, Range.FromLine);
@@ -2882,7 +3261,7 @@ var
   Index: Integer;
 begin
   if not FUseCodeFolding then Exit;
-  if FAllFoldRanges.FoldAroundLineEx(FCaretY, False, True, True, Index) then
+  if FAllFoldRanges.FoldAroundLineEx(FSelection.Caret.Line, False, True, True, Index) then
     Collapse(Index);
   EnsureCursorPosVisible;
 end;
@@ -2892,7 +3271,7 @@ var
   Index: Integer;
 begin
   if not FUseCodeFolding then Exit;
-  if FAllFoldRanges.CollapsedFoldStartAtLine(FCaretY, Index) then
+  if FAllFoldRanges.CollapsedFoldStartAtLine(FSelection.Caret.Line, Index) then
     Uncollapse(Index);
   EnsureCursorPosVisible;
 end;
@@ -2904,7 +3283,7 @@ begin
 
   // Surface caret
   var Index: Integer;
-  while FAllFoldRanges.FoldHidesLine(FCaretY, Index) do
+  while FAllFoldRanges.FoldHidesLine(FSelection.Caret.Line, Index) do
   begin
     var Range := FAllFoldRanges[Index];
     CaretXY := BufferCoord(Length(FLines[Range.FromLine - 1]) + 1, Range.FromLine);
@@ -3052,7 +3431,7 @@ var
 
           if not bBackward then
           begin
-            FCaretX := nFound + nReplaceLen;
+            FSelection.Caret.Char := nFound + nReplaceLen;
             if nSearchLen <> nReplaceLen then
             begin
               Inc(iResultOffset, nReplaceLen - nSearchLen);
@@ -3109,8 +3488,8 @@ begin
     end
     else if GetSelAvail then
     begin
-      ptStart := FBlockBegin;
-      ptEnd := FBlockEnd;
+      ptStart := FSelection.Start;
+      ptEnd := FSelection.Stop;
       if ptStart > ptEnd then
       begin
         var Tmp := ptStart;

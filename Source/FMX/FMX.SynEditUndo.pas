@@ -32,6 +32,7 @@ uses
   System.Math,
   System.Generics.Collections,
   SynEditMiscProcs,
+  SynEditSelections,
   SynEditTextBuffer;
 
 type
@@ -90,6 +91,8 @@ type
   private
     FBlockBegin: TBufferCoord;
     FBlockEnd: TBufferCoord;
+    FSelStorage: TSynSelStorage;
+    FHasMultiSel: Boolean;
   public
     procedure Undo(Editor: TCustomFMXSynEdit); override;
     procedure Redo(Editor: TCustomFMXSynEdit); override;
@@ -601,6 +604,8 @@ var
   Item: TSynLinePutUndoItem;
 begin
   if IsLocked or FInsideUndoRedo then Exit;
+  // Adjust remaining selections for line-change
+  FEditor.Selections.LinePut(Index, OldLine);
   Line := FEditor.Lines[Index];
   if Line <> OldLine then
   begin
@@ -630,6 +635,8 @@ var
   Item: TSynLinesDeletedUndoItem;
 begin
   if IsLocked or FInsideUndoRedo then Exit;
+  // Adjust remaining selections for line-change
+  FEditor.Selections.LinesDeleted(Index, Count);
   if Count > 0 then
   begin
     Item := TSynLinesDeletedUndoItem.Create(FEditor, Index,
@@ -643,6 +650,8 @@ var
   Item: TSynLinesInsertedUndoItem;
 begin
   if IsLocked or FInsideUndoRedo then Exit;
+  // Adjust remaining selections for line-change
+  FEditor.Selections.LinesInserted(Index, Count);
   // Consider a file with one empty line as empty
   if (FUndoList.Count = 0) and
     (FEditor.Lines.Count = 1) and (FEditor.Lines[0] = '')
@@ -670,11 +679,17 @@ begin
   FCaret := Editor.CaretXY;
   FBlockBegin := Editor.BlockBegin;
   FBlockEnd := Editor.BlockEnd;
+  FHasMultiSel := Editor.Selections.Count > 1;
+  if FHasMultiSel then
+    Editor.Selections.Store(FSelStorage);
 end;
 
 procedure TSynCaretAndSelectionUndoItem.Undo(Editor: TCustomFMXSynEdit);
 begin
-  Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
+  if FHasMultiSel then
+    Editor.Selections.Restore(FSelStorage)
+  else
+    Editor.SetCaretAndSelection(FCaret, FBlockBegin, FBlockEnd);
 end;
 
 procedure TSynCaretAndSelectionUndoItem.Redo(Editor: TCustomFMXSynEdit);
