@@ -58,7 +58,7 @@ SynEdit uses a **three-layer architecture**:
       └─────────────────────┘
 ```
 
-- **Shared** (no prefix): Platform-independent units — highlighters, text buffer, types, key commands
+- **Shared** (no prefix): Platform-independent units — highlighters, text buffer, types, key commands, spell-check providers
 - **VCL** (`Vcl.*` prefix): Windows-specific — DirectWrite, OLE, printing, accessibility
 - **FMX** (`FMX.*` prefix): Cross-platform — FMX Canvas rendering, FMX scrollbars, FMX clipboard
 
@@ -144,15 +144,16 @@ To manually install into your IDE:
 
 ## Testing
 
-The FMX editor has a DUnitX test suite with **186 tests** across **16 fixtures** covering buffer operations, caret movement, code folding, editor commands, content/file I/O, highlighter assignment, editor options, search/replace, undo/redo, spell check, bug-fix regressions, selection commands, clipboard, editing edge cases, color conversion, and completion proposal logic.
+Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-Tests run headless — no form or visual surface required. `FailsOnNoAsserts` is enabled and every test uses exact-value assertions.
+- **FMX** — **186 tests** across 16 fixtures covering buffer, caret, code folding, commands, content, highlighter, options, search, undo/redo, spell check, bug-fix regressions, selection, clipboard, editing edge cases, color conversion, and completion proposal logic.
+- **VCL** — **47 tests** across 3 fixtures covering Hunspell provider, Windows spell-check COM provider, and spell check component integration.
 
 ```
 build_fmx_tests.bat
 ```
 
-Test project: `Tests/FMX/FMXSynEditTests.dproj`
+Test projects: `Tests/FMX/FMXSynEditTests.dproj`, `Tests/VCL/VCLSynEditTests.dproj`
 
 ---
 

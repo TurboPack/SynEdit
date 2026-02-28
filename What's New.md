@@ -10,7 +10,7 @@ SynEdit now supports **FireMonkey (FMX)** alongside VCL through a three-layer ar
 
 The codebase has been restructured into three layers:
 
-- **Shared** (`Source/`) — Platform-independent units: 66 highlighters, text buffer, types, key commands. These are consumed by both VCL and FMX.
+- **Shared** (`Source/`) — Platform-independent units: 66 highlighters, text buffer, types, key commands, spell-check infrastructure (Hunspell and Windows providers). These are consumed by both VCL and FMX.
 - **VCL** (`Source/VCL/`, `Vcl.*` prefix) — Windows-specific: DirectWrite rendering, OLE drag-drop, printing, accessibility.
 - **FMX** (`Source/FMX/`, `FMX.*` prefix) — Cross-platform: FMX Canvas rendering, FMX scrollbars, FMX clipboard.
 
@@ -35,7 +35,7 @@ A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
 * **Completion proposals** — `TFMXSynCompletionProposal` popup with keyboard navigation, filtering, and customizable display.
 * **Plugin support** — `TSynFMXEditPlugin` base class for extending the editor via `OnCommand` hooks.
 * **Printing** — `TFMXSynEditPrint` with abstract provider interface for platform-specific rendering.
-* **Spell check** — `TFMXSynSpellCheck` with abstract provider interface for pluggable spell-check backends.
+* **Spell check** — `TFMXSynSpellCheck` with shared provider infrastructure (`ISynSpellCheckProvider`). Includes Hunspell and Windows spell-check providers usable by both VCL and FMX.
 * **Range scanning** — Incremental re-scanning for multi-line highlighters (XML, HTML, Delphi, etc.).
 * **Scrolling** — FMX `TScrollBar`-based scrolling with mouse wheel support.
 * **Gutter** — Line numbers with configurable width.
@@ -63,9 +63,11 @@ Three FMX demos are included in `Demos/FMX/`:
 * **EditApp** — Single-document editor with menus (File/Edit), status bar, file I/O, clipboard, undo/redo, and automatic highlighter detection from file extension.
 * **FeaturesDemo** — Comprehensive feature showcase with a controls panel, editor options toggles, search/replace dialogs, completion proposals, code folding, clipboard buttons, active line color picker, and a timestamped event log.
 
-### Test Suite
+### Test Suites
 
-A DUnitX test suite (`Tests/FMX/FMXSynEditTests.dproj`) provides **186 tests** across **16 fixtures** running headless without a form or visual surface. `FailsOnNoAsserts` is enabled and every test uses exact-value assertions.
+Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
+
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **186 tests**, 16 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -85,6 +87,14 @@ A DUnitX test suite (`Tests/FMX/FMXSynEditTests.dproj`) provides **186 tests** a
 | Editing | 12 | Line joining, overwrite mode, OnChange, BeginUpdate |
 | Renderer | 11 | TColorToAlphaColor byte-swap, SysNone, metrics |
 | CompletionProposal | 12 | AddItem/ClearList, filtering, position, MoveLine |
+
+**VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **47 tests**, 3 fixtures:
+
+| Fixture | Tests | Coverage area |
+| :------ | ----: | :------------ |
+| SynSpellCheck | 20 | Hunspell provider, suffix/prefix rules, suggest |
+| WindowsSpellCheck | 11 | Windows spell-check COM provider |
+| SpellCheckComponent | 16 | TSynSpellCheck component integration |
 
 ---
 

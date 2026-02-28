@@ -71,6 +71,10 @@ SynEdit/
     SynEditWildcardSearch.pas     Shared wildcard search
     SynEditStrConst.pas           Shared string constants
     SynUnicode.pas                Shared encoding utilities
+    SynSpellCheckTypes.pas        Shared spell check interfaces (ISynSpellCheckProvider)
+    SynSpellCheckHunspellProvider Shared Hunspell spell check provider
+    SynSpellCheckWindowsProvider  Shared Windows spell check provider
+    SynSpellCheckWinAPI.pas       Windows spell check API declarations
     SynEdit.inc                   Compiler directives
     Highlighters/
       SynHighlighter*.pas         66 language highlighters (shared)
@@ -153,6 +157,11 @@ SynEdit/
                                      selection, clipboard, editing, renderer,
                                      completion proposal, bug fixes)
       TestFMXSynSpellCheck.pas      Spell check provider tests
+    VCL/
+      VCLSynEditTests.dproj        DUnitX test project (47 tests, 3 fixtures)
+      TestVCLSynSpellCheck.pas      Hunspell provider tests
+      TestVCLSynWindowsSpellCheck   Windows spell-check COM provider tests
+      TestVCLSynSpellCheckComponent Spell check component integration tests
 ```
 
 ## Package Dependencies
