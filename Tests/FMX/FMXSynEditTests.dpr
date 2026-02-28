@@ -28,7 +28,8 @@ uses
   TestFMXSynEditRenderer in 'TestFMXSynEditRenderer.pas',
   TestFMXSynEditCompletionProposal in 'TestFMXSynEditCompletionProposal.pas',
   TestSynHighlighterDelphiFolding in 'TestSynHighlighterDelphiFolding.pas',
-  TestSynHighlighterHTMLFolding in 'TestSynHighlighterHTMLFolding.pas';
+  TestSynHighlighterHTMLFolding in 'TestSynHighlighterHTMLFolding.pas',
+  TestSynHighlighterXMLFolding in 'TestSynHighlighterXMLFolding.pas';
 
 var
   Runner: ITestRunner;

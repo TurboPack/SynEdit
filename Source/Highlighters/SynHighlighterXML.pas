@@ -60,6 +60,7 @@ uses
   {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
+  SynEditCodeFolding,
   SynUnicode,
   SysUtils,
   Classes;
@@ -91,7 +92,7 @@ type
      rsDocTypeQuoteEntityRef}
   );
 
-  TSynXMLSyn = class(TSynCustomHighlighter)
+  TSynXMLSyn = class(TSynCustomCodeFoldingHighlighter)
   private
     fRange: TRangeState;
     fTokenID: TtkTokenKind;
@@ -150,6 +151,8 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
   published
     property ElementAttri: TSynHighlighterAttributes read fElementAttri
       write fElementAttri;
@@ -843,18 +846,190 @@ end;
 
 function TSynXMLSyn.GetSampleSource: string;
 begin
-  Result:= '<?xml version="1.0"?>'#13#10+
-           '<!DOCTYPE root ['#13#10+
-           '  ]>'#13#10+
-           '<!-- Comment -->'#13#10+
-           '<root version="&test;">'#13#10+
-           '  <![CDATA[ **CDATA section** ]]>'#13#10+
-           '</root>';
+  Result :=
+    '<?xml version="1.0" encoding="UTF-8"?>'#13#10 +
+    '<!-- App configuration -->'#13#10 +
+    '<configuration>'#13#10 +
+    '  <appSettings>'#13#10 +
+    '    <add key="Theme" value="Dark"/>'#13#10 +
+    '    <add key="Lang" value="en"/>'#13#10 +
+    '  </appSettings>'#13#10 +
+    '  <database>'#13#10 +
+    '    <connection host="localhost"'#13#10 +
+    '      port="5432" name="mydb"/>'#13#10 +
+    '    <pool min="2" max="10"/>'#13#10 +
+    '  </database>'#13#10 +
+    '  <logging level="info">'#13#10 +
+    '    <![CDATA[ %d{yyyy-MM-dd} [%t] %m ]]>'#13#10 +
+    '    <target type="file">'#13#10 +
+    '      <param name="path" value="/var/log"/>'#13#10 +
+    '    </target>'#13#10 +
+    '  </logging>'#13#10 +
+    '</configuration>';
 end;
 
 class function TSynXMLSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangXML;
+end;
+
+// =============================================================================
+//   Code Folding Support
+// =============================================================================
+
+procedure CountXmlTags(const S: string; out Opens, Closes: Integer;
+  var InTag: Boolean; var IsClosing: Boolean; var InQuote: WideChar;
+  out ContinuedOpen: Boolean);
+{ Scan a single line for XML opening and closing tags.
+  State variables (InTag, IsClosing, InQuote) persist across calls so that
+  tags spanning multiple lines are handled correctly.
+  - Self-closing tags (<element/>) are excluded.
+  - Processing instructions (<?...?>), CDATA (<![CDATA[...]]>),
+    comments (<!--...-->), and DOCTYPE (<!DOCTYPE...>) are ignored.
+  - Handles quoted attribute values (won't be confused by > inside quotes).
+  ContinuedOpen is True when a tag continued from a previous line resolves
+  as an opening tag (already counted in Opens). }
+var
+  I, Len: Integer;
+  SelfClose: Boolean;
+  FirstTag: Boolean;
+begin
+  Opens := 0;
+  Closes := 0;
+  ContinuedOpen := False;
+  I := 1;
+  Len := Length(S);
+  FirstTag := InTag; // True if continuing a tag from a previous line
+
+  while I <= Len do
+  begin
+    if InQuote <> #0 then
+    begin
+      if S[I] = InQuote then
+        InQuote := #0;
+      Inc(I);
+    end
+    else if InTag then
+    begin
+      if S[I] = '>' then
+      begin
+        SelfClose := (I > 1) and (S[I - 1] = '/');
+        if IsClosing then
+        begin
+          Inc(Closes);
+        end
+        else if not SelfClose then
+        begin
+          Inc(Opens);
+          if FirstTag then
+            ContinuedOpen := True;
+        end;
+        InTag := False;
+        FirstTag := False;
+        Inc(I);
+      end
+      else if (S[I] = '"') or (S[I] = '''') then
+      begin
+        InQuote := S[I];
+        Inc(I);
+      end
+      else
+        Inc(I);
+    end
+    else if (S[I] = '<') then
+    begin
+      IsClosing := False;
+      FirstTag := False;
+      Inc(I);
+      // Skip processing instructions <?...?>
+      if (I <= Len) and (S[I] = '?') then
+      begin
+        while (I < Len) and not ((S[I] = '?') and (S[I + 1] = '>')) do
+          Inc(I);
+        Inc(I, 2); // skip ?>
+        Continue;
+      end;
+      // Skip comments <!-- and DOCTYPE/CDATA <!
+      if (I <= Len) and (S[I] = '!') then
+      begin
+        while (I <= Len) and (S[I] <> '>') do
+          Inc(I);
+        if I <= Len then Inc(I); // skip >
+        Continue;
+      end;
+      // Check for closing tag
+      if (I <= Len) and (S[I] = '/') then
+      begin
+        IsClosing := True;
+        Inc(I);
+      end;
+      // Read tag name
+      while (I <= Len) and (CharInSet(S[I], ['A'..'Z', 'a'..'z', '0'..'9',
+        '-', '_', '.', ':'])) do
+        Inc(I);
+      InTag := True;
+    end
+    else
+      Inc(I);
+  end;
+  // If InTag is still True, the tag spans to the next line.
+  // Don't count it yet — state carries over to the next call.
+end;
+
+procedure TSynXMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+var
+  Line: Integer;
+  CurLine: string;
+  Opens, Closes: Integer;
+  InTag, IsClosing: Boolean;
+  InQuote: WideChar;
+  PendingOpenLine: Integer;
+  ContinuedOpen: Boolean;
+begin
+  InTag := False;
+  IsClosing := False;
+  InQuote := #0;
+  PendingOpenLine := -1;
+
+  for Line := FromLine to ToLine do
+  begin
+    CurLine := LinesToScan[Line];
+    if Trim(CurLine) = '' then
+    begin
+      FoldRanges.NoFoldInfo(Line + 1);
+      Continue;
+    end;
+
+    CountXmlTags(CurLine, Opens, Closes, InTag, IsClosing, InQuote,
+      ContinuedOpen);
+
+    // Handle continued tag that resolved on this line
+    if ContinuedOpen and (PendingOpenLine > 0) then
+    begin
+      // Continued tag resolved as open — attribute fold to original line
+      Dec(Opens);
+      FoldRanges.StartFoldRange(PendingOpenLine, 1);
+      PendingOpenLine := -1;
+    end
+    else if (PendingOpenLine > 0) and not InTag then
+    begin
+      // Continued tag resolved as self-close or close — clear pending
+      PendingOpenLine := -1;
+    end;
+
+    // Normal fold range logic for this line's own tags
+    if Opens > Closes then
+      FoldRanges.StartFoldRange(Line + 1, 1)
+    else if Closes > Opens then
+      FoldRanges.StopFoldRange(Line + 1, 1)
+    else
+      FoldRanges.NoFoldInfo(Line + 1);
+
+    // Track pending open for incomplete non-closing tags
+    if InTag and not IsClosing and (PendingOpenLine < 0) then
+      PendingOpenLine := Line + 1;
+  end;
 end;
 
 initialization
