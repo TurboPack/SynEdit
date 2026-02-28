@@ -87,6 +87,61 @@ type
   end;
 
   [TestFixture]
+  TTestAutoIndentTabs = class
+  private
+    FEditor: TFMXSynEdit;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+    [Test]
+    procedure TestAutoIndentPreservesLeadingTabs;
+    [Test]
+    procedure TestAutoIndentPreservesMixedWhitespace;
+    [Test]
+    procedure TestAutoIndentWithSpacesStillWorks;
+    [Test]
+    procedure TestNoAutoIndentWhenDisabled;
+  end;
+
+  [TestFixture]
+  TTestPixelToBufferCoord = class
+  private
+    FEditor: TFMXSynEdit;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+    [Test]
+    procedure TestClickLeftOfCharBoundary;
+    [Test]
+    procedure TestClickRightOfCharBoundary;
+    [Test]
+    procedure TestClickExactlyOnCharBoundary;
+    [Test]
+    procedure TestClickInGutterClampsToOne;
+  end;
+
+  [TestFixture]
+  TTestScrollBarSizing = class
+  private
+    FEditor: TFMXSynEdit;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+    [Test]
+    procedure TestLinesInWindowDeltaNoScrollBars;
+    [Test]
+    procedure TestCharsInWindowDeltaNoScrollBars;
+    [Test]
+    procedure TestScrollBarsHiddenInitially;
+  end;
+
+  [TestFixture]
   TTestKeyboardHandlerChain = class
   private
     FEditor: TFMXSynEdit;
@@ -121,6 +176,7 @@ implementation
 uses
   System.Types,
   System.SysUtils,
+  System.Math,
   FMX.Graphics,
   SynEditTypes,
   SynEditKeyCmds,
@@ -576,11 +632,198 @@ begin
     'OnKeyDown should still be assigned after RemoveKeyDownHandler');
 end;
 
+{ ---- Auto-indent with tabs ---- }
+
+procedure TTestAutoIndentTabs.Setup;
+begin
+  FEditor := TFMXSynEdit.Create(nil);
+  Assert.IsTrue(eoAutoIndent in FEditor.Options, 'eoAutoIndent should be on by default');
+  // Disable eoTabsToSpaces so literal tabs stay in the buffer
+  FEditor.Options := FEditor.Options - [eoTabsToSpaces];
+end;
+
+procedure TTestAutoIndentTabs.TearDown;
+begin
+  FEditor.Free;
+end;
+
+procedure TTestAutoIndentTabs.TestAutoIndentPreservesLeadingTabs;
+begin
+  FEditor.Text := #9'indented';
+  FEditor.CaretXY := BufferCoord(10, 1); // end of line
+  FEditor.ExecuteCommand(ecLineBreak, #0);
+  Assert.AreEqual(2, FEditor.LineCount);
+  Assert.AreEqual(#9, Copy(FEditor.Lines[1], 1, 1),
+    'New line should start with a tab from auto-indent');
+end;
+
+procedure TTestAutoIndentTabs.TestAutoIndentPreservesMixedWhitespace;
+begin
+  FEditor.Text := #9'  mixed';
+  FEditor.CaretXY := BufferCoord(9, 1); // end of line
+  FEditor.ExecuteCommand(ecLineBreak, #0);
+  Assert.AreEqual(2, FEditor.LineCount);
+  Assert.AreEqual(#9'  ', Copy(FEditor.Lines[1], 1, 3),
+    'New line should preserve tab+spaces from auto-indent');
+end;
+
+procedure TTestAutoIndentTabs.TestAutoIndentWithSpacesStillWorks;
+begin
+  FEditor.Text := '    spaced';
+  FEditor.CaretXY := BufferCoord(11, 1);
+  FEditor.ExecuteCommand(ecLineBreak, #0);
+  Assert.AreEqual(2, FEditor.LineCount);
+  Assert.AreEqual('    ', Copy(FEditor.Lines[1], 1, 4),
+    'Auto-indent should still work with spaces');
+end;
+
+procedure TTestAutoIndentTabs.TestNoAutoIndentWhenDisabled;
+begin
+  FEditor.Options := FEditor.Options - [eoAutoIndent];
+  FEditor.Text := #9'indented';
+  FEditor.CaretXY := BufferCoord(10, 1);
+  FEditor.ExecuteCommand(ecLineBreak, #0);
+  Assert.AreEqual(2, FEditor.LineCount);
+  Assert.AreEqual('', FEditor.Lines[1],
+    'No auto-indent should produce empty new line');
+end;
+
+{ ---- PixelToBufferCoord ---- }
+
+procedure TTestPixelToBufferCoord.Setup;
+begin
+  FEditor := TFMXSynEdit.Create(nil);
+  FEditor.Text := 'ABCDEFGHIJ';
+  FEditor.Width := 500;
+  FEditor.Height := 300;
+end;
+
+procedure TTestPixelToBufferCoord.TearDown;
+begin
+  FEditor.Free;
+end;
+
+procedure TTestPixelToBufferCoord.TestClickLeftOfCharBoundary;
+var
+  BC: TBufferCoord;
+  Char3Px: TPointF;
+begin
+  // Get exact pixel position of char 3
+  Char3Px := FEditor.BufferCoordToPixel(BufferCoord(3, 1));
+  // Click slightly left of char 3 start — should map to char 2, not char 3
+  BC := FEditor.PixelToBufferCoord(Char3Px.X - 1, Char3Px.Y);
+  Assert.AreEqual(2, BC.Char,
+    'Clicking 1px left of char 3 should map to char 2 (Trunc behavior)');
+end;
+
+procedure TTestPixelToBufferCoord.TestClickRightOfCharBoundary;
+var
+  BC: TBufferCoord;
+  Char3Px: TPointF;
+begin
+  // Click just past the start of char 3
+  Char3Px := FEditor.BufferCoordToPixel(BufferCoord(3, 1));
+  BC := FEditor.PixelToBufferCoord(Char3Px.X + 1, Char3Px.Y);
+  Assert.AreEqual(3, BC.Char,
+    'Clicking 1px right of char 3 start should map to char 3');
+end;
+
+procedure TTestPixelToBufferCoord.TestClickExactlyOnCharBoundary;
+var
+  BC: TBufferCoord;
+  Char3Px: TPointF;
+begin
+  // Click exactly on the start of char 3
+  Char3Px := FEditor.BufferCoordToPixel(BufferCoord(3, 1));
+  BC := FEditor.PixelToBufferCoord(Char3Px.X, Char3Px.Y);
+  Assert.AreEqual(3, BC.Char,
+    'Clicking exactly on char 3 start should map to char 3');
+end;
+
+procedure TTestPixelToBufferCoord.TestClickInGutterClampsToOne;
+var
+  BC: TBufferCoord;
+begin
+  // Click at X = 0 (gutter area) — should clamp to char 1
+  BC := FEditor.PixelToBufferCoord(0, 0);
+  Assert.AreEqual(1, BC.Char,
+    'Clicking in gutter should clamp to char 1');
+end;
+
+{ ---- Scrollbar conditional sizing ---- }
+
+procedure TTestScrollBarSizing.Setup;
+begin
+  FEditor := TFMXSynEdit.Create(nil);
+  FEditor.Width := 400;
+  FEditor.Height := 300;
+end;
+
+procedure TTestScrollBarSizing.TearDown;
+begin
+  FEditor.Free;
+end;
+
+procedure TTestScrollBarSizing.TestLinesInWindowDeltaNoScrollBars;
+var
+  Lines300, Lines400: Integer;
+  ExpectedDelta: Integer;
+begin
+  // Short content — no scrollbars should appear
+  FEditor.Text := 'Short';
+  FEditor.Height := 300;
+  Lines300 := FEditor.LinesInWindow;
+  FEditor.Height := 400;
+  Lines400 := FEditor.LinesInWindow;
+  // Increasing height by 100 should gain exactly Trunc(100/LineHeight) lines
+  ExpectedDelta := Integer(Trunc(100 / FEditor.LineHeight));
+  Assert.AreEqual(ExpectedDelta, Lines400 - Lines300,
+    'LinesInWindow delta should match full height delta when no scrollbar');
+end;
+
+procedure TTestScrollBarSizing.TestCharsInWindowDeltaNoScrollBars;
+var
+  CharsNarrow, CharsWide: Integer;
+begin
+  // Short content — no vertical scrollbar should appear
+  FEditor.Text := 'Short';
+  FEditor.Width := 300;
+  CharsNarrow := FEditor.CharsInWindow;
+  FEditor.Width := 500;
+  CharsWide := FEditor.CharsInWindow;
+  // Adding 200px should gain roughly 200/CharWidth chars (within 1 of rounding)
+  Assert.IsTrue(Abs((CharsWide - CharsNarrow) * FEditor.CharWidth - 200) < FEditor.CharWidth,
+    'CharsInWindow delta should reflect full width change when no scrollbar');
+end;
+
+procedure TTestScrollBarSizing.TestScrollBarsHiddenInitially;
+var
+  LinesShort, LinesManyShort: Integer;
+begin
+  // Verify that adding more short lines (that don't need a horizontal
+  // scrollbar) doesn't reduce LinesInWindow. If the vertical scrollbar
+  // were incorrectly shown for short content, LinesInWindow would shrink.
+  FEditor.Text := 'Short';
+  FEditor.Height := 300;
+  LinesShort := FEditor.LinesInWindow;
+
+  // 5 short lines — still fits in window, no scrollbar needed
+  FEditor.Text := 'A' + sLineBreak + 'B' + sLineBreak + 'C' +
+    sLineBreak + 'D' + sLineBreak + 'E';
+  LinesManyShort := FEditor.LinesInWindow;
+
+  Assert.AreEqual(LinesShort, LinesManyShort,
+    'LinesInWindow should not change when adding lines that still fit');
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TTestPluginRegistration);
   TDUnitX.RegisterTestFixture(TTestModifiedProperty);
   TDUnitX.RegisterTestFixture(TTestTextBufferNilWidthFunc);
   TDUnitX.RegisterTestFixture(TTestTabExpansion);
+  TDUnitX.RegisterTestFixture(TTestAutoIndentTabs);
+  TDUnitX.RegisterTestFixture(TTestPixelToBufferCoord);
+  TDUnitX.RegisterTestFixture(TTestScrollBarSizing);
   TDUnitX.RegisterTestFixture(TTestKeyboardHandlerChain);
 
 end.
