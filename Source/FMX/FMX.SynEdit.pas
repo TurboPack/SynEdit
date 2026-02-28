@@ -101,6 +101,9 @@ type
     FKbdHandler: TSynEditKbdHandler;
     // Plugins
     FPlugins: TList;
+    // Cached max scroll width
+    FMaxScrollWidth: Integer;
+    FMaxScrollWidthValid: Boolean;
     // Private methods
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure SetTabWidth(Value: Integer);
@@ -601,15 +604,19 @@ function TCustomFMXSynEdit.GetMaxScrollWidth: Integer;
 var
   I, Len: Integer;
 begin
-  Result := 1;
-  for I := 0 to FLines.Count - 1 do
+  if not FMaxScrollWidthValid then
   begin
-    Len := Length(ExpandTabs(FLines[I], FTabWidth));
-    if Len > Result then
-      Result := Len;
+    FMaxScrollWidth := 1;
+    for I := 0 to FLines.Count - 1 do
+    begin
+      Len := Length(ExpandTabs(FLines[I], FTabWidth));
+      if Len > FMaxScrollWidth then
+        FMaxScrollWidth := Len;
+    end;
+    Inc(FMaxScrollWidth); // +1 for caret past end
+    FMaxScrollWidthValid := True;
   end;
-  Inc(Result); // +1 for caret past end
-  Result := Max(Result, FCharsInWindow + 1);
+  Result := Max(FMaxScrollWidth, FCharsInWindow + 1);
 end;
 
 { --- Caret --- }
@@ -1080,6 +1087,7 @@ end;
 
 procedure TCustomFMXSynEdit.LinesChanged(Sender: TObject);
 begin
+  FMaxScrollWidthValid := False;
   if FUseCodeFolding then
     FAllFoldRanges.StopScanning(FLines);
   UpdateGutterWidth;
@@ -2184,6 +2192,7 @@ begin
   if (Value > 0) and (Value <> FTabWidth) then
   begin
     FTabWidth := Value;
+    FMaxScrollWidthValid := False;
     Repaint;
   end;
 end;
