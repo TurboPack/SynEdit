@@ -168,8 +168,11 @@
         <DelphiCompile Include="..\..\..\Source\SynEditRegexSearch.pas">
             <BuildOrder>20</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditWildcardSearch.pas">
+        <DelphiCompile Include="..\..\..\Source\SynEditSelections.pas">
             <BuildOrder>21</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditWildcardSearch.pas">
+            <BuildOrder>22</BuildOrder>
         </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas">
             <BuildOrder>53</BuildOrder>
