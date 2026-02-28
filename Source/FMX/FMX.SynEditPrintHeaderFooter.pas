@@ -665,7 +665,7 @@ begin
     Canvas.Font.Assign(AItem.Font);
     Canvas.Fill.Color := TColorToAlphaColor(TColors.Black);
     Canvas.FillText(TextRect, AStr, False, 1.0, [], HAlign,
-      TTextAlign.Trailing);
+      TTextAlign.Leading);
   end;
 end;
 
@@ -709,7 +709,6 @@ function TSynEditPrintHeaderFooter.GetAsString: string;
 var
   I: Integer;
 begin
-  FixLines;
   Result := '';
   for I := 0 to FItems.Count - 1 do
   begin

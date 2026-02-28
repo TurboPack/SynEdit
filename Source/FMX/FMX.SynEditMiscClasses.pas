@@ -28,20 +28,6 @@ uses
   SynEditKeyConst;
 
 type
-  { Notification event chain - matches VCL version interface }
-  TSynNotifyEventChain = class(TComponent)
-  private
-    FClients: TList;
-    FSender: TObject;
-  public
-    constructor CreateEx(AOwner: TComponent);
-    destructor Destroy; override;
-    procedure Add(AEvent: TNotifyEvent);
-    procedure Remove(AEvent: TNotifyEvent);
-    procedure Fire;
-    property Sender: TObject read FSender write FSender;
-  end;
-
   { Selected text color }
   TSynSelectedColor = class(TPersistent)
   private
@@ -69,59 +55,6 @@ type
   { TSynEditSearchCustom is now in the shared SynEditTypes.pas unit }
 
 implementation
-
-{ TSynNotifyEventChain }
-
-constructor TSynNotifyEventChain.CreateEx(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FClients := TList.Create;
-end;
-
-destructor TSynNotifyEventChain.Destroy;
-begin
-  FClients.Free;
-  inherited;
-end;
-
-procedure TSynNotifyEventChain.Add(AEvent: TNotifyEvent);
-begin
-  FClients.Add(TMethod(AEvent).Code);
-  FClients.Add(TMethod(AEvent).Data);
-end;
-
-procedure TSynNotifyEventChain.Remove(AEvent: TNotifyEvent);
-var
-  I: Integer;
-begin
-  I := 0;
-  while I < FClients.Count - 1 do
-  begin
-    if (FClients[I] = TMethod(AEvent).Code) and
-       (FClients[I + 1] = TMethod(AEvent).Data) then
-    begin
-      FClients.Delete(I);
-      FClients.Delete(I);
-      Break;
-    end;
-    Inc(I, 2);
-  end;
-end;
-
-procedure TSynNotifyEventChain.Fire;
-var
-  I: Integer;
-  Event: TNotifyEvent;
-begin
-  I := 0;
-  while I < FClients.Count - 1 do
-  begin
-    TMethod(Event).Code := FClients[I];
-    TMethod(Event).Data := FClients[I + 1];
-    Event(FSender);
-    Inc(I, 2);
-  end;
-end;
 
 { TSynSelectedColor }
 
