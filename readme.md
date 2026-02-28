@@ -62,7 +62,7 @@ SynEdit uses a **three-layer architecture**:
 - **VCL** (`Vcl.*` prefix): Windows-specific — DirectWrite, OLE, printing, accessibility
 - **FMX** (`FMX.*` prefix): Cross-platform — FMX Canvas rendering, FMX scrollbars, FMX clipboard
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical reference including directory structure, package dependencies, unit scope resolution, build order, and contributor guidelines.
+See [Architecture.md](Doc/Architecture.md) for the full technical reference including directory structure, package dependencies, unit scope resolution, build order, and contributor guidelines.
 
 ---
 
@@ -162,7 +162,7 @@ Test projects: `Tests/FMX/FMXSynEditTests.dproj`, `Tests/VCL/VCLSynEditTests.dpr
 ### Prerequisites
 
 - Delphi 12+ (RAD Studio 12+)
-- Packages must be built in dependency order (see [ARCHITECTURE.md](ARCHITECTURE.md#building))
+- Packages must be built in dependency order (see [Architecture.md](Doc/Architecture.md#building))
 
 ### Build Scripts
 

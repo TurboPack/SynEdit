@@ -14,7 +14,7 @@ The codebase has been restructured into three layers:
 - **VCL** (`Source/VCL/`, `Vcl.*` prefix) — Windows-specific: DirectWrite rendering, OLE drag-drop, printing, accessibility.
 - **FMX** (`Source/FMX/`, `FMX.*` prefix) — Cross-platform: FMX Canvas rendering, FMX scrollbars, FMX clipboard.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical reference.
+See [Architecture.md](Doc/Architecture.md) for the full technical reference.
 
 ### FMX Editor (`TCustomFMXSynEdit`)
 
