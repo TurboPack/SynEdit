@@ -67,26 +67,32 @@ Three FMX demos are included in `Demos/FMX/`:
 
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **186 tests**, 16 fixtures:
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **277 tests**, 22 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
-| Buffer | 11 | Line add/delete/insert, text property |
-| Caret | 9 | Positioning, SelectAll, GetTextRange |
-| CodeFolding | 7 | Fold detection, collapse/uncollapse, levels |
-| Commands | 12 | Char insert/delete, line break, tab, navigation |
+| Buffer | 10 | Line add/delete/insert, text property |
+| Caret | 10 | Positioning, SelectAll, GetTextRange |
+| CodeFolding | 6 | Fold detection, collapse/uncollapse, levels |
+| Commands | 14 | Char insert/delete, line break, tab, navigation |
 | Content | 8 | Text get/set, multi-line, stream round-trip |
 | Highlighter | 5 | Assignment, free notification, switching |
-| Options | 9 | Default options, read-only, tab width, right edge |
+| Options | 10 | Default options, read-only, tab width, right edge |
 | Search | 9 | Case, whole-word, regex, replace, replace-all |
 | UndoRedo | 8 | Availability, restore, multiple undo/redo |
-| SpellCheck | 21 | Hunspell provider, suffix/prefix rules, suggest |
+| SpellCheck | 20 | Hunspell provider, suffix/prefix rules, suggest |
+| WindowsSpellCheck | 11 | Windows spell-check COM provider |
+| SpellCheckComponent | 16 | TSynSpellCheck component integration |
 | BugFixes | 23 | Plugin registration, Modified, nil width, tabs, keyboard chain |
 | Selection | 18 | ecSel* commands, accumulation, collapse, replace, line-boundary |
 | Clipboard | 10 | Copy/cut/paste, read-only guards, undo support |
 | Editing | 12 | Line joining, overwrite mode, OnChange, BeginUpdate |
 | Renderer | 11 | TColorToAlphaColor byte-swap, SysNone, metrics |
 | CompletionProposal | 12 | AddItem/ClearList, filtering, position, MoveLine |
+| DelphiFolding | 26 | Procedure/class/record/interface folding, class var exclusion |
+| HTMLFolding | 11 | Tag pairs, void elements, comments, multi-line tags |
+| XMLFolding | 14 | Elements, namespaces, PI/CDATA/DOCTYPE, multi-line tags |
+| CSSFolding | 13 | Brace folding, nested @media, comments, strings |
 
 **VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **47 tests**, 3 fixtures:
 
@@ -114,11 +120,12 @@ A new updated Delphi syntax highlighter for SynEdit (TSynDelphiSyn) and a design
 
 * **Delphi 13 Language Support**: Includes support for modern keywords such as reference, helper, operator, strict, sealed, final, delayed, and more.  
 * **Multiline String Literals**: Native support for Delphi's triple-quoted strings (''' ... ''').  
-* **Code Folding**: Built-in folding logic for:  
-  * {$REGION} / {$ENDREGION} directives.  
-  * implementation sections.  
-  * Classes, Records, and Methods (procedure, function, etc.).  
-  * Standard blocks (begin..end, case, try).  
+* **Code Folding**: Built-in folding logic for:
+  * {$REGION} / {$ENDREGION} directives.
+  * interface / implementation sections (each folds independently).
+  * Classes, Records, and Methods (procedure, function, constructor, destructor fold from the header line).
+  * Standard blocks (begin..end, case, try).
+  * `class var`, `class function`, `class procedure`, `class constructor`, `class destructor`, and `class operator` are correctly excluded from opening spurious folds.  
 * **Performance**: Uses a binary search algorithm for fast keyword lookups and class-cached Regular Expressions for folding logic.
 
 ### **Attributes**
