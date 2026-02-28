@@ -149,6 +149,10 @@
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEdit.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynCompletionProposal.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPlugins.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckWinAPI.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckWindowsProvider.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrintTypes.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditPrinterInfo.pas"/>

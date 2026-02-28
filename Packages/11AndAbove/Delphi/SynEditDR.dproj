@@ -156,6 +156,10 @@
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportTeX.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPythonBehaviour.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDBEdit.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckWinAPI.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckWindowsProvider.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrect.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrectEditor.pas">

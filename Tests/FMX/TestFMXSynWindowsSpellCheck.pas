@@ -6,8 +6,8 @@ interface
 
 uses
   DUnitX.TestFramework,
-  FMX.SynSpellCheck,
-  FMX.SynSpellCheckWindowsProvider;
+  SynSpellCheckTypes,
+  SynSpellCheckWindowsProvider;
 
 type
   [TestFixture]

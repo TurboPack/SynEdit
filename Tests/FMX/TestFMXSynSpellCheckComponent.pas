@@ -5,6 +5,7 @@ interface
 uses
   DUnitX.TestFramework,
   FMX.SynEdit,
+  SynSpellCheckTypes,
   FMX.SynSpellCheck;
 
 type

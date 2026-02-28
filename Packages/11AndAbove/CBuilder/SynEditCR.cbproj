@@ -266,6 +266,18 @@
         <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynDBEdit.pas">
             <BuildOrder>117</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynSpellCheckTypes.pas">
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynSpellCheckWinAPI.pas">
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas">
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynSpellCheckWindowsProvider.pas">
+            <BuildOrder>117</BuildOrder>
+        </DelphiCompile>
         <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas">
             <BuildOrder>117</BuildOrder>
         </DelphiCompile>

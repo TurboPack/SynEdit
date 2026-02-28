@@ -20,6 +20,11 @@ uses
   SynEditHighlighter,
   FMX.SynCompletionProposal,
   FMX.SynSpellCheck,
+  SynSpellCheckTypes,
+  SynSpellCheckHunspellProvider,
+  {$IFDEF MSWINDOWS}
+  SynSpellCheckWindowsProvider,
+  {$ENDIF}
   FMX.SynEditPrint,
   dlgFMXSearchText,
   dlgFMXReplaceText;

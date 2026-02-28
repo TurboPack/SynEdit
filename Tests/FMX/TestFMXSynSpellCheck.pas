@@ -4,7 +4,8 @@ interface
 
 uses
   DUnitX.TestFramework,
-  FMX.SynSpellCheck;
+  SynSpellCheckTypes,
+  SynSpellCheckHunspellProvider;
 
 type
   [TestFixture]
