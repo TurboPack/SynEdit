@@ -151,11 +151,11 @@ SynEdit/
     SynEditDemosGroup.groupproj   All demos
   Tests/
     FMX/
-      FMXSynEditTests.dproj        DUnitX test project (349 tests, 28 fixtures)
+      FMXSynEditTests.dproj        DUnitX test project (366 tests, 29 fixtures)
       TestFMXSynEdit*.pas           Test fixtures (buffer, caret, folding, commands,
                                      content, highlighter, options, search, undo/redo,
                                      selection, clipboard, editing, renderer,
-                                     completion proposal, bug fixes)
+                                     completion proposal, multi-caret, bug fixes)
       TestFMXSynSpellCheck.pas      Spell check provider tests
       TestFMXSynWindowsSpellCheck   Windows spell-check COM provider tests
       TestFMXSynSpellCheckComponent Spell check component integration tests

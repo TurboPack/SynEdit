@@ -27,6 +27,7 @@ A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
 * **Syntax highlighting** — All 66 shared highlighters work out of the box.
 * **Keyboard input** — Full text editing with insert/overwrite modes.
 * **Selection** — Mouse and keyboard selection with correct split-token rendering at selection boundaries.
+* **Multi-caret editing** — Multiple carets (Alt+Click), column selection (Alt+Shift+Arrows/Drag), select all matching text (Ctrl+Shift+W), carets at line ends (Alt+End). Shared `TSynSelectionsBase` architecture between VCL and FMX.
 * **Clipboard** — Cut, Copy, Paste via `IFMXClipboardService`.
 * **Undo/Redo** — Full undo/redo stack.
 * **File I/O** — `LoadFromFile`, `SaveToFile`, `LoadFromStream`, `SaveToStream`.
@@ -67,7 +68,7 @@ Three FMX demos are included in `Demos/FMX/`:
 
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **349 tests**, 28 fixtures:
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **366 tests**, 29 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -100,6 +101,7 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | CSSFolding | 13 | Brace folding, nested @media, comments, strings |
 | Bookmarks | 15 | Set/clear/goto, toggle, mark list, line clamp |
 | Gutter | 15 | Band order/visibility, auto-width, BandAtX, fold sync |
+| MultiCaret | 17 | Add/toggle carets, column selection, multi-caret edit/delete/backspace, merge, undo/redo |
 
 **VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **47 tests**, 3 fixtures:
 
