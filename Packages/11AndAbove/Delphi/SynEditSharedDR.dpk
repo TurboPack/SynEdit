@@ -46,6 +46,7 @@ contains
   SynEditSearch in '..\..\..\Source\SynEditSearch.pas',
   SynEditRegexSearch in '..\..\..\Source\SynEditRegexSearch.pas',
   SynEditSelections in '..\..\..\Source\SynEditSelections.pas',
+  SynEditUndoShared in '..\..\..\Source\SynEditUndoShared.pas',
   SynEditWildcardSearch in '..\..\..\Source\SynEditWildcardSearch.pas',
   SynHighlighterADSP21xx in '..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas',
   SynHighlighterAsm in '..\..\..\Source\Highlighters\SynHighlighterAsm.pas',

@@ -133,6 +133,8 @@
         <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditSearch.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditRegexSearch.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditSelections.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditUndoShared.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditWildcardSearch.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas"/>
