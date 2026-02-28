@@ -103,6 +103,11 @@ type
     FOnSearchNotFound: TNotifyEvent;
     // Keyboard handler chain
     FKbdHandler: TSynEditKbdHandler;
+    // Bookmarks
+    FBookmarks: array[0..9] of TSynFMXEditMark;
+    FMarkList: TSynFMXEditMarkList;
+    FOnPlaceBookmark: TNotifyEvent;
+    FOnClearBookmark: TNotifyEvent;
     // Plugins
     FPlugins: TList;
     // Cached max scroll width
@@ -237,6 +242,12 @@ type
     // Search/Replace
     function SearchReplace(const ASearch, AReplace: string;
       AOptions: TSynSearchOptions): Integer;
+    // Bookmarks
+    procedure SetBookmark(ABookmark: Integer; X, Y: Integer);
+    procedure ClearBookmark(ABookmark: Integer);
+    procedure GotoBookmark(ABookmark: Integer);
+    function GetBookmark(ABookmark: Integer; var X, Y: Integer): Boolean;
+    function IsBookmarkSet(ABookmark: Integer): Boolean;
     // Plugin management
     procedure RegisterPlugin(APlugin: TSynFMXEditPlugin);
     procedure UnregisterPlugin(APlugin: TSynFMXEditPlugin);
@@ -269,6 +280,7 @@ type
     property CharsInWindow: Integer read FCharsInWindow;
     property MaxScrollWidth: Integer read GetMaxScrollWidth;
     property DisplayRowCount: Integer read GetDisplayRowCount;
+    property Marks: TSynFMXEditMarkList read FMarkList;
     property SelectedColor: TSynSelectedColor read FSelectedColor;
     property UndoRedo: ISynEditUndo read FUndoRedo;
     property ScrollOptions: TSynEditorScrollOptions read FScrollOptions
@@ -297,6 +309,10 @@ type
       write FOnSearchNotFound;
     property OnScanForFoldRanges: TScanForFoldRangesEvent
       read FOnScanForFoldRanges write FOnScanForFoldRanges;
+    property OnPlaceBookmark: TNotifyEvent read FOnPlaceBookmark
+      write FOnPlaceBookmark;
+    property OnClearBookmark: TNotifyEvent read FOnClearBookmark
+      write FOnClearBookmark;
   end;
 
   TPlugInHandler = (phLinesInserted, phLinesDeleted, phLinePut, phAfterPaint);
@@ -364,6 +380,8 @@ type
     property OnReplaceText;
     property OnSearchNotFound;
     property OnScanForFoldRanges;
+    property OnPlaceBookmark;
+    property OnClearBookmark;
   end;
 
 implementation
@@ -468,6 +486,9 @@ begin
   // Keyboard handler chain
   FKbdHandler := TSynEditKbdHandler.Create;
 
+  // Bookmarks
+  FMarkList := TSynFMXEditMarkList.Create;
+
   // Plugins
   FPlugins := TList.Create;
 
@@ -478,6 +499,7 @@ destructor TCustomFMXSynEdit.Destroy;
 begin
   FWordWrapHelper.Free;
   FPlugins.Free;
+  FMarkList.Free;
   FKbdHandler.Free;
   FCodeFolding.Free;
   FAllFoldRanges.Free;
@@ -571,6 +593,8 @@ begin
   LineCount := Max(FLines.Count, 1);
   DigitCount := Max(2, Length(IntToStr(LineCount)));
   FGutterWidth := Round((DigitCount + 1) * FCharWidth) + 4;
+  // Always reserve space for bookmark indicators
+  FGutterWidth := FGutterWidth + Round(FLineHeight);
   if FUseCodeFolding then
   begin
     FoldWidth := FCodeFolding.GutterShapeSize + 8;
@@ -804,6 +828,10 @@ var
   R: TRectF;
   NumStr: string;
   NumberWidth: Single;
+  BookmarkAreaLeft: Single;
+  I: Integer;
+  Mark: TSynFMXEditMark;
+  CX, CY, Radius: Single;
 begin
   Renderer := TSynFMXRenderer(FRenderer);
 
@@ -815,11 +843,12 @@ begin
   Renderer.DrawLine(Canvas, FGutterWidth - 1, 0, FGutterWidth - 1, Height,
     TAlphaColors.Lightgray);
 
-  // Calculate number area width (excluding fold gutter)
+  // Calculate number area width (excluding bookmark area and fold gutter)
+  NumberWidth := FGutterWidth;
   if FUseCodeFolding then
-    NumberWidth := FGutterWidth - FCodeFolding.GutterShapeSize - 8
-  else
-    NumberWidth := FGutterWidth;
+    NumberWidth := NumberWidth - FCodeFolding.GutterShapeSize - 8;
+  NumberWidth := NumberWidth - Round(FLineHeight);
+  BookmarkAreaLeft := NumberWidth;
 
   // Line numbers (iterate display rows)
   for Row := FirstLine to LastLine do
@@ -836,6 +865,38 @@ begin
     NumStr := IntToStr(Line);
     R := RectF(2, Y, NumberWidth - 4, Y + FLineHeight);
     Renderer.PaintLineNumber(Canvas, R, NumStr, TAlphaColors.Gray);
+  end;
+
+  // Bookmark indicators
+  if (FMarkList <> nil) and (FMarkList.Count > 0) then
+  begin
+    for Row := FirstLine to LastLine do
+    begin
+      Line := RowToLine(Row);
+      if Line > FLines.Count then Break;
+      Y := (Row - FTopLine) * FLineHeight;
+
+      for I := 0 to FMarkList.Count - 1 do
+      begin
+        Mark := FMarkList[I];
+        if Mark.Visible and Mark.IsBookmark and (Mark.Line = Line) then
+        begin
+          // Draw filled circle with bookmark number
+          CX := BookmarkAreaLeft + FCharWidth;
+          CY := Y + FLineHeight / 2;
+          Radius := FLineHeight / 2 - 1;
+          Canvas.Fill.Color := TAlphaColors.Dodgerblue;
+          Canvas.FillEllipse(
+            RectF(CX - Radius, CY - Radius, CX + Radius, CY + Radius), 1.0);
+          // Draw bookmark number
+          Renderer.PaintToken(Canvas,
+            CX - FCharWidth / 2, Y,
+            IntToStr(Mark.BookmarkNumber),
+            TAlphaColors.White, TAlphaColors.Null, [fsBold]);
+          Break; // one indicator per line
+        end;
+      end;
+    end;
   end;
 
   // Fold gutter shapes
@@ -1356,6 +1417,17 @@ begin
       end;
     Ord('Y'):
       if ssCtrl in Shift then Cmd := ecRedo;
+    Ord('0')..Ord('9'):
+      // Bookmarks: Ctrl+N = goto, Ctrl+Shift+N = set/toggle
+      // Note: Ctrl+Shift+0 may be intercepted by Windows for input language
+      // switching and never reach the application. Bookmarks 1-9 are reliable.
+      if ssCtrl in Shift then
+      begin
+        if ssShift in Shift then
+          Cmd := ecSetMarker0 + Key - Ord('0')
+        else
+          Cmd := ecGotoMarker0 + Key - Ord('0');
+      end;
   end;
 
   if Cmd <> ecNone then
@@ -1688,6 +1760,25 @@ begin
     ecUnfoldLevel2: UncollapseLevel(2);
     ecFoldLevel3: CollapseLevel(3);
     ecUnfoldLevel3: UncollapseLevel(3);
+
+    // Bookmarks
+    ecGotoMarker0..ecGotoMarker9:
+      GotoBookmark(Command - ecGotoMarker0);
+    ecSetMarker0..ecSetMarker9:
+      begin
+        var BmIdx := Command - ecSetMarker0;
+        if IsBookmarkSet(BmIdx) then
+        begin
+          var BX, BY: Integer;
+          GetBookmark(BmIdx, BX, BY);
+          if BY = FCaretY then
+            ClearBookmark(BmIdx)
+          else
+            SetBookmark(BmIdx, FCaretX, FCaretY);
+        end
+        else
+          SetBookmark(BmIdx, FCaretX, FCaretY);
+      end;
   end;
 
   // Incremental range scan after text mutations
@@ -2263,9 +2354,90 @@ begin
     FCaretY := 1;
     FBlockBegin := BufferCoord(1, 1);
     FBlockEnd := BufferCoord(1, 1);
+    // Clear all bookmarks
+    for var I := 0 to 9 do
+      FBookmarks[I] := nil;
+    FMarkList.Clear;
   finally
     EndUpdate;
   end;
+end;
+
+{ --- Bookmarks --- }
+
+procedure TCustomFMXSynEdit.SetBookmark(ABookmark: Integer; X, Y: Integer);
+var
+  Mark: TSynFMXEditMark;
+begin
+  if (ABookmark < 0) or (ABookmark > 9) then Exit;
+  // Clamp line to valid range
+  Y := Max(1, Min(Y, Max(1, FLines.Count)));
+  X := Max(1, X);
+
+  if FBookmarks[ABookmark] <> nil then
+  begin
+    // Update existing bookmark position
+    FBookmarks[ABookmark].Line := Y;
+    FBookmarks[ABookmark].Char := X;
+  end
+  else
+  begin
+    Mark := TSynFMXEditMark.Create;
+    Mark.BookmarkNumber := ABookmark;
+    Mark.Line := Y;
+    Mark.Char := X;
+    Mark.Visible := True;
+    FMarkList.Add(Mark);
+    FBookmarks[ABookmark] := Mark;
+  end;
+
+  if Assigned(FOnPlaceBookmark) then
+    FOnPlaceBookmark(Self);
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.ClearBookmark(ABookmark: Integer);
+var
+  Idx: Integer;
+begin
+  if (ABookmark < 0) or (ABookmark > 9) then Exit;
+  if FBookmarks[ABookmark] = nil then Exit;
+
+  Idx := FMarkList.IndexOf(FBookmarks[ABookmark]);
+  if Idx >= 0 then
+    FMarkList.Delete(Idx);  // TObjectList frees the object
+  FBookmarks[ABookmark] := nil;
+
+  if Assigned(FOnClearBookmark) then
+    FOnClearBookmark(Self);
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.GotoBookmark(ABookmark: Integer);
+begin
+  if (ABookmark < 0) or (ABookmark > 9) then Exit;
+  if FBookmarks[ABookmark] = nil then Exit;
+
+  SetCaretXY(BufferCoord(FBookmarks[ABookmark].Char,
+    FBookmarks[ABookmark].Line));
+  EnsureCursorPosVisible;
+end;
+
+function TCustomFMXSynEdit.GetBookmark(ABookmark: Integer;
+  var X, Y: Integer): Boolean;
+begin
+  Result := False;
+  if (ABookmark < 0) or (ABookmark > 9) then Exit;
+  if FBookmarks[ABookmark] = nil then Exit;
+  X := FBookmarks[ABookmark].Char;
+  Y := FBookmarks[ABookmark].Line;
+  Result := True;
+end;
+
+function TCustomFMXSynEdit.IsBookmarkSet(ABookmark: Integer): Boolean;
+begin
+  Result := (ABookmark >= 0) and (ABookmark <= 9) and
+    (FBookmarks[ABookmark] <> nil);
 end;
 
 { --- Mouse handling --- }

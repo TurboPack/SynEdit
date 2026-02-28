@@ -93,6 +93,7 @@
         <DCCReference Include="TestSynHighlighterXMLFolding.pas"/>
         <DCCReference Include="TestSynHighlighterCSSFolding.pas"/>
         <DCCReference Include="TestFMXSynEditWordWrap.pas"/>
+        <DCCReference Include="TestFMXSynEditBookmarks.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

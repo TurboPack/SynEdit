@@ -37,6 +37,30 @@ const
   clDefaultSelectionFG = TColors.White;       // $FFFFFF in BGR
 
 type
+  { Bookmark/mark for FMX SynEdit }
+  TSynFMXEditMark = class
+  private
+    FLine: Integer;
+    FChar: Integer;
+    FBookmarkNum: Integer;
+    FVisible: Boolean;
+    function GetIsBookmark: Boolean;
+  public
+    constructor Create;
+    property Line: Integer read FLine write FLine;
+    property Char: Integer read FChar write FChar;
+    property BookmarkNumber: Integer read FBookmarkNum write FBookmarkNum;
+    property IsBookmark: Boolean read GetIsBookmark;
+    property Visible: Boolean read FVisible write FVisible;
+  end;
+
+  { List of marks/bookmarks }
+  TSynFMXEditMarkList = class(TObjectList<TSynFMXEditMark>)
+  public
+    function GetMarksForLine(ALine: Integer): TArray<TSynFMXEditMark>;
+    procedure ClearLine(ALine: Integer);
+  end;
+
   { Selected text color }
   TSynSelectedColor = class(TPersistent)
   private
@@ -64,6 +88,46 @@ type
   { TSynEditSearchCustom is now in the shared SynEditTypes.pas unit }
 
 implementation
+
+{ TSynFMXEditMark }
+
+constructor TSynFMXEditMark.Create;
+begin
+  inherited;
+  FBookmarkNum := -1;
+  FVisible := True;
+end;
+
+function TSynFMXEditMark.GetIsBookmark: Boolean;
+begin
+  Result := FBookmarkNum >= 0;
+end;
+
+{ TSynFMXEditMarkList }
+
+function TSynFMXEditMarkList.GetMarksForLine(ALine: Integer): TArray<TSynFMXEditMark>;
+var
+  I, Count: Integer;
+begin
+  Count := 0;
+  SetLength(Result, Self.Count);
+  for I := 0 to Self.Count - 1 do
+    if Items[I].Line = ALine then
+    begin
+      Result[Count] := Items[I];
+      Inc(Count);
+    end;
+  SetLength(Result, Count);
+end;
+
+procedure TSynFMXEditMarkList.ClearLine(ALine: Integer);
+var
+  I: Integer;
+begin
+  for I := Count - 1 downto 0 do
+    if (Items[I].Line = ALine) and not Items[I].IsBookmark then
+      Delete(I);
+end;
 
 { TSynSelectedColor }
 
