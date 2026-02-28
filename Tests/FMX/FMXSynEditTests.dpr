@@ -29,7 +29,8 @@ uses
   TestFMXSynEditCompletionProposal in 'TestFMXSynEditCompletionProposal.pas',
   TestSynHighlighterDelphiFolding in 'TestSynHighlighterDelphiFolding.pas',
   TestSynHighlighterHTMLFolding in 'TestSynHighlighterHTMLFolding.pas',
-  TestSynHighlighterXMLFolding in 'TestSynHighlighterXMLFolding.pas';
+  TestSynHighlighterXMLFolding in 'TestSynHighlighterXMLFolding.pas',
+  TestSynHighlighterCSSFolding in 'TestSynHighlighterCSSFolding.pas';
 
 var
   Runner: ITestRunner;

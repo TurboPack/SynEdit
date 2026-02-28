@@ -16,7 +16,7 @@ The Original Code is based on the SynHighlighterHTML.pas, released 2000-04-10 -
 this in turn was based on the hkHTMLSyn.pas file from the mwEdit component suite
 by Martin Waldenburg and other developers, the Initial Author of this file is
 Hideo Koiso.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -64,7 +64,8 @@ uses
   System.Generics.Collections,
   System.UITypes,
   SynEditTypes,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynEditCodeFolding;
 
 type
   TtkTokenKind = (tkComment, tkAtRule, tkProperty, tkSelector, tkSelectorAttrib,
@@ -74,7 +75,7 @@ type
   TRangeState = (rsComment, rsSelector, rsDeclaration, rsUnknown, rsProperty,
     rsValue, rsAttrib, rsParameter);
 
-  TSynCssSyn = class(TSynCustomHighlighter)
+  TSynCssSyn = class(TSynCustomCodeFoldingHighlighter)
   private
     fRange: TRangeState;
     fCommentRange: TRangeState;
@@ -145,6 +146,8 @@ type
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
+    procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -1066,10 +1069,26 @@ end;
 
 function TSynCssSyn.GetSampleSource: string;
 begin
-  Result := '/* Syntax Highlighting */'#13#10 +
-        'body { font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif; font-size: 8pt }'#13#10 +
-        'H1 { font-size: 18pt; color: #000099; made-up-property: 1 }';
-end; { GetSampleSource }
+  Result :=
+    '/* Main Stylesheet */'#13#10 +
+    'body {'#13#10 +
+    '  font-family: Arial, sans-serif;'#13#10 +
+    '  font-size: 14px;'#13#10 +
+    '  color: #333;'#13#10 +
+    '}'#13#10 +
+    'h1 {'#13#10 +
+    '  font-size: 24px;'#13#10 +
+    '  color: #000099;'#13#10 +
+    '}'#13#10 +
+    '@media screen and (max-width: 768px) {'#13#10 +
+    '  body {'#13#10 +
+    '    font-size: 12px;'#13#10 +
+    '  }'#13#10 +
+    '  h1 {'#13#10 +
+    '    font-size: 18px;'#13#10 +
+    '  }'#13#10 +
+    '}';
+end;
 
 class function TSynCssSyn.GetLanguageName: string;
 begin
@@ -1094,6 +1113,105 @@ end;
 class function TSynCssSyn.GetFriendlyLanguageName: string;
 begin
   Result := SYNS_FriendlyLangCSS;
+end;
+
+// =============================================================================
+//   Code Folding Support
+// =============================================================================
+
+procedure CountCssBraces(const S: string; out Opens, Closes: Integer;
+  var InComment: Boolean);
+{ Scan a single line for CSS brace pairs.
+  - Braces inside /* ... */ comments are ignored.
+  - Braces inside quoted strings ("..." or '...') are ignored.
+  - InComment persists across lines for multi-line comments. }
+var
+  I, Len: Integer;
+  InString: WideChar;
+begin
+  Opens := 0;
+  Closes := 0;
+  I := 1;
+  Len := Length(S);
+  InString := #0;
+
+  while I <= Len do
+  begin
+    if InComment then
+    begin
+      if (S[I] = '*') and (I < Len) and (S[I + 1] = '/') then
+      begin
+        InComment := False;
+        Inc(I, 2);
+      end
+      else
+        Inc(I);
+    end
+    else if InString <> #0 then
+    begin
+      if (S[I] = '\') and (I < Len) then
+        Inc(I, 2) // skip escaped character
+      else if S[I] = InString then
+      begin
+        InString := #0;
+        Inc(I);
+      end
+      else
+        Inc(I);
+    end
+    else if (S[I] = '/') and (I < Len) and (S[I + 1] = '*') then
+    begin
+      InComment := True;
+      Inc(I, 2);
+    end
+    else if (S[I] = '"') or (S[I] = '''') then
+    begin
+      InString := S[I];
+      Inc(I);
+    end
+    else if S[I] = '{' then
+    begin
+      Inc(Opens);
+      Inc(I);
+    end
+    else if S[I] = '}' then
+    begin
+      Inc(Closes);
+      Inc(I);
+    end
+    else
+      Inc(I);
+  end;
+end;
+
+procedure TSynCssSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
+  LinesToScan: TStrings; FromLine, ToLine: Integer);
+var
+  Line: Integer;
+  CurLine: string;
+  Opens, Closes: Integer;
+  InComment: Boolean;
+begin
+  InComment := False;
+
+  for Line := FromLine to ToLine do
+  begin
+    CurLine := LinesToScan[Line];
+    if Trim(CurLine) = '' then
+    begin
+      FoldRanges.NoFoldInfo(Line + 1);
+      Continue;
+    end;
+
+    CountCssBraces(CurLine, Opens, Closes, InComment);
+
+    if Opens > Closes then
+      FoldRanges.StartFoldRange(Line + 1, 1)
+    else if Closes > Opens then
+      FoldRanges.StopFoldRange(Line + 1, 1)
+    else
+      FoldRanges.NoFoldInfo(Line + 1);
+  end;
 end;
 
 initialization

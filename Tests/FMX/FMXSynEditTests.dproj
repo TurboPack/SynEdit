@@ -91,6 +91,7 @@
         <DCCReference Include="TestSynHighlighterDelphiFolding.pas"/>
         <DCCReference Include="TestSynHighlighterHTMLFolding.pas"/>
         <DCCReference Include="TestSynHighlighterXMLFolding.pas"/>
+        <DCCReference Include="TestSynHighlighterCSSFolding.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
