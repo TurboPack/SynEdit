@@ -1750,14 +1750,14 @@ begin
   LeftPart := Copy(SLine, 1, FCaretX - 1);
   RightPart := Copy(SLine, FCaretX, MaxInt);
 
-  // Auto-indent
+  // Auto-indent: copy leading whitespace (spaces and tabs)
   Indent := '';
   if eoAutoIndent in FOptions then
   begin
     var I := 1;
-    while (I <= Length(LeftPart)) and (LeftPart[I] = ' ') do
+    while (I <= Length(SLine)) and CharInSet(SLine[I], [' ', #9]) do
       Inc(I);
-    Indent := StringOfChar(' ', I - 1);
+    Indent := Copy(SLine, 1, I - 1);
   end;
 
   FLines[FCaretY - 1] := LeftPart;
