@@ -36,7 +36,7 @@ requires
 contains
   SynEditTypes in '..\..\..\Source\SynEditTypes.pas',
   SynEditStrConst in '..\..\..\Source\SynEditStrConst.pas',
-  SynEditKeyConst in '..\..\..\Source\SynEditKeyConst.pas',
+  SynEditKeyConstShared in '..\..\..\Source\SynEditKeyConstShared.pas',
   SynEditKeyCmds in '..\..\..\Source\SynEditKeyCmds.pas',
   SynEditHighlighter in '..\..\..\Source\SynEditHighlighter.pas',
   SynEditCodeFolding in '..\..\..\Source\SynEditCodeFolding.pas',

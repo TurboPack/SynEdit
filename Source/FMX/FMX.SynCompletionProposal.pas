@@ -202,7 +202,7 @@ uses
   FMX.Platform,
   FMX.Forms,
   FMX.TextLayout,
-  SynEditKeyConst;
+  SynEditKeyConstShared;
 
 { --------------------------------------------------------------------------- }
 { TSynFMXCompletionProposalForm                                               }

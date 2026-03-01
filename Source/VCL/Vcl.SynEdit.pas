@@ -60,7 +60,7 @@ uses
   SynUnicode,
   SynEditTypes,
   Vcl.SynEditTypes,
-  SynEditKeyConst,
+  SynEditKeyConstShared,
   SynEditMiscProcs,
   SynEditSelections,
   SynEditMiscClasses,

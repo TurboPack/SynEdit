@@ -101,7 +101,7 @@ uses
   ShellAPI,
   Forms,
   SynEditHighlighter,
-  SynEditKeyConst,
+  SynEditKeyConstShared,
   SysUtils;
 
 type

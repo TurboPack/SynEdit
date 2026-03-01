@@ -30,82 +30,84 @@ of this file under either the MPL or the GPL.
 
 unit Vcl.SynEditKeyConst;
 
-{ This unit provides a translation of DELPHI and CLX key constants to
-  more readable SynEdit constants }
+{ VCL key-constant facade.  Re-exports every constant from
+  SynEditKeyConstShared so that VCL code using 'Vcl.SynEditKeyConst'
+  continues to compile unchanged.  The actual definitions live in the
+  shared unit; this wrapper exists only to keep the Vcl.* namespace
+  populated for discoverability and IDE code-completion. }
 
 {$I SynEdit.inc}
 
 interface
 
 uses
-  Windows;
+  SynEditKeyConstShared;
 
 const
-
-  SYNEDIT_RETURN    = VK_RETURN;
-  SYNEDIT_ESCAPE    = VK_ESCAPE;
-  SYNEDIT_SPACE     = VK_SPACE;
-  SYNEDIT_PRIOR     = VK_PRIOR;
-  SYNEDIT_NEXT      = VK_NEXT;
-  SYNEDIT_END       = VK_END;
-  SYNEDIT_HOME      = VK_HOME;
-  SYNEDIT_UP        = VK_UP;
-  SYNEDIT_DOWN      = VK_DOWN;
-  SYNEDIT_BACK      = VK_BACK;
-  SYNEDIT_LEFT      = VK_LEFT;
-  SYNEDIT_RIGHT     = VK_RIGHT;
-  SYNEDIT_MENU      = VK_MENU;
-  SYNEDIT_CONTROL   = VK_CONTROL;
-  SYNEDIT_SHIFT     = VK_SHIFT;
-  SYNEDIT_F1        = VK_F1;
-  SYNEDIT_F2        = VK_F2;
-  SYNEDIT_F3        = VK_F3;
-  SYNEDIT_F4        = VK_F4;
-  SYNEDIT_F5        = VK_F5;
-  SYNEDIT_F6        = VK_F6;
-  SYNEDIT_F7        = VK_F7;
-  SYNEDIT_F8        = VK_F8;
-  SYNEDIT_F9        = VK_F9;
-  SYNEDIT_F10       = VK_F10;
-  SYNEDIT_F11       = VK_F11;
-  SYNEDIT_F12       = VK_F12;
-  SYNEDIT_F13       = VK_F13;
-  SYNEDIT_F14       = VK_F14;
-  SYNEDIT_F15       = VK_F15;
-  SYNEDIT_F16       = VK_F16;
-  SYNEDIT_F17       = VK_F17;
-  SYNEDIT_F18       = VK_F18;
-  SYNEDIT_F19       = VK_F19;
-  SYNEDIT_F20       = VK_F20;
-  SYNEDIT_F21       = VK_F21;
-  SYNEDIT_F22       = VK_F22;
-  SYNEDIT_F23       = VK_F23;
-  SYNEDIT_F24       = VK_F24;
-  SYNEDIT_PRINT     = VK_PRINT;
-  SYNEDIT_INSERT    = VK_INSERT;
-  SYNEDIT_DELETE    = VK_DELETE;
-  SYNEDIT_NUMPAD0   = VK_NUMPAD0;
-  SYNEDIT_NUMPAD1   = VK_NUMPAD1;
-  SYNEDIT_NUMPAD2   = VK_NUMPAD2;
-  SYNEDIT_NUMPAD3   = VK_NUMPAD3;
-  SYNEDIT_NUMPAD4   = VK_NUMPAD4;
-  SYNEDIT_NUMPAD5   = VK_NUMPAD5;
-  SYNEDIT_NUMPAD6   = VK_NUMPAD6;
-  SYNEDIT_NUMPAD7   = VK_NUMPAD7;
-  SYNEDIT_NUMPAD8   = VK_NUMPAD8;
-  SYNEDIT_NUMPAD9   = VK_NUMPAD9;
-  SYNEDIT_MULTIPLY  = VK_MULTIPLY;
-  SYNEDIT_ADD       = VK_ADD;
-  SYNEDIT_SEPARATOR = VK_SEPARATOR;
-  SYNEDIT_SUBTRACT  = VK_SUBTRACT;
-  SYNEDIT_DECIMAL   = VK_DECIMAL;
-  SYNEDIT_DIVIDE    = VK_DIVIDE;
-  SYNEDIT_NUMLOCK   = VK_NUMLOCK;
-  SYNEDIT_SCROLL    = VK_SCROLL;
-  SYNEDIT_TAB       = VK_TAB;
-  SYNEDIT_CLEAR     = VK_CLEAR;
-  SYNEDIT_PAUSE     = VK_PAUSE;
-  SYNEDIT_CAPITAL   = VK_CAPITAL;
+  SYNEDIT_RETURN    = SynEditKeyConstShared.SYNEDIT_RETURN;
+  SYNEDIT_ESCAPE    = SynEditKeyConstShared.SYNEDIT_ESCAPE;
+  SYNEDIT_SPACE     = SynEditKeyConstShared.SYNEDIT_SPACE;
+  SYNEDIT_PRIOR     = SynEditKeyConstShared.SYNEDIT_PRIOR;
+  SYNEDIT_NEXT      = SynEditKeyConstShared.SYNEDIT_NEXT;
+  SYNEDIT_END       = SynEditKeyConstShared.SYNEDIT_END;
+  SYNEDIT_HOME      = SynEditKeyConstShared.SYNEDIT_HOME;
+  SYNEDIT_UP        = SynEditKeyConstShared.SYNEDIT_UP;
+  SYNEDIT_DOWN      = SynEditKeyConstShared.SYNEDIT_DOWN;
+  SYNEDIT_BACK      = SynEditKeyConstShared.SYNEDIT_BACK;
+  SYNEDIT_LEFT      = SynEditKeyConstShared.SYNEDIT_LEFT;
+  SYNEDIT_RIGHT     = SynEditKeyConstShared.SYNEDIT_RIGHT;
+  SYNEDIT_MENU      = SynEditKeyConstShared.SYNEDIT_MENU;
+  SYNEDIT_CONTROL   = SynEditKeyConstShared.SYNEDIT_CONTROL;
+  SYNEDIT_SHIFT     = SynEditKeyConstShared.SYNEDIT_SHIFT;
+  SYNEDIT_F1        = SynEditKeyConstShared.SYNEDIT_F1;
+  SYNEDIT_F2        = SynEditKeyConstShared.SYNEDIT_F2;
+  SYNEDIT_F3        = SynEditKeyConstShared.SYNEDIT_F3;
+  SYNEDIT_F4        = SynEditKeyConstShared.SYNEDIT_F4;
+  SYNEDIT_F5        = SynEditKeyConstShared.SYNEDIT_F5;
+  SYNEDIT_F6        = SynEditKeyConstShared.SYNEDIT_F6;
+  SYNEDIT_F7        = SynEditKeyConstShared.SYNEDIT_F7;
+  SYNEDIT_F8        = SynEditKeyConstShared.SYNEDIT_F8;
+  SYNEDIT_F9        = SynEditKeyConstShared.SYNEDIT_F9;
+  SYNEDIT_F10       = SynEditKeyConstShared.SYNEDIT_F10;
+  SYNEDIT_F11       = SynEditKeyConstShared.SYNEDIT_F11;
+  SYNEDIT_F12       = SynEditKeyConstShared.SYNEDIT_F12;
+  SYNEDIT_F13       = SynEditKeyConstShared.SYNEDIT_F13;
+  SYNEDIT_F14       = SynEditKeyConstShared.SYNEDIT_F14;
+  SYNEDIT_F15       = SynEditKeyConstShared.SYNEDIT_F15;
+  SYNEDIT_F16       = SynEditKeyConstShared.SYNEDIT_F16;
+  SYNEDIT_F17       = SynEditKeyConstShared.SYNEDIT_F17;
+  SYNEDIT_F18       = SynEditKeyConstShared.SYNEDIT_F18;
+  SYNEDIT_F19       = SynEditKeyConstShared.SYNEDIT_F19;
+  SYNEDIT_F20       = SynEditKeyConstShared.SYNEDIT_F20;
+  SYNEDIT_F21       = SynEditKeyConstShared.SYNEDIT_F21;
+  SYNEDIT_F22       = SynEditKeyConstShared.SYNEDIT_F22;
+  SYNEDIT_F23       = SynEditKeyConstShared.SYNEDIT_F23;
+  SYNEDIT_F24       = SynEditKeyConstShared.SYNEDIT_F24;
+  SYNEDIT_PRINT     = SynEditKeyConstShared.SYNEDIT_PRINT;
+  SYNEDIT_INSERT    = SynEditKeyConstShared.SYNEDIT_INSERT;
+  SYNEDIT_DELETE    = SynEditKeyConstShared.SYNEDIT_DELETE;
+  SYNEDIT_NUMPAD0   = SynEditKeyConstShared.SYNEDIT_NUMPAD0;
+  SYNEDIT_NUMPAD1   = SynEditKeyConstShared.SYNEDIT_NUMPAD1;
+  SYNEDIT_NUMPAD2   = SynEditKeyConstShared.SYNEDIT_NUMPAD2;
+  SYNEDIT_NUMPAD3   = SynEditKeyConstShared.SYNEDIT_NUMPAD3;
+  SYNEDIT_NUMPAD4   = SynEditKeyConstShared.SYNEDIT_NUMPAD4;
+  SYNEDIT_NUMPAD5   = SynEditKeyConstShared.SYNEDIT_NUMPAD5;
+  SYNEDIT_NUMPAD6   = SynEditKeyConstShared.SYNEDIT_NUMPAD6;
+  SYNEDIT_NUMPAD7   = SynEditKeyConstShared.SYNEDIT_NUMPAD7;
+  SYNEDIT_NUMPAD8   = SynEditKeyConstShared.SYNEDIT_NUMPAD8;
+  SYNEDIT_NUMPAD9   = SynEditKeyConstShared.SYNEDIT_NUMPAD9;
+  SYNEDIT_MULTIPLY  = SynEditKeyConstShared.SYNEDIT_MULTIPLY;
+  SYNEDIT_ADD       = SynEditKeyConstShared.SYNEDIT_ADD;
+  SYNEDIT_SEPARATOR = SynEditKeyConstShared.SYNEDIT_SEPARATOR;
+  SYNEDIT_SUBTRACT  = SynEditKeyConstShared.SYNEDIT_SUBTRACT;
+  SYNEDIT_DECIMAL   = SynEditKeyConstShared.SYNEDIT_DECIMAL;
+  SYNEDIT_DIVIDE    = SynEditKeyConstShared.SYNEDIT_DIVIDE;
+  SYNEDIT_NUMLOCK   = SynEditKeyConstShared.SYNEDIT_NUMLOCK;
+  SYNEDIT_SCROLL    = SynEditKeyConstShared.SYNEDIT_SCROLL;
+  SYNEDIT_TAB       = SynEditKeyConstShared.SYNEDIT_TAB;
+  SYNEDIT_CLEAR     = SynEditKeyConstShared.SYNEDIT_CLEAR;
+  SYNEDIT_PAUSE     = SynEditKeyConstShared.SYNEDIT_PAUSE;
+  SYNEDIT_CAPITAL   = SynEditKeyConstShared.SYNEDIT_CAPITAL;
 
 implementation
 

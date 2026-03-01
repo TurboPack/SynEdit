@@ -273,7 +273,7 @@ implementation
 
 uses
   System.Types,
-  SynEditKeyConst,
+  SynEditKeyConstShared,
   SynEditMiscProcs;
 
 { TSynEditOptionsDialog }

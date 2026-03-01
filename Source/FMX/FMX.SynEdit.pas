@@ -412,7 +412,7 @@ uses
   FMX.SynEditTypes,
   FMX.SynEditUndo,
   FMX.SynUnicode,
-  SynEditKeyConst,
+  SynEditKeyConstShared,
   SynEditStrConst,
   SynEditSearch;
 

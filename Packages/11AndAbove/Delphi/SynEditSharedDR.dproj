@@ -124,7 +124,7 @@
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="..\..\..\Source\SynEditTypes.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditStrConst.pas"/>
-        <DCCReference Include="..\..\..\Source\SynEditKeyConst.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditKeyConstShared.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditKeyCmds.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditHighlighter.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditCodeFolding.pas"/>

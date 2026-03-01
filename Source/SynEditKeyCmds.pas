@@ -321,7 +321,7 @@ uses
   {$IFDEF MSWINDOWS}
   Winapi.Windows,
   {$ENDIF}
-  SynEditKeyConst,
+  SynEditKeyConstShared,
   SynEditStrConst;
 
 {$IFNDEF MSWINDOWS}

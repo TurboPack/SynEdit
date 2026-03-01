@@ -558,7 +558,7 @@ uses
   System.UITypes,
   SynEditTextBuffer,
   SynEditMiscProcs,
-  SynEditKeyConst;
+  SynEditKeyConstShared;
 
 const
   TextHeightString = 'CompletionProposal';

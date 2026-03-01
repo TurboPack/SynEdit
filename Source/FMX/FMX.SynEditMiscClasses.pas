@@ -26,7 +26,7 @@ uses
   SynEditTypes,
   SynEditSelections,
   SynEditKeyCmds,
-  SynEditKeyConst;
+  SynEditKeyConstShared;
 
 const
   { Cross-platform selection color defaults.

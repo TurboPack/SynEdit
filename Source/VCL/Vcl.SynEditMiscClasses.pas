@@ -59,7 +59,7 @@ uses
   SynEditTypes,
   SynEditSelections,
   SynEditKeyCmds,
-  SynEditKeyConst,
+  SynEditKeyConstShared,
   SynUnicode;
 
 type

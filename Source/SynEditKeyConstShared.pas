@@ -28,10 +28,16 @@ If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 -------------------------------------------------------------------------------}
 
-unit SynEditKeyConst;
+unit SynEditKeyConstShared;
 
-{ This unit provides platform-independent key constants for SynEdit.
-  Values match standard virtual key codes. }
+{ Platform-independent key constants for SynEdit.
+  Values match standard virtual key codes.
+
+  Named with the 'Shared' suffix because Delphi's scope resolution rules
+  make a bare 'SynEditKeyConst' shadow the prefixed 'Vcl.SynEditKeyConst'
+  and 'FMX.SynEditKeyConst' units.  The suffix ensures that shared code
+  references this unit unambiguously, while VCL/FMX code can still use
+  the prefixed wrappers. }
 
 {$I SynEdit.inc}
 

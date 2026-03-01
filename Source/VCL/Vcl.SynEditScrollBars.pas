@@ -68,7 +68,7 @@ uses
   SynEditMiscProcs,
   SynEditMiscClasses,
   SynEditStrConst,
-  SynEditKeyConst;
+  SynEditKeyConstShared;
 
 function GetBarScrollInfo(Handle: THandle; AKind: TScrollBarKind): TScrollInfo;
 begin
