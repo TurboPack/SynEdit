@@ -42,7 +42,7 @@ uses
   Graphics,
   RichEdit,
   SynEditExport,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type

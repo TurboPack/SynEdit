@@ -50,7 +50,7 @@ uses
   System.RegularExpressions,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   System.Classes;
 
 type

@@ -31,7 +31,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Menus,
   uEditAppIntfs, SynEdit, SynEditTypes, SynEditMiscProcs,
-  SynEditMiscClasses, SynEditSearch, SynUnicode;
+  SynEditMiscClasses, SynEditSearch, SynUnicodeShared;
 
 type
   TEditorKind = (ekBorderless, ekInTabsheet, ekMDIChild);

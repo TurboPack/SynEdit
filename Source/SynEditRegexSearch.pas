@@ -42,7 +42,7 @@ uses
   SynEditTypes,
   RegularExpressions,
   RegularExpressionsCore,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type

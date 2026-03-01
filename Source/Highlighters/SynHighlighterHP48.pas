@@ -51,7 +51,7 @@ uses
   {$ENDIF}
   System.UITypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

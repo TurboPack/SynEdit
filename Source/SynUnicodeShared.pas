@@ -26,7 +26,16 @@ of this file under either the MPL or the GPL.
 
 ------------------------------------------------------------------------------}
 
-unit SynUnicode;
+unit SynUnicodeShared;
+
+{ Platform-independent Unicode and encoding utilities for SynEdit.
+
+  Named with the 'Shared' suffix because a bare 'SynUnicode' unit
+  shadows 'Vcl.SynUnicode' and 'FMX.SynUnicode' under Delphi's scope
+  resolution rules (exact name match wins over dotted-prefix match).
+  The suffix lets shared code reference this unit unambiguously, while
+  Vcl.SynUnicode / FMX.SynUnicode re-export its public API together
+  with their own platform-specific clipboard functions. }
 
 {$I SynEdit.inc}
 

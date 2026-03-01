@@ -99,7 +99,7 @@ uses
   Vcl.Graphics,
   SynEditPrintTypes,
   SynEditPrintMargins,
-  SynUnicode,
+  SynUnicodeShared,
   System.Classes,
   System.SysUtils;
 

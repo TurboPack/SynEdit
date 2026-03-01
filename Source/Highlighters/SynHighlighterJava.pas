@@ -50,7 +50,7 @@ uses
   Winapi.Windows,
   {$ENDIF}
   SysUtils,
-  SynUnicode,
+  SynUnicodeShared,
   Classes,
 //++ CodeFolding
   SynEditCodeFolding;

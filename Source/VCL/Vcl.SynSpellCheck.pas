@@ -236,7 +236,7 @@ uses
   System.Math,
   System.Win.ComObj,
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   SynDWrite,
   SynEditMiscProcs,
   SynEditHighlighter,

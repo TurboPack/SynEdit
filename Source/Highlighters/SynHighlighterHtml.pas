@@ -53,7 +53,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynEditCodeFolding,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

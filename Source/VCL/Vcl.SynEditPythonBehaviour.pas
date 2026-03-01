@@ -43,7 +43,7 @@ interface
 
 uses
   Windows, Messages, Graphics, Controls, Forms, Dialogs, SynEdit, SynEditKeyCmds,
-  SynUnicode, SysUtils, Classes, SynEditTypes;
+  SynUnicodeShared, SysUtils, Classes, SynEditTypes;
 
 type
   TSynEditPythonBehaviour = class(TComponent)

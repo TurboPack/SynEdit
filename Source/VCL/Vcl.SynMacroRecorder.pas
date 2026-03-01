@@ -45,7 +45,7 @@ uses
   SynEditKeyCmds,
   SynEditPlugins,
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 resourcestring

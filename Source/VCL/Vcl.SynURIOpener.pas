@@ -52,7 +52,7 @@ uses
   SynEditTypes,
   SynEdit,
   SynHighlighterURI,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type

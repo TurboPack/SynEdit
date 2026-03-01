@@ -41,7 +41,7 @@ uses
   System.Classes,
   System.UITypes,
   System.Generics.Collections,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditTypes;
 
 const

@@ -435,7 +435,7 @@ end;
 implementation
 Uses
   SynEditStrConst,
-  SynUnicode;
+  SynUnicodeShared;
 
 {$REGION 'TSynSelectedColor'}
 

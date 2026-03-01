@@ -39,7 +39,7 @@ uses
   Graphics,
   SynEditExport,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   System.Generics.Collections,
   Classes;
 

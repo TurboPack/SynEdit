@@ -1551,7 +1551,7 @@ Uses
   System.Math,
   System.Win.ComObj,
   Vcl.Forms,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditTypes,
   SynEditMiscProcs,
   SynEditMiscClasses;

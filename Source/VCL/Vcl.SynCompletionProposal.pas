@@ -51,7 +51,7 @@ uses
   SynEditTypes,
   SynEditKeyCmds,
   SynEdit,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   SynCompletionType = (ctCode, ctHint, ctParams);

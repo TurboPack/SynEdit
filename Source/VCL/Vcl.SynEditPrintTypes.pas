@@ -43,7 +43,7 @@ unit Vcl.SynEditPrintTypes;
 interface
 
 uses
-  SynUnicode, Classes, SysUtils;
+  SynUnicodeShared, Classes, SysUtils;
 
 const
   DefLeft = 25; //Default left margin [mm]

@@ -46,7 +46,7 @@ uses
   Clipbrd,
   SynEditHighlighter,
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   Classes,
   SysUtils;
 

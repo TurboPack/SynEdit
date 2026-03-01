@@ -49,7 +49,7 @@ uses
   System.SysUtils,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
 //  JCLUnicode,
   System.Classes,
   SynEditCodeFolding;

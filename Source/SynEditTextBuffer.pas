@@ -42,7 +42,7 @@ uses
   System.SysUtils,
   SynEditTypes,
   SynEditMiscProcs,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   TSynEditRange = Pointer;

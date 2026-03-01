@@ -252,7 +252,7 @@ uses
 {$IFDEF MSWINDOWS}
   FMX.Printer,
 {$ENDIF}
-  SynUnicode,
+  SynUnicodeShared,
   FMX.SynEditRenderer;
 
 resourcestring

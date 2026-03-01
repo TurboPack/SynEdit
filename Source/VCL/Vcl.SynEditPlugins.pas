@@ -40,7 +40,7 @@ uses
   SynEdit,
   SynEditTypes,
   SynEditKeyCmds,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type

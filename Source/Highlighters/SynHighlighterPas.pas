@@ -57,7 +57,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   System.SysUtils,
   System.Classes,
   System.RegularExpressions,

@@ -373,7 +373,7 @@ uses
   System.Variants,
   Vcl.Controls,
   SynEditTypes,
-  SynUnicode;
+  SynUnicodeShared;
 
 resourcestring
   rsLocalizedControlType = 'editor';

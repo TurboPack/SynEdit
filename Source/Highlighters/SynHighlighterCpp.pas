@@ -48,7 +48,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SysUtils,
-  SynUnicode,
+  SynUnicodeShared,
   Classes,
   SynEditCodeFolding;
 

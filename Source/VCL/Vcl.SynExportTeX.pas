@@ -47,7 +47,7 @@ uses
   Graphics,
   SynEditExport,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type

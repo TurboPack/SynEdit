@@ -104,7 +104,7 @@ uses
   SynEditKeyCmds,
   SynEdit,
   SynEditMiscClasses,
-  SynUnicode,
+  SynUnicodeShared,
   Classes,
   SysUtils,
   IniFiles;

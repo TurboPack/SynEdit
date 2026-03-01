@@ -98,7 +98,7 @@ uses
   SynEditPrintMargins,
   SynEditMiscProcs,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SynDWrite;
 
 type

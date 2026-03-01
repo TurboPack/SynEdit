@@ -92,7 +92,7 @@ uses
   System.RTLConsts,
   System.Math,
   System.Threading,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditMiscProcs,
   SynDWrite;
 

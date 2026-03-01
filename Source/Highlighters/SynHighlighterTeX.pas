@@ -37,7 +37,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type

@@ -50,7 +50,7 @@ uses
   {$ENDIF}
   SynEditHighlighter,
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

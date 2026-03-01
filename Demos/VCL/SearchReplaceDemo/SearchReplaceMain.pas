@@ -31,7 +31,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, ToolWin, ImgList, ActnList, SynEdit, SynEditRegexSearch,
-  SynEditMiscClasses, SynEditSearch, SynUnicode, System.Actions,
+  SynEditMiscClasses, SynEditSearch, SynUnicodeShared, System.Actions,
   System.ImageList, Vcl.VirtualImageList, Vcl.BaseImageCollection,
   Vcl.ImageCollection, SynEditTypes;
 

@@ -55,7 +55,7 @@ uses
   Winapi.Windows,                                                               //Fiala
   {$ENDIF}
   SysUtils,
-  SynUnicode,
+  SynUnicodeShared,
   Classes,
 //++ CodeFolding
   SynEditCodeFolding;

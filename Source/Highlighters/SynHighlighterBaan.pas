@@ -53,7 +53,7 @@ uses
   {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils, Classes;
 
 type

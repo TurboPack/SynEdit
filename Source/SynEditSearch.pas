@@ -39,7 +39,7 @@ interface
 
 uses
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type

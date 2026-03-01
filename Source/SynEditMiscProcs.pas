@@ -48,7 +48,7 @@ uses
   System.RegularExpressions,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode;
+  SynUnicodeShared;
 
 const
   MaxIntArraySize = MaxInt div 16;

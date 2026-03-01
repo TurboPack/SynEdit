@@ -52,7 +52,7 @@ uses
   System.UITypes,
   SynEditHighlighter,
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditCodeFolding;
 
 type

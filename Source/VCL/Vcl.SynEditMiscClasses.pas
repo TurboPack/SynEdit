@@ -60,7 +60,7 @@ uses
   SynEditSelections,
   SynEditKeyCmds,
   SynEditKeyConstShared,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   {$REGION 'Selected Color'}

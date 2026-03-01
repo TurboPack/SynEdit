@@ -36,7 +36,7 @@ interface
 
 uses
   Windows,  Messages, Graphics, Controls, Forms, Dialogs, ExtCtrls, StdCtrls,
-  Buttons, Registry, SynAutoCorrect, SynUnicode, SysUtils, Classes;
+  Buttons, Registry, SynAutoCorrect, SynUnicodeShared, SysUtils, Classes;
 
 type
   TfrmAutoCorrectEditor = class(TForm)

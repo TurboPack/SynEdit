@@ -49,7 +49,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynEditCodeFolding,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   TtkTokenKind = (tkComment, tkText, tkSection, tkKey, tkNull, tkNumber,

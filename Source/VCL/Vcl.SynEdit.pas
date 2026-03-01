@@ -57,7 +57,7 @@ uses
   Vcl.Dialogs,
   Vcl.Themes,
   System.UITypes,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditTypes,
   Vcl.SynEditTypes,
   SynEditKeyConstShared,

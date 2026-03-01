@@ -87,7 +87,7 @@ uses
   Vcl.Graphics,
   SynEditPrintTypes,
   SynEditPrinterInfo,
-  SynUnicode,
+  SynUnicodeShared,
   SynDWrite,
   System.Classes,
   System.SysUtils;

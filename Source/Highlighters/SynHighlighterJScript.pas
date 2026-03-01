@@ -51,7 +51,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SysUtils,
-  SynUnicode,
+  SynUnicodeShared,
   Classes,
 //++ CodeFolding
   SynEditCodeFolding;

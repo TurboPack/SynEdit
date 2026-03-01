@@ -42,7 +42,7 @@ contains
   SynEditCodeFolding in '..\..\..\Source\SynEditCodeFolding.pas',
   SynEditTextBuffer in '..\..\..\Source\SynEditTextBuffer.pas',
   SynEditMiscProcs in '..\..\..\Source\SynEditMiscProcs.pas',
-  SynUnicode in '..\..\..\Source\SynUnicode.pas',
+  SynUnicodeShared in '..\..\..\Source\SynUnicodeShared.pas',
   SynEditSearch in '..\..\..\Source\SynEditSearch.pas',
   SynEditRegexSearch in '..\..\..\Source\SynEditRegexSearch.pas',
   SynEditSelections in '..\..\..\Source\SynEditSelections.pas',

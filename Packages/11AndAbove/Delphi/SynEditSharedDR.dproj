@@ -130,7 +130,7 @@
         <DCCReference Include="..\..\..\Source\SynEditCodeFolding.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditTextBuffer.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditMiscProcs.pas"/>
-        <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
+        <DCCReference Include="..\..\..\Source\SynUnicodeShared.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditSearch.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditRegexSearch.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditSelections.pas"/>

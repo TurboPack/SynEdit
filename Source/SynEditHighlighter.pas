@@ -37,7 +37,7 @@ uses
   Generics.Collections,
   System.UITypes,
   SynEditTypes,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   TSynHighlighterAttributes = class(TPersistent)
