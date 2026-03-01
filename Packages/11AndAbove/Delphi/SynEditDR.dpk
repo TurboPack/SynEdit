@@ -39,7 +39,7 @@ requires
 
 contains
   Vcl.SynEdit in '..\..\..\Source\VCL\Vcl.SynEdit.pas',
-  Vcl.SynEditTypes in '..\..\..\Source\VCL\Vcl.SynEditTypes.pas',
+  Vcl.SynEditScrollTypes in '..\..\..\Source\VCL\Vcl.SynEditScrollTypes.pas',
   Vcl.SynUnicode in '..\..\..\Source\VCL\Vcl.SynUnicode.pas',
   Vcl.SynDWrite in '..\..\..\Source\VCL\Vcl.SynDWrite.pas',
   Vcl.SynEditMiscClasses in '..\..\..\Source\VCL\Vcl.SynEditMiscClasses.pas',

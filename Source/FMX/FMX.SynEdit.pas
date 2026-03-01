@@ -409,7 +409,7 @@ implementation
 uses
   FMX.SynEditRenderer,
   FMX.SynEditScrollBars,
-  FMX.SynEditTypes,
+  FMX.SynEditScrollTypes,
   FMX.SynEditUndo,
   FMX.SynUnicode,
   SynEditKeyConstShared,

@@ -128,7 +128,7 @@
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="SynEditSharedDR.dcp"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEdit.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditScrollTypes.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynUnicode.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDWrite.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditMiscClasses.pas"/>

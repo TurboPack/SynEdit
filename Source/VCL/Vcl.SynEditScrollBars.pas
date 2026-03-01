@@ -36,7 +36,7 @@ uses
   Vcl.Controls,
   Vcl.Forms,
   SynEditTypes,
-  Vcl.SynEditTypes;
+  Vcl.SynEditScrollTypes;
 
 { Factory Method }
 function CreateSynEditScrollBars(Editor: TCustomControl): ISynEditScrollBars;

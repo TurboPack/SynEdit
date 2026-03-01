@@ -59,7 +59,7 @@ uses
   System.UITypes,
   SynUnicodeShared,
   SynEditTypes,
-  Vcl.SynEditTypes,
+  Vcl.SynEditScrollTypes,
   SynEditKeyConstShared,
   SynEditMiscProcs,
   SynEditSelections,

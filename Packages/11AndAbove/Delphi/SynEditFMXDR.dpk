@@ -36,7 +36,7 @@ requires
   SynEditSharedDR;
 
 contains
-  FMX.SynEditTypes in '..\..\..\Source\FMX\FMX.SynEditTypes.pas',
+  FMX.SynEditScrollTypes in '..\..\..\Source\FMX\FMX.SynEditScrollTypes.pas',
   FMX.SynUnicode in '..\..\..\Source\FMX\FMX.SynUnicode.pas',
   FMX.SynEditKeyConst in '..\..\..\Source\FMX\FMX.SynEditKeyConst.pas',
   FMX.SynEditRenderer in '..\..\..\Source\FMX\FMX.SynEditRenderer.pas',

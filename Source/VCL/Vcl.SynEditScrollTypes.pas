@@ -28,10 +28,18 @@ replace them with the notice and other provisions required by the GPL.
 If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 
-VCL-specific extensions extracted from SynEditTypes.pas
+VCL scrollbar interface, formerly Vcl.SynEditTypes.pas.
+
+Renamed to Vcl.SynEditScrollTypes to resolve a name collision: a bare
+'SynEditTypes' in a uses clause matches the shared SynEditTypes.pas
+(exact match) and shadows this Vcl-prefixed unit.  Renaming the shared
+side would require updating 110+ files and re-aliasing enum types (which
+Delphi does not support), so the VCL/FMX side was renamed instead.
+The unit contains only ISynEditScrollBars, so 'ScrollTypes' is a more
+accurate name anyway.
 -------------------------------------------------------------------------------}
 
-unit Vcl.SynEditTypes;
+unit Vcl.SynEditScrollTypes;
 
 {$I SynEdit.inc}
 

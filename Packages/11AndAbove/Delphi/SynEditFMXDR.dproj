@@ -138,7 +138,7 @@
         <DCCReference Include="fmx.dcp"/>
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="SynEditSharedDR.dcp"/>
-        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditScrollTypes.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynUnicode.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditKeyConst.pas"/>
         <DCCReference Include="..\..\..\Source\FMX\FMX.SynEditRenderer.pas"/>

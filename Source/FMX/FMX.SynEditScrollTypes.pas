@@ -7,7 +7,15 @@ with the License. You may obtain a copy of the License at
 http://www.mozilla.org/MPL/
 -------------------------------------------------------------------------------}
 
-unit FMX.SynEditTypes;
+unit FMX.SynEditScrollTypes;
+
+{ FMX scrollbar interface, formerly FMX.SynEditTypes.pas.
+
+  Renamed to FMX.SynEditScrollTypes for the same reason as the VCL
+  counterpart: a bare 'SynEditTypes' in a uses clause shadows any
+  dotted-prefix variant under Delphi's scope resolution rules.
+  Contains only ISynEditScrollBars, so 'ScrollTypes' better describes
+  the actual content. }
 
 {$I SynEdit.inc}
 

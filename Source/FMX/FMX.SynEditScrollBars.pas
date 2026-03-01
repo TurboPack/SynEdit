@@ -21,7 +21,7 @@ uses
   FMX.Types,
   FMX.Controls,
   FMX.StdCtrls,
-  FMX.SynEditTypes,
+  FMX.SynEditScrollTypes,
   SynEditTypes;
 
 { Factory method }
