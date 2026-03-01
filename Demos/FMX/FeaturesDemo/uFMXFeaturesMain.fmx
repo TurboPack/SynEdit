@@ -1,0 +1,480 @@
+object FMXFeaturesForm: TFMXFeaturesForm
+  Left = 0
+  Top = 0
+  Caption = 'SynEdit FMX - Features Demo'
+  ClientHeight = 700
+  ClientWidth = 1100
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object PanelLeft: TPanel
+    Align = Left
+    Size.Width = 280.000000000000000000
+    Size.Height = 700.000000000000000000
+    Size.PlatformDefault = False
+    object ScrollBox1: TVertScrollBox
+      Align = Client
+      Size.Width = 280.000000000000000000
+      Size.Height = 700.000000000000000000
+      Size.PlatformDefault = False
+      object LabelHLCaption: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Highlighter'
+      end
+      object ComboHL: TComboBox
+        Position.X = 8.000000000000000000
+        Position.Y = 28.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        OnChange = ComboHLChange
+      end
+      object BtnLoadSample: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 56.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Load Sample'
+        OnClick = BtnLoadSampleClick
+      end
+      object LabelClipboard: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 96.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Clipboard'
+      end
+      object BtnCut: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 116.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Cut'
+        OnClick = BtnCutClick
+      end
+      object BtnCopy: TButton
+        Position.X = 96.000000000000000000
+        Position.Y = 116.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Copy'
+        OnClick = BtnCopyClick
+      end
+      object BtnPaste: TButton
+        Position.X = 184.000000000000000000
+        Position.Y = 116.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Paste'
+        OnClick = BtnPasteClick
+      end
+      object BtnUndo: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 148.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Undo'
+        OnClick = BtnUndoClick
+      end
+      object BtnRedo: TButton
+        Position.X = 96.000000000000000000
+        Position.Y = 148.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Redo'
+        OnClick = BtnRedoClick
+      end
+      object BtnSelectAll: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 180.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Select All'
+        OnClick = BtnSelectAllClick
+      end
+      object BtnClear: TButton
+        Position.X = 140.000000000000000000
+        Position.Y = 180.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Clear'
+        OnClick = BtnClearClick
+      end
+      object LabelOptions: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 220.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Options'
+      end
+      object ChkAutoIndent: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 242.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Auto Indent'
+        IsChecked = True
+        OnChange = ChkOptionChange
+      end
+      object ChkInsertMode: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 266.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Insert Mode'
+        IsChecked = True
+        OnChange = ChkInsertModeChange
+      end
+      object ChkReadOnly: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 290.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Read Only'
+        OnChange = ChkReadOnlyChange
+      end
+      object ChkTabsToSpaces: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 314.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Tabs to Spaces'
+        IsChecked = True
+        OnChange = ChkOptionChange
+      end
+      object ChkSmartTabs: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 338.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Smart Tabs'
+        IsChecked = True
+        OnChange = ChkOptionChange
+      end
+      object LabelTabWidth: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 366.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Tab Width:'
+      end
+      object SpinTabWidth: TSpinBox
+        Position.X = 96.000000000000000000
+        Position.Y = 364.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        Min = 1.000000000000000000
+        Max = 16.000000000000000000
+        Value = 2.000000000000000000
+        OnChange = SpinTabWidthChange
+      end
+      object LabelAppearance: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 400.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Appearance'
+      end
+      object LabelRightEdge: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 424.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Right Edge:'
+      end
+      object SpinRightEdge: TSpinBox
+        Position.X = 96.000000000000000000
+        Position.Y = 422.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        Max = 200.000000000000000000
+        Value = 80.000000000000000000
+        OnChange = SpinRightEdgeChange
+      end
+      object LabelActiveColor: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 454.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Active Line:'
+      end
+      object ComboActiveColor: TComboColorBox
+        Position.X = 96.000000000000000000
+        Position.Y = 452.000000000000000000
+        Size.Width = 170.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        Color = claNull
+        OnChange = ComboActiveColorChange
+      end
+      object LabelStatus: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 492.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Status'
+      end
+      object LabelPosInfo: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 514.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Line: 1  Col: 1'
+      end
+      object LabelLinesInfo: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 534.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Lines: 0  Sel: No'
+      end
+      object LabelModInfo: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 554.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Modified: No'
+      end
+      object LabelCodeFolding: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 590.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Code Folding'
+      end
+      object ChkCodeFolding: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 612.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Enable Code Folding'
+        OnChange = ChkCodeFoldingChange
+      end
+      object BtnFoldAll: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 638.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Fold All'
+        OnClick = BtnFoldAllClick
+      end
+      object BtnUnfoldAll: TButton
+        Position.X = 140.000000000000000000
+        Position.Y = 638.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Unfold All'
+        OnClick = BtnUnfoldAllClick
+      end
+      object LabelSearchReplace: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 690.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Search / Replace'
+      end
+      object BtnSearch: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 712.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Find...'
+        OnClick = BtnSearchClick
+      end
+      object BtnReplace: TButton
+        Position.X = 140.000000000000000000
+        Position.Y = 712.000000000000000000
+        Size.Width = 126.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Replace...'
+        OnClick = BtnReplaceClick
+      end
+      object LabelCompletion: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 760.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Completion'
+      end
+      object BtnCompletion: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 782.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Show Completion (Ctrl+Space)'
+        OnClick = BtnCompletionClick
+      end
+      object LabelSpellCheckCaption: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 830.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Spell Check'
+      end
+      object ChkSpellCheck: TCheckBox
+        Position.X = 8.000000000000000000
+        Position.Y = 852.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Enable Spell Check'
+        OnChange = ChkSpellCheckChange
+      end
+      object LabelProvider: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 878.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Provider:'
+      end
+      object ComboProvider: TComboBox
+        Position.X = 8.000000000000000000
+        Position.Y = 898.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        OnChange = ComboProviderChange
+      end
+      object LabelLanguage: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 926.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Language:'
+      end
+      object ComboLanguage: TComboBox
+        Position.X = 8.000000000000000000
+        Position.Y = 946.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        OnChange = ComboLanguageChange
+      end
+      object BtnCheckFile: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 974.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Check File'
+        OnClick = BtnCheckFileClick
+      end
+      object LabelSpellStatus: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 1006.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Spell check: idle'
+      end
+      object LabelPrintCaption: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 1042.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Printing'
+      end
+      object BtnPrint: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 1064.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Print...'
+        OnClick = BtnPrintClick
+      end
+    end
+  end
+  object Splitter1: TSplitter
+    Align = Left
+    Cursor = crHSplit
+    MinSize = 200.000000000000000000
+    Position.X = 280.000000000000000000
+    Size.Width = 5.000000000000000000
+    Size.Height = 700.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object MemoLog: TMemo
+    Align = Bottom
+    Position.Y = 575.000000000000000000
+    Size.Width = 815.000000000000000000
+    Size.Height = 125.000000000000000000
+    Size.PlatformDefault = False
+    ReadOnly = True
+    TextSettings.Font.Family = 'Consolas'
+    TextSettings.Font.Size = 10.000000000000000000
+  end
+  object SplitterBottom: TSplitter
+    Align = Bottom
+    Cursor = crVSplit
+    MinSize = 50.000000000000000000
+    Position.Y = 570.000000000000000000
+    Size.Width = 815.000000000000000000
+    Size.Height = 5.000000000000000000
+    Size.PlatformDefault = False
+  end
+end

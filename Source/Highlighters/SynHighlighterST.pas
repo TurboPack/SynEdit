@@ -13,7 +13,7 @@ ST stands for Structured Text, and it is part of IEC1131 standard for
 programming PLCs.
 Author of this file is Ruggero Bandera.
 Portions created by Ruggero Bandera are Copyright (C) 2002 Ruggero Bandera.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -37,12 +37,13 @@ unit SynHighlighterST;
 interface
 
 uses
-  Windows,
-  Controls,
-  Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

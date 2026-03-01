@@ -12,7 +12,7 @@ Code template generated with SynGen.
 The original code is: SynHighlighterDOT.pas, released 2002-11-30.
 Description: DOT Syntax Parser/Highlighter
 The initial author of this file is nissl (nissl@tiscali.it, nissl@mammuth.it)
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 Copyright (c) 2002, all rights reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -44,12 +44,13 @@ unit SynHighlighterDOT;
 interface
 
 uses
-  Windows,
-  Controls,
-  Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

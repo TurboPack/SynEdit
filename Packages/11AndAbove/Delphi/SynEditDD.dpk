@@ -1,7 +1,7 @@
 package SynEditDD;
 
 {$R *.res}
-{$R '..\..\..\Source\SynEditReg.dcr'}
+{$R '..\..\..\Source\VCL\Vcl.SynEditReg.dcr'}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
@@ -26,7 +26,7 @@ package SynEditDD;
 {$IMAGEBASE $400000}
 {$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'TurboPack SynEdit Delphi designtime package'}
+{$DESCRIPTION 'TurboPack SynEdit Delphi VCL designtime package'}
 {$LIBSUFFIX AUTO}
 {$DESIGNONLY}
 {$IMPLICITBUILD OFF}
@@ -36,10 +36,10 @@ requires
   SynEditDR;
 
 contains
-  SynEditActionsResource in '..\..\..\Source\SynEditActionsResource.pas' {SynEditActions: TDataModule},
-  SynEditPropertyReg in '..\..\..\Source\SynEditPropertyReg.pas',
-  SynEditReg in '..\..\..\Source\SynEditReg.pas',
+  Vcl.SynEditActionsResource in '..\..\..\Source\VCL\Vcl.SynEditActionsResource.pas' {SynEditActions: TDataModule},
+  Vcl.SynEditPropertyReg in '..\..\..\Source\VCL\Vcl.SynEditPropertyReg.pas',
+  Vcl.SynEditReg in '..\..\..\Source\VCL\Vcl.SynEditReg.pas',
   SynHighlighterManager in '..\..\..\Source\Highlighters\SynHighlighterManager.pas',
-  SynDelphiIDEImporter in '..\..\..\Source\DesignTimeEditors\SynDelphiIDEImporter.pas';
+  SynDelphiIDEImporter in '..\..\..\Source\VCL\DesignTimeEditors\SynDelphiIDEImporter.pas';
 
 end.

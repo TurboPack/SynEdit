@@ -25,20 +25,24 @@ The two new data structures introduces are TSynSelection (single selection):
     function IsValid: Boolean;
   end;
 ```
-and TSynSelections (shown partially)
+and TSynSelectionsBase (shown partially), the shared abstract base class in `SynEditSelections.pas`:
 
 ```pascal
-TSynSelections = class
+TSynSelectionsBase = class
   public
     type
       TKeepSelection = (ksKeepBase, ksKeepActive);
     procedure Clear(KeepSelection: TKeepSelection = ksKeepActive);
-    // properties
-    // The last selection entered
-    // Non-multicursor commands operate on the active selection
+    function AddCaret(const ACaret: TBufferCoord; IsBase: Boolean = False): Boolean;
+    procedure ColumnSelection(Anchor, ACaret: TBufferCoord; LastPosX: Integer = 0);
+    procedure Merge;
+    function PartSelectionsForRow(const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
+    procedure Store(out SelStorage: TSynSelStorage);
+    procedure Restore(const [Ref] SelStorage: TSynSelStorage);
+    procedure LinesInserted(FirstLine, aCount: Integer);
+    procedure LinesDeleted(FirstLine, aCount: Integer);
+    procedure LinePut(aIndex: Integer; const OldLine: string);
     property ActiveSelection: TSynSelection read GetActiveSelection write SetActiveSelection;
-    // The selection that is kept when you clear multiple cursors
-    // It the first one as in VS Code
     property BaseSelection: TSynSelection read GetBaseSelection write SetBaseSelection;
     property Count: Integer read GetCount;
     property ActiveSelIndex: Integer read FActiveSelIndex write SetActiveSelIndex;
@@ -47,7 +51,11 @@ TSynSelections = class
   end;
 ```
 
-TCustomSynedit owns a TSynSelections object exposed with the property ```Selections``` and a TSynSelection record exposed as ```Selection```.
+Platform-specific subclasses override 10 abstract methods for editor coupling:
+- **VCL**: `TSynSelections` in `Vcl.SynEditMiscClasses.pas`
+- **FMX**: `TSynFMXSelections` in `FMX.SynEditMiscClasses.pas`
+
+Both TCustomSynEdit (VCL) and TCustomFMXSynEdit (FMX) own a selections object exposed with the property `Selections` and a TSynSelection record exposed as `Selection`.
 
 Most of the commands and properties you are likely to have used, such as CaretXY, BeginBlock,
 EndBlock, SelAvail, SelStart, SelEnd, SetCaretAndSelection etc operate as in previous versions

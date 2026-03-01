@@ -1,0 +1,415 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <Base>True</Base>
+        <AppType>Package</AppType>
+        <Config Condition="'$(Config)'==''">Release</Config>
+        <FrameworkType>None</FrameworkType>
+        <MainSource>SynEditSharedCR.cpp</MainSource>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <ProjectGuid>{A1B2C3D4-1234-5678-9ABC-DEF012345678}</ProjectGuid>
+        <ProjectName Condition="'$(ProjectName)'==''">SynEditSharedCR</ProjectName>
+        <ProjectVersion>20.2</ProjectVersion>
+        <TargetedPlatforms>3</TargetedPlatforms>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+        <Cfg_1_Win32>true</Cfg_1_Win32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>SynEditSharedCR</SanitizedProjectName>
+        <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
+        <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
+        <BCC_wpar>false</BCC_wpar>
+        <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
+        <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+        <DCC_Define>SYN_SHARED;$(DCC_Define)</DCC_Define>
+        <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
+        <DCC_OutputNeverBuildDcps>false</DCC_OutputNeverBuildDcps>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DllSuffix>$(Auto)</DllSuffix>
+        <DynamicRTL>true</DynamicRTL>
+        <ILINK_Description>TurboPack SynEdit Shared CBuilder runtime package</ILINK_Description>
+        <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
+        <ILINK_GenerateLibFile>true</ILINK_GenerateLibFile>
+        <ILINK_LibraryPath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\release\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
+        <IncludePath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(IncludePath)</IncludePath>
+        <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
+        <Multithreaded>true</Multithreaded>
+        <ProjectType>CppPackage</ProjectType>
+        <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
+        <TLIB_PageSize>128</TLIB_PageSize>
+        <UsePackages>true</UsePackages>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1031</VerInfo_Locale>
+        <_TCHARMapping>char</_TCHARMapping>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
+        <PackageImports>rtl;$(PackageImports)</PackageImports>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
+        <PackageImports>rtl;$(PackageImports)</PackageImports>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
+        <BCC_DisableFramePtrElimOpt>true</BCC_DisableFramePtrElimOpt>
+        <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
+        <BCC_DisableSpellChecking>true</BCC_DisableSpellChecking>
+        <BCC_EnableCPPExceptions>true</BCC_EnableCPPExceptions>
+        <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
+        <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
+        <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
+        <BCC_StackFrames>true</BCC_StackFrames>
+        <BCC_UseRegisterVariables>None</BCC_UseRegisterVariables>
+        <CLANG_UnwindTables>true</CLANG_UnwindTables>
+        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+        <DCC_Define>DEBUG</DCC_Define>
+        <DCC_Optimize>false</DCC_Optimize>
+        <Defines>_DEBUG;$(Defines)</Defines>
+        <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
+        <ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\debug\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
+        <TASM_Debugging>Full</TASM_Debugging>
+        <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)$(CC_SUFFIX)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <Defines>NDEBUG;$(Defines)</Defines>
+        <TASM_Debugging>None</TASM_Debugging>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageImport Include="rtl.bpi">
+            <BuildOrder>1</BuildOrder>
+        </PackageImport>
+        <CppCompile Include="SynEditSharedCR.cpp">
+            <BuildOrder>0</BuildOrder>
+        </CppCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditTypes.pas">
+            <BuildOrder>10</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditStrConst.pas">
+            <BuildOrder>11</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditKeyConst.pas">
+            <BuildOrder>12</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditKeyCmds.pas">
+            <BuildOrder>13</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditHighlighter.pas">
+            <BuildOrder>14</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditCodeFolding.pas">
+            <BuildOrder>15</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditTextBuffer.pas">
+            <BuildOrder>16</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditMiscProcs.pas">
+            <BuildOrder>17</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynUnicode.pas">
+            <BuildOrder>18</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditSearch.pas">
+            <BuildOrder>19</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditRegexSearch.pas">
+            <BuildOrder>20</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditSelections.pas">
+            <BuildOrder>21</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\SynEditWildcardSearch.pas">
+            <BuildOrder>22</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas">
+            <BuildOrder>53</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas">
+            <BuildOrder>54</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas">
+            <BuildOrder>55</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterBaan.pas">
+            <BuildOrder>56</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterBat.pas">
+            <BuildOrder>57</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCAC.pas">
+            <BuildOrder>58</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCache.pas">
+            <BuildOrder>59</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCobol.pas">
+            <BuildOrder>60</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCPM.pas">
+            <BuildOrder>61</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCpp.pas">
+            <BuildOrder>62</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCS.pas">
+            <BuildOrder>63</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterCss.pas">
+            <BuildOrder>64</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDelphi.pas">
+            <BuildOrder>65</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDfm.pas">
+            <BuildOrder>66</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDml.pas">
+            <BuildOrder>67</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDOT.pas">
+            <BuildOrder>68</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterDWS.pas">
+            <BuildOrder>69</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterEiffel.pas">
+            <BuildOrder>70</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterFortran.pas">
+            <BuildOrder>71</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterFoxpro.pas">
+            <BuildOrder>72</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGalaxy.pas">
+            <BuildOrder>73</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGeneral.pas">
+            <BuildOrder>74</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterGWS.pas">
+            <BuildOrder>75</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHaskell.pas">
+            <BuildOrder>76</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHC11.pas">
+            <BuildOrder>77</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHP48.pas">
+            <BuildOrder>78</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterHtml.pas">
+            <BuildOrder>79</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterIDL.pas">
+            <BuildOrder>80</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterIni.pas">
+            <BuildOrder>81</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterInno.pas">
+            <BuildOrder>82</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJava.pas">
+            <BuildOrder>83</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJScript.pas">
+            <BuildOrder>84</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterJSON.pas">
+            <BuildOrder>85</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterKix.pas">
+            <BuildOrder>86</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas">
+            <BuildOrder>87</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas">
+            <BuildOrder>88</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterM3.pas">
+            <BuildOrder>89</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas">
+            <BuildOrder>90</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas">
+            <BuildOrder>91</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas">
+            <BuildOrder>92</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterOmni.pas">
+            <BuildOrder>93</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPas.pas">
+            <BuildOrder>94</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPerl.pas">
+            <BuildOrder>95</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPHP.pas">
+            <BuildOrder>96</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterProgress.pas">
+            <BuildOrder>97</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterPython.pas">
+            <BuildOrder>98</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRC.pas">
+            <BuildOrder>99</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRexx.pas">
+            <BuildOrder>100</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterRuby.pas">
+            <BuildOrder>101</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSDD.pas">
+            <BuildOrder>102</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSml.pas">
+            <BuildOrder>103</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterSQL.pas">
+            <BuildOrder>104</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterST.pas">
+            <BuildOrder>105</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterTclTk.pas">
+            <BuildOrder>106</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterTeX.pas">
+            <BuildOrder>107</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterUNIXShellScript.pas">
+            <BuildOrder>108</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterUnreal.pas">
+            <BuildOrder>109</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterURI.pas">
+            <BuildOrder>110</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVB.pas">
+            <BuildOrder>111</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVBScript.pas">
+            <BuildOrder>112</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas">
+            <BuildOrder>113</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas">
+            <BuildOrder>114</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas">
+            <BuildOrder>115</BuildOrder>
+        </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas">
+            <BuildOrder>116</BuildOrder>
+        </DelphiCompile>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>CPlusPlusBuilder.Personality.12</Borland.Personality>
+        <Borland.ProjectType>CppPackage</Borland.ProjectType>
+        <BorlandProject>
+            <CPlusPlusBuilder.Personality>
+                <Source>
+                    <Source Name="MainSource">SynEditSharedCR.cpp</Source>
+                </Source>
+                <Excluded_Packages/>
+                <ProjectProperties>
+                    <ProjectProperties Name="AutoShowDeps">False</ProjectProperties>
+                    <ProjectProperties Name="ManagePaths">True</ProjectProperties>
+                    <ProjectProperties Name="VerifyPackages">True</ProjectProperties>
+                    <ProjectProperties Name="IndexFiles">False</ProjectProperties>
+                </ProjectProperties>
+            </CPlusPlusBuilder.Personality>
+            <Platforms>
+                <Platform value="Android">False</Platform>
+                <Platform value="Android64">False</Platform>
+                <Platform value="Linux64">False</Platform>
+                <Platform value="OSX64">False</Platform>
+                <Platform value="OSXARM64">False</Platform>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">True</Platform>
+                <Platform value="Win64x">True</Platform>
+                <Platform value="iOSDevice64">False</Platform>
+                <Platform value="iOSSimARM64">False</Platform>
+            </Platforms>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Project="$(BDS)\Bin\CodeGear.Cpp.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Cpp.Targets')"/>
+    <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+    <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
+</Project>

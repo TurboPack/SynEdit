@@ -26,16 +26,18 @@ unit SynEditHighlighter;
 interface
 
 uses
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Winapi.Windows,
+  Vcl.Graphics,
+  System.Win.Registry,
+  {$ENDIF}
   System.SysUtils,
   System.Classes,
-  System.Win.Registry,
   System.IniFiles,
   Generics.Collections,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditTypes,
-  SynEditMiscClasses,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   TSynHighlighterAttributes = class(TPersistent)
@@ -63,10 +65,12 @@ type
     procedure AssignColorAndStyle(Source: TSynHighlighterAttributes);
     constructor Create(AName: string; AFriendlyName: string);
     procedure InternalSaveDefaultValues;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function LoadFromBorlandRegistry(RootKey: HKEY; AttrKey, AttrName: string;
       OldStyle: Boolean): Boolean; virtual;
     function LoadFromRegistry(Reg: TRegistry): Boolean;
     function SaveToRegistry(Reg: TRegistry): Boolean;
+    {$ENDIF}
     function LoadFromFile(Ini: TCustomIniFile): Boolean;
     function SaveToFile(Ini: TCustomIniFile): Boolean;
   public
@@ -176,10 +180,12 @@ type
     procedure SetLine(const Value: string; LineNumber: Integer); virtual;
     procedure SetRange(Value: Pointer); virtual;
     procedure ResetRange; virtual;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function UseUserSettings(settingIndex: Integer): Boolean; virtual;
     procedure EnumUserSettings(Settings: TStrings); virtual;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; virtual;
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; virtual;
+    {$ENDIF}
     function LoadFromIniFile(AIni: TCustomIniFile): Boolean;
     function SaveToIniFile(AIni: TCustomIniFile): Boolean;
     function LoadFromFile(AFileName: string): Boolean;
@@ -382,6 +388,7 @@ begin
   fStyleDefault := fStyle;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynHighlighterAttributes.LoadFromBorlandRegistry(RootKey: HKEY;
   AttrKey, AttrName: string; OldStyle: Boolean): Boolean;
   // How the highlighting information is stored:
@@ -569,6 +576,7 @@ begin
   else
     Result := LoadNewStyle(RootKey, AttrKey, AttrName);
 end; { TSynHighlighterAttributes.LoadFromBorlandRegistry }
+{$ENDIF}
 
 procedure TSynHighlighterAttributes.SetBackground(Value: TColor);
 begin
@@ -607,6 +615,7 @@ begin
   end;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynHighlighterAttributes.LoadFromRegistry(Reg: TRegistry): Boolean;
 var
   Key: string;
@@ -643,6 +652,7 @@ begin
   else
     Result := False;
 end;
+{$ENDIF}
 
 function TSynHighlighterAttributes.LoadFromFile(Ini: TCustomIniFile): Boolean;
 var
@@ -791,6 +801,7 @@ begin
     inherited Assign(Source);
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 procedure TSynCustomHighlighter.EnumUserSettings(Settings: TStrings);
 begin
   Settings.Clear;
@@ -844,6 +855,7 @@ begin
     r.Free;
   end;
 end;
+{$ENDIF}
 
 function TSynCustomHighlighter.LoadFromFile(AFileName: string): Boolean;
 var

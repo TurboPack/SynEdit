@@ -1,8 +1,123 @@
-# **TSynDelphiSyn & IDE Settings Importer**
+# What's New in SynEdit
+
+---
+
+## **FMX Cross-Platform Editor**
+
+SynEdit now supports **FireMonkey (FMX)** alongside VCL through a three-layer architecture that shares highlighters and core logic between both frameworks.
+
+### Three-Layer Architecture
+
+The codebase has been restructured into three layers:
+
+- **Shared** (`Source/`) — Platform-independent units: 66 highlighters, text buffer, types, key commands, spell-check infrastructure (Hunspell and Windows providers). These are consumed by both VCL and FMX.
+- **VCL** (`Source/VCL/`, `Vcl.*` prefix) — Windows-specific: DirectWrite rendering, OLE drag-drop, printing, accessibility.
+- **FMX** (`Source/FMX/`, `FMX.*` prefix) — Cross-platform: FMX Canvas rendering, FMX scrollbars, FMX clipboard.
+
+See [Architecture.md](Doc/Architecture.md) for the full technical reference.
+
+### FMX Editor (`TCustomFMXSynEdit`)
+
+**Unit:** `Source\FMX\FMX.SynEdit.pas`
+
+**Inheritance:** `TControl`
+
+A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
+
+* **Syntax highlighting** — All 66 shared highlighters work out of the box.
+* **Keyboard input** — Full text editing with insert/overwrite modes.
+* **Selection** — Mouse and keyboard selection with correct split-token rendering at selection boundaries.
+* **Multi-caret editing** — Multiple carets (Alt+Click), column selection (Alt+Shift+Arrows/Drag), select all matching text (Ctrl+Shift+W), carets at line ends (Alt+End). Shared `TSynSelectionsBase` architecture between VCL and FMX.
+* **Clipboard** — Cut, Copy, Paste via `IFMXClipboardService`.
+* **Undo/Redo** — Full undo/redo stack.
+* **File I/O** — `LoadFromFile`, `SaveToFile`, `LoadFromStream`, `SaveToStream`.
+* **Code folding** — Collapse and expand foldable regions.
+* **Search/Replace** — `SearchReplace` method with options for case, whole word, regex, selection-only, and replace all.
+* **Completion proposals** — `TFMXSynCompletionProposal` popup with keyboard navigation, filtering, and customizable display.
+* **Plugin support** — `TSynFMXEditPlugin` base class for extending the editor via `OnCommand` hooks.
+* **Printing** — `TFMXSynEditPrint` with abstract provider interface for platform-specific rendering.
+* **Spell check** — `TFMXSynSpellCheck` with shared provider infrastructure (`ISynSpellCheckProvider`). Includes Hunspell and Windows spell-check providers usable by both VCL and FMX.
+* **Range scanning** — Incremental re-scanning for multi-line highlighters (XML, HTML, Delphi, etc.).
+* **Scrolling** — FMX `TScrollBar`-based scrolling with mouse wheel support.
+* **Gutter** — Line numbers with configurable width.
+* **Right edge** — Configurable right margin indicator.
+* **Active line highlighting** — Configurable active line background color.
+* **Editor options** — Auto indent, smart tabs, tabs-to-spaces, and more via `TSynEditorOptions`.
+
+### New Packages
+
+Five new packages support the three-layer architecture:
+
+| Package | Description |
+| :---- | :---- |
+| SynEditSharedDR / SynEditSharedCR | Shared runtime — types, text buffer, 66 highlighters |
+| SynEditFMXDR / SynEditFMXCR | FMX runtime — FMX editor and supporting units |
+| SynEditFMXDD / SynEditFMXCD | FMX designtime — component registration |
+
+Build order: Shared → VCL/FMX Runtime → VCL/FMX Designtime.
+
+### FMX Demos
+
+Three FMX demos are included in `Demos/FMX/`:
+
+* **HighlighterDemo** — Browse 13 language highlighters (Delphi, C++, Java, Python, JavaScript, HTML, XML, CSS, SQL, JSON, C#, INI, Batch) with a consistent color scheme.
+* **EditApp** — Single-document editor with menus (File/Edit), status bar, file I/O, clipboard, undo/redo, and automatic highlighter detection from file extension.
+* **FeaturesDemo** — Comprehensive feature showcase with a controls panel, editor options toggles, search/replace dialogs, completion proposals, code folding, clipboard buttons, active line color picker, and a timestamped event log.
+
+### Test Suites
+
+Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
+
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **366 tests**, 29 fixtures:
+
+| Fixture | Tests | Coverage area |
+| :------ | ----: | :------------ |
+| Buffer | 10 | Line add/delete/insert, text property |
+| Caret | 10 | Positioning, SelectAll, GetTextRange |
+| CodeFolding | 6 | Fold detection, collapse/uncollapse, levels |
+| Commands | 14 | Char insert/delete, line break, tab, navigation |
+| Content | 8 | Text get/set, multi-line, stream round-trip |
+| Highlighter | 5 | Assignment, free notification, switching |
+| Options | 10 | Default options, read-only, tab width, right edge |
+| Search | 9 | Case, whole-word, regex, replace, replace-all |
+| UndoRedo | 9 | Availability, restore, multiple undo/redo, redo caret |
+| SpellCheck | 20 | Hunspell provider, suffix/prefix rules, suggest |
+| WindowsSpellCheck | 11 | Windows spell-check COM provider |
+| SpellCheckComponent | 17 | TSynSpellCheck component integration, selection dedup |
+| BugFixes | 23 | Plugin dispatch, Modified, nil width, tabs, keyboard chain |
+| CrossPlatformFixes | 9 | Selection colors, BlockBegin/BlockEnd setters, coordinate clamping |
+| WordWrap | 20 | Enable/disable, row mapping, coordinate conversion, caret navigation, gutter |
+| AutoIndentTabs | 4 | Tab preservation, mixed whitespace, disable option |
+| PixelToBufferCoord | 4 | Click mapping at/near char boundaries, gutter clamp |
+| ScrollBarSizing | 3 | LinesInWindow/CharsInWindow delta, scrollbar hidden |
+| Selection | 18 | ecSel* commands, accumulation, collapse, replace, line-boundary |
+| Clipboard | 10 | Copy/cut/paste, read-only guards, undo support |
+| Editing | 12 | Line joining, overwrite mode, OnChange, BeginUpdate |
+| Renderer | 11 | TColorToAlphaColor byte-swap, SysNone, metrics |
+| CompletionProposal | 12 | AddItem/ClearList, filtering, position, MoveLine |
+| DelphiFolding | 26 | Procedure/class/record/interface folding, class var exclusion |
+| HTMLFolding | 11 | Tag pairs, void elements, comments, multi-line tags |
+| XMLFolding | 14 | Elements, namespaces, PI/CDATA/DOCTYPE, multi-line tags |
+| CSSFolding | 13 | Brace folding, nested @media, comments, strings |
+| Bookmarks | 15 | Set/clear/goto, toggle, mark list, line clamp |
+| Gutter | 15 | Band order/visibility, auto-width, BandAtX, fold sync |
+| MultiCaret | 17 | Add/toggle carets, column selection, multi-caret edit/delete/backspace, merge, undo/redo |
+
+**VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **47 tests**, 3 fixtures:
+
+| Fixture | Tests | Coverage area |
+| :------ | ----: | :------------ |
+| SynSpellCheck | 20 | Hunspell provider, suffix/prefix rules, suggest |
+| WindowsSpellCheck | 11 | Windows spell-check COM provider |
+| SpellCheckComponent | 16 | TSynSpellCheck component integration |
+
+---
+
+## **TSynDelphiSyn & IDE Settings Importer**
 
 A new updated Delphi syntax highlighter for SynEdit (TSynDelphiSyn) and a design-time tool (SynDelphiIDEImporter) to synchronize your SynEdit components with your current Delphi IDE configuration.
 
-## **1\. TSynDelphiSyn Component**
+## **TSynDelphiSyn Component**
 
 **Unit:** `Source\Highlighters\SynHighlighterDelphi.pas`
 
@@ -14,11 +129,12 @@ A new updated Delphi syntax highlighter for SynEdit (TSynDelphiSyn) and a design
 
 * **Delphi 13 Language Support**: Includes support for modern keywords such as reference, helper, operator, strict, sealed, final, delayed, and more.  
 * **Multiline String Literals**: Native support for Delphi's triple-quoted strings (''' ... ''').  
-* **Code Folding**: Built-in folding logic for:  
-  * {$REGION} / {$ENDREGION} directives.  
-  * implementation sections.  
-  * Classes, Records, and Methods (procedure, function, etc.).  
-  * Standard blocks (begin..end, case, try).  
+* **Code Folding**: Built-in folding logic for:
+  * {$REGION} / {$ENDREGION} directives.
+  * interface / implementation sections (each folds independently).
+  * Classes, Records, and Methods (procedure, function, constructor, destructor fold from the header line).
+  * Standard blocks (begin..end, case, try).
+  * `class var`, `class function`, `class procedure`, `class constructor`, `class destructor`, and `class operator` are correctly excluded from opening spurious folds.  
 * **Performance**: Uses a binary search algorithm for fast keyword lookups and class-cached Regular Expressions for folding logic.
 
 ### **Attributes**

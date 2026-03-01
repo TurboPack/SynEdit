@@ -1,0 +1,62 @@
+package SynEditFMXDR;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST ON}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE RELEASE}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'TurboPack SynEdit Delphi FMX runtime package'}
+{$LIBSUFFIX AUTO}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  fmx,
+  rtl,
+  SynEditSharedDR;
+
+contains
+  FMX.SynEditScrollTypes in '..\..\..\Source\FMX\FMX.SynEditScrollTypes.pas',
+  FMX.SynUnicode in '..\..\..\Source\FMX\FMX.SynUnicode.pas',
+  FMX.SynEditKeyConst in '..\..\..\Source\FMX\FMX.SynEditKeyConst.pas',
+  FMX.SynEditRenderer in '..\..\..\Source\FMX\FMX.SynEditRenderer.pas',
+  FMX.SynEditMiscClasses in '..\..\..\Source\FMX\FMX.SynEditMiscClasses.pas',
+  FMX.SynEditScrollBars in '..\..\..\Source\FMX\FMX.SynEditScrollBars.pas',
+  FMX.SynEditKbdHandler in '..\..\..\Source\FMX\FMX.SynEditKbdHandler.pas',
+  FMX.SynEditUndo in '..\..\..\Source\FMX\FMX.SynEditUndo.pas',
+  FMX.SynEdit in '..\..\..\Source\FMX\FMX.SynEdit.pas',
+  FMX.SynCompletionProposal in '..\..\..\Source\FMX\FMX.SynCompletionProposal.pas',
+  FMX.SynEditPlugins in '..\..\..\Source\FMX\FMX.SynEditPlugins.pas',
+  SynSpellCheckTypes in '..\..\..\Source\SynSpellCheckTypes.pas',
+  SynSpellCheckWinAPI in '..\..\..\Source\SynSpellCheckWinAPI.pas',
+  SynSpellCheckHunspellProvider in '..\..\..\Source\SynSpellCheckHunspellProvider.pas',
+  SynSpellCheckWindowsProvider in '..\..\..\Source\SynSpellCheckWindowsProvider.pas',
+  FMX.SynSpellCheck in '..\..\..\Source\FMX\FMX.SynSpellCheck.pas',
+  FMX.SynEditPrintTypes in '..\..\..\Source\FMX\FMX.SynEditPrintTypes.pas',
+  FMX.SynEditPrinterInfo in '..\..\..\Source\FMX\FMX.SynEditPrinterInfo.pas',
+  FMX.SynEditPrintMargins in '..\..\..\Source\FMX\FMX.SynEditPrintMargins.pas',
+  FMX.SynEditPrintHeaderFooter in '..\..\..\Source\FMX\FMX.SynEditPrintHeaderFooter.pas',
+  FMX.SynEditPrint in '..\..\..\Source\FMX\FMX.SynEditPrint.pas',
+  FMX.SynEditWordWrap in '..\..\..\Source\FMX\FMX.SynEditWordWrap.pas';
+
+end.

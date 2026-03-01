@@ -39,9 +39,9 @@ interface
 uses
   System.SysUtils,
   System.Classes,
+  System.UITypes,
   System.Generics.Collections,
-  Vcl.Menus,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditTypes;
 
 const
@@ -318,9 +318,72 @@ var
 implementation
 
 uses
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
-  SynEditKeyConst,
+  {$ENDIF}
+  SynEditKeyConstShared,
   SynEditStrConst;
+
+{$IFNDEF MSWINDOWS}
+const
+  VK_OEM_PLUS  = $BB;
+  VK_OEM_MINUS = $BD;
+  VK_OEM_2     = $BF;
+  VK_OEM_6     = $DD;
+{$ENDIF}
+
+{ Local shortcut conversion functions - portable replacements for Vcl.Menus }
+function ShortCut(Key: Word; Shift: TShiftState): TShortCut;
+begin
+  Result := Key;
+  if ssShift in Shift then Inc(Result, scShift);
+  if ssCtrl in Shift then Inc(Result, scCtrl);
+  if ssAlt in Shift then Inc(Result, scAlt);
+end;
+
+procedure ShortCutToKey(ShortCut: TShortCut; var Key: Word; var Shift: TShiftState);
+begin
+  Key := ShortCut and not (scShift + scCtrl + scAlt);
+  Shift := [];
+  if ShortCut and scShift <> 0 then Include(Shift, ssShift);
+  if ShortCut and scCtrl <> 0 then Include(Shift, ssCtrl);
+  if ShortCut and scAlt <> 0 then Include(Shift, ssAlt);
+end;
+
+function ShortCutToText(ShortCut: TShortCut): string;
+var
+  Key: Word;
+  Shift: TShiftState;
+begin
+  ShortCutToKey(ShortCut, Key, Shift);
+  Result := '';
+  if ssCtrl in Shift then Result := Result + 'Ctrl+';
+  if ssShift in Shift then Result := Result + 'Shift+';
+  if ssAlt in Shift then Result := Result + 'Alt+';
+  case Key of
+    $08: Result := Result + 'BkSp';
+    $09: Result := Result + 'Tab';
+    $0D: Result := Result + 'Enter';
+    $1B: Result := Result + 'Esc';
+    $20: Result := Result + 'Space';
+    $21: Result := Result + 'PgUp';
+    $22: Result := Result + 'PgDn';
+    $23: Result := Result + 'End';
+    $24: Result := Result + 'Home';
+    $25: Result := Result + 'Left';
+    $26: Result := Result + 'Up';
+    $27: Result := Result + 'Right';
+    $28: Result := Result + 'Down';
+    $2D: Result := Result + 'Ins';
+    $2E: Result := Result + 'Del';
+    $30..$39: Result := Result + Char(Key);
+    $41..$5A: Result := Result + Char(Key);
+    $60..$69: Result := Result + 'Num' + Char(Key - $60 + Ord('0'));
+    $70..$87: Result := Result + 'F' + IntToStr(Key - $6F);
+  else
+    Result := Result + '#' + IntToStr(Key);
+  end;
+end;
 
 { Command mapping routines }
 
@@ -536,7 +599,7 @@ end;
 
 function TSynEditKeyStroke.GetShortCut: TShortCut;
 begin
-  Result := Vcl.Menus.ShortCut(Key, Shift);
+  Result := SynEditKeyCmds.ShortCut(Key, Shift);
 end;
 
 procedure TSynEditKeyStroke.SetCommand(const Value: TSynEditorCommand);
@@ -579,7 +642,7 @@ begin
     end;
   end;
 
-  Vcl.Menus.ShortCutToKey(Value, NewKey, NewShift);
+  ShortCutToKey(Value, NewKey, NewShift);
 
   if (NewKey <> Key) or (NewShift <> Shift) then
   begin
@@ -622,7 +685,7 @@ begin
     end;
   end;
 
-  Vcl.Menus.ShortCutToKey(Value, NewKey, NewShift);
+  ShortCutToKey(Value, NewKey, NewShift);
   if (NewKey <> Key2) or (NewShift <> Shift2) then
   begin
     Key2 := NewKey;
@@ -632,7 +695,7 @@ end;
 
 function TSynEditKeyStroke.GetShortCut2: TShortCut;
 begin
-  Result := Vcl.Menus.ShortCut(Key2, Shift2);
+  Result := SynEditKeyCmds.ShortCut(Key2, Shift2);
 end;
 
 procedure TSynEditKeyStroke.LoadFromStream(AStream: TStream);

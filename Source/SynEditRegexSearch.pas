@@ -10,8 +10,8 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is: SynEditRegexSearch.pas, released 2002-07-26.
 
-Original Code by Eduardo Mauro, Gerald Nunn and Flávio Etrusco.
-Unicode translation by Maël Hörz.
+Original Code by Eduardo Mauro, Gerald Nunn and Flï¿½vio Etrusco.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -42,8 +42,7 @@ uses
   SynEditTypes,
   RegularExpressions,
   RegularExpressionsCore,
-  SynEditMiscClasses,
-  SynUnicode,
+  SynUnicodeShared,
   Classes;
 
 type
@@ -75,8 +74,7 @@ implementation
 
 uses
   RegularExpressionsAPI,
-  System.SysUtils,
-  Consts;
+  System.SysUtils;
 
 {$IF (CompilerVersion <= 35) and not Declared(RTLVersion112)}
 type

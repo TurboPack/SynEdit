@@ -85,7 +85,9 @@ implementation
 
 uses
   DesignIntf,
-  Windows,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
   Forms,
   Controls,
   StdCtrls,

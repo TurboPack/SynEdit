@@ -45,11 +45,11 @@ interface
 uses
   System.Classes,
   System.RegularExpressions,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   SynEditCodeFolding,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   TtkTokenKind = (tkComment, tkText, tkSection, tkKey, tkNull, tkNumber,

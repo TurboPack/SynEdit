@@ -11,7 +11,7 @@ the specific language governing rights and limitations under the License.
 The Original Code is: SynHighlighterModelica.pas, released 2000-11-09.
 The Initial Author of this file is Falko Jens Wagner.
 Portions created by Falko Jens Wagner are Copyright 2000 Falko Jens Wagner.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -34,11 +34,13 @@ unit SynHighlighterModelica;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
+  {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 
