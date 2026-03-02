@@ -31,7 +31,7 @@ All highlighters are shared between VCL and FMX — write once, highlight everyw
 
 ## What's New
 
-See [What's new.md](What's%20new.md) for detailed information on recent additions including:
+See [What's New.md](What's%20New.md) for detailed information on recent additions including:
 
 - **TSynDelphiSyn** — Modern Delphi highlighter with multiline string literals, code folding, and Delphi 13 keyword support
 - **IDE Settings Importer** — Design-time tool to import your Delphi IDE color scheme and editor preferences into SynEdit components
