@@ -14,7 +14,7 @@ through a three-layer architecture.
 │  Vcl.SynEdit.pas         │  │  FMX.SynEdit.pas          │
 │  Vcl.SynDWrite.pas       │  │  FMX.SynEditRenderer.pas  │
 │  Vcl.SynEditMiscClasses  │  │  FMX.SynEditMiscClasses   │
-│  (36 units)              │  │  (18 units)               │
+│  (40 units)              │  │  (19 units)               │
 └────────────┬─────────────┘  └────────────┬──────────────┘
              │                              │
              └──────────┬──────────────────-┘
@@ -70,7 +70,10 @@ SynEdit/
     SynEditRegexSearch.pas        Shared regex search
     SynEditWildcardSearch.pas     Shared wildcard search
     SynEditStrConst.pas           Shared string constants
-    SynUnicode.pas                Shared encoding utilities
+    SynUnicodeShared.pas          Shared encoding utilities
+    SynEditKeyConstShared.pas     Shared key constant definitions
+    SynEditSelections.pas         Shared multi-caret selection (TSynSelectionsBase)
+    SynEditUndoShared.pas         Shared undo base class (TSynEditUndoBase)
     SynSpellCheckTypes.pas        Shared spell check interfaces (ISynSpellCheckProvider)
     SynSpellCheckHunspellProvider Shared Hunspell spell check provider
     SynSpellCheckWindowsProvider  Shared Windows spell check provider
@@ -82,7 +85,8 @@ SynEdit/
     VCL/
       Vcl.SynEdit.pas             VCL editor (TCustomSynEdit : TCustomControl)
       Vcl.SynDWrite.pas           DirectWrite text rendering
-      Vcl.SynEditTypes.pas        VCL-specific type extensions
+      Vcl.SynUnicode.pas          VCL clipboard, re-exports SynUnicodeShared
+      Vcl.SynEditScrollTypes.pas  VCL scrollbar interfaces
       Vcl.SynEditMiscClasses.pas  VCL gutter, glyphs, bookmarks
       Vcl.SynEditScrollBars.pas   Native Windows scrollbars
       Vcl.SynEditKeyConst.pas     VCL key constant mapping
@@ -98,6 +102,13 @@ SynEdit/
       Vcl.SynAutoCorrect*.pas     Auto-correction with VCL dialogs
       Vcl.SynMacroRecorder.pas    Macro recording
       Vcl.SynEditPlugins.pas      VCL plugin framework
+      Vcl.SynEditWordWrap.pas     VCL word wrap
+      Vcl.SynEditPythonBehaviour  Python auto-indent behaviour
+      Vcl.SynEditActionsResource  Standard editor actions
+      Vcl.SynEditKeyCmdEditor.pas Key command editor dialog
+      Vcl.SynEditKeyCmdsEditor    Key commands list editor dialog
+      Vcl.SynEditOptionsDialog    Editor options dialog
+      Vcl.SynOmniSetupDialog.pas  Omni highlighter setup dialog
       Vcl.SynURIOpener.pas        URI detection and opening
       Vcl.SynEditExport.pas       Base exporter
       Vcl.SynExportHTML.pas       HTML export
@@ -109,13 +120,14 @@ SynEdit/
     FMX/
       FMX.SynEdit.pas             FMX editor (TCustomFMXSynEdit : TControl)
       FMX.SynEditRenderer.pas     FMX Canvas text rendering
-      FMX.SynEditTypes.pas        FMX-specific type extensions
+      FMX.SynEditScrollTypes.pas  FMX scrollbar interfaces
       FMX.SynEditMiscClasses.pas  FMX utility classes
       FMX.SynEditScrollBars.pas   FMX TScrollBar integration
       FMX.SynEditKeyConst.pas     FMX key constant mapping
       FMX.SynEditKbdHandler.pas   FMX keyboard/mouse event chains
       FMX.SynEditUndo.pas         FMX undo/redo system
       FMX.SynEditPlugins.pas      FMX editor plugin base class
+      FMX.SynEditWordWrap.pas     FMX word wrap
       FMX.SynUnicode.pas          FMX clipboard (IFMXClipboardService)
       FMX.SynCompletionProposal   FMX code completion (TPopup-based)
       FMX.SynEditPrint.pas        FMX printing (abstract provider)
@@ -289,8 +301,21 @@ to be used by both VCL and FMX editors.
 3. Add to `SynEditFMXCR.cbproj` source list
 4. Can reference both shared units and other `FMX.*` units
 
-### Unit Naming Rule
+### Unit Naming Rules
 
 A unit is **never** both shared AND scope-resolved. If a unit has a `Vcl.*`
 or `FMX.*` counterpart, it must not exist as a bare name in `Source/`. If a
 unit is shared, it must not have a prefixed counterpart.
+
+**Shared suffix convention**: When shared logic must coexist with
+platform-specific units of the same base name, the shared unit uses a
+`*Shared` suffix to avoid scope-resolution collisions:
+
+| Shared unit | VCL counterpart | FMX counterpart |
+|-------------|-----------------|-----------------|
+| `SynUnicodeShared.pas` | `Vcl.SynUnicode.pas` | `FMX.SynUnicode.pas` |
+| `SynEditKeyConstShared.pas` | `Vcl.SynEditKeyConst.pas` | `FMX.SynEditKeyConst.pas` |
+| `SynEditUndoShared.pas` | `Vcl.SynEditUndo.pas` | `FMX.SynEditUndo.pas` |
+
+The VCL/FMX units re-export the shared declarations and add
+platform-specific functionality (e.g., clipboard, key mapping).

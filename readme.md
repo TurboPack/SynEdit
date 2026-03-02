@@ -23,7 +23,7 @@ SynEdit is a syntax highlighting edit control, not based on the Windows common c
 - **66 language highlighters** (Delphi, C++, Python, JavaScript, HTML, XML, SQL, and many more)
 - **189 Omni highlighter configurations** for additional languages via INI-based definitions
 - **VCL editor** (`TCustomSynEdit`) — full-featured Windows editor with DirectWrite rendering, code folding, completion proposals, printing, spell check, OLE drag-drop, and accessibility
-- **FMX editor** (`TCustomFMXSynEdit`) — cross-platform editor with FMX Canvas rendering, syntax highlighting, keyboard input, selection, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, plugin support, printing (abstract provider), and spell check (abstract provider)
+- **FMX editor** (`TCustomFMXSynEdit`) — cross-platform editor with FMX Canvas rendering, syntax highlighting, keyboard input, selection, multi-caret editing, word wrap, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, plugin support, printing (abstract provider), and spell check (abstract provider)
 
 All highlighters are shared between VCL and FMX — write once, highlight everywhere.
 
@@ -35,7 +35,8 @@ See [What's New.md](What's%20New.md) for detailed information on recent addition
 
 - **TSynDelphiSyn** — Modern Delphi highlighter with multiline string literals, code folding, and Delphi 13 keyword support
 - **IDE Settings Importer** — Design-time tool to import your Delphi IDE color scheme and editor preferences into SynEdit components
-- **FMX Editor** — Cross-platform FireMonkey editor with syntax highlighting, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, printing, spell check, and plugin support
+- **Multi-Caret Editing** — Multiple carets (Alt+Click), column selection (Alt+Shift+Arrows), select matching text (Ctrl+Shift+W), with shared architecture between VCL and FMX
+- **FMX Editor** — Cross-platform FireMonkey editor with syntax highlighting, multi-caret editing, word wrap, clipboard, undo/redo, file I/O, code folding, search/replace, completion proposals, printing, spell check, and plugin support
 
 ---
 
@@ -46,7 +47,7 @@ SynEdit uses a **three-layer architecture**:
 ```
 ┌────────────────────┐  ┌────────────────────┐
 │  Source/VCL/        │  │  Source/FMX/        │
-│  36 Vcl.* units     │  │  18 FMX.* units     │
+│  40 Vcl.* units     │  │  19 FMX.* units     │
 └─────────┬──────────┘  └─────────┬──────────┘
           └──────┬───────────────-┘
                  │ uses
