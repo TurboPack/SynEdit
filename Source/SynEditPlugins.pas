@@ -47,21 +47,21 @@ type
   TAbstractSynPlugin = class(TComponent)
   private
     procedure SetEditor(const Value: TCustomSynEdit);
-    function GetEditors(aIndex: Integer): TCustomSynEdit;
+    function GetEditors(aIndex: NativeInt): TCustomSynEdit;
     function GetEditor: TCustomSynEdit;
-    function GetEditorCount: Integer;
+    function GetEditorCount: NativeInt;
   protected
     fEditors: TList;
     procedure Notification(aComponent: TComponent;
       aOperation: TOperation); override;
     procedure DoAddEditor(aEditor: TCustomSynEdit); virtual;
     procedure DoRemoveEditor(aEditor: TCustomSynEdit); virtual;
-    function AddEditor(aEditor: TCustomSynEdit): Integer;
-    function RemoveEditor(aEditor: TCustomSynEdit): Integer;
+    function AddEditor(aEditor: TCustomSynEdit): NativeInt;
+    function RemoveEditor(aEditor: TCustomSynEdit): NativeInt;
   public
     destructor Destroy; override;
-    property Editors[aIndex: Integer]: TCustomSynEdit read GetEditors;
-    property EditorCount: Integer read GetEditorCount;
+    property Editors[aIndex: NativeInt]: TCustomSynEdit read GetEditors;
+    property EditorCount: NativeInt read GetEditorCount;
   published
     property Editor: TCustomSynEdit read GetEditor write SetEditor;
   end;
@@ -144,7 +144,7 @@ const
   ecPluginBase = 64000;
 
 var
-  gCurrentCommand: Integer = ecPluginBase;
+  gCurrentCommand: TSynEditorCommand = ecPluginBase;
 
 function NewPluginCommand: TSynEditorCommand;
 begin
@@ -160,7 +160,7 @@ end;
 
 { TAbstractSynPlugin }
 
-function TAbstractSynPlugin.AddEditor(aEditor: TCustomSynEdit): Integer;
+function TAbstractSynPlugin.AddEditor(aEditor: TCustomSynEdit): NativeInt;
 begin
   if fEditors = nil then
   begin
@@ -206,7 +206,7 @@ begin
 
 end;
 
-function TAbstractSynPlugin.RemoveEditor(aEditor: TCustomSynEdit): Integer;
+function TAbstractSynPlugin.RemoveEditor(aEditor: TCustomSynEdit): NativeInt;
 begin
   if fEditors = nil then
   begin
@@ -243,7 +243,7 @@ begin
   end;
 end;
 
-function TAbstractSynPlugin.GetEditors(aIndex: Integer): TCustomSynEdit;
+function TAbstractSynPlugin.GetEditors(aIndex: NativeInt): TCustomSynEdit;
 begin
   Result := TCustomSynEdit(fEditors[aIndex]);
 end;
@@ -256,7 +256,7 @@ begin
     Result := nil;
 end;
 
-function TAbstractSynPlugin.GetEditorCount: Integer;
+function TAbstractSynPlugin.GetEditorCount: NativeInt;
 begin
   if fEditors <> nil then
     Result := fEditors.Count
@@ -413,7 +413,7 @@ end;
 
 procedure TAbstractSynSingleHookPlugin.SetShortCut(const Value: TShortCut);
 var
-  cEditor: Integer;
+  cEditor: NativeInt;
 begin
   if fShortCut <> Value then
   begin
@@ -437,7 +437,7 @@ end;
 function TAbstractSynCompletion.GetCurrentEditorString: string;
 var
   S: string;
-  Col: Integer;
+  Col: NativeInt;
 begin
   S := CurrentEditor.LineText;
   if (CurrentEditor.CaretX > 1) and

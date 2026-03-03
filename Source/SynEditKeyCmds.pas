@@ -1016,7 +1016,7 @@ begin
   for I := Low(EditorCommandStrs) to High(EditorCommandStrs) do
     if Uppercase(EditorCommandStrs[I].Name) = AString then
     begin
-      Result := EditorCommandStrs[I].Value;
+      Result := TSynEditorCommand(EditorCommandStrs[I].Value);
       Break;
     end;
 end;

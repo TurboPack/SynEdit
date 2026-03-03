@@ -94,13 +94,13 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
 //-- CodeFolding
   published
     property AttributeAttri: TSynHighlighterAttributes read FAttributeAttri
@@ -121,7 +121,8 @@ implementation
 
 uses
   SynEditStrConst,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynFunc;
 
 { TSynJSONSyn }
 
@@ -480,7 +481,7 @@ begin
   end;
 end;
 
-function TSynJSONSyn.GetTokenKind: Integer;
+function TSynJSONSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(FTokenID);
 end;
@@ -492,17 +493,17 @@ end;
 
 //++ CodeFolding
 procedure TSynJSONSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
 var
   CurLine: string;
-  Line: Integer;
+  Line: NativeInt;
 
-  function FindBraces(Line: Integer; OpenBrace, CloseBrace: Char; FoldType: Integer): Boolean;
+  function FindBraces(Line: NativeInt; OpenBrace, CloseBrace: Char; FoldType: NativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    function LineHasChar(AChar: Char; StartCol: NativeInt; out Col: NativeInt): Boolean;
     var
-      I: Integer;
+      I: NativeInt;
     begin
       Result := False;
       Col := 0;
@@ -518,15 +519,15 @@ var
       end;
     end;
 
-    function Indent: Integer;
+    function Indent: NativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: Integer;
-    CloseIdx: Integer;
-    Idx: Integer;
+    OpenIdx: NativeInt;
+    CloseIdx: NativeInt;
+    Idx: NativeInt;
   begin
     LineHasChar(OpenBrace, 1, OpenIdx);
     LineHasChar(CloseBrace, 1, CloseIdx);
@@ -557,7 +558,7 @@ var
 begin
   for Line := FromLine to ToLine do
   begin
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.GetItem(Line);
 
     // Skip empty lines
     if CurLine = '' then begin

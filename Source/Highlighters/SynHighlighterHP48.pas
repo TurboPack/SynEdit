@@ -78,18 +78,18 @@ type
   private
     function GetText: string;
     procedure SetText(const Value: string);
-    function GetInObject(Index: Integer): TObject;
-    procedure SetInObject(Index: Integer; const Value: TObject);
+    function GetInObject(Index: NativeInt): TObject;
+    procedure SetInObject(Index: NativeInt; const Value: TObject);
   protected
     FOnChange: TNotifyEvent;
-    SumOfUsed: array[0..NbSubList - 1] of Integer;
-    DatasUsed: array[0..NbSubList - 1] of Integer;
+    SumOfUsed: array[0..NbSubList - 1] of NativeInt;
+    DatasUsed: array[0..NbSubList - 1] of NativeInt;
     Datas: array[0..NbSubList - 1] of PSpeedListObjects;
-    LengthDatas: array[0..NbSubList - 1] of Integer;
+    LengthDatas: array[0..NbSubList - 1] of NativeInt;
     procedure Changed; virtual;
-    function Get(Index: Integer): string; virtual;
-    function GetObject(Index: Integer): TSpeedListObject;
-    function GetCount: Integer;
+    function Get(Index: NativeInt): string; virtual;
+    function GetObject(Index: NativeInt): TSpeedListObject;
+    function GetCount: NativeInt;
     function GetStringList: TStrings;
     procedure SetStringList(const Value: TStrings);
   public
@@ -98,15 +98,15 @@ type
 
     destructor Destroy; override;
     constructor Create;
-    function AddObj(const Value: TSpeedListObject): Integer;
+    function AddObj(const Value: TSpeedListObject): NativeInt;
     function Add(const Value: string): TSpeedListObject;
     procedure Clear;
     function Find(const Name: string): TSpeedListObject;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
-    property Objects[Index: Integer]: TSpeedListObject read GetObject;
-    property InObject[Index: Integer]: TObject read GetInObject write SetInObject;
-    property Strings[Index: Integer]: string read Get; default;
-    property Count: Integer read GetCount;
+    property Objects[Index: NativeInt]: TSpeedListObject read GetObject;
+    property InObject[Index: NativeInt]: TObject read GetInObject write SetInObject;
+    property Strings[Index: NativeInt]: string read Get; default;
+    property Count: NativeInt read GetCount;
     property StringList: TStrings read GetStringList write SetStringList;
     property Text: string read GetText write SetText;
   end;
@@ -150,7 +150,7 @@ type
     function GetAttribCount: Integer; override;
     function GetAttribute(Idx: Integer): TSynHighlighterAttributes; override;
     function IsFilterStored: Boolean; override;
-    function IsLineEnd(Run: Integer): Boolean; override;
+    function IsLineEnd(Run: NativeInt): Boolean; override;
   public
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: string; override;
@@ -160,12 +160,12 @@ type
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
-    procedure DoSetLine(const Value: string; LineNumber: Integer); override;
+    procedure DoSetLine(const Value: string; LineNumber: NativeInt); override;
     procedure Next; override;
 
     function GetToken: string; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
 
     function GetRange: Pointer; override;
     procedure SetRange(Value: Pointer); override;
@@ -201,7 +201,8 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 const
   DefaultAsmKeyWords: string = '!RPL'#13#10'ENDCODE'#13#10'{'#13#10'}'#13#10 +
@@ -235,9 +236,9 @@ const
     'A=PC'#13#10'C=PC'#13#10'APCEX'#13#10'CPCEX'#13#10'XM=0'#13#10'SB=0'#13#10'SR=0'#13#10'MP=0'#13#10'CLRHST'#13#10'?XM=0'#13#10'?SR=0'#13#10'?MP=0'#13#10'?SB=0'#13#10'RTNYES'#13#10'SKIPYES{'#13#10'{'#13#10'}'#13#10'UP'#13#10'EXIT'#13#10'EXITNC'#13#10'EXITC'#13#10'UPC'#13#10'UPNC' +
     '}SKELSE{'#13#10'SKC{'#13#10'SKNC{'#13#10'SKUB{'#13#10'SKUBL{'#13#10'SKIPC{'#13#10'SKIPNC{'#13#10'EXIT2'#13#10'EXIT3'#13#10'UP2'#13#10'UP3'#13#10'}SKLSE{'#13#10'}SKEC{'#13#10'}SKENC{'#13#10;
 
-function StringCrc(S: string): Integer;
+function StringCrc(S: string): NativeInt;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   Result := 0;
   for I := 1 to length(s) do begin
@@ -270,10 +271,10 @@ end;
 
 { TSpeedStringList }
 
-function TSpeedStringList.AddObj(const Value: TSpeedListObject): Integer;
+function TSpeedStringList.AddObj(const Value: TSpeedListObject): NativeInt;
 var
-  Crc: Integer;
-  I: Integer;
+  Crc: NativeInt;
+  I: NativeInt;
 begin
   Crc := StringCrc(Value.Name) mod High(Datas) + 1;
   if DatasUsed[Crc] = lengthDatas[Crc] then begin
@@ -302,7 +303,7 @@ end;
 
 procedure TSpeedStringList.Clear;
 var
-  I, J: Integer;
+  I, J: NativeInt;
 begin
   for I := Low(datas) to High(datas) do begin
     for J := 0 to DatasUsed[I] - 1 do
@@ -317,7 +318,7 @@ end;
 
 constructor TSpeedStringList.Create;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   inherited Create;
   for I := Low(Datas) to High(datas) do begin
@@ -336,8 +337,8 @@ end;
 
 function TSpeedStringList.Find(const name: string): TSpeedListObject;
 var
-  Crc: Integer;
-  I: Integer;
+  Crc: NativeInt;
+  I: NativeInt;
 begin
   Crc := StringCrc(name) mod High(Datas) + 1;
   for I := 0 to DatasUsed[Crc] - 1 do
@@ -348,9 +349,9 @@ begin
   Result := nil;
 end;
 
-function TSpeedStringList.Get(Index: Integer): string;
+function TSpeedStringList.Get(Index: NativeInt): string;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := Low(SumOfUsed) + 1 to High(SumOfUsed) do
     if Index > SumOfUsed[I] then begin
@@ -360,14 +361,14 @@ begin
   Result := '';
 end;
 
-function TSpeedStringList.GetCount: Integer;
+function TSpeedStringList.GetCount: NativeInt;
 begin
   Result := SumOfUsed[High(datas)] + DatasUsed[High(Datas)];
 end;
 
-function TSpeedStringList.GetInObject(Index: Integer): TObject;
+function TSpeedStringList.GetInObject(Index: NativeInt): TObject;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := Low(SumOfUsed) + 1 to High(SumOfUsed) do
     if Index > SumOfUSed[I] then begin
@@ -377,9 +378,9 @@ begin
   Result := nil;
 end;
 
-function TSpeedStringList.GetObject(Index: Integer): TSpeedListObject;
+function TSpeedStringList.GetObject(Index: NativeInt): TSpeedListObject;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := Low(SumOfUsed) + 1 to High(SumOfUsed) do
     if Index > SumOfUSed[I] then begin
@@ -391,7 +392,7 @@ end;
 
 function TSpeedStringList.GetStringList: TStrings;
 var
-  I, J: Integer;
+  I, J: NativeInt;
 begin
   Result := TStringList.Create;
   for I := Low(Datas) to High(Datas) do
@@ -409,9 +410,9 @@ end;
 
 procedure TSpeedStringList.NameChange(const Obj: TSpeedListObject; const NewName: string);
 var
-  Crc: Integer;
-  I: Integer;
-  J: Integer;
+  Crc: NativeInt;
+  I: NativeInt;
+  J: NativeInt;
 begin
   Crc := StringCrc(obj.Name) mod High(Datas) + 1;
   for I := 0 to DatasUsed[Crc] - 1 do
@@ -431,9 +432,9 @@ end;
 
 procedure TSpeedStringList.ObjectDeleted(const obj: TSpeedListObject);
 var
-  Crc: Integer;
-  I: Integer;
-  J: Integer;
+  Crc: NativeInt;
+  I: NativeInt;
+  J: NativeInt;
 begin
   Crc := StringCrc(obj.Name) mod High(Datas) + 1;
   for I := 0 to DatasUsed[Crc] - 1 do
@@ -448,10 +449,10 @@ begin
     end;
 end;
 
-procedure TSpeedStringList.SetInObject(Index: Integer;
+procedure TSpeedStringList.SetInObject(Index: NativeInt;
   const Value: TObject);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := Low(SumOfUsed) + 1 to High(SumOfUsed) do
     if Index > SumOfUSed[I] then begin
@@ -486,7 +487,7 @@ end;
 
 constructor TSynHP48Syn.Create(AOwner: TComponent);
 var
-  J, K: Integer;
+  J, K: NativeInt;
 begin
   Attribs[tkNull] := TSynHighlighterAttributes.Create(SYNS_AttrNull, SYNS_FriendlyAttrNull);
   Attribs[tkAsmKey] := TSynHighlighterAttributes.Create(SYNS_AttrAsmKey, SYNS_FriendlyAttrAsmKey);
@@ -657,7 +658,7 @@ end;
 
 function TSynHP48Syn.IdentProc: TtkTokenKind;
 var
-  I: Integer;
+  I: NativeInt;
   s: string;
 begin
   I := Run;
@@ -888,7 +889,7 @@ end;
 
 function TSynHP48Syn.SasmProc1: TtkTokenKind;
 var
-  I: Integer;
+  I: NativeInt;
   s: string;
 begin
   Result := tksAsmKey;
@@ -919,7 +920,7 @@ end;
 
 function TSynHP48Syn.SasmProc2: TtkTokenKind;
 var
-  I: Integer;
+  I: NativeInt;
   s: string;
 begin
   Result := tksAsm;
@@ -967,7 +968,7 @@ begin
   Result := GetAttrib(Ord(fTockenKind));
 end;
 
-function TSynHP48Syn.GetTokenKind: Integer;
+function TSynHP48Syn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTockenKind);
 end;
@@ -981,7 +982,7 @@ end;
 // (instead of the standard 0-based Run)
 
 procedure TSynHP48Syn.DoSetLine(const Value: string;
-  LineNumber: Integer);
+  LineNumber: NativeInt);
 begin
   inherited;
   Run := 1;
@@ -990,15 +991,15 @@ end;
 
 function TSynHP48Syn.GetToken: string;
 var
-  Len: Integer;
+  Len: NativeInt;
 begin
   Len := (Run - 1) - fTokenPos;
   SetLength(Result, Len);
   if Len > 0 then
-    StrLCopy(@Result[1], fCasedLine + fTokenPos, Len);
+    StrLCopy(@Result[1], fCasedLine + fTokenPos, Int32(Len));
 end;
 
-function TSynHP48Syn.IsLineEnd(Run: Integer): Boolean;
+function TSynHP48Syn.IsLineEnd(Run: NativeInt): Boolean;
 begin
   Result := (Run - 1 >= fLineLen) or (fLine[Run - 1] = #10) or (fLine[Run - 1] = #13);
 end;

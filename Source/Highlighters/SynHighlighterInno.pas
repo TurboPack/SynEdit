@@ -85,7 +85,7 @@ type
     procedure SemiColonProc;
     procedure StringProc;
     procedure UnknownProc;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
   protected
     function GetSampleSource: string; override;
     function IsCurrentToken(const Token: string): Boolean; override;
@@ -101,7 +101,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
   published
     property ConstantAttri: TSynHighlighterAttributes read fConstantAttri
@@ -204,7 +204,7 @@ end;
 
 function TSynInnoSyn.IsCurrentToken(const Token: string): Boolean;
   var
-  I: Integer;
+  I: NativeInt;
   Temp: PWideChar;
 begin
   Temp := fToIdent;
@@ -324,7 +324,7 @@ end;
 
 procedure TSynInnoSyn.IdentProc;
 var
-  LookAhead: Integer;
+  LookAhead: NativeInt;
 begin
   fTokenID := IdentKind((fLine + Run));
   Inc(Run, fStringLen);
@@ -384,7 +384,7 @@ end;
 
 procedure TSynInnoSyn.ConstantProc;
 var
-  BraceLevel, LastOpenBrace: Integer;
+  BraceLevel, LastOpenBrace: NativeInt;
 begin
   { Much of this is based on code from the SkipPastConst function in IS's
     CmnFunc2 unit. [jr] }
@@ -397,7 +397,7 @@ begin
   end;
   fTokenID := tkConstant;
   BraceLevel := 1;
-  LastOpenBrace := Low(Integer);
+  LastOpenBrace := Low(NativeInt);
   repeat
     Inc(Run);
     case fLine[Run] of
@@ -433,7 +433,7 @@ end;
 
 procedure TSynInnoSyn.SemiColonProc;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := Run-1 downto 0 do
     if fLine[I] > ' ' then begin
@@ -528,7 +528,7 @@ begin
   end;
 end;
 
-function TSynInnoSyn.GetTokenKind: Integer;
+function TSynInnoSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -548,7 +548,7 @@ begin
   Result := SYNS_LangInno;
 end;
 
-procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));

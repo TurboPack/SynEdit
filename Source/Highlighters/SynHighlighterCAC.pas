@@ -104,7 +104,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -544,7 +544,7 @@ begin
   end;
 end;
 
-function TSynCACSyn.GetTokenKind: Integer;
+function TSynCACSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

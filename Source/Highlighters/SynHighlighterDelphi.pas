@@ -85,14 +85,14 @@ type
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
 
     // Code Folding Support
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
@@ -110,6 +110,9 @@ type
   end;
 
 implementation
+
+uses
+  SynFunc;
 
 const
   // SORTED list of keywords for Binary Search (Delphi 13 + Standard Pascal)
@@ -275,7 +278,7 @@ begin
   end;
 end;
 
-function TSynDelphiSyn.GetTokenKind: Integer;
+function TSynDelphiSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -286,7 +289,7 @@ end;
 
 function TSynDelphiSyn.IsKeyword(const AKeyword: string): Boolean;
 var
-  L, H, I, C: Integer;
+  L, H, I, C: NativeInt;
 begin
   Result := inherited IsKeyword(AKeyword);
   L := Low(DelphiKeywords);
@@ -680,10 +683,10 @@ end;
 // =============================================================================
 
 procedure TSynDelphiSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
 var
   CurLine: string;
-  Line: Integer;
+  Line: NativeInt;
 
   function IsStartKeyword(const S: string): Boolean;
   begin
@@ -699,7 +702,7 @@ var
 begin
   for Line := FromLine to ToLine do
   begin
-    CurLine := Trim(LinesToScan[Line]);
+    CurLine := Trim(LinesToScan.GetItem(Line));
     if CurLine = '' then
     begin
       FoldRanges.NoFoldInfo(Line + 1);

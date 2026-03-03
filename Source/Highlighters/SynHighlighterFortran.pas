@@ -56,7 +56,7 @@ type
     tkString, tkSymbol, tkUnknown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
 type
   TSynFortranSyn = class(TSynCustomHighlighter)
@@ -70,8 +70,8 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: NativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -111,7 +111,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -148,7 +148,7 @@ const
     'use', 'value', 'volatile', 'where', 'while', 'write' 
   );
 
-  KeyIndices: array[0..192] of Integer = (
+  KeyIndices: array[0..192] of NativeInt = (
     8, -1, -1, -1, -1, 11, -1, -1, -1, 31, 2, -1, -1, 59, -1, -1, -1, -1, -1, 
     13, 55, -1, -1, -1, 65, -1, 38, 54, 40, 10, 37, -1, -1, 25, -1, -1, 5, -1, 
     -1, -1, -1, -1, -1, 4, -1, -1, 21, -1, -1, 49, -1, -1, -1, -1, 9, -1, -1, 
@@ -190,7 +190,7 @@ end;
 
 procedure TSynFortranSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -201,12 +201,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynFortranSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynFortranSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynFortranSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynFortranSyn.KeyWordFunc(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -612,7 +612,7 @@ begin
   end;
 end;
 
-function TSynFortranSyn.GetTokenKind: Integer;
+function TSynFortranSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

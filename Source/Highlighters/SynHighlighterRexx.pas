@@ -57,7 +57,7 @@ type
   TProcTableProc = procedure of object;
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
 type
   TSynRexxSyn = class(TSynCustomHighlighter)
@@ -73,108 +73,108 @@ type
     fStdFunctionAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     function HashKey(Str: PWideChar): Cardinal;
-    function FuncAbbrev(Index: Integer): TtkTokenKind;
-    function FuncAbs(Index: Integer): TtkTokenKind;
-    function FuncAddress(Index: Integer): TtkTokenKind;
-    function FuncArg(Index: Integer): TtkTokenKind;
-    function FuncB2x(Index: Integer): TtkTokenKind;
-    function FuncBitand(Index: Integer): TtkTokenKind;
-    function FuncBitor(Index: Integer): TtkTokenKind;
-    function FuncBitxor(Index: Integer): TtkTokenKind;
-    function FuncC2d(Index: Integer): TtkTokenKind;
-    function FuncC2x(Index: Integer): TtkTokenKind;
-    function FuncCall(Index: Integer): TtkTokenKind;
-    function FuncCenter(Index: Integer): TtkTokenKind;
-    function FuncCentre(Index: Integer): TtkTokenKind;
-    function FuncChangestr(Index: Integer): TtkTokenKind;
-    function FuncCharin(Index: Integer): TtkTokenKind;
-    function FuncCharout(Index: Integer): TtkTokenKind;
-    function FuncChars(Index: Integer): TtkTokenKind;
-    function FuncCompare(Index: Integer): TtkTokenKind;
-    function FuncCondition(Index: Integer): TtkTokenKind;
-    function FuncCopies(Index: Integer): TtkTokenKind;
-    function FuncD2c(Index: Integer): TtkTokenKind;
-    function FuncD2x(Index: Integer): TtkTokenKind;
-    function FuncDatatype(Index: Integer): TtkTokenKind;
-    function FuncDate(Index: Integer): TtkTokenKind;
-    function FuncDelstr(Index: Integer): TtkTokenKind;
-    function FuncDelword(Index: Integer): TtkTokenKind;
-    function FuncDigits(Index: Integer): TtkTokenKind;
-    function FuncDo(Index: Integer): TtkTokenKind;
-    function FuncDrop(Index: Integer): TtkTokenKind;
-    function FuncElse(Index: Integer): TtkTokenKind;
-    function FuncEnd(Index: Integer): TtkTokenKind;
-    function FuncErrortext(Index: Integer): TtkTokenKind;
-    function FuncExit(Index: Integer): TtkTokenKind;
-    function FuncForm(Index: Integer): TtkTokenKind;
-    function FuncFormat(Index: Integer): TtkTokenKind;
-    function FuncFuzz(Index: Integer): TtkTokenKind;
-    function FuncIf(Index: Integer): TtkTokenKind;
-    function FuncInsert(Index: Integer): TtkTokenKind;
-    function FuncInterpret(Index: Integer): TtkTokenKind;
-    function FuncIterate(Index: Integer): TtkTokenKind;
-    function FuncJustify(Index: Integer): TtkTokenKind;
-    function FuncLastpos(Index: Integer): TtkTokenKind;
-    function FuncLeave(Index: Integer): TtkTokenKind;
-    function FuncLeft(Index: Integer): TtkTokenKind;
-    function FuncLength(Index: Integer): TtkTokenKind;
-    function FuncLinein(Index: Integer): TtkTokenKind;
-    function FuncLineout(Index: Integer): TtkTokenKind;
-    function FuncLines(Index: Integer): TtkTokenKind;
-    function FuncLinesize(Index: Integer): TtkTokenKind;
-    function FuncMax(Index: Integer): TtkTokenKind;
-    function FuncMin(Index: Integer): TtkTokenKind;
-    function FuncNop(Index: Integer): TtkTokenKind;
-    function FuncNumeric(Index: Integer): TtkTokenKind;
-    function FuncOptions(Index: Integer): TtkTokenKind;
-    function FuncOtherwise(Index: Integer): TtkTokenKind;
-    function FuncOverlay(Index: Integer): TtkTokenKind;
-    function FuncParse(Index: Integer): TtkTokenKind;
-    function FuncPos(Index: Integer): TtkTokenKind;
-    function FuncProcedure(Index: Integer): TtkTokenKind;
-    function FuncPull(Index: Integer): TtkTokenKind;
-    function FuncPush(Index: Integer): TtkTokenKind;
-    function FuncQueue(Index: Integer): TtkTokenKind;
-    function FuncQueued(Index: Integer): TtkTokenKind;
-    function FuncRandom(Index: Integer): TtkTokenKind;
-    function FuncReturn(Index: Integer): TtkTokenKind;
-    function FuncReverse(Index: Integer): TtkTokenKind;
-    function FuncRight(Index: Integer): TtkTokenKind;
-    function FuncRxfuncadd(Index: Integer): TtkTokenKind;
-    function FuncRxfuncdrop(Index: Integer): TtkTokenKind;
-    function FuncRxfuncquery(Index: Integer): TtkTokenKind;
-    function FuncSay(Index: Integer): TtkTokenKind;
-    function FuncSelect(Index: Integer): TtkTokenKind;
-    function FuncSignal(Index: Integer): TtkTokenKind;
-    function FuncSourceline(Index: Integer): TtkTokenKind;
-    function FuncSpace(Index: Integer): TtkTokenKind;
-    function FuncStream(Index: Integer): TtkTokenKind;
-    function FuncStrip(Index: Integer): TtkTokenKind;
-    function FuncSubstr(Index: Integer): TtkTokenKind;
-    function FuncSubword(Index: Integer): TtkTokenKind;
-    function FuncSymbol(Index: Integer): TtkTokenKind;
-    function FuncThen(Index: Integer): TtkTokenKind;
-    function FuncTime(Index: Integer): TtkTokenKind;
-    function FuncTrace(Index: Integer): TtkTokenKind;
-    function FuncTranslate(Index: Integer): TtkTokenKind;
-    function FuncTrunc(Index: Integer): TtkTokenKind;
-    function FuncUpper(Index: Integer): TtkTokenKind;
-    function FuncValue(Index: Integer): TtkTokenKind;
-    function FuncVar(Index: Integer): TtkTokenKind;
-    function FuncVerify(Index: Integer): TtkTokenKind;
-    function FuncWhen(Index: Integer): TtkTokenKind;
-    function FuncWord(Index: Integer): TtkTokenKind;
-    function FuncWordindex(Index: Integer): TtkTokenKind;
-    function FuncWordlength(Index: Integer): TtkTokenKind;
-    function FuncWordpos(Index: Integer): TtkTokenKind;
-    function FuncWords(Index: Integer): TtkTokenKind;
-    function FuncX2b(Index: Integer): TtkTokenKind;
-    function FuncX2c(Index: Integer): TtkTokenKind;
-    function FuncX2d(Index: Integer): TtkTokenKind;
-    function FuncXrange(Index: Integer): TtkTokenKind;
+    function FuncAbbrev(Index: NativeInt): TtkTokenKind;
+    function FuncAbs(Index: NativeInt): TtkTokenKind;
+    function FuncAddress(Index: NativeInt): TtkTokenKind;
+    function FuncArg(Index: NativeInt): TtkTokenKind;
+    function FuncB2x(Index: NativeInt): TtkTokenKind;
+    function FuncBitand(Index: NativeInt): TtkTokenKind;
+    function FuncBitor(Index: NativeInt): TtkTokenKind;
+    function FuncBitxor(Index: NativeInt): TtkTokenKind;
+    function FuncC2d(Index: NativeInt): TtkTokenKind;
+    function FuncC2x(Index: NativeInt): TtkTokenKind;
+    function FuncCall(Index: NativeInt): TtkTokenKind;
+    function FuncCenter(Index: NativeInt): TtkTokenKind;
+    function FuncCentre(Index: NativeInt): TtkTokenKind;
+    function FuncChangestr(Index: NativeInt): TtkTokenKind;
+    function FuncCharin(Index: NativeInt): TtkTokenKind;
+    function FuncCharout(Index: NativeInt): TtkTokenKind;
+    function FuncChars(Index: NativeInt): TtkTokenKind;
+    function FuncCompare(Index: NativeInt): TtkTokenKind;
+    function FuncCondition(Index: NativeInt): TtkTokenKind;
+    function FuncCopies(Index: NativeInt): TtkTokenKind;
+    function FuncD2c(Index: NativeInt): TtkTokenKind;
+    function FuncD2x(Index: NativeInt): TtkTokenKind;
+    function FuncDatatype(Index: NativeInt): TtkTokenKind;
+    function FuncDate(Index: NativeInt): TtkTokenKind;
+    function FuncDelstr(Index: NativeInt): TtkTokenKind;
+    function FuncDelword(Index: NativeInt): TtkTokenKind;
+    function FuncDigits(Index: NativeInt): TtkTokenKind;
+    function FuncDo(Index: NativeInt): TtkTokenKind;
+    function FuncDrop(Index: NativeInt): TtkTokenKind;
+    function FuncElse(Index: NativeInt): TtkTokenKind;
+    function FuncEnd(Index: NativeInt): TtkTokenKind;
+    function FuncErrortext(Index: NativeInt): TtkTokenKind;
+    function FuncExit(Index: NativeInt): TtkTokenKind;
+    function FuncForm(Index: NativeInt): TtkTokenKind;
+    function FuncFormat(Index: NativeInt): TtkTokenKind;
+    function FuncFuzz(Index: NativeInt): TtkTokenKind;
+    function FuncIf(Index: NativeInt): TtkTokenKind;
+    function FuncInsert(Index: NativeInt): TtkTokenKind;
+    function FuncInterpret(Index: NativeInt): TtkTokenKind;
+    function FuncIterate(Index: NativeInt): TtkTokenKind;
+    function FuncJustify(Index: NativeInt): TtkTokenKind;
+    function FuncLastpos(Index: NativeInt): TtkTokenKind;
+    function FuncLeave(Index: NativeInt): TtkTokenKind;
+    function FuncLeft(Index: NativeInt): TtkTokenKind;
+    function FuncLength(Index: NativeInt): TtkTokenKind;
+    function FuncLinein(Index: NativeInt): TtkTokenKind;
+    function FuncLineout(Index: NativeInt): TtkTokenKind;
+    function FuncLines(Index: NativeInt): TtkTokenKind;
+    function FuncLinesize(Index: NativeInt): TtkTokenKind;
+    function FuncMax(Index: NativeInt): TtkTokenKind;
+    function FuncMin(Index: NativeInt): TtkTokenKind;
+    function FuncNop(Index: NativeInt): TtkTokenKind;
+    function FuncNumeric(Index: NativeInt): TtkTokenKind;
+    function FuncOptions(Index: NativeInt): TtkTokenKind;
+    function FuncOtherwise(Index: NativeInt): TtkTokenKind;
+    function FuncOverlay(Index: NativeInt): TtkTokenKind;
+    function FuncParse(Index: NativeInt): TtkTokenKind;
+    function FuncPos(Index: NativeInt): TtkTokenKind;
+    function FuncProcedure(Index: NativeInt): TtkTokenKind;
+    function FuncPull(Index: NativeInt): TtkTokenKind;
+    function FuncPush(Index: NativeInt): TtkTokenKind;
+    function FuncQueue(Index: NativeInt): TtkTokenKind;
+    function FuncQueued(Index: NativeInt): TtkTokenKind;
+    function FuncRandom(Index: NativeInt): TtkTokenKind;
+    function FuncReturn(Index: NativeInt): TtkTokenKind;
+    function FuncReverse(Index: NativeInt): TtkTokenKind;
+    function FuncRight(Index: NativeInt): TtkTokenKind;
+    function FuncRxfuncadd(Index: NativeInt): TtkTokenKind;
+    function FuncRxfuncdrop(Index: NativeInt): TtkTokenKind;
+    function FuncRxfuncquery(Index: NativeInt): TtkTokenKind;
+    function FuncSay(Index: NativeInt): TtkTokenKind;
+    function FuncSelect(Index: NativeInt): TtkTokenKind;
+    function FuncSignal(Index: NativeInt): TtkTokenKind;
+    function FuncSourceline(Index: NativeInt): TtkTokenKind;
+    function FuncSpace(Index: NativeInt): TtkTokenKind;
+    function FuncStream(Index: NativeInt): TtkTokenKind;
+    function FuncStrip(Index: NativeInt): TtkTokenKind;
+    function FuncSubstr(Index: NativeInt): TtkTokenKind;
+    function FuncSubword(Index: NativeInt): TtkTokenKind;
+    function FuncSymbol(Index: NativeInt): TtkTokenKind;
+    function FuncThen(Index: NativeInt): TtkTokenKind;
+    function FuncTime(Index: NativeInt): TtkTokenKind;
+    function FuncTrace(Index: NativeInt): TtkTokenKind;
+    function FuncTranslate(Index: NativeInt): TtkTokenKind;
+    function FuncTrunc(Index: NativeInt): TtkTokenKind;
+    function FuncUpper(Index: NativeInt): TtkTokenKind;
+    function FuncValue(Index: NativeInt): TtkTokenKind;
+    function FuncVar(Index: NativeInt): TtkTokenKind;
+    function FuncVerify(Index: NativeInt): TtkTokenKind;
+    function FuncWhen(Index: NativeInt): TtkTokenKind;
+    function FuncWord(Index: NativeInt): TtkTokenKind;
+    function FuncWordindex(Index: NativeInt): TtkTokenKind;
+    function FuncWordlength(Index: NativeInt): TtkTokenKind;
+    function FuncWordpos(Index: NativeInt): TtkTokenKind;
+    function FuncWords(Index: NativeInt): TtkTokenKind;
+    function FuncX2b(Index: NativeInt): TtkTokenKind;
+    function FuncX2c(Index: NativeInt): TtkTokenKind;
+    function FuncX2d(Index: NativeInt): TtkTokenKind;
+    function FuncXrange(Index: NativeInt): TtkTokenKind;
     procedure IdentProc;
     procedure UnknownProc;
-    function AltFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
     procedure InitIdent;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure NullProc;
@@ -201,10 +201,10 @@ type
     procedure SetRange(Value: Pointer); override;
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): UnicodeString; override;
+    function GetKeyWords(TokenKind: NativeInt): UnicodeString; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -249,7 +249,7 @@ const
     'wordindex', 'wordlength', 'wordpos', 'words', 'x2b', 'x2c', 'x2d', 'xrange' 
   );
 
-  KeyIndices: array[0..348] of Integer = (
+  KeyIndices: array[0..348] of NativeInt = (
     -1, 26, -1, -1, -1, -1, -1, -1, -1, 6, -1, -1, 20, -1, 75, 0, -1, 98, -1, 
     -1, 50, -1, 10, -1, -1, -1, -1, -1, 44, -1, -1, -1, -1, -1, -1, -1, 66, -1, 
     -1, -1, 84, -1, -1, -1, -1, 83, 13, 42, 39, -1, -1, 5, -1, -1, 49, -1, -1, 
@@ -273,7 +273,7 @@ const
 
 procedure TSynRexxSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -394,7 +394,7 @@ begin
 end;
 {$Q+}
 
-function TSynRexxSyn.FuncAbbrev(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncAbbrev(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -402,7 +402,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncAbs(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncAbs(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -410,15 +410,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncAddress(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncArg(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncAddress(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -426,55 +418,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncB2x(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncBitand(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncBitor(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncBitxor(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncC2d(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncC2x(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncCall(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncArg(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -482,7 +426,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncCenter(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncB2x(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -490,7 +434,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncCentre(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncBitand(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -498,7 +442,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncChangestr(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncBitor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -506,7 +450,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncCharin(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncBitxor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -514,7 +458,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncCharout(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncC2d(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -522,7 +466,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncChars(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncC2x(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -530,79 +474,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncCompare(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncCondition(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncCopies(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncD2c(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncD2x(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncDatatype(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncDate(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncDelstr(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncDelword(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncDigits(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncCall(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -610,7 +482,127 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncDo(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncCenter(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncCentre(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncChangestr(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncCharin(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncCharout(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncChars(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncCompare(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncCondition(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncCopies(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncD2c(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncD2x(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncDatatype(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncDate(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncDelstr(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncDelword(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncDigits(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -618,7 +610,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncDrop(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncDo(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -626,7 +618,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncElse(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncDrop(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -634,7 +626,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncEnd(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncElse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -642,15 +634,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncErrortext(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncExit(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncEnd(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -658,7 +642,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncForm(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncErrortext(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -666,15 +650,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncFormat(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncFuzz(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncExit(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -682,7 +658,23 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncIf(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncForm(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncFormat(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncFuzz(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -690,15 +682,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncInsert(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncInterpret(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncIf(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -706,7 +690,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncIterate(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncInsert(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncInterpret(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -714,23 +706,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncJustify(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncLastpos(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncLeave(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncIterate(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -738,7 +714,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncLeft(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncJustify(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -746,7 +722,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncLength(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncLastpos(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -754,55 +730,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncLinein(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncLineout(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncLines(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncLinesize(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncMax(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncMin(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncNop(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncLeave(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -810,7 +738,71 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncNumeric(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncLeft(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncLength(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncLinein(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncLineout(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncLines(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncLinesize(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncMax(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncMin(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncNop(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -818,7 +810,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncOptions(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncNumeric(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -826,7 +818,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncOtherwise(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncOptions(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -834,15 +826,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncOverlay(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncParse(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncOtherwise(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -850,7 +834,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncPos(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncOverlay(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -858,7 +842,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncProcedure(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncParse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -866,7 +850,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncPull(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncPos(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncProcedure(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -874,7 +866,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncPush(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncPull(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -882,7 +874,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncQueue(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncPush(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -890,23 +882,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncQueued(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncRandom(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncReturn(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncQueue(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -914,7 +890,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncReverse(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncQueued(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -922,7 +898,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncRight(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncRandom(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -930,31 +906,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncRxfuncadd(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncRxfuncdrop(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncRxfuncquery(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncSay(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncReturn(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -962,7 +914,47 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncSelect(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncReverse(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncRight(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncRxfuncadd(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncRxfuncdrop(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncRxfuncquery(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncSay(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -970,7 +962,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncSignal(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncSelect(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -978,63 +970,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncSourceline(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncSpace(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncStream(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncStrip(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncSubstr(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncSubword(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncSymbol(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncThen(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncSignal(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1042,7 +978,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncTime(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncSourceline(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1050,7 +986,55 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncTrace(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncSpace(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncStream(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncStrip(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncSubstr(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncSubword(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncSymbol(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncThen(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1058,7 +1042,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncTranslate(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncTime(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1066,15 +1050,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncTrunc(Index: Integer): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkStdFunction
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynRexxSyn.FuncUpper(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncTrace(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1082,7 +1058,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncValue(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncTranslate(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1090,7 +1066,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncVar(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncTrunc(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncUpper(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1098,7 +1082,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncVerify(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncValue(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1106,7 +1090,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncWhen(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncVar(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1114,7 +1098,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncWord(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncVerify(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1122,7 +1106,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncWordindex(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncWhen(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.FuncWord(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1130,7 +1122,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncWordlength(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncWordindex(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1138,7 +1130,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncWordpos(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncWordlength(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1146,7 +1138,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncWords(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncWordpos(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1154,7 +1146,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncX2b(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncWords(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1162,7 +1154,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncX2c(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncX2b(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1170,7 +1162,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncX2d(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncX2c(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1178,7 +1170,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.FuncXrange(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncX2d(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkStdFunction
@@ -1186,7 +1178,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynRexxSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynRexxSyn.FuncXrange(Index: NativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkStdFunction
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynRexxSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
@@ -1438,7 +1438,7 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynRexxSyn.GetKeyWords(TokenKind: Integer): UnicodeString;
+function TSynRexxSyn.GetKeyWords(TokenKind: NativeInt): UnicodeString;
 begin
   Result := 
     'ABBREV,ABS,ADDRESS,ARG,B2X,BITAND,BITOR,BITXOR,C2D,C2X,CALL,CENTER,CE' +
@@ -1474,7 +1474,7 @@ begin
   end;
 end;
 
-function TSynRexxSyn.GetTokenKind: Integer;
+function TSynRexxSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

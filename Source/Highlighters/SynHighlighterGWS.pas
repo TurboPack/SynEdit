@@ -72,7 +72,7 @@ Type
   TRangeState = (rsAnsiC, rsUnKnown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
   TSynGWScriptSyn = class(TSynCustomHighlighter)
   private
@@ -88,20 +88,20 @@ Type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function FuncBool(Index: Integer): TtkTokenKind;
-    function FuncBreak(Index: Integer): TtkTokenKind;
-    function FuncChar(Index: Integer): TtkTokenKind;
-    function FuncDo(Index: Integer): TtkTokenKind;
-    function FuncElse(Index: Integer): TtkTokenKind;
-    function FuncFalse(Index: Integer): TtkTokenKind;
-    function FuncFor(Index: Integer): TtkTokenKind;
-    function FuncIf(Index: Integer): TtkTokenKind;
-    function FuncInt(Index: Integer): TtkTokenKind;
-    function FuncReturn(Index: Integer): TtkTokenKind;
-    function FuncString(Index: Integer): TtkTokenKind;
-    function FuncTrue(Index: Integer): TtkTokenKind;
-    function FuncWhile(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
+    function FuncBool(Index: NativeInt): TtkTokenKind;
+    function FuncBreak(Index: NativeInt): TtkTokenKind;
+    function FuncChar(Index: NativeInt): TtkTokenKind;
+    function FuncDo(Index: NativeInt): TtkTokenKind;
+    function FuncElse(Index: NativeInt): TtkTokenKind;
+    function FuncFalse(Index: NativeInt): TtkTokenKind;
+    function FuncFor(Index: NativeInt): TtkTokenKind;
+    function FuncIf(Index: NativeInt): TtkTokenKind;
+    function FuncInt(Index: NativeInt): TtkTokenKind;
+    function FuncReturn(Index: NativeInt): TtkTokenKind;
+    function FuncString(Index: NativeInt): TtkTokenKind;
+    function FuncTrue(Index: NativeInt): TtkTokenKind;
+    function FuncWhile(Index: NativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AnsiCProc;
@@ -152,7 +152,7 @@ Type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -180,7 +180,7 @@ const
     'return', 'string', 'true', 'while' 
   );
 
-  KeyIndices: array[0..12] of Integer = (
+  KeyIndices: array[0..12] of NativeInt = (
     8, 5, 11, 12, 1, 10, 0, 2, 9, 4, 6, 3, 7 
   );
 
@@ -200,7 +200,7 @@ end;
 
 procedure TSynGWScriptSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -221,13 +221,13 @@ begin
   fIdentFuncTable[3] := FuncWhile;
 end;
 
-function TSynGWScriptSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
 
-function TSynGWScriptSyn.FuncBool(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncBool(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -235,7 +235,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncBreak(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncBreak(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -243,7 +243,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncChar(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncChar(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -251,7 +251,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncDo(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncDo(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -259,7 +259,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncElse(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncElse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -267,7 +267,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncFalse(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncFalse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -275,7 +275,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncFor(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncFor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -283,7 +283,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncIf(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncIf(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -291,7 +291,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncInt(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncInt(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -299,7 +299,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncReturn(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncReturn(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -307,7 +307,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncString(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncString(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -315,7 +315,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncTrue(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncTrue(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -323,7 +323,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynGWScriptSyn.FuncWhile(Index: Integer): TtkTokenKind;
+function TSynGWScriptSyn.FuncWhile(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -983,7 +983,7 @@ begin
   end;
 end;
 
-function TSynGWScriptSyn.GetTokenKind: Integer;
+function TSynGWScriptSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(GetTokenID);
 end;

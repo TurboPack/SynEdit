@@ -82,7 +82,7 @@ type
     tkProsperoLink, tkTelnetLink, tkWaisLink, tkWebLink, tkUnknown, tkNullChar);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Key: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Key: NativeInt): TtkTokenKind of object;
 
   TAlreadyVisitedURIFunc = function (URI: string): Boolean of object;
 
@@ -97,7 +97,7 @@ type
     fVisitedURIAttri: TSynHighlighterAttributes;
     fAlreadyVisitedURI: TAlreadyVisitedURIFunc;
 
-    function HashKey(Str: PWideChar): Integer;
+    function HashKey(Str: PWideChar): NativeInt;
     procedure InitIdent;
 
     procedure CRProc;
@@ -107,18 +107,18 @@ type
     procedure SpaceProc;
     procedure UnknownProc;
 
-    function AltFunc(Key: Integer): TtkTokenKind;
-    function FuncFtp(Key: Integer): TtkTokenKind;
-    function FuncGopher(Key: Integer): TtkTokenKind;
-    function FuncHttp(Key: Integer): TtkTokenKind;
-    function FuncHttps(Key: Integer): TtkTokenKind;
-    function FuncMailto(Key: Integer): TtkTokenKind;
-    function FuncNews(Key: Integer): TtkTokenKind;
-    function FuncNntp(Key: Integer): TtkTokenKind;
-    function FuncProspero(Key: Integer): TtkTokenKind;
-    function FuncTelnet(Key: Integer): TtkTokenKind;
-    function FuncWais(Key: Integer): TtkTokenKind;
-    function FuncWeb(Key: Integer): TtkTokenKind;
+    function AltFunc(Key: NativeInt): TtkTokenKind;
+    function FuncFtp(Key: NativeInt): TtkTokenKind;
+    function FuncGopher(Key: NativeInt): TtkTokenKind;
+    function FuncHttp(Key: NativeInt): TtkTokenKind;
+    function FuncHttps(Key: NativeInt): TtkTokenKind;
+    function FuncMailto(Key: NativeInt): TtkTokenKind;
+    function FuncNews(Key: NativeInt): TtkTokenKind;
+    function FuncNntp(Key: NativeInt): TtkTokenKind;
+    function FuncProspero(Key: NativeInt): TtkTokenKind;
+    function FuncTelnet(Key: NativeInt): TtkTokenKind;
+    function FuncWais(Key: NativeInt): TtkTokenKind;
+    function FuncWeb(Key: NativeInt): TtkTokenKind;
 
     function IsAlphaNum(AChar: WideChar): Boolean;
     function IsMark(AChar: WideChar): Boolean;
@@ -151,7 +151,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -175,7 +175,7 @@ const
     'news://', 'www', 'nntp://', 'ftp://', 'wais://', '', 'telnet://', 'mailto:'
   );
 
-function TSynURISyn.HashKey(Str: PWideChar): Integer;
+function TSynURISyn.HashKey(Str: PWideChar): NativeInt;
 begin
   Result := 0;
   while CharInSet(Str^, ['A'..'Z', 'a'..'z']) do
@@ -207,7 +207,7 @@ end;
 
 procedure TSynURISyn.InitIdent;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     fIdentFuncTable[I] := AltFunc;
@@ -228,7 +228,7 @@ end;
 
 function TSynURISyn.IsCurrentToken(const Token: string): Boolean;
 var
-  I: Integer;
+  I: NativeInt;
   Temp: PWideChar;
 begin
   Temp := fMayBeProtocol;
@@ -249,7 +249,7 @@ begin
     Result := False;
 end;
 
-function TSynURISyn.AltFunc(Key: Integer): TtkTokenKind;
+function TSynURISyn.AltFunc(Key: NativeInt): TtkTokenKind;
 begin
   Result := tkUnknown;
 end;
@@ -382,7 +382,7 @@ begin
   Result := fTokenId;
 end;
 
-function TSynURISyn.GetTokenKind: Integer;
+function TSynURISyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -430,7 +430,7 @@ end;
 
 procedure TSynURISyn.ProtocolProc;
 var
-  Key: Integer;
+  Key: NativeInt;
 begin
   if IsValidEmailAddress then
     fTokenID := tkMailtoLink
@@ -447,7 +447,7 @@ begin
   end;
 end;
 
-function TSynURISyn.FuncFtp(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncFtp(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkFtpLink
@@ -455,7 +455,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncGopher(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncGopher(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkGopherLink
@@ -463,7 +463,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncHttp(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncHttp(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkHttpLink
@@ -471,7 +471,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncHttps(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncHttps(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkHttpsLink
@@ -479,7 +479,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncMailto(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncMailto(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkMailtoLink
@@ -487,7 +487,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncNews(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncNews(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkNewsLink
@@ -495,7 +495,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncNntp(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncNntp(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkNntpLink
@@ -503,7 +503,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncProspero(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncProspero(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkProsperoLink
@@ -511,7 +511,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncTelnet(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncTelnet(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkTelnetLink
@@ -519,7 +519,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncWais(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncWais(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkWaisLink
@@ -527,7 +527,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncWeb(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncWeb(Key: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidWebLink then
     Result := tkWebLink
@@ -594,7 +594,7 @@ end;
 
 function TSynURISyn.IsValidEmailAddress: Boolean;
 var
-  StartPos, AtPos, DotPos: Integer;
+  StartPos, AtPos, DotPos: NativeInt;
 begin
   StartPos := Run;
 
@@ -625,7 +625,7 @@ end;
 
 function TSynURISyn.IsValidURI: Boolean;
 var
-  ProtocolEndPos, DotPos: Integer;
+  ProtocolEndPos, DotPos: NativeInt;
 
   function IsRelativePath: Boolean;
   begin
@@ -657,7 +657,7 @@ end;
 
 function TSynURISyn.IsValidWebLink: Boolean;
 var
-  WWWEndPos, DotPos, SecondDotPos: Integer;
+  WWWEndPos, DotPos, SecondDotPos: NativeInt;
 
   function IsRelativePath: Boolean;
   begin

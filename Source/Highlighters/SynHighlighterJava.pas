@@ -73,7 +73,7 @@ type
   TRangeState = (rsANil, rsComment, rsDocument, rsUnknown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
 //  TSynJavaSyn = class(TSynCustomHighlighter)
 //++ CodeFolding
@@ -81,8 +81,8 @@ type
 //-- CodeFolding
   private
     fRange: TRangeState;
-    FRoundCount: Integer;
-    FSquareCount: Integer;
+    FRoundCount: NativeInt;
+    FSquareCount: NativeInt;
     FTokenID: TtkTokenKind;
     FExtTokenID: TxtkTokenKind;
     fIdentFuncTable: array[0..112] of TIdentFuncTableFunc;
@@ -95,8 +95,8 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: NativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -152,7 +152,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -160,7 +160,7 @@ type
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
 //-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -186,7 +186,8 @@ implementation
 
 uses
   SynEditStrConst,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynFunc;
 
 const
   KeyWords: array[0..51] of string = (
@@ -199,7 +200,7 @@ const
     'transient', 'true', 'try', 'void', 'volatile', 'while' 
   );
 
-  KeyIndices: array[0..112] of Integer = (
+  KeyIndices: array[0..112] of NativeInt = (
     1, -1, -1, 45, -1, -1, 39, -1, -1, -1, 9, 36, 26, -1, -1, 4, 27, 5, 50, 25, 
     33, -1, 18, -1, 17, 6, 28, -1, -1, -1, 51, -1, -1, -1, -1, 21, 48, -1, 7, 3, 
     -1, -1, -1, 49, 41, -1, 35, -1, 46, 40, -1, -1, -1, 42, -1, -1, -1, -1, -1, 
@@ -236,7 +237,7 @@ end;
 
 procedure TSynJavaSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -247,12 +248,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynJavaSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynJavaSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynJavaSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynJavaSyn.KeyWordFunc(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -720,16 +721,16 @@ end;
 
 //++ CodeFolding
 procedure TSynJavaSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
 var
   CurLine: string;
 
-  function FindBraces(Line: Integer): Boolean;
+  function FindBraces(Line: NativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    function LineHasChar(AChar: Char; StartCol: NativeInt; out Col: NativeInt): Boolean;
     var
-      I: Integer;
+      I: NativeInt;
     begin
       Result := False;
       Col := 0;
@@ -745,15 +746,15 @@ var
       end;
     end;
 
-    function Indent: Integer;
+    function Indent: NativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: Integer;
-    CloseIdx: Integer;
-    Idx: Integer;
+    OpenIdx: NativeInt;
+    CloseIdx: NativeInt;
+    Idx: NativeInt;
   begin
     LineHasChar('{', 1, OpenIdx);
     LineHasChar('}', 1, CloseIdx);
@@ -781,7 +782,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: Integer): Boolean;
+  function FoldRegion(Line: NativeInt): Boolean;
   var
     S: string;
   begin
@@ -800,7 +801,7 @@ var
   end;
 
 var
-  Line: Integer;
+  Line: NativeInt;
 begin
   for Line := FromLine to ToLine do
   begin
@@ -819,7 +820,7 @@ begin
       Continue;
     end;
 
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.GetItem(Line);
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -1089,7 +1090,7 @@ begin
   end;
 end;
 
-function TSynJavaSyn.GetTokenKind: Integer;
+function TSynJavaSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

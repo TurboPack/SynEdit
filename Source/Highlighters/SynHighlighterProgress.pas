@@ -71,15 +71,15 @@ type
   end;
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
 type
   TSynProgressSyn = class(TSynCustomHighLighter)
   private
     fRange: TRangeState;
-    fCommentLevel: Integer;
-    fIncludeLevel: Integer;
-    fPreProcessorLevel: Integer;
+    fCommentLevel: NativeInt;
+    fIncludeLevel: NativeInt;
+    fPreProcessorLevel: NativeInt;
     FTokenID: TtkTokenKind;
     fCommentAttri: TSynHighlighterAttributes;
     fEventAttri: TSynHighlighterAttributes;
@@ -94,7 +94,7 @@ type
     fDataTypeAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AsciiCharProc;
     procedure CommentRangeProc;
@@ -126,7 +126,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -463,7 +463,8 @@ implementation
 
 uses
   SynEditMiscProcs,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 function TSynProgressSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
@@ -480,7 +481,7 @@ begin
     Result := tkIdentifier;
 end;
 
-procedure TSynProgressSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynProgressSyn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -821,7 +822,7 @@ procedure TSynProgressSyn.BraceOpenProc;
 var
   P: PWideChar;
 
-  function LevelCount: Integer;
+  function LevelCount: NativeInt;
   begin
     if fTokenID = tkInclude then
       Result := fIncludeLevel
@@ -912,9 +913,9 @@ begin
   rng.Range := Ord(fRange);
   rng.Level := 0;
   case fRange of
-    rsComment: rng.Level := fCommentLevel;
-    rsInclude: rng.Level := fIncludeLevel;
-    rsPreProcessor: rng.Level := fPreProcessorLevel;
+    rsComment: rng.Level := ToWord(fCommentLevel);
+    rsInclude: rng.Level := ToWord(fIncludeLevel);
+    rsPreProcessor: rng.Level := ToWord(fPreProcessorLevel);
   end;
   Result := rng.Ptr;
 end;
@@ -944,7 +945,7 @@ begin
   end;
 end;
 
-function TSynProgressSyn.GetTokenKind: Integer;
+function TSynProgressSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

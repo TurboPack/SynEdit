@@ -36,7 +36,7 @@ unit SynEditCodeFolding;
    To support code folding a Highlighter must inherit from
    TSynCustomCodeFoldingHighlighter and implement one abstact procedure
    ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer);
+      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt);
    For each line ScanForFoldRanges needs to call one of the following:
       FoldRanges.StartFoldRange
       FoldRanges.StopFoldRange
@@ -120,23 +120,21 @@ type
   // A single fold
   // Important: FromLine, ToLine are 1-based
   TSynFoldRange = record
-    FromLine: Integer; // Beginning line
-    ToLine: Integer; // End line
-    FoldType: Integer;  // Could be used by some complex highlighters
-    Indent: Integer;   // Only used for Indent based folding (Python)
+    FromLine: NativeInt; // Beginning line
+    ToLine: NativeInt; // End line
+    FoldType: NativeInt;  // Could be used by some complex highlighters
+    Indent: NativeInt;   // Only used for Indent based folding (Python)
   private
     FCollapsed: Boolean; // Is collapsed?
     // The following private variables are used for efficienct
     // conversion from lines to rows and vice versa.
     // They are updated in AdjustRangeRows
-    FFromRow: Integer; // starting row
-    FCollapsedIndex: Integer; // Index of enclosing collapsed range
+    FFromRow: NativeInt; // starting row
+    FCollapsedIndex: NativeInt; // Index of enclosing collapsed range
   public
-    procedure Move(Count: Integer);
+    procedure Move(Count: NativeInt);
     property Collapsed: Boolean read FCollapsed;
-    constructor Create(AFromLine: Integer; AToLine: Integer = -1;
-      AFoldType: Integer = 1; AIndent: Integer = -1;
-      ACollapsed: Boolean = False);
+    constructor Create(AFromLine: NativeInt; AToLine: NativeInt = -1; AFoldType: NativeInt = 1; AIndent: NativeInt = -1; ACollapsed: Boolean = False);
   end;
 
   PSynFoldRange = ^TSynFoldRange;
@@ -162,24 +160,24 @@ type
       TFoldOpenClose = (focOpen, focClose, focCloseOpen);
 
       TLineFoldInfo = record
-        Line: Integer;
+        Line: NativeInt;
         FoldOpenClose: TFoldOpenClose;
-        FoldType: Integer;
-        Indent: Integer;
-        constructor Create(ALine: Integer;
+        FoldType: NativeInt;
+        Indent: NativeInt;
+        constructor Create(ALine: NativeInt;
           AFoldOpenClose: TFoldOpenClose = focOpen;
-          AFoldType: Integer = 1; AIndent: Integer = -1);
+          AFoldType: NativeInt = 1; AIndent: NativeInt = -1);
       end;
   private
     fCodeFoldingMode: TSynCodeFoldingMode;
     fRangesNeedFixing: Boolean;
     fRanges: TList<TSynFoldRange>;
-    fCollapsedState: TList<Integer>;
+    fCollapsedState: TList<NativeInt>;
     fFoldInfoList: TList<TLineFoldInfo>;
     FRowComparer: IComparer<TSynFoldRange>;
     FAdjustRangesProc: TSynAdjustRangesProc;
-    function Get(Index: Integer): TSynFoldRange;
-    function GetCount: Integer;
+    function Get(Index: NativeInt): TSynFoldRange;
+    function GetCount: NativeInt;
     procedure RecreateFoldRanges(Lines: TStrings);
     procedure AdjustRangeRows;
   public
@@ -188,28 +186,28 @@ type
 
     {utility routines}
     procedure CollapseAll;
-    function Collapse(RangeIndex: Integer): Boolean;
-    procedure CollapseLevel(Level: Integer);
-    procedure CollapseFoldType(FoldType: Integer);
+    function Collapse(RangeIndex: NativeInt): Boolean;
+    procedure CollapseLevel(Level: NativeInt);
+    procedure CollapseFoldType(FoldType: NativeInt);
     procedure UnCollapseAll;
-    procedure UnCollapse(RangeIndex: Integer);
-    procedure UnCollapseLevel(Level: Integer);
-    procedure UnCollapseFoldType(FoldType: Integer);
-    function FoldStartAtLine(Line: Integer): Boolean; overload;
-    function FoldStartAtLine(Line: Integer; out Index: Integer): Boolean; overload;
-    function CollapsedFoldStartAtLine(Line: Integer): Boolean; overload;
-    function CollapsedFoldStartAtLine(Line: Integer; out Index: Integer): Boolean; overload;
-    function FoldEndAtLine(Line: Integer): Boolean; overload;
-    function FoldEndAtLine(Line: Integer; out Index: Integer): Boolean; overload;
-    function FoldAroundLineEx(Line: Integer; WantCollapsed, AcceptFromLine,
-      AcceptToLine: Boolean; out Index: Integer): Boolean;
-    function FoldAroundLine(Line: Integer): Boolean; overload;
-    function FoldAroundLine(Line: Integer; out Index: Integer): Boolean; overload;
-    function FoldHidesLine(Line: Integer): Boolean; overload;
-    function FoldHidesLine(Line: Integer; out Index: Integer): Boolean; overload;
-    function FoldsAtLevel(Level: Integer): TArray<Integer>;
-    function FoldsOfType(aType: Integer): TArray<Integer>;
-    function FoldRangesForTextRange(FromLine, ToLine: Integer):
+    procedure UnCollapse(RangeIndex: NativeInt);
+    procedure UnCollapseLevel(Level: NativeInt);
+    procedure UnCollapseFoldType(FoldType: NativeInt);
+    function FoldStartAtLine(Line: NativeInt): Boolean; overload;
+    function FoldStartAtLine(Line: NativeInt; out Index: NativeInt): Boolean; overload;
+    function CollapsedFoldStartAtLine(Line: NativeInt): Boolean; overload;
+    function CollapsedFoldStartAtLine(Line: NativeInt; out Index: NativeInt): Boolean; overload;
+    function FoldEndAtLine(Line: NativeInt): Boolean; overload;
+    function FoldEndAtLine(Line: NativeInt; out Index: NativeInt): Boolean; overload;
+    function FoldAroundLineEx(Line: NativeInt; WantCollapsed, AcceptFromLine,
+      AcceptToLine: Boolean; out Index: NativeInt): Boolean;
+    function FoldAroundLine(Line: NativeInt): Boolean; overload;
+    function FoldAroundLine(Line: NativeInt; out Index: NativeInt): Boolean; overload;
+    function FoldHidesLine(Line: NativeInt): Boolean; overload;
+    function FoldHidesLine(Line: NativeInt; out Index: NativeInt): Boolean; overload;
+    function FoldsAtLevel(Level: NativeInt): TArray<NativeInt>;
+    function FoldsOfType(aType: NativeInt): TArray<NativeInt>;
+    function FoldRangesForTextRange(FromLine, ToLine: NativeInt):
         TArray<TSynFoldRange>;
 
     {Scanning support}
@@ -219,30 +217,30 @@ type
     procedure RestoreCollapsedState(Stream: TStream); overload;
     procedure StartScanning;
     function  StopScanning(Lines: TStrings): Boolean; // Returns True of Ranges were updated
-    procedure AddLineInfo(ALine: Integer; AFoldType: Integer;
-      AFoldOpenClose: TFoldOpenClose;  AIndent: Integer);
-    procedure StartFoldRange(ALine: Integer; AFoldType: Integer; AIndent: Integer = -1);
-    procedure StopFoldRange(ALine: Integer; AFoldType: Integer;  AIndent: Integer = -1);
-    procedure StopStartFoldRange(ALine: Integer; AFoldType: Integer;  AIndent: Integer = -1);
-    procedure NoFoldInfo(ALine: Integer);
-    function  GetIndentLevel(Line: Integer): Integer;
+    procedure AddLineInfo(ALine: NativeInt; AFoldType: NativeInt;
+      AFoldOpenClose: TFoldOpenClose;  AIndent: NativeInt);
+    procedure StartFoldRange(ALine: NativeInt; AFoldType: NativeInt; AIndent: NativeInt = -1);
+    procedure StopFoldRange(ALine: NativeInt; AFoldType: NativeInt; AIndent: NativeInt = -1);
+    procedure StopStartFoldRange(ALine: NativeInt; AFoldType: NativeInt; AIndent: NativeInt = -1);
+    procedure NoFoldInfo(ALine: NativeInt);
+    function  GetIndentLevel(Line: NativeInt): NativeInt;
 
     // plugin notifications and support routines
-    function FoldLineToRow(Line: Integer): Integer;
-    function FoldRowToLine(Row: Integer): Integer;
-    function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
-    function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
-    function LinePut(aIndex: Integer; const OldLine: string): Integer;
+    function FoldLineToRow(Line: NativeInt): NativeInt;
+    function FoldRowToLine(Row: NativeInt): NativeInt;
+    function LinesInserted(aIndex: NativeInt; aCount: NativeInt): NativeInt;
+    function LinesDeleted(aIndex: NativeInt; aCount: NativeInt): NativeInt;
+    function LinePut(aIndex: NativeInt; const OldLine: string): NativeInt;
     procedure Reset;
 
     {Access to the internal FoldRange list routines}
-    procedure AddByParts(AFoldType: Integer; AFromLine: Integer; AToLine: Integer = -1);
+    procedure AddByParts(AFoldType: NativeInt; AFromLine: NativeInt; AToLine: NativeInt = -1);
     procedure AddFoldRange(FoldRange: TSynFoldRange);
     property  CodeFoldingMode: TSynCodeFoldingMode
               read fCodeFoldingMode write fCodeFoldingMode;
     property AdjustRangesProc: TSynAdjustRangesProc write fAdjustRangesProc;
-    property Count: Integer read GetCount;
-    property FoldRange[Index: Integer]: TSynFoldRange read Get; default;
+    property Count: NativeInt read GetCount;
+    property FoldRange[Index: NativeInt]: TSynFoldRange read Get; default;
     property Ranges: TList<TSynFoldRange> read fRanges;
   end;
 
@@ -255,21 +253,21 @@ type
     fFolderBarLinesColor: TColor;
     fShowCollapsedLine: Boolean;
     fShowHintMark: Boolean;
-    fGutterShapeSize:  Integer;
+    fGutterShapeSize:  NativeInt;
     fOnChange: TSynCodeFoldingChangeEvent;
     procedure SetCollapsedLineColor(const Value: TColor);
     procedure SetFolderBarLinesColor(const Value: TColor);
     procedure SetShowCollapsedLine(const Value: Boolean);
     procedure SetShowHintMark(const Value: Boolean);
-    procedure SetGutterShapeSize(const Value: Integer);
+    procedure SetGutterShapeSize(const Value: NativeInt);
   public
     constructor Create;
     procedure Assign(Source: TPersistent); override;
-    function ScaledGutterShapeSize(PPI: Integer): Integer;
+    function ScaledGutterShapeSize(PPI: NativeInt): NativeInt;
     property OnChange: TSynCodeFoldingChangeEvent read fOnChange write fOnChange;
   published
     // Size of the gutter shapes in pixels at 96 PPI
-    property  GutterShapeSize: Integer read fGutterShapeSize
+    property  GutterShapeSize: NativeInt read fGutterShapeSize
       write SetGutterShapeSize default 9;
     property CollapsedLineColor: TColor read fCollapsedLineColor
       write SetCollapsedLineColor default clGrayText;
@@ -284,15 +282,15 @@ type
   TSynCustomCodeFoldingHighlighter = class(TSynCustomHighlighter)
   protected
     // Utility functions
-    function GetLineRange(Lines: TStrings; Line: Integer): Pointer;
-    function TabWidth(LinesToScan: TStrings): Integer;
+    function GetLineRange(Lines: TStrings; Line: NativeInt): Pointer;
+    function TabWidth(LinesToScan: TStrings): NativeInt;
   public
     // Called when a Highlighter is assigned to Synedit;
     // No need to override except to change the SynCodeFoldingMode
     procedure InitFoldRanges(FoldRanges: TSynFoldRanges); virtual;
     // Called after Highlighter ranges have been set
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); virtual; abstract;
+      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); virtual; abstract;
     // Called immediately after FoldRanges have been recreated
     // Override only if some finetuning of the FoldRanges is need.
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
@@ -301,18 +299,19 @@ type
   end;
 
 const
-  FoldRegionType: Integer = 99;
+  FoldRegionType: NativeInt = 99;
 
 implementation
 
 Uses
   Winapi.Windows,
   System.Math,
-  SynEditTextBuffer;
+  SynEditTextBuffer,
+  SynFunc;
 
 { TSynEditFoldRanges }
 
-function TSynFoldRanges.Collapse(RangeIndex: Integer): Boolean;
+function TSynFoldRanges.Collapse(RangeIndex: NativeInt): Boolean;
 begin
   Result := False;
   if not InRange(RangeIndex, 0, Count - 1) then Exit;
@@ -328,31 +327,31 @@ end;
 
 procedure TSynFoldRanges.CollapseAll;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   for Index := 0 to  Count -1 do
     fRanges.List[Index].FCollapsed := True;
   AdjustRangeRows;
 end;
 
-function TSynFoldRanges.CollapsedFoldStartAtLine(Line: Integer): Boolean;
+function TSynFoldRanges.CollapsedFoldStartAtLine(Line: NativeInt): Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   Result := CollapsedFoldStartAtLine(Line, Index);
 end;
 
-function TSynFoldRanges.CollapsedFoldStartAtLine(Line: Integer;
-  out Index: Integer): Boolean;
+function TSynFoldRanges.CollapsedFoldStartAtLine(Line: NativeInt;
+  out Index: NativeInt): Boolean;
 begin
   Result := fRanges.BinarySearch(TSynFoldRange.Create(Line), Index);
   if Result then
     Result := Result and fRanges[Index].Collapsed;
 end;
 
-procedure TSynFoldRanges.CollapseFoldType(FoldType: Integer);
+procedure TSynFoldRanges.CollapseFoldType(FoldType: NativeInt);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := 0 to Count - 1 do
     if fRanges.List[I].FoldType = FoldType then
@@ -361,10 +360,10 @@ begin
   AdjustRangeRows;
 end;
 
-procedure TSynFoldRanges.CollapseLevel(Level: Integer);
+procedure TSynFoldRanges.CollapseLevel(Level: NativeInt);
 var
-  I: Integer;
-  RangeIndices: TArray<Integer>;
+  I: NativeInt;
+  RangeIndices: TArray<NativeInt>;
 begin
   RangeIndices := FoldsAtLevel(Level);
 
@@ -382,21 +381,21 @@ begin
   fRanges := TList<TSynFoldRange>.Create(TComparer<TSynFoldRange>.Construct(
     function(const L, R: TSynFoldRange): Integer
     begin
-      Result := L.FromLine - R.FromLine;
+      Result := CompareValue(L.FromLine, R.FromLine);
     end));
 
   FRowComparer := TComparer<TSynFoldRange>.Construct(
     function(const L, R: TSynFoldRange): Integer
     begin
-      Result := L.FFromRow - R.FFromRow;
+      Result := CompareValue(L.FFromRow, R.FFromRow);
     end);
 
-  fCollapsedState := TList<Integer>.Create;
+  fCollapsedState := TList<NativeInt>.Create;
 
   fFoldInfoList := TList<TLineFoldInfo>.Create(TComparer<TLineFoldInfo>.Construct(
     function(const L, R: TLineFoldInfo): Integer
     begin
-      Result := L.Line - R.Line;
+      Result := CompareValue(L.Line, R.Line);
     end));
 end;
 
@@ -408,25 +407,25 @@ begin
   inherited;
 end;
 
-function TSynFoldRanges.FoldAroundLine(Line: Integer): Boolean;
+function TSynFoldRanges.FoldAroundLine(Line: NativeInt): Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   Result := FoldAroundLine(Line, Index);
 end;
 
-function TSynFoldRanges.FoldAroundLine(Line: Integer;
-  out Index: Integer): Boolean;
+function TSynFoldRanges.FoldAroundLine(Line: NativeInt;
+  out Index: NativeInt): Boolean;
 begin
   Result := FoldAroundLineEx(Line, False, False, False, Index);
 end;
 
-function TSynFoldRanges.FoldAroundLineEx(Line: Integer;
+function TSynFoldRanges.FoldAroundLineEx(Line: NativeInt;
   WantCollapsed, AcceptFromLine, AcceptToLine: Boolean;
-  out Index: Integer): Boolean;
+  out Index: NativeInt): Boolean;
 var
-  I: Integer;
-  Idx: Integer;
+  I: NativeInt;
+  Idx: NativeInt;
 begin
   Index := -1;
   Result := False;
@@ -485,10 +484,10 @@ begin
       end;
 end;
 
-function TSynFoldRanges.FoldEndAtLine(Line: Integer;
-  out Index: Integer): Boolean;
+function TSynFoldRanges.FoldEndAtLine(Line: NativeInt;
+  out Index: NativeInt): Boolean;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   Result := False;
   for i := 0 to fRanges.Count - 1 do
@@ -503,30 +502,30 @@ begin
         Break; // sorted by line. don't bother scanning further
 end;
 
-function TSynFoldRanges.FoldEndAtLine(Line: Integer): Boolean;
+function TSynFoldRanges.FoldEndAtLine(Line: NativeInt): Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
    Result := FoldEndAtLine(Line, Index);
 end;
 
-function TSynFoldRanges.FoldHidesLine(Line: Integer): Boolean;
+function TSynFoldRanges.FoldHidesLine(Line: NativeInt): Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   Result := FoldHidesLine(Line, Index);
 end;
 
-function TSynFoldRanges.FoldHidesLine(Line: Integer;
-  out Index: Integer): Boolean;
+function TSynFoldRanges.FoldHidesLine(Line: NativeInt;
+  out Index: NativeInt): Boolean;
 begin
   Result := FoldAroundLineEx(Line, True, False, True, Index);
 end;
 
-function TSynFoldRanges.FoldLineToRow(Line: Integer): Integer;
+function TSynFoldRanges.FoldLineToRow(Line: NativeInt): NativeInt;
 var
-  Index: Integer;
-  CollapsedLines: Integer;
+  Index: NativeInt;
+  CollapsedLines: NativeInt;
   Range: TSynFoldRange;
 begin
   if Count = 0 then Exit(Line);
@@ -551,7 +550,7 @@ begin
 end;
 
 function TSynFoldRanges.FoldRangesForTextRange(FromLine,
-  ToLine: Integer): TArray<TSynFoldRange>;
+  ToLine: NativeInt): TArray<TSynFoldRange>;
 // Used for structure highlight
 var
   Range: TSynFoldRange;
@@ -567,9 +566,9 @@ begin
   end;
 end;
 
-function TSynFoldRanges.FoldRowToLine(Row: Integer): Integer;
+function TSynFoldRanges.FoldRowToLine(Row: NativeInt): NativeInt;
 var
-  Index: Integer;
+  Index: NativeInt;
   Range: TSynFoldRange;
 begin
   if Count = 0 then Exit(Row);
@@ -595,27 +594,27 @@ begin
     Result := Range.FromLine + Row - Range.FFromRow;
 end;
 
-function TSynFoldRanges.FoldsAtLevel(Level: Integer): TArray<Integer>;
+function TSynFoldRanges.FoldsAtLevel(Level: NativeInt): TArray<NativeInt>;
 {
    Returns an array of indices of folds with level = Level
    ignoring fold ranges of type FoldRegionType
 }
 var
-  I: Integer;
-  FRStack: TList<Integer>;
-  ResultList: TList<Integer>;
+  I: NativeInt;
+  FRStack: TList<NativeInt>;
+  ResultList: TList<NativeInt>;
 
-   procedure RemoveClosed(Line: Integer);
+   procedure RemoveClosed(Line: NativeInt);
    var
-     J: Integer;
+     J: NativeInt;
    begin
      for J := FRStack.Count-1 downto 0 do
        if fRanges.List[FRStack[J]].ToLine <= Line then
          FRStack.Delete(J);
    end;
 begin
-  FRStack := TList<Integer>.Create;
-  ResultList := TList<Integer>.Create;
+  FRStack := TList<NativeInt>.Create;
+  ResultList := TList<NativeInt>.Create;
   try
     for I := 0 to fRanges.Count - 1 do
     begin
@@ -633,15 +632,15 @@ begin
   end;
 end;
 
-function TSynFoldRanges.FoldsOfType(aType: Integer): TArray<Integer>;
+function TSynFoldRanges.FoldsOfType(aType: NativeInt): TArray<NativeInt>;
 {
    Returns an array of indices of folds with FoldType = aType
 }
 var
-  I: Integer;
-  ResultList: TList<Integer>;
+  I: NativeInt;
+  ResultList: TList<NativeInt>;
 begin
-  ResultList := TList<Integer>.Create;
+  ResultList := TList<NativeInt>.Create;
   try
     for I := 0 to fRanges.Count - 1 do
     begin
@@ -654,14 +653,14 @@ begin
   end;
 end;
 
-function TSynFoldRanges.FoldStartAtLine(Line: Integer): Boolean;
+function TSynFoldRanges.FoldStartAtLine(Line: NativeInt): Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   Result := FoldStartAtLine(Line, Index);
 end;
 
-function TSynFoldRanges.FoldStartAtLine(Line: Integer; out Index: Integer): Boolean;
+function TSynFoldRanges.FoldStartAtLine(Line: NativeInt; out Index: NativeInt): Boolean;
 {
   If Result is False it Returns the First Index with Line greater than Line
 }
@@ -669,10 +668,10 @@ begin
   Result := fRanges.BinarySearch(TSynFoldRange.Create(Line), Index);
 end;
 
-procedure TSynFoldRanges.AddByParts(AFoldType: Integer; AFromLine: Integer;
-  AToLine: Integer);
+procedure TSynFoldRanges.AddByParts(AFoldType: NativeInt; AFromLine: NativeInt;
+  AToLine: NativeInt);
 var
-  Index: Integer;
+  Index: NativeInt;
   FR: TSynFoldRange;
 begin
   // Insert keeping the list sorted
@@ -688,11 +687,11 @@ begin
   fRanges.Add(FoldRange);
 end;
 
-procedure TSynFoldRanges.AddLineInfo(ALine: Integer; AFoldType: Integer;
-  AFoldOpenClose: TFoldOpenClose; AIndent: Integer);
+procedure TSynFoldRanges.AddLineInfo(ALine: NativeInt; AFoldType: NativeInt;
+  AFoldOpenClose: TFoldOpenClose; AIndent: NativeInt);
 var
   LineFoldInfo: TLineFoldInfo;
-  Index: Integer;
+  Index: NativeInt;
 begin
   LineFoldInfo := TLineFoldInfo.Create(ALine, AFoldOpenClose, AFoldType, AIndent);
 
@@ -715,11 +714,11 @@ end;
 
 procedure TSynFoldRanges.AdjustRangeRows;
 var
-  I: Integer;
-  CollapsedTo: Integer;
-  CollapsedCount: Integer;
-  CollapsedFromRow: Integer;
-  CollapsedIndex: Integer;
+  I: NativeInt;
+  CollapsedTo: NativeInt;
+  CollapsedCount: NativeInt;
+  CollapsedFromRow: NativeInt;
+  CollapsedIndex: NativeInt;
 begin
   if fRanges.Count = 0 then Exit;
 
@@ -764,21 +763,21 @@ begin
     end;
 end;
 
-function TSynFoldRanges.Get(Index: Integer): TSynFoldRange;
+function TSynFoldRanges.Get(Index: NativeInt): TSynFoldRange;
 begin
   Result := TSynFoldRange(fRanges[Index]);
 end;
 
-function TSynFoldRanges.GetCount: Integer;
+function TSynFoldRanges.GetCount: NativeInt;
 begin
   Result := fRanges.Count;
 end;
 
 
-function TSynFoldRanges.GetIndentLevel(Line: Integer): Integer;
+function TSynFoldRanges.GetIndentLevel(Line: NativeInt): NativeInt;
 var
-  Index: Integer;
-  I: Integer;
+  Index: NativeInt;
+  I: NativeInt;
 begin
   Result := -1;
   fFoldInfoList.BinarySearch(TLineFoldInfo.Create(Line), Index);
@@ -790,14 +789,14 @@ begin
     end;
 end;
 
-function TSynFoldRanges.LinesDeleted(aIndex, aCount: Integer): Integer;
+function TSynFoldRanges.LinesDeleted(aIndex, aCount: NativeInt): NativeInt;
 {
   Adjust fFoldInfoList and fRanges
   aIndex is 0-based fFoldInfoList and fRanges are 1-based
   If needed recreate fRanges
 }
 var
-  I: Integer;
+  I: NativeInt;
 begin
   fRangesNeedFixing := False;
 
@@ -831,13 +830,13 @@ begin
         Dec(fRanges.List[I].ToLine, ToLine - aIndex)
 end;
 
-function TSynFoldRanges.LinesInserted(aIndex, aCount: Integer): Integer;
+function TSynFoldRanges.LinesInserted(aIndex, aCount: NativeInt): NativeInt;
 {
   Adjust fFoldInfoList and fRanges
   aIndex is 0-based fFoldInfoList and fRanges are 1-based
 }
 var
-  I: Integer;
+  I: NativeInt;
 begin
   Result := aCount;
   for I := fFoldInfoList.Count - 1 downto 0 do
@@ -857,14 +856,14 @@ begin
     end;
 end;
 
-function TSynFoldRanges.LinePut(aIndex: Integer; const OldLine: string): Integer;
+function TSynFoldRanges.LinePut(aIndex: NativeInt; const OldLine: string): NativeInt;
 begin
    Result := 1;
 end;
 
-procedure TSynFoldRanges.NoFoldInfo(ALine: Integer);
+procedure TSynFoldRanges.NoFoldInfo(ALine: NativeInt);
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   if fFoldInfoList.BinarySearch(TLineFoldInfo.Create(ALine), Index)
   then
@@ -882,16 +881,16 @@ end;
 
 procedure TSynFoldRanges.RecreateFoldRanges(Lines: TStrings);
 var
-  OpenFoldStack: TList<Integer>;
+  OpenFoldStack: TList<NativeInt>;
   LFI: TLineFoldInfo;
   PFoldRange: PSynFoldRange;
-  I: Integer;
-  Line: Integer;
+  I: NativeInt;
+  Line: NativeInt;
 begin
    { TODO: Account for type }
   fRanges.Clear;
 
-  OpenFoldStack := TList<Integer>.Create;
+  OpenFoldStack := TList<NativeInt>.Create;
   try
     for LFI in fFoldInfoList do
     begin
@@ -961,7 +960,7 @@ begin
         if PFoldRange^.Indent >= 0 then
         begin
           Line := PFoldRange^.ToLine;
-          while (Line > PFoldRange^.FromLine) and (TrimLeft(Lines[Line-1]) = '') do
+          while (Line > PFoldRange^.FromLine) and (TrimLeft(Lines.GetItem(Line-1)) = '') do
           begin
             Dec(PFoldRange^.ToLine);
             Dec(Line);
@@ -986,7 +985,8 @@ end;
 
 procedure TSynFoldRanges.RestoreCollapsedState(Stream: TStream);
 var
-  Size, Line, Index: Integer;
+  Size: Int64;
+  Line, Index: NativeInt;
 begin
   Size := Stream.Size;
   while Stream.Position < Size do begin
@@ -1000,7 +1000,7 @@ end;
 
 procedure TSynFoldRanges.RestoreCollapsedState;
 var
-  I, Index: Integer;
+  I, Index: NativeInt;
 begin
   for I in fCollapsedState do begin
     if FoldStartAtLine(I, Index) then
@@ -1011,7 +1011,7 @@ begin
   AdjustRangeRows;
 end;
 
-procedure TSynFoldRanges.StartFoldRange(ALine, AFoldType: Integer;  AIndent: Integer);
+procedure TSynFoldRanges.StartFoldRange(ALine: NativeInt; AFoldType: NativeInt; AIndent: NativeInt = -1);
 begin
   AddLineInfo(ALine, AFoldType, focOpen, AIndent);
 end;
@@ -1020,12 +1020,12 @@ procedure TSynFoldRanges.StartScanning;
 begin
 end;
 
-procedure TSynFoldRanges.StopFoldRange(ALine, AFoldType: Integer; AIndent: Integer);
+procedure TSynFoldRanges.StopFoldRange(ALine: NativeInt; AFoldType: NativeInt; AIndent: NativeInt = -1);
 begin
   AddLineInfo(ALine, AFoldType, focClose, AIndent);
 end;
 
-procedure TSynFoldRanges.StopStartFoldRange(ALine, AFoldType: Integer; AIndent: Integer);
+procedure TSynFoldRanges.StopStartFoldRange(ALine: NativeInt; AFoldType: NativeInt; AIndent: NativeInt = -1);
 begin
   AddLineInfo(ALine, AFoldType, focCloseOpen, AIndent);
 end;
@@ -1060,7 +1060,7 @@ begin
        Stream.WriteData(FoldRange.FromLine);
 end;
 
-procedure TSynFoldRanges.UnCollapse(RangeIndex: Integer);
+procedure TSynFoldRanges.UnCollapse(RangeIndex: NativeInt);
 begin
   if not InRange(RangeIndex, 0, Count - 1) then Exit;
 
@@ -1073,16 +1073,16 @@ end;
 
 procedure TSynFoldRanges.UnCollapseAll;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   for Index := 0 to  Count -1 do
     fRanges.List[Index].FCollapsed := False;
   AdjustRangeRows;
 end;
 
-procedure TSynFoldRanges.UnCollapseFoldType(FoldType: Integer);
+procedure TSynFoldRanges.UnCollapseFoldType(FoldType: NativeInt);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := 0 to Count - 1 do
     if fRanges.List[I].FoldType = FoldType then
@@ -1091,10 +1091,10 @@ begin
   AdjustRangeRows;
 end;
 
-procedure TSynFoldRanges.UnCollapseLevel(Level: Integer);
+procedure TSynFoldRanges.UnCollapseLevel(Level: NativeInt);
 var
-  I: Integer;
-  RangeIndices: TArray<Integer>;
+  I: NativeInt;
+  RangeIndices: TArray<NativeInt>;
 begin
   RangeIndices := FoldsAtLevel(Level);
 
@@ -1116,8 +1116,7 @@ end;
 
 { TSynEditFoldRange }
 
-constructor TSynFoldRange.Create(AFromLine, AToLine, AFoldType: Integer;
-  AIndent: Integer; ACollapsed: Boolean);
+constructor TSynFoldRange.Create(AFromLine: NativeInt; AToLine: NativeInt = -1; AFoldType: NativeInt = 1; AIndent: NativeInt = -1; ACollapsed: Boolean = False);
 begin
   FromLine := AFromLine;
   FFromRow := AFromLine;
@@ -1127,7 +1126,7 @@ begin
   FCollapsed := ACollapsed;
 end;
 
-procedure TSynFoldRange.Move(Count: Integer);
+procedure TSynFoldRange.Move(Count: NativeInt);
 begin
   Inc(FromLine, Count);
   Inc(ToLine, Count);
@@ -1136,8 +1135,8 @@ end;
 
 { TSynFoldRanges.TLineFoldInfo }
 
-constructor TSynFoldRanges.TLineFoldInfo.Create(ALine: Integer;
-  AFoldOpenClose: TFoldOpenClose; AFoldType: Integer; AIndent: Integer);
+constructor TSynFoldRanges.TLineFoldInfo.Create(ALine: NativeInt;
+  AFoldOpenClose: TFoldOpenClose; AFoldType: NativeInt; AIndent: NativeInt);
 begin
     Line := ALine;
     FoldOpenClose := AFoldOpenClose;
@@ -1159,7 +1158,7 @@ begin
 end;
 
 function TSynCustomCodeFoldingHighlighter.GetLineRange(Lines: TStrings;
-  Line: Integer): Pointer;
+  Line: NativeInt): Pointer;
 begin
   if (Line >= 0) and (Line < Lines.Count) then
     Result := TSynEditStringList(Lines).Ranges[Line]
@@ -1174,7 +1173,7 @@ begin
 end;
 
 function TSynCustomCodeFoldingHighlighter.TabWidth(
-  LinesToScan: TStrings): Integer;
+  LinesToScan: TStrings): NativeInt;
 begin
   Result := TSynEditStringList(LinesToScan).TabWidth;
 end;
@@ -1205,7 +1204,7 @@ begin
   fGutterShapeSize := 9;
 end;
 
-function TSynCodeFolding.ScaledGutterShapeSize(PPI: Integer): Integer;
+function TSynCodeFolding.ScaledGutterShapeSize(PPI: NativeInt): NativeInt;
 { Always returns an odd number }
 begin
   Result := MulDiv(fGutterShapeSize, PPI, 96);
@@ -1229,7 +1228,7 @@ begin
   end;
 end;
 
-procedure TSynCodeFolding.SetGutterShapeSize(const Value: Integer);
+procedure TSynCodeFolding.SetGutterShapeSize(const Value: NativeInt);
 begin
   if fGutterShapeSize <> Value then begin
     fGutterShapeSize := Value;

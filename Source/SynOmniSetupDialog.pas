@@ -140,7 +140,8 @@ uses
   System.SysUtils,
   System.Math,
   System.IniFiles,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 procedure TSynOmniSynSetup.edLanguagelNameChange(Sender: TObject);
 begin
