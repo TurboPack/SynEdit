@@ -29,18 +29,21 @@ unit Vcl.SynEditDragDrop;
 interface
 
 Uses
-  Windows, ActiveX, SysUtils, Classes, Messages, Controls, Forms, ExtCtrls;
+  Windows, ActiveX, SysUtils, Classes, Messages, Controls, Forms, ExtCtrls,
+  SynEditDragDropWin;
 
-
-// Drop effects as Delphi style constants (originals in ActiveX)
+// Re-export shared drop effect constants (API contract preserved)
 const
-  deNone   = DROPEFFECT_NONE;
-  deMove   = DROPEFFECT_MOVE;
-  deCopy   = DROPEFFECT_COPY;
-  deLink   = DROPEFFECT_LINK;
-  deScroll = DROPEFFECT_SCROLL;
+  deNone   = SynEditDragDropWin.deNone;
+  deMove   = SynEditDragDropWin.deMove;
+  deCopy   = SynEditDragDropWin.deCopy;
+  deLink   = SynEditDragDropWin.deLink;
+  deScroll = SynEditDragDropWin.deScroll;
 
 type
+  // Re-export shared type (API contract preserved)
+  TSynDragSource = SynEditDragDropWin.TSynDragSource;
+
   TOnDragEvent = procedure(Sender: TObject; DataObject: IDataObject; State: TShiftState; MousePt: TPoint; var Effect: LongInt; var Result: HResult) of object;
   TOnDragOverEvent = procedure(Sender: TObject; State: TShiftState; MousePt: TPoint; var Effect: LongInt; var Result: HResult) of object;
   TOnDragLeaveEvent = procedure(Sender: TObject; var Result: HResult) of Object;
@@ -69,30 +72,7 @@ type
     property OnDrop: TOnDragEvent read FOnDrop write FOnDrop;
   end;
 
-  // Implementation of the IDropSource interface
-  TSynDragSource = class(TInterfacedObject, IDropSource)
-  private
-    // Called routinely by Windows to check that drag operations are to continue. See the
-   // implementation below of QueryContinueDrag method for the default operation.
-    function QueryContinueDrag(fEscapePressed: BOOL; grfKeyState: Longint): HResult; overload; stdcall;
-    // Called routinely to modify the displayed cursor.
-    function GiveFeedback(dwEffect: Longint): HResult; stdcall;
-  end;
-
 implementation
-
-//--- returns the normal response for a wanted effect:
-//  no keys       = "move"
-//  control only  = "copy"
-//  control/shift = "link" - ignored in this case
-function StandardEffect(Keys: TShiftState): Integer;
-begin
-  Result := deMove;
-  if ssCtrl in Keys then
-  begin
-    Result := deCopy;
-  end
-end;
 
 { TDropTarget }
 
@@ -167,23 +147,6 @@ begin
   Effect := StandardEffect(State);
   if Assigned(FOnDrop) then
     FOnDrop(Self, DataObject, State, Pt, Effect, Result)
-end;
-
-//===  DRAG SOURCE CLASS ===================================================
-
-function TSynDragSource.QueryContinueDrag(fEscapePressed: BOOL; grfKeyState: Longint): HResult;
-begin
-  if fEscapePressed then  // cancel the drop
-    Result := DRAGDROP_S_CANCEL
-  else if(grfKeyState and MK_LBUTTON) = 0 then
-    Result := DRAGDROP_S_DROP   // drop has occurred
-  else
-    Result := S_OK;
-end;
-
-function TSynDragSource.GiveFeedback(dwEffect: Longint): HResult;
-begin
-  Result := DRAGDROP_S_USEDEFAULTCURSORS;
 end;
 
 

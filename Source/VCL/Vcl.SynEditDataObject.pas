@@ -34,24 +34,12 @@ uses
   Winapi.ActiveX,
   System.SysUtils,
   System.Classes,
-  System.Generics.Collections;
+  System.Generics.Collections,
+  SynEditDragDropWin;
 
 Type
-
-  TSynEnumFormatEtc = class (TInterfacedObject, IEnumFORMATETC)
-  private
-    FList: TArray<TClipFormat>;
-    FIndex: Integer;
-  protected
-    function GetFormatEtc(ClipFormat: TClipFormat): TFormatEtc;
-    {IEnumFORMATETC}
-    function Next (celt: Longint; out elt; pceltFetched: PLongint): HResult; stdcall;
-    function Skip (celt: Longint): HResult; stdcall;
-    function Reset: HResult; stdcall;
-    function Clone (out Enum: IEnumFormatEtc): HResult; stdcall;
-  public
-    constructor Create (FormatList: TArray<TClipFormat>; Index: Integer = 0);
-  end;
+  // Re-export shared type (API contract preserved)
+  TSynEnumFormatEtc = SynEditDragDropWin.TSynEnumFormatEtc;
 
   TSynEditDataObject = class (TInterfacedObject, IDataObject)
   private
@@ -75,89 +63,45 @@ Type
     destructor Destroy; override;
   end;
 
-function MakeGlobal (const S: string): hGlobal; overload;
-function MakeGlobal (var P; Size: Integer): hGlobal; overload;
+// Re-export shared functions (API contract preserved)
+function MakeGlobal(const S: string): HGLOBAL; overload;
+function MakeGlobal(var P; Size: Integer): HGLOBAL; overload;
 function HasFormat(DataObject: IDataObject; Format: TClipFormat): Boolean;
 function GetInternalClipText: TArray<string>;
 
+// Re-export shared constant (API contract preserved)
 const
-  IntClipFormatDelimiter = #$EEFF;   // from private unicode area
+  IntClipFormatDelimiter = SynEditDragDropWin.IntClipFormatDelimiter;
 
-var
-  SynEditClipboardFormat: UINT;
-  HTMLClipboardFormat: UINT;
+// Note: SynEditClipboardFormat and HTMLClipboardFormat vars are accessible
+// directly via the SynEditDragDropWin unit (which is in the interface uses).
 
 implementation
 
 uses
-  Vcl.Clipbrd,
   SynEdit,
   SynEditTypes,
   SynExportHTML;
 
-function MakeGlobal (const S: string): hGlobal;
-var
-  P: PChar;
-  Size: Integer;
+// Re-export thin wrappers that delegate to shared unit
+function MakeGlobal(const S: string): HGLOBAL;
 begin
-  Size := ByteLength(S) + SizeOf(Char);
-  Result := GlobalAlloc (GHND, Size);
-  if Result = 0 then
-    OutOfMemoryError;
-  P := GlobalLock (Result);
-  try
-    Move(PChar(S)^, P^, Size)
-  finally
-    GlobalUnlock (Result)
-  end
+  Result := SynEditDragDropWin.MakeGlobal(S);
 end;
 
-function MakeGlobal (var P; Size: Integer): hGlobal;
-var
-  D: pointer;
+function MakeGlobal(var P; Size: Integer): HGLOBAL;
 begin
-  Result := GlobalAlloc (GHND, Size);
-  if Result = 0 then
-    OutOfMemoryError;
-  D := GlobalLock (Result);
-  try
-    Move (P, D^, Size)
-  finally
-    GlobalUnlock (Result)
-  end
+  Result := SynEditDragDropWin.MakeGlobal(P, Size);
 end;
 
-function HasFormat(DataObject: IDataObject; Format: TClipFormat):Boolean;
-var
-  FormatEnumerator: IEnumFormatEtc;
-  FormatEtc: TFormatEtc;
-  Returned: Integer;
+function HasFormat(DataObject: IDataObject; Format: TClipFormat): Boolean;
 begin
-  Result := False;
-  if (DataObject.EnumFormatEtc (DATADIR_GET, FormatEnumerator) = S_OK) then begin
-    FormatEnumerator.Reset;
-    while FormatEnumerator.Next (1, FormatEtc, @Returned) = S_OK do
-      if FormatEtc.cfFormat = Format then
-        Exit(True);
-  end;
+  Result := SynEditDragDropWin.HasFormat(DataObject, Format);
 end;
 
 function GetInternalClipText: TArray<string>;
-var
-  Data: THandle;
-  TempS: string;
 begin
-  Result := [];
-  if not Clipboard.HasFormat(SynEditClipboardFormat) then Exit;
-  Data := Clipboard.GetAsHandle(SynEditClipboardFormat);
-
-  if Data <> 0 then
-    try
-      TempS := PChar(GlobalLock(Data));
-      Result := TempS.Split([IntClipFormatDelimiter]);
-    finally
-      GlobalUnlock(Data);
-    end;
+  Result := SynEditDragDropWin.GetInternalClipText;
 end;
 
 
@@ -225,11 +169,11 @@ begin
   try
     Medium.tymed := TYMED_HGLOBAL;
     if FormatEtcIn.cfFormat = CF_UNICODETEXT then
-      Medium.hGlobal := MakeGlobal(FText)
+      Medium.hGlobal := SynEditDragDropWin.MakeGlobal(FText)
     else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
-      Medium.hGlobal := MakeGlobal(FInternalText)
+      Medium.hGlobal := SynEditDragDropWin.MakeGlobal(FInternalText)
     else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) then
-      Medium.hGlobal := MakeGlobal(HtmlStream.Memory^, HtmlStream.Position);
+      Medium.hGlobal := SynEditDragDropWin.MakeGlobal(HtmlStream.Memory^, HtmlStream.Position);
   except
     Result := E_UNEXPECTED;
   end
@@ -294,7 +238,7 @@ begin
   try
     if dwDirection = DATADIR_GET then
     begin
-      EnumFormatEtc := TSynEnumFormatEtc.Create(FFormatEtc.ToArray);
+      EnumFormatEtc := SynEditDragDropWin.TSynEnumFormatEtc.Create(FFormatEtc.ToArray);
       Result := S_OK
     end else
       Result := E_NOTIMPL;
@@ -319,82 +263,4 @@ begin
 end;
 
 
-//=== BASE ENUM FORMATETC CLASS ================================================
-
-constructor TSynEnumFormatEtc.Create(FormatList: TArray<TClipFormat>;
-  Index: Integer);
-begin
-  inherited Create;
-  FList := FormatList;
-  FIndex := Index;
-end;
-
-function TSynEnumFormatEtc.GetFormatEtc(ClipFormat: TClipFormat): TFormatEtc;
-begin
-  with Result do
-  begin
-    cfFormat := ClipFormat;
-    dwAspect := DVASPECT_CONTENT;
-    ptd := nil;
-    tymed := TYMED_HGLOBAL;
-    lindex := -1;
-  end;
-end;
-
-function TSynEnumFormatEtc.Next (celt: Longint; out elt; pceltFetched: PLongint): HResult;
-var
-  I: Integer;
-  FormatEtc: PFormatEtc;
-begin
-  I := 0;
-  FormatEtc:= PFormatEtc(@Elt);
-  while (I < Celt) and (FIndex < Length(FList)) do
-  begin
-    FormatEtc^ := GetFormatEtc(FList[FIndex]);
-    Inc(FormatEtc);
-    Inc (FIndex);
-    Inc (I)
-  end;
-
-  if (pCeltFetched <> nil) then pCeltFetched^:= i;
-
-  if (I = Celt) then
-    Result:= S_OK
-  else
-    Result:= S_FALSE;
-end;
-
-function TSynEnumFormatEtc.Skip (celt: Longint): HResult;
-begin
-  Result := S_OK;
-  if Celt <= Length(FList) - FIndex then
-    FIndex := FIndex + Celt
-  else begin
-    FIndex := Length(FList);
-    Result := S_FALSE
-  end
-end;
-
-function TSynEnumFormatEtc.Reset: HResult;
-begin
-  FIndex := 0;
-  Result := S_OK;
-end;
-
-function TSynEnumFormatEtc.Clone (out Enum: IEnumFormatEtc): HResult;
-begin
-  Result := S_OK;
-  Enum := TSynEnumFormatEtc.Create (FList, FIndex);
-end;
-
-
-const
-  CF_HTML = 'HTML Format';
-initialization
-  OleInitialize(nil);
-  SynEditClipboardFormat := RegisterClipboardFormat ('Internal SynEdit clipboard format');
-  HTMLClipboardFormat := RegisterClipboardFormat(CF_HTML);
-finalization
-  OleFlushClipboard;
-  OleUninitialize;
 end.

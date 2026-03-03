@@ -1129,6 +1129,8 @@ uses
   SynEditStrConst,
   SynEditDataObject,
   SynEditDragDrop,
+  SynEditDragDropShared,
+  SynEditDragDropWin,
   SynEditSearch;
 
 { TCustomSynEdit }
@@ -4245,8 +4247,9 @@ procedure TCustomSynEdit.OleDrop(Sender: TObject; DataObject: IDataObject;
   var Result: HResult);
 var
   vNewCaret: TBufferCoord;
-  DoDrop, DropAfter, DropMove: Boolean;
   vBB, vBE: TBufferCoord;
+  DropInfo: TSynDropInfo;
+  DropMove: Boolean;
   DragDropText: string;
   ChangeScrollPastEOL: Boolean;
   FormatEtc: TFormatEtc;
@@ -4260,25 +4263,13 @@ begin
   try
     ComputeCaret(Pt.X, Pt.Y);
     vNewCaret := CaretXY;
-    if not (sfOleDragSource in fStateFlags) then
-    begin
-      DoDrop := True;
-      DropAfter := False;
-    end
-    else
-    begin
-      // Internal dragging
-      vBB := BlockBegin;
-      vBE := BlockEnd;
-      DropAfter := (vNewCaret.Line > vBE.Line)
-        or ((vNewCaret.Line = vBE.Line) and ((vNewCaret.Char > vBE.Char) or
-        ((not DropMove) and (vNewCaret.Char = vBE.Char))));
-      DoDrop := DropAfter or (vNewCaret.Line < vBB.Line)
-        or ((vNewCaret.Line = vBB.Line) and ((vNewCaret.Char < vBB.Char) or
-        ((not DropMove) and (vNewCaret.Char = vBB.Char))));
-    end;
+    vBB := BlockBegin;
+    vBE := BlockEnd;
 
-    if DoDrop then begin
+    DropInfo := TSynDragDropHelper.ComputeDropInfo(vNewCaret, vBB, vBE,
+      sfOleDragSource in fStateFlags, DropMove);
+
+    if DropInfo.DoDrop then begin
       with FormatEtc do begin
         cfFormat := CF_UNICODETEXT;
         dwAspect := DVASPECT_CONTENT;
@@ -4290,15 +4281,15 @@ begin
         if Medium.hGlobal <> 0 then begin
           DragDropText := PChar(GlobalLock(Medium.hGlobal));
           GlobalUnLock(Medium.hGlobal);
-          DoDrop := DragDropText <> '';
+          DropInfo.DoDrop := DragDropText <> '';
         end else
-          DoDrop := False;
+          DropInfo.DoDrop := False;
         ReleaseStgMedium(Medium);
       end else
-        DoDrop := False;
+        DropInfo.DoDrop := False;
     end;
 
-    if DoDrop then begin
+    if DropInfo.DoDrop then begin
       BeginUndoBlock;
       try
         // delete the selected text if necessary
@@ -4308,12 +4299,8 @@ begin
             // Internal dragging
             Effect := DROPEFFECT_NONE;  // do not clear selection after drop
             SelText := '';
-            // adjust horizontal drop position
-            if DropAfter and (vNewCaret.Line = vBE.Line) then
-              Dec(vNewCaret.Char, vBE.Char - vBB.Char);
-            // adjust vertical drop position
-            if DropAfter and (vBE.Line > vBB.Line) then
-              Dec(vNewCaret.Line, vBE.Line - vBB.Line);
+            vNewCaret := TSynDragDropHelper.AdjustDropPos(
+              vNewCaret, vBB, vBE, DropInfo.DropAfter);
           end;
         end;
         // insert the selected text
