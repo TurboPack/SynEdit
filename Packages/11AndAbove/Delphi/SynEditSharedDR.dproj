@@ -200,6 +200,8 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditDragDropShared.pas"/>
+        <DCCReference Include="..\..\..\Source\SynEditDragDropWin.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
