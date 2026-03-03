@@ -34,7 +34,8 @@ uses
   TestFMXSynEditWordWrap in 'TestFMXSynEditWordWrap.pas',
   TestFMXSynEditBookmarks in 'TestFMXSynEditBookmarks.pas',
   TestFMXSynEditGutter in 'TestFMXSynEditGutter.pas',
-  TestFMXSynEditMultiCaret in 'TestFMXSynEditMultiCaret.pas';
+  TestFMXSynEditMultiCaret in 'TestFMXSynEditMultiCaret.pas',
+  TestFMXSynEditDragDrop in 'TestFMXSynEditDragDrop.pas';
 
 var
   Runner: ITestRunner;
