@@ -854,6 +854,9 @@ var
   BGColor: TAlphaColor;
   R: TRectF;
 begin
+  // Sync FSelection record back to FSelections list before painting
+  FSelections.ActiveSelection := FSelection;
+
   EnsureOleDropTarget;
   Renderer := TSynFMXRenderer(FRenderer);
 
