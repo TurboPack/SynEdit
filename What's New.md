@@ -45,6 +45,65 @@ A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
 * **Active line highlighting** — Configurable active line background color.
 * **Editor options** — Auto indent, smart tabs, tabs-to-spaces, and more via `TSynEditorOptions`.
 
+### What's Missing (compared to VCL)
+
+The FMX editor covers core editing functionality but does not yet have full VCL feature parity. The following VCL capabilities have no FMX equivalent:
+
+#### Components & Units
+
+| VCL Unit | Feature |
+| :------- | :------ |
+| `Vcl.SynAccessibility` | Windows UI Automation / screen reader support |
+| `Vcl.SynMacroRecorder` | Macro recording and playback |
+| `Vcl.SynAutoCorrect` | Auto-correction engine with customizable rules |
+| `Vcl.SynDBEdit` | Database-aware editor (TDataSet binding) |
+| `Vcl.SynURIOpener` | Hyperlink detection and opening |
+| `Vcl.SynEditPythonBehaviour` | Python-specific auto-indentation |
+| `Vcl.SynExportHTML` | HTML export with CSS styling |
+| `Vcl.SynExportRTF` | Rich Text Format export |
+| `Vcl.SynExportTeX` | LaTeX export |
+| `Vcl.SynEditPrintPreview` | Print preview window |
+| `Vcl.SynEditPrintMarginsDialog` | Print margin configuration dialog |
+| `Vcl.SynEditOptionsDialog` | Editor options configuration dialog |
+| `Vcl.SynEditKeyCmdEditor` | Key command editor dialogs |
+| `Vcl.SynDWrite` | DirectWrite / Direct2D hardware-accelerated rendering |
+
+#### Properties & Features
+
+| Feature | Description |
+| :------ | :---------- |
+| `TextHint` | Placeholder text when editor is empty |
+| `InsertCaret` / `OverwriteCaret` | Configurable caret styles |
+| `VisibleSpecialChars` | Show spaces, tabs, and EOL markers |
+| `MaxUndo` | Configurable undo history limit |
+| `HideSelection` | Hide selection when editor loses focus |
+| `Indicators` | Line indicators (breakpoints, errors) |
+| `BracketsHighlight` | Bracket pair matching and highlighting |
+| `WordAtCursor` / `WordAtMouse` | Word-under-cursor/mouse queries |
+| Scrollbar annotations | Visual markers in scrollbar track |
+| Indent guides | Vertical lines showing indentation structure |
+
+#### Events
+
+| Event | Description |
+| :---- | :---------- |
+| `OnGutterClick` | Click handler for gutter area (bookmarks, folding) |
+| `OnGutterGetText` | Custom gutter line text |
+| `OnPaint` / `OnPaintTransient` | Custom painting hooks |
+| `OnDropFiles` | File drag-drop from Explorer |
+| `OnScroll` | Scroll position change notification |
+| `OnZoom` | Font size zoom (Ctrl+Scroll) |
+| `OnMouseCursor` | Custom cursor per buffer position |
+| `OnContextHelp` | Context-sensitive help lookup |
+
+#### Rendering
+
+The VCL editor uses **DirectWrite / Direct2D** for hardware-accelerated text rendering with ClearType, ligatures, and advanced typography. The FMX editor uses FMX Canvas rendering, which is adequate for most use cases but does not match DirectWrite quality or performance on Windows.
+
+#### Drag-and-Drop Platform Support
+
+FMX drag-and-drop is currently **Windows-only** (OLE-based via `ISynDragDropPlatform`). macOS and Linux are not yet implemented — `CreateSynDragDropPlatform` returns nil on non-Windows platforms.
+
 ### New Packages
 
 Five new packages support the three-layer architecture:

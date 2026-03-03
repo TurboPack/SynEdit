@@ -148,7 +148,7 @@ To manually install into your IDE:
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
 - **FMX** — **393 tests** across 31 fixtures covering buffer, caret, code folding, commands, content, highlighter, options, search, undo/redo, spell check, bug-fix regressions, cross-platform fixes, word wrap, selection, clipboard, editing edge cases, color conversion, completion proposal logic, highlighter folding (Delphi, HTML, XML, CSS), auto-indent, pixel coordinate mapping, scrollbar sizing, bookmarks, gutter bands, multi-caret editing, and drag-drop.
-- **VCL** — **47 tests** across 3 fixtures covering Hunspell provider, Windows spell-check COM provider, and spell check component integration.
+- **VCL** — **64 tests** across 4 fixtures covering Hunspell provider, Windows spell-check COM provider, spell check component integration, and drag-drop.
 
 ```
 build_fmx_tests.bat
