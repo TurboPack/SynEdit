@@ -74,6 +74,7 @@
         <DCCReference Include="TestVCLSynWindowsSpellCheck.pas"/>
         <DCCReference Include="TestVCLSynSpellCheckComponent.pas"/>
         <DCCReference Include="TestVCLSynEditDragDrop.pas"/>
+        <DCCReference Include="TestVCLSynMacroRecorder.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

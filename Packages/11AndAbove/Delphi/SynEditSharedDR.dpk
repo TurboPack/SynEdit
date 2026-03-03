@@ -113,6 +113,7 @@ contains
   SynHighlighterXML in '..\..\..\Source\Highlighters\SynHighlighterXML.pas',
   SynHighlighterYAML in '..\..\..\Source\Highlighters\SynHighlighterYAML.pas',
   SynEditDragDropShared in '..\..\..\Source\SynEditDragDropShared.pas',
-  SynEditDragDropWin in '..\..\..\Source\SynEditDragDropWin.pas';
+  SynEditDragDropWin in '..\..\..\Source\SynEditDragDropWin.pas',
+  SynMacroRecorderShared in '..\..\..\Source\SynMacroRecorderShared.pas';
 
 end.

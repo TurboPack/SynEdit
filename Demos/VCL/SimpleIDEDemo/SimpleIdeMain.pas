@@ -50,6 +50,8 @@ uses
   SynHighlighterPas,
   SynEditTypes,
   SynEditCodeFolding,
+  Vcl.SynMacroRecorder,
+  SynMacroRecorderShared,
   uSimpleIDEDebugger, System.Types, Winapi.D2D1;
 type
   TSimpleIDEMainForm = class(TForm)
@@ -59,6 +61,13 @@ type
     ActionDebugRun: TAction;
     ActionDebugStep: TAction;
     ActionDebugStop: TAction;
+    MenuItemMacro: TMenuItem;
+    miMacroRecord: TMenuItem;
+    miMacroStop: TMenuItem;
+    miMacroPlayback: TMenuItem;
+    ActionMacroRecord: TAction;
+    ActionMacroStop: TAction;
+    ActionMacroPlayback: TAction;
     ActionListMain: TActionList;
     ActionToggleBreakpoint: TAction;
     MainMenu: TMainMenu;
@@ -106,6 +115,12 @@ type
     procedure ActionToggleBreakpointUpdate(Sender: TObject);
     procedure ActionClearAllBreakpointsExecute(Sender: TObject);
     procedure ActionClearAllBreakpointsUpdate(Sender: TObject);
+    procedure ActionMacroRecordExecute(Sender: TObject);
+    procedure ActionMacroRecordUpdate(Sender: TObject);
+    procedure ActionMacroStopExecute(Sender: TObject);
+    procedure ActionMacroStopUpdate(Sender: TObject);
+    procedure ActionMacroPlaybackExecute(Sender: TObject);
+    procedure ActionMacroPlaybackUpdate(Sender: TObject);
     procedure ClickDebugBand(Sender: TObject; Button: TMouseButton;
         X, Y, Row, Line: Integer);
     procedure SynEditorTSynGutterBands1MouseCursor(Sender: TObject; X, Y, Row,
@@ -115,12 +130,14 @@ type
   private
     FCurrentLine: Integer;
     FDebugger: TSampleDebugger;
+    FMacroRecorder: TSynMacroRecorder;
     procedure DebuggerBreakpointChange(Sender: TObject; ALine: Integer);
     procedure DebuggerCurrentLineChange(Sender: TObject);
     procedure DebuggerStateChange(Sender: TObject; OldState,
       NewState: TDebuggerState);
     procedure DebuggerYield(Sender: TObject);
     procedure SetCurrentLine(ALine: Integer);
+    procedure MacroStateChange(Sender: TObject);
   end;
 
 var
@@ -178,6 +195,10 @@ begin
     OnYield := DebuggerYield;
   end;
   TDebugSupportPlugin.Create(Self);
+  // Macro recorder
+  FMacroRecorder := TSynMacroRecorder.Create(Self);
+  FMacroRecorder.AddEditor(SynEditor);
+  FMacroRecorder.OnStateChange := MacroStateChange;
   Settings := TStringList.Create;
   try
     SynPasSyn.EnumUserSettings(Settings);
@@ -405,5 +426,49 @@ begin
   end;
 end;
 
-end.
+// --- Macro Recording ---
 
+procedure TSimpleIDEMainForm.ActionMacroRecordExecute(Sender: TObject);
+begin
+  FMacroRecorder.RecordMacro(SynEditor);
+  Statusbar.SimpleText := ' Macro: Recording...';
+end;
+
+procedure TSimpleIDEMainForm.ActionMacroRecordUpdate(Sender: TObject);
+begin
+  ActionMacroRecord.Enabled := FMacroRecorder.State = msStopped;
+end;
+
+procedure TSimpleIDEMainForm.ActionMacroStopExecute(Sender: TObject);
+begin
+  FMacroRecorder.Stop;
+end;
+
+procedure TSimpleIDEMainForm.ActionMacroStopUpdate(Sender: TObject);
+begin
+  ActionMacroStop.Enabled := FMacroRecorder.State in [msRecording, msPaused, msPlaying];
+end;
+
+procedure TSimpleIDEMainForm.ActionMacroPlaybackExecute(Sender: TObject);
+begin
+  FMacroRecorder.PlaybackMacro(SynEditor);
+end;
+
+procedure TSimpleIDEMainForm.ActionMacroPlaybackUpdate(Sender: TObject);
+begin
+  ActionMacroPlayback.Enabled := (FMacroRecorder.State = msStopped) and
+    not FMacroRecorder.IsEmpty;
+end;
+
+procedure TSimpleIDEMainForm.MacroStateChange(Sender: TObject);
+const
+  StateNames: array[TSynMacroState] of string =
+    ('Stopped', 'Recording', 'Playing', 'Paused');
+begin
+  Statusbar.SimpleText := ' Macro: ' + StateNames[FMacroRecorder.State];
+  if FMacroRecorder.State = msStopped then
+    Statusbar.SimpleText := Statusbar.SimpleText +
+      Format(' (%d events)', [FMacroRecorder.EventCount]);
+end;
+
+end.

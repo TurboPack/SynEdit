@@ -43,6 +43,7 @@ A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
 * **Gutter** — Line numbers with configurable width.
 * **Right edge** — Configurable right margin indicator.
 * **Active line highlighting** — Configurable active line background color.
+* **Macro recording** — `TFMXSynMacroRecorder` component for recording and playing back editor commands. Shared event types via `SynMacroRecorderShared.pas`.
 * **Editor options** — Auto indent, smart tabs, tabs-to-spaces, and more via `TSynEditorOptions`.
 
 ### What's Missing (compared to VCL)
@@ -54,7 +55,6 @@ The FMX editor covers core editing functionality but does not yet have full VCL 
 | VCL Unit | Feature |
 | :------- | :------ |
 | `Vcl.SynAccessibility` | Windows UI Automation / screen reader support |
-| `Vcl.SynMacroRecorder` | Macro recording and playback |
 | `Vcl.SynAutoCorrect` | Auto-correction engine with customizable rules |
 | `Vcl.SynDBEdit` | Database-aware editor (TDataSet binding) |
 | `Vcl.SynURIOpener` | Hyperlink detection and opening |
@@ -128,7 +128,7 @@ Three FMX demos are included in `Demos/FMX/`:
 
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **393 tests**, 31 fixtures:
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **428 tests**, 34 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -164,8 +164,11 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | MultiCaret | 17 | Add/toggle carets, column selection, multi-caret edit/delete/backspace, merge, undo/redo |
 | DragDropHelper | 10 | ComputeDropInfo, AdjustDropPos, IsDropCopy |
 | DragDropIntegration | 17 | External/internal drop, move/copy, past EOL, multi-line, undo |
+| SharedMacroEvents | 14 | Factory, stream round-trips, AsString, PlaybackTo callback |
+| FMXHookedCommandHandlers | 5 | Register/call/suppress/unregister/multiple handlers |
+| FMXMacroRecorder | 16 | State, record/playback typing/navigation, undo, serialization |
 
-**VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **64 tests**, 4 fixtures:
+**VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **95 tests**, 5 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -173,6 +176,7 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | WindowsSpellCheck | 11 | Windows spell-check COM provider |
 | SpellCheckComponent | 16 | TSynSpellCheck component integration |
 | DragDropIntegration | 17 | External/internal drop, move/copy, past EOL, multi-line, undo |
+| MacroRecorder | 30 | State machine, recording, playback, events, serialization, properties |
 
 ---
 

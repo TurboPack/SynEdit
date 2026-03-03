@@ -428,9 +428,63 @@ object FMXFeaturesForm: TFMXFeaturesForm
         Size.PlatformDefault = False
         Text = 'Spell check: idle'
       end
-      object LabelPrintCaption: TLabel
+      object LabelMacroCaption: TLabel
         Position.X = 8.000000000000000000
         Position.Y = 1042.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        StyledSettings = [Family, Size]
+        TextSettings.Font.Style = [fsBold]
+        Text = 'Macro Recording'
+      end
+      object BtnMacroRecord: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 1064.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Record'
+        OnClick = BtnMacroRecordClick
+      end
+      object BtnMacroPause: TButton
+        Position.X = 96.000000000000000000
+        Position.Y = 1064.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Pause'
+        OnClick = BtnMacroPauseClick
+      end
+      object BtnMacroStop: TButton
+        Position.X = 184.000000000000000000
+        Position.Y = 1064.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Stop'
+        OnClick = BtnMacroStopClick
+      end
+      object BtnMacroPlay: TButton
+        Position.X = 8.000000000000000000
+        Position.Y = 1096.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Playback (Ctrl+Shift+P)'
+        OnClick = BtnMacroPlayClick
+      end
+      object LabelMacroState: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 1128.000000000000000000
+        Size.Width = 260.000000000000000000
+        Size.Height = 18.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Macro: Stopped'
+      end
+      object LabelPrintCaption: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 1164.000000000000000000
         Size.Width = 260.000000000000000000
         Size.Height = 18.000000000000000000
         Size.PlatformDefault = False
@@ -440,7 +494,7 @@ object FMXFeaturesForm: TFMXFeaturesForm
       end
       object BtnPrint: TButton
         Position.X = 8.000000000000000000
-        Position.Y = 1064.000000000000000000
+        Position.Y = 1186.000000000000000000
         Size.Width = 260.000000000000000000
         Size.Height = 28.000000000000000000
         Size.PlatformDefault = False

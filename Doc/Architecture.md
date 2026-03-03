@@ -14,7 +14,7 @@ through a three-layer architecture.
 │  Vcl.SynEdit.pas         │  │  FMX.SynEdit.pas          │
 │  Vcl.SynDWrite.pas       │  │  FMX.SynEditRenderer.pas  │
 │  Vcl.SynEditMiscClasses  │  │  FMX.SynEditMiscClasses   │
-│  (40 units)              │  │  (19 units)               │
+│  (40 units)              │  │  (20 units)               │
 └────────────┬─────────────┘  └────────────┬──────────────┘
              │                              │
              └──────────┬──────────────────-┘
@@ -76,6 +76,7 @@ SynEdit/
     SynEditUndoShared.pas         Shared undo base class (TSynEditUndoBase)
     SynEditDragDropShared.pas     Shared drag-drop logic (TSynDragDropHelper)
     SynEditDragDropWin.pas        Windows OLE building blocks (shared by VCL and FMX)
+    SynMacroRecorderShared.pas    Shared macro event types and serialization
     SynSpellCheckTypes.pas        Shared spell check interfaces (ISynSpellCheckProvider)
     SynSpellCheckHunspellProvider Shared Hunspell spell check provider
     SynSpellCheckWindowsProvider  Shared Windows spell check provider
@@ -138,6 +139,7 @@ SynEdit/
       FMX.SynEditPrintTypes.pas   FMX print type definitions
       FMX.SynEditPrinterInfo.pas  FMX printer info (abstract provider)
       FMX.SynEditDragDrop.pas     FMX drag-drop platform abstraction + Windows OLE impl
+      FMX.SynMacroRecorder.pas    FMX macro recording and playback
       FMX.SynSpellCheck.pas       FMX spell check (abstract provider)
       FMX.SynEditReg.pas          FMX component registration
   Packages/
@@ -166,7 +168,7 @@ SynEdit/
     SynEditDemosGroup.groupproj   All demos
   Tests/
     FMX/
-      FMXSynEditTests.dproj        DUnitX test project (393 tests, 31 fixtures)
+      FMXSynEditTests.dproj        DUnitX test project (428 tests, 34 fixtures)
       TestFMXSynEdit*.pas           Test fixtures (buffer, caret, folding, commands,
                                      content, highlighter, options, search, undo/redo,
                                      selection, clipboard, editing, renderer,
@@ -176,12 +178,14 @@ SynEdit/
       TestFMXSynWindowsSpellCheck   Windows spell-check COM provider tests
       TestFMXSynSpellCheckComponent Spell check component integration tests
       TestSynHighlighter*Folding    Highlighter fold tests (Delphi, HTML, XML, CSS)
+      TestFMXSynMacroRecorder.pas   Macro event, hooked command, macro recorder tests
     VCL/
-      VCLSynEditTests.dproj        DUnitX test project (64 tests, 4 fixtures)
+      VCLSynEditTests.dproj        DUnitX test project (95 tests, 5 fixtures)
       TestVCLSynSpellCheck.pas      Hunspell provider tests
       TestVCLSynWindowsSpellCheck   Windows spell-check COM provider tests
       TestVCLSynSpellCheckComponent Spell check component integration tests
       TestVCLSynEditDragDrop.pas    Drag-drop integration tests
+      TestVCLSynMacroRecorder.pas   Macro recording and playback tests
 ```
 
 ## Package Dependencies
@@ -323,6 +327,7 @@ platform-specific units of the same base name, the shared unit uses a
 | `SynEditUndoShared.pas` | `Vcl.SynEditUndo.pas` | `FMX.SynEditUndo.pas` |
 | `SynEditDragDropShared.pas` | — | — |
 | `SynEditDragDropWin.pas` | `Vcl.SynEditDragDrop.pas` / `Vcl.SynEditDataObject.pas` | `FMX.SynEditDragDrop.pas` |
+| `SynMacroRecorderShared.pas` | `Vcl.SynMacroRecorder.pas` | `FMX.SynMacroRecorder.pas` |
 
 The VCL/FMX units re-export the shared declarations and add
 platform-specific functionality (e.g., clipboard, key mapping).

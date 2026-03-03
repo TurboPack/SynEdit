@@ -123,6 +123,9 @@ type
     FDragScrollDeltaY: Integer;
     FOleDropToken: IInterface;
     FOleDropRegistered: Boolean;
+    // Hooked command handlers
+    FHookedCommandHandlers: TDictionary<THookedCommandEvent, Pointer>;
+    FCommandData: Pointer;
     // Private methods
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure SetTabWidth(Value: Integer);
@@ -237,6 +240,8 @@ type
       const Point: TPointF); override;
     procedure DragLeave; override;
     procedure DragEnd; override;
+    procedure NotifyHookedCommandHandlers(AfterProcessing: Boolean;
+      var Command: TSynEditorCommand; var AChar: WideChar; Data: Pointer);
     /// Core drop logic extracted for testability.
     /// DragDrop delegates here after extracting text, coordinates, and flags.
     procedure DropTextAtPos(const DropText: string; DropPos: TBufferCoord;
@@ -261,8 +266,12 @@ type
       ABlockEnd: TBufferCoord);
     procedure BeginUpdate; reintroduce;
     procedure EndUpdate; reintroduce;
-    procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar);
+    procedure CommandProcessor(Command: TSynEditorCommand; AChar: WideChar;
+      Data: Pointer = nil);
     procedure ExecuteCommand(Command: TSynEditorCommand; AChar: WideChar);
+    procedure RegisterCommandHandler(const AHandlerProc: THookedCommandEvent;
+      AHandlerData: Pointer);
+    procedure UnregisterCommandHandler(AHandlerProc: THookedCommandEvent);
     procedure SetSelectedTextPrimitive(const Value: string);
     function PixelToBufferCoord(X, Y: Single): TBufferCoord;
     function BufferCoordToPixel(const BC: TBufferCoord): TPointF;
@@ -569,6 +578,7 @@ end;
 destructor TCustomFMXSynEdit.Destroy;
 begin
   UnregisterOleDropTarget(FOleDropToken);
+  FHookedCommandHandlers.Free;
   FDragScrollTimer.Free;
   FWordWrapHelper.Free;
   FPlugins.Free;
@@ -1585,25 +1595,38 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.CommandProcessor(Command: TSynEditorCommand;
-  AChar: WideChar);
+  AChar: WideChar; Data: Pointer);
 var
   CommandInfo: TSynCommandInfo;
 begin
-  if (Command <> ecNone) and (Command < ecUserFirst) then
-  begin
-    if not SynCommandsInfo.TryGetValue(Command, CommandInfo)
-      or (CommandInfo.CommandKind in [ckStandard, ckSingleCaret])
-      or (FSelections.Count = 1)
-    then
+  // Pre-command hooks
+  NotifyHookedCommandHandlers(False, Command, AChar, Data);
+  if Command = ecNone then Exit;
+
+  FCommandData := Data;
+  try
+    if (Command <> ecNone) and (Command < ecUserFirst) then
     begin
-      if SynCommandsInfo.TryGetValue(Command, CommandInfo)
-        and (CommandInfo.CommandKind = ckSingleCaret) and (FSelections.Count > 1) then
-        FSelections.Clear(TSynSelectionsBase.TKeepSelection.ksKeepBase);
-      ExecuteCommand(Command, AChar);
-    end
-    else
-      ExecuteMultiCaretCommand(Command, AChar);
+      if not SynCommandsInfo.TryGetValue(Command, CommandInfo)
+        or (CommandInfo.CommandKind in [ckStandard, ckSingleCaret])
+        or (FSelections.Count = 1)
+      then
+      begin
+        if SynCommandsInfo.TryGetValue(Command, CommandInfo)
+          and (CommandInfo.CommandKind = ckSingleCaret) and (FSelections.Count > 1) then
+          FSelections.Clear(TSynSelectionsBase.TKeepSelection.ksKeepBase);
+        ExecuteCommand(Command, AChar);
+      end
+      else
+        ExecuteMultiCaretCommand(Command, AChar);
+    end;
+  finally
+    FCommandData := nil;
   end;
+
+  // Post-command hooks
+  if Command <> ecNone then
+    NotifyHookedCommandHandlers(True, Command, AChar, Data);
 end;
 
 procedure TCustomFMXSynEdit.ExecuteMultiCaretCommand(
@@ -2055,6 +2078,18 @@ begin
         end
         else
           SetBookmark(BmIdx, FSelection.Caret.Char, FSelection.Caret.Line);
+      end;
+
+    // GotoXY (used by macro playback)
+    ecGotoXY:
+      if (FCommandData <> nil) then
+        CaretXY := TBufferCoord(FCommandData^);
+    ecSelGotoXY:
+      if (FCommandData <> nil) then
+      begin
+        BlockBegin := CaretXY;
+        CaretXY := TBufferCoord(FCommandData^);
+        BlockEnd := CaretXY;
       end;
 
     // Multi-caret commands
@@ -3811,6 +3846,43 @@ end;
 procedure TCustomFMXSynEdit.RemoveKeyDownHandler(aHandler: TKeyEvent);
 begin
   FKbdHandler.RemoveKeyDownHandler(aHandler);
+end;
+
+procedure TCustomFMXSynEdit.RegisterCommandHandler(
+  const AHandlerProc: THookedCommandEvent; AHandlerData: Pointer);
+begin
+  if not Assigned(AHandlerProc) then Exit;
+
+  if not Assigned(FHookedCommandHandlers) then
+    FHookedCommandHandlers := TDictionary<THookedCommandEvent, Pointer>.Create;
+  FHookedCommandHandlers.AddOrSetValue(AHandlerProc, AHandlerData);
+end;
+
+procedure TCustomFMXSynEdit.UnregisterCommandHandler(AHandlerProc:
+  THookedCommandEvent);
+begin
+  if not (Assigned(AHandlerProc) and Assigned(FHookedCommandHandlers)) then
+    Exit;
+
+  FHookedCommandHandlers.Remove(AHandlerProc);
+end;
+
+procedure TCustomFMXSynEdit.NotifyHookedCommandHandlers(
+  AfterProcessing: Boolean; var Command: TSynEditorCommand;
+  var AChar: WideChar; Data: Pointer);
+var
+  Handled: Boolean;
+  Handler: TPair<THookedCommandEvent, Pointer>;
+begin
+  Handled := False;
+
+  if not Assigned(FHookedCommandHandlers) then Exit;
+
+  for Handler in FHookedCommandHandlers do
+    Handler.Key(Self, AfterProcessing, Handled, Command, AChar, Data,
+      Handler.Value);
+  if Handled then
+    Command := ecNone;
 end;
 
 procedure TCustomFMXSynEdit.DoPluginAfterPaint(Canvas: TCanvas;

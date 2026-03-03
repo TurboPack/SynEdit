@@ -12,7 +12,8 @@ uses
   TestVCLSynSpellCheck in 'TestVCLSynSpellCheck.pas',
   TestVCLSynWindowsSpellCheck in 'TestVCLSynWindowsSpellCheck.pas',
   TestVCLSynSpellCheckComponent in 'TestVCLSynSpellCheckComponent.pas',
-  TestVCLSynEditDragDrop in 'TestVCLSynEditDragDrop.pas';
+  TestVCLSynEditDragDrop in 'TestVCLSynEditDragDrop.pas',
+  TestVCLSynMacroRecorder in 'TestVCLSynMacroRecorder.pas';
 
 var
   Runner: ITestRunner;

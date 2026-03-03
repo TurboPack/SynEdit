@@ -3,7 +3,7 @@
         <Base>True</Base>
         <AppType>Application</AppType>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>SimpleIDEDemo.dpr</MainSource>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -65,7 +65,7 @@
         <DCC_ExeOutput>..\bin\$(Platform)\$(Config)\</DCC_ExeOutput>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_UnitSearchPath>..\..\Source;..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -73,7 +73,7 @@
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
@@ -82,7 +82,7 @@
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_Namespace>System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -92,17 +92,17 @@
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -110,17 +110,17 @@
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
         <DCC_Optimize>false</DCC_Optimize>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <DCC_UnitSearchPath>..\..\Source\Highlighters;..\..\source</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\VCL;..\..\..\Source\Highlighters</DCC_UnitSearchPath>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

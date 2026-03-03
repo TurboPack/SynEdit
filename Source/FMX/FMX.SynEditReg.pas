@@ -18,13 +18,15 @@ uses
   FMX.SynCompletionProposal,
   FMX.SynSpellCheck,
   FMX.SynEditPrint,
+  FMX.SynMacroRecorder,
   SynEditHighlighter,
   SynEditStrConst;
 
 procedure Register;
 begin
   RegisterComponents('SynEdit FMX', [TFMXSynEdit,
-    TSynFMXCompletionProposal, TSynFMXSpellCheck, TSynFMXEditPrint]);
+    TSynFMXCompletionProposal, TSynFMXSpellCheck, TSynFMXEditPrint,
+    TFMXSynMacroRecorder]);
 end;
 
 end.

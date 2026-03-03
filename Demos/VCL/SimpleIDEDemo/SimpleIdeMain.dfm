@@ -171,7 +171,6 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
         Width = 2
       end>
     Highlighter = SynPasSyn
-    ReadOnly = True
     ScrollbarAnnotations = <>
     OnSpecialLineColors = SynEditorSpecialLineColors
   end
@@ -239,6 +238,26 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
       OnExecute = ActionToggleBreakpointExecute
       OnUpdate = ActionToggleBreakpointUpdate
     end
+    object ActionMacroRecord: TAction
+      Category = 'Macro'
+      Caption = 'Record (Ctrl+Shift+R)'
+      ShortCut = 24658
+      OnExecute = ActionMacroRecordExecute
+      OnUpdate = ActionMacroRecordUpdate
+    end
+    object ActionMacroStop: TAction
+      Category = 'Macro'
+      Caption = 'Stop'
+      OnExecute = ActionMacroStopExecute
+      OnUpdate = ActionMacroStopUpdate
+    end
+    object ActionMacroPlayback: TAction
+      Category = 'Macro'
+      Caption = 'Playback (Ctrl+Shift+P)'
+      ShortCut = 24656
+      OnExecute = ActionMacroPlaybackExecute
+      OnUpdate = ActionMacroPlaybackUpdate
+    end
     object ActionClearAllBreakpoints: TAction
       Category = 'Debug'
       Caption = 'Clear All Breakpoints'
@@ -255,6 +274,18 @@ object SimpleIDEMainForm: TSimpleIDEMainForm
   object MainMenu: TMainMenu
     Left = 36
     Top = 100
+    object MenuItemMacro: TMenuItem
+      Caption = '&Macro'
+      object miMacroRecord: TMenuItem
+        Action = ActionMacroRecord
+      end
+      object miMacroStop: TMenuItem
+        Action = ActionMacroStop
+      end
+      object miMacroPlayback: TMenuItem
+        Action = ActionMacroPlayback
+      end
+    end
     object MenuItemDebug: TMenuItem
       Caption = '&Debug'
       object miDebugRun: TMenuItem

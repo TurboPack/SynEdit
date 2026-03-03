@@ -26,6 +26,8 @@ uses
   SynSpellCheckWindowsProvider,
   {$ENDIF}
   FMX.SynEditPrint,
+  FMX.SynMacroRecorder,
+  SynMacroRecorderShared,
   dlgFMXSearchText,
   dlgFMXReplaceText;
 
@@ -78,6 +80,12 @@ type
     ComboLanguage: TComboBox;
     BtnCheckFile: TButton;
     LabelSpellStatus: TLabel;
+    LabelMacroCaption: TLabel;
+    BtnMacroRecord: TButton;
+    BtnMacroPause: TButton;
+    BtnMacroStop: TButton;
+    BtnMacroPlay: TButton;
+    LabelMacroState: TLabel;
     LabelPrintCaption: TLabel;
     BtnPrint: TButton;
     Splitter1: TSplitter;
@@ -109,6 +117,10 @@ type
     procedure ComboProviderChange(Sender: TObject);
     procedure ComboLanguageChange(Sender: TObject);
     procedure BtnCheckFileClick(Sender: TObject);
+    procedure BtnMacroRecordClick(Sender: TObject);
+    procedure BtnMacroPauseClick(Sender: TObject);
+    procedure BtnMacroStopClick(Sender: TObject);
+    procedure BtnMacroPlayClick(Sender: TObject);
     procedure BtnPrintClick(Sender: TObject);
     procedure ChkWordWrapChange(Sender: TObject);
   private
@@ -123,6 +135,7 @@ type
     FCompletion: TSynFMXCompletionProposal;
     FSpellCheck: TSynFMXSpellCheck;
     FPrintComponent: TSynFMXEditPrint;
+    FMacroRecorder: TFMXSynMacroRecorder;
     FDictionariesPath: string;
     procedure CreateHighlighters;
     procedure PopulateLanguageCombo;
@@ -131,6 +144,7 @@ type
     procedure UpdateStatusLabels;
     procedure LogEvent(const Msg: string);
     procedure SpellCheckComplete(Sender: TObject);
+    procedure MacroStateChange(Sender: TObject);
   end;
 
 var
@@ -230,6 +244,11 @@ begin
   ChkWordWrap.Size.Height := 22;
   ChkWordWrap.Text := 'Word Wrap';
   ChkWordWrap.OnChange := ChkWordWrapChange;
+
+  // Macro recording
+  FMacroRecorder := TFMXSynMacroRecorder.Create(Self);
+  FMacroRecorder.Editor := FEditor;
+  FMacroRecorder.OnStateChange := MacroStateChange;
 
   // Printing
   FPrintComponent := TSynFMXEditPrint.Create(Self);
@@ -860,6 +879,53 @@ begin
       [FSpellCheck.Errors.Count]);
   LogEvent(Format('Spell check complete: %d error(s)',
     [FSpellCheck.Errors.Count]));
+end;
+
+// --- Macro Recording ---
+
+procedure TFMXFeaturesForm.BtnMacroRecordClick(Sender: TObject);
+begin
+  FMacroRecorder.RecordMacro(FEditor);
+  LogEvent('Macro: Recording started (Ctrl+Shift+R)');
+end;
+
+procedure TFMXFeaturesForm.BtnMacroPauseClick(Sender: TObject);
+begin
+  if FMacroRecorder.State = msRecording then
+  begin
+    FMacroRecorder.Pause;
+    LogEvent('Macro: Paused');
+  end
+  else if FMacroRecorder.State = msPaused then
+  begin
+    FMacroRecorder.Resume;
+    LogEvent('Macro: Resumed');
+  end;
+end;
+
+procedure TFMXFeaturesForm.BtnMacroStopClick(Sender: TObject);
+begin
+  FMacroRecorder.Stop;
+  LogEvent(Format('Macro: Stopped (%d events)', [FMacroRecorder.EventCount]));
+end;
+
+procedure TFMXFeaturesForm.BtnMacroPlayClick(Sender: TObject);
+begin
+  if FMacroRecorder.IsEmpty then
+  begin
+    LogEvent('Macro: Nothing to play');
+    Exit;
+  end;
+  FMacroRecorder.PlaybackMacro(FEditor);
+  LogEvent('Macro: Playback complete');
+end;
+
+procedure TFMXFeaturesForm.MacroStateChange(Sender: TObject);
+const
+  StateNames: array[TSynMacroState] of string =
+    ('Stopped', 'Recording', 'Playing', 'Paused');
+begin
+  LabelMacroState.Text := 'Macro: ' + StateNames[FMacroRecorder.State];
 end;
 
 // --- Printing ---
