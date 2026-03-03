@@ -113,6 +113,16 @@ type
     // Cached max scroll width
     FMaxScrollWidth: Integer;
     FMaxScrollWidthValid: Boolean;
+    // Drag-and-drop state
+    FIsDragSource: Boolean;
+    FDragDropHandled: Boolean;
+    FDragReady: Boolean;
+    FDragStartPos: TPointF;
+    FDragScrollTimer: TTimer;
+    FDragScrollDeltaX: Integer;
+    FDragScrollDeltaY: Integer;
+    FOleDropToken: IInterface;
+    FOleDropRegistered: Boolean;
     // Private methods
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure SetTabWidth(Value: Integer);
@@ -195,6 +205,13 @@ type
     procedure SetWordWrap(Value: Boolean);
     function GetWrapAreaWidth: Integer;
     function GetDisplayRowCount: Integer;
+    // Drag-and-drop private
+    procedure DoDragDropOperation;
+    procedure ComputeDragScroll(X, Y: Single);
+    procedure DragScrollTimerHandler(Sender: TObject);
+    procedure StopDragScroll;
+    function IsPointInSelection(const BC: TBufferCoord): Boolean;
+    procedure EnsureOleDropTarget;
   protected
     // Plugin hooks (protected for testability)
     procedure DoPluginAfterPaint(Canvas: TCanvas; const AClip: TRectF;
@@ -214,6 +231,16 @@ type
       X, Y: Single); override;
     procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer;
       var Handled: Boolean); override;
+    procedure DragOver(const Data: TDragObject; const Point: TPointF;
+      var Operation: TDragOperation); override;
+    procedure DragDrop(const Data: TDragObject;
+      const Point: TPointF); override;
+    procedure DragLeave; override;
+    procedure DragEnd; override;
+    /// Core drop logic extracted for testability.
+    /// DragDrop delegates here after extracting text, coordinates, and flags.
+    procedure DropTextAtPos(const DropText: string; DropPos: TBufferCoord;
+      IsInternal, IsMove: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -407,6 +434,11 @@ type
 implementation
 
 uses
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  SynEditDragDropShared,
+  FMX.SynEditDragDrop,
   FMX.SynEditRenderer,
   FMX.SynEditScrollBars,
   FMX.SynEditScrollTypes,
@@ -522,11 +554,22 @@ begin
   // Plugins
   FPlugins := TList.Create;
 
+  // Drag-and-drop scroll timer
+  FDragScrollTimer := TTimer.Create(Self);
+  FDragScrollTimer.Enabled := False;
+  FDragScrollTimer.Interval := 100;
+  FDragScrollTimer.OnTimer := DragScrollTimerHandler;
+
+  // We draw our own caret feedback during drag; disable FMX's blue outline
+  EnableDragHighlight := False;
+
   UpdateGutterWidth;
 end;
 
 destructor TCustomFMXSynEdit.Destroy;
 begin
+  UnregisterOleDropTarget(FOleDropToken);
+  FDragScrollTimer.Free;
   FWordWrapHelper.Free;
   FPlugins.Free;
   FGutter.Free;
@@ -811,6 +854,7 @@ var
   BGColor: TAlphaColor;
   R: TRectF;
 begin
+  EnsureOleDropTarget;
   Renderer := TSynFMXRenderer(FRenderer);
 
   // Background
@@ -2324,6 +2368,10 @@ begin
       while FLines.Count < FSelection.Caret.Line do
         FLines.Add('');
       var SLine := FLines[FSelection.Caret.Line - 1];
+      // Pad with spaces if caret is past end of line
+      if FSelection.Caret.Char > Length(SLine) + 1 then
+        SLine := SLine + StringOfChar(' ',
+          FSelection.Caret.Char - 1 - Length(SLine));
       System.Insert(Value, SLine, FSelection.Caret.Char);
       FLines[FSelection.Caret.Line - 1] := SLine;
       Inc(FSelection.Caret.Char, Length(Value));
@@ -2334,6 +2382,10 @@ begin
       while FLines.Count < FSelection.Caret.Line do
         FLines.Add('');
       var SLine := FLines[FSelection.Caret.Line - 1];
+      // Pad with spaces if caret is past end of line
+      if FSelection.Caret.Char > Length(SLine) + 1 then
+        SLine := SLine + StringOfChar(' ',
+          FSelection.Caret.Char - 1 - Length(SLine));
       var LeftPart := Copy(SLine, 1, FSelection.Caret.Char - 1);
       var RightPart := Copy(SLine, FSelection.Caret.Char, MaxInt);
 
@@ -2422,6 +2474,7 @@ begin
     FSelection.Stop := BufferCoord(Length(FLines[LastLine - 1]) + 1, LastLine);
     FSelection.Caret.Char := FSelection.Stop.Char;
     FSelection.Caret.Line := FSelection.Stop.Line;
+    FSelections.ActiveSelection := FSelection;
     Repaint;
   end;
 end;
@@ -2430,6 +2483,7 @@ procedure TCustomFMXSynEdit.ClearSelection;
 begin
   FSelection.Start := GetCaretXY;
   FSelection.Stop := FSelection.Start;
+  FSelections.ActiveSelection := FSelection;
   Repaint;
 end;
 
@@ -2713,6 +2767,17 @@ begin
     end;
 
     BC := PixelToBufferCoord(X, Y);
+
+    // Drag-drop: detect click on selection (single caret, no modifiers)
+    if (eoDragDropEditing in FOptions) and (FSelections.Count = 1)
+      and (X >= FGutterWidth) and (Shift * [ssAlt, ssShift] = [])
+      and not FSelection.IsEmpty and IsPointInSelection(BC) then
+    begin
+      FDragReady := True;
+      FDragStartPos := PointF(X, Y);
+      Exit;
+    end;
+
     if Shift * [ssAlt, ssShift] = [ssAlt, ssShift] then
     begin
       // Alt+Shift+Click: column selection from anchor to click
@@ -2757,6 +2822,17 @@ var
   BC: TBufferCoord;
 begin
   inherited;
+  // Drag-drop: check if we've moved far enough to initiate drag
+  if FDragReady and (ssLeft in Shift) then
+  begin
+    if (Abs(X - FDragStartPos.X) > 5) or (Abs(Y - FDragStartPos.Y) > 5) then
+    begin
+      FDragReady := False;
+      DoDragDropOperation;
+    end;
+    Exit;
+  end;
+
   if ssLeft in Shift then
   begin
     BC := PixelToBufferCoord(X, Y);
@@ -2783,8 +2859,21 @@ end;
 
 procedure TCustomFMXSynEdit.MouseUp(Button: TMouseButton; Shift: TShiftState;
   X, Y: Single);
+var
+  BC: TBufferCoord;
 begin
   inherited;
+  // Click on selection without drag = place caret
+  if FDragReady then
+  begin
+    FDragReady := False;
+    BC := PixelToBufferCoord(X, Y);
+    FSelection := TSynSelection.Create(BC, BC, BC);
+    if FSelections.Count > 1 then
+      FSelections.Clear(TSynSelectionsBase.TKeepSelection.ksKeepActive);
+    FSelections.ActiveSelection := FSelection;
+    Repaint;
+  end;
 end;
 
 procedure TCustomFMXSynEdit.MouseWheel(Shift: TShiftState; WheelDelta: Integer;
@@ -2797,6 +2886,211 @@ begin
       TPointF.Zero);
     Handled := True;
   end;
+end;
+
+{ --- Drag-and-drop --- }
+
+function TCustomFMXSynEdit.IsPointInSelection(const BC: TBufferCoord): Boolean;
+var
+  Index: Integer;
+begin
+  Result := FSelections.FindSelection(BC, Index)
+    and not FSelections[Index].IsEmpty;
+end;
+
+procedure TCustomFMXSynEdit.EnsureOleDropTarget;
+begin
+  if FOleDropRegistered then Exit;
+  if Root = nil then Exit;
+  FOleDropRegistered := True;
+  FOleDropToken := RegisterOleDropTarget(Self);
+end;
+
+procedure TCustomFMXSynEdit.DoDragDropOperation;
+var
+  Platform: ISynDragDropPlatform;
+  DragData: TSynDragData;
+  DragResult: TSynDragResult;
+begin
+  Platform := CreateSynDragDropPlatform;
+  if Platform = nil then Exit;
+
+  DragData.Text := GetSelText;
+  DragData.Highlighter := FHighlighter;
+  DragData.FontFamily := FFont.Family;
+  DragData.FontSize := Round(FFont.Size);
+  DragData.BackgroundColor := TAlphaColors.White;
+  DragData.UseBackground := not (eoNoHTMLBackground in FOptions);
+
+  FIsDragSource := True;
+  FDragDropHandled := False;
+  try
+    DragResult := Platform.StartDrag(Self, DragData);
+  finally
+    FIsDragSource := False;
+    if (DragResult.Effect = sdaMove) and not FDragDropHandled then
+    begin
+      FUndoRedo.BeginBlock(Self);
+      try
+        DoDeleteSelection;
+      finally
+        FUndoRedo.EndBlock(Self);
+      end;
+      Repaint;
+    end;
+  end;
+end;
+
+procedure TCustomFMXSynEdit.DragOver(const Data: TDragObject;
+  const Point: TPointF; var Operation: TDragOperation);
+var
+  BC: TBufferCoord;
+begin
+  if FReadOnly or Data.Data.IsEmpty then
+  begin
+    Operation := TDragOperation.None;
+    Exit;
+  end;
+
+  BC := PixelToBufferCoord(Point.X, Point.Y);
+
+  // Show caret at potential drop position
+  FSelection.Caret := BC;
+  FCaretBlinkOn := True;
+  Repaint;
+
+  // Determine Copy vs Move
+  {$IFDEF MSWINDOWS}
+  if GetKeyState(VK_CONTROL) < 0 then
+    Operation := TDragOperation.Copy
+  else
+  {$ENDIF}
+    Operation := TDragOperation.Move;
+
+  ComputeDragScroll(Point.X, Point.Y);
+end;
+
+procedure TCustomFMXSynEdit.DragDrop(const Data: TDragObject;
+  const Point: TPointF);
+var
+  IsMove: Boolean;
+begin
+  StopDragScroll;
+  if Data.Data.IsEmpty or FReadOnly then Exit;
+
+  {$IFDEF MSWINDOWS}
+  IsMove := GetKeyState(VK_CONTROL) >= 0;
+  {$ELSE}
+  IsMove := True;
+  {$ENDIF}
+
+  // OLE drops don't set Data.Source, so use FIsDragSource flag instead
+  // (same approach as VCL's sfOleDragSource in fStateFlags)
+  DropTextAtPos(Data.Data.AsString,
+    PixelToBufferCoord(Point.X, Point.Y), FIsDragSource, IsMove);
+end;
+
+procedure TCustomFMXSynEdit.DropTextAtPos(const DropText: string;
+  DropPos: TBufferCoord; IsInternal, IsMove: Boolean);
+var
+  vBB, vBE: TBufferCoord;
+  DropInfo: TSynDropInfo;
+begin
+  if (DropText = '') or FReadOnly then Exit;
+
+  vBB := BlockBegin;
+  vBE := BlockEnd;
+
+  DropInfo := TSynDragDropHelper.ComputeDropInfo(
+    DropPos, vBB, vBE, IsInternal, IsMove);
+  if not DropInfo.DoDrop then Exit;
+
+  BeginUpdate;
+  FUndoRedo.BeginBlock(Self);
+  try
+    if IsMove and IsInternal then
+    begin
+      FDragDropHandled := True;
+      // Restore original selection for deletion (DragOver moved the caret)
+      FSelection.Start := vBB;
+      FSelection.Stop := vBE;
+      DoDeleteSelection;
+      DropPos := TSynDragDropHelper.AdjustDropPos(
+        DropPos, vBB, vBE, DropInfo.DropAfter);
+    end;
+
+    var SaveOpts := FScrollOptions;
+    Include(FScrollOptions, eoScrollPastEol);
+    try
+      FSelection.Caret := DropPos;
+      FSelection.Start := DropPos;
+      FSelection.Stop := DropPos;
+      FSelections.ActiveSelection := FSelection;
+      SetSelectedTextPrimitive(DropText);
+      SetCaretAndSelection(
+        BufferCoord(FSelection.Caret.Char, FSelection.Caret.Line),
+        DropPos,
+        BufferCoord(FSelection.Caret.Char, FSelection.Caret.Line));
+    finally
+      FScrollOptions := SaveOpts;
+    end;
+  finally
+    FUndoRedo.EndBlock(Self);
+    EndUpdate;
+  end;
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.DragLeave;
+begin
+  inherited;
+  StopDragScroll;
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.DragEnd;
+begin
+  inherited;
+  FIsDragSource := False;
+  FDragReady := False;
+  StopDragScroll;
+  Repaint;
+end;
+
+procedure TCustomFMXSynEdit.ComputeDragScroll(X, Y: Single);
+const
+  ScrollMargin = 20;
+begin
+  FDragScrollDeltaX := 0;
+  FDragScrollDeltaY := 0;
+
+  if Y < ScrollMargin then
+    FDragScrollDeltaY := -1
+  else if Y > Height - ScrollMargin then
+    FDragScrollDeltaY := 1;
+
+  if X < FGutterWidth + ScrollMargin then
+    FDragScrollDeltaX := -1
+  else if X > Width - ScrollMargin then
+    FDragScrollDeltaX := 1;
+
+  FDragScrollTimer.Enabled :=
+    (FDragScrollDeltaX <> 0) or (FDragScrollDeltaY <> 0);
+end;
+
+procedure TCustomFMXSynEdit.DragScrollTimerHandler(Sender: TObject);
+begin
+  if FDragScrollDeltaY <> 0 then
+    TopLine := TopLine + FDragScrollDeltaY;
+  if FDragScrollDeltaX <> 0 then
+    LeftChar := LeftChar + FDragScrollDeltaX;
+end;
+
+procedure TCustomFMXSynEdit.StopDragScroll;
+begin
+  FDragScrollTimer.Enabled := False;
+  FDragScrollDeltaX := 0;
+  FDragScrollDeltaY := 0;
 end;
 
 { --- Property setters --- }
