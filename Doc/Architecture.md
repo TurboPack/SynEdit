@@ -177,10 +177,11 @@ SynEdit/
       TestFMXSynSpellCheckComponent Spell check component integration tests
       TestSynHighlighter*Folding    Highlighter fold tests (Delphi, HTML, XML, CSS)
     VCL/
-      VCLSynEditTests.dproj        DUnitX test project (47 tests, 3 fixtures)
+      VCLSynEditTests.dproj        DUnitX test project (64 tests, 4 fixtures)
       TestVCLSynSpellCheck.pas      Hunspell provider tests
       TestVCLSynWindowsSpellCheck   Windows spell-check COM provider tests
       TestVCLSynSpellCheckComponent Spell check component integration tests
+      TestVCLSynEditDragDrop.pas    Drag-drop integration tests
 ```
 
 ## Package Dependencies

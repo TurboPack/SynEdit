@@ -539,6 +539,11 @@ type
       State: TShiftState; MousePt: TPoint; var Effect: LongInt;
       var Result: HResult); virtual;
     procedure OleDragLeave(Sender: TObject; var Result: HResult); virtual;
+    /// Core drop logic extracted for testability.
+    /// OleDrop delegates here after extracting text from the IDataObject.
+    /// Returns True if the drop was performed, False if rejected.
+    function DropTextAtPos(const DropText: string; DropPos: TBufferCoord;
+      IsInternal, IsMove: Boolean): Boolean;
     //-- Ole Drag & Drop
     function GetReadOnly: Boolean; virtual;
     procedure HighlighterAttrChanged(Sender: TObject);
@@ -4247,79 +4252,89 @@ procedure TCustomSynEdit.OleDrop(Sender: TObject; DataObject: IDataObject;
   var Result: HResult);
 var
   vNewCaret: TBufferCoord;
-  vBB, vBE: TBufferCoord;
-  DropInfo: TSynDropInfo;
-  DropMove: Boolean;
   DragDropText: string;
-  ChangeScrollPastEOL: Boolean;
   FormatEtc: TFormatEtc;
   Medium: TStgMedium;
   Pt: TPoint;
 begin
   Pt := ScreenToClient(MousePt);
-  DropMove := Effect = DROPEFFECT_MOVE;
+
+  ComputeCaret(Pt.X, Pt.Y);
+  vNewCaret := CaretXY;
+
+  // Extract text from IDataObject
+  DragDropText := '';
+  with FormatEtc do begin
+    cfFormat := CF_UNICODETEXT;
+    dwAspect := DVASPECT_CONTENT;
+    ptd := nil;
+    tymed := TYMED_HGLOBAL;
+    lindex := -1;
+  end;
+  if DataObject.GetData(FormatEtc, Medium) = S_OK then begin
+    if Medium.hGlobal <> 0 then begin
+      DragDropText := PChar(GlobalLock(Medium.hGlobal));
+      GlobalUnLock(Medium.hGlobal);
+    end;
+    ReleaseStgMedium(Medium);
+  end;
+
+  if not DropTextAtPos(DragDropText, vNewCaret,
+    sfOleDragSource in fStateFlags, Effect = DROPEFFECT_MOVE) then
+    // Drop rejected (empty text, read-only, or drop inside selection)
+    Effect := DROPEFFECT_NONE
+  else if (sfOleDragSource in fStateFlags) and (Effect = DROPEFFECT_MOVE) then
+    // Internal move: signal OLE source not to delete (we already did)
+    Effect := DROPEFFECT_NONE;
+end;
+
+function TCustomSynEdit.DropTextAtPos(const DropText: string;
+  DropPos: TBufferCoord; IsInternal, IsMove: Boolean): Boolean;
+var
+  vBB, vBE: TBufferCoord;
+  DropInfo: TSynDropInfo;
+  ChangeScrollPastEOL: Boolean;
+begin
+  Result := False;
+  if (DropText = '') or ReadOnly then
+    Exit;
 
   BeginUpdate;
   try
-    ComputeCaret(Pt.X, Pt.Y);
-    vNewCaret := CaretXY;
     vBB := BlockBegin;
     vBE := BlockEnd;
 
-    DropInfo := TSynDragDropHelper.ComputeDropInfo(vNewCaret, vBB, vBE,
-      sfOleDragSource in fStateFlags, DropMove);
+    DropInfo := TSynDragDropHelper.ComputeDropInfo(DropPos, vBB, vBE,
+      IsInternal, IsMove);
 
-    if DropInfo.DoDrop then begin
-      with FormatEtc do begin
-        cfFormat := CF_UNICODETEXT;
-        dwAspect := DVASPECT_CONTENT;
-        ptd := nil;
-        tymed := TYMED_HGLOBAL;
-        lindex := -1;
+    if not DropInfo.DoDrop then
+      Exit;
+
+    Result := True;
+    BeginUndoBlock;
+    try
+      // delete the selected text if necessary
+      if IsMove and IsInternal then
+      begin
+        SelText := '';
+        DropPos := TSynDragDropHelper.AdjustDropPos(
+          DropPos, vBB, vBE, DropInfo.DropAfter);
       end;
-      if DataObject.GetData(FormatEtc, Medium) = S_OK then begin
-        if Medium.hGlobal <> 0 then begin
-          DragDropText := PChar(GlobalLock(Medium.hGlobal));
-          GlobalUnLock(Medium.hGlobal);
-          DropInfo.DoDrop := DragDropText <> '';
-        end else
-          DropInfo.DoDrop := False;
-        ReleaseStgMedium(Medium);
-      end else
-        DropInfo.DoDrop := False;
-    end;
-
-    if DropInfo.DoDrop then begin
-      BeginUndoBlock;
+      // insert the selected text
+      ChangeScrollPastEOL := not (eoScrollPastEol in fScrollOptions);
       try
-        // delete the selected text if necessary
-        if DropMove then
-        begin
-          if sfOleDragSource in fStateFlags then begin
-            // Internal dragging
-            Effect := DROPEFFECT_NONE;  // do not clear selection after drop
-            SelText := '';
-            vNewCaret := TSynDragDropHelper.AdjustDropPos(
-              vNewCaret, vBB, vBE, DropInfo.DropAfter);
-          end;
-        end;
-        // insert the selected text
-        ChangeScrollPastEOL := not (eoScrollPastEol in fScrollOptions);
-        try
-          if ChangeScrollPastEOL then
-            Include(fScrollOptions, eoScrollPastEol);
-          CaretXY := vNewCaret;
-          SelText := DragDropText; // creates undo action
-        finally
-          if ChangeScrollPastEOL then
-            Exclude(fScrollOptions, eoScrollPastEol);
-        end;
-        SetCaretAndSelection(CaretXY, vNewCaret, CaretXY);
+        if ChangeScrollPastEOL then
+          Include(fScrollOptions, eoScrollPastEol);
+        CaretXY := DropPos;
+        SelText := DropText;
       finally
-        EndUndoBlock;
+        if ChangeScrollPastEOL then
+          Exclude(fScrollOptions, eoScrollPastEol);
       end;
-    end else
-      Effect := DROPEFFECT_NONE;
+      SetCaretAndSelection(CaretXY, DropPos, CaretXY);
+    finally
+      EndUndoBlock;
+    end;
   finally
     EndUpdate;
   end;

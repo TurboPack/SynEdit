@@ -106,13 +106,14 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | DragDropHelper | 10 | ComputeDropInfo, AdjustDropPos, IsDropCopy |
 | DragDropIntegration | 17 | External/internal drop, move/copy, past EOL, multi-line, undo |
 
-**VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **47 tests**, 3 fixtures:
+**VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **64 tests**, 4 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
 | SynSpellCheck | 20 | Hunspell provider, suffix/prefix rules, suggest |
 | WindowsSpellCheck | 11 | Windows spell-check COM provider |
 | SpellCheckComponent | 16 | TSynSpellCheck component integration |
+| DragDropIntegration | 17 | External/internal drop, move/copy, past EOL, multi-line, undo |
 
 ---
 

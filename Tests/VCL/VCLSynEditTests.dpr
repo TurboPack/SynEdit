@@ -11,7 +11,8 @@ uses
   DUnitX.TestFramework,
   TestVCLSynSpellCheck in 'TestVCLSynSpellCheck.pas',
   TestVCLSynWindowsSpellCheck in 'TestVCLSynWindowsSpellCheck.pas',
-  TestVCLSynSpellCheckComponent in 'TestVCLSynSpellCheckComponent.pas';
+  TestVCLSynSpellCheckComponent in 'TestVCLSynSpellCheckComponent.pas',
+  TestVCLSynEditDragDrop in 'TestVCLSynEditDragDrop.pas';
 
 var
   Runner: ITestRunner;
