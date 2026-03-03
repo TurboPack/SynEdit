@@ -74,6 +74,8 @@ SynEdit/
     SynEditKeyConstShared.pas     Shared key constant definitions
     SynEditSelections.pas         Shared multi-caret selection (TSynSelectionsBase)
     SynEditUndoShared.pas         Shared undo base class (TSynEditUndoBase)
+    SynEditDragDropShared.pas     Shared drag-drop logic (TSynDragDropHelper)
+    SynEditDragDropWin.pas        Windows OLE building blocks (shared by VCL and FMX)
     SynSpellCheckTypes.pas        Shared spell check interfaces (ISynSpellCheckProvider)
     SynSpellCheckHunspellProvider Shared Hunspell spell check provider
     SynSpellCheckWindowsProvider  Shared Windows spell check provider
@@ -135,6 +137,7 @@ SynEdit/
       FMX.SynEditPrintMargins.pas FMX print margin settings
       FMX.SynEditPrintTypes.pas   FMX print type definitions
       FMX.SynEditPrinterInfo.pas  FMX printer info (abstract provider)
+      FMX.SynEditDragDrop.pas     FMX drag-drop platform abstraction + Windows OLE impl
       FMX.SynSpellCheck.pas       FMX spell check (abstract provider)
       FMX.SynEditReg.pas          FMX component registration
   Packages/
@@ -163,11 +166,12 @@ SynEdit/
     SynEditDemosGroup.groupproj   All demos
   Tests/
     FMX/
-      FMXSynEditTests.dproj        DUnitX test project (366 tests, 29 fixtures)
+      FMXSynEditTests.dproj        DUnitX test project (393 tests, 31 fixtures)
       TestFMXSynEdit*.pas           Test fixtures (buffer, caret, folding, commands,
                                      content, highlighter, options, search, undo/redo,
                                      selection, clipboard, editing, renderer,
-                                     completion proposal, multi-caret, bug fixes)
+                                     completion proposal, multi-caret, drag-drop,
+                                     bug fixes)
       TestFMXSynSpellCheck.pas      Spell check provider tests
       TestFMXSynWindowsSpellCheck   Windows spell-check COM provider tests
       TestFMXSynSpellCheckComponent Spell check component integration tests
@@ -224,7 +228,7 @@ to be used by both VCL and FMX editors.
 | Scrollbars | Native Windows (`WM_HSCROLL`/`WM_VSCROLL`) | FMX `TScrollBar` components |
 | Input | Windows messages (`WM_KEYDOWN`, etc.) | FMX event overrides (`KeyDown`, etc.) |
 | Clipboard | Windows API | `IFMXClipboardService` |
-| Drag-drop | OLE `IDropTarget`/`IDropSource` | FMX `DragEnter`/`DragDrop` |
+| Drag-drop | OLE `IDropTarget`/`IDropSource` | OLE via `ISynDragDropPlatform` + FMX `TControl` overrides |
 | Completion | `Vcl.SynCompletionProposal` (native popup) | `FMX.SynCompletionProposal` (`TPopup`-based) |
 | Printing | Windows GDI/printer API | Abstract provider (`FMX.SynEditPrint`) |
 | Spell check | Windows COM (`Vcl.SynSpellCheck`) | Abstract provider (`FMX.SynSpellCheck`) |
@@ -316,6 +320,12 @@ platform-specific units of the same base name, the shared unit uses a
 | `SynUnicodeShared.pas` | `Vcl.SynUnicode.pas` | `FMX.SynUnicode.pas` |
 | `SynEditKeyConstShared.pas` | `Vcl.SynEditKeyConst.pas` | `FMX.SynEditKeyConst.pas` |
 | `SynEditUndoShared.pas` | `Vcl.SynEditUndo.pas` | `FMX.SynEditUndo.pas` |
+| `SynEditDragDropShared.pas` | — | — |
+| `SynEditDragDropWin.pas` | `Vcl.SynEditDragDrop.pas` / `Vcl.SynEditDataObject.pas` | `FMX.SynEditDragDrop.pas` |
 
 The VCL/FMX units re-export the shared declarations and add
 platform-specific functionality (e.g., clipboard, key mapping).
+The drag-drop shared units use a different pattern: `SynEditDragDropWin`
+contains Windows OLE building blocks consumed by both VCL and FMX units
+directly (not via re-export), while `SynEditDragDropShared` contains
+pure cross-platform drop logic.

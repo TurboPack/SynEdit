@@ -12,7 +12,7 @@ The codebase has been restructured into three layers:
 
 - **Shared** (`Source/`) — Platform-independent units: 66 highlighters, text buffer, types, key commands, spell-check infrastructure (Hunspell and Windows providers). These are consumed by both VCL and FMX.
 - **VCL** (`Source/VCL/`, `Vcl.*` prefix) — Windows-specific: DirectWrite rendering, OLE drag-drop, printing, accessibility.
-- **FMX** (`Source/FMX/`, `FMX.*` prefix) — Cross-platform: FMX Canvas rendering, FMX scrollbars, FMX clipboard.
+- **FMX** (`Source/FMX/`, `FMX.*` prefix) — Cross-platform: FMX Canvas rendering, FMX scrollbars, FMX clipboard, drag-drop.
 
 See [Architecture.md](Doc/Architecture.md) for the full technical reference.
 
@@ -38,6 +38,7 @@ A cross-platform syntax-highlighting editor built on FireMonkey. Supports:
 * **Printing** — `TFMXSynEditPrint` with abstract provider interface for platform-specific rendering.
 * **Spell check** — `TFMXSynSpellCheck` with shared provider infrastructure (`ISynSpellCheckProvider`). Includes Hunspell and Windows spell-check providers usable by both VCL and FMX.
 * **Range scanning** — Incremental re-scanning for multi-line highlighters (XML, HTML, Delphi, etc.).
+* **Drag-and-drop** (Windows) — Internal move/copy and external drop via `ISynDragDropPlatform` abstraction. Windows OLE implementation with CF_UNICODETEXT and CF_HTML formats. Fixes FMX framework bug where `TWinDropTarget.Drop` fails to report `dwEffect`. Auto-scroll near edges, visual caret feedback during drag, and full undo support. macOS/Linux not yet implemented — `CreateSynDragDropPlatform` returns nil on non-Windows platforms.
 * **Scrolling** — FMX `TScrollBar`-based scrolling with mouse wheel support.
 * **Gutter** — Line numbers with configurable width.
 * **Right edge** — Configurable right margin indicator.
@@ -68,7 +69,7 @@ Three FMX demos are included in `Demos/FMX/`:
 
 Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-value assertions throughout.
 
-**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **366 tests**, 29 fixtures:
+**FMX tests** (`Tests/FMX/FMXSynEditTests.dproj`) — **393 tests**, 31 fixtures:
 
 | Fixture | Tests | Coverage area |
 | :------ | ----: | :------------ |
@@ -102,6 +103,8 @@ Two DUnitX test suites run headless with `FailsOnNoAsserts` enabled and exact-va
 | Bookmarks | 15 | Set/clear/goto, toggle, mark list, line clamp |
 | Gutter | 15 | Band order/visibility, auto-width, BandAtX, fold sync |
 | MultiCaret | 17 | Add/toggle carets, column selection, multi-caret edit/delete/backspace, merge, undo/redo |
+| DragDropHelper | 10 | ComputeDropInfo, AdjustDropPos, IsDropCopy |
+| DragDropIntegration | 17 | External/internal drop, move/copy, past EOL, multi-line, undo |
 
 **VCL tests** (`Tests/VCL/VCLSynEditTests.dproj`) — **47 tests**, 3 fixtures:
 
