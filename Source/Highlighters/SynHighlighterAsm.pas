@@ -83,7 +83,7 @@ type
     procedure SingleQuoteStringProc;
     procedure SymbolProc;
     procedure UnknownProc;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
   protected
     function GetSampleSource: string; override;
@@ -99,7 +99,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -157,7 +157,7 @@ const
     'sldt,smsw,stc,std,sti,stos,stosb,stosd,stosw,str,sub,test,verr,verw,' +
     'wait,wbinvd,xadd,xchg,xlat,xlatb,xor';
 
-procedure TSynAsmSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynAsmSyn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -405,7 +405,7 @@ begin
   end;
 end;
 
-function TSynAsmSyn.GetTokenKind: Integer;
+function TSynAsmSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

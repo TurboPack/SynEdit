@@ -147,16 +147,16 @@ type
             // left
     PTop,   // Top position of text in device units (pixels) - this is the top
             // margin minus the top unprintable distance
-    PBottom: Integer; // Bottom position of text in device units (pixels) -
+    PBottom: Int64; // Bottom position of text in device units (pixels) -
                       // calculated form top
     PHeader,          // Header in device units (pixels)
-    PFooter: Integer; // Footer in device units (pixels) - calculated from top
-    PLeftHFTextIndent: Integer;  // Left position of text in header and footer in device
+    PFooter: Int64; // Footer in device units (pixels) - calculated from top
+    PLeftHFTextIndent: Int64;  // Left position of text in header and footer in device
                                  // units (pixels). Calculated as Left margin + LeftHFTextIndent
-    PRightHFTextIndent: Integer; // Right position of text in header and footer in device
+    PRightHFTextIndent: Int64; // Right position of text in header and footer in device
                                  // units (pixels). Calculated from left
-    PHFInternalMargin: Integer;  // Internal margin in device units (pixels)
-    PGutter: Integer; // Binding gutter in device units (pixels)
+    PHFInternalMargin: Int64;  // Internal margin in device units (pixels)
+    PGutter: Int64; // Binding gutter in device units (pixels)
     constructor Create;
     procedure InitPage(TextFormat: TSynTextFormat; PageNum: Integer; PrinterInfo:
         TSynEditPrinterInfo; LineNumbers, LineNumbersInMargin: Boolean; MaxLineNum:
@@ -184,6 +184,9 @@ type
   end;
 
 implementation
+
+uses
+  SynFunc;
 
 { TSynEditPrintMargins }
 const

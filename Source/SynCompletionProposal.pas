@@ -404,7 +404,7 @@ type
     fEditors: TList;
     FShortCut: TShortCut;
     FNoNextKey: Boolean;
-    FCompletionStart: Integer;
+    FCompletionStart: NativeInt;
     FAdjustCompletionStart: Boolean;
     FOnCodeCompletion: TCodeCompletionEvent;
     FTimer: TTimer;
@@ -440,14 +440,14 @@ type
     destructor Destroy; override;
     procedure AddEditor(AEditor: TCustomSynEdit);
     function RemoveEditor(AEditor: TCustomSynEdit): Boolean;
-    function EditorsCount: Integer;
+    function EditorsCount: NativeInt;
     procedure ExecuteEx(s: string; x, y: Integer; Kind: SynCompletionType = ctCode); override;
     procedure ActivateCompletion;
     procedure CancelCompletion;
     procedure ActivateTimer(ACurrentEditor: TCustomSynEdit);
     procedure DeactivateTimer;
     property Editors[i: Integer]: TCustomSynEdit read GetEditor;
-    property CompletionStart: Integer read FCompletionStart write FCompletionStart; // ET 04/02/2003
+    property CompletionStart: NativeInt read FCompletionStart write FCompletionStart; // ET 04/02/2003
   published
     property ShortCut: TShortCut read FShortCut write SetShortCut;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
@@ -558,7 +558,8 @@ uses
   System.UITypes,
   SynEditTextBuffer,
   SynEditMiscProcs,
-  SynEditKeyConst;
+  SynEditKeyConst,
+  SynFunc;
 
 const
   TextHeightString = 'CompletionProposal';
@@ -585,15 +586,15 @@ type
   TFormatChunkList = class
   private
     FChunks: TList;
-    function GetCount: Integer;
-    function GetChunk(Index: Integer): PFormatChunk;
+    function GetCount: NativeInt;
+    function GetChunk(Index: NativeInt): PFormatChunk;
   public
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
     procedure Add(AChunk: PFormatChunk);
-    property Count: Integer read GetCount;
-    property Chunks[Index: Integer]: PFormatChunk read GetChunk; default;
+    property Count: NativeInt read GetCount;
+    property Chunks[Index: NativeInt]: PFormatChunk read GetChunk; default;
   end;
 
 
@@ -601,12 +602,12 @@ const
   AllCommands = [fcColor..High(TFormatCommand)];
 
 
-function TFormatChunkList.GetCount: Integer;
+function TFormatChunkList.GetCount: NativeInt;
 begin
   Result := FChunks.Count;
 end;
 
-function TFormatChunkList.GetChunk(Index: Integer): PFormatChunk;
+function TFormatChunkList.GetChunk(Index: NativeInt): PFormatChunk;
 begin
   Result := FChunks[Index];
 end;
@@ -853,7 +854,7 @@ end;
 function StripFormatCommands(const FormattedString: string): string;
 var
   Chunks: TFormatChunkList;
-  i: Integer;
+  i: NativeInt;
 begin
   Chunks := TFormatChunkList.Create;
   try
@@ -873,7 +874,7 @@ function PaintChunks(TargetCanvas: TCanvas; const Rect: TRect; PPI: Integer;
   ChunkList: TFormatChunkList; Columns: TProposalColumns; Images: TCustomImageList;
   Invisible: Boolean): Integer;
 var
-  i: Integer;
+  i: NativeInt;
   X: Integer;
   C: PFormatChunk;
   CurrentColumn: TProposalColumn;
@@ -2118,7 +2119,7 @@ begin
         FScrollbar.Max := FAssignedList.Count - FLinesInWindow;
         if FScrollbar.Max <> 0 then
         begin
-          FScrollbar.LargeChange := FLinesInWindow;
+          FScrollbar.LargeChange := TScrollBarInc(FLinesInWindow);
           FScrollbar.PageSize := 1;
           FScrollbar.Enabled := True;
         end else
@@ -2314,8 +2315,7 @@ var
 
     if tmpY + tmpHeight > WorkArea.Bottom then
     begin
-      tmpY := tmpY - tmpHeight - (Form.CurrentEditor  as TCustomSynEdit).LineHeight -
-        2 * FForm.FScaledMargin;
+      tmpY := tmpY - tmpHeight - ToInt32((Form.CurrentEditor  as TCustomSynEdit).LineHeight - 2 * FForm.FScaledMargin);
       if tmpY < 0 then
         tmpY := 0;
     end;
@@ -3031,7 +3031,7 @@ end;
 function TSynCompletionProposal.GetCurrentInput(AEditor: TCustomSynEdit): string;
 var
   s: string;
-  i: Integer;
+  i: NativeInt;
 begin
   Result := '';
   if AEditor <> nil then
@@ -3057,7 +3057,7 @@ end;
 function TSynCompletionProposal.GetPreviousToken(AEditor: TCustomSynEdit): string;
 var
   Line: string;
-  X: Integer;
+  X: NativeInt;
 begin
   Result := '';
   if not Assigned(AEditor) then
@@ -3189,7 +3189,7 @@ end;
 
 procedure TSynCompletionProposal.AddEditor(AEditor: TCustomSynEdit);
 var
-  i: Integer;
+  i: NativeInt;
 begin
   i := fEditors.IndexOf(AEditor);
   if i = -1 then begin
@@ -3201,7 +3201,7 @@ begin
   end;
 end;
 
-function TSynCompletionProposal.EditorsCount: Integer;
+function TSynCompletionProposal.EditorsCount: NativeInt;
 begin
   Result := fEditors.count;
 end;
@@ -3216,7 +3216,7 @@ end;
 
 function TSynCompletionProposal.RemoveEditor(AEditor: TCustomSynEdit): Boolean;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   i := fEditors.Remove(AEditor);
   Result := i <> -1;
@@ -3239,7 +3239,7 @@ end;
 procedure TSynCompletionProposal.DoExecute(AEditor: TCustomSynEdit);
 var
   p: TPoint;
-  i: Integer;
+  i: NativeInt;
 begin
   i := FEditors.IndexOf(AEditor);
   if i <> -1 then
@@ -3415,7 +3415,7 @@ var
   I, J: Integer;
   StartOfBlock: TBufferCoord;
   OrigOptions: TSynEditorOptions;
-  BeginningSpaceCount: Integer;
+  BeginningSpaceCount: NativeInt;
   Spacing: string;
 begin
   if Assigned(OnBeforeExecute) then OnBeforeExecute(Self);
@@ -3438,10 +3438,10 @@ begin
           if not(eoTabsToSpaces in Editor.Options) and
             (BeginningSpaceCount >= Editor.TabWidth)
           then
-            Spacing := StringofChar(#9, BeginningSpaceCount div Editor.TabWidth)
-              + StringofChar(' ', BeginningSpaceCount mod Editor.TabWidth)
+            Spacing := StringOfChar(#9, BeginningSpaceCount div Editor.TabWidth)
+              + StringOfChar(' ', BeginningSpaceCount mod Editor.TabWidth)
           else
-            Spacing := StringofChar(' ', BeginningSpaceCount);
+            Spacing := StringOfChar(' ', BeginningSpaceCount);
 
           Inc(I);
           if (I < AutoCompleteList.Count) and
@@ -3530,7 +3530,7 @@ end;
 function TSynAutoComplete.GetPreviousToken(Editor: TCustomSynEdit): string;
 var
   s: string;
-  i: Integer;
+  i: NativeInt;
 begin
   Result := '';
   if Editor <> nil then

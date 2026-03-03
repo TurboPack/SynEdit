@@ -140,7 +140,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -727,7 +727,7 @@ end;
 
 function TSynXMLSyn.NextTokenIs(Token: string): Boolean;
 var
-  I, Len: Integer;
+  I, Len: NativeInt;
 begin
   Result := True;
   Len := Length(Token);
@@ -791,7 +791,7 @@ begin
   end;
 end;
 
-function TSynXMLSyn.GetTokenKind: Integer;
+function TSynXMLSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

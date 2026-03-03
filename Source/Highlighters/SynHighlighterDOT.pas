@@ -72,7 +72,7 @@ type
   TRangeState = (rsUnKnown, rsCStyleComment, rsString);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
 type
   TSynDOTSyn = class(TSynCustomHighlighter)
@@ -91,153 +91,153 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fValueAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function FuncAll(Index: Integer): TtkTokenKind;
-    function FuncAppendix(Index: Integer): TtkTokenKind;
-    function FuncArrowhead(Index: Integer): TtkTokenKind;
-    function FuncArrowsize(Index: Integer): TtkTokenKind;
-    function FuncArrowtail(Index: Integer): TtkTokenKind;
-    function FuncAuto(Index: Integer): TtkTokenKind;
-    function FuncBack(Index: Integer): TtkTokenKind;
-    function FuncBgcolor(Index: Integer): TtkTokenKind;
-    function FuncBold(Index: Integer): TtkTokenKind;
-    function FuncBoth(Index: Integer): TtkTokenKind;
-    function FuncBottomlabel(Index: Integer): TtkTokenKind;
-    function FuncBox(Index: Integer): TtkTokenKind;
-    function FuncCenter(Index: Integer): TtkTokenKind;
-    function FuncCircle(Index: Integer): TtkTokenKind;
-    function FuncClusterrank(Index: Integer): TtkTokenKind;
-    function FuncColor(Index: Integer): TtkTokenKind;
-    function FuncComment(Index: Integer): TtkTokenKind;
-    function FuncCompound(Index: Integer): TtkTokenKind;
-    function FuncConcentrate(Index: Integer): TtkTokenKind;
-    function FuncConstraint(Index: Integer): TtkTokenKind;
-    function FuncDecorate(Index: Integer): TtkTokenKind;
-    function FuncDiamond(Index: Integer): TtkTokenKind;
-    function FuncDigraph(Index: Integer): TtkTokenKind;
-    function FuncDir(Index: Integer): TtkTokenKind;
-    function FuncDistortion(Index: Integer): TtkTokenKind;
-    function FuncDot(Index: Integer): TtkTokenKind;
-    function FuncDotted(Index: Integer): TtkTokenKind;
-    function FuncDoublecircle(Index: Integer): TtkTokenKind;
-    function FuncDoubleoctagon(Index: Integer): TtkTokenKind;
-    function FuncE(Index: Integer): TtkTokenKind;
-    function FuncEdge(Index: Integer): TtkTokenKind;
-    function FuncEgg(Index: Integer): TtkTokenKind;
-    function FuncEllipse(Index: Integer): TtkTokenKind;
-    function FuncFalse(Index: Integer): TtkTokenKind;
-    function FuncFill(Index: Integer): TtkTokenKind;
-    function FuncFillcolor(Index: Integer): TtkTokenKind;
-    function FuncFilled(Index: Integer): TtkTokenKind;
-    function FuncFixedsize(Index: Integer): TtkTokenKind;
-    function FuncFontcolor(Index: Integer): TtkTokenKind;
-    function FuncFontname(Index: Integer): TtkTokenKind;
-    function FuncFontpath(Index: Integer): TtkTokenKind;
-    function FuncFontsize(Index: Integer): TtkTokenKind;
-    function FuncForward(Index: Integer): TtkTokenKind;
-    function FuncGlobal(Index: Integer): TtkTokenKind;
-    function FuncGraph(Index: Integer): TtkTokenKind;
-    function FuncGroup(Index: Integer): TtkTokenKind;
-    function FuncHeadlabel(Index: Integer): TtkTokenKind;
-    function FuncHeadport(Index: Integer): TtkTokenKind;
-    function FuncHeadurl(Index: Integer): TtkTokenKind;
-    function FuncHeight(Index: Integer): TtkTokenKind;
-    function FuncHexagon(Index: Integer): TtkTokenKind;
-    function FuncHouse(Index: Integer): TtkTokenKind;
-    function FuncId(Index: Integer): TtkTokenKind;
-    function FuncInv(Index: Integer): TtkTokenKind;
-    function FuncInvdot(Index: Integer): TtkTokenKind;
-    function FuncInvhouse(Index: Integer): TtkTokenKind;
-    function FuncInvodot(Index: Integer): TtkTokenKind;
-    function FuncInvtrapezium(Index: Integer): TtkTokenKind;
-    function FuncInvtriangle(Index: Integer): TtkTokenKind;
-    function FuncLabel(Index: Integer): TtkTokenKind;
-    function FuncLabelangle(Index: Integer): TtkTokenKind;
-    function FuncLabeldistance(Index: Integer): TtkTokenKind;
-    function FuncLabelfloat(Index: Integer): TtkTokenKind;
-    function FuncLabelfontcolor(Index: Integer): TtkTokenKind;
-    function FuncLabelfontname(Index: Integer): TtkTokenKind;
-    function FuncLabelfontsize(Index: Integer): TtkTokenKind;
-    function FuncLabeljust(Index: Integer): TtkTokenKind;
-    function FuncLabelloc(Index: Integer): TtkTokenKind;
-    function FuncLayer(Index: Integer): TtkTokenKind;
-    function FuncLayers(Index: Integer): TtkTokenKind;
-    function FuncLhead(Index: Integer): TtkTokenKind;
-    function FuncLtail(Index: Integer): TtkTokenKind;
-    function FuncMargin(Index: Integer): TtkTokenKind;
-    function FuncMax(Index: Integer): TtkTokenKind;
-    function FuncMcircle(Index: Integer): TtkTokenKind;
-    function FuncMclimit(Index: Integer): TtkTokenKind;
-    function FuncMdiamond(Index: Integer): TtkTokenKind;
-    function FuncMerged(Index: Integer): TtkTokenKind;
-    function FuncMin(Index: Integer): TtkTokenKind;
-    function FuncMinimum(Index: Integer): TtkTokenKind;
-    function FuncMinlen(Index: Integer): TtkTokenKind;
-    function FuncMrecord(Index: Integer): TtkTokenKind;
-    function FuncMsquare(Index: Integer): TtkTokenKind;
-    function FuncMultiples(Index: Integer): TtkTokenKind;
-    function FuncN(Index: Integer): TtkTokenKind;
-    function FuncNe(Index: Integer): TtkTokenKind;
-    function FuncNode(Index: Integer): TtkTokenKind;
-    function FuncNodesep(Index: Integer): TtkTokenKind;
-    function FuncNone(Index: Integer): TtkTokenKind;
-    function FuncNormal(Index: Integer): TtkTokenKind;
-    function FuncNslimit(Index: Integer): TtkTokenKind;
-    function FuncNw(Index: Integer): TtkTokenKind;
-    function FuncOctagon(Index: Integer): TtkTokenKind;
-    function FuncOdot(Index: Integer): TtkTokenKind;
-    function FuncOnto(Index: Integer): TtkTokenKind;
-    function FuncOrdering(Index: Integer): TtkTokenKind;
-    function FuncOrientation(Index: Integer): TtkTokenKind;
-    function FuncPage(Index: Integer): TtkTokenKind;
-    function FuncPagedir(Index: Integer): TtkTokenKind;
-    function FuncParallelogram(Index: Integer): TtkTokenKind;
-    function FuncPeripheries(Index: Integer): TtkTokenKind;
-    function FuncPlaintext(Index: Integer): TtkTokenKind;
-    function FuncPoint(Index: Integer): TtkTokenKind;
-    function FuncPolygon(Index: Integer): TtkTokenKind;
-    function FuncQuantum(Index: Integer): TtkTokenKind;
-    function FuncRank(Index: Integer): TtkTokenKind;
-    function FuncRankdir(Index: Integer): TtkTokenKind;
-    function FuncRanksep(Index: Integer): TtkTokenKind;
-    function FuncRatio(Index: Integer): TtkTokenKind;
-    function FuncRecord(Index: Integer): TtkTokenKind;
-    function FuncRegular(Index: Integer): TtkTokenKind;
-    function FuncRemincross(Index: Integer): TtkTokenKind;
-    function FuncRotate(Index: Integer): TtkTokenKind;
-    function FuncS(Index: Integer): TtkTokenKind;
-    function FuncSame(Index: Integer): TtkTokenKind;
-    function FuncSamehead(Index: Integer): TtkTokenKind;
-    function FuncSametail(Index: Integer): TtkTokenKind;
-    function FuncSamplepoints(Index: Integer): TtkTokenKind;
-    function FuncSe(Index: Integer): TtkTokenKind;
-    function FuncSearchsize(Index: Integer): TtkTokenKind;
-    function FuncSection(Index: Integer): TtkTokenKind;
-    function FuncShape(Index: Integer): TtkTokenKind;
-    function FuncShapefile(Index: Integer): TtkTokenKind;
-    function FuncSides(Index: Integer): TtkTokenKind;
-    function FuncSink(Index: Integer): TtkTokenKind;
-    function FuncSize(Index: Integer): TtkTokenKind;
-    function FuncSkew(Index: Integer): TtkTokenKind;
-    function FuncSource(Index: Integer): TtkTokenKind;
-    function FuncStrict(Index: Integer): TtkTokenKind;
-    function FuncStyle(Index: Integer): TtkTokenKind;
-    function FuncSubgraph(Index: Integer): TtkTokenKind;
-    function FuncSw(Index: Integer): TtkTokenKind;
-    function FuncTaillabel(Index: Integer): TtkTokenKind;
-    function FuncTailport(Index: Integer): TtkTokenKind;
-    function FuncTailurl(Index: Integer): TtkTokenKind;
-    function FuncToplabel(Index: Integer): TtkTokenKind;
-    function FuncTrapezium(Index: Integer): TtkTokenKind;
-    function FuncTriangle(Index: Integer): TtkTokenKind;
-    function FuncTripleoctagon(Index: Integer): TtkTokenKind;
-    function FuncTrue(Index: Integer): TtkTokenKind;
-    function FuncUrl(Index: Integer): TtkTokenKind;
-    function FuncW(Index: Integer): TtkTokenKind;
-    function FuncWeight(Index: Integer): TtkTokenKind;
-    function FuncWhen(Index: Integer): TtkTokenKind;
-    function FuncWidth(Index: Integer): TtkTokenKind;
-    function FuncZ(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
+    function FuncAll(Index: NativeInt): TtkTokenKind;
+    function FuncAppendix(Index: NativeInt): TtkTokenKind;
+    function FuncArrowhead(Index: NativeInt): TtkTokenKind;
+    function FuncArrowsize(Index: NativeInt): TtkTokenKind;
+    function FuncArrowtail(Index: NativeInt): TtkTokenKind;
+    function FuncAuto(Index: NativeInt): TtkTokenKind;
+    function FuncBack(Index: NativeInt): TtkTokenKind;
+    function FuncBgcolor(Index: NativeInt): TtkTokenKind;
+    function FuncBold(Index: NativeInt): TtkTokenKind;
+    function FuncBoth(Index: NativeInt): TtkTokenKind;
+    function FuncBottomlabel(Index: NativeInt): TtkTokenKind;
+    function FuncBox(Index: NativeInt): TtkTokenKind;
+    function FuncCenter(Index: NativeInt): TtkTokenKind;
+    function FuncCircle(Index: NativeInt): TtkTokenKind;
+    function FuncClusterrank(Index: NativeInt): TtkTokenKind;
+    function FuncColor(Index: NativeInt): TtkTokenKind;
+    function FuncComment(Index: NativeInt): TtkTokenKind;
+    function FuncCompound(Index: NativeInt): TtkTokenKind;
+    function FuncConcentrate(Index: NativeInt): TtkTokenKind;
+    function FuncConstraint(Index: NativeInt): TtkTokenKind;
+    function FuncDecorate(Index: NativeInt): TtkTokenKind;
+    function FuncDiamond(Index: NativeInt): TtkTokenKind;
+    function FuncDigraph(Index: NativeInt): TtkTokenKind;
+    function FuncDir(Index: NativeInt): TtkTokenKind;
+    function FuncDistortion(Index: NativeInt): TtkTokenKind;
+    function FuncDot(Index: NativeInt): TtkTokenKind;
+    function FuncDotted(Index: NativeInt): TtkTokenKind;
+    function FuncDoublecircle(Index: NativeInt): TtkTokenKind;
+    function FuncDoubleoctagon(Index: NativeInt): TtkTokenKind;
+    function FuncE(Index: NativeInt): TtkTokenKind;
+    function FuncEdge(Index: NativeInt): TtkTokenKind;
+    function FuncEgg(Index: NativeInt): TtkTokenKind;
+    function FuncEllipse(Index: NativeInt): TtkTokenKind;
+    function FuncFalse(Index: NativeInt): TtkTokenKind;
+    function FuncFill(Index: NativeInt): TtkTokenKind;
+    function FuncFillcolor(Index: NativeInt): TtkTokenKind;
+    function FuncFilled(Index: NativeInt): TtkTokenKind;
+    function FuncFixedsize(Index: NativeInt): TtkTokenKind;
+    function FuncFontcolor(Index: NativeInt): TtkTokenKind;
+    function FuncFontname(Index: NativeInt): TtkTokenKind;
+    function FuncFontpath(Index: NativeInt): TtkTokenKind;
+    function FuncFontsize(Index: NativeInt): TtkTokenKind;
+    function FuncForward(Index: NativeInt): TtkTokenKind;
+    function FuncGlobal(Index: NativeInt): TtkTokenKind;
+    function FuncGraph(Index: NativeInt): TtkTokenKind;
+    function FuncGroup(Index: NativeInt): TtkTokenKind;
+    function FuncHeadlabel(Index: NativeInt): TtkTokenKind;
+    function FuncHeadport(Index: NativeInt): TtkTokenKind;
+    function FuncHeadurl(Index: NativeInt): TtkTokenKind;
+    function FuncHeight(Index: NativeInt): TtkTokenKind;
+    function FuncHexagon(Index: NativeInt): TtkTokenKind;
+    function FuncHouse(Index: NativeInt): TtkTokenKind;
+    function FuncId(Index: NativeInt): TtkTokenKind;
+    function FuncInv(Index: NativeInt): TtkTokenKind;
+    function FuncInvdot(Index: NativeInt): TtkTokenKind;
+    function FuncInvhouse(Index: NativeInt): TtkTokenKind;
+    function FuncInvodot(Index: NativeInt): TtkTokenKind;
+    function FuncInvtrapezium(Index: NativeInt): TtkTokenKind;
+    function FuncInvtriangle(Index: NativeInt): TtkTokenKind;
+    function FuncLabel(Index: NativeInt): TtkTokenKind;
+    function FuncLabelangle(Index: NativeInt): TtkTokenKind;
+    function FuncLabeldistance(Index: NativeInt): TtkTokenKind;
+    function FuncLabelfloat(Index: NativeInt): TtkTokenKind;
+    function FuncLabelfontcolor(Index: NativeInt): TtkTokenKind;
+    function FuncLabelfontname(Index: NativeInt): TtkTokenKind;
+    function FuncLabelfontsize(Index: NativeInt): TtkTokenKind;
+    function FuncLabeljust(Index: NativeInt): TtkTokenKind;
+    function FuncLabelloc(Index: NativeInt): TtkTokenKind;
+    function FuncLayer(Index: NativeInt): TtkTokenKind;
+    function FuncLayers(Index: NativeInt): TtkTokenKind;
+    function FuncLhead(Index: NativeInt): TtkTokenKind;
+    function FuncLtail(Index: NativeInt): TtkTokenKind;
+    function FuncMargin(Index: NativeInt): TtkTokenKind;
+    function FuncMax(Index: NativeInt): TtkTokenKind;
+    function FuncMcircle(Index: NativeInt): TtkTokenKind;
+    function FuncMclimit(Index: NativeInt): TtkTokenKind;
+    function FuncMdiamond(Index: NativeInt): TtkTokenKind;
+    function FuncMerged(Index: NativeInt): TtkTokenKind;
+    function FuncMin(Index: NativeInt): TtkTokenKind;
+    function FuncMinimum(Index: NativeInt): TtkTokenKind;
+    function FuncMinlen(Index: NativeInt): TtkTokenKind;
+    function FuncMrecord(Index: NativeInt): TtkTokenKind;
+    function FuncMsquare(Index: NativeInt): TtkTokenKind;
+    function FuncMultiples(Index: NativeInt): TtkTokenKind;
+    function FuncN(Index: NativeInt): TtkTokenKind;
+    function FuncNe(Index: NativeInt): TtkTokenKind;
+    function FuncNode(Index: NativeInt): TtkTokenKind;
+    function FuncNodesep(Index: NativeInt): TtkTokenKind;
+    function FuncNone(Index: NativeInt): TtkTokenKind;
+    function FuncNormal(Index: NativeInt): TtkTokenKind;
+    function FuncNslimit(Index: NativeInt): TtkTokenKind;
+    function FuncNw(Index: NativeInt): TtkTokenKind;
+    function FuncOctagon(Index: NativeInt): TtkTokenKind;
+    function FuncOdot(Index: NativeInt): TtkTokenKind;
+    function FuncOnto(Index: NativeInt): TtkTokenKind;
+    function FuncOrdering(Index: NativeInt): TtkTokenKind;
+    function FuncOrientation(Index: NativeInt): TtkTokenKind;
+    function FuncPage(Index: NativeInt): TtkTokenKind;
+    function FuncPagedir(Index: NativeInt): TtkTokenKind;
+    function FuncParallelogram(Index: NativeInt): TtkTokenKind;
+    function FuncPeripheries(Index: NativeInt): TtkTokenKind;
+    function FuncPlaintext(Index: NativeInt): TtkTokenKind;
+    function FuncPoint(Index: NativeInt): TtkTokenKind;
+    function FuncPolygon(Index: NativeInt): TtkTokenKind;
+    function FuncQuantum(Index: NativeInt): TtkTokenKind;
+    function FuncRank(Index: NativeInt): TtkTokenKind;
+    function FuncRankdir(Index: NativeInt): TtkTokenKind;
+    function FuncRanksep(Index: NativeInt): TtkTokenKind;
+    function FuncRatio(Index: NativeInt): TtkTokenKind;
+    function FuncRecord(Index: NativeInt): TtkTokenKind;
+    function FuncRegular(Index: NativeInt): TtkTokenKind;
+    function FuncRemincross(Index: NativeInt): TtkTokenKind;
+    function FuncRotate(Index: NativeInt): TtkTokenKind;
+    function FuncS(Index: NativeInt): TtkTokenKind;
+    function FuncSame(Index: NativeInt): TtkTokenKind;
+    function FuncSamehead(Index: NativeInt): TtkTokenKind;
+    function FuncSametail(Index: NativeInt): TtkTokenKind;
+    function FuncSamplepoints(Index: NativeInt): TtkTokenKind;
+    function FuncSe(Index: NativeInt): TtkTokenKind;
+    function FuncSearchsize(Index: NativeInt): TtkTokenKind;
+    function FuncSection(Index: NativeInt): TtkTokenKind;
+    function FuncShape(Index: NativeInt): TtkTokenKind;
+    function FuncShapefile(Index: NativeInt): TtkTokenKind;
+    function FuncSides(Index: NativeInt): TtkTokenKind;
+    function FuncSink(Index: NativeInt): TtkTokenKind;
+    function FuncSize(Index: NativeInt): TtkTokenKind;
+    function FuncSkew(Index: NativeInt): TtkTokenKind;
+    function FuncSource(Index: NativeInt): TtkTokenKind;
+    function FuncStrict(Index: NativeInt): TtkTokenKind;
+    function FuncStyle(Index: NativeInt): TtkTokenKind;
+    function FuncSubgraph(Index: NativeInt): TtkTokenKind;
+    function FuncSw(Index: NativeInt): TtkTokenKind;
+    function FuncTaillabel(Index: NativeInt): TtkTokenKind;
+    function FuncTailport(Index: NativeInt): TtkTokenKind;
+    function FuncTailurl(Index: NativeInt): TtkTokenKind;
+    function FuncToplabel(Index: NativeInt): TtkTokenKind;
+    function FuncTrapezium(Index: NativeInt): TtkTokenKind;
+    function FuncTriangle(Index: NativeInt): TtkTokenKind;
+    function FuncTripleoctagon(Index: NativeInt): TtkTokenKind;
+    function FuncTrue(Index: NativeInt): TtkTokenKind;
+    function FuncUrl(Index: NativeInt): TtkTokenKind;
+    function FuncW(Index: NativeInt): TtkTokenKind;
+    function FuncWeight(Index: NativeInt): TtkTokenKind;
+    function FuncWhen(Index: NativeInt): TtkTokenKind;
+    function FuncWidth(Index: NativeInt): TtkTokenKind;
+    function FuncZ(Index: NativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -265,10 +265,10 @@ type
     procedure SetRange(Value: Pointer); override;
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): string; override;
+    function GetKeyWords(TokenKind: NativeInt): string; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
      function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -316,7 +316,7 @@ const
     'weight', 'when', 'width', 'z' 
   );
 
-  KeyIndices: array[0..786] of Integer = (
+  KeyIndices: array[0..786] of NativeInt = (
     -1, -1, -1, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
     -1, 141, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 88, 50, -1, -1, -1, -1, -1, 
@@ -389,7 +389,7 @@ end;
 
 procedure TSynDOTSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -543,12 +543,12 @@ begin
   fIdentFuncTable[245] := FuncZ;
 end;
 
-function TSynDOTSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncAll(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncAll(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -556,7 +556,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncAppendix(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncAppendix(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -564,7 +564,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncArrowhead(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncArrowhead(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -572,7 +572,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncArrowsize(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncArrowsize(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -580,7 +580,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncArrowtail(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncArrowtail(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -588,7 +588,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncAuto(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncAuto(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -596,7 +596,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncBack(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncBack(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -604,7 +604,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncBgcolor(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncBgcolor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -612,7 +612,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncBold(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncBold(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -620,7 +620,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncBoth(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncBoth(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -628,7 +628,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncBottomlabel(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncBottomlabel(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -636,7 +636,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncBox(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncBox(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -644,7 +644,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncCenter(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncCenter(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -652,7 +652,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncCircle(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncCircle(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -660,7 +660,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncClusterrank(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncClusterrank(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -668,7 +668,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncColor(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncColor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -676,7 +676,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncComment(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncComment(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -684,7 +684,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncCompound(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncCompound(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -692,7 +692,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncConcentrate(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncConcentrate(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -700,7 +700,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncConstraint(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncConstraint(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -708,7 +708,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDecorate(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDecorate(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -716,7 +716,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDiamond(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDiamond(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -724,7 +724,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDigraph(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDigraph(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -732,7 +732,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDir(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDir(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -740,7 +740,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDistortion(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDistortion(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -748,7 +748,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDot(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDot(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkArrowHead
@@ -756,7 +756,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDotted(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDotted(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -764,7 +764,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDoublecircle(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDoublecircle(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -772,7 +772,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncDoubleoctagon(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncDoubleoctagon(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -780,7 +780,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncE(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncE(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -788,7 +788,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncEdge(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncEdge(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -796,7 +796,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncEgg(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncEgg(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -804,7 +804,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncEllipse(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncEllipse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -812,7 +812,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFalse(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFalse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -820,7 +820,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFill(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFill(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -828,7 +828,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFillcolor(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFillcolor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -836,7 +836,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFilled(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFilled(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue  // TODO: ANSI source isn't clear if tkValue or tkAttribute
@@ -844,7 +844,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFixedsize(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFixedsize(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -852,7 +852,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFontcolor(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFontcolor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -860,7 +860,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFontname(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFontname(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -868,7 +868,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFontpath(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFontpath(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -876,7 +876,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncFontsize(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncFontsize(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -884,7 +884,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncForward(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncForward(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -892,7 +892,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncGlobal(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncGlobal(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -900,7 +900,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncGraph(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncGraph(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -908,7 +908,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncGroup(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncGroup(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -916,7 +916,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncHeadlabel(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncHeadlabel(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -924,7 +924,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncHeadport(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncHeadport(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -932,7 +932,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncHeadurl(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncHeadurl(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -940,7 +940,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncHeight(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncHeight(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -948,7 +948,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncHexagon(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncHexagon(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -956,7 +956,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncHouse(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncHouse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -964,7 +964,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncId(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncId(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -972,7 +972,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncInv(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncInv(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkArrowHead
@@ -980,7 +980,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncInvdot(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncInvdot(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkArrowHead
@@ -988,7 +988,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncInvhouse(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncInvhouse(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -996,7 +996,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncInvodot(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncInvodot(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkArrowHead
@@ -1004,7 +1004,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncInvtrapezium(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncInvtrapezium(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1012,7 +1012,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncInvtriangle(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncInvtriangle(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1020,7 +1020,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabel(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabel(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1028,7 +1028,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabelangle(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabelangle(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1036,7 +1036,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabeldistance(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabeldistance(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1044,7 +1044,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabelfloat(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabelfloat(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1052,7 +1052,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabelfontcolor(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabelfontcolor(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1060,7 +1060,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabelfontname(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabelfontname(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1068,7 +1068,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabelfontsize(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabelfontsize(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1076,7 +1076,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabeljust(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabeljust(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1084,7 +1084,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLabelloc(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLabelloc(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1092,7 +1092,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLayer(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLayer(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute  // TODO: ANSI source isn't clear if tkAttribute or tkKey
@@ -1100,7 +1100,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLayers(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLayers(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute  // TODO: ANSI source isn't clear if tkAttribute or tkKey
@@ -1108,7 +1108,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLhead(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLhead(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1116,7 +1116,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncLtail(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncLtail(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1124,7 +1124,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMargin(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMargin(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1132,7 +1132,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMax(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMax(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1140,7 +1140,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMcircle(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMcircle(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1148,7 +1148,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMclimit(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMclimit(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1156,7 +1156,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMdiamond(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMdiamond(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1164,7 +1164,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMerged(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMerged(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1172,7 +1172,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMin(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMin(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1180,7 +1180,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMinimum(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMinimum(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1188,7 +1188,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMinlen(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMinlen(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1196,7 +1196,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMrecord(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMrecord(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1204,7 +1204,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMsquare(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMsquare(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1212,7 +1212,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncMultiples(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncMultiples(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1220,7 +1220,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncN(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncN(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1228,7 +1228,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncNe(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncNe(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1236,7 +1236,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncNode(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncNode(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1244,7 +1244,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncNodesep(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncNodesep(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1252,7 +1252,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncNone(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncNone(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1262,7 +1262,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncNormal(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncNormal(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkArrowHead
@@ -1270,7 +1270,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncNslimit(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncNslimit(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1278,7 +1278,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncNw(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncNw(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1286,7 +1286,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncOctagon(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncOctagon(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1294,7 +1294,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncOdot(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncOdot(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkArrowHead
@@ -1302,7 +1302,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncOnto(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncOnto(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1310,7 +1310,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncOrdering(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncOrdering(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1318,7 +1318,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncOrientation(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncOrientation(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1326,7 +1326,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncPage(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncPage(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1336,7 +1336,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncPagedir(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncPagedir(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1344,7 +1344,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncParallelogram(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncParallelogram(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1352,7 +1352,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncPeripheries(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncPeripheries(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1360,7 +1360,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncPlaintext(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncPlaintext(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1368,7 +1368,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncPoint(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncPoint(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1376,7 +1376,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncPolygon(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncPolygon(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1384,7 +1384,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncQuantum(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncQuantum(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1392,7 +1392,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRank(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRank(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1400,7 +1400,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRankdir(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRankdir(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1408,7 +1408,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRanksep(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRanksep(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1416,7 +1416,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRatio(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRatio(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1424,7 +1424,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRecord(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRecord(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1432,7 +1432,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRegular(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRegular(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1440,7 +1440,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRemincross(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRemincross(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1448,7 +1448,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncRotate(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncRotate(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1456,7 +1456,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncS(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncS(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1464,7 +1464,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSame(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSame(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1472,7 +1472,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSamehead(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSamehead(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1480,7 +1480,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSametail(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSametail(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1488,7 +1488,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSamplepoints(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSamplepoints(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1496,7 +1496,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSe(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSe(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1504,7 +1504,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSearchsize(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSearchsize(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1512,7 +1512,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSection(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSection(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1520,7 +1520,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncShape(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncShape(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1528,7 +1528,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncShapefile(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncShapefile(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1536,7 +1536,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSides(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSides(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1544,7 +1544,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSink(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSink(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1552,7 +1552,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSize(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSize(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1560,7 +1560,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSkew(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSkew(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1568,7 +1568,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSource(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSource(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1576,7 +1576,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncStrict(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncStrict(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1584,7 +1584,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncStyle(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncStyle(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1592,7 +1592,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSubgraph(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSubgraph(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1600,7 +1600,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncSw(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncSw(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1608,7 +1608,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncTaillabel(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncTaillabel(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1616,7 +1616,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncTailport(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncTailport(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1624,7 +1624,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncTailurl(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncTailurl(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1632,7 +1632,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncToplabel(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncToplabel(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1640,7 +1640,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncTrapezium(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncTrapezium(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1648,7 +1648,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncTriangle(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncTriangle(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1656,7 +1656,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncTripleoctagon(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncTripleoctagon(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkShape
@@ -1664,7 +1664,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncTrue(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncTrue(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1672,7 +1672,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncUrl(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncUrl(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1680,7 +1680,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncW(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncW(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkValue
@@ -1688,7 +1688,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncWeight(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncWeight(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1696,7 +1696,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncWhen(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncWhen(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1706,7 +1706,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncWidth(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncWidth(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1714,7 +1714,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynDOTSyn.FuncZ(Index: Integer): TtkTokenKind;
+function TSynDOTSyn.FuncZ(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkAttribute
@@ -1948,7 +1948,7 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynDOTSyn.GetKeyWords(TokenKind: Integer): string;
+function TSynDOTSyn.GetKeyWords(TokenKind: NativeInt): string;
 begin
   Result :=
     '--,->,all,appendix,arrowhead,arrowsize,arrowtail,auto,back,bgcolor,bo' +
@@ -1995,7 +1995,7 @@ begin
   end;
 end;
 
-function TSynDOTSyn.GetTokenKind: Integer;
+function TSynDOTSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

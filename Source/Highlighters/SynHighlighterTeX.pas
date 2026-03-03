@@ -83,7 +83,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -294,7 +294,7 @@ begin
   end;
 end;  { GetTokenAttribute }
 
-function TSynTeXSyn.GetTokenKind: Integer;
+function TSynTeXSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;  { GetTokenKind }

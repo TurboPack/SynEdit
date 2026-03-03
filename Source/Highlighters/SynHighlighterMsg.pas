@@ -58,7 +58,7 @@ type
   TRangeState = (rsUnKnown, rsBraceComment, rsString);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
   TSynMsgSyn = class(TSynCustomHighlighter)
   private
@@ -72,14 +72,14 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     fTerminatorAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function FuncBeginproc(Index: Integer): TtkTokenKind;
-    function FuncChars(Index: Integer): TtkTokenKind;
-    function FuncEnclosedby(Index: Integer): TtkTokenKind;
-    function FuncEndproc(Index: Integer): TtkTokenKind;
-    function FuncKeys(Index: Integer): TtkTokenKind;
-    function FuncSamplesource(Index: Integer): TtkTokenKind;
-    function FuncTokentypes(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
+    function FuncBeginproc(Index: NativeInt): TtkTokenKind;
+    function FuncChars(Index: NativeInt): TtkTokenKind;
+    function FuncEnclosedby(Index: NativeInt): TtkTokenKind;
+    function FuncEndproc(Index: NativeInt): TtkTokenKind;
+    function FuncKeys(Index: NativeInt): TtkTokenKind;
+    function FuncSamplesource(Index: NativeInt): TtkTokenKind;
+    function FuncTokentypes(Index: NativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -109,7 +109,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -133,7 +133,7 @@ const
     'tokentypes' 
   );
 
-  KeyIndices: array[0..6] of Integer = (
+  KeyIndices: array[0..6] of NativeInt = (
     2, 1, 6, 4, 0, 5, 3 
   );
 
@@ -165,7 +165,7 @@ end;
 
 procedure TSynMsgSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -180,12 +180,12 @@ begin
   fIdentFuncTable[2] := FuncTokentypes;
 end;
 
-function TSynMsgSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynMsgSyn.FuncBeginproc(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.FuncBeginproc(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -193,7 +193,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynMsgSyn.FuncChars(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.FuncChars(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -201,7 +201,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynMsgSyn.FuncEnclosedby(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.FuncEnclosedby(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -209,7 +209,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynMsgSyn.FuncEndproc(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.FuncEndproc(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -217,7 +217,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynMsgSyn.FuncKeys(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.FuncKeys(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -225,7 +225,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynMsgSyn.FuncSamplesource(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.FuncSamplesource(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -233,7 +233,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynMsgSyn.FuncTokentypes(Index: Integer): TtkTokenKind;
+function TSynMsgSyn.FuncTokentypes(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -455,7 +455,7 @@ begin
   end;
 end;
 
-function TSynMsgSyn.GetTokenKind: Integer;
+function TSynMsgSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

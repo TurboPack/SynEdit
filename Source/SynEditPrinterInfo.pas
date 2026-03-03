@@ -75,10 +75,10 @@ type
     function GetYPixPrmm: Single;
   public
     procedure UpdatePrinter;
-    function PixFromLeft(mmValue: Double): Integer;
-    function PixFromRight(mmValue: Double): Integer;
-    function PixFromTop(mmValue: Double): Integer;
-    function PixFromBottom(mmValue: Double): Integer;
+    function PixFromLeft(mmValue: Double): Int64;
+    function PixFromRight(mmValue: Double): Int64;
+    function PixFromTop(mmValue: Double): Int64;
+    function PixFromBottom(mmValue: Double): Int64;
     property PhysicalWidth: Integer read GetPhysicalWidth;
     property PhysicalHeight: Integer read GetPhysicalHeight;
     property PrintableWidth: Integer read GetPrintableWidth;
@@ -97,28 +97,28 @@ implementation
 
 { TSynEditPrinterInfo }
 
-function TSynEditPrinterInfo.PixFromBottom(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromBottom(mmValue: Double): Int64;
 begin
   if not FIsUpdated then
     UpdatePrinter;
   Result := Round(mmValue * FYPixPrmm - FBottomGutter);
 end;
 
-function TSynEditPrinterInfo.PixFromLeft(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromLeft(mmValue: Double): Int64;
 begin
   if not FIsUpdated then
     UpdatePrinter;
   Result := Round(mmValue * FXPixPrmm - FLeftGutter);
 end;
 
-function TSynEditPrinterInfo.PixFromRight(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromRight(mmValue: Double): Int64;
 begin
   if not FIsUpdated then
     UpdatePrinter;
   Result := Round(mmValue * FXPixPrmm - FRightGutter);
 end;
 
-function TSynEditPrinterInfo.PixFromTop(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromTop(mmValue: Double): Int64;
 begin
   if not FIsUpdated then
     UpdatePrinter;

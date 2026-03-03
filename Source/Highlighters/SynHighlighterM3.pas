@@ -74,7 +74,7 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fSyntaxErrorAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymAsciiCharProc;
     procedure SymCommentHelpProc;
@@ -106,7 +106,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -152,7 +152,7 @@ const
     'LONGREAL,LOOPHOLE,MAX,MIN,MUTEX,NARROW,NEW,NIL,NULL,NUMBER,ORD,REAL,' +
     'REFANY,ROUND,SUBARRAY,TEXT,TRUE,TRUNC,TYPECODE,VAL';
 
-procedure TSynM3Syn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynM3Syn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -313,11 +313,11 @@ end;
 procedure TSynM3Syn.SymNumberProc;
 var
   BasedNumber: Boolean;
-  MaxDigit: Integer;
+  MaxDigit: NativeInt;
 
   function IsValidDigit(AChar: WideChar): Boolean;
   var
-    Digit: Integer;
+    Digit: NativeInt;
   begin
     case AChar of
       '0'..'9': Digit := Ord(AChar) - Ord('0');
@@ -583,7 +583,7 @@ begin
   Result := fTokenId;
 end;
 
-function TSynM3Syn.GetTokenKind: Integer;
+function TSynM3Syn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

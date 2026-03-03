@@ -95,7 +95,7 @@ type
     fImportantPropertyAttri: TSynHighlighterAttributes;
     fAtRuleAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AtRuleProc;
     procedure SelectorProc;
@@ -140,7 +140,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -514,7 +514,7 @@ begin
     Result := tkUndefProperty;
 end;
 
-procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -1038,7 +1038,7 @@ begin
   end;
 end;
 
-function TSynCssSyn.GetTokenKind: Integer;
+function TSynCssSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

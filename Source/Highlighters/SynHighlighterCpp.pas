@@ -74,7 +74,7 @@ type
     rsMultiLineString, rsMultiLineDirective);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
 //  TSynCppSyn = class(TSynCustomHighlighter)
   TSynCppSyn = class(TSynCustomCodeFoldingHighlighter)
@@ -100,9 +100,9 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fBracketAttri: TSynHighlighterAttributes;
     FNewPreprocesorStyle: Boolean;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
-    function FuncAsm(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: NativeInt): TtkTokenKind;
+    function FuncAsm(Index: NativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -161,17 +161,17 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
-    function UseUserSettings(settingIndex: Integer): Boolean; override;
+    function UseUserSettings(settingIndex: NativeInt): Boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
     property NewPreprocesorStyle: Boolean read FNewPreprocesorStyle write SetNewPreprocesorStyle;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
 //-- CodeFolding
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
@@ -197,7 +197,8 @@ uses
   Windows,
   Registry,
   SynEditStrConst,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynFunc;
 
 const
   KeyWords: array[0..129] of string = (
@@ -223,7 +224,7 @@ const
     'while', 'wchar_t', 'xor', 'xor_eq'
   );
 
-  KeyIndices: array[0..640] of Integer = (
+  KeyIndices: array[0..640] of NativeInt = (
     68, -1, -1, -1, -1, -1, -1, -1, -1, 110, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, 1, -1, -1, 17, -1, -1, -1, -1, 97, -1, -1, -1, -1,
     -1, 62, -1, 28, -1, -1, -1, -1, -1, -1, 64, 21, 90, -1, -1, -1, -1, 108, -1,
@@ -288,7 +289,7 @@ end;
 
 procedure TSynCppSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -303,12 +304,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynCppSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynCppSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynCppSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynCppSyn.KeyWordFunc(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -316,7 +317,7 @@ begin
     Result := tkIdentifier
 end;
 
-function TSynCppSyn.FuncAsm(Index: Integer): TtkTokenKind;
+function TSynCppSyn.FuncAsm(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
   begin
@@ -786,7 +787,7 @@ end;
 
 procedure TSynCppSyn.NumberProc;
 
-  function IsNumberChar(Run: Integer): Boolean;
+  function IsNumberChar(Run: NativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', 'A'..'F', 'a'..'f', '.', 'u', 'U', 'l', 'L', 'x', 'X', '-', '+':
@@ -796,7 +797,7 @@ procedure TSynCppSyn.NumberProc;
     end;
   end;
 
-  function IsDigitPlusMinusChar(Run: Integer): Boolean;
+  function IsDigitPlusMinusChar(Run: NativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', '+', '-':
@@ -806,7 +807,7 @@ procedure TSynCppSyn.NumberProc;
     end;
   end;
 
-  function IsHexDigit(Run: Integer): Boolean;
+  function IsHexDigit(Run: NativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', 'a'..'f', 'A'..'F':
@@ -816,7 +817,7 @@ procedure TSynCppSyn.NumberProc;
     end;
   end;
 
-  function IsAlphaUncerscore(Run: Integer): Boolean;
+  function IsAlphaUncerscore(Run: NativeInt): Boolean;
   begin
     case fLine[Run] of
       'A'..'Z', 'a'..'z', '_':
@@ -827,8 +828,8 @@ procedure TSynCppSyn.NumberProc;
   end;
 
 var
-  idx1: Integer; // token[1]
-  i: Integer;
+  idx1: NativeInt; // token[1]
+  i: NativeInt;
 begin
   idx1 := Run;
   Inc(Run);
@@ -1028,17 +1029,17 @@ begin
 end;
 
 procedure TSynCppSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
 var
   CurLine: string;
-  Line: Integer;
+  Line: NativeInt;
 
-  function FindBraces(Line: Integer): Boolean;
+  function FindBraces(Line: NativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    function LineHasChar(AChar: Char; StartCol: NativeInt; out Col: NativeInt): Boolean;
     var
-      I: Integer;
+      I: NativeInt;
     begin
       Result := False;
       Col := 0;
@@ -1054,15 +1055,15 @@ var
       end;
     end;
 
-    function Indent: Integer;
+    function Indent: NativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: Integer;
-    CloseIdx: Integer;
-    Idx: Integer;
+    OpenIdx: NativeInt;
+    CloseIdx: NativeInt;
+    Idx: NativeInt;
   begin
     LineHasChar('{', 1, OpenIdx);
     LineHasChar('}', 1, CloseIdx);
@@ -1090,7 +1091,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: Integer): Boolean;
+  function FoldRegion(Line: NativeInt): Boolean;
   var
     S: string;
   begin
@@ -1127,12 +1128,12 @@ begin
     end;
 
     // Find Fold regions
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.GetItem(Line);
     if FoldRegion(Line) then
       Continue;
 
     // Find an braces on this line  (Fold Type 1)
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.GetItem(Line);
     if not FindBraces(Line) then
       FoldRanges.NoFoldInfo(Line + 1);
   end; // while Line
@@ -1461,7 +1462,7 @@ begin
   end;
 end;
 
-function TSynCppSyn.GetTokenKind: Integer;
+function TSynCppSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -1497,7 +1498,7 @@ begin
   end;
 end;
 
-function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
+function TSynCppSyn.UseUserSettings(settingIndex: NativeInt): Boolean;
 // Possible parameter values:
 //   index into TStrings returned by EnumUserSettings
 // Possible return values:
@@ -1505,13 +1506,13 @@ function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
 //   false: problem reading settings or invalid version specified - old settings
 //          were preserved
 
-  function ReadCPPBSettings(settingIndex: Integer): Boolean;
+  function ReadCPPBSettings(settingIndex: NativeInt): Boolean;
 
     function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
 
       function ReadCPPB1(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
       var
-        I: Integer;
+        I: NativeInt;
       begin
         for I := 1 to Length(name) do
           if name[I] = ' ' then name[I] := '_';
@@ -1588,23 +1589,23 @@ function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
         tmpInvalidAttri   .Assign(fInvalidAttri);
         tmpSpaceAttri     .Assign(fSpaceAttri);
         tmpDirecAttri     .Assign(fDirecAttri);
-        if s[settingIndex][1] = '1'
-          then Result := ReadCPPBSetting(s[settingIndex],fAsmAttri,'Plain text')
-          else Result := ReadCPPBSetting(s[settingIndex],fAsmAttri,'Assembler');
+        if s.GetItem(settingIndex)[1] = '1'
+          then Result := ReadCPPBSetting(s.GetItem(settingIndex),fAsmAttri,'Plain text')
+          else Result := ReadCPPBSetting(s.GetItem(settingIndex),fAsmAttri,'Assembler');
         Result := Result                                                         and
-                  ReadCPPBSetting(s[settingIndex],fCommentAttri,'Comment')       and
-                  ReadCPPBSetting(s[settingIndex],fIdentifierAttri,'Identifier') and
-                  ReadCPPBSetting(s[settingIndex],fInvalidAttri,'Illegal Char')  and
-                  ReadCPPBSetting(s[settingIndex],fKeyAttri,'Reserved word')     and
-                  ReadCPPBSetting(s[settingIndex],fNumberAttri,'Integer')        and
-                  ReadCPPBSetting(s[settingIndex],fFloatAttri,'Float')           and
-                  ReadCPPBSetting(s[settingIndex],fHexAttri,'Hex')               and
-                  ReadCPPBSetting(s[settingIndex],fOctalAttri,'Octal')           and
-                  ReadCPPBSetting(s[settingIndex],fSpaceAttri,'Whitespace')      and
-                  ReadCPPBSetting(s[settingIndex],fStringAttri,'String')         and
-                  ReadCPPBSetting(s[settingIndex],fCharAttri,'Character')             and
-                  ReadCPPBSetting(s[settingIndex],fSymbolAttri,'Symbol')         and
-                  ReadCPPBSetting(s[settingIndex],fDirecAttri,'Preprocessor');
+                  ReadCPPBSetting(s.GetItem(settingIndex),fCommentAttri,'Comment')       and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fIdentifierAttri,'Identifier') and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fInvalidAttri,'Illegal Char')  and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fKeyAttri,'Reserved word')     and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fNumberAttri,'Integer')        and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fFloatAttri,'Float')           and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fHexAttri,'Hex')               and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fOctalAttri,'Octal')           and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fSpaceAttri,'Whitespace')      and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fStringAttri,'String')         and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fCharAttri,'Character')             and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fSymbolAttri,'Symbol')         and
+                  ReadCPPBSetting(s.GetItem(settingIndex),fDirecAttri,'Preprocessor');
         if not Result then begin
           fStringAttri    .Assign(tmpStringAttri);
           fCharAttri      .Assign(tmpCharAttri);

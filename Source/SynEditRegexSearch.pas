@@ -53,18 +53,18 @@ type
     fMatchCollection: TMatchCollection;
     fOptions: TRegExOptions;
     fPattern: string;
-    fResultCount: Integer;
+    fResultCount: NativeInt;
   protected
     function GetPattern: string; override;
     procedure SetPattern(const Value: string); override;
     procedure SetOptions(const Value: TSynSearchOptions); override;
-    function GetLength(Index: Integer): Integer; override;
-    function GetResult(Index: Integer): Integer; override;
-    function GetResultCount: Integer; override;
+    function GetLength(Index: NativeInt): NativeInt; override;
+    function GetResult(Index: NativeInt): NativeInt; override;
+    function GetResultCount: NativeInt; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function FindAll(const NewText: string; StartChar: Integer = 1;
-      EndChar: Integer = 0): Integer; override;
+    function FindAll(const NewText: string; StartChar: NativeInt = 1;
+      EndChar: NativeInt = 0): NativeInt; override;
     function PreprocessReplaceExpression(const AReplace: string): string; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
@@ -76,17 +76,18 @@ implementation
 uses
   RegularExpressionsAPI,
   System.SysUtils,
-  Consts;
+  Consts,
+  SynFunc;
 
 {$IF (CompilerVersion <= 35) and not Declared(RTLVersion112)}
 type
   { TPerlRegExHelper }
 
   TPerlRegExHelper = class helper for TPerlRegEx
-    procedure AddRawOptions(PCREOptions: Integer);
+    procedure AddRawOptions(PCREOptions: NativeInt);
   end;
 
-procedure TPerlRegExHelper.AddRawOptions(PCREOptions: Integer);
+procedure TPerlRegExHelper.AddRawOptions(PCREOptions: NativeInt);
 begin
   with Self do FPCREOptions := FPCREOptions or PCREOptions;
 end;
@@ -94,10 +95,10 @@ end;
 type
   TRegExHelper = record helper for TRegEx
   public
-    procedure AddRawOptions(PCREOptions: Integer);
+    procedure AddRawOptions(PCREOptions: NativeInt);
   end;
 
-procedure TRegExHelper.AddRawOptions(PCREOptions: Integer);
+procedure TRegExHelper.AddRawOptions(PCREOptions: NativeInt);
 begin
   with Self do FRegEx.AddRawOptions(PCREOptions);
 end;
@@ -112,17 +113,17 @@ begin
 end;
 
 function TSynEditRegexSearch.FindAll(const NewText: string;
-  StartChar: Integer = 1; EndChar: Integer = 0): Integer;
+  StartChar: NativeInt = 1; EndChar: NativeInt = 0): NativeInt;
 begin
   if NewText = '' then
     Exit(0);
 
-  fMatchCollection :=  RegEx.Matches(NewText, StartChar);
+  fMatchCollection :=  RegEx.Matches(NewText, ToInt32(StartChar));
 
   Result := fMatchCollection.Count;
   if (EndChar > 0) and (EndChar < NewText.Length + 1) then
     // Exclude results beyond EndChar
-    while (Result > 0) and ((fMatchCollection[Result - 1].Index + fMatchCollection[Result - 1].Length) > EndChar) do
+    while (Result > 0) and ((fMatchCollection[ToInt32(Result - 1)].Index + fMatchCollection[ToInt32(Result - 1)].Length) > EndChar) do
       Dec(Result);
   fResultCount := Result;
 end;
@@ -140,9 +141,9 @@ begin
   Result := RegEx.Replace(aOccurrence, aReplacement);
 end;
 
-function TSynEditRegexSearch.GetLength(Index: Integer): Integer;
+function TSynEditRegexSearch.GetLength(Index: NativeInt): NativeInt;
 begin
-  Result := fMatchCollection[Index].Length;
+  Result := fMatchCollection[ToInt32(Index)].Length;
 end;
 
 function TSynEditRegexSearch.GetPattern: string;
@@ -150,12 +151,12 @@ begin
   Result := fPattern;
 end;
 
-function TSynEditRegexSearch.GetResult(Index: Integer): Integer;
+function TSynEditRegexSearch.GetResult(Index: NativeInt): NativeInt;
 begin
-  Result := fMatchCollection[Index].Index;
+  Result := fMatchCollection[ToInt32(Index)].Index;
 end;
 
-function TSynEditRegexSearch.GetResultCount: Integer;
+function TSynEditRegexSearch.GetResultCount: NativeInt;
 begin
   Result := fResultCount;
 end;

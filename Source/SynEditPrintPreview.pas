@@ -60,7 +60,7 @@ uses
 
 type
 //Event raised when page is changed in preview
-  TPreviewPageEvent = procedure(Sender: TObject; PageNumber: Integer) of object;
+  TPreviewPageEvent = procedure(Sender: TObject; PageNumber: NativeInt) of object;
   TSynPreviewScale = (pscWholePage, pscPageWidth, pscUserScaled);
 
   TSynEditPrintPreview = class(TCustomControl)
@@ -77,7 +77,7 @@ type
     FPageSize: TSize;
     FScrollPosition: TPoint;
     FPageBG: TColor;
-    FPageNumber: Integer;
+    FPageNumber: NativeInt;
     FShowScrollHint: Boolean;
     FOnPreviewPage: TPreviewPageEvent;
     FOnScaleChange: TNotifyEvent;
@@ -100,7 +100,7 @@ type
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
     procedure WMMouseHWheel(var Message: TWMMouseWheel); message WM_MOUSEHWHEEL;
     procedure PaintPaper;
-    function GetPageCount: Integer;
+    function GetPageCount: NativeInt;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetPageHeightFromWidth(AWidth: Integer): Integer;
@@ -125,8 +125,8 @@ type
     procedure FirstPage;
     procedure LastPage;
     procedure Print;
-    property PageNumber: Integer read FPageNumber;
-    property PageCount: Integer read GetPageCount;
+    property PageNumber: NativeInt read FPageNumber;
+    property PageCount: NativeInt read GetPageCount;
   published
     property Align default alClient;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle
@@ -158,7 +158,8 @@ implementation
 uses
   Winapi.D2D1,
   SynDWrite,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 const
   MARGIN_X = 12; // margin width left and right of page
@@ -427,8 +428,8 @@ begin
         si.fMask := si.fMask or SIF_DISABLENOSCROLL;
         si.nMin := 1;
         if Assigned(FSynEditPrint) then begin
-          si.nMax := FSynEditPrint.PageCount;
-          si.nPos := FPageNumber;
+          si.nMax := ToInt32(FSynEditPrint.PageCount);
+          si.nPos := ToInt32(FPageNumber);
         end
         else begin
           si.nMax := 1;
@@ -611,7 +612,7 @@ begin
           end;
       end;
       {Updating scroll position and redrawing}
-    FScrollPosition.Y := -(FPageNumber - 1);
+    FScrollPosition.Y := -(ToInt32(FPageNumber) - 1);
     UpdateScrollbars;
     if Assigned(FOnPreviewPage) then
       FOnPreviewPage(Self, FPageNumber);
@@ -730,7 +731,7 @@ begin
   Shift := KeysToShiftState(Message.Keys);
   Include(Shift, System.Classes.ssHorizontal);
   // HWheel directions are reversed from Wheel - retest
-  WheelDelta := - Message.WheelDelta;
+  WheelDelta := SmallInt(-Message.WheelDelta);
   MousePos := Message.Pos;
   if DoMouseWheel(Shift, WheelDelta, MousePos) then
     Message.Result := 1;
@@ -800,7 +801,7 @@ begin
   end;
 end;
 
-function TSynEditPrintPreview.GetPageCount: Integer;
+function TSynEditPrintPreview.GetPageCount: NativeInt;
 begin
   Result := SynEditPrint.PageCount;
 end;

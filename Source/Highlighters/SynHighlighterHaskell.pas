@@ -76,7 +76,7 @@ type
     rsAsmBlock, rsDirective, rsDirectiveComment, rsString34, rsString39);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
 
   TSynHaskellSyn = class(TSynCustomHighlighter)
   private
@@ -92,8 +92,8 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: NativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: NativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -148,7 +148,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -185,7 +185,7 @@ const
     'module', 'otherwise', 'String', 'then', 'True', 'type', 'where' 
   );
 
-  KeyIndices: array[0..28] of Integer = (
+  KeyIndices: array[0..28] of NativeInt = (
     2, 23, 10, 16, 7, -1, 22, 8, 14, 17, 5, 4, 11, -1, 1, 9, 12, 0, -1, 6, -1, 
     3, 15, 18, 20, -1, 13, 19, 21 
   );
@@ -218,7 +218,7 @@ end;
 
 procedure TSynHaskellSyn.InitIdent;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -229,12 +229,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynHaskellSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynHaskellSyn.AltFunc(Index: NativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynHaskellSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynHaskellSyn.KeyWordFunc(Index: NativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -876,7 +876,7 @@ begin
   end;
 end;
 
-function TSynHaskellSyn.GetTokenKind: Integer;
+function TSynHaskellSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(GetTokenID);
 end;

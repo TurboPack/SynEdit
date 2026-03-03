@@ -65,16 +65,16 @@ type
 //Print status events
   TSynPrintStatus = (psBegin, psNewPage, psEnd);
   TPrintStatusEvent = procedure(Sender: TObject; Status: TSynPrintStatus;
-    PageNumber: Integer; var Abort: Boolean) of object;
+    PageNumber: NativeInt; var Abort: Boolean) of object;
 //Event raised when a line is printed (can be used to generate Table of Contents)
-  TPrintLineEvent = procedure(Sender: TObject; LineNumber, PageNumber: Integer) of object;
+  TPrintLineEvent = procedure(Sender: TObject; LineNumber, PageNumber: NativeInt) of object;
 
-function IntToRoman(Value: Integer): string;
+function IntToRoman(Value: NativeInt): string;
 
 implementation
 
 //Integer to Roman - copied from SWAG
-function IntToRoman(Value: Integer): string;
+function IntToRoman(Value: NativeInt): string;
 begin
   Result := '';
   while Value >= 1000 do begin

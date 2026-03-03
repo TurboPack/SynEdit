@@ -99,7 +99,7 @@ type
   ISpellCheckerFactory = interface(IUnknown)
     ['{8E018A9D-2415-4677-BF08-794EA61F94BB}']
     function Get_SupportedLanguages(out value: IEnumString): HResult; stdcall;
-    function IsSupported(languageTag: PWideChar; out value: Integer): HResult; stdcall;
+    function IsSupported(languageTag: PWideChar; out value: NativeInt): HResult; stdcall;
     function CreateSpellChecker(languageTag: PWideChar; out value: ISpellChecker): HResult; stdcall;
   end;
 
@@ -209,8 +209,8 @@ type
   protected
     FSynSpellCheck: TSynSpellCheck;
     { Procedures }
-    procedure LinesInserted(FirstLine, Count: Integer); override;
-    procedure LinePut(aIndex: Integer; const OldLine: string); override;
+    procedure LinesInserted(FirstLine, Count: NativeInt); override;
+    procedure LinePut(aIndex: NativeInt; const OldLine: string); override;
   public
     constructor Create(AOwner: TCustomSynEdit);
     { Properties }
@@ -228,8 +228,8 @@ type
   private type
     TWorkItem = record
       Token: string;
-      TokenPos: Integer;
-      constructor Create(AToken: string; ATokenPos: Integer);
+      TokenPos: NativeInt;
+      constructor Create(AToken: string; ATokenPos: NativeInt);
     end;
   private
     FLanguageCode: string;
@@ -240,7 +240,7 @@ type
     FUnderlineStyle: TUnderlineStyle;
     FPenColor: TColor;
     FAttributesChecked: TStrings;
-    FUpdateCount: Integer;
+    FUpdateCount: NativeInt;
     FCheckAsYouType: Boolean;
     FDictionaryNA: Boolean;
     FWorkList: TList<TWorkItem>;
@@ -256,8 +256,8 @@ type
   protected
     procedure Notification(AComponent: TComponent;
       Operation: TOperation); override;
-    function SpellCheckLine(Editor: TCustomSynEdit; Line: Integer;
-        StartChar:Integer = 0; EndChar: Integer = MaxInt; ErrorPos: Integer = -1):
+    function SpellCheckLine(Editor: TCustomSynEdit; Line: NativeInt;
+        StartChar:NativeInt = 0; EndChar: NativeInt = MaxInt; ErrorPos: NativeInt = -1):
         ISpellingError;
     class function SpellCheckFactory: ISpellCheckerFactory;
   public
@@ -266,7 +266,7 @@ type
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure Changed(LangId: Boolean = False);
-    function AddEditor(AEditor: TCustomSynEdit): Integer;
+    function AddEditor(AEditor: TCustomSynEdit): NativeInt;
     function RemoveEditor(AEditor: TCustomSynEdit): Boolean;
     // Spell checking actions applied to FEditor
     procedure CheckFile;
@@ -380,7 +380,7 @@ resourcestring
 
 {$REGION 'TSynSpellCheck Implementation'}
 
-function TSynSpellCheck.AddEditor(AEditor: TCustomSynEdit): Integer;
+function TSynSpellCheck.AddEditor(AEditor: TCustomSynEdit): NativeInt;
 var
   Plugin: TSpellCheckPlugin;
 begin
@@ -404,13 +404,13 @@ end;
 
 procedure TSynSpellCheck.CheckFile;
 var
-  Line: Integer;
+  Line: NativeInt;
 begin
   if not Assigned(FEditor) then Exit;
 
   ClearErrors(False);
 
-  for Line := 1 to FEditor.Lines.Count do
+  for Line := 1 to FEditor.Lines.CountNative do
     SpellCheckLine(FEditor, Line);
   Editor.Invalidate;
 end;
@@ -418,7 +418,7 @@ end;
 procedure TSynSpellCheck.CheckSelection;
 var
   BB, BE: TBufferCoord;
-  Line: Integer;
+  Line: NativeInt;
 begin
   if not Assigned(FEditor) then Exit;
   BB := Editor.BlockBegin;
@@ -567,7 +567,7 @@ end;
 
 function TSynSpellCheck.RemoveEditor(AEditor: TCustomSynEdit): Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   Index := FEditors.IndexOf(AEditor);
   Result := Index >= 0;
@@ -659,8 +659,8 @@ begin
 end;
 
 function TSynSpellCheck.SpellCheckLine(Editor: TCustomSynEdit; Line:
-    Integer; StartChar:Integer = 0; EndChar: Integer = MaxInt;
-    ErrorPos: Integer = -1): ISpellingError;
+    NativeInt; StartChar:NativeInt = 0; EndChar: NativeInt = MaxInt;
+    ErrorPos: NativeInt = -1): ISpellingError;
 { The core spell checking function.   Spells checks a whole or part of
   a line.  If ErrorPos > 0 then instead of adding indicators, it returns the
   SpellingError at the ErrorPos
@@ -669,7 +669,7 @@ function TSynSpellCheck.SpellCheckLine(Editor: TCustomSynEdit; Line:
   marshalling via the Windows message queue.  Hence the use of the WorkList
   to avoid messing up the highlighter scanning, which is not reentrant}
 
-  procedure SpellCheckToken(const Token: string; TokenPos: Integer = 0);
+  procedure SpellCheckToken(const Token: string; TokenPos: NativeInt = 0);
   var
     SpellingErrors: IEnumSpellingError;
     SpellingError: ISpellingError;
@@ -681,14 +681,14 @@ function TSynSpellCheck.SpellCheckLine(Editor: TCustomSynEdit; Line:
       SpellingError.Get_StartIndex(StartIndex);
       SpellingError.Get_Length(Len);
 
-      if (Integer(StartIndex) + 1 < StartChar) then Continue;
-      if (Integer(StartIndex + Len) > EndChar) then Break;
+      if (NativeInt(StartIndex) + 1 < StartChar) then Continue;
+      if (NativeInt(StartIndex + Len) > EndChar) then Break;
 
       if ErrorPos < 0 then
         Editor.Indicators.Add(Line,
           TSynIndicator.Create(SpellErrorIndicatorId,
-            Integer(StartIndex) + TokenPos + 1,
-            Integer(StartIndex) + TokenPos + 1 + Integer(Len)), False)
+            NativeInt(StartIndex) + TokenPos + 1,
+            NativeInt(StartIndex) + TokenPos + 1 + NativeInt(Len)), False)
       else if InRange(ErrorPos - TokenPos, StartIndex + 1, StartIndex + Len) then
       begin
        Result := SpellingError;
@@ -700,7 +700,7 @@ function TSynSpellCheck.SpellCheckLine(Editor: TCustomSynEdit; Line:
 var
   SLine, Token: string;
   Attri: TSynHighlighterAttributes;
-  TokenPos: Integer;
+  TokenPos: NativeInt;
   WorkItem: TWorkItem;
 begin
   Result := nil;
@@ -784,11 +784,11 @@ begin
   FHandlers := [phLinesInserted, phLinePut];
 end;
 
-procedure TSpellCheckPlugin.LinePut(aIndex: Integer; const OldLine: string);
+procedure TSpellCheckPlugin.LinePut(aIndex: NativeInt; const OldLine: string);
 var
   Line: string;
-  Len1, Len2: Integer;
-  StartingPos: Integer;
+  Len1, Len2: NativeInt;
+  StartingPos: NativeInt;
 begin
   if Editor <> FSynSpellCheck.Editor then Exit;  // Chained editors
 
@@ -801,9 +801,9 @@ begin
   end;
 end;
 
-procedure TSpellCheckPlugin.LinesInserted(FirstLine, Count: Integer);
+procedure TSpellCheckPlugin.LinesInserted(FirstLine, Count: NativeInt);
 var
-  Line: Integer;
+  Line: NativeInt;
 begin
   if Editor <> FSynSpellCheck.Editor then Exit;
 
@@ -1048,7 +1048,7 @@ end;
 
 { TSynSpellCheck.TWorkItem }
 
-constructor TSynSpellCheck.TWorkItem.Create(AToken: string; ATokenPos: Integer);
+constructor TSynSpellCheck.TWorkItem.Create(AToken: string; ATokenPos: NativeInt);
 begin
   Self.Token := AToken;
   Self.TokenPos := ATokenPos;

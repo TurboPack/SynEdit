@@ -52,15 +52,15 @@ type
   TMethodList = class
   private
     fData: TList;
-    function GetItem(Index: Integer): TMethod;
-    function GetCount: Integer;
+    function GetItem(Index: NativeInt): TMethod;
+    function GetCount: NativeInt;
   public
     constructor Create;
     destructor Destroy; override;
     procedure Add(aHandler: TMethod);
     procedure Remove(aHandler: TMethod);
-    property Items[Index: Integer]: TMethod read GetItem; default;
-    property Count: Integer read GetCount;
+    property Items[Index: NativeInt]: TMethod read GetItem; default;
+    property Count: NativeInt read GetCount;
   end;
 
   TSynEditKbdHandler = class (TObject)
@@ -178,7 +178,7 @@ end;
 
 procedure TSynEditKbdHandler.ExecuteKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  idx: Integer;
+  idx: NativeInt;
 begin
   if fInKeyDown then
     Exit;
@@ -203,7 +203,7 @@ end;
 
 procedure TSynEditKbdHandler.ExecuteKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  idx: Integer;
+  idx: NativeInt;
 begin
   if fInKeyUp then
     Exit;
@@ -228,7 +228,7 @@ end;
 
 procedure TSynEditKbdHandler.ExecuteKeyPress(Sender: TObject; var Key: WideChar);
 var
-  idx: Integer;
+  idx: NativeInt;
 begin
   if fInKeyPress then
     Exit;
@@ -254,7 +254,7 @@ end;
 procedure TSynEditKbdHandler.ExecuteMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  cHandler: Integer;
+  cHandler: NativeInt;
 begin
   if fInMouseDown then
     Exit;
@@ -270,7 +270,7 @@ end;
 procedure TSynEditKbdHandler.ExecuteMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  cHandler: Integer;
+  cHandler: NativeInt;
 begin
   if fInMouseUp then
     Exit;
@@ -286,7 +286,7 @@ end;
 procedure TSynEditKbdHandler.ExecuteMouseCursor(Sender: TObject;
   const aLineCharPos: TBufferCoord; var aCursor: TCursor);
 var
-  cHandler: Integer;
+  cHandler: NativeInt;
 begin
   if fInMouseCursor then
     Exit;
@@ -349,12 +349,12 @@ begin
   inherited Destroy;
 end;
 
-function TMethodList.GetCount: Integer;
+function TMethodList.GetCount: NativeInt;
 begin
   Result := fData.Count div 2;
 end;
 
-function TMethodList.GetItem(Index: Integer): TMethod;
+function TMethodList.GetItem(Index: NativeInt): TMethod;
 begin
   Index := Index * 2;
   Result.Data := fData[Index];
@@ -363,7 +363,7 @@ end;
 
 procedure TMethodList.Remove(aHandler: TMethod);
 var
-  cPos: Integer;
+  cPos: NativeInt;
 begin
   cPos := fData.Count - 2;
   while cPos >= 0 do

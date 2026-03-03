@@ -123,7 +123,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -789,7 +789,7 @@ begin
   end;
 end;
 
-function TSynBaanSyn.GetTokenKind: Integer;
+function TSynBaanSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;

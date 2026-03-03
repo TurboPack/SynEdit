@@ -120,7 +120,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: NativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -538,7 +538,7 @@ end;
 
 procedure TSynCacheSyn.SpaceProc;
 var
-  x: Integer;
+  x: NativeInt;
 begin
   x := Run;
   Inc(Run);
@@ -650,7 +650,7 @@ begin
   end;
 end;
 
-function TSynCacheSyn.GetTokenKind: Integer;
+function TSynCacheSyn.GetTokenKind: NativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -738,7 +738,7 @@ end;
 //------------------------------------------------------------------------------
 procedure TSynCacheSyn.DirectiveProc;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if FLine[Run + 1] = '#' then
     fTokenID := tkClass
