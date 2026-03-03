@@ -1,0 +1,124 @@
+object FMXEditAppForm: TFMXEditAppForm
+  Left = 0
+  Top = 0
+  Caption = 'Untitled - SynEdit FMX'
+  ClientHeight = 600
+  ClientWidth = 900
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object MenuBar1: TMenuBar
+    Size.Width = 900.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    object MenuFile: TMenuItem
+      Text = 'File'
+      object MenuNew: TMenuItem
+        Text = 'New'
+        ShortCut = 16462
+        OnClick = MenuNewClick
+      end
+      object MenuOpen: TMenuItem
+        Text = 'Open...'
+        ShortCut = 16463
+        OnClick = MenuOpenClick
+      end
+      object MenuSave: TMenuItem
+        Text = 'Save'
+        ShortCut = 16467
+        OnClick = MenuSaveClick
+      end
+      object MenuSaveAs: TMenuItem
+        Text = 'Save As...'
+        OnClick = MenuSaveAsClick
+      end
+      object MenuSep1: TMenuItem
+        Text = '-'
+      end
+      object MenuExit: TMenuItem
+        Text = 'Exit'
+        ShortCut = 32883
+        OnClick = MenuExitClick
+      end
+    end
+    object MenuEdit: TMenuItem
+      Text = 'Edit'
+      object MenuUndo: TMenuItem
+        Text = 'Undo'
+        ShortCut = 16474
+        OnClick = MenuUndoClick
+      end
+      object MenuRedo: TMenuItem
+        Text = 'Redo'
+        ShortCut = 24666
+        OnClick = MenuRedoClick
+      end
+      object MenuSep2: TMenuItem
+        Text = '-'
+      end
+      object MenuCut: TMenuItem
+        Text = 'Cut'
+        ShortCut = 16472
+        OnClick = MenuCutClick
+      end
+      object MenuCopy: TMenuItem
+        Text = 'Copy'
+        ShortCut = 16451
+        OnClick = MenuCopyClick
+      end
+      object MenuPaste: TMenuItem
+        Text = 'Paste'
+        ShortCut = 16470
+        OnClick = MenuPasteClick
+      end
+      object MenuSep3: TMenuItem
+        Text = '-'
+      end
+      object MenuSelectAll: TMenuItem
+        Text = 'Select All'
+        ShortCut = 16449
+        OnClick = MenuSelectAllClick
+      end
+    end
+  end
+  object PanelStatus: TPanel
+    Align = Bottom
+    Position.Y = 575.000000000000000000
+    Size.Width = 900.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    object LabelPos: TLabel
+      Align = Left
+      Size.Width = 200.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Leading
+      Margins.Left = 8.000000000000000000
+      Text = 'Ln: 1  Col: 1'
+    end
+    object LabelInsert: TLabel
+      Align = Left
+      Size.Width = 100.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Center
+      Text = 'Insert'
+    end
+    object LabelModified: TLabel
+      Align = Left
+      Size.Width = 100.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Center
+      Text = ''
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    Filter = 'All Files (*.*)|*.*'
+  end
+  object SaveDialog1: TSaveDialog
+    Filter = 'All Files (*.*)|*.*'
+  end
+end

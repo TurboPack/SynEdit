@@ -43,10 +43,13 @@ unit SynHighlighterOmni;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
+  {$ENDIF}
   System.SysUtils,
+  SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
 //  JCLUnicode,
   System.Classes,
   SynEditCodeFolding;
@@ -213,9 +216,11 @@ type
       LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
     procedure SetRange(Value: Pointer); override;
     function SaveToIniFile(const FileName: string): Boolean;
+    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
-    function LoadFromIniFile(const FileName: string): Boolean;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
+    {$ENDIF}
+    function LoadFromIniFile(const FileName: string): Boolean;
     procedure SetKeyWordsCompat(FromStrings: TStrings; ToStrings: TStrings);
     function IsReservedWord(const AKeyword: string; KeyList: TStrings; AKWStartWith: Boolean): Boolean;
   published
@@ -276,12 +281,14 @@ type
 implementation
 
 uses
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   System.Win.Registry,
+  {$ENDIF}
   System.TypInfo,
   SyStem.IniFiles,
   SynEditStrConst,
   SynEditMiscProcs,
-  Vcl.Graphics;
+  System.UITypes;
 
 
 function TSynOmniSyn.IsEsc(const ARun: Integer): Boolean;
@@ -1663,6 +1670,7 @@ begin
   end;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynOmniSyn.LoadFromRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   r: TRegistry;
@@ -1677,6 +1685,7 @@ begin
     else Result := false;
   finally r.Free; end;
 end;
+{$ENDIF}
 
 function TSynOmniSyn.SaveToIniFile(const FileName: string): Boolean;
 var
@@ -1849,6 +1858,7 @@ begin
   end;
 end;
 
+{$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function TSynOmniSyn.SaveToRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   r: TRegistry;
@@ -1863,6 +1873,7 @@ begin
     else Result := false;
   finally r.Free; end;
 end;
+{$ENDIF}
 
 procedure TSynOmniSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings; FromLine, ToLine: Integer);

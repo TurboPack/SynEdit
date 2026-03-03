@@ -48,9 +48,9 @@ uses
   System.Classes,
   SynEditCodeFolding,
   System.RegularExpressions,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditHighlighter;
 
 const

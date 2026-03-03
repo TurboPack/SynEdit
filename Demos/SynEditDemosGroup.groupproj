@@ -1,42 +1,42 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{C8060E47-C8E2-4651-988B-12815A27FFF5}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="CompletionProposalDemo\CompletionProposalDemo.dproj">
+        <Projects Include="VCL\CompletionProposalDemo\CompletionProposalDemo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="SpellCheck\SpellCheck.dproj">
+        <Projects Include="VCL\SpellCheck\SpellCheck.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="SimpleIDEDemo\SimpleIDEDemo.dproj">
+        <Projects Include="VCL\SimpleIDEDemo\SimpleIDEDemo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="SearchReplaceDemo\SearchReplaceDemo.dproj">
+        <Projects Include="VCL\SearchReplaceDemo\SearchReplaceDemo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="PrintDemo\TestPP.dproj">
+        <Projects Include="VCL\PrintDemo\TestPP.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="MarkdownViewer\MarkdownViewerDemo.dproj">
+        <Projects Include="VCL\MarkdownViewer\MarkdownViewerDemo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="HighlighterDemo\HighlighterDemo.dproj">
+        <Projects Include="VCL\HighlighterDemo\HighlighterDemo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Folding\FoldingDemo.dproj">
+        <Projects Include="VCL\Folding\FoldingDemo.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="EditAppDemos\EditAppWorkbook.dproj">
+        <Projects Include="VCL\EditAppDemos\EditAppWorkbook.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="EditAppDemos\EditAppSDI.dproj">
+        <Projects Include="VCL\EditAppDemos\EditAppSDI.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="EditAppDemos\EditAppMDI.dproj">
+        <Projects Include="VCL\EditAppDemos\EditAppMDI.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="CompletionProposalDemo\ParamCompletionDemo.dproj">
+        <Projects Include="VCL\CompletionProposalDemo\ParamCompletionDemo.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -48,112 +48,112 @@
         </BorlandProject>
     </ProjectExtensions>
     <Target Name="CompletionProposalDemo">
-        <MSBuild Projects="CompletionProposalDemo\CompletionProposalDemo.dproj"/>
+        <MSBuild Projects="VCL\CompletionProposalDemo\CompletionProposalDemo.dproj"/>
     </Target>
     <Target Name="CompletionProposalDemo:Clean">
-        <MSBuild Projects="CompletionProposalDemo\CompletionProposalDemo.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\CompletionProposalDemo\CompletionProposalDemo.dproj" Targets="Clean"/>
     </Target>
     <Target Name="CompletionProposalDemo:Make">
-        <MSBuild Projects="CompletionProposalDemo\CompletionProposalDemo.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\CompletionProposalDemo\CompletionProposalDemo.dproj" Targets="Make"/>
     </Target>
     <Target Name="SpellCheck">
-        <MSBuild Projects="SpellCheck\SpellCheck.dproj"/>
+        <MSBuild Projects="VCL\SpellCheck\SpellCheck.dproj"/>
     </Target>
     <Target Name="SpellCheck:Clean">
-        <MSBuild Projects="SpellCheck\SpellCheck.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\SpellCheck\SpellCheck.dproj" Targets="Clean"/>
     </Target>
     <Target Name="SpellCheck:Make">
-        <MSBuild Projects="SpellCheck\SpellCheck.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\SpellCheck\SpellCheck.dproj" Targets="Make"/>
     </Target>
     <Target Name="SimpleIDEDemo">
-        <MSBuild Projects="SimpleIDEDemo\SimpleIDEDemo.dproj"/>
+        <MSBuild Projects="VCL\SimpleIDEDemo\SimpleIDEDemo.dproj"/>
     </Target>
     <Target Name="SimpleIDEDemo:Clean">
-        <MSBuild Projects="SimpleIDEDemo\SimpleIDEDemo.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\SimpleIDEDemo\SimpleIDEDemo.dproj" Targets="Clean"/>
     </Target>
     <Target Name="SimpleIDEDemo:Make">
-        <MSBuild Projects="SimpleIDEDemo\SimpleIDEDemo.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\SimpleIDEDemo\SimpleIDEDemo.dproj" Targets="Make"/>
     </Target>
     <Target Name="SearchReplaceDemo">
-        <MSBuild Projects="SearchReplaceDemo\SearchReplaceDemo.dproj"/>
+        <MSBuild Projects="VCL\SearchReplaceDemo\SearchReplaceDemo.dproj"/>
     </Target>
     <Target Name="SearchReplaceDemo:Clean">
-        <MSBuild Projects="SearchReplaceDemo\SearchReplaceDemo.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\SearchReplaceDemo\SearchReplaceDemo.dproj" Targets="Clean"/>
     </Target>
     <Target Name="SearchReplaceDemo:Make">
-        <MSBuild Projects="SearchReplaceDemo\SearchReplaceDemo.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\SearchReplaceDemo\SearchReplaceDemo.dproj" Targets="Make"/>
     </Target>
     <Target Name="TestPP">
-        <MSBuild Projects="PrintDemo\TestPP.dproj"/>
+        <MSBuild Projects="VCL\PrintDemo\TestPP.dproj"/>
     </Target>
     <Target Name="TestPP:Clean">
-        <MSBuild Projects="PrintDemo\TestPP.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\PrintDemo\TestPP.dproj" Targets="Clean"/>
     </Target>
     <Target Name="TestPP:Make">
-        <MSBuild Projects="PrintDemo\TestPP.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\PrintDemo\TestPP.dproj" Targets="Make"/>
     </Target>
     <Target Name="MarkdownViewerDemo">
-        <MSBuild Projects="MarkdownViewer\MarkdownViewerDemo.dproj"/>
+        <MSBuild Projects="VCL\MarkdownViewer\MarkdownViewerDemo.dproj"/>
     </Target>
     <Target Name="MarkdownViewerDemo:Clean">
-        <MSBuild Projects="MarkdownViewer\MarkdownViewerDemo.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\MarkdownViewer\MarkdownViewerDemo.dproj" Targets="Clean"/>
     </Target>
     <Target Name="MarkdownViewerDemo:Make">
-        <MSBuild Projects="MarkdownViewer\MarkdownViewerDemo.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\MarkdownViewer\MarkdownViewerDemo.dproj" Targets="Make"/>
     </Target>
     <Target Name="HighlighterDemo">
-        <MSBuild Projects="HighlighterDemo\HighlighterDemo.dproj"/>
+        <MSBuild Projects="VCL\HighlighterDemo\HighlighterDemo.dproj"/>
     </Target>
     <Target Name="HighlighterDemo:Clean">
-        <MSBuild Projects="HighlighterDemo\HighlighterDemo.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\HighlighterDemo\HighlighterDemo.dproj" Targets="Clean"/>
     </Target>
     <Target Name="HighlighterDemo:Make">
-        <MSBuild Projects="HighlighterDemo\HighlighterDemo.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\HighlighterDemo\HighlighterDemo.dproj" Targets="Make"/>
     </Target>
     <Target Name="FoldingDemo">
-        <MSBuild Projects="Folding\FoldingDemo.dproj"/>
+        <MSBuild Projects="VCL\Folding\FoldingDemo.dproj"/>
     </Target>
     <Target Name="FoldingDemo:Clean">
-        <MSBuild Projects="Folding\FoldingDemo.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\Folding\FoldingDemo.dproj" Targets="Clean"/>
     </Target>
     <Target Name="FoldingDemo:Make">
-        <MSBuild Projects="Folding\FoldingDemo.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\Folding\FoldingDemo.dproj" Targets="Make"/>
     </Target>
     <Target Name="EditAppWorkbook">
-        <MSBuild Projects="EditAppDemos\EditAppWorkbook.dproj"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppWorkbook.dproj"/>
     </Target>
     <Target Name="EditAppWorkbook:Clean">
-        <MSBuild Projects="EditAppDemos\EditAppWorkbook.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppWorkbook.dproj" Targets="Clean"/>
     </Target>
     <Target Name="EditAppWorkbook:Make">
-        <MSBuild Projects="EditAppDemos\EditAppWorkbook.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppWorkbook.dproj" Targets="Make"/>
     </Target>
     <Target Name="EditAppSDI">
-        <MSBuild Projects="EditAppDemos\EditAppSDI.dproj"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppSDI.dproj"/>
     </Target>
     <Target Name="EditAppSDI:Clean">
-        <MSBuild Projects="EditAppDemos\EditAppSDI.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppSDI.dproj" Targets="Clean"/>
     </Target>
     <Target Name="EditAppSDI:Make">
-        <MSBuild Projects="EditAppDemos\EditAppSDI.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppSDI.dproj" Targets="Make"/>
     </Target>
     <Target Name="EditAppMDI">
-        <MSBuild Projects="EditAppDemos\EditAppMDI.dproj"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppMDI.dproj"/>
     </Target>
     <Target Name="EditAppMDI:Clean">
-        <MSBuild Projects="EditAppDemos\EditAppMDI.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppMDI.dproj" Targets="Clean"/>
     </Target>
     <Target Name="EditAppMDI:Make">
-        <MSBuild Projects="EditAppDemos\EditAppMDI.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\EditAppDemos\EditAppMDI.dproj" Targets="Make"/>
     </Target>
     <Target Name="ParamCompletionDemo">
-        <MSBuild Projects="CompletionProposalDemo\ParamCompletionDemo.dproj"/>
+        <MSBuild Projects="VCL\CompletionProposalDemo\ParamCompletionDemo.dproj"/>
     </Target>
     <Target Name="ParamCompletionDemo:Clean">
-        <MSBuild Projects="CompletionProposalDemo\ParamCompletionDemo.dproj" Targets="Clean"/>
+        <MSBuild Projects="VCL\CompletionProposalDemo\ParamCompletionDemo.dproj" Targets="Clean"/>
     </Target>
     <Target Name="ParamCompletionDemo:Make">
-        <MSBuild Projects="CompletionProposalDemo\ParamCompletionDemo.dproj" Targets="Make"/>
+        <MSBuild Projects="VCL\CompletionProposalDemo\ParamCompletionDemo.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
         <CallTarget Targets="CompletionProposalDemo;SpellCheck;SimpleIDEDemo;SearchReplaceDemo;TestPP;MarkdownViewerDemo;HighlighterDemo;FoldingDemo;EditAppWorkbook;EditAppSDI;EditAppMDI;ParamCompletionDemo"/>

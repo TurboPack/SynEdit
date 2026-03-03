@@ -11,7 +11,7 @@ the specific language governing rights and limitations under the License.
 The Original Code is: SynEditWildcardSearch.pas, released 2003-06-21.
 
 The original author of this file is Michael Elsdoerfer.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -37,7 +37,6 @@ unit SynEditWildcardSearch;
 interface
 
 uses
-  SynEdit,
   SynEditTypes,
   SynEditRegexSearch,
   Classes;
@@ -64,9 +63,6 @@ type
   end;
 
 implementation
-
-uses
-  Consts;
 
 { TSynEditWildcardSearch }
 

@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterVB.pas, released 2000-04-20.
 The Original Code is based on the wbADSP21xxSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Max Horv-th.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -45,12 +45,14 @@ interface
 uses
   System.Classes,
   System.SysUtils,
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   System.Win.Registry,
+  {$ENDIF}
   System.RegularExpressions,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditHighlighter,
   SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   SynEditCodeFolding;
 
 type

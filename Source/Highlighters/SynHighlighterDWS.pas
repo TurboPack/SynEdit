@@ -41,8 +41,10 @@ unit SynHighlighterDWS;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
-  Vcl.Graphics,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
   System.SysUtils,

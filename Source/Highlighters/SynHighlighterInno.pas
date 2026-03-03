@@ -47,7 +47,7 @@ uses
   System.Classes,
   System.Generics.Defaults,
   System.Generics.Collections,
-  Vcl.Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter;
 

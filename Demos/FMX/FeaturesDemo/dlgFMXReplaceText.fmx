@@ -1,0 +1,112 @@
+object FMXReplaceTextDialog: TFMXReplaceTextDialog
+  Left = 0
+  Top = 0
+  Caption = 'Replace Text'
+  ClientHeight = 240
+  ClientWidth = 400
+  Position = TFormPosition.ScreenCenter
+  object lblSearch: TLabel
+    Position.X = 16
+    Position.Y = 16
+    Size.Width = 60
+    Size.Height = 22
+    Text = 'Search:'
+  end
+  object edtSearch: TEdit
+    Position.X = 80
+    Position.Y = 12
+    Size.Width = 300
+    Size.Height = 28
+    TabOrder = 0
+  end
+  object lblReplace: TLabel
+    Position.X = 16
+    Position.Y = 48
+    Size.Width = 60
+    Size.Height = 22
+    Text = 'Replace:'
+  end
+  object edtReplace: TEdit
+    Position.X = 80
+    Position.Y = 44
+    Size.Width = 300
+    Size.Height = 28
+    TabOrder = 1
+  end
+  object grpOptions: TGroupBox
+    Position.X = 16
+    Position.Y = 80
+    Size.Width = 180
+    Size.Height = 100
+    Text = 'Options'
+    object cbMatchCase: TCheckBox
+      Position.X = 12
+      Position.Y = 20
+      Size.Width = 150
+      Size.Height = 22
+      Text = 'Match Case'
+    end
+    object cbWholeWord: TCheckBox
+      Position.X = 12
+      Position.Y = 46
+      Size.Width = 150
+      Size.Height = 22
+      Text = 'Whole Word'
+    end
+    object cbRegex: TCheckBox
+      Position.X = 12
+      Position.Y = 72
+      Size.Width = 150
+      Size.Height = 22
+      Text = 'Regular Expression'
+    end
+  end
+  object grpDirection: TGroupBox
+    Position.X = 204
+    Position.Y = 80
+    Size.Width = 176
+    Size.Height = 100
+    Text = 'Direction'
+    object rbForward: TRadioButton
+      Position.X = 12
+      Position.Y = 20
+      Size.Width = 150
+      Size.Height = 22
+      Text = 'Forward'
+      IsChecked = True
+    end
+    object rbBackward: TRadioButton
+      Position.X = 12
+      Position.Y = 46
+      Size.Width = 150
+      Size.Height = 22
+      Text = 'Backward'
+    end
+  end
+  object btnReplace: TButton
+    Position.X = 112
+    Position.Y = 196
+    Size.Width = 84
+    Size.Height = 30
+    Text = 'Replace'
+    Default = True
+    OnClick = btnReplaceClick
+  end
+  object btnReplaceAll: TButton
+    Position.X = 204
+    Position.Y = 196
+    Size.Width = 84
+    Size.Height = 30
+    Text = 'Replace All'
+    OnClick = btnReplaceAllClick
+  end
+  object btnClose: TButton
+    Position.X = 296
+    Position.Y = 196
+    Size.Width = 84
+    Size.Height = 30
+    Text = 'Close'
+    Cancel = True
+    OnClick = btnCloseClick
+  end
+end

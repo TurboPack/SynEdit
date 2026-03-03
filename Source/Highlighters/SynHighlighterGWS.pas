@@ -38,10 +38,10 @@ unit SynHighlighterGWS;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

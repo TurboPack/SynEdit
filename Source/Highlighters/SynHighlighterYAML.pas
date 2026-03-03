@@ -34,7 +34,8 @@ uses
   System.SysUtils,
   System.Classes,
   SynEditCodeFolding,
-  Vcl.Graphics,
+  System.UITypes,
+  SynEditTypes,
   SynEditHighlighter;
 
 //State constants
@@ -148,7 +149,9 @@ implementation
 uses
   System.Character,
   System.Math,
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
+  {$ENDIF}
   SynEditStrConst,
   SynEditMiscProcs;
 

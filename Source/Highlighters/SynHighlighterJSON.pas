@@ -34,11 +34,13 @@ unit SynHighlighterJSON;
 interface
 
 uses
-  Graphics,
+  System.UITypes,
+  {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
+  {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   //++ CodeFolding
   SynEditCodeFolding,
   //++ CodeFolding

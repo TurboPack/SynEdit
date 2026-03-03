@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
@@ -47,22 +47,23 @@
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
         <BCC_wpar>false</BCC_wpar>
         <DCC_AdditionalSwitches>-LUDesignIDE</DCC_AdditionalSwitches>
+        <DCC_UsePackage>SynEditSharedDR;SynEditDR;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
-        <DCC_UnitSearchPath>..\..\..\Source;..\..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\Source\VCL;..\..\..\Source;..\..\..\Source\Highlighters;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DesignOnlyPackage>true</DesignOnlyPackage>
         <DllSuffix>$(Auto)</DllSuffix>
         <DynamicRTL>true</DynamicRTL>
-        <ILINK_Description>TurboPack SynEdit CBuilder designtime package</ILINK_Description>
+        <ILINK_Description>TurboPack SynEdit CBuilder VCL designtime package</ILINK_Description>
         <ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
         <ILINK_GenerateLibFile>true</ILINK_GenerateLibFile>
-        <ILINK_LibraryPath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <ILINK_LibraryPath>..\..\..\Source\VCL\;..\..\..\Source\Highlighters\;..\..\..\Source\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\release\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
-        <IncludePath>..\..\..\Source\Highlighters\;..\..\..\Source\;$(IncludePath)</IncludePath>
+        <IncludePath>..\..\..\Source\VCL\;..\..\..\Source\Highlighters\;..\..\..\Source\;$(IncludePath)</IncludePath>
         <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
         <Multithreaded>true</Multithreaded>
         <ProjectType>CppPackage</ProjectType>
@@ -156,13 +157,13 @@
         <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterManager.pas">
             <BuildOrder>12</BuildOrder>
         </DelphiCompile>
-        <DelphiCompile Include="..\..\..\Source\SynEditPropertyReg.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditPropertyReg.pas">
             <BuildOrder>3</BuildOrder>
         </DelphiCompile>
-        <ResFiles Include="..\..\..\source\SynEditReg.dcr">
+        <ResFiles Include="..\..\..\Source\VCL\Vcl.SynEditReg.dcr">
             <BuildOrder>5</BuildOrder>
         </ResFiles>
-        <DelphiCompile Include="..\..\..\Source\SynEditReg.pas">
+        <DelphiCompile Include="..\..\..\Source\VCL\Vcl.SynEditReg.pas">
             <BuildOrder>4</BuildOrder>
         </DelphiCompile>
         <BuildConfiguration Include="Base">
@@ -201,7 +202,7 @@
                 <Platform value="OSXARM64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">False</Platform>
-                <Platform value="Win64x">False</Platform>
+                <Platform value="Win64x">True</Platform>
                 <Platform value="iOSDevice64">False</Platform>
                 <Platform value="iOSSimARM64">False</Platform>
             </Platforms>

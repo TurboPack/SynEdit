@@ -1,0 +1,34 @@
+object FMXHighlighterForm: TFMXHighlighterForm
+  Left = 0
+  Top = 0
+  Caption = 'SynEdit FMX - Highlighter Demo'
+  ClientHeight = 600
+  ClientWidth = 900
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object PanelTop: TPanel
+    Align = Top
+    Size.Width = 900.000000000000000000
+    Size.Height = 40.000000000000000000
+    Size.PlatformDefault = False
+    object LabelHL: TLabel
+      Align = Left
+      StyledSettings = [Family, Size]
+      Size.Width = 100.000000000000000000
+      Size.Height = 40.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Center
+      Text = 'Highlighter:'
+    end
+    object ComboBoxHL: TComboBox
+      Align = Client
+      Size.Width = 800.000000000000000000
+      Size.Height = 40.000000000000000000
+      Size.PlatformDefault = False
+      OnChange = ComboBoxHLChange
+    end
+  end
+end

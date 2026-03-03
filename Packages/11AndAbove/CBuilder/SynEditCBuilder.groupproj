@@ -1,13 +1,22 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{F9BE6A59-BDDF-49EA-8DBD-FFCEA9630B0C}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="SynEditCR.cbproj">
+        <Projects Include="SynEditSharedCR.cbproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="SynEditCR.cbproj">
+            <Dependencies>SynEditSharedCR.cbproj</Dependencies>
+        </Projects>
         <Projects Include="SynEditCD.cbproj">
-            <Dependencies/>
+            <Dependencies>SynEditCR.cbproj</Dependencies>
+        </Projects>
+        <Projects Include="SynEditFMXCR.cbproj">
+            <Dependencies>SynEditSharedCR.cbproj</Dependencies>
+        </Projects>
+        <Projects Include="SynEditFMXCD.cbproj">
+            <Dependencies>SynEditFMXCR.cbproj</Dependencies>
         </Projects>
     </ItemGroup>
     <ProjectExtensions>
@@ -17,6 +26,15 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
+    <Target Name="SynEditSharedCR">
+        <MSBuild Projects="SynEditSharedCR.cbproj"/>
+    </Target>
+    <Target Name="SynEditSharedCR:Clean">
+        <MSBuild Projects="SynEditSharedCR.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SynEditSharedCR:Make">
+        <MSBuild Projects="SynEditSharedCR.cbproj" Targets="Make"/>
+    </Target>
     <Target Name="SynEditCR">
         <MSBuild Projects="SynEditCR.cbproj"/>
     </Target>
@@ -35,14 +53,32 @@
     <Target Name="SynEditCD:Make">
         <MSBuild Projects="SynEditCD.cbproj" Targets="Make"/>
     </Target>
+    <Target Name="SynEditFMXCR">
+        <MSBuild Projects="SynEditFMXCR.cbproj"/>
+    </Target>
+    <Target Name="SynEditFMXCR:Clean">
+        <MSBuild Projects="SynEditFMXCR.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SynEditFMXCR:Make">
+        <MSBuild Projects="SynEditFMXCR.cbproj" Targets="Make"/>
+    </Target>
+    <Target Name="SynEditFMXCD">
+        <MSBuild Projects="SynEditFMXCD.cbproj"/>
+    </Target>
+    <Target Name="SynEditFMXCD:Clean">
+        <MSBuild Projects="SynEditFMXCD.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SynEditFMXCD:Make">
+        <MSBuild Projects="SynEditFMXCD.cbproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="SynEditCR;SynEditCD"/>
+        <CallTarget Targets="SynEditSharedCR;SynEditCR;SynEditCD;SynEditFMXCR;SynEditFMXCD"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="SynEditCR:Clean;SynEditCD:Clean"/>
+        <CallTarget Targets="SynEditSharedCR:Clean;SynEditCR:Clean;SynEditCD:Clean;SynEditFMXCR:Clean;SynEditFMXCD:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="SynEditCR:Make;SynEditCD:Make"/>
+        <CallTarget Targets="SynEditSharedCR:Make;SynEditCR:Make;SynEditCD:Make;SynEditFMXCR:Make;SynEditFMXCD:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

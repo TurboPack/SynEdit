@@ -10,7 +10,7 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is: SynHighlighterSDD.pas, released 2001-08-20.
 The Initial Author of this file is Pieter Polak.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -34,11 +34,13 @@ unit SynHighlighterSDD;
 interface
 
 uses
-  Windows,
-  Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

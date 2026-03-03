@@ -13,7 +13,7 @@ The original code is: SynHighlighterLDraw.pas, released 2003-04-12.
 Description: LDraw Parser/Highlighter
 The initial author of this file is Orion Pobursky.
 Copyright (c) 2003, all rights reserved.
-Unicode translation by Maël Hörz.
+Unicode translation by Maï¿½l Hï¿½rz.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
 Contributors.txt file.
@@ -43,9 +43,12 @@ unit SynHighlighterLDraw;
 interface
 
 uses
-  Windows, Controls, Graphics,
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes,
   SynEditHighlighter, SynEditTypes,
-  SynUnicode,
+  SynUnicodeShared,
   SysUtils,
   Classes;
 

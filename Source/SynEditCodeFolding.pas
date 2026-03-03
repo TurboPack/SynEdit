@@ -109,7 +109,7 @@ uses
   System.SysUtils,
   System.Generics.Defaults,
   System.Generics.Collections,
-  Vcl.Graphics,
+  SynEditTypes,
   SynEditHighlighter;
 
 type
@@ -306,7 +306,9 @@ const
 implementation
 
 Uses
+  {$IFDEF MSWINDOWS}
   Winapi.Windows,
+  {$ENDIF}
   System.Math,
   SynEditTextBuffer;
 

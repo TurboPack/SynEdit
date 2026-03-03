@@ -12,7 +12,7 @@
   The Original Code is based on parts of mwCustomEdit.pas by Martin Waldenburg,
   part of the mwEdit component suite.
   Portions created by Martin Waldenburg are Copyright (C) 1998 Martin Waldenburg.
-  Unicode translation by Maël Hörz.
+  Unicode translation by Maï¿½l Hï¿½rz.
   All Rights Reserved.
 
   Contributors to the SynEdit and mwEdit projects are listed in the
@@ -42,7 +42,7 @@ uses
   System.SysUtils,
   SynEditTypes,
   SynEditMiscProcs,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   TSynEditRange = Pointer;
@@ -196,7 +196,7 @@ begin
   raise ESynEditStringList.CreateFmt(SListIndexOutOfBounds, [Index]);
 end;
 
-constructor TSynEditStringList.Create;
+constructor TSynEditStringList.Create(TextWidthFunc: TTextWidthFunc);
 begin
   inherited Create;
   FFileFormat := sffDos;
@@ -384,7 +384,10 @@ begin
   begin
     if sfTextWidthUnknown in FList^[Index].FFlags then
     begin
-      Result := FTextWidthFunc(FList^[Index].FString);
+      if Assigned(FTextWidthFunc) then
+        Result := FTextWidthFunc(FList^[Index].FString)
+      else
+        Result := Length(FList^[Index].FString);
       FList^[Index].FTextWidth := Result;
       Exclude(FList^[Index].FFlags, sfTextWidthUnknown);
     end
@@ -411,7 +414,10 @@ begin
       PRec := @FList^[I];
       if sfTextWidthUnknown in PRec^.FFlags then
       begin
-        PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
+        if Assigned(FTextWidthFunc) then
+          PRec^.FTextWidth := FTextWidthFunc(PRec^.FString)
+        else
+          PRec^.FTextWidth := Length(PRec^.FString);
         Exclude(PRec^.FFlags, sfTextWidthUnknown);
       end;
       repeat
@@ -627,6 +633,7 @@ begin
   S := GetTextStr;
 
   Cancel := False;
+  {$IFDEF MSWINDOWS}
   if (Encoding = TEncoding.ANSI) and Assigned(FOnInfoLoss) and not IsAnsiOnly(S)
   then
   begin
@@ -636,6 +643,7 @@ begin
     if Encoding <> TEncoding.ANSI then
       SetEncoding(Encoding);
   end;
+  {$ENDIF}
 
   Buffer := Encoding.GetBytes(S);
   if WriteBOM then
@@ -669,7 +677,10 @@ begin
       // Optimization:  We calculate text width here, thus
       // in most cases avoiding to recalc FMaxWidth the hard way
       OldWidth := FTextWidth;
-      FTextWidth := FTextWidthFunc(FString);
+      if Assigned(FTextWidthFunc) then
+        FTextWidth := FTextWidthFunc(FString)
+      else
+        FTextWidth := Length(FString);
       Exclude(FFlags, sfTextWidthUnknown);
       if (FMaxWidth = OldWidth) and (OldWidth > FTextWidth) then
         FMaxWidth := -1
