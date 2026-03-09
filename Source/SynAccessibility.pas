@@ -856,8 +856,8 @@ begin
   var
     SearchS: string;
     Line: string;
-    I: NativeInt;
-    Index, StartIndex: NativeInt;
+    I: TSynNativeInt;
+    Index, StartIndex: TSynNativeInt;
   begin
     if FSynEdit = nil then
     begin
@@ -934,7 +934,7 @@ end;
 
 function TSynTextRangeProvider.GetBoundingRectangles(out RetVal: PSafeArray): HResult;
 var
-  I: NativeInt;
+  I: TSynNativeInt;
   Index: Integer;
   R: TRect;
   BC: TBufferCoord;
@@ -1039,7 +1039,7 @@ begin
 
   TThread.Synchronize(nil, procedure
   var
-    I: NativeInt;
+    I: TSynNativeInt;
   begin
     if FSynEdit = nil then
     begin

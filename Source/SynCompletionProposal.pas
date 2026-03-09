@@ -41,6 +41,7 @@ uses
   Winapi.Messages,
   System.SysUtils,
   System.Classes,
+  Vcl.Themes,
   Vcl.Graphics,
   Vcl.Forms,
   Vcl.Controls,
@@ -51,6 +52,7 @@ uses
   SynEditTypes,
   SynEditKeyCmds,
   SynEdit,
+  SynFunc,
   SynUnicode;
 
 type
@@ -204,7 +206,7 @@ type
     procedure WMActivate (var Message: TWMActivate); message WM_ACTIVATE;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetCurrentPPI: Integer;{$IF CompilerVersion >= 32}override;{$ENDIF}
+    function GetCurrentPPI: Integer;{$IF CompilerVersion >= 33}override;{$ENDIF}
   public
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
@@ -404,7 +406,7 @@ type
     fEditors: TList;
     FShortCut: TShortCut;
     FNoNextKey: Boolean;
-    FCompletionStart: NativeInt;
+    FCompletionStart: TSynNativeInt;
     FAdjustCompletionStart: Boolean;
     FOnCodeCompletion: TCodeCompletionEvent;
     FTimer: TTimer;
@@ -424,7 +426,7 @@ type
     function GetCurrentInput(AEditor: TCustomSynEdit): string;
     function GetTimerInterval: Integer;
     procedure SetTimerInterval(const Value: Integer);
-    function GetEditor(i: Integer): TCustomSynEdit;
+    function GetEditor(i: TSynNativeInt): TCustomSynEdit;
     procedure InternalCancelCompletion;
   protected
     procedure DoExecute(AEditor: TCustomSynEdit); virtual;
@@ -446,8 +448,8 @@ type
     procedure CancelCompletion;
     procedure ActivateTimer(ACurrentEditor: TCustomSynEdit);
     procedure DeactivateTimer;
-    property Editors[i: Integer]: TCustomSynEdit read GetEditor;
-    property CompletionStart: NativeInt read FCompletionStart write FCompletionStart; // ET 04/02/2003
+    property Editors[i: TSynNativeInt]: TCustomSynEdit read GetEditor;
+    property CompletionStart: TSynNativeInt read FCompletionStart write FCompletionStart; // ET 04/02/2003
   published
     property ShortCut: TShortCut read FShortCut write SetShortCut;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
@@ -553,13 +555,11 @@ implementation
 
 uses
   System.Math,
-  Vcl.Themes,
   System.Types,
   System.UITypes,
   SynEditTextBuffer,
   SynEditMiscProcs,
-  SynEditKeyConst,
-  SynFunc;
+  SynEditKeyConst;
 
 const
   TextHeightString = 'CompletionProposal';
@@ -586,15 +586,15 @@ type
   TFormatChunkList = class
   private
     FChunks: TList;
-    function GetCount: NativeInt;
-    function GetChunk(Index: NativeInt): PFormatChunk;
+    function GetCount: TSynNativeInt;
+    function GetChunk(Index: TSynNativeInt): PFormatChunk;
   public
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
     procedure Add(AChunk: PFormatChunk);
-    property Count: NativeInt read GetCount;
-    property Chunks[Index: NativeInt]: PFormatChunk read GetChunk; default;
+    property Count: TSynNativeInt read GetCount;
+    property Chunks[Index: TSynNativeInt]: PFormatChunk read GetChunk; default;
   end;
 
 
@@ -602,12 +602,12 @@ const
   AllCommands = [fcColor..High(TFormatCommand)];
 
 
-function TFormatChunkList.GetCount: NativeInt;
+function TFormatChunkList.GetCount: TSynNativeInt;
 begin
   Result := FChunks.Count;
 end;
 
-function TFormatChunkList.GetChunk(Index: NativeInt): PFormatChunk;
+function TFormatChunkList.GetChunk(Index: TSynNativeInt): PFormatChunk;
 begin
   Result := FChunks[Index];
 end;
@@ -854,7 +854,7 @@ end;
 function StripFormatCommands(const FormattedString: string): string;
 var
   Chunks: TFormatChunkList;
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   Chunks := TFormatChunkList.Create;
   try
@@ -874,7 +874,7 @@ function PaintChunks(TargetCanvas: TCanvas; const Rect: TRect; PPI: Integer;
   ChunkList: TFormatChunkList; Columns: TProposalColumns; Images: TCustomImageList;
   Invisible: Boolean): Integer;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
   X: Integer;
   C: PFormatChunk;
   CurrentColumn: TProposalColumn;
@@ -1203,24 +1203,18 @@ begin
   FTitleFont.Color := clBtnText;
   FTitleFont.PixelsPerInch := Screen.DefaultPixelsPerInch;
   FTitleFont.Size := Application.DefaultFont.Size;
-  {$IF CompilerVersion >= 36}
   FTitleFont.IsScreenFont := True;
-  {$IFEND CompilerVersion >= 36}
 
   FFont := TFont.Create;
   FFont.PixelsPerInch := Screen.DefaultPixelsPerInch;
   FFont.Size := Application.DefaultFont.Size;
-  {$IF CompilerVersion >= 36}
   FFont.IsScreenFont := True;
-  {$IFEND CompilerVersion >= 36}
 
   FGripperFont := TFont.Create;
   FGripperFont.Color := clBtnText;
   FGripperFont.PixelsPerInch := Screen.DefaultPixelsPerInch;
   FGripperFont.Size := Application.DefaultFont.Size;
-  {$IF CompilerVersion >= 36}
   FGripperFont.IsScreenFont := True;
-  {$IFEND CompilerVersion >= 36}
 
   ClSelect := clHighlight;
   ClSelectedText := clHighlightText;
@@ -2243,7 +2237,7 @@ var
     ActivePPI := FForm.GetCurrentPPI;
     // ScaleForPPI will scale Width and Height
     // Scaling at this point prevents further scaling when the Form is shown
-    {$IF CompilerVersion >= 32}FForm.ScaleForPPI(ActivePPI);{$ENDIF}
+    FForm.ScaleForPPI(ActivePPI);
 
     // Scrollbar needs to be properly scaled in case primary monitor is High-DPI
     // Check for Windows Anniversary Edition
@@ -3031,7 +3025,7 @@ end;
 function TSynCompletionProposal.GetCurrentInput(AEditor: TCustomSynEdit): string;
 var
   s: string;
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   Result := '';
   if AEditor <> nil then
@@ -3206,7 +3200,7 @@ begin
   Result := fEditors.count;
 end;
 
-function TSynCompletionProposal.GetEditor(i: Integer): TCustomSynEdit;
+function TSynCompletionProposal.GetEditor(i: TSynNativeInt): TCustomSynEdit;
 begin
   if (i < 0) or (i >= EditorsCount) then
     Result := nil

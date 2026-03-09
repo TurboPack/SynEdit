@@ -149,8 +149,8 @@ var
   TempS: string;
 begin
   Result := [];
-  if not Clipboard.HasFormat(SynEditClipboardFormat) then Exit;
-  Data := Clipboard.GetAsHandle(SynEditClipboardFormat);
+  if not Clipboard.HasFormat(ToWord(SynEditClipboardFormat)) then Exit;
+  Data := Clipboard.GetAsHandle(ToWord(SynEditClipboardFormat));
 
   if Data <> 0 then
     try
@@ -168,7 +168,7 @@ var
 
   function DelimitedText(Delimiter: string): string;
   var
-    Index: NativeInt;
+    Index: TSynNativeInt;
     Sel: TSynSelection;
   begin
     Result := '';

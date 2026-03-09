@@ -1665,7 +1665,7 @@ begin
   then
     Exit;
 
-  R := RectF(X, Y, X + IL.Width * ScaleF, Y + IL.Height * ScaleF).Round;
+  R := TRectF.FromRect(RectF(X, Y, X + IL.Width * ScaleF, Y + IL.Height * ScaleF).Round);
   RT.DrawBitmap(Bitmap, PD2D1RectF(@R), 1);
 end;
 
@@ -1693,6 +1693,7 @@ var
   Index: Cardinal;
   Exists: BOOL;
   NameLength: Cardinal;
+{$IF COMPILERVERSION < 31}LocalName: string;{$IFEND}
 begin
   Result := '';
 
@@ -1700,10 +1701,15 @@ begin
   CheckOSError(FontFamily.GetFamilyNames(Names));
   if Names.GetCount > 0 then
   begin
-    CheckOSError(Names.FindLocaleName(UserLocaleName, Index, Exists));
+    CheckOSError(Names.FindLocaleName(UserLocaleName{$IF COMPILERVERSION < 31}[0]{$IFEND}, Index, Exists));
     if not Exists then
     begin
+{$IF COMPILERVERSION < 31}
+      LocalName := 'en-us';
+      CheckOSError(Names.FindLocaleName(LocalName[1], Index, Exists));
+{$ELSE}
       CheckOSError(Names.FindLocaleName('en-us', Index, Exists));
+{$IFEND}
       if not Exists then
         Index := 0;
     end;

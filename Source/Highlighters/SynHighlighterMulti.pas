@@ -48,12 +48,13 @@ uses
   System.RegularExpressions,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   System.Classes;
 
 type
-  TOnCheckMarker = procedure (Sender: TObject; var StartPos, MarkerLen: NativeInt;
-    var MarkerText: string; Line: NativeInt; const LineStr: string) of object;
+  TOnCheckMarker = procedure (Sender: TObject; var StartPos, MarkerLen: TSynNativeInt;
+    var MarkerText: string; Line: TSynNativeInt; const LineStr: string) of object;
 
   TScheme = class(TCollectionItem)
   private
@@ -102,25 +103,25 @@ type
   TSchemes = class(TCollection)
   private
     fOwner: TSynMultiSyn;
-    function GetScheme(const AIndex: NativeInt): TScheme;
-    procedure SetScheme(const AIndex: NativeInt; const AValue: TScheme);
+    function GetScheme(const AIndex: TSynNativeInt): TScheme;
+    procedure SetScheme(const AIndex: TSynNativeInt; const AValue: TScheme);
   protected
     function GetOwner: TPersistent; override;
     procedure Update(Item: TCollectionItem); override;
   public
     constructor Create(aOwner: TSynMultiSyn);
-    property Scheme[const AIndex: NativeInt]: TScheme read GetScheme write SetScheme; default;
+    property Scheme[const AIndex: TSynNativeInt]: TScheme read GetScheme write SetScheme; default;
   end;
 
   TMarker = class
   protected
-    fScheme: NativeInt;
-    fStartPos: NativeInt;
-    fMarkerLen: NativeInt;
+    fScheme: TSynNativeInt;
+    fStartPos: TSynNativeInt;
+    fMarkerLen: TSynNativeInt;
     fMarkerText: string;
     fIsOpenMarker: Boolean;
   public
-    constructor Create(aScheme, aStartPos, aMarkerLen: NativeInt;
+    constructor Create(aScheme, aStartPos, aMarkerLen: TSynNativeInt;
       aIsOpenMarker: Boolean; const aMarkerText: string);
   end;
 
@@ -171,22 +172,22 @@ type
     fDefaultLanguageName: string;
     fMarkers: TList;
     fMarker: TMarker;
-    fNextMarker: NativeInt;
-    fCurrScheme: NativeInt;
+    fNextMarker: TSynNativeInt;
+    fCurrScheme: TSynNativeInt;
     fTmpRange: pointer;
     fOnCustomRange: TCustomRangeEvent;
     fLineStr: string;
     procedure SetDefaultHighlighter(const Value: TSynCustomHighLighter);
-    function GetMarkers(Index: NativeInt): TMarker;
-    property Markers[Index: NativeInt]: TMarker read GetMarkers;
-    procedure DoCheckMarker(Scheme:TScheme; StartPos, MarkerLen: NativeInt;
-      const MarkerText: string; Start: Boolean; Line: NativeInt;
+    function GetMarkers(Index: TSynNativeInt): TMarker;
+    property Markers[Index: TSynNativeInt]: TMarker read GetMarkers;
+    procedure DoCheckMarker(Scheme:TScheme; StartPos, MarkerLen: TSynNativeInt;
+      const MarkerText: string; Start: Boolean; Line: TSynNativeInt;
       const LineStr: string);
     procedure SetOnCustomRange(const Value: TCustomRangeEvent);
   protected
     fSchemes: TSchemes;
     fDefaultHighlighter: TSynCustomHighLighter;
-    fLineNumber: NativeInt;
+    fLineNumber: TSynNativeInt;
     fSampleSource: string;
     procedure Loaded; override;
     procedure SetSchemes(const Value: TSchemes);
@@ -199,7 +200,7 @@ type
     procedure Notification(aComp: TComponent; aOp: TOperation); override;
     function GetSampleSource: string; override;
     procedure SetSampleSource(Value: string); override;
-    procedure DoSetLine(const Value: string; LineNumber: NativeInt); override;
+    procedure DoSetLine(const Value: string; LineNumber: TSynNativeInt); override;
     //
     procedure OldRangeProc(Operation: TRangeOperation; var Range: TRangeUNativeInt);
     procedure NewRangeProc(Operation: TRangeOperation; var Range: TRangeUNativeInt);
@@ -213,12 +214,12 @@ type
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
     function UpdateRangeProcs: Boolean;
-    property CurrScheme: NativeInt read fCurrScheme write fCurrScheme;
+    property CurrScheme: TSynNativeInt read fCurrScheme write fCurrScheme;
     property CurrLine: string read fLineStr;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; override;
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
@@ -239,13 +240,12 @@ uses
   System.Math,
   Vcl.Graphics,
   SynEditMiscProcs,
-  SynEditStrConst,
-  SynFunc;
+  SynEditStrConst;
 
 { TMarker }
 
 constructor TMarker.Create(aScheme, aStartPos,
-  aMarkerLen: NativeInt; aIsOpenMarker: Boolean; const aMarkerText: string);
+  aMarkerLen: TSynNativeInt; aIsOpenMarker: Boolean; const aMarkerText: string);
 begin
   fScheme := aScheme;
   fStartPos := aStartPos;
@@ -258,7 +258,7 @@ end;
 
 procedure TSynMultiSyn.ClearMarkers;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   for i := 0 to fMarkers.Count - 1 do
     TObject(fMarkers[i]).Free;
@@ -287,7 +287,7 @@ end;
 
 function TSynMultiSyn.GetAttribCount: Integer;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   Result := Schemes.Count;
   if DefaultHighlighter <> nil then
@@ -299,7 +299,7 @@ end;
 
 function TSynMultiSyn.GetAttribute(Index: Integer): TSynHighlighterAttributes;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
   HL: TSynCustomHighlighter;
 begin
   if Index < Schemes.Count then
@@ -365,7 +365,7 @@ begin
   Result := SYNS_LangGeneralMulti;
 end;
 
-function TSynMultiSyn.GetMarkers(Index: NativeInt): TMarker;
+function TSynMultiSyn.GetMarkers(Index: TSynNativeInt): TMarker;
 begin
   Result := TMarker(fMarkers[Index]);
 end;
@@ -409,7 +409,7 @@ begin
     if Range = 0 then
       Exit;
     iSchemeRange := NativeUInt(Range);
-    fCurrScheme := NativeInt(iSchemeRange and MaxSchemeCount) - 2;
+    fCurrScheme := ToSynNativeInt(iSchemeRange and MaxSchemeCount) - 2;
     iSchemeRange := iSchemeRange shr SchemeIndexSize;
     if (CurrScheme < 0) then
     begin
@@ -433,7 +433,7 @@ begin
     Result := nil;
 end;
 
-function TSynMultiSyn.GetTokenKind: NativeInt;
+function TSynMultiSyn.GetTokenKind: TSynNativeInt;
 begin
   if fMarker <> nil then
     Result := 0
@@ -554,7 +554,7 @@ end;
 
 procedure TSynMultiSyn.Notification(aComp: TComponent; aOp: TOperation);
 var
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   inherited;
   // 'opRemove' doesn't mean the component is being destroyed. It means it's
@@ -597,12 +597,12 @@ begin
   end;
 end;
 
-procedure TSynMultiSyn.DoCheckMarker(Scheme:TScheme; StartPos, MarkerLen: NativeInt;
-  const MarkerText: string; Start: Boolean; Line: NativeInt;
+procedure TSynMultiSyn.DoCheckMarker(Scheme:TScheme; StartPos, MarkerLen: TSynNativeInt;
+  const MarkerText: string; Start: Boolean; Line: TSynNativeInt;
   const LineStr: string);
 var
-  aStartPos: NativeInt;
-  aMarkerLen: NativeInt;
+  aStartPos: TSynNativeInt;
+  aMarkerLen: TSynNativeInt;
   aMarkerText: string;
 begin
   aStartPos := StartPos;
@@ -644,7 +644,7 @@ function TSynMultiSyn.LoadFromRegistry(RootKey: HKEY;
   Key: string): Boolean;
 var
   r: TRegistry;
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   if DefaultHighlighter <> nil then
     Result := DefaultHighlighter.LoadFromRegistry(RootKey, Key + '\DefaultHighlighter')
@@ -673,7 +673,7 @@ end;
 function TSynMultiSyn.SaveToRegistry(RootKey: HKEY; Key: string): Boolean;
 var
   r: TRegistry;
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   if DefaultHighlighter <> nil then
     Result := DefaultHighlighter.SaveToRegistry(RootKey, Key + '\DefaultHighlighter')
@@ -735,7 +735,7 @@ begin
   end
   else
   begin
-    CurrScheme := NativeInt(Range and MaxSchemeCount) - 1;
+    CurrScheme := ToSynNativeInt(Range and MaxSchemeCount) - 1;
     Range := Range shr SchemeIndexSize;
     if CurrScheme >= 0 then
     begin
@@ -753,7 +753,7 @@ end;
 function TSynMultiSyn.UpdateRangeProcs: Boolean;
 // determines the appropriate RangeProcs and returns whether they were changed
 var
-  i: NativeInt;
+  i: TSynNativeInt;
   OldProc: TRangeProc;
 begin
   OldProc := fRangeProc;
@@ -811,14 +811,14 @@ begin
   Result := SYNS_FriendlyLangGeneralMulti;
 end;
 
-procedure TSynMultiSyn.DoSetLine(const Value: string; LineNumber: NativeInt);
+procedure TSynMultiSyn.DoSetLine(const Value: string; LineNumber: TSynNativeInt);
 var
   Match: TMatch;
   iScheme: TScheme;
   iExpr: string;
   iLine: string;
-  iEaten: NativeInt;
-  Idx: NativeInt;
+  iEaten: TSynNativeInt;
+  Idx: TSynNativeInt;
 begin
   ClearMarkers;
 
@@ -900,7 +900,7 @@ begin
   fOwner := aOwner;
 end;
 
-function TSchemes.GetScheme(const AIndex: NativeInt): TScheme;
+function TSchemes.GetScheme(const AIndex: TSynNativeInt): TScheme;
 begin
   Result := inherited Items[ToInt32(AIndex)] as TScheme;
 end;
@@ -910,7 +910,7 @@ begin
   Result := fOwner;
 end;
 
-procedure TSchemes.SetScheme(const AIndex: NativeInt; const AValue: TScheme);
+procedure TSchemes.SetScheme(const AIndex: TSynNativeInt; const AValue: TScheme);
 begin
   inherited Items[ToInt32(AIndex)] := AValue;
 end;

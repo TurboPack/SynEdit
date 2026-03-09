@@ -47,6 +47,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
+  SynFunc,
   SysUtils,
   Classes;
 
@@ -99,7 +100,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -124,7 +125,7 @@ type
 implementation
 
 uses
-  SynEditStrConst, SynFunc;
+  SynEditStrConst;
 
 procedure TSynAWKSyn.MakeSyntaxList;
 begin
@@ -215,7 +216,7 @@ end;
 
 procedure TSynAWKSyn.IdentProc;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
   idx: Integer;
   s: string;
 begin
@@ -516,7 +517,7 @@ begin
   end;
 end;
 
-function TSynAWKSyn.GetTokenKind: NativeInt;
+function TSynAWKSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

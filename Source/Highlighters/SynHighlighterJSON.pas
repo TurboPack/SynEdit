@@ -38,6 +38,7 @@ uses
   Registry,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   //++ CodeFolding
   SynEditCodeFolding,
@@ -94,13 +95,13 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
 //-- CodeFolding
   published
     property AttributeAttri: TSynHighlighterAttributes read FAttributeAttri
@@ -121,8 +122,7 @@ implementation
 
 uses
   SynEditStrConst,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 { TSynJSONSyn }
 
@@ -481,7 +481,7 @@ begin
   end;
 end;
 
-function TSynJSONSyn.GetTokenKind: NativeInt;
+function TSynJSONSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(FTokenID);
 end;
@@ -493,17 +493,17 @@ end;
 
 //++ CodeFolding
 procedure TSynJSONSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: NativeInt;
+  Line: TSynNativeInt;
 
-  function FindBraces(Line: NativeInt; OpenBrace, CloseBrace: Char; FoldType: NativeInt): Boolean;
+  function FindBraces(Line: TSynNativeInt; OpenBrace, CloseBrace: Char; FoldType: TSynNativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: NativeInt; out Col: NativeInt): Boolean;
+    function LineHasChar(AChar: Char; StartCol: TSynNativeInt; out Col: TSynNativeInt): Boolean;
     var
-      I: NativeInt;
+      I: TSynNativeInt;
     begin
       Result := False;
       Col := 0;
@@ -519,15 +519,15 @@ var
       end;
     end;
 
-    function Indent: NativeInt;
+    function Indent: TSynNativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: NativeInt;
-    CloseIdx: NativeInt;
-    Idx: NativeInt;
+    OpenIdx: TSynNativeInt;
+    CloseIdx: TSynNativeInt;
+    Idx: TSynNativeInt;
   begin
     LineHasChar(OpenBrace, 1, OpenIdx);
     LineHasChar(CloseBrace, 1, CloseIdx);
@@ -558,7 +558,7 @@ var
 begin
   for Line := FromLine to ToLine do
   begin
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin

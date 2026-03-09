@@ -86,6 +86,7 @@ implementation
 
 uses
   SynEditStrConst,
+  SynFunc,
   System.SysUtils;
 
 { TSynExporterRTF }
@@ -208,7 +209,7 @@ end;
 
 function TSynExporterRTF.GetHeader: string;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
 
   function GetFontTable: string;
   begin

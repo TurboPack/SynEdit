@@ -50,6 +50,7 @@ uses
   System.RegularExpressions,
   Vcl.Graphics,
   SynEditTypes,
+  SynFunc,
   SynUnicode,
   SynEditHighlighter;
 
@@ -125,16 +126,16 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
     procedure InitFoldRanges(FoldRanges: TSynFoldRanges); override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-    function FlowControlAtLine(Lines: TStrings; Line: NativeInt): TSynFlowControl; override;
+    function FlowControlAtLine(Lines: TStrings; Line: TSynNativeInt): TSynFlowControl; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
     write fCommentAttri;
@@ -169,8 +170,7 @@ implementation
 
 uses
   SynEditStrConst,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 var
   GlobalKeywords: TStringList;
@@ -289,7 +289,7 @@ const
     'zip'
     );
 var
-  f: NativeInt;
+  f: TSynNativeInt;
 begin
   if not Assigned (GlobalKeywords) then
   begin
@@ -413,14 +413,14 @@ begin
 end;
 
 function TSynPythonSyn.FlowControlAtLine(Lines: TStrings;
-  Line: NativeInt): TSynFlowControl;
+  Line: TSynNativeInt): TSynFlowControl;
 var
   SLine: string;
-  Index: NativeInt;
+  Index: TSynNativeInt;
 begin
   Result := fcNone;
 
-  SLine := Lines.GetItem(Line - 1);
+  SLine := Lines.ItemsNative[Line - 1];
 
   Index :=  SLine.IndexOf('continue');
   if Index >= 0 then
@@ -470,12 +470,12 @@ end;
 procedure TSynPythonSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings);
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   inherited;
   for I := 0 to FoldRanges.Count - 1 do
     with FoldRanges.Ranges.List[I] do
-      if FoldType <> NativeInt(pftCodeBlock) then
+      if FoldType <> Ord(pftCodeBlock) then
         Indent := 0;
 end;
 
@@ -808,7 +808,7 @@ end;
 
 procedure TSynPythonSyn.String2Proc;
 var
-  fBackslashCount: NativeInt;
+  fBackslashCount: TSynNativeInt;
 begin
   fTokenID := tkString;
   if (FLine[Run + 1] = '"') and (FLine[Run + 2] = '"') then
@@ -924,7 +924,7 @@ end;
 
 procedure TSynPythonSyn.StringProc;
 var
-  fBackslashCount: NativeInt;
+  fBackslashCount: TSynNativeInt;
 begin
   fTokenID := tkString;
   if (FLine[Run + 1] = #39) and (FLine[Run + 2] = #39) then begin
@@ -999,7 +999,7 @@ end;
 
 procedure TSynPythonSyn.StringEndProc(EndChar: WideChar);
 var
-  fBackslashCount: NativeInt;
+  fBackslashCount: TSynNativeInt;
 begin
   if fRange = rsMultilineString3 then
     fTokenID := tkString
@@ -1168,7 +1168,7 @@ begin
   end;
 end;
 
-function TSynPythonSyn.GetTokenKind: NativeInt;
+function TSynPythonSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -1185,33 +1185,33 @@ begin
 end;
 
 procedure TSynPythonSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
   LeftTrimmedLine: string;
-  Line: NativeInt;
-  Indent: NativeInt;
-  TabW: NativeInt;
-  FoldType: NativeInt;
+  Line: TSynNativeInt;
+  Indent: TSynNativeInt;
+  TabW: TSynNativeInt;
+  FoldType: TSynNativeInt;
 
-  function IsMultiLineString(Line: NativeInt; Range: TRangeState; Fold: Boolean): Boolean;
+  function IsMultiLineString(Line: TSynNativeInt; Range: TRangeState; Fold: Boolean): Boolean;
   begin
     Result := True;
     if TRangeState(GetLineRange(LinesToScan, Line)) = Range then
     begin
       if (TRangeState(GetLineRange(LinesToScan, Line - 1)) <> Range) and Fold then
-        FoldRanges.StartFoldRange(Line + 1, NativeInt(pftMultiLineStringFoldType))
+        FoldRanges.StartFoldRange(Line + 1, Ord(pftMultiLineStringFoldType))
       else
         FoldRanges.NoFoldInfo(Line + 1);
     end
     else if (TRangeState(GetLineRange(LinesToScan, Line - 1)) = Range) and Fold then
     begin
-      FoldRanges.StopFoldRange(Line + 1, NativeInt(pftMultiLineStringFoldType));
+      FoldRanges.StopFoldRange(Line + 1, Ord(pftMultiLineStringFoldType));
     end else
       Result := False;
   end;
 
-  function FoldRegion(Line: NativeInt): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   begin
     Result := False;
     if Uppercase(Copy(LeftTrimmedLine, 1, 7)) = '#REGION' then
@@ -1236,7 +1236,7 @@ begin
       Continue;
 
     // Find Fold regions
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
     LeftTrimmedLine := TrimLeft(CurLine);
 
     // Skip empty lines
@@ -1257,11 +1257,11 @@ begin
       if Success then
       begin
         if Groups[1].Value = 'class' then
-          FoldType := NativeInt(pftClassDefType)
+          FoldType := Ord(pftClassDefType)
         else if Pos('def', Groups[1].Value) >= 1 then
-          FoldType := NativeInt(pftFunctionDefType)
+          FoldType := Ord(pftFunctionDefType)
         else
-          FoldType := NativeInt(pftCodeBlock);
+          FoldType := Ord(pftCodeBlock);
 
         FoldRanges.StartFoldRange(Line + 1, FoldType, Indent);
         Continue;

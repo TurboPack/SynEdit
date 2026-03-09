@@ -53,6 +53,7 @@ uses
   Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   System.SysUtils,
   System.Classes,
@@ -67,7 +68,7 @@ type
     rsExports, rsDirective, rsDirectiveAsm, rsUnKnown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
   TDelphiVersion = (dvDelphi1, dvDelphi2, dvDelphi3, dvDelphi4, dvDelphi5,
     dvDelphi6, dvDelphi7, dvDelphi8, dvDelphi2005);
@@ -103,43 +104,43 @@ type
     RE_BlockEnd: TRegEx;
     RE_Code: TRegEx;
     RE_ControlFlow: TRegEx;
-    function AltFunc(Index: NativeInt): TtkTokenKind;
-    function KeyWordFunc(Index: NativeInt): TtkTokenKind;
-    function FuncAsm(Index: NativeInt): TtkTokenKind;
-    function FuncAutomated(Index: NativeInt): TtkTokenKind;
-    function FuncCdecl(Index: NativeInt): TtkTokenKind;
-    function FuncContains(Index: NativeInt): TtkTokenKind;
-    function FuncDeprecated(Index: NativeInt): TtkTokenKind;
-    function FuncDispid(Index: NativeInt): TtkTokenKind;
-    function FuncDispinterface(Index: NativeInt): TtkTokenKind;
-    function FuncEnd(Index: NativeInt): TtkTokenKind;
-    function FuncExports(Index: NativeInt): TtkTokenKind;
-    function FuncFinal(Index: NativeInt): TtkTokenKind;
-    function FuncFinalization(Index: NativeInt): TtkTokenKind;
-    function FuncHelper(Index: NativeInt): TtkTokenKind;
-    function FuncImplements(Index: NativeInt): TtkTokenKind;
-    function FuncIndex(Index: NativeInt): TtkTokenKind;
-    function FuncName(Index: NativeInt): TtkTokenKind;
-    function FuncNodefault(Index: NativeInt): TtkTokenKind;
-    function FuncOperator(Index: NativeInt): TtkTokenKind;
-    function FuncOverload(Index: NativeInt): TtkTokenKind;
-    function FuncPackage(Index: NativeInt): TtkTokenKind;
-    function FuncPlatform(Index: NativeInt): TtkTokenKind;
-    function FuncProperty(Index: NativeInt): TtkTokenKind;
-    function FuncRead(Index: NativeInt): TtkTokenKind;
-    function FuncReadonly(Index: NativeInt): TtkTokenKind;
-    function FuncReintroduce(Index: NativeInt): TtkTokenKind;
-    function FuncRequires(Index: NativeInt): TtkTokenKind;
-    function FuncResourcestring(Index: NativeInt): TtkTokenKind;
-    function FuncSafecall(Index: NativeInt): TtkTokenKind;
-    function FuncSealed(Index: NativeInt): TtkTokenKind;
-    function FuncStdcall(Index: NativeInt): TtkTokenKind;
-    function FuncStored(Index: NativeInt): TtkTokenKind;
-    function FuncStringresource(Index: NativeInt): TtkTokenKind;
-    function FuncThreadvar(Index: NativeInt): TtkTokenKind;
-    function FuncWrite(Index: NativeInt): TtkTokenKind;
-    function FuncWriteonly(Index: NativeInt): TtkTokenKind;
-    function FuncType(Index: NativeInt): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAsm(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAutomated(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCdecl(Index: TSynNativeInt): TtkTokenKind;
+    function FuncContains(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDeprecated(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDispid(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDispinterface(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEnd(Index: TSynNativeInt): TtkTokenKind;
+    function FuncExports(Index: TSynNativeInt): TtkTokenKind;
+    function FuncFinal(Index: TSynNativeInt): TtkTokenKind;
+    function FuncFinalization(Index: TSynNativeInt): TtkTokenKind;
+    function FuncHelper(Index: TSynNativeInt): TtkTokenKind;
+    function FuncImplements(Index: TSynNativeInt): TtkTokenKind;
+    function FuncIndex(Index: TSynNativeInt): TtkTokenKind;
+    function FuncName(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNodefault(Index: TSynNativeInt): TtkTokenKind;
+    function FuncOperator(Index: TSynNativeInt): TtkTokenKind;
+    function FuncOverload(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPackage(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPlatform(Index: TSynNativeInt): TtkTokenKind;
+    function FuncProperty(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRead(Index: TSynNativeInt): TtkTokenKind;
+    function FuncReadonly(Index: TSynNativeInt): TtkTokenKind;
+    function FuncReintroduce(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRequires(Index: TSynNativeInt): TtkTokenKind;
+    function FuncResourcestring(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSafecall(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSealed(Index: TSynNativeInt): TtkTokenKind;
+    function FuncStdcall(Index: TSynNativeInt): TtkTokenKind;
+    function FuncStored(Index: TSynNativeInt): TtkTokenKind;
+    function FuncStringresource(Index: TSynNativeInt): TtkTokenKind;
+    function FuncThreadvar(Index: TSynNativeInt): TtkTokenKind;
+    function FuncWrite(Index: TSynNativeInt): TtkTokenKind;
+    function FuncWriteonly(Index: TSynNativeInt): TtkTokenKind;
+    function FuncType(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -181,17 +182,17 @@ type
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
-    function UseUserSettings(VersionIndex: NativeInt): Boolean; override;
+    function UseUserSettings(VersionIndex: TSynNativeInt): Boolean; override;
     procedure EnumUserSettings(DelphiVersions: TStrings); override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-    function FlowControlAtLine(Lines: TStrings; Line: NativeInt): TSynFlowControl; override;
+    function FlowControlAtLine(Lines: TStrings; Line: TSynNativeInt): TSynFlowControl; override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -227,8 +228,7 @@ implementation
 uses
   System.Math,
   SynEditStrConst,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 const
   // if the language is case-insensitive keywords *must* be in lowercase
@@ -254,7 +254,7 @@ const
     'string', 'with', 'word', 'wordbool', 'write', 'writeonly', 'xor'
   );
 
-  KeyIndices: array[0..640] of NativeInt = (
+  KeyIndices: array[0..640] of TSynNativeInt = (
     -1, -1, -1, 34, -1, -1, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, 122, -1, 78, -1, -1, 11, -1, -1, -1, -1, -1, -1, -1, 128, -1, -1,
     -1, -1, -1, -1, -1, -1, 107, -1, -1, 31, -1, -1, -1, -1, -1, -1, -1, -1, 35,
@@ -326,7 +326,7 @@ end;
 
 procedure TSynPasSyn.InitIdent;
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[I] = -1 then
@@ -395,12 +395,12 @@ begin
       fIdentFuncTable[I] := KeyWordFunc;
 end;
 
-function TSynPasSyn.AltFunc(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier
 end;
 
-function TSynPasSyn.KeyWordFunc(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -408,14 +408,14 @@ begin
     Result := tkIdentifier
 end;
 
-function TSynPasSyn.FlowControlAtLine(Lines: TStrings; Line: NativeInt):
+function TSynPasSyn.FlowControlAtLine(Lines: TStrings; Line: TSynNativeInt):
     TSynFlowControl;
 var
   Match: TMatch;
 begin
   Result := fcNone;
 
-  Match := RE_ControlFlow.Match(Lines.GetItem(Line - 1));
+  Match := RE_ControlFlow.Match(Lines.ItemsNative[Line - 1]);
   if Match.Success then
   begin
     if Match.Groups[2].Length > 0 then
@@ -431,7 +431,7 @@ begin
   end;
 end;
 
-function TSynPasSyn.FuncAsm(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncAsm(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
   begin
@@ -443,7 +443,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncAutomated(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncAutomated(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -451,7 +451,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncCdecl(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncCdecl(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi2) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -459,7 +459,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncContains(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncContains(Index: TSynNativeInt): TtkTokenKind;
 begin
   if PackageSource and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -467,7 +467,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncDeprecated(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncDeprecated(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi6) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -475,7 +475,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncDispid(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncDispid(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -483,7 +483,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncDispinterface(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncDispinterface(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -491,7 +491,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncEnd(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncEnd(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
   begin
@@ -502,7 +502,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncExports(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncExports(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
   begin
@@ -513,7 +513,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncFinal(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncFinal(Index: TSynNativeInt): TtkTokenKind;
 begin
  if (DelphiVersion >= dvDelphi8) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -521,7 +521,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncFinalization(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncFinalization(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi2) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -529,7 +529,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncHelper(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncHelper(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi8) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -537,7 +537,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncImplements(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncImplements(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (fRange = rsProperty) and (DelphiVersion >= dvDelphi4) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -545,7 +545,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncIndex(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncIndex(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (fRange in [rsProperty, rsExports]) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -553,7 +553,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncName(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncName(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (fRange = rsExports) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -561,7 +561,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncNodefault(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncNodefault(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (fRange = rsProperty) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -569,7 +569,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncOperator(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncOperator(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi8) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -577,7 +577,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncOverload(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncOverload(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi4) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -585,7 +585,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncPackage(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncPackage(Index: TSynNativeInt): TtkTokenKind;
 begin
   if PackageSource and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -593,7 +593,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncPlatform(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncPlatform(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi6) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -601,7 +601,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncProperty(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncProperty(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
   begin
@@ -612,7 +612,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncRead(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncRead(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (fRange = rsProperty) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -620,7 +620,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncReadonly(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncReadonly(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and (fRange = rsProperty) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -628,7 +628,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncReintroduce(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncReintroduce(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi4) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -636,7 +636,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncRequires(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncRequires(Index: TSynNativeInt): TtkTokenKind;
 begin
   if PackageSource and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -644,7 +644,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncResourcestring(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncResourcestring(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -652,7 +652,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncSafecall(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncSafecall(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -660,7 +660,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncSealed(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncSealed(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi8) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -668,7 +668,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncStdcall(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncStdcall(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi2) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -676,7 +676,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncStored(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncStored(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (fRange = rsProperty) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -684,7 +684,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncStringresource(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncStringresource(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -692,7 +692,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncThreadvar(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncThreadvar(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -700,7 +700,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncWrite(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncWrite(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (fRange = rsProperty) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -708,7 +708,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncWriteonly(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncWriteonly(Index: TSynNativeInt): TtkTokenKind;
 begin
   if (DelphiVersion >= dvDelphi3) and (fRange = rsProperty) and IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -716,7 +716,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPasSyn.FuncType(Index: NativeInt): TtkTokenKind;
+function TSynPasSyn.FuncType(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkType
@@ -1150,7 +1150,7 @@ begin
   end;
 end;
 
-function TSynPasSyn.GetTokenKind: NativeInt;
+function TSynPasSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -1175,7 +1175,7 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
   procedure LoadKeyVersions(const Key, Prefix: string);
   var
     Versions: TStringList;
-    I: NativeInt;
+    I: TSynNativeInt;
   begin
     with TRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
     begin
@@ -1188,7 +1188,7 @@ procedure TSynPasSyn.EnumUserSettings(DelphiVersions: TStrings);
             try
               GetKeyNames(Versions);
               for I := 0 to Versions.Count - 1 do
-                DelphiVersions.Add(Prefix + Versions.GetItem(I));
+                DelphiVersions.Add(Prefix + Versions.ItemsNative[I]);
             finally
               FreeAndNil(Versions);
             end;
@@ -1211,7 +1211,7 @@ begin
   LoadKeyVersions('\SOFTWARE\Embarcadero\BDS', BDSVersionPrefix);
 end;
 
-function TSynPasSyn.UseUserSettings(VersionIndex: NativeInt): Boolean;
+function TSynPasSyn.UseUserSettings(VersionIndex: TSynNativeInt): Boolean;
 // Possible parameter values:
 //   index into TStrings returned by EnumUserSettings
 // Possible return values:
@@ -1219,7 +1219,7 @@ function TSynPasSyn.UseUserSettings(VersionIndex: NativeInt): Boolean;
 //   False: problem reading settings or invalid version specified - old settings
 //          were preserved
 
-  function ReadDelphiSettings(settingIndex: NativeInt): Boolean;
+  function ReadDelphiSettings(settingIndex: TSynNativeInt): Boolean;
 
     function ReadDelphiSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
     var
@@ -1228,7 +1228,7 @@ function TSynPasSyn.UseUserSettings(VersionIndex: NativeInt): Boolean;
 
       function ReadDelphi2Or3(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
       var
-        I: NativeInt;
+        I: TSynNativeInt;
       begin
         for I := 1 to Length(name) do
           if name[I] = ' ' then name[I] := '_';
@@ -1292,7 +1292,7 @@ function TSynPasSyn.UseUserSettings(VersionIndex: NativeInt): Boolean;
         Result := False;
         Exit;
       end;
-      iVersionTag := iVersions.GetItem(settingIndex);
+      iVersionTag := iVersions.ItemsNative[settingIndex];
     finally
       iVersions.Free;
     end;
@@ -1424,16 +1424,16 @@ const
   FT_Implementation = 18;
 
 procedure TSynPasSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: NativeInt;
+  Line: TSynNativeInt;
 
-  function BlockDelimiter(Line: NativeInt): Boolean;
+  function BlockDelimiter(Line: TSynNativeInt): Boolean;
   var
     StructureHighlight: Boolean;
 
-    function Indent: NativeInt;
+    function Indent: TSynNativeInt;
     begin
       if StructureHighlight then
         Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan))
@@ -1442,8 +1442,8 @@ var
     end;
 
   var
-    BeginIndex: NativeInt;
-    EndIndex: NativeInt;
+    BeginIndex: TSynNativeInt;
+    EndIndex: TSynNativeInt;
     Match: TMatch;
     MatchValue: string;
   begin
@@ -1488,7 +1488,7 @@ var
       FoldRanges.StopStartFoldRange(Line + 1, FT_Standard, Indent);
   end;
 
-  function FoldRegion(Line: NativeInt): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -1506,7 +1506,7 @@ var
     end;
   end;
 
-  function ConditionalDirective(Line: NativeInt): Boolean;
+  function ConditionalDirective(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -1529,8 +1529,8 @@ var
     end;
   end;
 
-  function IsMultiLineStatement(Line: NativeInt; Ranges: TRangeStates;
-     Fold: Boolean; FoldType: NativeInt = 1): Boolean;
+  function IsMultiLineStatement(Line: TSynNativeInt; Ranges: TRangeStates;
+     Fold: Boolean; FoldType: TSynNativeInt = 1): Boolean;
   begin
     Result := True;
     if TRangeState(GetLineRange(LinesToScan, Line)) in Ranges then
@@ -1558,7 +1558,7 @@ begin
     then
       Continue;
 
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -1592,8 +1592,8 @@ procedure TSynPasSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
    Provide folding for procedures and functions included nested ones.
 }
 var
-  I, j, SkipTo: NativeInt;
-  ImplementationIndex: NativeInt;
+  I, j, SkipTo: TSynNativeInt;
+  ImplementationIndex: TSynNativeInt;
   FoldRange: TSynFoldRange;
   mc: TMatchCollection;
 begin
@@ -1629,7 +1629,7 @@ begin
               Continue
             else
             begin
-              mc := RE_BlockBegin.Matches(LinesToScan.GetItem(FoldRange.FromLine - 1));
+              mc := RE_BlockBegin.Matches(LinesToScan.ItemsNative[FoldRange.FromLine - 1]);
               if mc.Count > 0 then
               begin
                 if mc.Item[0].Value.ToLower = 'begin' then

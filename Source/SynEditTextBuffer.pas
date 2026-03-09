@@ -42,6 +42,7 @@ uses
   System.SysUtils,
   SynEditTypes,
   SynEditMiscProcs,
+  SynFunc,
   SynUnicode;
 
 type
@@ -60,8 +61,8 @@ type
     FString: string;
     FObject: TObject;
     FRange: TSynEditRange;
-    FTextWidth: NativeInt;
-    FCharIndex: NativeInt;
+    FTextWidth: TSynNativeInt;
+    FCharIndex: TSynNativeInt;
     FFlags: TSynEditStringFlags;
   end;
 
@@ -78,21 +79,21 @@ const
 type
   TSynEditStringRecList = TArray<TSynEditStringRec>;
 
-  TStringListChangeEvent = procedure(Sender: TObject; Index: NativeInt;
-    Count: NativeInt) of object;
-  TStringListPutEvent = procedure(Sender: TObject; Index: NativeInt;
+  TStringListChangeEvent = procedure(Sender: TObject; Index: TSynNativeInt;
+    Count: TSynNativeInt) of object;
+  TStringListPutEvent = procedure(Sender: TObject; Index: TSynNativeInt;
     const OldLine: string) of object;
 
-  TTextWidthFunc = function(const S: string): NativeInt of object;
+  TTextWidthFunc = function(const S: string): TSynNativeInt of object;
 
   TSynEditStringList = class(TStrings)
   strict private
     FTextWidthFunc: TTextWidthFunc;
     FList: TSynEditStringRecList;
-    FCount: NativeInt;
-    FCapacity: NativeInt;
+    FCount: TSynNativeInt;
+    FCapacity: TSynNativeInt;
     FFileFormat: TSynEditFileFormat;
-    FMaxWidth: NativeInt;
+    FMaxWidth: TSynNativeInt;
     FTabWidth: Integer;
     FCharIndexesAreValid: Boolean;
     FDetectUTF8: Boolean;
@@ -105,33 +106,33 @@ type
     FOnInserted: TStringListChangeEvent;
     FOnPut: TStringListPutEvent;
     FOnInfoLoss: TSynInfoLossEvent;
-    function GetCapacityNative: NativeInt;
-    function GetTextWidth(Index: NativeInt): NativeInt;
-    function GetMaxWidth: NativeInt;
-    function GetRange(Index: NativeInt): TSynEditRange;
+    function GetCapacityNative: TSynNativeInt;
+    function GetTextWidth(Index: TSynNativeInt): TSynNativeInt;
+    function GetMaxWidth: TSynNativeInt;
+    function GetRange(Index: TSynNativeInt): TSynEditRange;
     procedure Grow;
-    procedure InsertItem(Index: NativeInt; const S: string);
-    procedure PutRange(Index: NativeInt; ARange: TSynEditRange);
-    function GetChangeFlags(Index: NativeInt): TSynLineChangeFlags;
-    function GetCountNative: NativeInt;
-    procedure SetChangeFlags(Index: NativeInt; const Value: TSynLineChangeFlags);
+    procedure InsertItem(Index: TSynNativeInt; const S: string);
+    procedure PutRange(Index: TSynNativeInt; ARange: TSynEditRange);
+    function GetChangeFlags(Index: TSynNativeInt): TSynLineChangeFlags;
+    function GetCountNative: TSynNativeInt;
+    procedure SetChangeFlags(Index: TSynNativeInt; const Value: TSynLineChangeFlags);
     function GetFileFormat: TSynEditFileFormat;
-    function GetNative(Index: NativeInt): string;
-    function GetObjectNative(Index: NativeInt): TObject;
-    procedure PutNative(Index: NativeInt; const S: string);
-    procedure PutObjectNative(AIndex: NativeInt; const AValue: TObject);
+    function GetNative(Index: TSynNativeInt): string;
+    function GetObjectNative(Index: TSynNativeInt): TObject;
+    procedure PutNative(Index: TSynNativeInt; const S: string);
+    procedure PutObjectNative(AIndex: TSynNativeInt; const AValue: TObject);
     procedure SetFileFormat(const Value: TSynEditFileFormat);
-    procedure SetCapacityNative(const AValue: NativeInt);
+    procedure SetCapacityNative(const AValue: TSynNativeInt);
   strict protected
     procedure Changed; virtual;
     procedure Changing; virtual;
     // TStrings overriden protected methods
-    function Get(Index: Integer): string; override; deprecated;
+    function Get(Index: Integer): string; override;{$IF COMPILERVERSION >= 38} deprecated;{$IFEND}
     function GetCapacity: Integer; override; deprecated;
     function GetCount: Integer; override; deprecated;
-    function GetObject(Index: Integer): TObject; override; deprecated;
-    procedure Put(Index: Integer; const S: string); override; deprecated;
-    procedure PutObject(Index: Integer; AObject: TObject); override; deprecated;
+    function GetObject(Index: Integer): TObject; override;{$IF COMPILERVERSION >= 38} deprecated;{$IFEND}
+    procedure Put(Index: Integer; const S: string); override;{$IF COMPILERVERSION >= 38} deprecated;{$IFEND}
+    procedure PutObject(Index: Integer; AObject: TObject); override;{$IF COMPILERVERSION >= 38} deprecated;{$IFEND}
     procedure SetCapacity(AValue: Integer); override; deprecated;
     procedure SetTextStr(const Value: string); override;
     procedure SetUpdateState(Updating: Boolean); override; deprecated;
@@ -142,38 +143,38 @@ type
     // TStrings overriden public methods
     procedure Clear; override;
     procedure Delete(Index: Integer); override;
-    procedure DeleteNative(Index: NativeInt);
-    procedure DeleteLines(Index, NumLines: NativeInt);
+    procedure DeleteNative(Index: TSynNativeInt);
+    procedure DeleteLines(Index, NumLines: TSynNativeInt);
     procedure Insert(Index: Integer; const S: string); override;
-    procedure InsertNative(Index: NativeInt; const S: string);
+    procedure InsertNative(Index: TSynNativeInt; const S: string);
     procedure LoadFromStream(Stream: TStream; Encoding: TEncoding); override;
     procedure SaveToStream(Stream: TStream; Encoding: TEncoding); override;
     procedure SetEncoding(const Value: TEncoding); override; // just to elevate
     // Other public methods
     constructor Create(TextWidthFunc: TTextWidthFunc);
     destructor Destroy; override;
-    procedure InsertStrings(Index: NativeInt; Strings: TArray<string>;
-      FromIndex: NativeInt = 0);
-    procedure InsertText(Index: NativeInt; NewText: string);
+    procedure InsertStrings(Index: TSynNativeInt; Strings: TArray<string>;
+      FromIndex: TSynNativeInt = 0);
+    procedure InsertText(Index: TSynNativeInt; NewText: string);
     function GetSeparatedText(Separators: string): string;
     procedure ResetMaxWidth;
-    function LineCharLength(Index: NativeInt): Integer;
-    function LineCharIndex(Index: NativeInt): NativeInt;
+    function LineCharLength(Index: TSynNativeInt): Integer;
+    function LineCharIndex(Index: TSynNativeInt): TSynNativeInt;
     procedure SetTextAndFileFormat(const Value: string);
 
-    property CapacityNative: NativeInt read GetCapacityNative write SetCapacityNative;
-    property CountNative: NativeInt read GetCountNative;
-    property ObjectsNative[Index: NativeInt]: TObject read GetObjectNative write PutObjectNative;
-    property StringsNative[Index: NativeInt]: string read GetNative write PutNative; default;
+    property CapacityNative: TSynNativeInt read GetCapacityNative write SetCapacityNative;
+    property CountNative: TSynNativeInt read GetCountNative;
+    property ObjectsNative[Index: TSynNativeInt]: TObject read GetObjectNative write PutObjectNative;
+    property StringsNative[Index: TSynNativeInt]: string read GetNative write PutNative; default;
     // FileFormat is deprecated and will be removed - Use LineBreak instead
     property FileFormat: TSynEditFileFormat read GetFileFormat write SetFileFormat;
-    property TextWidth[Index: NativeInt]: NativeInt read GetTextWidth;
-    property MaxWidth: NativeInt read GetMaxWidth;
-    property Ranges[Index: NativeInt]: TSynEditRange read GetRange write PutRange;
+    property TextWidth[Index: TSynNativeInt]: TSynNativeInt read GetTextWidth;
+    property MaxWidth: TSynNativeInt read GetMaxWidth;
+    property Ranges[Index: TSynNativeInt]: TSynEditRange read GetRange write PutRange;
     property TabWidth: Integer read FTabWidth write SetTabWidth;
     property UTF8CheckLen: Integer read FUTF8CheckLen write FUTF8CheckLen;
     property DetectUTF8: Boolean read FDetectUTF8 write FDetectUTF8;
-    property ChangeFlags[Index: NativeInt]: TSynLineChangeFlags read GetChangeFlags
+    property ChangeFlags[Index: TSynNativeInt]: TSynLineChangeFlags read GetChangeFlags
       write SetChangeFlags;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
     property OnChanging: TNotifyEvent read FOnChanging write FOnChanging;
@@ -192,8 +193,7 @@ type
 implementation
 uses
   System.Math,
-  System.Threading,
-  SynFunc;
+  System.Threading;
 
 resourcestring
   SListIndexOutOfBounds = 'Invalid stringlist index %d';
@@ -201,7 +201,7 @@ resourcestring
 
   { TSynEditStringList }
 
-procedure ListIndexOutOfBounds(Index: NativeInt);
+procedure ListIndexOutOfBounds(Index: TSynNativeInt);
 begin
   raise ESynEditStringList.CreateFmt(SListIndexOutOfBounds, [Index]);
 end;
@@ -213,7 +213,11 @@ begin
   FMaxWidth := -1;
   FTabWidth := 8;
   FUTF8CheckLen := -1;
+{$IF COMPILERVERSION >= 31}
   Options := Options - [soWriteBOM, soTrailingLineBreak];
+{$ELSE}
+  WriteBOM := False;
+{$ENDIF}
   FDetectUTF8 := True;
   FTextWidthFunc := TextWidthFunc;
 end;
@@ -242,7 +246,7 @@ end;
 
 procedure TSynEditStringList.Clear;
 var
-  OldCount: NativeInt;
+  OldCount: TSynNativeInt;
 begin
   if FCount <> 0 then
   begin
@@ -263,10 +267,10 @@ end;
 
 procedure TSynEditStringList.Delete(Index: Integer);
 begin
-  DeleteNative(NativeInt(Index));
+  DeleteNative(ToSynNativeInt(Index));
 end;
 
-procedure TSynEditStringList.DeleteNative(Index: NativeInt);
+procedure TSynEditStringList.DeleteNative(Index: TSynNativeInt);
 begin
   if (Index < 0) or (Index >= FCount) then
     ListIndexOutOfBounds(Index);
@@ -286,9 +290,9 @@ begin
   Changed;
 end;
 
-procedure TSynEditStringList.DeleteLines(Index, NumLines: NativeInt);
+procedure TSynEditStringList.DeleteLines(Index, NumLines: TSynNativeInt);
 var
-  LinesAfter: NativeInt;
+  LinesAfter: TSynNativeInt;
 begin
   if NumLines > 0 then
   begin
@@ -315,12 +319,12 @@ end;
 
 function TSynEditStringList.Get(Index: Integer): string;
 begin
-  Result := GetNative(NativeInt(Index));
+  Result := GetNative(ToSynNativeInt(Index));
 end;
 
 procedure TSynEditStringList.UpdateCharIndexes;
 var
-  I, N: NativeInt;
+  I, N: TSynNativeInt;
   P: PSynEditStringRec;
 begin
   FCharIndexesAreValid := True;
@@ -336,7 +340,7 @@ begin
   end;
 end;
 
-function TSynEditStringList.LineCharLength(Index: NativeInt): Integer;
+function TSynEditStringList.LineCharLength(Index: TSynNativeInt): Integer;
 begin
   if (Index >= 0) and (Index < FCount) then
     Result := Length(FList[Index].FString)
@@ -344,7 +348,7 @@ begin
     Result := 0;
 end;
 
-function TSynEditStringList.LineCharIndex(Index: NativeInt): NativeInt;
+function TSynEditStringList.LineCharIndex(Index: TSynNativeInt): TSynNativeInt;
 begin
   if (Index >= 0)  and (Index < FCount) then
   begin
@@ -361,12 +365,12 @@ begin
   Result := ToInt32(FCapacity);
 end;
 
-function TSynEditStringList.GetCapacityNative: NativeInt;
+function TSynEditStringList.GetCapacityNative: TSynNativeInt;
 begin
   Result := FCapacity;
 end;
 
-function TSynEditStringList.GetChangeFlags(Index: NativeInt): TSynLineChangeFlags;
+function TSynEditStringList.GetChangeFlags(Index: TSynNativeInt): TSynLineChangeFlags;
 begin
   if (Index >= 0) and (Index < FCount) then
     Result :=  FList[Index].FFlags * [sfModified..sfAsSaved]
@@ -379,7 +383,7 @@ begin
   Result := ToInt32(FCount);
 end;
 
-function TSynEditStringList.GetCountNative: NativeInt;
+function TSynEditStringList.GetCountNative: TSynNativeInt;
 begin
   Result := FCount;
 end;
@@ -396,7 +400,7 @@ begin
     Result := sffDos;
 end;
 
-function TSynEditStringList.GetTextWidth(Index: NativeInt): NativeInt;
+function TSynEditStringList.GetTextWidth(Index: TSynNativeInt): TSynNativeInt;
 begin
   if (Index >= 0) and (Index < FCount) then
   begin
@@ -413,7 +417,7 @@ begin
     Result := 0;
 end;
 
-function TSynEditStringList.GetMaxWidth: NativeInt;
+function TSynEditStringList.GetMaxWidth: TSynNativeInt;
 begin
   if FMaxWidth > 0 then
     Result := FMaxWidth
@@ -421,9 +425,9 @@ begin
     Result := 0
   else
   begin
-    TParallel.&For(0, FCount - 1, procedure(I:NativeInt)
+    TParallel.&For(0, FCount - 1, procedure(I: TSynNativeInt)
     var
-      LMaxW: NativeInt;
+      LMaxW: TSynNativeInt;
       PRec: PSynEditStringRec;
     begin
       PRec := @FList[I];
@@ -444,10 +448,10 @@ end;
 
 function TSynEditStringList.GetObject(Index: Integer): TObject;
 begin
-  Result := GetObjectNative(NativeInt(Index));
+  Result := GetObjectNative(ToSynNativeInt(Index));
 end;
 
-function TSynEditStringList.GetObjectNative(Index: NativeInt): TObject;
+function TSynEditStringList.GetObjectNative(Index: TSynNativeInt): TObject;
 begin
   if (Index >= 0) and (Index < FCount) then
     Result := FList[Index].FObject
@@ -455,7 +459,7 @@ begin
     Result := nil;
 end;
 
-function TSynEditStringList.GetRange(Index: NativeInt): TSynEditRange;
+function TSynEditStringList.GetRange(Index: TSynNativeInt): TSynEditRange;
 begin
   if (Index >= 0) and (Index < FCount) then
     Result := FList[Index].FRange
@@ -466,8 +470,8 @@ end;
 function TSynEditStringList.GetSeparatedText(Separators: string): string;
 { Optimized by Eric Grange }
 var
-  I: NativeInt;
-  Size: NativeInt;
+  I: TSynNativeInt;
+  Size: TSynNativeInt;
   L, LineBreakSize: Integer;
   P, PLineBreak: PChar;
   PRec: PSynEditStringRec;
@@ -482,7 +486,7 @@ begin
 
   // compute buffer size
   Size := (FCount - 1) * LineBreakSize + LineCharIndex(FCount - 1) +
-    NativeInt(Length(FList[FCount - 1].FString));
+    ToSynNativeInt(Length(FList[FCount - 1].FString));
   SetLength(Result, Size);
 
   P := Pointer(Result);
@@ -526,7 +530,7 @@ begin
   end;
 end;
 
-function TSynEditStringList.GetNative(Index: NativeInt): string;
+function TSynEditStringList.GetNative(Index: TSynNativeInt): string;
 begin
   if (Index >= 0) and (Index < FCount) then
     Result := FList[Index].FString
@@ -541,10 +545,10 @@ end;
 
 procedure TSynEditStringList.Insert(Index: Integer; const S: string);
 begin
-  InsertNative(NativeInt(Index), S);
+  InsertNative(ToSynNativeInt(Index), S);
 end;
 
-procedure TSynEditStringList.InsertNative(Index: NativeInt; const S: string);
+procedure TSynEditStringList.InsertNative(Index: TSynNativeInt; const S: string);
 begin
   if Pos(#10, S) > 0 then
     InsertText(Index, S)
@@ -552,7 +556,7 @@ begin
     InsertStrings(Index, [S]);
 end;
 
-procedure TSynEditStringList.InsertItem(Index: NativeInt; const S: string);
+procedure TSynEditStringList.InsertItem(Index: TSynNativeInt; const S: string);
 begin
   if FCount = FCapacity then
     Grow;
@@ -577,16 +581,16 @@ begin
   Changed;
 end;
 
-procedure TSynEditStringList.InsertStrings(Index: NativeInt;
-  Strings: TArray<string>; FromIndex: NativeInt);
+procedure TSynEditStringList.InsertStrings(Index: TSynNativeInt;
+  Strings: TArray<string>; FromIndex: TSynNativeInt);
 var
-  I: NativeInt;
-  LineCount: NativeInt;
+  I: TSynNativeInt;
+  LineCount: TSynNativeInt;
 begin
   if (Index < 0) or (Index > FCount) then
     ListIndexOutOfBounds(Index);
 
-  LineCount := Length(Strings) - FromIndex;
+  LineCount := ToSynNativeInt(Length(Strings) - FromIndex);
   if LineCount > 0 then
   begin
     if FCapacity < FCount + LineCount then
@@ -616,7 +620,7 @@ begin
   end;
 end;
 
-procedure TSynEditStringList.InsertText(Index: NativeInt; NewText: string);
+procedure TSynEditStringList.InsertText(Index: TSynNativeInt; NewText: string);
 var
   TmpStringList: TStringList;
 begin
@@ -635,11 +639,11 @@ end;
 procedure TSynEditStringList.LoadFromStream(Stream: TStream;
   Encoding: TEncoding);
 var
-  Size: NativeInt;
+  Size: TSynNativeInt;
   Buffer: TBytes;
   DecodedText: string;
 begin
-  Size := NativeInt(Stream.Size - Stream.Position);
+  Size := TSynNativeInt(Stream.Size - Stream.Position);
   SetLength(Buffer, Size);
   Stream.Read(Buffer, 0, Size);
   Size := TEncoding.GetBufferEncoding(Buffer, Encoding, DefaultEncoding);
@@ -687,13 +691,13 @@ end;
 
 procedure TSynEditStringList.Put(Index: Integer; const S: string);
 begin
-  PutNative(NativeInt(Index), S);
+  PutNative(ToSynNativeInt(Index), S);
 end;
 
-procedure TSynEditStringList.PutNative(Index: NativeInt; const S: string);
+procedure TSynEditStringList.PutNative(Index: TSynNativeInt; const S: string);
 var
   OldLine: string;
-  OldWidth: NativeInt;
+  OldWidth: TSynNativeInt;
 begin
   if (Index = 0) and (FCount = 0) or (FCount = Index) then
     Add('');
@@ -729,10 +733,10 @@ end;
 
 procedure TSynEditStringList.PutObject(Index: Integer; AObject: TObject);
 begin
-  PutObjectNative(NativeInt(Index), AObject);
+  PutObjectNative(ToSynNativeInt(Index), AObject);
 end;
 
-procedure TSynEditStringList.PutObjectNative(AIndex: NativeInt; const AValue: TObject);
+procedure TSynEditStringList.PutObjectNative(AIndex: TSynNativeInt; const AValue: TObject);
 begin
   if (AIndex < 0) or (AIndex >= FCount) then
     ListIndexOutOfBounds(AIndex);
@@ -741,7 +745,7 @@ begin
   Changed;
 end;
 
-procedure TSynEditStringList.PutRange(Index: NativeInt; ARange: TSynEditRange);
+procedure TSynEditStringList.PutRange(Index: TSynNativeInt; ARange: TSynEditRange);
 begin
   if (Index < 0) or (Index >= FCount) then
     ListIndexOutOfBounds(Index);
@@ -750,10 +754,10 @@ end;
 
 procedure TSynEditStringList.SetCapacity(AValue: Integer);
 begin
-  CapacityNative := NativeInt(AValue);
+  CapacityNative := ToSynNativeInt(AValue);
 end;
 
-procedure TSynEditStringList.SetChangeFlags(Index: NativeInt;
+procedure TSynEditStringList.SetChangeFlags(Index: TSynNativeInt;
   const Value: TSynLineChangeFlags);
 begin
   if (Index >= 0) and (Index < FCount) then
@@ -866,7 +870,7 @@ end;
 
 procedure TSynEditStringList.ResetMaxWidth;
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   FMaxWidth := -1;
   for I := 0 to FCount - 1 do
@@ -877,7 +881,7 @@ begin
     end;
 end;
 
-procedure TSynEditStringList.SetCapacityNative(const AValue: NativeInt);
+procedure TSynEditStringList.SetCapacityNative(const AValue: TSynNativeInt);
 begin
   if AValue < CountNative then
     EListError.Create(SInvalidCapacity);

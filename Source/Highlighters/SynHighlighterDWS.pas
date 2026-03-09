@@ -48,6 +48,7 @@ uses
   System.SysUtils,
   System.Classes,
   SynEditCodeFolding,
+  SynFunc,
   System.RegularExpressions,
   System.Character;
 
@@ -150,7 +151,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
@@ -163,10 +164,10 @@ type
     // the most recent Delphi editor highlighting.
 
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
-    function FlowControlAtLine(Lines: TStrings; Line: NativeInt): TSynFlowControl; override;
+    function FlowControlAtLine(Lines: TStrings; Line: TSynNativeInt): TSynFlowControl; override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -197,8 +198,7 @@ implementation
 uses
   System.Math,
   SynEditStrConst,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 const
    // if the language is case-insensitive keywords *must* be in lowercase
@@ -357,13 +357,13 @@ end;
 
 procedure TSynDWSSyn.InitIdent;
 
-  procedure SetIdentFunc(h: NativeInt; const func: TIdentFuncTableFunc);
+  procedure SetIdentFunc(h: TSynNativeInt; const func: TIdentFuncTableFunc);
   begin
     fIdentFuncTable[h]:=func;
   end;
 
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   for I := Low(cKeywords) to High(cKeywords) do
   begin
@@ -414,13 +414,13 @@ begin
 end;
 
 function TSynDWSSyn.FlowControlAtLine(Lines: TStrings;
-  Line: NativeInt): TSynFlowControl;
+  Line: TSynNativeInt): TSynFlowControl;
 var
   Match: TMatch;
 begin
   Result := fcNone;
 
-  Match := RE_ControlFlow.Match(Lines.GetItem(Line - 1));
+  Match := RE_ControlFlow.Match(Lines.ItemsNative[Line - 1]);
   if Match.Success then
   begin
     if Match.Groups[2].Length > 0 then
@@ -657,7 +657,7 @@ procedure TSynDWSSyn.LoadDelphiStyle;
 
    procedure AddKeyword( const AName: string );
    var
-     I: NativeInt;
+     I: TSynNativeInt;
    begin
      I := HashKey( @AName[1] );
      fIdentFuncTable[I]:= KeyWordFunc;
@@ -666,7 +666,7 @@ procedure TSynDWSSyn.LoadDelphiStyle;
 
    procedure RemoveKeyword( const AName: string );
    var
-     I: NativeInt;
+     I: TSynNativeInt;
    begin
      I := fKeyWords.IndexOf(AName);
      if I <> -1 then
@@ -682,7 +682,7 @@ const
   cKeywordsToRemove: array[0..1] of string = (
       'break', 'exit');
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   // This routine can be called to install a Delphi style of colors
   // and highlighting. It modifies the basic TSynDWSSyn to reproduce
@@ -1028,7 +1028,7 @@ begin
   end;
 end;
 
-function TSynDWSSyn.GetTokenKind: NativeInt;
+function TSynDWSSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -1053,16 +1053,16 @@ const
   FT_Implementation = 18;
 
 procedure TSynDWSSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: NativeInt;
+  Line: TSynNativeInt;
 
-  function BlockDelimiter(Line: NativeInt): Boolean;
+  function BlockDelimiter(Line: TSynNativeInt): Boolean;
   var
     StructureHighlight: Boolean;
 
-    function Indent: NativeInt;
+    function Indent: TSynNativeInt;
     begin
       if StructureHighlight then
         Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan))
@@ -1071,8 +1071,8 @@ var
     end;
 
   var
-    BeginIndex: NativeInt;
-    EndIndex: NativeInt;
+    BeginIndex: TSynNativeInt;
+    EndIndex: TSynNativeInt;
     Match: TMatch;
     MatchValue: string;
   begin
@@ -1117,7 +1117,7 @@ var
       FoldRanges.StopStartFoldRange(Line + 1, FT_Standard, Indent);
   end;
 
-  function FoldRegion(Line: NativeInt): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -1135,7 +1135,7 @@ var
     end;
   end;
 
-  function ConditionalDirective(Line: NativeInt): Boolean;
+  function ConditionalDirective(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -1158,8 +1158,8 @@ var
     end;
   end;
 
-  function IsMultiLineStatement(Line: NativeInt; Ranges: TRangeStates;
-     Fold: Boolean; FoldType: NativeInt = 1): Boolean;
+  function IsMultiLineStatement(Line: TSynNativeInt; Ranges: TRangeStates;
+     Fold: Boolean; FoldType: TSynNativeInt = 1): Boolean;
   begin
     Result := True;
     if TRangeState(GetLineRange(LinesToScan, Line)) in Ranges then
@@ -1190,7 +1190,7 @@ begin
     then
       Continue;
 
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -1224,8 +1224,8 @@ procedure TSynDWSSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
    Provide folding for procedures and functions included nested ones.
 }
 var
-  I, j, SkipTo: NativeInt;
-  ImplementationIndex: NativeInt;
+  I, j, SkipTo: TSynNativeInt;
+  ImplementationIndex: TSynNativeInt;
   FoldRange: TSynFoldRange;
   Match: TMatch;
 begin
@@ -1260,7 +1260,7 @@ begin
             if FoldRange.ToLine <= SkipTo then
               Continue
             else begin
-              Match := RE_BlockBegin.Match(LinesToScan.GetItem(FoldRange.FromLine - 1));
+              Match := RE_BlockBegin.Match(LinesToScan.ItemsNative[FoldRange.FromLine - 1]);
               if Match.Success then
               begin
                 if LowerCase(Match.Value) = 'begin' then

@@ -45,7 +45,8 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   System.RegularExpressions,
-  SynEditCodeFolding;
+  SynEditCodeFolding,
+  SynFunc;
 
 type
   TtkTokenKind = (
@@ -79,9 +80,9 @@ type
     fTokenID: TtkTokenKind;
     fIndicator: WideChar;
 
-    fCodeStartPos: NativeInt;
-    fCodeMediumPos: NativeInt;
-    fCodeEndPos: NativeInt;
+    fCodeStartPos: TSynNativeInt;
+    fCodeMediumPos: TSynNativeInt;
+    fCodeEndPos: TSynNativeInt;
 
     fCommentAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
@@ -100,7 +101,7 @@ type
     FKeywords: TDictionary<string, TtkTokenKind>;
     RE_BlockBegin: TRegEx;
     RE_BlockEnd: TRegEx;
-    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure IdentProc;
     procedure UnknownProc;
@@ -124,9 +125,9 @@ type
     function IsFilterStored: Boolean; override;
     procedure NextProcedure;
 
-    procedure SetCodeStartPos(Value: NativeInt);
-    procedure SetCodeMediumPos(Value: NativeInt);
-    procedure SetCodeEndPos(Value: NativeInt);
+    procedure SetCodeStartPos(Value: TSynNativeInt);
+    procedure SetCodeMediumPos(Value: TSynNativeInt);
+    procedure SetCodeEndPos(Value: TSynNativeInt);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -139,12 +140,12 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
 //-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
@@ -162,17 +163,16 @@ type
     property TagAreaAttri: TSynHighlighterAttributes read fTagAreaAttri write fTagAreaAttri;
     property DebugLinesAttri: TSynHighlighterAttributes read fDebugLinesAttri write fDebugLinesAttri;
 
-    property AreaAStartPos: NativeInt read fCodeStartPos write SetCodeStartPos;
-    property AreaBStartPos: NativeInt read fCodeMediumPos write SetCodeMediumPos;
-    property CodeEndPos: NativeInt read fCodeEndPos write SetCodeEndPos;
+    property AreaAStartPos: TSynNativeInt read fCodeStartPos write SetCodeStartPos;
+    property AreaBStartPos: TSynNativeInt read fCodeMediumPos write SetCodeMediumPos;
+    property CodeEndPos: TSynNativeInt read fCodeEndPos write SetCodeEndPos;
   end;
 
 implementation
 
 uses
   SynEditMiscProcs,
-  SynEditStrConst,
-  SynFunc;
+  SynEditStrConst;
 
 const
   BooleanWords: string =
@@ -376,7 +376,7 @@ const
 const
   StringChars: array[TRangeState] of WideChar = (#0, '"', '''', '=',  '"', '''', #0, #0);
 
-procedure TSynCobolSyn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
+procedure TSynCobolSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -384,8 +384,8 @@ end;
 
 function TSynCobolSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  I: NativeInt;
-  LRun: NativeInt;
+  I: TSynNativeInt;
+  LRun: TSynNativeInt;
   S: string;
 begin
   fToIdent := MayBe;
@@ -431,7 +431,7 @@ end;
 
 procedure TSynCobolSyn.FirstCharsProc;
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   if IsLineEnd(Run) then
     NextProcedure
@@ -754,20 +754,20 @@ const
   FT_CodeDeclaration = 16;
   FT_CodeDeclarationWithBody = 17;
   FT_Implementation = 18;
-  FT_Region: NativeInt = 99;
+  FT_Region: TSynNativeInt = 99;
 
 procedure TSynCobolSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt);
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt);
 var
-  Line: NativeInt;
-  iList: TList<NativeInt>;
+  Line: TSynNativeInt;
+  iList: TList<TSynNativeInt>;
   CurLine: string;
   ok: Boolean;
   IsLastDot: Boolean;
 
-  function BlockDelimiter(Line: NativeInt): Boolean;
+  function BlockDelimiter(Line: TSynNativeInt): Boolean;
   var
-    Index: NativeInt;
+    Index: TSynNativeInt;
     mcb: TMatchCollection;
     mce: TMatchCollection;
     match: TMatch;
@@ -817,11 +817,11 @@ var
   end;
 
 begin
-  iList := TList<NativeInt>.Create;
+  iList := TList<TSynNativeInt>.Create;
 
   for Line := 0 to LinesToScan.Count - 1 do
   begin
-    CurLine := Trim(LinesToScan.GetItem(Line));
+    CurLine := Trim(LinesToScan.ItemsNative[Line]);
     IsLastDot := Copy(CurLine, Length(CurLine), 1) = '.';
 
     // Divisions
@@ -976,7 +976,7 @@ begin
   end;
 end;
 
-function TSynCobolSyn.GetTokenKind: NativeInt;
+function TSynCobolSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -1081,7 +1081,7 @@ begin
   end;
 end;
 
-procedure TSynCobolSyn.SetCodeStartPos(Value: NativeInt);
+procedure TSynCobolSyn.SetCodeStartPos(Value: TSynNativeInt);
 begin
   if Value <= fCodeMediumPos then
     fCodeStartPos := Value
@@ -1089,7 +1089,7 @@ begin
     fCodeStartPos := fCodeMediumPos;
 end;
 
-procedure TSynCobolSyn.SetCodeMediumPos(Value: NativeInt);
+procedure TSynCobolSyn.SetCodeMediumPos(Value: TSynNativeInt);
 begin
   if (fCodeStartPos <= Value) and (Value <= fCodeEndPos) then
     fCodeMediumPos := Value
@@ -1099,7 +1099,7 @@ begin
     else fCodeMediumPos := fCodeStartPos;
 end;
 
-procedure TSynCobolSyn.SetCodeEndPos(Value: NativeInt);
+procedure TSynCobolSyn.SetCodeEndPos(Value: TSynNativeInt);
 begin
   if Value > fCodeMediumPos then
     fCodeEndPos := Value

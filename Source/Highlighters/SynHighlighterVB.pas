@@ -50,6 +50,7 @@ uses
   Vcl.Graphics,
   SynEditHighlighter,
   SynEditTypes,
+  SynFunc,
   SynUnicode,
   SynEditCodeFolding;
 
@@ -58,7 +59,7 @@ type
     tkString, tkUnknown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynVBSyn = class(TSynCustomCodeFoldingHighlighter)
@@ -74,9 +75,9 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     RE_BlockBegin: TRegEx;
     RE_BlockEnd: TRegEx;
-    function AltFunc(Index: NativeInt): TtkTokenKind;
-    function KeyWordFunc(Index: NativeInt): TtkTokenKind;
-    function FuncRem(Index: NativeInt): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRem(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -106,10 +107,10 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
   published
@@ -132,8 +133,7 @@ implementation
 
 uses
   SynEditMiscProcs,
-  SynEditStrConst,
-  SynFunc;
+  SynEditStrConst;
 
 const
   {added keywords: catch, try, import}
@@ -169,7 +169,7 @@ const
     'with', 'write', 'xor'
   );
 
-  KeyIndices: array[0..1510] of NativeInt = (
+  KeyIndices: array[0..1510] of TSynNativeInt = (
     100, -1, -1, -1, -1, -1, -1, -1, 91, -1, -1, -1, 140, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 7, -1, -1, -1, -1, 74,
     -1, -1, -1, 176, -1, -1, 181, 146, 171, -1, -1, -1, -1, 5, -1, -1, -1, -1,
@@ -282,7 +282,7 @@ end;
 
 procedure TSynVBSyn.InitIdent;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -295,12 +295,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynVBSyn.AltFunc(Index: NativeInt): TtkTokenKind;
+function TSynVBSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynVBSyn.KeyWordFunc(Index: NativeInt): TtkTokenKind;
+function TSynVBSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -308,7 +308,7 @@ begin
     Result := tkIdentifier
 end;
 
-function TSynVBSyn.FuncRem(Index: NativeInt): TtkTokenKind;
+function TSynVBSyn.FuncRem(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
   begin
@@ -358,15 +358,15 @@ const
   FT_Implementation = 18;
 
 procedure TSynVBSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt);
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: NativeInt;
+  Line: TSynNativeInt;
   ok: Boolean;
 
-  function BlockDelimiter(Line: NativeInt): Boolean;
+  function BlockDelimiter(Line: TSynNativeInt): Boolean;
   var
-    Index: NativeInt;
+    Index: TSynNativeInt;
     mcb: TMatchCollection;
     mce: TMatchCollection;
     match: TMatch;
@@ -409,7 +409,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: NativeInt): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -432,7 +432,7 @@ begin
   begin
     // Deal first with Multiline statements
 
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -456,8 +456,8 @@ procedure TSynVBSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
    Provide folding for procedures and functions included nested ones.
 }
 var
-  i, j, SkipTo: NativeInt;
-  ImplementationIndex: NativeInt;
+  i, j, SkipTo: TSynNativeInt;
+  ImplementationIndex: TSynNativeInt;
   FoldRange: TSynFoldRange;
   mc: TMatchCollection;
 begin
@@ -494,7 +494,7 @@ begin
               Continue
             else
             begin
-              mc := RE_BlockBegin.Matches(LinesToScan.GetItem(FoldRange.FromLine - 1));
+              mc := RE_BlockBegin.Matches(LinesToScan.ItemsNative[FoldRange.FromLine - 1]);
               if mc.Count > 0 then
               begin
                 if mc.Item[0].Value.ToLower = 'begin' then
@@ -715,7 +715,7 @@ begin
   end;
 end;
 
-function TSynVBSyn.GetTokenKind: NativeInt;
+function TSynVBSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

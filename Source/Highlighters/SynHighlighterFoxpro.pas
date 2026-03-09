@@ -53,6 +53,7 @@ uses
   Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   System.RegularExpressions,
   SynEditCodeFolding;
 
@@ -61,7 +62,7 @@ type
     tkString, tkUnknown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynFoxproSyn = class(TSynCustomCodeFoldingHighlighter)
@@ -77,7 +78,7 @@ type
     FKeywords: TDictionary<string, TtkTokenKind>;
     RE_BlockBegin: TRegEx;
     RE_BlockEnd: TRegEx;
-    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AndSymbolProc;
     procedure AsciiCharProc;
@@ -126,10 +127,10 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
   published
@@ -152,8 +153,7 @@ implementation
 
 uses
   SynEditMiscProcs,
-  SynEditStrConst,
-  SynFunc;
+  SynEditStrConst;
 
 const
   KeyWords: string =
@@ -310,15 +310,15 @@ const
   FT_Implementation = 18;
 
 procedure TSynFoxproSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt);
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: NativeInt;
+  Line: TSynNativeInt;
   ok: Boolean;
 
-  function BlockDelimiter(Line: NativeInt): Boolean;
+  function BlockDelimiter(Line: TSynNativeInt): Boolean;
   var
-    Index: NativeInt;
+    Index: TSynNativeInt;
     mcb: TMatchCollection;
     mce: TMatchCollection;
     match: TMatch;
@@ -361,7 +361,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: NativeInt): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -384,7 +384,7 @@ begin
   begin
     // Deal first with Multiline statements
 
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -408,8 +408,8 @@ procedure TSynFoxproSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
    Provide folding for procedures and functions included nested ones.
 }
 var
-  I, J, SkipTo: NativeInt;
-  ImplementationIndex: NativeInt;
+  I, J, SkipTo: TSynNativeInt;
+  ImplementationIndex: TSynNativeInt;
   FoldRange: TSynFoldRange;
   mc: TMatchCollection;
 begin
@@ -446,7 +446,7 @@ begin
               Continue
             else
             begin
-              mc := RE_BlockBegin.Matches(LinesToScan.GetItem(FoldRange.FromLine - 1));
+              mc := RE_BlockBegin.Matches(LinesToScan.ItemsNative[FoldRange.FromLine - 1]);
               if mc.Count > 0 then
               begin
                 if mc.Item[0].Value.ToLower = 'begin' then
@@ -556,7 +556,7 @@ begin
   inherited;
 end;
 
-procedure TSynFoxproSyn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
+procedure TSynFoxproSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -938,7 +938,7 @@ begin
   end;
 end;
 
-function TSynFoxproSyn.GetTokenKind: NativeInt;
+function TSynFoxproSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

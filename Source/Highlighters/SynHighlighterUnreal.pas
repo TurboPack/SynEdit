@@ -46,6 +46,7 @@ uses
   Windows, // registry constants
   SynEditHighlighter,
   SynEditTypes,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -80,13 +81,13 @@ type
   TRangeState = (rsANil, rsAnsiC, rsDirective, rsDirectiveComment, rsUnKnown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
   TSynUnrealSyn = class(TSynCustomHighlighter)
   private
     fRange: TRangeState;
-    FRoundCount: NativeInt;
-    FSquareCount: NativeInt;
+    FRoundCount: TSynNativeInt;
+    FSquareCount: TSynNativeInt;
     FTokenID: TtkTokenKind;
     FExtTokenID: TxtkTokenKind;
     fIdentFuncTable: array[0..732] of TIdentFuncTableFunc;
@@ -101,150 +102,150 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fString2Attri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: NativeInt): TtkTokenKind;
-    function FuncAbstract(Index: NativeInt): TtkTokenKind;
-    function FuncAlways(Index: NativeInt): TtkTokenKind;
-    function FuncArray(Index: NativeInt): TtkTokenKind;
-    function FuncArraycount(Index: NativeInt): TtkTokenKind;
-    function FuncAssert(Index: NativeInt): TtkTokenKind;
-    function FuncAuto(Index: NativeInt): TtkTokenKind;
-    function FuncAutomated(Index: NativeInt): TtkTokenKind;
-    function FuncBool(Index: NativeInt): TtkTokenKind;
-    function FuncBoundingbox(Index: NativeInt): TtkTokenKind;
-    function FuncBoundingvolume(Index: NativeInt): TtkTokenKind;
-    function FuncBreak(Index: NativeInt): TtkTokenKind;
-    function FuncButton(Index: NativeInt): TtkTokenKind;
-    function FuncByte(Index: NativeInt): TtkTokenKind;
-    function FuncCache(Index: NativeInt): TtkTokenKind;
-    function FuncCacheexempt(Index: NativeInt): TtkTokenKind;
-    function FuncCase(Index: NativeInt): TtkTokenKind;
-    function FuncCatch(Index: NativeInt): TtkTokenKind;
-    function FuncClass(Index: NativeInt): TtkTokenKind;
-    function FuncCoerce(Index: NativeInt): TtkTokenKind;
-    function FuncCollapsecategories(Index: NativeInt): TtkTokenKind;
-    function FuncColor(Index: NativeInt): TtkTokenKind;
-    function FuncConfig(Index: NativeInt): TtkTokenKind;
-    function FuncConst(Index: NativeInt): TtkTokenKind;
-    function FuncContinue(Index: NativeInt): TtkTokenKind;
-    function FuncCoords(Index: NativeInt): TtkTokenKind;
-    function FuncCpptext(Index: NativeInt): TtkTokenKind;
-    function FuncCross(Index: NativeInt): TtkTokenKind;
-    function FuncDefault(Index: NativeInt): TtkTokenKind;
-    function FuncDefaultproperties(Index: NativeInt): TtkTokenKind;
-    function FuncDelegate(Index: NativeInt): TtkTokenKind;
-    function FuncDelete(Index: NativeInt): TtkTokenKind;
-    function FuncDependson(Index: NativeInt): TtkTokenKind;
-    function FuncDeprecated(Index: NativeInt): TtkTokenKind;
-    function FuncDo(Index: NativeInt): TtkTokenKind;
-    function FuncDontcollapsecategories(Index: NativeInt): TtkTokenKind;
-    function FuncDot(Index: NativeInt): TtkTokenKind;
-    function FuncEach(Index: NativeInt): TtkTokenKind;
-    function FuncEdfindable(Index: NativeInt): TtkTokenKind;
-    function FuncEditconst(Index: NativeInt): TtkTokenKind;
-    function FuncEditconstarray(Index: NativeInt): TtkTokenKind;
-    function FuncEditinline(Index: NativeInt): TtkTokenKind;
-    function FuncEditinlinenew(Index: NativeInt): TtkTokenKind;
-    function FuncEditinlinenotify(Index: NativeInt): TtkTokenKind;
-    function FuncEditinlineuse(Index: NativeInt): TtkTokenKind;
-    function FuncElse(Index: NativeInt): TtkTokenKind;
-    function FuncEnum(Index: NativeInt): TtkTokenKind;
-    function FuncEnumcount(Index: NativeInt): TtkTokenKind;
-    function FuncEvent(Index: NativeInt): TtkTokenKind;
-    function FuncExec(Index: NativeInt): TtkTokenKind;
-    function FuncExpands(Index: NativeInt): TtkTokenKind;
-    function FuncExplicit(Index: NativeInt): TtkTokenKind;
-    function FuncExport(Index: NativeInt): TtkTokenKind;
-    function FuncExportstructs(Index: NativeInt): TtkTokenKind;
-    function FuncExtends(Index: NativeInt): TtkTokenKind;
-    function FuncFalse(Index: NativeInt): TtkTokenKind;
-    function FuncFinal(Index: NativeInt): TtkTokenKind;
-    function FuncFloat(Index: NativeInt): TtkTokenKind;
-    function FuncFor(Index: NativeInt): TtkTokenKind;
-    function FuncForeach(Index: NativeInt): TtkTokenKind;
-    function FuncFunction(Index: NativeInt): TtkTokenKind;
-    function FuncGlobal(Index: NativeInt): TtkTokenKind;
-    function FuncGlobalconfig(Index: NativeInt): TtkTokenKind;
-    function FuncGoto(Index: NativeInt): TtkTokenKind;
-    function FuncGuid(Index: NativeInt): TtkTokenKind;
-    function FuncHidecategories(Index: NativeInt): TtkTokenKind;
-    function FuncHidedropdown(Index: NativeInt): TtkTokenKind;
-    function FuncHideparent(Index: NativeInt): TtkTokenKind;
-    function FuncIf(Index: NativeInt): TtkTokenKind;
-    function FuncIgnores(Index: NativeInt): TtkTokenKind;
-    function FuncImport(Index: NativeInt): TtkTokenKind;
-    function FuncInit(Index: NativeInt): TtkTokenKind;
-    function FuncInput(Index: NativeInt): TtkTokenKind;
-    function FuncInsert(Index: NativeInt): TtkTokenKind;
-    function FuncInstanced(Index: NativeInt): TtkTokenKind;
-    function FuncInt(Index: NativeInt): TtkTokenKind;
-    function FuncIntrinsic(Index: NativeInt): TtkTokenKind;
-    function FuncInvariant(Index: NativeInt): TtkTokenKind;
-    function FuncIterator(Index: NativeInt): TtkTokenKind;
-    function FuncLatent(Index: NativeInt): TtkTokenKind;
-    function FuncLength(Index: NativeInt): TtkTokenKind;
-    function FuncLocal(Index: NativeInt): TtkTokenKind;
-    function FuncLocalized(Index: NativeInt): TtkTokenKind;
-    function FuncLong(Index: NativeInt): TtkTokenKind;
-    function FuncMesh(Index: NativeInt): TtkTokenKind;
-    function FuncModel(Index: NativeInt): TtkTokenKind;
-    function FuncMutable(Index: NativeInt): TtkTokenKind;
-    function FuncName(Index: NativeInt): TtkTokenKind;
-    function FuncNative(Index: NativeInt): TtkTokenKind;
-    function FuncNativereplication(Index: NativeInt): TtkTokenKind;
-    function FuncNew(Index: NativeInt): TtkTokenKind;
-    function FuncNoexport(Index: NativeInt): TtkTokenKind;
-    function FuncNone(Index: NativeInt): TtkTokenKind;
-    function FuncNoteditinlinenew(Index: NativeInt): TtkTokenKind;
-    function FuncNotplaceable(Index: NativeInt): TtkTokenKind;
-    function FuncNousercreate(Index: NativeInt): TtkTokenKind;
-    function FuncOperator(Index: NativeInt): TtkTokenKind;
-    function FuncOptional(Index: NativeInt): TtkTokenKind;
-    function FuncOut(Index: NativeInt): TtkTokenKind;
-    function FuncParseconfig(Index: NativeInt): TtkTokenKind;
-    function FuncPerobjectconfig(Index: NativeInt): TtkTokenKind;
-    function FuncPlaceable(Index: NativeInt): TtkTokenKind;
-    function FuncPlane(Index: NativeInt): TtkTokenKind;
-    function FuncPointer(Index: NativeInt): TtkTokenKind;
-    function FuncPostoperator(Index: NativeInt): TtkTokenKind;
-    function FuncPreoperator(Index: NativeInt): TtkTokenKind;
-    function FuncPrivate(Index: NativeInt): TtkTokenKind;
-    function FuncProtected(Index: NativeInt): TtkTokenKind;
-    function FuncRegister(Index: NativeInt): TtkTokenKind;
-    function FuncReliable(Index: NativeInt): TtkTokenKind;
-    function FuncRemove(Index: NativeInt): TtkTokenKind;
-    function FuncReplication(Index: NativeInt): TtkTokenKind;
-    function FuncReturn(Index: NativeInt): TtkTokenKind;
-    function FuncRng(Index: NativeInt): TtkTokenKind;
-    function FuncRot(Index: NativeInt): TtkTokenKind;
-    function FuncRotator(Index: NativeInt): TtkTokenKind;
-    function FuncSafereplace(Index: NativeInt): TtkTokenKind;
-    function FuncScale(Index: NativeInt): TtkTokenKind;
-    function FuncScriptconst(Index: NativeInt): TtkTokenKind;
-    function FuncSelf(Index: NativeInt): TtkTokenKind;
-    function FuncShowcategories(Index: NativeInt): TtkTokenKind;
-    function FuncSimulated(Index: NativeInt): TtkTokenKind;
-    function FuncSingular(Index: NativeInt): TtkTokenKind;
-    function FuncSkip(Index: NativeInt): TtkTokenKind;
-    function FuncSound(Index: NativeInt): TtkTokenKind;
-    function FuncState(Index: NativeInt): TtkTokenKind;
-    function FuncStatic(Index: NativeInt): TtkTokenKind;
-    function FuncStop(Index: NativeInt): TtkTokenKind;
-    function FuncString(Index: NativeInt): TtkTokenKind;
-    function FuncStruct(Index: NativeInt): TtkTokenKind;
-    function FuncSuper(Index: NativeInt): TtkTokenKind;
-    function FuncSwitch(Index: NativeInt): TtkTokenKind;
-    function FuncTexture(Index: NativeInt): TtkTokenKind;
-    function FuncTransient(Index: NativeInt): TtkTokenKind;
-    function FuncTravel(Index: NativeInt): TtkTokenKind;
-    function FuncTrue(Index: NativeInt): TtkTokenKind;
-    function FuncUnreliable(Index: NativeInt): TtkTokenKind;
-    function FuncUntil(Index: NativeInt): TtkTokenKind;
-    function FuncVar(Index: NativeInt): TtkTokenKind;
-    function FuncVect(Index: NativeInt): TtkTokenKind;
-    function FuncVector(Index: NativeInt): TtkTokenKind;
-    function FuncVoid(Index: NativeInt): TtkTokenKind;
-    function FuncWhile(Index: NativeInt): TtkTokenKind;
-    function FuncWithin(Index: NativeInt): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAbstract(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAlways(Index: TSynNativeInt): TtkTokenKind;
+    function FuncArray(Index: TSynNativeInt): TtkTokenKind;
+    function FuncArraycount(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAssert(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAuto(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAutomated(Index: TSynNativeInt): TtkTokenKind;
+    function FuncBool(Index: TSynNativeInt): TtkTokenKind;
+    function FuncBoundingbox(Index: TSynNativeInt): TtkTokenKind;
+    function FuncBoundingvolume(Index: TSynNativeInt): TtkTokenKind;
+    function FuncBreak(Index: TSynNativeInt): TtkTokenKind;
+    function FuncButton(Index: TSynNativeInt): TtkTokenKind;
+    function FuncByte(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCache(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCacheexempt(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCase(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCatch(Index: TSynNativeInt): TtkTokenKind;
+    function FuncClass(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCoerce(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCollapsecategories(Index: TSynNativeInt): TtkTokenKind;
+    function FuncColor(Index: TSynNativeInt): TtkTokenKind;
+    function FuncConfig(Index: TSynNativeInt): TtkTokenKind;
+    function FuncConst(Index: TSynNativeInt): TtkTokenKind;
+    function FuncContinue(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCoords(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCpptext(Index: TSynNativeInt): TtkTokenKind;
+    function FuncCross(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDefault(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDefaultproperties(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDelegate(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDelete(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDependson(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDeprecated(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDo(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDontcollapsecategories(Index: TSynNativeInt): TtkTokenKind;
+    function FuncDot(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEach(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEdfindable(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEditconst(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEditconstarray(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEditinline(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEditinlinenew(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEditinlinenotify(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEditinlineuse(Index: TSynNativeInt): TtkTokenKind;
+    function FuncElse(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEnum(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEnumcount(Index: TSynNativeInt): TtkTokenKind;
+    function FuncEvent(Index: TSynNativeInt): TtkTokenKind;
+    function FuncExec(Index: TSynNativeInt): TtkTokenKind;
+    function FuncExpands(Index: TSynNativeInt): TtkTokenKind;
+    function FuncExplicit(Index: TSynNativeInt): TtkTokenKind;
+    function FuncExport(Index: TSynNativeInt): TtkTokenKind;
+    function FuncExportstructs(Index: TSynNativeInt): TtkTokenKind;
+    function FuncExtends(Index: TSynNativeInt): TtkTokenKind;
+    function FuncFalse(Index: TSynNativeInt): TtkTokenKind;
+    function FuncFinal(Index: TSynNativeInt): TtkTokenKind;
+    function FuncFloat(Index: TSynNativeInt): TtkTokenKind;
+    function FuncFor(Index: TSynNativeInt): TtkTokenKind;
+    function FuncForeach(Index: TSynNativeInt): TtkTokenKind;
+    function FuncFunction(Index: TSynNativeInt): TtkTokenKind;
+    function FuncGlobal(Index: TSynNativeInt): TtkTokenKind;
+    function FuncGlobalconfig(Index: TSynNativeInt): TtkTokenKind;
+    function FuncGoto(Index: TSynNativeInt): TtkTokenKind;
+    function FuncGuid(Index: TSynNativeInt): TtkTokenKind;
+    function FuncHidecategories(Index: TSynNativeInt): TtkTokenKind;
+    function FuncHidedropdown(Index: TSynNativeInt): TtkTokenKind;
+    function FuncHideparent(Index: TSynNativeInt): TtkTokenKind;
+    function FuncIf(Index: TSynNativeInt): TtkTokenKind;
+    function FuncIgnores(Index: TSynNativeInt): TtkTokenKind;
+    function FuncImport(Index: TSynNativeInt): TtkTokenKind;
+    function FuncInit(Index: TSynNativeInt): TtkTokenKind;
+    function FuncInput(Index: TSynNativeInt): TtkTokenKind;
+    function FuncInsert(Index: TSynNativeInt): TtkTokenKind;
+    function FuncInstanced(Index: TSynNativeInt): TtkTokenKind;
+    function FuncInt(Index: TSynNativeInt): TtkTokenKind;
+    function FuncIntrinsic(Index: TSynNativeInt): TtkTokenKind;
+    function FuncInvariant(Index: TSynNativeInt): TtkTokenKind;
+    function FuncIterator(Index: TSynNativeInt): TtkTokenKind;
+    function FuncLatent(Index: TSynNativeInt): TtkTokenKind;
+    function FuncLength(Index: TSynNativeInt): TtkTokenKind;
+    function FuncLocal(Index: TSynNativeInt): TtkTokenKind;
+    function FuncLocalized(Index: TSynNativeInt): TtkTokenKind;
+    function FuncLong(Index: TSynNativeInt): TtkTokenKind;
+    function FuncMesh(Index: TSynNativeInt): TtkTokenKind;
+    function FuncModel(Index: TSynNativeInt): TtkTokenKind;
+    function FuncMutable(Index: TSynNativeInt): TtkTokenKind;
+    function FuncName(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNative(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNativereplication(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNew(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNoexport(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNone(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNoteditinlinenew(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNotplaceable(Index: TSynNativeInt): TtkTokenKind;
+    function FuncNousercreate(Index: TSynNativeInt): TtkTokenKind;
+    function FuncOperator(Index: TSynNativeInt): TtkTokenKind;
+    function FuncOptional(Index: TSynNativeInt): TtkTokenKind;
+    function FuncOut(Index: TSynNativeInt): TtkTokenKind;
+    function FuncParseconfig(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPerobjectconfig(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPlaceable(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPlane(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPointer(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPostoperator(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPreoperator(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPrivate(Index: TSynNativeInt): TtkTokenKind;
+    function FuncProtected(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRegister(Index: TSynNativeInt): TtkTokenKind;
+    function FuncReliable(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRemove(Index: TSynNativeInt): TtkTokenKind;
+    function FuncReplication(Index: TSynNativeInt): TtkTokenKind;
+    function FuncReturn(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRng(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRot(Index: TSynNativeInt): TtkTokenKind;
+    function FuncRotator(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSafereplace(Index: TSynNativeInt): TtkTokenKind;
+    function FuncScale(Index: TSynNativeInt): TtkTokenKind;
+    function FuncScriptconst(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSelf(Index: TSynNativeInt): TtkTokenKind;
+    function FuncShowcategories(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSimulated(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSingular(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSkip(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSound(Index: TSynNativeInt): TtkTokenKind;
+    function FuncState(Index: TSynNativeInt): TtkTokenKind;
+    function FuncStatic(Index: TSynNativeInt): TtkTokenKind;
+    function FuncStop(Index: TSynNativeInt): TtkTokenKind;
+    function FuncString(Index: TSynNativeInt): TtkTokenKind;
+    function FuncStruct(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSuper(Index: TSynNativeInt): TtkTokenKind;
+    function FuncSwitch(Index: TSynNativeInt): TtkTokenKind;
+    function FuncTexture(Index: TSynNativeInt): TtkTokenKind;
+    function FuncTransient(Index: TSynNativeInt): TtkTokenKind;
+    function FuncTravel(Index: TSynNativeInt): TtkTokenKind;
+    function FuncTrue(Index: TSynNativeInt): TtkTokenKind;
+    function FuncUnreliable(Index: TSynNativeInt): TtkTokenKind;
+    function FuncUntil(Index: TSynNativeInt): TtkTokenKind;
+    function FuncVar(Index: TSynNativeInt): TtkTokenKind;
+    function FuncVect(Index: TSynNativeInt): TtkTokenKind;
+    function FuncVector(Index: TSynNativeInt): TtkTokenKind;
+    function FuncVoid(Index: TSynNativeInt): TtkTokenKind;
+    function FuncWhile(Index: TSynNativeInt): TtkTokenKind;
+    function FuncWithin(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -301,11 +302,11 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
-    function UseUserSettings(settingIndex: NativeInt): Boolean; override;
+    function UseUserSettings(settingIndex: TSynNativeInt): Boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
   published
@@ -334,7 +335,7 @@ type
 implementation
 
 uses
-  SynEditStrConst, SynFunc;
+  SynEditStrConst;
 
 const
   KeyWords: array[0..142] of string = (
@@ -364,7 +365,7 @@ const
     'within' 
   );
 
-  KeyIndices: array[0..732] of NativeInt = (
+  KeyIndices: array[0..732] of TSynNativeInt = (
     -1, -1, -1, -1, -1, -1, 78, -1, -1, -1, -1, 25, -1, -1, -1, -1, -1, -1, -1, 
     -1, -1, -1, -1, -1, 79, -1, -1, -1, -1, -1, -1, -1, -1, 104, -1, -1, -1, -1, 
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 36, -1, -1, -1, -1, -1, -1, -1, 
@@ -435,7 +436,7 @@ end;
 
 procedure TSynUnrealSyn.InitIdent;
 var
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -586,12 +587,12 @@ begin
   fIdentFuncTable[367] := FuncWithin;
 end;
 
-function TSynUnrealSyn.AltFunc(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncAbstract(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncAbstract(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -599,7 +600,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncAlways(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncAlways(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -607,7 +608,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncArray(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncArray(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -615,7 +616,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncArraycount(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncArraycount(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -623,7 +624,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncAssert(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncAssert(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -631,7 +632,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncAuto(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncAuto(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -639,7 +640,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncAutomated(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncAutomated(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -647,7 +648,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncBool(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncBool(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -655,7 +656,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncBoundingbox(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncBoundingbox(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -663,7 +664,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncBoundingvolume(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncBoundingvolume(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -671,7 +672,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncBreak(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncBreak(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -679,7 +680,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncButton(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncButton(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -687,7 +688,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncByte(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncByte(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -695,7 +696,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCache(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCache(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -703,7 +704,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCacheexempt(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCacheexempt(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -711,7 +712,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCase(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCase(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -719,7 +720,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCatch(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCatch(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -727,7 +728,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncClass(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncClass(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -735,7 +736,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCoerce(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCoerce(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -743,7 +744,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCollapsecategories(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCollapsecategories(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -751,7 +752,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncColor(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncColor(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -759,7 +760,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncConfig(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncConfig(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -767,7 +768,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncConst(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncConst(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -775,7 +776,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncContinue(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncContinue(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -783,7 +784,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCoords(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCoords(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -791,7 +792,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncCpptext(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCpptext(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -800,7 +801,7 @@ begin
 
 end;
 
-function TSynUnrealSyn.FuncCross(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncCross(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkSymbol
@@ -808,7 +809,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDefault(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDefault(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -816,7 +817,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDefaultproperties(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDefaultproperties(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -824,7 +825,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDelegate(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDelegate(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -832,7 +833,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDelete(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDelete(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -840,7 +841,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDependson(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDependson(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -848,7 +849,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDeprecated(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDeprecated(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -856,7 +857,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDo(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDo(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -864,7 +865,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDontcollapsecategories(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDontcollapsecategories(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -872,7 +873,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncDot(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncDot(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkSymbol
@@ -880,7 +881,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncEach(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEach(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -888,15 +889,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncEdfindable(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey2
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncEditconst(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEdfindable(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -904,7 +897,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncEditconstarray(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEditconst(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -912,7 +905,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncEditinline(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEditconstarray(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -920,7 +913,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncEditinlinenew(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEditinline(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -928,7 +921,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncEditinlinenotify(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEditinlinenew(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -936,7 +929,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncEditinlineuse(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEditinlinenotify(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -944,95 +937,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncElse(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncEnum(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncEnumcount(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncEvent(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncExec(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncExpands(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncExplicit(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncExport(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncExportstructs(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncExtends(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncFalse(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncFinal(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEditinlineuse(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1040,7 +945,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncFloat(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncElse(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1048,7 +953,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncFor(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEnum(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1056,7 +961,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncForeach(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEnumcount(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1064,7 +969,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncFunction(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncEvent(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1072,7 +977,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncGlobal(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncExec(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1080,7 +985,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncGlobalconfig(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncExpands(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1088,7 +993,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncGoto(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncExplicit(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1096,7 +1001,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncGuid(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncExport(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1104,7 +1009,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncHidecategories(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncExportstructs(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1112,7 +1017,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncHidedropdown(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncExtends(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1120,7 +1025,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncHideparent(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncFalse(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1128,55 +1033,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncIf(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncIgnores(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncImport(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncInit(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncInput(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncInsert(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncInstanced(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncFinal(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1184,7 +1041,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncInt(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncFloat(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1192,7 +1049,135 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncIntrinsic(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncFor(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncForeach(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncFunction(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncGlobal(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncGlobalconfig(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncGoto(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncGuid(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncHidecategories(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncHidedropdown(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncHideparent(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncIf(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncIgnores(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncImport(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncInit(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncInput(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncInsert(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncInstanced(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1200,7 +1185,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncInvariant(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncInt(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncIntrinsic(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1208,15 +1201,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncIterator(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncLatent(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncInvariant(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1224,7 +1209,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncLength(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncIterator(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1232,15 +1217,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncLocal(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncLocalized(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncLatent(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1248,7 +1225,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncLong(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncLength(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1256,7 +1233,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncMesh(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncLocal(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1264,31 +1241,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncModel(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncMutable(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncName(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncNative(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncLocalized(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1296,7 +1249,47 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncNativereplication(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncLong(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncMesh(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncModel(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncMutable(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncName(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncNative(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1304,15 +1297,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncNew(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncNoexport(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncNativereplication(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1320,7 +1305,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncNone(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncNew(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1328,15 +1313,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncNoteditinlinenew(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncNotplaceable(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncNoexport(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1344,7 +1321,23 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncNousercreate(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncNone(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncNoteditinlinenew(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncNotplaceable(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1352,47 +1345,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncOperator(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncOptional(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncOut(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncParseconfig(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncPerobjectconfig(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncPlaceable(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncNousercreate(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1400,7 +1353,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncPlane(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncOperator(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1408,7 +1361,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncPointer(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncOptional(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1416,7 +1369,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncPostoperator(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncOut(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1424,7 +1377,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncPreoperator(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncParseconfig(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1432,7 +1385,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncPrivate(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncPerobjectconfig(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncPlaceable(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1440,7 +1401,39 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncProtected(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncPlane(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncPointer(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncPostoperator(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncPreoperator(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncPrivate(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1448,15 +1441,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncRegister(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncReliable(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncProtected(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1464,7 +1449,15 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncRemove(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncRegister(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncReliable(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1472,7 +1465,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncReplication(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncRemove(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1480,39 +1473,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncReturn(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncRng(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncRot(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncRotator(Index: NativeInt): TtkTokenKind;
-begin
-  if IsCurrentToken(KeyWords[Index]) then
-    Result := tkKey
-  else
-    Result := tkIdentifier;
-end;
-
-function TSynUnrealSyn.FuncSafereplace(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncReplication(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1520,7 +1481,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncScale(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncReturn(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1528,7 +1489,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncScriptconst(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncRng(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1536,7 +1497,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncSelf(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncRot(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1544,7 +1505,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncShowcategories(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncRotator(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1552,7 +1513,47 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncSimulated(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncSafereplace(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey2
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncScale(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncScriptconst(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncSelf(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncShowcategories(Index: TSynNativeInt): TtkTokenKind;
+begin
+  if IsCurrentToken(KeyWords[Index]) then
+    Result := tkKey
+  else
+    Result := tkIdentifier;
+end;
+
+function TSynUnrealSyn.FuncSimulated(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1561,7 +1562,7 @@ begin
 
 end;
 
-function TSynUnrealSyn.FuncSingular(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncSingular(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1569,7 +1570,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncSkip(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncSkip(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1577,7 +1578,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncSound(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncSound(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1585,7 +1586,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncState(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncState(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1593,7 +1594,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncStatic(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncStatic(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1601,7 +1602,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncStop(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncStop(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1609,7 +1610,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncString(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncString(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1617,7 +1618,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncStruct(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncStruct(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1625,7 +1626,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncSuper(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncSuper(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1633,7 +1634,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncSwitch(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncSwitch(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1641,7 +1642,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncTexture(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncTexture(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1649,7 +1650,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncTransient(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncTransient(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1657,7 +1658,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncTravel(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncTravel(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1665,7 +1666,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncTrue(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncTrue(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1673,7 +1674,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncUnreliable(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncUnreliable(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey2
@@ -1681,7 +1682,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncUntil(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncUntil(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1689,7 +1690,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncVar(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncVar(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1697,7 +1698,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncVect(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncVect(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1705,7 +1706,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncVector(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncVector(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1713,7 +1714,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncVoid(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncVoid(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1721,7 +1722,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncWhile(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncWhile(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1729,7 +1730,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynUnrealSyn.FuncWithin(Index: NativeInt): TtkTokenKind;
+function TSynUnrealSyn.FuncWithin(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -2459,7 +2460,7 @@ begin
   end;
 end;
 
-function TSynUnrealSyn.GetTokenKind: NativeInt;
+function TSynUnrealSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -2495,7 +2496,7 @@ begin
   end;
 end;
 
-function TSynUnrealSyn.UseUserSettings(settingIndex: NativeInt): Boolean;
+function TSynUnrealSyn.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
 // Possible parameter values:
 //   index into TStrings returned by EnumUserSettings
 // Possible return values:
@@ -2503,13 +2504,13 @@ function TSynUnrealSyn.UseUserSettings(settingIndex: NativeInt): Boolean;
 //   false: problem reading settings or invalid version specified - old settings
 //          were preserved
 
-  function ReadCPPBSettings(settingIndex: NativeInt): Boolean;
+  function ReadCPPBSettings(settingIndex: TSynNativeInt): Boolean;
 
     function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
 
       function ReadCPPB1(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
       var
-        I: NativeInt;
+        I: TSynNativeInt;
       begin
         for I := 1 to Length(name) do
           if name[I] = ' ' then name[I] := '_';
@@ -2571,15 +2572,15 @@ function TSynUnrealSyn.UseUserSettings(settingIndex: NativeInt): Boolean;
         tmpInvalidAttri   .Assign(fInvalidAttri);
         tmpSpaceAttri     .Assign(fSpaceAttri);
         tmpDirecAttri     .Assign(fDirecAttri);
-        Result := ReadCPPBSetting(sl.GetItem(settingIndex),fCommentAttri,'Comment')       and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fIdentifierAttri,'Identifier') and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fInvalidAttri,'Illegal Char')  and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fKeyAttri,'Reserved word')     and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fNumberAttri,'Integer')        and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fSpaceAttri,'Whitespace')      and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fStringAttri,'String')         and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fSymbolAttri,'Symbol')         and
-                  ReadCPPBSetting(sl.GetItem(settingIndex),fDirecAttri,'Preprocessor');
+        Result := ReadCPPBSetting(sl.ItemsNative[settingIndex],fCommentAttri,'Comment')       and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fIdentifierAttri,'Identifier') and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fInvalidAttri,'Illegal Char')  and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fKeyAttri,'Reserved word')     and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fNumberAttri,'Integer')        and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fSpaceAttri,'Whitespace')      and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fStringAttri,'String')         and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fSymbolAttri,'Symbol')         and
+                  ReadCPPBSetting(sl.ItemsNative[settingIndex],fDirecAttri,'Preprocessor');
         if not Result then begin
           fStringAttri    .Assign(tmpStringAttri);
           fString2Attri   .Assign(tmpStringAttri);

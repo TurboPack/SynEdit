@@ -35,7 +35,8 @@ uses
   System.Classes,
   SynEditCodeFolding,
   Vcl.Graphics,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynFunc;
 
 //State constants
 const
@@ -67,7 +68,7 @@ type
   TProcTableProc = procedure of object;
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynYAMLSyn = class(TSynCustomCodeFoldingHighlighter)
@@ -108,7 +109,7 @@ type
   protected
     function GetSampleSource: UnicodeString; override;
     function IsFilterStored: Boolean; override;
-    procedure DoSetLine(const Value: UnicodeString; LineNumber: NativeInt); override;
+    procedure DoSetLine(const Value: UnicodeString; LineNumber: TSynNativeInt); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -122,12 +123,12 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure InitFoldRanges(FoldRanges : TSynFoldRanges); override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
     property DocDelimiterAttri: TSynHighlighterAttributes read fDocDelimiterAttri write fDocDelimiterAttri;
@@ -150,8 +151,7 @@ uses
   System.Math,
   Winapi.Windows,
   SynEditStrConst,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 procedure TSynYAMLSyn.SpaceProc;
 begin
@@ -233,12 +233,12 @@ begin
     Inc(Run);
 end;
 
-procedure TSynYAMLSyn.DoSetLine(const Value: UnicodeString; LineNumber: NativeInt);
+procedure TSynYAMLSyn.DoSetLine(const Value: UnicodeString; LineNumber: TSynNativeInt);
 const
   sDocStart: UnicodeString = '---';
   sDocEnd: UnicodeString = '...';
 var
-  NewIndent: NativeInt;
+  NewIndent: TSynNativeInt;
 begin
   inherited;
   NewIndent := LeftSpaces(fLineStr, False);
@@ -414,7 +414,7 @@ end;
 
 procedure TSynYAMLSyn.ValueProc;
 var
-  Start: NativeInt;
+  Start: TSynNativeInt;
   Val:  UnicodeString;
   FloatVal: Extended;
 begin
@@ -576,7 +576,7 @@ begin
   end;
 end;
 
-function TSynYAMLSyn.GetTokenKind: NativeInt;
+function TSynYAMLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -651,9 +651,9 @@ begin
 end;
 
 procedure TSynYAMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 
-  function LeftSpaces(const CurLine: string; TabW: NativeInt): NativeInt;
+  function LeftSpaces(const CurLine: string; TabW: TSynNativeInt): TSynNativeInt;
   var
     p: PWideChar;
   begin
@@ -673,7 +673,7 @@ procedure TSynYAMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
 
   function StripComments(const Line: string): string;
   var
-    Index: NativeInt;
+    Index: TSynNativeInt;
   begin
     Index := Pos('#', Line);
     if Index = 0 then
@@ -685,12 +685,12 @@ procedure TSynYAMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
 var
   CurLine: string;
   TrimmedLine: string;
-  Line: NativeInt;
-  Indent: NativeInt;
-  FoldType: NativeInt;
+  Line: TSynNativeInt;
+  Indent: TSynNativeInt;
+  FoldType: TSynNativeInt;
 begin
   for Line := FromLine to ToLine do begin
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
     TrimmedLine := Trim(StripComments(CurLine));
 
     // skip empty lines

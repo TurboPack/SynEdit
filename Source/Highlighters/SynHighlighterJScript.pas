@@ -49,6 +49,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SysUtils,
+  SynFunc,
   SynUnicode,
   Classes,
 //++ CodeFolding
@@ -63,7 +64,7 @@ type
   TRangeState = (rsUnknown, rsANSI, rsLiteral, rsLiteralTemplate);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
 //  TSynJScriptSyn = class(TSynCustomHighLighter)
@@ -72,7 +73,7 @@ type
 //-- CodeFolding
   private
     fRange: TRangeState;
-    fLiteralLevel: NativeInt;
+    fLiteralLevel: TSynNativeInt;
     FTokenID: TtkTokenKind;
     fCommentAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
@@ -123,7 +124,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsKeyword(const AKeyword: string): Boolean; override;
     function IsEvent(const AKeyword: string): Boolean;
     function IsNonReserwedKeyWord(const AKeyword: string): Boolean;
@@ -132,7 +133,7 @@ type
     procedure ResetRange; override;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
 //-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -156,8 +157,7 @@ implementation
 
 uses
   SynEditStrConst,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 const
   // IMPORTANT!!! Cause JavaScript is case sensitive, list must be sorted by ASCII values
@@ -243,7 +243,7 @@ const
 
 function TSynJScriptSyn.IsKeyword(const AKeyword: string): Boolean;
 var
-  First, Last, I, Compare: NativeInt;
+  First, Last, I, Compare: TSynNativeInt;
 begin
   First := 0;
   Last := High(Keywords);
@@ -265,7 +265,7 @@ end;
 
 function TSynJScriptSyn.IsEvent(const AKeyword: string): Boolean;
 var
-  First, Last, I, Compare: NativeInt;
+  First, Last, I, Compare: TSynNativeInt;
 begin
   First := 0;
   Last := High(Events);
@@ -287,7 +287,7 @@ end;
 
 function TSynJScriptSyn.IsNonReserwedKeyWord(const AKeyword: string): Boolean;
 var
-  First, Last, I, Compare: NativeInt;
+  First, Last, I, Compare: TSynNativeInt;
 begin
   First := 0;
   Last := High(NonReserwedKeyWords);
@@ -503,7 +503,7 @@ procedure TSynJScriptSyn.NumberProc;
     end;
   end;
 
-  function IsHexChar(Run: NativeInt): Boolean;
+  function IsHexChar(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', 'a'..'f', 'A'..'F':
@@ -514,7 +514,7 @@ procedure TSynJScriptSyn.NumberProc;
   end;
 
 var
-  idx1: NativeInt; // token[1]
+  idx1: TSynNativeInt; // token[1]
   isHex: Boolean;
 begin
   fTokenID := tkNumber;
@@ -736,7 +736,7 @@ begin
   end;
 end;
 
-function TSynJScriptSyn.GetTokenKind: NativeInt;
+function TSynJScriptSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -797,17 +797,17 @@ end;
 
 //++ CodeFolding
 procedure TSynJScriptSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: NativeInt;
+  Line: TSynNativeInt;
 
-  function FindBraces(Line: NativeInt): Boolean;
+  function FindBraces(Line: TSynNativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: NativeInt; out Col: NativeInt): Boolean;
+    function LineHasChar(AChar: Char; StartCol: TSynNativeInt; out Col: TSynNativeInt): Boolean;
     var
-      I: NativeInt;
+      I: TSynNativeInt;
     begin
       Result := False;
       Col := 0;
@@ -823,15 +823,15 @@ var
       end;
     end;
 
-    function Indent: NativeInt;
+    function Indent: TSynNativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: NativeInt;
-    CloseIdx: NativeInt;
-    Idx: NativeInt;
+    OpenIdx: TSynNativeInt;
+    CloseIdx: TSynNativeInt;
+    Idx: TSynNativeInt;
   begin
     LineHasChar('{', 1, OpenIdx);
     LineHasChar('}', 1, CloseIdx);
@@ -859,7 +859,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: NativeInt): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -895,7 +895,7 @@ begin
       Continue;
     end;
 
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin

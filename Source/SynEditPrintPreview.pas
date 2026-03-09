@@ -56,7 +56,8 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Forms,
-  SynEditPrint;
+  SynEditPrint,
+  SynFunc;
 
 type
 //Event raised when page is changed in preview
@@ -77,7 +78,7 @@ type
     FPageSize: TSize;
     FScrollPosition: TPoint;
     FPageBG: TColor;
-    FPageNumber: NativeInt;
+    FPageNumber: TSynNativeInt;
     FShowScrollHint: Boolean;
     FOnPreviewPage: TPreviewPageEvent;
     FOnScaleChange: TNotifyEvent;
@@ -114,7 +115,11 @@ type
     procedure ScrollVertTo(Value: Integer); virtual;
     procedure UpdateScrollbars; virtual;
     procedure SizeChanged; virtual;
+  {$IF COMPILERVERSION <= 30}
+    procedure ChangeScale(M, D: Integer); override;
+  {$ELSE}
     procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
+  {$ENDIF}
     function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -125,7 +130,7 @@ type
     procedure FirstPage;
     procedure LastPage;
     procedure Print;
-    property PageNumber: NativeInt read FPageNumber;
+    property PageNumber: TSynNativeInt read FPageNumber;
     property PageCount: NativeInt read GetPageCount;
   published
     property Align default alClient;
@@ -158,8 +163,7 @@ implementation
 uses
   Winapi.D2D1,
   SynDWrite,
-  SynEditStrConst,
-  SynFunc;
+  SynEditStrConst;
 
 const
   MARGIN_X = 12; // margin width left and right of page
@@ -168,15 +172,25 @@ const
 
 { TSynEditPrintPreview }
 
+{$IF COMPILERVERSION <= 30}
+procedure TSynEditPrintPreview.ChangeScale(M, D: Integer);
+{$ELSE}
 procedure TSynEditPrintPreview.ChangeScale(M, D: Integer; isDpiChange: Boolean);
+{$ENDIF}
 begin
+{$IF COMPILERVERSION >= 31}
   if isDpiChange then
   begin
+{$ENDIF}
     FMargin_X := MulDiv(FMargin_X, M, D);
     FMargin_Y := MulDiv(FMargin_Y, M, D);
     FShadow_Size := MulDiv(FShadow_Size, M, D);
+{$IF COMPILERVERSION <= 30}
+  inherited ChangeScale(M, D);
+{$ELSE}
   end;
   inherited ChangeScale(M, D, isDpiChange);
+{$ENDIF}
 end;
 
 constructor TSynEditPrintPreview.Create(AOwner: TComponent);

@@ -53,6 +53,7 @@ uses
   SynEditHighlighter,
   Windows,                                                                      //Fiala
   SysUtils,
+  SynFunc,
   SynUnicode,
   Classes,
 //++ CodeFolding
@@ -66,7 +67,7 @@ type
   TRangeState = (rsUnknown, rsString, rsQuotedString);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: NativeInt): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 //  TSynPerlSyn = class(TSynCustomHighlighter)
 //++ CodeFolding
@@ -87,11 +88,11 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     fVariableAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: NativeInt): TtkTokenKind;
-    function FuncVar(Index: NativeInt): TtkTokenKind;
-    function FuncKey(Index: NativeInt): TtkTokenKind;
-    function FuncOperator(Index: NativeInt): TtkTokenKind;
-    function FuncPragma(Index: NativeInt): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function FuncVar(Index: TSynNativeInt): TtkTokenKind;
+    function FuncKey(Index: TSynNativeInt): TtkTokenKind;
+    function FuncOperator(Index: TSynNativeInt): TtkTokenKind;
+    function FuncPragma(Index: TSynNativeInt): TtkTokenKind;
 
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
@@ -136,7 +137,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;               //Fiala
     procedure Next; override;
@@ -145,7 +146,7 @@ type
     procedure SetRange(Value: Pointer); override;                               //Fiala
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: NativeInt; ToLine: NativeInt); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
 //-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -175,8 +176,7 @@ implementation
 
 uses
   SynEditStrConst,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 const
   { expanded keywords list }                                                    //Fiala
@@ -229,7 +229,7 @@ const
     'while', 'write', 'xor' 
   );
 
-  KeyIndices: array[0..2728] of NativeInt = (
+  KeyIndices: array[0..2728] of TSynNativeInt = (
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 222, -1, -1, -1, -1, -1, -1,
     -1, -1, 201, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, 203, -1, -1, -1, -1, -1, -1, -1, -1, 87, -1, -1, -1, -1, -1, -1,
@@ -407,7 +407,7 @@ end;
 
 procedure TSynPerlSyn.InitIdent;
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[I] = -1 then
@@ -522,7 +522,7 @@ begin
   fIdentFuncTable[2564] := FuncOperator;
 end;
 
-function TSynPerlSyn.AltFunc(Index: NativeInt): TtkTokenKind;
+function TSynPerlSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
@@ -943,7 +943,7 @@ var
 
   function GetFirstBracket: char;
   var
-    I: NativeInt;
+    I: TSynNativeInt;
   begin
     Result := #0;
     I := Run + 1;
@@ -1040,7 +1040,7 @@ end;
 
 procedure TSynPerlSyn.StringInterpProc;
 var
-  fBackslashCount: NativeInt;
+  fBackslashCount: TSynNativeInt;
 begin
   { modification for first quote is backshlashed }
   if (FRange = rsUnknown ) and (FLine[Run - 1] = '\') then                      // Fiala
@@ -1210,7 +1210,7 @@ begin
   end;
 end;
 
-function TSynPerlSyn.GetTokenKind: NativeInt;
+function TSynPerlSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -1265,7 +1265,7 @@ begin
     IdentProc;
 end;
 
-function TSynPerlSyn.FuncVar(Index: NativeInt): TtkTokenKind;
+function TSynPerlSyn.FuncVar(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkVariable
@@ -1273,7 +1273,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPerlSyn.FuncKey(Index: NativeInt): TtkTokenKind;
+function TSynPerlSyn.FuncKey(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -1281,7 +1281,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPerlSyn.FuncOperator(Index: NativeInt): TtkTokenKind;
+function TSynPerlSyn.FuncOperator(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkOperator
@@ -1289,7 +1289,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynPerlSyn.FuncPragma(Index: NativeInt): TtkTokenKind;
+function TSynPerlSyn.FuncPragma(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkPragma
@@ -1322,17 +1322,17 @@ end;
 
 //++ CodeFolding
 procedure TSynPerlSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: NativeInt;
+  Line: TSynNativeInt;
 
-  function FindBraces(Line: NativeInt): Boolean;
+  function FindBraces(Line: TSynNativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: NativeInt; out Col: NativeInt): Boolean;
+    function LineHasChar(AChar: Char; StartCol: TSynNativeInt; out Col: TSynNativeInt): Boolean;
     var
-      I: NativeInt;
+      I: TSynNativeInt;
     begin
       Result := False;
       Col := 0;
@@ -1348,15 +1348,15 @@ var
       end;
     end;
 
-    function Indent: NativeInt;
+    function Indent: TSynNativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: NativeInt;
-    CloseIdx: NativeInt;
-    Idx: NativeInt;
+    OpenIdx: TSynNativeInt;
+    CloseIdx: TSynNativeInt;
+    Idx: TSynNativeInt;
   begin
     LineHasChar('{', 1, OpenIdx);
     LineHasChar('}', 1, CloseIdx);
@@ -1384,7 +1384,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: NativeInt): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -1406,7 +1406,7 @@ begin
   for Line := FromLine to ToLine do
   begin
 
-    CurLine := LinesToScan.GetItem(Line);
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -1432,7 +1432,7 @@ end;
 
 procedure TSynPerlSyn.StringEndProc;                                            //Fiala
 var
-  fBackslashCount: NativeInt;
+  fBackslashCount: TSynNativeInt;
 begin
   FTokenID := tkString;
   repeat

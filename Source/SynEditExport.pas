@@ -318,10 +318,10 @@ end;
 procedure TSynCustomExporter.CopyToClipboardFormat(AFormat: UINT);
 var
   hData: THandle;
-  hDataSize: NativeInt;
+  hDataSize: TSynNativeInt;
   PtrData: PByte;
 begin
-  hDataSize := NativeInt(GetBufferSize + 1);
+  hDataSize := TSynNativeInt(GetBufferSize + 1);
   hData := GlobalAlloc(GMEM_MOVEABLE or GMEM_ZEROINIT or GMEM_SHARE, hDataSize);
   if hData <> 0 then
   try
@@ -334,7 +334,7 @@ begin
       finally
         GlobalUnlock(hData);
       end;
-      Clipboard.SetAsHandle(AFormat, hData);
+      Clipboard.SetAsHandle(ToWord(AFormat), hData);
     end
     else
       Abort;
@@ -377,7 +377,7 @@ end;
 
 procedure TSynCustomExporter.ExportRange(ALines: TStrings; Start, Stop: TBufferCoord);
 var
-  i: NativeInt;
+  i: TSynNativeInt;
   Line, Token: string;
   Attri: TSynHighlighterAttributes;
 begin
@@ -389,8 +389,8 @@ begin
     then
       Abort;
     Stop.Line := Max(1, Min(Stop.Line, ALines.Count));
-    Stop.Char := Max(1, Min(Stop.Char, Length(ALines.GetItem(Stop.Line - 1)) + 1));
-    Start.Char := Max(1, Min(Start.Char, Length(ALines.GetItem(Start.Line - 1)) + 1));
+    Stop.Char := Max(1, Min(Stop.Char, Length(ALines.ItemsNative[Stop.Line - 1]) + 1));
+    Start.Char := Max(1, Min(Start.Char, Length(ALines.ItemsNative[Start.Line - 1]) + 1));
     if (Start.Line = Stop.Line) and (Start.Char >= Stop.Char) then
       Abort;
     // initialization
@@ -402,7 +402,7 @@ begin
     fFirstAttribute := True;
     for i := Start.Line to Stop.Line do
     begin
-      Line := ALines.GetItem(i - 1);
+      Line := ALines.ItemsNative[i - 1];
       // order is important, since Start.Y might be equal to Stop.Y
       if i = Stop.Line then
         Delete(Line, Stop.Char, MaxInt);

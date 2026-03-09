@@ -37,7 +37,6 @@ interface
 uses
   Winapi.Windows,
   Winapi.Messages,
-  System.ImageList,
   System.Win.Registry,
   Vcl.Graphics,
   Vcl.Controls,
@@ -275,7 +274,8 @@ uses
   System.Types,
   System.UITypes,
   SynEditKeyConst,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynFunc;
 
 { TSynEditOptionsDialog }
 

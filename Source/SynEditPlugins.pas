@@ -40,6 +40,7 @@ uses
   SynEdit,
   SynEditTypes,
   SynEditKeyCmds,
+  SynFunc,
   SynUnicode,
   Classes;
 
@@ -47,9 +48,9 @@ type
   TAbstractSynPlugin = class(TComponent)
   private
     procedure SetEditor(const Value: TCustomSynEdit);
-    function GetEditors(aIndex: NativeInt): TCustomSynEdit;
+    function GetEditors(aIndex: TSynNativeInt): TCustomSynEdit;
     function GetEditor: TCustomSynEdit;
-    function GetEditorCount: NativeInt;
+    function GetEditorCount: TSynNativeInt;
   protected
     fEditors: TList;
     procedure Notification(aComponent: TComponent;
@@ -60,8 +61,8 @@ type
     function RemoveEditor(aEditor: TCustomSynEdit): NativeInt;
   public
     destructor Destroy; override;
-    property Editors[aIndex: NativeInt]: TCustomSynEdit read GetEditors;
-    property EditorCount: NativeInt read GetEditorCount;
+    property Editors[aIndex: TSynNativeInt]: TCustomSynEdit read GetEditors;
+    property EditorCount: TSynNativeInt read GetEditorCount;
   published
     property Editor: TCustomSynEdit read GetEditor write SetEditor;
   end;
@@ -243,7 +244,7 @@ begin
   end;
 end;
 
-function TAbstractSynPlugin.GetEditors(aIndex: NativeInt): TCustomSynEdit;
+function TAbstractSynPlugin.GetEditors(aIndex: TSynNativeInt): TCustomSynEdit;
 begin
   Result := TCustomSynEdit(fEditors[aIndex]);
 end;
@@ -256,7 +257,7 @@ begin
     Result := nil;
 end;
 
-function TAbstractSynPlugin.GetEditorCount: NativeInt;
+function TAbstractSynPlugin.GetEditorCount: TSynNativeInt;
 begin
   if fEditors <> nil then
     Result := fEditors.Count
@@ -413,7 +414,7 @@ end;
 
 procedure TAbstractSynSingleHookPlugin.SetShortCut(const Value: TShortCut);
 var
-  cEditor: NativeInt;
+  cEditor: TSynNativeInt;
 begin
   if fShortCut <> Value then
   begin

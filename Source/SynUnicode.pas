@@ -105,6 +105,7 @@ implementation
 
 uses
   SynEditTextBuffer,
+  SynFunc,
   Math,
   SysConst,
   RTLConsts;
@@ -150,7 +151,7 @@ end;
 function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: Int64): Boolean;
 var
   Buffer: TBytes;
-  BufferSize: NativeInt;
+  BufferSize: TSynNativeInt;
   BomLen: Integer;
   Encoding: TEncoding;
 begin
@@ -158,7 +159,7 @@ begin
   // to signal an invalid result
 
   // start analysis at actual Stream.Position
-  BufferSize := NativeInt(Min(BytesToCheck, Stream.Size - Stream.Position));
+  BufferSize := TSynNativeInt(Min(BytesToCheck, Stream.Size - Stream.Position));
 
   // if no special characteristics are found it is not UTF-8
   Result := False;
@@ -303,7 +304,7 @@ function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding;
 
   function TBytesEqual(A, B: TBytes; const Len: Int64): Boolean;
   var
-    I: Int64;
+    I: {$IF COMPILERVERSION < 29}Integer{$ELSE}Int64{$IFEND};
   begin
     Result := True;
     for I := 0 to Len - 1 do
@@ -333,7 +334,7 @@ begin
   if Size >= Length(Preamble) then
   begin
     Setlength(Buffer, Length(Preamble));
-    Stream.Read(Buffer, 0, Length(Preamble));
+    Stream.Read(Buffer, 0, ToSynNativeInt(Length(Preamble)));
     Stream.Seek(-Length(Preamble), soCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin
@@ -346,7 +347,7 @@ begin
   if Size >= Length(Preamble) then
   begin
     Setlength(Buffer, Length(Preamble));
-    Stream.Read(Buffer, 0, Length(Preamble));
+    Stream.Read(Buffer, 0, ToSynNativeInt(Length(Preamble)));
     Stream.Seek(-Length(Preamble), soCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin

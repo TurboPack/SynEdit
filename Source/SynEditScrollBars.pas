@@ -85,10 +85,10 @@ type
   TSynScrollBarState = record
     Kind: TScrollBarKind;
     Active: Boolean;
-    nMin: NativeInt;
-    nMax: NativeInt;
-    nPage: NativeInt;   // Note: Struct define is UINT
-    nPos: NativeInt;
+    nMin: TSynNativeInt;
+    nMax: TSynNativeInt;
+    nPage: TSynNativeInt;   // Note: Struct define is UINT
+    nPos: TSynNativeInt;
     class operator Equal(a, b: TSynScrollBarState): Boolean;
     class operator NotEqual(a, b: TSynScrollBarState): Boolean;
   end;
@@ -97,8 +97,8 @@ type
   private
     FOwner: TCustomSynEdit;
     FIsScrolling: Boolean;
-    FMouseWheelVertAccumulator: NativeInt;
-    FMouseWheelHorzAccumulator: NativeInt;
+    FMouseWheelVertAccumulator: TSynNativeInt;
+    FMouseWheelHorzAccumulator: TSynNativeInt;
     FPrevHorzSBState: TSynScrollBarState;  // Last applied horizontal scrollbar state
     FPrevVertSBState: TSynScrollBarState;  // Last applied vertical scrollbar state
     FNewHorzSBState: TSynScrollBarState;   // New Horizontal ScrollBar state
@@ -198,7 +198,7 @@ var
   ScrollInfo: TScrollInfo;
   AutoVis: Boolean;
   BarKind: UINT;
-  BarWSCode: NativeInt;
+  BarWSCode: TSynNativeInt;
   ScrollbarVisible: Boolean;
   HideEnabled: Boolean;
 begin
@@ -254,7 +254,7 @@ end;
 
 procedure TSynEditScrollBars.UpdateScrollBarsState;
 var
-  MaxScroll: NativeInt;
+  MaxScroll: TSynNativeInt;
 begin
   // Do Horz First
   FNewHorzSBState.Active :=
@@ -270,8 +270,8 @@ begin
     end
     else
     begin
-      MaxScroll := (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
-        FOwner.CharWidth) + 1);
+      MaxScroll := ToSynNativeInt(CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
+        FOwner.CharWidth)) + 1;
       if eoScrollPastEol in FOwner.ScrollOptions then
         MaxScroll := Max(MaxScroll + 1,
           FOwner.LeftChar - 1 + GetHorzPageInChars);  // PastEOL adds 1 to MaxScroll.
@@ -335,7 +335,7 @@ begin
     SB_RIGHT:
       // Simply set LeftChar property to MaxWidth/FCharWidth
       // it would do the range checking and constrain the value if necessary
-      FOwner.LeftChar := CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth);
+      FOwner.LeftChar := ToSynNativeInt(CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth));
       // Scrolls one char left / right
     SB_LINERIGHT: FOwner.LeftChar := FOwner.LeftChar + 1;
     SB_LINELEFT: FOwner.LeftChar := FOwner.LeftChar - 1;
@@ -378,7 +378,7 @@ var
   rc: TRect;
   pt: TPoint;
   ScrollHint: THintWindow;
-  ButtonH: NativeInt;
+  ButtonH: TSynNativeInt;
   ScrollInfo: TScrollInfo;
 begin
   AMsg.Result := 0;
@@ -447,8 +447,8 @@ end;
 procedure TSynEditScrollBars.DoMouseWheel(Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint);
 var
-  WheelClicks: NativeInt;
-  LinesToScroll: NativeInt;
+  WheelClicks: TSynNativeInt;
+  LinesToScroll: TSynNativeInt;
   CharsToScroll: Integer;
 begin
   if [ssCtrl, ssAlt, ssShift, ssHorizontal] * Shift = [ssCtrl] then
@@ -564,7 +564,7 @@ begin
         ScrollInfo := GetBarScrollInfo(Control.Handle, sbHorizontal);
         BtnEnabled := ([eoDisableScrollArrows, eoScrollPastEol] *
           TCustomSynEdit(Control).ScrollOptions <> [eoDisableScrollArrows]) or
-          (ScrollInfo.nPos <= ScrollInfo.nMax - NativeInt(ScrollInfo.nPage));
+          (ScrollInfo.nPos <= ScrollInfo.nMax - ToSynNativeInt(ScrollInfo.nPage));
         if (HorzSliderRect.Height > 0) and BtnEnabled then
           Details := LStyle.GetElementDetails(HorzDownState)
         else
@@ -590,14 +590,14 @@ var
   LVertScrollRect, LVertSliderRect: TRect;
   Editor: TCustomSynEdit;
   Ann: TSynScrollbarAnnItem;
-  I, J, Row, RowCount: NativeInt;
-  Rows: TArray<NativeInt>;
+  I, J, Row, RowCount: TSynNativeInt;
+  Rows: TArray<TSynNativeInt>;
   Colors: TArray<TColor>;
   Color: TColor;
   AnnWidth: Integer;
   SliderBitmap: TBitmap;
   BtnEnabled: Boolean;
-  MaxScroll: NativeInt;
+  MaxScroll: TSynNativeInt;
 begin
   if Handle = 0 then Exit;
   if DC = 0 then Exit;

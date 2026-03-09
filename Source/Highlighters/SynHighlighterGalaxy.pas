@@ -48,6 +48,7 @@ uses
   Windows,
   Graphics,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils, Classes;
 
@@ -93,7 +94,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsKeyword(const AKeyword: string): Boolean; override;
     procedure Next; override;
@@ -118,8 +119,7 @@ implementation
 
 uses
   Registry,
-  SynEditStrConst,
-  SynFunc;
+  SynEditStrConst;
 
 function TSynGalaxySyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
@@ -133,7 +133,7 @@ end;
 
 function TSynGalaxySyn.IsKeyword(const AKeyword: string): Boolean;
 var
-  First, Last, I, Compare: NativeInt;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -143,7 +143,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := CompareStr(fKeywords.GetItem(i), Token);
+    Compare := CompareStr(fKeywords.ItemsNative[i], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -347,7 +347,7 @@ begin
   end;
 end;
 
-function TSynGalaxySyn.GetTokenKind: NativeInt;
+function TSynGalaxySyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -364,13 +364,13 @@ end;
 
 procedure TSynGalaxySyn.SetKeyWords(const Value: TStrings);
 var
-  i: NativeInt;
+  i: TSynNativeInt;
 begin
   if Value <> nil then
     begin
       Value.BeginUpdate;
       for i := 0 to Value.Count - 1 do
-        Value.SetItem(i, SysUtils.AnsiUpperCase(Value.GetItem(i)));
+        Value.ItemsNative[i] := SysUtils.AnsiUpperCase(Value.ItemsNative[i]);
       Value.EndUpdate;
     end;
   fKeyWords.Assign(Value);

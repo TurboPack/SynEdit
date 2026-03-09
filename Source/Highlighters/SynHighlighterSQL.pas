@@ -53,7 +53,8 @@ uses
   System.Generics.Collections,
   Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynFunc;
 
 type
   TtkTokenKind = (tkComment, tkDatatype, tkDefaultPackage, tkException,
@@ -97,7 +98,7 @@ type
     fVariableAttri: TSynHighlighterAttributes;
 
     function IdentKind: TtkTokenKind;
-    procedure DoAddKeyword(AKeyword: string; AKind: NativeInt);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     procedure SetDialect(Value: TSQLDialect);
     procedure SetTableNames(const Value: TStrings);
     procedure SetFunctionNames(const Value: TStrings);
@@ -146,11 +147,11 @@ type
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: NativeInt): string; override;
+    function GetKeyWords(TokenKind: TSynNativeInt): string; override;
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: NativeInt; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsKeyword(const AKeyword: string): Boolean; override;
     procedure Next; override;
@@ -207,8 +208,7 @@ uses
   Winapi.Windows,
   System.Character,
   SynEditMiscProcs,
-  SynEditStrConst,
-  SynFunc;
+  SynEditStrConst;
 
 const
 //---"Standard" (ANSI SQL keywords (Version 1, 2 and 3) (www.sql.org)-----------
@@ -1820,7 +1820,7 @@ end;
 
 procedure TSynSQLSyn.VariableProc;
 var
-  I: NativeInt;
+  I: TSynNativeInt;
   FoundDoubleMinus: Boolean;
 begin
   // MS SQL Server uses @@ to indicate system functions/variables
@@ -1931,7 +1931,7 @@ begin
       else
       begin
         // This will work with ansi and unicode letters, including surrogate pairs
-        if (not FLine[Run].IsLowSurrogate) and Char.IsLetter(FLineStr, ToInt32(Run)) then  // Index is 0 based here
+        if (not Char(FLine[Run]).IsLowSurrogate) and Char.IsLetter(FLineStr, ToInt32(Run)) then  // Index is 0 based here
           IdentProc
         else
           UnknownProc;
@@ -1999,7 +1999,7 @@ begin
   end;
 end;
 
-function TSynSQLSyn.GetTokenKind: NativeInt;
+function TSynSQLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -2046,7 +2046,7 @@ begin
   Result := SYNS_LangSQL;
 end;
 
-procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: NativeInt);
+procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 var
   S: string;
 begin
@@ -2106,7 +2106,7 @@ end;
 
 procedure TSynSQLSyn.InitializeKeywordLists;
 var
-  I: NativeInt;
+  I: TSynNativeInt;
 begin
   FKeywords.Clear;
   fToIdent := nil;
@@ -2274,7 +2274,7 @@ begin
   Result := SYNS_FriendlyLangSQL;
 end;
 
-function TSynSQLSyn.GetKeyWords(TokenKind: NativeInt): string;
+function TSynSQLSyn.GetKeyWords(TokenKind: TSynNativeInt): string;
 begin
   Result := '';
 

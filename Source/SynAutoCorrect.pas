@@ -206,6 +206,8 @@ type
 
 implementation
 
+uses
+ SynEditTextBuffer, SynFunc;
 
 { TCustomSynAutoCorrect }
 
@@ -553,7 +555,7 @@ begin
     if Assigned(Editor) and Enabled and (FPrevLine <> -1) then
     begin
       b := False;
-      s := Editor.Lines[Pred(FPrevLine)];
+      s := Editor.Lines.ItemsNative[Pred(FPrevLine)];
       cx := -1;
 
       for i := 0 to Pred(FItems.Count) do
@@ -569,11 +571,11 @@ begin
         if Assigned(FOnAutoCorrect) then
         begin
           Action := aaCorrect;
-          FOnAutoCorrect(Self, Editor.Lines[Pred(FPrevLine)], s, Editor.CaretY,
+          FOnAutoCorrect(Self, Editor.Lines[ToSynNativeInt(Pred(FPrevLine))], s, Editor.CaretY,
             0, Action);
           if Action = aaAbort then Exit;
         end;
-        Editor.Lines[Pred(FPrevLine)] := s;
+        Editor.Lines[ToSynNativeInt(Pred(FPrevLine))] := s;
         
         if Assigned(OnCorrected) then
           OnCorrected(Self);
