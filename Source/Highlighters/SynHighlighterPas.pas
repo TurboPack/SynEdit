@@ -1251,7 +1251,7 @@ function TSynPasSyn.UseUserSettings(VersionIndex: TSynNativeInt): Boolean;
       function ReadDelphi2009OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
       begin
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-               '\Software\CodeGear\BDS\'+settingTag+'\Editor\Highlight',key,False);
+               '\Software\Embarcadero\BDS\'+settingTag+'\Editor\Highlight',key,False);
       end; { ReadDelphi2009OrMore }
 
     begin { ReadDelphiSetting }
@@ -1280,7 +1280,8 @@ function TSynPasSyn.UseUserSettings(VersionIndex: TSynNativeInt): Boolean;
 
   var
     tmpAsmAttri, tmpCommentAttri, tmpIdentAttri, tmpKeyAttri, tmpNumberAttri,
-    tmpSpaceAttri, tmpStringAttri, tmpSymbolAttri: TSynHighlighterAttributes;
+    tmpSpaceAttri, tmpStringAttri, tmpSymbolAttri, tmpDirecAttri,
+    tmpCharAttri, tmpFloatAttri, tmpHexAttri: TSynHighlighterAttributes;
     iVersions: TStringList;
     iVersionTag: string;
   begin { ReadDelphiSettings }
@@ -1304,6 +1305,10 @@ function TSynPasSyn.UseUserSettings(VersionIndex: TSynNativeInt): Boolean;
     tmpSpaceAttri   := TSynHighlighterAttributes.Create('', '');
     tmpStringAttri  := TSynHighlighterAttributes.Create('', '');
     tmpSymbolAttri  := TSynHighlighterAttributes.Create('', '');
+    tmpDirecAttri  := TSynHighlighterAttributes.Create('', '');
+    tmpCharAttri  := TSynHighlighterAttributes.Create('', '');
+    tmpFloatAttri  := TSynHighlighterAttributes.Create('', '');
+    tmpHexAttri  := TSynHighlighterAttributes.Create('', '');
 
     Result := ReadDelphiSetting(iVersionTag, tmpAsmAttri,'Assembler') and
       ReadDelphiSetting(iVersionTag, tmpCommentAttri,'Comment') and
@@ -1312,16 +1317,20 @@ function TSynPasSyn.UseUserSettings(VersionIndex: TSynNativeInt): Boolean;
       ReadDelphiSetting(iVersionTag, tmpNumberAttri,'Number') and
       ReadDelphiSetting(iVersionTag, tmpSpaceAttri,'Whitespace') and
       ReadDelphiSetting(iVersionTag, tmpStringAttri,'String') and
-      ReadDelphiSetting(iVersionTag, tmpSymbolAttri,'Symbol');
+      ReadDelphiSetting(iVersionTag, tmpSymbolAttri,'Symbol') and
+      ReadDelphiSetting(iVersionTag, tmpDirecAttri,'Preprocessor') and
+      ReadDelphiSetting(iVersionTag, tmpCharAttri,'Character') and
+      ReadDelphiSetting(iVersionTag, tmpFloatAttri,'Float') and
+      ReadDelphiSetting(iVersionTag, tmpHexAttri,'Hex');
 
     if Result then
     begin
       fAsmAttri.AssignColorAndStyle(tmpAsmAttri);
-      fCharAttri.AssignColorAndStyle(tmpStringAttri); { Delphi lacks Char attribute }
+      fCharAttri.AssignColorAndStyle(tmpCharAttri);
       fCommentAttri.AssignColorAndStyle(tmpCommentAttri);
-      fDirecAttri.AssignColorAndStyle(tmpCommentAttri); { Delphi lacks Directive attribute }
-      fFloatAttri.AssignColorAndStyle(tmpNumberAttri); { Delphi lacks Float attribute }
-      fHexAttri.AssignColorAndStyle(tmpNumberAttri); { Delphi lacks Hex attribute }
+      fDirecAttri.AssignColorAndStyle(tmpDirecAttri);
+      fFloatAttri.AssignColorAndStyle(tmpFloatAttri);
+      fHexAttri.AssignColorAndStyle(tmpHexAttri);
       fIdentifierAttri.AssignColorAndStyle(tmpIdentAttri);
       fKeyAttri.AssignColorAndStyle(tmpKeyAttri);
       fNumberAttri.AssignColorAndStyle(tmpNumberAttri);
