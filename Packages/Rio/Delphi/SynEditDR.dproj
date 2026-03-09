@@ -185,6 +185,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterM3.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMarkdown.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas"/>

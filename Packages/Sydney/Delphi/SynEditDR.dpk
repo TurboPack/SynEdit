@@ -115,6 +115,7 @@ contains
   SynHighlighterLDraw in '..\..\..\Source\Highlighters\SynHighlighterLDraw.pas',
   SynHighlighterLLVM in '..\..\..\Source\Highlighters\SynHighlighterLLVM.pas',
   SynHighlighterM3 in '..\..\..\Source\Highlighters\SynHighlighterM3.pas',
+  SynHighlighterMarkdown in '..\..\..\Source\Highlighters\SynHighlighterMarkdown.pas',
   SynHighlighterModelica in '..\..\..\Source\Highlighters\SynHighlighterModelica.pas',
   SynHighlighterMsg in '..\..\..\Source\Highlighters\SynHighlighterMsg.pas',
   SynHighlighterMulti in '..\..\..\Source\Highlighters\SynHighlighterMulti.pas',
