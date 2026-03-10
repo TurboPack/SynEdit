@@ -137,6 +137,8 @@ type
       write FListAttri;
     property SpaceAttri: TSynHighlighterAttributes read FSpaceAttri
       write FSpaceAttri;
+    property TextAttri: TSynHighlighterAttributes read FTextAttri
+      write FTextAttri;
   end;
 
 procedure SetEntities(Dict: TDictionary<String, String>);
