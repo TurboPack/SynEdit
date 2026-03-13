@@ -5693,9 +5693,12 @@ begin
       fGutter.ChangeScale(M,D);
       FBookmarkOptions.ChangeScale(M, D);
       fWordWrapGlyph.ChangeScale(M, D);
-      // Adjust Font.PixelsPerInch so that Font.Size is correct
-      // Delphi should be doing that but it doesn't
+{$IF COMPILERVERSION <= 35}
       Font.PixelsPerInch := M;
+      Font.Height := MulDiv(Font.Height, M, D);
+{$ELSE}
+      Font.ChangeScale(M, D, isDpiChange);
+{$IFEND}
     finally
       EndUpdate;
     end;
