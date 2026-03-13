@@ -46,6 +46,7 @@ uses
   Winapi.Windows,
   System.SysUtils,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
 //  JCLUnicode,
   System.Classes,
@@ -173,7 +174,7 @@ type
     procedure DoubleQuoteProc;
     procedure RubyStringProc;
     procedure RubyStringProc2;
-    procedure RubyRangeProc(const AType: Integer);
+    procedure RubyRangeProc(const AType: TSynNativeInt);
     procedure TabKeyProc;
     procedure FileNameProc;
     procedure RestIsCommentProc;
@@ -186,7 +187,7 @@ type
     procedure SetKeyWords3(const Value: TStrings);
     procedure SetResWords(const Value: TStrings);
     procedure SetSingleComments(const Value: TSingleLineComments);
-    function  IsEsc(const ARun: Integer): Boolean;
+    function  IsEsc(const ARun: TSynNativeInt): Boolean;
     procedure SetCaseSensitive(const Value: Boolean);
   public
     class function GetCapabilities: TSynHighlighterCapabilities; override;
@@ -196,21 +197,21 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
-    function GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+    function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
-    function GetKeyWords(TokenKind: Integer): string; override;
+    function GetKeyWords(TokenKind: TSynNativeInt): string; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure ResetRange; override;
     // ScanForFoldRanges is used for CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
     procedure SetRange(Value: Pointer); override;
     function SaveToIniFile(const FileName: string): Boolean;
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; override;
@@ -284,9 +285,9 @@ uses
   Vcl.Graphics;
 
 
-function TSynOmniSyn.IsEsc(const ARun: Integer): Boolean;
+function TSynOmniSyn.IsEsc(const ARun: TSynNativeInt): Boolean;
 var
-  i, j: Integer;
+  i, j: TSynNativeInt;
 begin
   Result := False;
   if not FEscapedStrings then Exit;
@@ -613,10 +614,10 @@ end;
 
 procedure TSynOmniSyn.IdentProc;
 var
-  OldRun: Integer;
+  OldRun: TSynNativeInt;
   tmpToken: string;
   WhiteStart: Boolean;
-  I: Integer;
+  I: TSynNativeInt;
 begin
   OldRun := Run;
   WhiteStart := False;
@@ -768,7 +769,7 @@ end;
 
 procedure TSynOmniSyn.NumberProc;
 var
-  OldRun: Integer;
+  OldRun: TSynNativeInt;
 
   function IsNumberChar: Boolean;
   begin
@@ -910,9 +911,9 @@ begin
     FTokenID := tkSymbol;
 end;
 
-procedure TSynOmniSyn.RubyRangeProc(const AType: Integer);
+procedure TSynOmniSyn.RubyRangeProc(const AType: TSynNativeInt);
 var
-  myLevel: Integer;
+  myLevel: TSynNativeInt;
   IsRegExp: Boolean;
 begin
   myLevel := 0;
@@ -1076,7 +1077,7 @@ end;
 procedure TSynOmniSyn.SlashProc;
 var
   IsComment: Boolean;
-  i: Integer;
+  i: TSynNativeInt;
 begin
   if (csSpecStyle in FSingleComments) then
   begin
@@ -1432,7 +1433,7 @@ begin
   Result := inherited GetCapabilities + [hcStructureHighlight];
 end;
 
-function TSynOmniSyn.GetDefaultAttribute(Index: integer): TSynHighlighterAttributes;
+function TSynOmniSyn.GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
 begin
   case Index of
     SYN_ATTR_COMMENT: Result := FCommentAttri;
@@ -1486,7 +1487,7 @@ begin
   end;
 end;
 
-function TSynOmniSyn.GetTokenKind: integer;
+function TSynOmniSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(FTokenID);
 end;
@@ -1727,7 +1728,7 @@ var
 
 var
   KeyWord: string;
-  Idx: Integer;
+  Idx: TSynNativeInt;
   Str: string;
 begin
   Result := False;
@@ -1748,7 +1749,7 @@ begin
       Idx := FDefaultFilter.IndexOf('|');
       if Idx >= 0 then
       begin
-        Str := FDefaultFilter.Substring(Idx + 1);
+        Str := FDefaultFilter.Substring(ToInt32(Idx + 1));
         Str := StringReplace(Str, ';', ',', [rfReplaceAll]);
         SL.Add('FileType=' + Str);
       end;
@@ -1826,7 +1827,7 @@ begin
 
       SL.Add('KeyWordChars=' + FKeywordChars);
       SL.Add('CodeFolding=' +
-        GetEnumName(TypeInfo(TCodeFoldingType), Integer(FCodeFoldingType)));
+        GetEnumName(TypeInfo(TCodeFoldingType), Ord(FCodeFoldingType)));
 
       SL.Add('[KeyWords]');
       for KeyWord in FKeyWords do
@@ -1865,16 +1866,16 @@ begin
 end;
 
 procedure TSynOmniSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: String;
 
-  function FindBraces(Line: Integer): Boolean;
+  function FindBraces(Line: TSynNativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    function LineHasChar(AChar: Char; StartCol: TSynNativeInt; out Col: TSynNativeInt): Boolean;
     var
-      I: Integer;
+      I: TSynNativeInt;
     begin
       Result := False;
       Col := 0;
@@ -1890,15 +1891,15 @@ var
       end;
     end;
 
-    function Indent: Integer;
+    function Indent: TSynNativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: Integer;
-    CloseIdx: Integer;
-    Idx: Integer;
+    OpenIdx: TSynNativeInt;
+    CloseIdx: TSynNativeInt;
+    Idx: TSynNativeInt;
   begin
     LineHasChar('{', 1, OpenIdx);
     LineHasChar('}', 1, CloseIdx);
@@ -1926,7 +1927,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: Integer): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S : string;
   begin
@@ -1946,7 +1947,7 @@ var
   end;
 
 var
-  Line: Integer;
+  Line: TSynNativeInt;
   RangeState: TRangeState;
 
 begin
@@ -1974,7 +1975,7 @@ begin
       end;
     end;
 
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -2094,7 +2095,7 @@ end;
 function TSynOmniSyn.IsReservedWord(const AKeyword: string; KeyList: TStrings;
   AKWStartWith: Boolean): Boolean;
 var
-  First, Last, I, L, Compare: Integer;
+  First, Last, I, L, Compare: TSynNativeInt;
   Token: string;
   Chr: Char;
 begin
@@ -2105,7 +2106,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Token := KeyList[i];
+    Token := KeyList.ItemsNative[i];
     L := Length(Token);
 
     { token starts with list item and is followed by number }
@@ -2188,7 +2189,7 @@ procedure TSynOmniSyn.FortranCommProc;
 
   function IsFirstChar: Boolean;
   var
-    I: Integer;
+    I: TSynNativeInt;
   begin
     Result := True;
     for I := Run - 1 downto 0 do
@@ -2314,11 +2315,11 @@ end;
 procedure TSynOmniSyn.AsteriskProc;
 var
   IsComm: Boolean;
-  i: Integer;
+  i: TSynNativeInt;
 
   function IsSasComment: Boolean;
   var
-    i: Integer;
+    i: TSynNativeInt;
   begin
     Result := True;
     for i := Run-1 downto 0 do
@@ -2578,7 +2579,7 @@ begin
   until IsLineEnd(Run);
 end;
 
-function TSynOmniSyn.GetKeyWords(TokenKind: Integer): string;
+function TSynOmniSyn.GetKeyWords(TokenKind: TSynNativeInt): string;
 begin
   Result := '';
 end;

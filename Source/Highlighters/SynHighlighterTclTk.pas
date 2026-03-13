@@ -48,6 +48,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -121,7 +122,7 @@ type
     function GetTokenID: TtkTokenKind;
     function IsKeyword(const AKeyword: string): Boolean; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -234,7 +235,7 @@ const
 function TSynTclTkSyn.InternalIsKeyword(const AKeyword: string;
   KeyWordList: TStrings; ACaseSensitive: Boolean = False): Boolean;
 var
-  First, Last, I, Compare: Integer;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -247,7 +248,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := CompareStr(KeyWordList[i], Token);
+    Compare := CompareStr(KeyWordList.ItemsNative[i], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -268,7 +269,7 @@ end;
 
 constructor TSynTclTkSyn.Create(AOwner: TComponent);
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   inherited Create(AOwner);
 
@@ -660,7 +661,7 @@ begin
   end;
 end;
 
-function TSynTclTkSyn.GetTokenKind: Integer;
+function TSynTclTkSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -756,7 +757,7 @@ end;
 function TSynTclTkSyn.IsKeywordListStored: Boolean;
 var
   Keys: TStringList;
-  DefKey: Integer;
+  DefKey: TSynNativeInt;
   Index: Integer;
 begin
   Keys := TStringList.Create;
@@ -856,7 +857,7 @@ end;
 function TSynTclTkSyn.IsSecondKeywordListStored: Boolean;
 var
   Keys: TStringList;
-  DefKey: Integer;
+  DefKey: TSynNativeInt;
   Index: Integer;
 begin
   Keys := TStringList.Create;

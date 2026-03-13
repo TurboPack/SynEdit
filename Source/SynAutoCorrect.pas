@@ -116,7 +116,7 @@ type
 
   TAutoCorrectAction = (aaCorrect, aaAbort);
   TAutoCorrectEvent = procedure(Sender: TObject;
-    const AOriginal, ACorrection: string; Line, Column: Integer;
+    const AOriginal, ACorrection: string; Line, Column: NativeInt;
     var Action: TAutoCorrectAction) of object;
 
   TCustomSynAutoCorrect = class(TComponent)
@@ -134,12 +134,12 @@ type
     FOnCorrected: TNotifyEvent;
 
     { Private variables and methods }
-    FPrevLine: Integer;
+    FPrevLine: NativeInt;
 
-    function CorrectItemStart(EditLine, SearchString: string; StartPos: Integer;
-      MatchCase, WholeWord: Boolean): Integer;
+    function CorrectItemStart(EditLine, SearchString: string; StartPos: NativeInt;
+      MatchCase, WholeWord: Boolean): NativeInt;
     function FindAndCorrect(var EditLine: string; Original, Correction: string;
-      var CurrentX: Integer): Boolean;
+      var CurrentX: NativeInt): Boolean;
     function PreviousToken: string;
 
     { Accessor methods }
@@ -206,6 +206,8 @@ type
 
 implementation
 
+uses
+ SynEditTextBuffer, SynFunc;
 
 { TCustomSynAutoCorrect }
 
@@ -363,7 +365,8 @@ end;
 
 function TCustomSynAutoCorrect.AutoCorrectAll: Boolean;
 var
-  i, cx: Integer;
+  i: Integer;
+  cx: NativeInt;
   s, Original, Correction, CurrText: string;
 begin
   Result := False;
@@ -384,9 +387,10 @@ begin
 end;
 
 function TCustomSynAutoCorrect.CorrectItemStart(EditLine, SearchString: string;
-  StartPos: Integer; MatchCase, WholeWord: Boolean): Integer;
+  StartPos: NativeInt; MatchCase, WholeWord: Boolean): NativeInt;
 var
-  SearchCount, I: Integer;
+  SearchCount: NativeInt;
+  I: Integer;
   CurBuf, Buf: PWideChar;
   BufLen: Integer;
 
@@ -504,7 +508,8 @@ procedure TCustomSynAutoCorrect.KeyboardHandler(Sender: TObject; AfterProcessing
   Data: Pointer; HandlerData: Pointer);
 var
   b: Boolean;
-  i, cx: Integer;
+  i: Integer;
+  cx: NativeInt;
   s, Original, Correction, CurrText: string;
 begin
   if Enabled and not AfterProcessing and not Handled then
@@ -541,7 +546,8 @@ procedure TCustomSynAutoCorrect.MouseDownHandler(Sender: TObject;
 var
   Action: TAutoCorrectAction;
   b: Boolean;
-  i, cx: Integer;
+  i: Integer;
+  cx: NativeInt;
   s, Original, Correction, CurrText: string;
 begin
   if ascoCorrectOnMouseDown in FOptions then
@@ -549,7 +555,7 @@ begin
     if Assigned(Editor) and Enabled and (FPrevLine <> -1) then
     begin
       b := False;
-      s := Editor.Lines[Pred(FPrevLine)];
+      s := Editor.Lines.ItemsNative[Pred(FPrevLine)];
       cx := -1;
 
       for i := 0 to Pred(FItems.Count) do
@@ -565,11 +571,11 @@ begin
         if Assigned(FOnAutoCorrect) then
         begin
           Action := aaCorrect;
-          FOnAutoCorrect(Self, Editor.Lines[Pred(FPrevLine)], s, Editor.CaretY,
+          FOnAutoCorrect(Self, Editor.Lines[ToSynNativeInt(Pred(FPrevLine))], s, Editor.CaretY,
             0, Action);
           if Action = aaAbort then Exit;
         end;
-        Editor.Lines[Pred(FPrevLine)] := s;
+        Editor.Lines[ToSynNativeInt(Pred(FPrevLine))] := s;
         
         if Assigned(OnCorrected) then
           OnCorrected(Self);
@@ -579,9 +585,9 @@ begin
 end;
 
 function TCustomSynAutoCorrect.FindAndCorrect(var EditLine: string;
-  Original, Correction: string; var CurrentX: Integer): Boolean;
+  Original, Correction: string; var CurrentX: NativeInt): Boolean;
 var
-  StartPos: Integer;
+  StartPos: NativeInt;
   EndPos: Integer;
   FoundText, ReplaceDefText: string;
   p: TBufferCoord;
@@ -689,7 +695,8 @@ end;
 
 function TCustomSynAutoCorrect.PreviousToken: string;
 var
-  i, cx: Integer;
+  i: NativeInt;
+  cx: NativeInt;
 begin
   Result := Editor.LineText;
   cx := Editor.CaretX;

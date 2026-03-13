@@ -66,7 +66,7 @@ type
     procedure actSearchUpdate(Sender: TObject);
     procedure ActionSearchReplaceUpdate(Sender: TObject);
     procedure SynEditorReplaceText(Sender: TObject; const ASearch,
-      AReplace: string; Line, Column: Integer;
+      AReplace: string; Line, Column: NativeInt;
       var Action: TSynReplaceAction);
     procedure FormCreate(Sender: TObject);
     procedure SynEditorMouseDown(Sender: TObject; Button: TMouseButton; Shift:

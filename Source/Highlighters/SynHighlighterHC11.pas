@@ -51,7 +51,8 @@ uses
   System.Generics.Collections,
   Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynFunc;
 
 type
   TtkTokenKind = (tkComment, tkDirective, tkIdentifier, tkKey, tkNull, tkNumber,
@@ -73,7 +74,7 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure SymAsciiCharProc;
     procedure SymbolProc;
@@ -102,7 +103,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -156,7 +157,7 @@ const
     'EQU_,OPT_,PAGE,ORG_,RMB_,END'  // directives
   );
 
-procedure TSynHC11Syn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynHC11Syn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -404,7 +405,7 @@ begin
   end;
 end;
 
-function TSynHC11Syn.GetTokenKind: Integer;
+function TSynHC11Syn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

@@ -94,13 +94,15 @@ unit SynEditPrintHeaderFooter;
 interface
 
 uses
+  System.Classes,
+  System.Types,
   Winapi.Windows,
   Winapi.D2D1,
   Vcl.Graphics,
   SynEditPrintTypes,
   SynEditPrintMargins,
+  SynFunc,
   SynUnicode,
-  System.Classes,
   System.SysUtils;
 
 type
@@ -115,14 +117,14 @@ type
     FAlignment: TAlignment;
         {Used to store the original Index when the item was added - the index
          might change when the list is sorted}
-    FIndex: Integer;
+    FIndex: TSynNativeInt;
     function GetAsString: string;
     procedure SetAsString(const Value: string);
     procedure SetFont(const Value: TFont);
   public
     constructor Create;
     destructor Destroy; override;
-    function GetText(NumPages, PageNum: Integer; Roman: Boolean;
+    function GetText(NumPages, PageNum: NativeInt; Roman: Boolean;
       Title, ATime, ADate: string): string;
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
@@ -146,10 +148,10 @@ type
     FItems: TList;
     FDefaultFont: TFont;
     FDate, FTime: string;
-    FNumPages: Integer;
+    FNumPages: NativeInt;
     FTitle: string;
     FMargins: TSynEditPrintMargins;
-    FFrameHeight: Integer;
+    FFrameHeight: TSynInt64;
     FRomanNumbers: Boolean;
     FLineHeights: TArray<Integer>;
     FLineCount: Integer;
@@ -164,15 +166,15 @@ type
     constructor Create;
     destructor Destroy; override;
     function Add(Text: string; Font: TFont; Alignment: TAlignment;
-      LineNumber: Integer): Integer;
+      LineNumber: Integer): TSynNativeInt;
     procedure Delete(Index: Integer);
     procedure Clear;
-    function Count: Integer;
-    function Get(Index: Integer): THeaderFooterItem;
+    function Count: TSynNativeInt;
+    function Get(Index: TSynNativeInt): THeaderFooterItem;
     procedure SetPixPrInch(Value: Integer);
-    procedure InitPrint(NumPages: Integer; Title: string; Margins:
+    procedure InitPrint(NumPages: NativeInt; Title: string; Margins:
         TSynEditPrintMargins);
-    procedure Print(RT: ID2D1RenderTarget; PageNum: Integer);
+    procedure Print(RT: ID2D1RenderTarget; PageNum: NativeInt);
     procedure Assign(Source: TPersistent); override;
     procedure FixLines;
     property AsString: string read GetAsString write SetAsString;
@@ -206,7 +208,6 @@ type
 implementation
 
 uses
-  System.Types,
   System.UITypes,
   System.Math,
   SynDWrite,
@@ -261,7 +262,7 @@ end;
 
 { This is basically copied from original SynEditPrint.pas. Returns the
   header/footer text with macros expanded }
-function THeaderFooterItem.GetText(NumPages, PageNum: Integer;
+function THeaderFooterItem.GetText(NumPages, PageNum: NativeInt;
   Roman: Boolean; Title, ATime, ADate: string): string;
 var
   Len, Start, Run: Integer;
@@ -474,14 +475,14 @@ var
 begin
   s := Value;
   FText := DecodeString(GetFirstEl(s, '/'));
-  FFont.Charset := StrToIntDef(GetFirstEl(s, '/'), 0);
+  FFont.Charset := TFontCharSet(StrToIntDef(GetFirstEl(s, '/'), 0));
   FFont.Color := StrToIntDef(GetFirstEl(s, '/'), 0);
   FFont.Height := StrToIntDef(GetFirstEl(s, '/'), 0);
   FFont.Name := DecodeString(GetFirstEl(s, '/'));
   FFont.Pitch := TFontPitch(StrToIntDef(GetFirstEl(s, '/'), 0));
   FFont.PixelsPerInch := StrToIntDef(GetFirstEl(s, '/'), 0);
   FFont.Size := StrToIntDef(GetFirstEl(s, '/'), 0);
-  byte(sty) := StrToIntDef(GetFirstEl(s, '/'), 0);
+  byte(sty) := ToByte(StrToIntDef(GetFirstEl(s, '/'), 0));
   FFont.Style := sty;
   FLineNumber := StrToIntDef(GetFirstEl(s, '/'), 0);
   FAlignment := TAlignment(StrToIntDef(GetFirstEl(s, '/'), 0));
@@ -523,7 +524,7 @@ begin
 end;
 
 function THeaderFooter.Add(Text: string; Font: TFont;
-  Alignment: TAlignment; LineNumber: Integer): Integer;
+  Alignment: TAlignment; LineNumber: Integer): TSynNativeInt;
 var
   AItem: THeaderFooterItem;
 begin
@@ -541,7 +542,7 @@ end;
 
 procedure THeaderFooter.Delete(Index: Integer);
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := 0 to FItems.Count - 1 do
   begin
@@ -555,7 +556,7 @@ end;
 
 procedure THeaderFooter.Clear;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := 0 to FItems.Count - 1 do
     THeaderFooterItem(FItems[i]).Free;
@@ -571,7 +572,8 @@ end;
   start with 1 (the user might add header/footer items starting at line 2) }
 procedure THeaderFooter.FixLines;
 var
-  i, CurLine: Integer;
+  i: TSynNativeInt;
+  CurLine: Integer;
 begin
   SetLength(FLineHeights, 0);
   CurLine := 0;
@@ -592,9 +594,10 @@ end;
   and calculates the font baseline where text is to be written }
 procedure THeaderFooter.CalcHeight;
 var
-  I, CurLine: Integer;
+  I: TSynNativeInt;
+  CurLine: TSynNativeInt;
   AItem: THeaderFooterItem;
-  FOrgHeight: Integer;
+  FOrgHeight: TSynInt64;
   TextFormat: TSynTextFormat;
 begin
   FFrameHeight := -1;
@@ -613,7 +616,7 @@ begin
     end;
 
     TextFormat:= TSynTextFormat.Create(AItem.Font);
-    FLineHeights[CurLine - 1] := Max(FLineHeights[CurLine - 1], TextFormat.LineHeight);
+    FLineHeights[CurLine - 1] := ToInt32(Max(FLineHeights[CurLine - 1], TextFormat.LineHeight));
     FFrameHeight := Max(FFrameHeight, FOrgHeight + FLineHeights[CurLine - 1]);
   end;
   FFrameHeight := FFrameHeight + 2 * FMargins.PHFInternalMargin;
@@ -622,14 +625,15 @@ end;
 function CompareItems(Item1, Item2: Pointer): Integer;
 //Used to sort header/footer items
 begin
-  Result := THeaderFooterItem(Item1).LineNumber - THeaderFooterItem(Item2).LineNumber;
+  Result := CompareValue(THeaderFooterItem(Item1).LineNumber, THeaderFooterItem(Item2).LineNumber);
   if Result = 0 then
-    Result := Integer(Item1) - Integer(Item2);
+    Result := CompareValue(NativeInt(Item1), NativeInt(Item2));
 end;
 
 procedure THeaderFooter.SetPixPrInch(Value: Integer);
 var
-  i, TmpSize: Integer;
+  i: TSynNativeInt;
+  TmpSize: Integer;
   AFont: TFont;
 begin
   FPPI := Value;
@@ -642,7 +646,7 @@ begin
   end;
 end;
 
-procedure THeaderFooter.InitPrint(NumPages: Integer; Title: string;
+procedure THeaderFooter.InitPrint(NumPages: NativeInt; Title: string;
   Margins: TSynEditPrintMargins);
 begin
   FDate := DateToStr(Now);
@@ -682,12 +686,14 @@ begin
   end;
 end;
 
-procedure THeaderFooter.Print(RT: ID2D1RenderTarget; PageNum: Integer);
+procedure THeaderFooter.Print(RT: ID2D1RenderTarget; PageNum: NativeInt);
 const
   DWriteTextAlignment: array[TAlignment] of DWRITE_TEXT_ALIGNMENT =
     (DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_TEXT_ALIGNMENT_CENTER);
 var
-  I, Y, CurLine: Integer;
+  I: TSynNativeInt;
+  CurLine: Integer;
+  Y: NativeInt;
   AStr: string;
   AItem: THeaderFooterItem;
   TheAlignment: TAlignment;
@@ -699,10 +705,10 @@ begin
   DrawFrame(RT);
 
   if FType = hftHeader then
-    Y := FMargins.PHeader - FFrameHeight
+    Y := NativeInt(FMargins.PHeader - FFrameHeight)
   else
-    Y := FMargins.PFooter;
-  Y := Y + FMargins.PHFInternalMargin; // Add the specified internal margin
+    Y := NativeInt(FMargins.PFooter);
+  Y := NativeInt(Y + FMargins.PHFInternalMargin); // Add the specified internal margin
 
   CurLine := 1;
   for I := 0 to FItems.Count - 1 do
@@ -719,7 +725,7 @@ begin
     AStr := AItem.GetText(FNumPages, PageNum, FRomanNumbers, FTitle, FTime, FDate);
 
     Layout := TSynTextLayout.Create(TextFormat, PChar(AStr), AStr.Length,
-      FMargins.PRightHFTextIndent - FMargins.PLeftHFTextIndent,
+      NativeUInt(FMargins.PRightHFTextIndent - FMargins.PLeftHFTextIndent),
       FLineHeights[CurLine - 1]);
     Layout.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
     //Find the alignment of the header/footer item - check for MirrorPosition
@@ -733,14 +739,14 @@ begin
     end;
     Layout.SetTextAlignment(DWriteTextAlignment[TheAlignment]);
 
-    Layout.Draw(RT, FMargins.PLeftHFTextIndent, Y, AItem.Font.Color);
+    Layout.Draw(RT, NativeInt(FMargins.PLeftHFTextIndent), Y, AItem.Font.Color);
   end;
 end;
 
 procedure THeaderFooter.Assign(Source: TPersistent);
 var
   Src: THeaderFooter;
-  i: Integer;
+  i: TSynNativeInt;
 begin
   if (Source <> nil) and (Source is THeaderFooter) then begin
     Src := THeaderFooter(Source);
@@ -760,19 +766,19 @@ begin
     inherited Assign(Source);
 end;
 
-function THeaderFooter.Count: Integer;
+function THeaderFooter.Count: TSynNativeInt;
 begin
   Result := FItems.Count;
 end;
 
-function THeaderFooter.Get(Index: Integer): THeaderFooterItem;
+function THeaderFooter.Get(Index: TSynNativeInt): THeaderFooterItem;
 begin
   Result := THeaderFooterItem(FItems[Index]);
 end;
 
 function THeaderFooter.GetAsString: string;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   FixLines;
   Result := '';
@@ -803,7 +809,8 @@ end;
 
 procedure THeaderFooter.LoadFromStream(AStream: TStream);
 var
-  Num, I: Integer;
+  Num: Integer;
+  I: TSynNativeInt;
   aCharset: TFontCharset;
   aColor: TColor;
   aHeight: Integer;
@@ -858,7 +865,8 @@ end;
 
 procedure THeaderFooter.SaveToStream(AStream: TStream);
 var
-  I, Num: Integer;
+  I: TSynNativeInt;
+  Num: TSynNativeInt;
   aCharset: TFontCharset;
   aColor: TColor;
   aHeight: Integer;

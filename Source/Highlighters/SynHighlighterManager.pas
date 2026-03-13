@@ -92,6 +92,7 @@ uses
   CheckLst,
   SynEditHighlighter,
   SynEditStrConst,
+  SynFunc,
   SysUtils;
 
 type

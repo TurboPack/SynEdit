@@ -54,6 +54,7 @@ uses
   Windows, Messages, Controls, Graphics, Registry,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -140,7 +141,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -727,7 +728,7 @@ end;
 
 function TSynXMLSyn.NextTokenIs(Token: string): Boolean;
 var
-  I, Len: Integer;
+  I, Len: TSynNativeInt;
 begin
   Result := True;
   Len := Length(Token);
@@ -791,7 +792,7 @@ begin
   end;
 end;
 
-function TSynXMLSyn.GetTokenKind: Integer;
+function TSynXMLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

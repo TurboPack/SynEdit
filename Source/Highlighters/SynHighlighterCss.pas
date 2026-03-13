@@ -64,7 +64,8 @@ uses
   System.Generics.Collections,
   Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynFunc;
 
 type
   TtkTokenKind = (tkComment, tkAtRule, tkProperty, tkSelector, tkSelectorAttrib,
@@ -95,7 +96,7 @@ type
     fImportantPropertyAttri: TSynHighlighterAttributes;
     fAtRuleAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AtRuleProc;
     procedure SelectorProc;
@@ -140,7 +141,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -514,7 +515,7 @@ begin
     Result := tkUndefProperty;
 end;
 
-procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -1038,7 +1039,7 @@ begin
   end;
 end;
 
-function TSynCssSyn.GetTokenKind: Integer;
+function TSynCssSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

@@ -46,6 +46,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -120,7 +121,7 @@ type
     function IsKeyword(const AKeyword: string): Boolean; override;
     function IsSecondKeyWord(aToken: string): Boolean;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -160,7 +161,7 @@ const
 
 function TSynRubySyn.IsKeyword(const AKeyword: string): Boolean;
 var
-  First, Last, I, Compare: Integer;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -171,7 +172,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := CompareStr(fKeywords[I], Token);
+    Compare := CompareStr(fKeywords.ItemsNative[I], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -186,7 +187,7 @@ end; { IsKeyWord }
 
 function TSynRubySyn.IsSecondKeyWord(aToken: string): Boolean;
 var
-  First, Last, I, Compare: Integer;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -196,7 +197,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := CompareStr(fSecondKeys[i], Token);
+    Compare := CompareStr(fSecondKeys.ItemsNative[i], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -211,7 +212,7 @@ end; { IsSecondKeyWord }
 
 constructor TSynRubySyn.Create(AOwner: TComponent);
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   inherited Create(AOwner);
 
@@ -306,7 +307,7 @@ end;
 procedure TSynRubySyn.LowerProc;
 {$IFDEF SYN_HEREDOC}
 var
-  i, Len, SkipRun: Integer;
+  i, Len, SkipRun: TSynNativeInt;
   IndentedHeredoc: Boolean;
   QuoteChar: WideChar;
 {$ENDIF}
@@ -501,7 +502,7 @@ procedure TSynRubySyn.HeredocProc;
   end;
 
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   if IsLineEnd(Run) and (fTokenPos = Run) then
   begin
@@ -638,7 +639,7 @@ begin
   end;
 end;
 
-function TSynRubySyn.GetTokenKind: Integer;
+function TSynRubySyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

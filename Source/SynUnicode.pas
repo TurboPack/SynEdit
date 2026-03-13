@@ -85,9 +85,9 @@ type
   TSynEncodings = set of TSynEncoding;
 
 function IsAnsiOnly(const WS: string): Boolean;
-function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: Integer = $4000): Boolean; overload;
+function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: Int64 = $4000): Boolean; overload;
 function IsUTF8(const FileName: string; out WithBOM: Boolean; BytesToCheck: Integer = $4000): Boolean; overload;
-function IsUTF8(const Bytes: TBytes; Start: Integer = 0; BytesToCheck: Integer = $4000): Boolean; overload;
+function IsUTF8(const Bytes: TBytes; Start: Int64 = 0; BytesToCheck: Int64 = $4000): Boolean; overload;
 function GetEncoding(const FileName: string; out WithBOM: Boolean): TEncoding; overload;
 function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding; overload;
 
@@ -105,6 +105,7 @@ implementation
 
 uses
   SynEditTextBuffer,
+  SynFunc,
   Math,
   SysConst,
   RTLConsts;
@@ -147,10 +148,10 @@ end;
 
 // checks for a BOM in UTF-8 format or searches the first 4096 bytes for
 // typical UTF-8 octet sequences
-function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: Integer): Boolean;
+function IsUTF8(Stream: TStream; out WithBOM: Boolean; BytesToCheck: Int64): Boolean;
 var
   Buffer: TBytes;
-  BufferSize: Integer;
+  BufferSize: TSynNativeInt;
   BomLen: Integer;
   Encoding: TEncoding;
 begin
@@ -158,7 +159,7 @@ begin
   // to signal an invalid result
 
   // start analysis at actual Stream.Position
-  BufferSize := Min(BytesToCheck, Stream.Size - Stream.Position);
+  BufferSize := TSynNativeInt(Min(BytesToCheck, Stream.Size - Stream.Position));
 
   // if no special characteristics are found it is not UTF-8
   Result := False;
@@ -184,11 +185,13 @@ begin
   end;
 end;
 
-function IsUTF8(const Bytes: TBytes; Start: Integer; BytesToCheck: Integer): Boolean; overload;
+function IsUTF8(const Bytes: TBytes; Start: Int64; BytesToCheck: Int64): Boolean; overload;
 const
   MinimumCountOfUTF8Strings = 1;
 var
-   Len, i, FoundUTF8Strings: Integer;
+   Len: Int64;
+   i: Int64;
+   FoundUTF8Strings: Integer;
 
   // 3 trailing bytes are the maximum in valid UTF-8 streams,
   // so a count of 4 trailing bytes is enough to detect invalid UTF-8 streams
@@ -299,9 +302,9 @@ end;
 
 function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding;
 
-  function TBytesEqual(A, B: TBytes; Len: Integer): Boolean;
+  function TBytesEqual(A, B: TBytes; const Len: Int64): Boolean;
   var
-    I: Integer;
+    I: {$IF COMPILERVERSION < 29}Integer{$ELSE}Int64{$IFEND};
   begin
     Result := True;
     for I := 0 to Len - 1 do
@@ -310,7 +313,7 @@ function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding;
 
 var
   Buffer: TBytes;
-  Size: Integer;
+  Size: Int64;
   Preamble: TBytes;
 begin
   // if Stream is nil, let Delphi raise the exception, by accessing Stream,
@@ -331,7 +334,7 @@ begin
   if Size >= Length(Preamble) then
   begin
     Setlength(Buffer, Length(Preamble));
-    Stream.Read(Buffer, 0, Length(Preamble));
+    Stream.Read(Buffer, 0, ToSynNativeInt(Length(Preamble)));
     Stream.Seek(-Length(Preamble), soCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin
@@ -344,7 +347,7 @@ begin
   if Size >= Length(Preamble) then
   begin
     Setlength(Buffer, Length(Preamble));
-    Stream.Read(Buffer, 0, Length(Preamble));
+    Stream.Read(Buffer, 0, ToSynNativeInt(Length(Preamble)));
     Stream.Seek(-Length(Preamble), soCurrent);
     if TBytesEqual(Preamble, Buffer, Length(Preamble)) then
     begin

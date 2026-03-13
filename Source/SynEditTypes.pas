@@ -47,7 +47,8 @@ uses
   System.Math,
   Vcl.Controls,
   System.SysUtils,
-  System.Classes;
+  System.Classes,
+  SynFunc;
 
 const
   DefaultBrackets = '()[]{}';
@@ -138,8 +139,8 @@ type
 
   TBufferCoord = record
     // Char and Line are 1-based
-    Char: Integer;
-    Line: Integer;
+    Char: TSynNativeInt;
+    Line: TSynNativeInt;
     function ToString(ShortForm: Boolean = True): string;
     class operator Equal(a, b: TBufferCoord): Boolean;
     class operator NotEqual(a, b: TBufferCoord): Boolean;
@@ -155,8 +156,8 @@ type
   end;
 
   TDisplayCoord = record
-    Column: Integer;
-    Row: Integer;
+    Column: TSynNativeInt;
+    Row: TSynNativeInt;
     class operator Equal(a, b: TDisplayCoord): Boolean;
     class operator NotEqual(a, b: TDisplayCoord): Boolean;
     class operator LessThan(a, b: TDisplayCoord): Boolean;
@@ -172,7 +173,7 @@ type
     Start: TBufferCoord;
     Stop: TBufferCoord;
     CaretAtEOL: Boolean;  // used by wordwrap
-    LastPosX: Integer;    // in pixels. Used in vertical movements
+    LastPosX: TSynNativeInt;    // in pixels. Used in vertical movements
     procedure Normalize;
     function Normalized: TSynSelection;
     function IsEmpty: Boolean;
@@ -180,7 +181,7 @@ type
     function Intersects(const Other: TSynSelection): Boolean;
     function Contains(const BC: TBufferCoord): Boolean;
     constructor Create(const ACaret, AStart, AStop: TBufferCoord; ACaretAtEOL:
-        Boolean = False; ALastPosX: Integer = 0);
+        Boolean = False; ALastPosX: TSynNativeInt = 0);
     class operator Equal(a, b: TSynSelection): Boolean;
     class operator NotEqual(a, b: TSynSelection): Boolean;
     class function Invalid: TSynSelection; static;
@@ -189,26 +190,17 @@ type
 
   TSynSelectionArray = TArray<TSynSelection>;
 
-  (*  Helper methods for TControl - for backwward compatibility *)
-  {$IF CompilerVersion <= 32}
-  TControlHelper = class helper for TControl
-  public
-    function CurrentPPI: Integer;
-    function FCurrentPPI: Integer;
-  end;
-  {$ENDIF}
-
-function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
-function BufferCoord(AChar, ALine: Integer): TBufferCoord;
+function DisplayCoord(AColumn, ARow: TSynNativeInt): TDisplayCoord;
+function BufferCoord(AChar, ALine: TSynNativeInt): TBufferCoord;
 
 type
 { *************************** For Carets **********************************}
 
 TCaretShape = record
-  Width: Integer;
-  Height: Integer;
+  Width: TSynNativeInt;
+  Height: TSynNativeInt;
   Offset: TPoint;
-  constructor Create(AWidth, AHeight: Integer; AOffset: TPoint);
+  constructor Create(AWidth, AHeight: TSynNativeInt; AOffset: TPoint);
 end;
 
 
@@ -232,18 +224,18 @@ end;
     // conversion methods
     function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
-    function GetRowLength(aRow: Integer): Integer;
-    function RowCount: Integer;
-    function RowToLine(aRow: Integer): Integer;
-    function LineToRow(aLine: Integer): Integer;
+    function GetRowLength(aRow: TSynNativeInt): TSynNativeInt;
+    function RowCount: TSynNativeInt;
+    function RowToLine(aRow: TSynNativeInt): TSynNativeInt;
+    function LineToRow(aLine: TSynNativeInt): TSynNativeInt;
     // plugin notifications
-    function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
-    function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
-    function LinePut(aIndex: Integer; const OldLine: string): Integer;
+    function LinesInserted(aIndex: TSynNativeInt; aCount: TSynNativeInt): TSynNativeInt;
+    function LinesDeleted(aIndex: TSynNativeInt; aCount: TSynNativeInt): TSynNativeInt;
+    function LinePut(aIndex: TSynNativeInt; const OldLine: string): TSynNativeInt;
     // font or size change
     procedure DisplayChanged;
     procedure Reset;
-    property RowLength[RowIndex: Integer]: Integer read GetRowLength;
+    property RowLength[RowIndex: TSynNativeInt]: TSynNativeInt read GetRowLength;
   end;
 
 { ************************* For Undo Redo ********************************}
@@ -266,7 +258,7 @@ end;
     ChangeStartPos: TBufferCoord;
     ChangeEndPos: TBufferCoord;
     ChangeStr: string;
-    ChangeNumber: Integer;
+    ChangeNumber: TSynNativeInt;
     ChangeReason: TSynChangeReason;
     // the following undo item cannot be grouped with this one  when undoing
     // don't group the previous one with this one when redoing
@@ -276,14 +268,14 @@ end;
   { Handles undo/redo and manages Modified status }
   ISynEditUndo =  interface
     function GetModified: Boolean;
-    function GetMaxUndoActions: Integer;
+    function GetMaxUndoActions: TSynNativeInt;
     function GetCanUndo: Boolean;
     function GetCanRedo: Boolean;
     function GetFullUndoImposible: Boolean;
     function GetOnModifiedChanged: TNotifyEvent;
     function GetInsideUndoRedo: Boolean;
     procedure SetModified(const Value: Boolean);
-    procedure SetMaxUndoActions(const Value: Integer);
+    procedure SetMaxUndoActions(const Value: TSynNativeInt);
     procedure SetGroupUndo(const Value: Boolean);
     procedure SetOnModifiedChanged(const Event: TNotifyEvent);
     procedure SetCommandProcessed(const Command: TSynEditorCommand);
@@ -318,7 +310,7 @@ end;
     { MaxUndoActions zero or less indicates unlimited undo. It grows as needed.
       If it is a positive number, when the limit is reached 1/4 of the
       Undo history is discarded to make space for following undo actions }
-    property MaxUndoActions: Integer read GetMaxUndoActions
+    property MaxUndoActions: TSynNativeInt read GetMaxUndoActions
       write SetMaxUndoActions;
     property FullUndoImpossible: Boolean read GetFullUndoImposible;
     property OnModifiedChanged: TNotifyEvent read GetOnModifiedChanged
@@ -334,13 +326,13 @@ Uses
   SynEditStrConst,
   SynUnicode;
 
-function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
+function DisplayCoord(AColumn, ARow: TSynNativeInt): TDisplayCoord;
 begin
   Result.Column := AColumn;
   Result.Row := ARow;
 end;
 
-function BufferCoord(AChar, ALine: Integer): TBufferCoord;
+function BufferCoord(AChar, ALine: TSynNativeInt): TBufferCoord;
 begin
   Result.Char := AChar;
   Result.Line := ALine;
@@ -486,22 +478,6 @@ begin
   Result := (a.Row <> b.Row) or (a.Column <> b.Column);
 end;
 
-{$IF CompilerVersion <= 32}
-{ TControlHelper }
-
-function TControlHelper.CurrentPPI: Integer;
-begin
-  Result := Screen.PixelsPerInch;
-end;
-
-function TControlHelper.FCurrentPPI: Integer;
-begin
-  Result := Screen.PixelsPerInch;
-end;
-{$ENDIF}
-
-
-
 { TSynSelection }
 
 function TSynSelection.Contains(const BC: TBufferCoord): Boolean;
@@ -511,7 +487,7 @@ begin
 end;
 
 constructor TSynSelection.Create(const ACaret, AStart, AStop: TBufferCoord;
-    ACaretAtEOL: Boolean = False; ALastPosX: Integer = 0);
+    ACaretAtEOL: Boolean = False; ALastPosX: TSynNativeInt = 0);
 begin
   Caret := ACaret;
   Start := AStart;
@@ -563,10 +539,12 @@ begin
 end;
 
 procedure TSynSelection.Normalize;
+var
+  Temp: TBufferCoord;
 begin
   if Start > Stop then
   begin
-    var Temp := Start;
+    Temp := Start;
     Start := Stop;
     Stop := Temp;
     Caret := Stop;
@@ -586,7 +564,7 @@ end;
 
 { TCaretShape }
 
-constructor TCaretShape.Create(AWidth, AHeight: Integer; AOffset: TPoint);
+constructor TCaretShape.Create(AWidth, AHeight: TSynNativeInt; AOffset: TPoint);
 begin
   Width := AWidth;
   Height := AHeight;

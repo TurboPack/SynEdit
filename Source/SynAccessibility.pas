@@ -373,6 +373,7 @@ uses
   System.Variants,
   Vcl.Controls,
   SynEditTypes,
+  SynFunc,
   SynUnicode;
 
 resourcestring
@@ -557,11 +558,11 @@ begin
 
   TThread.Synchronize(nil, procedure
   begin
-    if (FSynEdit = nil) or (FSynEdit.Lines.Count = 0) then
+    if (FSynEdit = nil) or (FSynEdit.Lines.CountNative = 0) then
       BC := BufferCoord(1, 1)
     else
-      BC := BufferCoord(FSynEdit.Lines[FSynEdit.Lines.Count -1].Length + 1,
-              FSynEdit.Lines.Count);
+      BC := BufferCoord(FSynEdit.Lines[FSynEdit.Lines.CountNative -1].Length + 1,
+              FSynEdit.Lines.CountNative);
   end);
 
   RetVal := TSynTextRangeProvider.Create(FSynEdit, BufferCoord(1, 1), BC);
@@ -663,7 +664,7 @@ begin
 
   TThread.Synchronize(nil, procedure
   begin
-    if (FSynEdit = nil) or (FSynEdit.Lines.Count = 0) then
+    if (FSynEdit = nil) or (FSynEdit.Lines.CountNative = 0) then
       BC := BufferCoord(1, 1)
     else
     begin
@@ -763,7 +764,7 @@ begin
   begin
     if FSynEdit = nil then Exit;
 
-    if FSynEdit.Lines.Count = 0 then
+    if FSynEdit.Lines.CountNative = 0 then
     begin
       BB := BufferCoord(1, 1);
       BE := BB;
@@ -775,7 +776,7 @@ begin
     else if AUnit = TextUnit_Paragraph then
       AUnit := TextUnit_Page;
 
-    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.CountNative);
     BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
 
     case AUnit of
@@ -816,13 +817,13 @@ begin
         begin
           BB.Char := 1;
           BE.Line := BB.Line + FSynEdit.LinesInWindow;
-          BE.Line := EnsureRange(BE.Line, 1, FSynEdit.Lines.Count);
+          BE.Line := EnsureRange(BE.Line, 1, FSynEdit.Lines.CountNative);
           BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
         end;
       TextUnit_Document:
         begin
           BB := BufferCoord(1, 1);
-          BE.Line := FSynEdit.Lines.Count;
+          BE.Line := FSynEdit.Lines.CountNative;
           BE.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
         end;
     end;
@@ -844,7 +845,7 @@ begin
   RetVal := nil;
   if FSynEdit = nil then
     Exit(E_UNEXPECTED)
-  else if FSynEdit.Lines.Count = 0 then
+  else if FSynEdit.Lines.CountNative = 0 then
     Exit(S_OK);
 
   Result := S_OK;
@@ -855,8 +856,8 @@ begin
   var
     SearchS: string;
     Line: string;
-    I: Integer;
-    Index, StartIndex: Integer;
+    I: TSynNativeInt;
+    Index, StartIndex: TSynNativeInt;
   begin
     if FSynEdit = nil then
     begin
@@ -864,9 +865,9 @@ begin
       Exit;
     end;
 
-    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.CountNative);
     BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line -1].Length + 1);
-    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
+    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.CountNative);
     BE.Char := EnsureRange(BE.Char, 1, FSynEdit.Lines[BB.Line -1].Length + 1);
 
     if IgnoreCase then
@@ -886,7 +887,7 @@ begin
         else
           StartIndex := 1;
 
-        Index := Line.LastIndexOf(SearchS, Line.Length - 1, Line.Length - StartIndex + 1);
+        Index := Line.LastIndexOf(SearchS, Line.Length - 1, Line.Length - ToInt32(StartIndex) + 1);
         // Index is zero-based
         if Index >= 0 then
         begin
@@ -908,7 +909,7 @@ begin
         else
           StartIndex := 1;
 
-        Index := Pos(SearchS, Line, StartIndex);
+        Index := PosNative(SearchS, Line, StartIndex);
         if Index > 0 then
         begin
           TextRange := TSynTextRangeProvider.Create(FSynEdit,
@@ -933,7 +934,8 @@ end;
 
 function TSynTextRangeProvider.GetBoundingRectangles(out RetVal: PSafeArray): HResult;
 var
-  I, Index: Integer;
+  I: TSynNativeInt;
+  Index: Integer;
   R: TRect;
   BC: TBufferCoord;
   P: TPoint;
@@ -945,14 +947,14 @@ begin
 
   Result := S_OK;
 
-  if FSynEdit.Lines.Count = 0 then
+  if FSynEdit.Lines.CountNative = 0 then
     R := Rect(FSynEdit.GutterWidth + FSynEdit.TextMargin, 0, FSynEdit.CharWidth,
       FSynEdit.LineHeight)
   else
   begin
-    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.CountNative);
     BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
-    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
+    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.CountNative);
     BE.Char := EnsureRange(BE.Char, 1, FSynEdit.Lines[BE.Line - 1].Length + 1);
 
     if (BB.Char = FSynEdit.Lines[BB.Line - 1].Length + 1) and
@@ -987,13 +989,13 @@ begin
 
         R.Right := Max(R.Right, P.X);
         if I = BE.Line then
-          R.Bottom := P.Y + FSynEdit.LineHeight;
+          R.SetBottom(P.Y + FSynEdit.LineHeight);
       end;
     end;
   end;
 
   R.Left := Max(R.Left, FSynEdit.GutterWidth + FSynEdit.TextMargin);
-  R.Right := Max(R.Right, R.Left + FSynEdit.CharWidth);
+  R.SetRight(Max(R.Right, R.Left + FSynEdit.CharWidth));
   R := TRect.Intersect(R, FSynEdit.ClientRect);
 
   R := FSynEdit.ClientToScreen(R);
@@ -1037,7 +1039,7 @@ begin
 
   TThread.Synchronize(nil, procedure
   var
-    I: Integer;
+    I: TSynNativeInt;
   begin
     if FSynEdit = nil then
     begin
@@ -1045,12 +1047,12 @@ begin
       Exit;
     end;
 
-    if FSynEdit.Lines.Count = 0 then
+    if FSynEdit.Lines.CountNative = 0 then
       Exit;
 
-    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+    BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.CountNative);
     BB.Char := EnsureRange(BB.Char, 1, FSynEdit.Lines[BB.Line - 1].Length + 1);
-    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.Count);
+    BE.Line := EnsureRange(BE.Line, BB.Line, FSynEdit.Lines.CountNative);
     BE.Char := EnsureRange(BE.Char, 1, FSynEdit.Lines[BE.Line - 1].Length + 1);
 
     if BB = BE then
@@ -1082,7 +1084,7 @@ end;
 function TSynTextRangeProvider.Move(AUnit: TextUnit; count: SYSINT; out RetVal:
     SYSINT): HResult;
 var
-  NMoves: SYSINT;
+  NMoves: NativeInt;
 begin
   if FSynEdit = nil then
     Exit(E_UNEXPECTED);
@@ -1092,7 +1094,7 @@ begin
 
   if Count = 0 then
     Exit
-  else if FSynEdit.Lines.Count = 0 then
+  else if FSynEdit.Lines.CountNative = 0 then
   begin
     BB := BufferCoord(1, 1);
     BE := BB;
@@ -1131,7 +1133,7 @@ begin
             end
             else if (Count > 0) and (BB.Char = FSynEdit.Lines[BB.Line - 1].Length + 1) then
             begin
-              if BB.Line = FSynEdit.Lines.Count then
+              if BB.Line = FSynEdit.Lines.CountNative then
                 Break
               else
               begin
@@ -1190,7 +1192,7 @@ begin
         begin
           BE := BB;
           Inc(BB.Line, Count);
-          BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+          BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.CountNative);
           BB.Char := 1;
           NMoves := BB.Line - BE.Line;
           BE := BB;
@@ -1201,21 +1203,21 @@ begin
         begin
           BE := BB;
           Inc(BB.Line, Count * FSynEdit.LinesInWindow);
-          BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.Count);
+          BB.Line := EnsureRange(BB.Line, 1, FSynEdit.Lines.CountNative);
           BB.Char := 1;
           NMoves := Ceil((BB.Line - BE.Line) / FSynEdit.LinesInWindow);
           if IsDegenerate then
             BE := BB
           else
           begin
-            BE.Line := Min(BB.Line + FSynEdit.LinesInWindow - 1, FSynEdit.Lines.Count);
+            BE.Line := Min(BB.Line + FSynEdit.LinesInWindow - 1, FSynEdit.Lines.CountNative);
             BE.Char := FSynEdit.Lines[BE.Line - 1].Length + 1;
           end;
         end;
       TextUnit_Document:
         if Count > 0 then
         begin
-          BB.Line := FSynEdit.Lines.Count;
+          BB.Line := FSynEdit.Lines.CountNative;
           BB.Char := FSynEdit.Lines[BB.Line - 1].Length + 1;
           BE := BB;
           NMoves := 1;
@@ -1229,7 +1231,7 @@ begin
         end
     end;
   end);
-  RetVal := NMoves;
+  RetVal := ToInt32(NMoves);
 end;
 
 function TSynTextRangeProvider.MoveEndpointByRange(

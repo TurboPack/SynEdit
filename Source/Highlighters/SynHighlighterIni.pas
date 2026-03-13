@@ -49,6 +49,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynEditCodeFolding,
+  SynFunc,
   SynUnicode;
 
 type
@@ -107,13 +108,13 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
     procedure AdjustFoldRanges(FoldRanges: TSynFoldRanges;
       LinesToScan: TStrings); override;
   published
@@ -181,14 +182,14 @@ begin
 end;
 
 procedure TSynIniSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
-  Line: Integer;
+  Line: TSynNativeInt;
   SLine: string;
 begin
   for Line := FromLine to ToLine do
   begin
-    SLine := LinesToScan[Line];
+    SLine := LinesToScan.ItemsNative[Line];
 
     if (SLine <> '') and
       (GetHighlighterAttriAtRowCol(LinesToScan, Line, 1) = SectionAttri)
@@ -596,7 +597,7 @@ end;
 procedure TSynIniSyn.AdjustFoldRanges(FoldRanges: TSynFoldRanges;
   LinesToScan: TStrings);
 var
-  I, J: Integer;
+  I, J: TSynNativeInt;
 begin
   // Last section
   if FoldRanges.Count > 0 then
@@ -606,7 +607,7 @@ begin
   for I := 0 to FoldRanges.Count - 1 do
     with FoldRanges.Ranges.List[I] do
       for J := ToLine downto FromLine + 1 do
-        if LinesToScan[J - 1] = '' then
+        if LinesToScan.ItemsNative[J - 1] = '' then
           Dec(ToLine)
         else
           Break;
@@ -639,7 +640,7 @@ end;
 
 procedure TSynIniSyn.StringEndProc(EndChar: Char);
 var
-  fBackslashCount: Integer;
+  fBackslashCount: TSynNativeInt;
 begin
   fTokenID := tkTrippleQuotedString;
 
@@ -686,7 +687,7 @@ end;
 // ""
 procedure TSynIniSyn.StringProc;
 var
-  fBackslashCount: Integer;
+  fBackslashCount: TSynNativeInt;
 begin
   if Run = 0 then
   begin
@@ -762,7 +763,7 @@ end;
 // ''
 procedure TSynIniSyn.StringProc1;
 var
-  fBackslashCount: Integer;
+  fBackslashCount: TSynNativeInt;
 begin
   if Run = 0 then
   begin
@@ -911,7 +912,7 @@ begin
   end;
 end;
 
-function TSynIniSyn.GetTokenKind: Integer;
+function TSynIniSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

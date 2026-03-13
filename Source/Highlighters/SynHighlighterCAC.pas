@@ -47,6 +47,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -104,7 +105,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -544,7 +545,7 @@ begin
   end;
 end;
 
-function TSynCACSyn.GetTokenKind: Integer;
+function TSynCACSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

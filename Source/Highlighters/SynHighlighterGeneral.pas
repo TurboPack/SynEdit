@@ -48,6 +48,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -127,10 +128,10 @@ type
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
-    function GetCharBeforeToken(offset: Integer = -1): WideChar;
-    function GetCharAfterToken(offset: Integer = 1): WideChar;
+    function GetCharBeforeToken(offset: TSynNativeInt = -1): WideChar;
+    function GetCharAfterToken(offset: TSynNativeInt = 1): WideChar;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsKeyword(const AKeyword: string): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;
@@ -175,7 +176,7 @@ uses
 
 function TSynGeneralSyn.IsIdentChar(AChar: WideChar): Boolean;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   Result := False;
   for i := 1 to Length(fIdentChars) do
@@ -188,7 +189,7 @@ end;
 
 function TSynGeneralSyn.IsKeyword(const AKeyword: string): Boolean;
 var
-  First, Last, I, Compare: Integer;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -198,7 +199,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := CompareText(fKeywords[i], Token);
+    Compare := CompareText(fKeywords.ItemsNative[i], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -636,7 +637,7 @@ end;
 
 // GetCharBeforeToken
 //
-function TSynGeneralSyn.GetCharBeforeToken(offset: Integer = -1): WideChar;
+function TSynGeneralSyn.GetCharBeforeToken(offset: TSynNativeInt = -1): WideChar;
 begin
    if fTokenPos+offset>=0 then
       Result:=FLine[fTokenPos+offset]
@@ -645,7 +646,7 @@ end;
 
 // GetCharAfterToken
 //
-function TSynGeneralSyn.GetCharAfterToken(offset: Integer = 1): WideChar;
+function TSynGeneralSyn.GetCharAfterToken(offset: TSynNativeInt = 1): WideChar;
 begin
    Result:=FLine[fTokenPos+offset];
 end;
@@ -669,7 +670,7 @@ begin
     fOnGetTokenAttribute(Result);
 end;
 
-function TSynGeneralSyn.GetTokenKind: Integer;
+function TSynGeneralSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -686,13 +687,13 @@ end;
 
 procedure TSynGeneralSyn.SetKeyWords(const Value: TStrings);
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   if Value <> nil then
     begin 
       Value.BeginUpdate;
       for i := 0 to Value.Count - 1 do
-        Value[i] := SysUtils.AnsiUpperCase(Value[i]);
+        Value.ItemsNative[i] := SysUtils.AnsiUpperCase(Value.ItemsNative[i]);
       Value.EndUpdate;
     end;
 

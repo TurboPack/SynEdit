@@ -46,6 +46,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -55,7 +56,7 @@ type
     tkNumber, tkSpace, tkString, tkSymbol, tkVariable, tkUnknown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynKixSyn = class(TSynCustomHighlighter)
@@ -71,8 +72,8 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     fVariableAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -102,7 +103,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -160,7 +161,7 @@ const
     'writeprofilestring', 'writevalue', 'wuserid', 'ydayno', 'year' 
   );
 
-  KeyIndices: array[0..970] of Integer = (
+  KeyIndices: array[0..970] of TSynNativeInt = (
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 95, -1, -1, -1, -1, -1, -1, 10, 
     -1, 29, 25, -1, -1, -1, 151, -1, -1, 22, -1, -1, -1, -1, -1, -1, -1, 64, -1, 
     -1, 76, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 97, 135, -1, -1, -1, 89, 
@@ -244,7 +245,7 @@ end;
 
 procedure TSynKixSyn.InitIdent;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -255,12 +256,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynKixSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynKixSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynKixSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynKixSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -486,7 +487,7 @@ begin
   end;
 end;
 
-function TSynKixSyn.GetTokenKind: Integer;
+function TSynKixSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

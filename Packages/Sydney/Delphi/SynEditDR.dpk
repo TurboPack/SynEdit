@@ -9,7 +9,7 @@ package SynEditDR;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS OFF}
+{$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION ON}
@@ -77,6 +77,7 @@ contains
   SynExportHTML in '..\..\..\Source\SynExportHTML.pas',
   SynExportRTF in '..\..\..\Source\SynExportRTF.pas',
   SynExportTeX in '..\..\..\Source\SynExportTeX.pas',
+  SynFunc in '..\..\..\Source\SynFunc.pas',
   SynHighlighterADSP21xx in '..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas',
   SynHighlighterAsm in '..\..\..\Source\Highlighters\SynHighlighterAsm.pas',
   SynHighlighterAWK in '..\..\..\Source\Highlighters\SynHighlighterAWK.pas',
@@ -89,6 +90,7 @@ contains
   SynHighlighterCpp in '..\..\..\Source\Highlighters\SynHighlighterCpp.pas',
   SynHighlighterCS in '..\..\..\Source\Highlighters\SynHighlighterCS.pas',
   SynHighlighterCss in '..\..\..\Source\Highlighters\SynHighlighterCss.pas',
+  SynHighlighterDelphi in '..\..\..\Source\Highlighters\SynHighlighterDelphi.pas',
   SynHighlighterDfm in '..\..\..\Source\Highlighters\SynHighlighterDfm.pas',
   SynHighlighterDml in '..\..\..\Source\Highlighters\SynHighlighterDml.pas',
   SynHighlighterDOT in '..\..\..\Source\Highlighters\SynHighlighterDOT.pas',
@@ -113,6 +115,7 @@ contains
   SynHighlighterLDraw in '..\..\..\Source\Highlighters\SynHighlighterLDraw.pas',
   SynHighlighterLLVM in '..\..\..\Source\Highlighters\SynHighlighterLLVM.pas',
   SynHighlighterM3 in '..\..\..\Source\Highlighters\SynHighlighterM3.pas',
+  SynHighlighterMarkdown in '..\..\..\Source\Highlighters\SynHighlighterMarkdown.pas',
   SynHighlighterModelica in '..\..\..\Source\Highlighters\SynHighlighterModelica.pas',
   SynHighlighterMsg in '..\..\..\Source\Highlighters\SynHighlighterMsg.pas',
   SynHighlighterMulti in '..\..\..\Source\Highlighters\SynHighlighterMulti.pas',

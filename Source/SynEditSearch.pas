@@ -41,6 +41,8 @@ uses
   SynEditTypes,
   SynEditMiscClasses,
   SynUnicode,
+  SynFunc,
+  System.Generics.Collections,
   Classes;
 
 type
@@ -50,16 +52,16 @@ type
     Origin: PWideChar;
     TheEnd: PWideChar;
     Pat, CasedPat: string;
-    fCount: Integer;
-    fTextLen: Integer;
+    fCount: TSynNativeInt;
+    fTextLen: TSynNativeInt;
     FLineStart: PWideChar;
-    Look_At: Integer;
-    PatLen, PatLenSucc: Integer;
-    Shift: array[WideChar] of Integer;
+    Look_At: TSynNativeInt;
+    PatLen, PatLenSucc: TSynNativeInt;
+    Shift: array[WideChar] of TSynNativeInt;
     fBackwards: Boolean;
     fCaseSensitive: Boolean;
     fWhole: Boolean;
-    fResults: TList;
+    fResults: TList<NativeInt>;
     fShiftInitialized: Boolean;
     FTextToSearch: string;
     function GetFinished: Boolean;
@@ -70,22 +72,22 @@ type
     function TestWholeWord: Boolean;
     procedure SetPattern(const Value: string); override;
     function GetPattern: string; override;
-    function GetLength(Index: Integer): Integer; override;
-    function GetResult(Index: Integer): Integer; override;
-    function GetResultCount: Integer; override;
+    function GetLength(Index: TSynNativeInt): TSynNativeInt; override;
+    function GetResult(Index: TSynNativeInt): TSynNativeInt; override;
+    function GetResultCount: TSynNativeInt; override;
     procedure SetOptions(const Value: TSynSearchOptions); override;
   public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
-    function FindAll(const NewText: string; StartChar: Integer = 1;
-      EndChar: Integer = 0): Integer; override;
+    function FindAll(const NewText: string; StartChar: TSynNativeInt = 1;
+      EndChar: TSynNativeInt = 0): TSynNativeInt; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
-    function FindFirst(const NewText: string; StartChar, EndChar: Integer): Integer;
-    function FindLast(const NewText: string; StartChar, EndChar: Integer): Integer;
-    procedure FixResults(First, Delta: Integer);
-    function Next: Integer;
-    function Prev: Integer;
-    property Count: Integer read fCount write fCount;
+    function FindFirst(const NewText: string; StartChar, EndChar: TSynNativeInt): NativeInt;
+    function FindLast(const NewText: string; StartChar, EndChar: TSynNativeInt): NativeInt;
+    procedure FixResults(First, Delta: TSynNativeInt);
+    function Next: NativeInt;
+    function Prev: NativeInt;
+    property Count: TSynNativeInt read fCount write fCount;
     property Finished: Boolean read GetFinished;
     property Pattern read CasedPat;
     property Backwards: Boolean read fBackwards write fBackwards;
@@ -102,7 +104,7 @@ uses
 constructor TSynEditSearch.Create(aOwner: TComponent);
 begin
   inherited;
-  fResults := TList.Create;
+  fResults := TList<NativeInt>.Create;
 end;
 
 function TSynEditSearch.GetFinished: Boolean;
@@ -110,27 +112,27 @@ begin
   Result := (Run >= TheEnd) or (PatLen >= fTextLen);
 end;
 
-function TSynEditSearch.GetResult(Index: Integer): Integer;
+function TSynEditSearch.GetResult(Index: TSynNativeInt): TSynNativeInt;
 begin
   Result := 0;
   if (Index >= 0) and (Index < fResults.Count) then
-    Result := Integer(fResults[Index]);
+    Result := ToSynNativeInt(fResults[Index]);
 end;
 
-function TSynEditSearch.GetResultCount: Integer;
+function TSynEditSearch.GetResultCount: TSynNativeInt;
 begin
   Result := fResults.Count;
 end;
 
-procedure TSynEditSearch.FixResults(First, Delta: Integer);
+procedure TSynEditSearch.FixResults(First, Delta: TSynNativeInt);
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   if (Delta <> 0) and (fResults.Count > 0) then begin
     I := Pred(fResults.Count);
     while I >= 0 do begin
-      if Integer(fResults[I]) <= First then Break;
-      fResults[I] := pointer(Integer(fResults[I]) - Delta);
+      if fResults[I] <= First then Break;
+      fResults[I] := fResults[I] - Delta;
       Dec(I);
     end;
   end;
@@ -139,7 +141,7 @@ end;
 procedure TSynEditSearch.InitShiftTable;
 var
   C: WideChar;
-  I: Integer;
+  I: TSynNativeInt;
 begin
   PatLenSucc := PatLen + 1;
   Look_At := 1;
@@ -179,9 +181,9 @@ begin
     ((Run >= FLineStart + fTextLen) or IsWordBreakChar(Run[1]));
 end;
 
-function TSynEditSearch.Next: Integer;
+function TSynEditSearch.Next: NativeInt;
 var
-  I: Integer;
+  I: TSynNativeInt;
   J: PWideChar;
 begin
   Result := 0;
@@ -214,12 +216,12 @@ begin
   end;
 end;
 
-function TSynEditSearch.Prev: Integer;
+function TSynEditSearch.Prev: NativeInt;
 // "Naive" backward search
 // Run points to the last char of the pattern in the search string
 // as in Next so that we can reuse TestWholeWord.
 var
-  I: Integer;
+  I: TSynNativeInt;
   PTrial: PChar;
 begin
   Result := 0;
@@ -277,12 +279,12 @@ begin
   end;
 end;
 
-function TSynEditSearch.FindAll(const NewText: string; StartChar: Integer = 1;
-      EndChar: Integer = 0): Integer;
+function TSynEditSearch.FindAll(const NewText: string; StartChar: TSynNativeInt = 1;
+      EndChar: TSynNativeInt = 0): TSynNativeInt;
 // Uses a Boyer-Moore algorithm for forward seach and a "naive" one
 // for backward search
 var
-  Found: Integer;
+  Found: NativeInt;
 begin
   if EndChar = 0 then
     EndChar := NewText.Length + 1;
@@ -311,7 +313,7 @@ begin
     Found := FindLast(NewText, StartChar, EndChar);
     while Found > 0 do
     begin
-      fResults.Insert(0, Pointer(Found));
+      fResults.Insert(0, Found);
       Found := Prev;
     end;
   end
@@ -320,7 +322,7 @@ begin
     Found := FindFirst(NewText, StartChar, EndChar);
     while Found > 0 do
     begin
-      fResults.Add(Pointer(Found));
+      fResults.Add(Found);
       Found := Next;
     end;
   end;
@@ -333,7 +335,7 @@ begin
 end;
 
 function TSynEditSearch.FindFirst(const NewText: string;
-  StartChar, EndChar: Integer): Integer;
+  StartChar, EndChar: TSynNativeInt): NativeInt;
 begin
   if not fShiftInitialized then
     InitShiftTable;
@@ -345,7 +347,7 @@ begin
 end;
 
 function TSynEditSearch.FindLast(const NewText: string;
-  StartChar, EndChar: Integer): Integer;
+  StartChar, EndChar: TSynNativeInt): NativeInt;
 begin
   Origin := FLineStart + StartChar - 1;
   TheEnd := Origin + EndChar - StartChar;
@@ -353,7 +355,7 @@ begin
   Result := Prev;
 end;
 
-function TSynEditSearch.GetLength(Index: Integer): Integer;
+function TSynEditSearch.GetLength(Index: TSynNativeInt): TSynNativeInt;
 begin
   Result := PatLen;
 end;

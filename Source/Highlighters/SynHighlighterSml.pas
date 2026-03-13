@@ -49,6 +49,7 @@ uses
   Registry,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -60,7 +61,7 @@ Type
   TRangeState = (rsUnknown, rsComment, rsMultilineString);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynSMLSyn = class(TSynCustomHighlighter)
@@ -80,8 +81,8 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fSyntaxErrorAttri: TSynHighlighterAttributes;
     function IsValidMLCharacter: Boolean;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -118,7 +119,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -158,7 +159,7 @@ const
     'structure', 'then', 'type', 'val', 'where', 'while', 'with', 'withtype' 
   );
 
-  KeyIndices: array[0..70] of Integer = (
+  KeyIndices: array[0..70] of TSynNativeInt = (
     28, -1, -1, -1, 23, 4, 19, -1, -1, 32, 8, 6, -1, 33, 0, -1, 14, -1, 2, -1, 
     -1, 29, 35, -1, -1, -1, -1, 13, -1, -1, 9, -1, 11, 30, 1, -1, 25, 36, -1, 
     -1, -1, 40, -1, 7, -1, 16, 26, 37, -1, 15, 21, -1, 18, 12, 5, -1, -1, 10, 
@@ -193,7 +194,7 @@ end;
 
 procedure TSynSMLSyn.InitIdent;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -206,7 +207,7 @@ end;
 
 function TSynSMLSyn.IsValidMLCharacter: Boolean;
 
- function IsABNRTChar(Run: Integer): Boolean;
+ function IsABNRTChar(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       'a', 'b', 'n', 'r', 't':
@@ -239,12 +240,12 @@ begin
     end
 end;
 
-function TSynSMLSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynSMLSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynSMLSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynSMLSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -601,7 +602,7 @@ begin
   end;
 end;
 
-function TSynSMLSyn.GetTokenKind: Integer;
+function TSynSMLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

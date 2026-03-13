@@ -53,7 +53,8 @@ uses
   System.Generics.Collections,
   Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynFunc;
 
 type
   TtkTokenKind = (tkComment, tkDatatype, tkDefaultPackage, tkException,
@@ -97,7 +98,7 @@ type
     fVariableAttri: TSynHighlighterAttributes;
 
     function IdentKind: TtkTokenKind;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     procedure SetDialect(Value: TSQLDialect);
     procedure SetTableNames(const Value: TStrings);
     procedure SetFunctionNames(const Value: TStrings);
@@ -146,11 +147,11 @@ type
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): string; override;
+    function GetKeyWords(TokenKind: TSynNativeInt): string; override;
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsKeyword(const AKeyword: string): Boolean; override;
     procedure Next; override;
@@ -1349,7 +1350,7 @@ var
   S: string;
   p: PChar;
 
-  function IsIdentCharFromIndex(Index: Integer): Boolean;
+  function IsIdentCharFromIndex(Index: NativeInt): Boolean;
   begin
     case FLineStr[Index] of
       'a'..'z', 'A'..'Z', '0'..'9', '_':
@@ -1366,7 +1367,7 @@ var
         Result := False;
     end;
     if not Result then
-      Result := Char.IsLetterOrDigit(FLineStr, Index - 1) or
+      Result := Char.IsLetterOrDigit(FLineStr, ToInt32(Index - 1)) or
         CharInSet(FLineStr[Index], AdditionalIdentChars) and
         not IsWordBreakChar(FLineStr[Index]);
   end;
@@ -1819,7 +1820,7 @@ end;
 
 procedure TSynSQLSyn.VariableProc;
 var
-  I: Integer;
+  I: TSynNativeInt;
   FoundDoubleMinus: Boolean;
 begin
   // MS SQL Server uses @@ to indicate system functions/variables
@@ -1930,7 +1931,7 @@ begin
       else
       begin
         // This will work with ansi and unicode letters, including surrogate pairs
-        if (not FLine[Run].IsLowSurrogate) and Char.IsLetter(FLineStr, Run) then  // Index is 0 based here
+        if (not Char(FLine[Run]).IsLowSurrogate) and Char.IsLetter(FLineStr, ToInt32(Run)) then  // Index is 0 based here
           IdentProc
         else
           UnknownProc;
@@ -1998,7 +1999,7 @@ begin
   end;
 end;
 
-function TSynSQLSyn.GetTokenKind: Integer;
+function TSynSQLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -2045,7 +2046,7 @@ begin
   Result := SYNS_LangSQL;
 end;
 
-procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 var
   S: string;
 begin
@@ -2071,7 +2072,7 @@ var
 begin
   for i := 0 to fTableNames.Count - 1 do
   begin
-    S := AnsiLowerCase(fTableNames[i]);
+    S := AnsiLowerCase(fTableNames[I]);
     if not FKeywords.ContainsKey(S) then
       FKeywords.Add(S, tkTableName);
   end;
@@ -2082,9 +2083,9 @@ var
   i: Integer;
   S: string;
 begin
-  for i := 0 to (fFunctionNames.Count - 1) do
+  for i := 0 to fFunctionNames.Count - 1 do
   begin
-    S := AnsiLowerCase(fFunctionNames[i]);
+    S := AnsiLowerCase(fFunctionNames[I]);
     if not FKeywords.ContainsKey(S) then
       FKeywords.Add(S, tkFunction);
   end;
@@ -2095,9 +2096,9 @@ var
   i: Integer;
   S: string;
 begin
-  for i := 0 to (fProcNames.Count - 1) do
+  for i := 0 to fProcNames.Count - 1 do
   begin
-    S := AnsiLowerCase(fProcNames[i]);
+    S := AnsiLowerCase(fProcNames[I]);
     if not FKeywords.ContainsKey(S) then
       FKeywords.Add(S, tkProcName);
   end;
@@ -2105,7 +2106,7 @@ end;
 
 procedure TSynSQLSyn.InitializeKeywordLists;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   FKeywords.Clear;
   fToIdent := nil;
@@ -2273,7 +2274,7 @@ begin
   Result := SYNS_FriendlyLangSQL;
 end;
 
-function TSynSQLSyn.GetKeyWords(TokenKind: Integer): string;
+function TSynSQLSyn.GetKeyWords(TokenKind: TSynNativeInt): string;
 begin
   Result := '';
 

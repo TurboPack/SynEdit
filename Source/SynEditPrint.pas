@@ -98,16 +98,17 @@ uses
   SynEditPrintMargins,
   SynEditMiscProcs,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SynDWrite;
 
 type
   TPageLine = class
   public
-    FirstLine: Integer;
-    FirstRow: Integer;
-    LastLine: Integer;
-    LastRow: Integer;
+    FirstLine: NativeInt;
+    FirstRow: NativeInt;
+    LastLine: NativeInt;
+    LastRow: NativeInt;
   end;
 
   //The actual print controller object
@@ -127,7 +128,7 @@ type
     FWrap: Boolean;
     FOnPrintLine: TPrintLineEvent;
     FOnPrintStatus: TPrintStatusEvent;
-    FLineHeight: Integer;
+    FLineHeight: NativeInt;
     FHighlight: Boolean;
     FColors: Boolean;
     FHighlighter: TSynCustomHighlighter;
@@ -139,8 +140,8 @@ type
     FDefaultBG: TColor;
     FPageOffset: Integer;
     FRangesOK: Boolean;
-    FMaxRowCount: Integer;
-    FMaxWidth: Integer;
+    FMaxRowCount: Int64;
+    FMaxWidth: Int64;
     FPagesCounted: Boolean;
     FLineNumbersInMargin: Boolean;
     FTabWidth: Integer;
@@ -153,34 +154,34 @@ type
     procedure SetLines(const Value: TStrings);
     procedure SetFont(const Value: TFont);
     procedure SetMaxLeftChar(const Value: Integer);
-    procedure PrintPage(RT: ID2D1RenderTarget; Num: Integer; const ClipR: TRect);
+    procedure PrintPage(RT: ID2D1RenderTarget; Num: TSynNativeInt; const ClipR: TRect);
     procedure WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos:
-        Integer; FontColor: TColor);
+        NativeInt; FontColor: TColor);
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure SetPixelsPrInch;
     procedure InitRanges;
-    function GetPageCount: Integer;
+    function GetPageCount: TSynNativeInt;
     procedure SetSynEdit(const Value: TCustomSynEdit);
     procedure SetFooter(const Value: TFooter);
     procedure SetHeader(const Value: THeader);
     procedure SetMargins(const Value: TSynEditPrintMargins);
-    function GetTextLayout(const Line: Integer): TSynTextLayout;
+    function GetTextLayout(const Line: NativeInt): TSynTextLayout;
   protected
     procedure DefineProperties(Filer: TFiler); override;
     property MaxLeftChar: Integer read FMaxLeftChar write SetMaxLeftChar;
-    procedure DoPrintStatus(Status: TSynPrintStatus; PageNumber: Integer;
+    procedure DoPrintStatus(Status: TSynPrintStatus; PageNumber: NativeInt;
       var Abort: Boolean); virtual;
-    procedure DoPrintLine(LineNumber, PageNumber: Integer); virtual;
+    procedure DoPrintLine(LineNumber, PageNumber: NativeInt); virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure InitPrint;
     procedure PrintToCanvas(ACanvas: TCanvas; const RenderRect, ClipRect: TRect;
-      PageNo: Integer);
+      PageNo: TSynNativeInt);
     procedure Print;
-    procedure PrintRange(StartPage, EndPage: Integer);
+    procedure PrintRange(StartPage, EndPage: TSynNativeInt);
     property PrinterInfo: TSynEditPrinterInfo read FPrinterInfo;
-    property PageCount: Integer read GetPageCount;
+    property PageCount: TSynNativeInt read GetPageCount;
     property SynEdit: TCustomSynEdit write SetSynEdit;
 
     procedure LoadFromStream(AStream: TStream);
@@ -348,14 +349,14 @@ end;
 // Calculates the total number of pages
 procedure TSynEditPrint.CalcPages;
 var
-  I: Integer;
+  I: NativeInt;
   PageLine: TPageLine;
   TextLayout: TSynTextLayout;
   LineMetrics: TDwriteLineMetrics;
   ActualLineCount: Cardinal;
   LayoutRowCount: Integer;
-  RowCount: Integer;
-  iStartLine, iEndLine: Integer;
+  RowCount: Int64;
+  iStartLine, iEndLine: NativeInt;
 begin
   InitRanges;
   FPages.Clear;
@@ -379,7 +380,7 @@ begin
   RowCount := 0;
   for I := iStartLine to iEndLine do
   begin
-    if FLines[I] = '' then
+    if FLines.ItemsNative[I] = '' then
     begin
       Inc(RowCount);
       LayoutRowCount := 1;
@@ -396,14 +397,14 @@ begin
     while RowCount >= FMaxRowCount do
     begin
       PageLine.LastLine := I;
-      PageLine.LastRow := LayoutRowCount - (RowCount - FMaxRowCount);
+      PageLine.LastRow := NativeInt(LayoutRowCount - (RowCount - FMaxRowCount));
 
       if (RowCount = FMaxRowCount) and (I = iEndLine) then Break;
 
       PageLine := TPageLine.Create;
       PageLine.FirstLine := IfThen(RowCount = FMaxRowCount, I + 1, I);
       PageLine.FirstRow := IfThen(RowCount = FMaxRowCount, 1,
-         LayoutRowCount - RowCount + FMaxRowCount + 1);
+         NativeInt(LayoutRowCount - RowCount + FMaxRowCount + 1));
       FPages.Add(PageLine);
       RowCount := RowCount - FMaxRowCount;
     end;
@@ -420,7 +421,7 @@ end;
 { Writes the line number. FMargins. PLeft is the position of the left margin
   (which is automatically incremented by the length of the linenumber text, if
   the linenumbers should not be placed in the margin) }
-procedure TSynEditPrint.WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos: Integer;
+procedure TSynEditPrint.WriteLineNumber(RT: ID2D1RenderTarget; const LineNumber, YPos: NativeInt;
   FontColor: TColor);
 var
   AStr: string;
@@ -428,25 +429,27 @@ var
 begin
   AStr := IntToStr(LineNumber + FLineOffset) + ': ';
   Layout := TSynTextLayout.Create(FSynTextFormat, PChar(AStr), AStr.Length);
-  Layout.Draw(RT, FMargins.PLeft -
-    Round(Layout.TextMetrics.widthIncludingTrailingWhitespace), YPos, FontColor);
+  Layout.Draw(RT, ToInt32(FMargins.PLeft) -
+    RoundNative(Layout.TextMetrics.widthIncludingTrailingWhitespace), YPos, FontColor);
 end;
 
-procedure TSynEditPrint.PrintPage(RT: ID2D1RenderTarget; Num: Integer; const ClipR: TRect);
+procedure TSynEditPrint.PrintPage(RT: ID2D1RenderTarget; Num: TSynNativeInt; const ClipR: TRect);
 // Prints a page to a RenderTarget
 // ** The RenderTarget assumes a PPI of 96 **
 // The ClipR(ect) serves the purpose of reducing painting when previewing
 var
-  I: Integer;
+  I: NativeInt;
   LineText: string;
-  YPos: Integer;
-  iSelStart, iSelLen: Integer;
+  YPos: Int64;
+  iSelStart: NativeInt;
+  iSelLen: NativeInt;
   TextLayout: TSynTextLayout;
   LineMetrics: TDwriteLineMetrics;
   ActualLineCount: Cardinal;
-  LayoutRowCount: Integer;
+  LayoutRowCount: NativeInt;
   Token: string;
-  TokenPos, TokenEnd: Integer;
+  TokenPos: NativeInt;
+  TokenEnd: NativeInt;
   Attr: TSynHighlighterAttributes;
   BkgColor, FontColor, AColor: TColor;
   HitMetrics: TDwriteHitTestMetrics;
@@ -477,12 +480,12 @@ begin
 
       // TODO multicaret
       YPos := FMargins.PTop;
-      for i := FPages[Num - 1].FirstLine to  FPages[Num - 1].LastLine do
+      for i := FPages[Num - 1].FirstLine to FPages[Num - 1].LastLine do
       begin
         if FLineNumbers and (YPos + FLineHeight >= ClipR.Top) then
-          WriteLineNumber(RT, i + 1, YPos, FontColor);
+          WriteLineNumber(RT, i + 1, NativeInt(YPos), FontColor);
 
-        LineText := FLines[I];
+        LineText := FLines.ItemsNative[I];
 
         if LineText = '' then
           LayoutRowCount := 1
@@ -500,7 +503,7 @@ begin
             else
               iSelStart := 1;
             if i = fBlockEnd.Line -1 then
-              iSelLen := fBlockEnd.Char  - iSelStart
+              iSelLen := fBlockEnd.Char - iSelStart
             else
               iSelLen := MaxInt;
           end;
@@ -509,8 +512,8 @@ begin
 
           if FSynOK then
           begin
-            FHighlighter.SetRange(FLines.Objects[i]);
-            FHighlighter.SetLine(LineText, i + 1);
+            FHighlighter.SetRange(FLines.ObjectsNative[i]);
+            FHighlighter.SetLine(LineText, ToSynNativeInt(i + 1));
 
             while not FHighLighter.GetEol do
             begin
@@ -535,8 +538,8 @@ begin
                   AColor := Attr.Background;
                   if (AColor <> clNone) and (AColor <> BkgColor) then
                   begin
-                    TextLayout.IDW.HitTestTextPosition(TokenPos - 1, False, X1, Y1, HitMetrics);
-                    TextLayout.IDW.HitTestTextPosition(TokenEnd - 2, True, X2, Y2, HitMetrics);
+                    TextLayout.IDW.HitTestTextPosition(ToUInt32(TokenPos - 1), False, X1, Y1, HitMetrics);
+                    TextLayout.IDW.HitTestTextPosition(ToUInt32(TokenEnd - 2), True, X2, Y2, HitMetrics);
 
                     // Word wrap complications - line continues from previous page
                     if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1) then
@@ -569,19 +572,19 @@ begin
           begin
             if (I = FPages[Num - 1].FirstLine) and (FPages[Num - 1].FirstRow > 1) then
             begin
-              TextLayout.DrawClipped(RT, FMargins.PLeft,
-                YPos - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
+              TextLayout.DrawClipped(RT, NativeInt(FMargins.PLeft),
+                ToInt32(YPos) - Pred(FPages[Num - 1].FirstRow) * FLineHeight,
                 Rect(FMargins.PLeft, YPos, FMargins.PRight,
                 FMargins.PTop + FMaxRowCount * FLineHeight), FFont.Color);
               LayoutRowCount := LayoutRowCount - FPages[Num - 1].FirstRow + 1;
             end else if (I = FPages[Num - 1].LastLine) and
               (FPages[Num - 1].LastRow < LayoutRowCount)
             then
-              TextLayout.DrawClipped(RT, FMargins.PLeft, YPos,
+              TextLayout.DrawClipped(RT, ToInt32(FMargins.PLeft), ToInt32(YPos),
                 Rect(FMargins.PLeft, YPos, FMargins.PRight,
                 YPos + FPages[Num - 1].LastRow * FLineHeight), FFont.Color)
             else
-              TextLayout.Draw(RT, FMargins.PLeft, YPos, FFont.Color);
+              TextLayout.Draw(RT, ToInt32(FMargins.PLeft), ToInt32(YPos), FFont.Color);
           end;
         end;
         DoPrintLine(I + 1, Num);
@@ -597,7 +600,7 @@ begin
 end;
 
 procedure TSynEditPrint.PrintToCanvas(ACanvas: TCanvas; const RenderRect,
-    ClipRect: TRect; PageNo: Integer);
+    ClipRect: TRect; PageNo: TSynNativeInt);
 // Used by preview component
 var
   RT:  ID2D1DCRenderTarget;
@@ -646,11 +649,12 @@ begin
   PrintRange(1, -1);
 end;
 
-procedure TSynEditPrint.PrintRange(StartPage, EndPage: Integer);
+procedure TSynEditPrint.PrintRange(StartPage, EndPage: TSynNativeInt);
 // Prints the pages in the specified range.  It uses as guide the sample app
 // https://github.com/microsoft/Windows-classic-samples/tree/main/Samples/D2DPrintingFromDesktopApps
 var
-  Page, Copy: Integer;
+  Page: TSynNativeInt;
+  Copy: Integer;
   Title, PrinterName: string;
   PrintDocumentPackageTarget: IPrintDocumentPackageTarget;
   Device: ID2D1Device;
@@ -739,7 +743,7 @@ begin
   end;
 end;
 
-procedure TSynEditPrint.DoPrintLine(LineNumber, PageNumber: Integer);
+procedure TSynEditPrint.DoPrintLine(LineNumber, PageNumber: NativeInt);
 //Fires the OnPrintLine event
 begin
   if Assigned(FOnPrintLine) then
@@ -747,7 +751,7 @@ begin
 end;
 
 procedure TSynEditPrint.DoPrintStatus(Status: TSynPrintStatus;
-  PageNumber: Integer; var Abort: Boolean);
+  PageNumber: NativeInt; var Abort: Boolean);
 //Fires the OnPrintStatus event
 begin
   Abort := False;
@@ -756,7 +760,7 @@ begin
   // if Abort then printing will stop at the earliest opportunity
 end;
 
-function TSynEditPrint.GetPageCount: Integer;
+function TSynEditPrint.GetPageCount: TSynNativeInt;
 {Returns total page count. If pages hasn't been counted before,
  then InitPrint is called which calculates pages}
 begin
@@ -768,14 +772,14 @@ begin
   end;
 end;
 
-function TSynEditPrint.GetTextLayout(const Line: Integer): TSynTextLayout;
+function TSynEditPrint.GetTextLayout(const Line: NativeInt): TSynTextLayout;
 // TODO multicaret
 var
-  iSelStart, iSelLen: Integer;
+  iSelStart, iSelLen: NativeInt;
   S: string;
 begin
   if not fSelectedOnly then
-    S := Lines[Line]
+    S := Lines.ItemsNative[Line]
   else
   begin
     if Line = fBlockBegin.Line -1 then
@@ -786,9 +790,9 @@ begin
       iSelLen := fBlockEnd.Char  - iSelStart
     else
       iSelLen := MaxInt;
-    S := Copy(Lines[Line], iSelStart, iSelLen);
+    S := Copy(Lines.ItemsNative[Line], iSelStart, iSelLen);
   end;
-  Result.Create(FSynTextFormat, PChar(S), S.Length, FMaxWidth, MaxInt, Wrap, 1);
+  Result.Create(FSynTextFormat, PChar(S), NativeInt(S.Length), NativeUInt(FMaxWidth), MaxInt, Wrap, 1);
 end;
 
 procedure TSynEditPrint.SetSynEdit(const Value: TCustomSynEdit);

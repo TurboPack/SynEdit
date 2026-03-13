@@ -52,6 +52,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -320,11 +321,11 @@ type
     rsUnKnown, rsValue, rsQuoteValue, rsDoubleQuoteValue);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
   TSynHTMLSyn = class(TSynCustomHighlighter)
   private
-    fAndCode: Integer;
+    fAndCode: TSynNativeInt;
     fRange: TRangeState;
 //    fIdentFuncTable: array[0..1542] of TIdentFuncTableFunc;
     fIdentFuncTable: array[0..2178] of TIdentFuncTableFunc;
@@ -338,8 +339,8 @@ type
     fTextAttri: TSynHighlighterAttributes;
     fUndefKeyAttri: TSynHighlighterAttributes;
     fValueAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -370,7 +371,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -428,7 +429,7 @@ const
 //    'tr', 'tt', 'u', 'ul', 'var', 'wbr', 'xmp'
 //  );
 //
-//  KeyIndices: array[0..1542] of Integer = (
+//  KeyIndices: array[0..1542] of TSynNativeInt = (
 //    -1, -1, 182, -1, -1, -1, 97, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 //    -1, -1, -1, 33, -1, -1, -1, -1, 40, -1, -1, -1, -1, -1, 137, 189, -1, -1,
 //    -1, -1, -1, -1, -1, -1, 191, -1, -1, -1, -1, -1, -1, -1, 52, 170, -1, -1,
@@ -549,7 +550,7 @@ const
     'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr', 'xmp'
   );
 
-  KeyIndices: array[0..2178] of Integer = (
+  KeyIndices: array[0..2178] of TSynNativeInt = (
     -1, -1, -1, 3, -1, -1, 231, 250, -1, -1, -1, 212, -1, -1, -1, -1, -1, -1,
     -1, -1, 175, -1, -1, -1, -1, -1, 128, -1, -1, -1, -1, 155, -1, -1, -1, -1,
     -1, -1, -1, 83, -1, 201, 122, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -707,7 +708,7 @@ end;
 
 procedure TSynHTMLSyn.InitIdent;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[I] = -1 then
@@ -718,12 +719,12 @@ begin
       fIdentFuncTable[I] := KeyWordFunc;
 end;
 
-function TSynHTMLSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynHTMLSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkUndefKey;
 end;
 
-function TSynHTMLSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynHTMLSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -902,7 +903,7 @@ procedure TSynHTMLSyn.TextProc;
   end;
 
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   if CharInSet(fLine[Run], [#0..#31, '<']) then
   begin
@@ -1163,7 +1164,7 @@ begin
   end;
 end;
 
-function TSynHTMLSyn.GetTokenKind: Integer;
+function TSynHTMLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

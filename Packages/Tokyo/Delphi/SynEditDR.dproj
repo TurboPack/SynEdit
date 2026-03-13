@@ -8,18 +8,13 @@
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectGuid>{AC917C2B-5870-48AD-981D-668AD3E4A533}</ProjectGuid>
         <ProjectVersion>18.7</ProjectVersion>
-        <TargetedPlatforms>3</TargetedPlatforms>
+        <TargetedPlatforms>1</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
         <Base_Win32>true</Base_Win32>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
-        <Base_Win64>true</Base_Win64>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
@@ -30,12 +25,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
         <Cfg_1_Win32>true</Cfg_1_Win32>
-        <CfgParent>Cfg_1</CfgParent>
-        <Cfg_1>true</Cfg_1>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win64)'!=''">
-        <Cfg_1_Win64>true</Cfg_1_Win64>
         <CfgParent>Cfg_1</CfgParent>
         <Cfg_1>true</Cfg_1>
         <Base>true</Base>
@@ -51,12 +40,6 @@
         <Cfg_2>true</Cfg_2>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
-        <Cfg_2_Win64>true</Cfg_2_Win64>
-        <CfgParent>Cfg_2</CfgParent>
-        <Cfg_2>true</Cfg_2>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <SanitizedProjectName>SynEditDR</SanitizedProjectName>
         <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
@@ -68,6 +51,7 @@
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
+        <DCC_UnitSearchPath>..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_WriteableConstants>true</DCC_WriteableConstants>
         <DllSuffix>250</DllSuffix>
         <GenDll>true</GenDll>
@@ -83,12 +67,6 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
-        <Icon_MainIcon>SynEditDR.ico</Icon_MainIcon>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_DebugInformation>0</DCC_DebugInformation>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
@@ -96,10 +74,9 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+        <DCC_DebugInformation>2</DCC_DebugInformation>
+        <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
+        <DCC_MapFile>3</DCC_MapFile>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -109,10 +86,6 @@
         <DCC_Optimize>false</DCC_Optimize>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -174,6 +147,7 @@
         <DCCReference Include="..\..\..\Source\SynExportHTML.pas"/>
         <DCCReference Include="..\..\..\Source\SynExportRTF.pas"/>
         <DCCReference Include="..\..\..\Source\SynExportTeX.pas"/>
+        <DCCReference Include="..\..\..\Source\SynFunc.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas"/>
@@ -186,6 +160,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCpp.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCS.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterCss.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDelphi.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDfm.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDml.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDOT.pas"/>
@@ -210,6 +185,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterM3.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMarkdown.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterModelica.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMsg.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMulti.pas"/>
@@ -293,92 +269,9 @@
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
             </Delphi.Personality>
-            <Deployment Version="3">
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\19.0\Bpl\SynEditDR.bpl" Configuration="Release" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>SynEditDR.bpl</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\SynEditDR260.bpl" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>SynEditDR.bpl</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployClass Name="AdditionalDebugSymbols">
-                    <Platform Name="Win32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>0</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="DebugSymbols">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="DependencyFramework">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Required="true" Name="DependencyPackage">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.bpl</Extensions>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="File">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Required="true" Name="ProjectOutput">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="ProjectUWPManifest">
-                    <Platform Name="Win32">
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win64">
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="UWP_DelphiLogo150">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win64">
-                        <RemoteDir>Assets</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="UWP_DelphiLogo44">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                    <Platform Name="Win64">
-                        <RemoteDir>Assets</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-            </Deployment>
             <ModelSupport>False</ModelSupport>
             <Platforms>
                 <Platform value="Win32">True</Platform>
-                <Platform value="Win64">True</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

@@ -36,9 +36,11 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
+  Winapi.Windows,
   SynEditTypes,
   SynEditTextBuffer,
-  SynEdit;
+  SynEdit,
+  SynFunc;
 
 const
   MaxIndex = MaxInt div 16;
@@ -53,29 +55,29 @@ type
 
   TSynWordWrapPlugin = class(TInterfacedObject, ISynEditBufferPlugin)
   private
-    FLineOffsets: TList<Integer>;
-    FRowLengths: TList<Integer>;
-    FLineCount: Integer;
+    FLineOffsets: TList<TSynNativeInt>;
+    FRowLengths: TList<NativeInt>;
+    FLineCount: TSynNativeInt;
     FEditor: TCustomSynEdit;
-    FMaxRowWidth: Integer;
+    FMaxRowWidth: TSynNativeInt;
 
-    procedure WrapLine(const Index: Integer; out RowLengths: TArray<Integer>);
+    procedure WrapLine(const Index: TSynNativeInt; out RowLengths: TArray<NativeInt>);
     procedure WrapLines;
-    function ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean = False): Integer;
+    function ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean = False): TSynNativeInt;
     procedure TrimArrays;
 
     { ISynEditBufferPlugin Interface}
     // conversion methods
     function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
-    function GetRowLength(aRow: Integer): Integer;
-    function RowCount: Integer;
-    function RowToLine(aRow: Integer): Integer;
-    function LineToRow(aLine: Integer): Integer;
+    function GetRowLength(aRow: TSynNativeInt): TSynNativeInt;
+    function RowCount: TSynNativeInt;
+    function RowToLine(aRow: TSynNativeInt): TSynNativeInt;
+    function LineToRow(aLine: TSynNativeInt): TSynNativeInt;
     // plugin notifications
-    function LinesInserted(aIndex: Integer; aCount: Integer): Integer;
-    function LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
-    function LinePut(aIndex: Integer; const OldLine: string): Integer;
+    function LinesInserted(aIndex: TSynNativeInt; aCount: TSynNativeInt): TSynNativeInt;
+    function LinesDeleted(aIndex: TSynNativeInt; aCount: TSynNativeInt): TSynNativeInt;
+    function LinePut(aIndex: TSynNativeInt; const OldLine: string): TSynNativeInt;
     // font or size change
     procedure DisplayChanged;
     procedure Reset;
@@ -87,7 +89,6 @@ type
 implementation
 
 uses
-  Winapi.Windows,
   Winapi.D2D1,
   System.RTLConsts,
   System.Math,
@@ -102,9 +103,9 @@ uses
 function TSynWordWrapPlugin.BufferToDisplayPos(
   const aPos: TBufferCoord): TDisplayCoord;
 var
-  vStartRow: Integer; // first row of the line
-  cRow: Integer;
-  vRowLen: Integer;
+  vStartRow: TSynNativeInt; // first row of the line
+  cRow: TSynNativeInt;
+  vRowLen: TSynNativeInt;
 begin
   Assert(aPos.Char > 0);
   Assert(aPos.Line > 0);
@@ -125,13 +126,13 @@ begin
     Inc(vRowLen, FRowLengths[cRow]);
     if aPos.Char <= vRowLen then
     begin
-      Result.Column := aPos.Char - vRowLen + FRowLengths[cRow];
+      Result.Column := aPos.Char - vRowLen + ToSynNativeInt(FRowLengths[cRow]);
       Result.Row := cRow + 1;
       Exit;
     end;
   end;
   // beyond EOL
-  Result.Column := aPos.Char - vRowLen + FRowLengths[FLineOffsets[aPos.Line - 1] - 1];
+  Result.Column := aPos.Char - vRowLen + ToSynNativeInt(FRowLengths[FLineOffsets[aPos.Line - 1] - 1]);
   Result.Row := FLineOffsets[aPos.Line - 1];
 end;
 
@@ -141,9 +142,9 @@ begin
   if aOwner = nil then
     raise Exception.Create( 'Owner of TSynWordWrapPlugin must be a TCustomSynEdit' );
   FEditor := aOwner;
-  FLineCount := FEditor.Lines.Count;
-  FLineOffsets := TList<Integer>.Create;
-  FRowLengths := TList<Integer>.Create;
+  FLineCount := FEditor.Lines.CountNative;
+  FLineOffsets := TList<TSynNativeInt>.Create;
+  FRowLengths := TList<NativeInt>.Create;
   Reset;
 end;
 
@@ -163,8 +164,8 @@ end;
 function TSynWordWrapPlugin.DisplayToBufferPos(
   const aPos: TDisplayCoord): TBufferCoord;
 var
-  cRow: Integer;
-  FirstRow: Integer;  // 0-based first row of line
+  cRow: TSynNativeInt;
+  FirstRow: TSynNativeInt;  // 0-based first row of line
 begin
   Assert(aPos.Column > 0);
   Assert(aPos.Row > 0);
@@ -181,7 +182,7 @@ begin
     // Only allow positions beyond EOL in the last row of a line
     Result.Char := aPos.Column
   else
-    Result.Char := Min(aPos.Column, FRowLengths[aPos.Row - 1] + 1);
+    Result.Char := Min(aPos.Column, ToSynNativeInt(FRowLengths[aPos.Row - 1] + 1));
   if Result.Line = 1 then
     FirstRow := 0
   else
@@ -190,20 +191,20 @@ begin
     Inc(Result.Char, FRowLengths[cRow]);
 end;
 
-function TSynWordWrapPlugin.GetRowLength(aRow: Integer): Integer;
+function TSynWordWrapPlugin.GetRowLength(aRow: TSynNativeInt): TSynNativeInt;
 // aRow is 1-based...
 begin
   if (aRow <= 0) or (aRow > FRowLengths.Count) then
     TList.Error(SListIndexError, aRow);
-  Result := FRowLengths[aRow - 1];
+  Result := ToSynNativeInt(FRowLengths[aRow - 1]);
 end;
 
-function TSynWordWrapPlugin.LinesDeleted(aIndex: Integer; aCount: Integer): Integer;
+function TSynWordWrapPlugin.LinesDeleted(aIndex: TSynNativeInt; aCount: TSynNativeInt): TSynNativeInt;
 // Returns the number of rows deleted
 var
-  vStartRow: Integer;
-  vEndRow: Integer;
-  cLine: Integer;
+  vStartRow: TSynNativeInt;
+  vEndRow: TSynNativeInt;
+  cLine: TSynNativeInt;
 begin
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
@@ -228,11 +229,11 @@ begin
     TrimArrays;
 end;
 
-function TSynWordWrapPlugin.LinesInserted(aIndex: Integer; aCount: Integer): Integer;
+function TSynWordWrapPlugin.LinesInserted(aIndex: TSynNativeInt; aCount: TSynNativeInt): TSynNativeInt;
 // Returns the number of rows inserted
 var
-  cLine: Integer;
-  TempArray: TArray<Integer>;
+  cLine: TSynNativeInt;
+  TempArray: TArray<TSynNativeInt>;
 begin
   Assert(aIndex >= 0);
   Assert(aCount >= 1);
@@ -244,13 +245,13 @@ begin
   // Rewrap
   Result := 0;
   for cLine := aIndex to aIndex + aCount - 1 do
-    Inc(Result, ReWrapLine(cLine, True));
+    Inc(Result, ReWrapLine(TLineIndex(cLine), True));
   // Adjust lines below
   for cLine := aIndex + aCount to FLineCount - 1 do
     Inc(FLineOffsets.List[cLine], Result);
 end;
 
-function TSynWordWrapPlugin.LineToRow(aLine: Integer): Integer;
+function TSynWordWrapPlugin.LineToRow(aLine: TSynNativeInt): TSynNativeInt;
 begin
   Assert(aLine > 0);
   if FLineCount < aLine then
@@ -262,14 +263,14 @@ begin
     Result := FLineOffsets[aLine - 2] + 1;
 end;
 
-function TSynWordWrapPlugin.LinePut(aIndex: Integer; const OldLine: string): Integer;
+function TSynWordWrapPlugin.LinePut(aIndex: TSynNativeInt; const OldLine: string): TSynNativeInt;
 var
-  cLine: Integer;
+  cLine: TSynNativeInt;
 begin
   Assert(aIndex >= 0);
   Assert(aIndex < FLineCount);
   // Rewrap
-  Result := ReWrapLine(aIndex);
+  Result := ReWrapLine(TLineIndex(aIndex));
   // Adjust lines below
   if Result <> 0 then
     for cLine := aIndex + 1 to FLineCount - 1 do
@@ -278,7 +279,7 @@ end;
 
 procedure TSynWordWrapPlugin.Reset;
 var
-  MinChars: Integer;
+  MinChars: TSynNativeInt;
 begin
   // Ensure minimum line length
   MinChars := 3;
@@ -290,13 +291,13 @@ begin
   WrapLines;
 end;
 
-function TSynWordWrapPlugin.ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean): Integer;
+function TSynWordWrapPlugin.ReWrapLine(aIndex: TLineIndex; IsLineInserted: Boolean): TSynNativeInt;
 // Wraps the line and adjusts fRowLenghts and FLineOffsets[aIndex]
 // Returns RowCount delta (how many wrapped lines were added or removed by this change).
 var
-  RowLengths: TArray<Integer>;
-  PrevOffset: Integer;
-  PrevRowCount: Integer;
+  RowLengths: TArray<NativeInt>;
+  PrevOffset: TSynNativeInt;
+  PrevRowCount: TSynNativeInt;
 begin
   WrapLine(aIndex, RowLengths);
 
@@ -311,37 +312,37 @@ begin
   if PrevRowCount > 0 then
     FRowLengths.DeleteRange(PrevOffset, PrevRowCount);
   FRowLengths.InsertRange(PrevOffset, RowLengths);
-  FLineOffsets[aIndex] := PrevOffset + Length(RowLengths);
-  Result := Length(RowLengths) - PrevRowCount;
+  FLineOffsets[aIndex] := PrevOffset + ToSynNativeInt(Length(RowLengths));
+  Result := ToSynNativeInt(Length(RowLengths)) - PrevRowCount;
 end;
 
 procedure TSynWordWrapPlugin.WrapLines;
 var
-  cLine: Integer;
-  RowLengths: TArray<TArray<Integer>>;
+  cLine: TSynNativeInt;
+  RowLengths: TArray<TArray<NativeInt>>;
 begin
   FLineOffsets.Clear;
-  FLineOffsets.Capacity := FEditor.Lines.Count;
+  FLineOffsets.Capacity := FEditor.Lines.CountNative;
   FRowLengths.Clear;
-  FRowLengths.Capacity := FEditor.Lines.Count;
+  FRowLengths.Capacity := FEditor.Lines.CountNative;
 
-  if (FEditor.Lines.Count = 0) or (FMaxRowWidth < FEditor.CharWidth) then
+  if (FEditor.Lines.CountNative = 0) or (FMaxRowWidth < FEditor.CharWidth) then
     Exit;
 
-  SetLength(RowLengths, FEditor.Lines.Count);
-  TParallel.&For(0, FEditor.Lines.Count - 1, procedure(I: Integer)
+  SetLength(RowLengths, FEditor.Lines.CountNative);
+  TParallel.&For(0, FEditor.Lines.CountNative - 1, procedure(I: TSynNativeInt)
   begin
     WrapLine(I, RowLengths[I]);
   end);
 
-  for cLine := 0 to FEditor.Lines.Count - 1 do
+  for cLine := 0 to FEditor.Lines.CountNative - 1 do
   begin
     FRowLengths.AddRange(RowLengths[cLine]);
     FLineOffsets.Add(FRowLengths.Count);
   end;
 end;
 
-function TSynWordWrapPlugin.RowCount: Integer;
+function TSynWordWrapPlugin.RowCount: TSynNativeInt;
 begin
   Result := FRowLengths.Count;
   if FLineCount > 0 then
@@ -350,9 +351,9 @@ begin
     Assert(Result = 0);
 end;
 
-function TSynWordWrapPlugin.RowToLine(aRow: Integer): Integer;
+function TSynWordWrapPlugin.RowToLine(aRow: TSynNativeInt): TSynNativeInt;
 var
-  cLine: Integer;
+  cLine: TSynNativeInt;
 begin
   Assert(aRow > 0);
   if aRow > FRowLengths.Count then
@@ -372,19 +373,20 @@ begin
   FRowLengths.TrimExcess;
 end;
 
-procedure TSynWordWrapPlugin.WrapLine(const Index: Integer;
-  out RowLengths: TArray<Integer>);
+procedure TSynWordWrapPlugin.WrapLine(const Index: TSynNativeInt;
+  out RowLengths: TArray<NativeInt>);
 var
   SLine: string;
   Layout: TSynTextLayout;
-  W: Integer;
+  W: TSynNativeInt;
   P, P2, PStart, PEnd, PBreak: PChar;
-  CW, TW, LW: Integer;
+  CW: TSynNativeInt;
+  TW, LW: TSynNativeInt;
   IsTrailing, IsInside: BOOL;
-  fWorkList: TList<Integer>;
+  fWorkList: TList<NativeInt>;
   HTM: TDwriteHitTestMetrics;
   HasRTL: Boolean; // Whether the line contains RTL characters
-  Idx: Integer;
+  Idx: TSynNativeInt;
   LineMetrics: TArray<DWRITE_LINE_METRICS>;
   ActualLineCount: Cardinal;
 begin
@@ -399,7 +401,7 @@ begin
     RowLengths := [SLine.Length]
   else
   begin
-    fWorkList := TList<Integer>.Create;
+    fWorkList := TList<NativeInt>.Create;
     try
       // Preallocation helps with very long lines
       fWorkList.Capacity := MulDiv(SLine.Length, CW + 1, FMaxRowWidth);
@@ -432,10 +434,10 @@ begin
         if HasRTL then
         begin
           // Special case - Let DWrite do the word-wrap
-          Layout.Create(FEditor.TextFormat, PStart, PEnd - PStart, FMaxRowWidth, FEditor.LineHeight);
+          Layout.Create(FEditor.TextFormat, PStart, PEnd - PStart, ToUInt32(FMaxRowWidth), FEditor.LineHeight);
           Layout.IDW.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
           SetLength(LineMetrics, Layout.TextMetrics.lineCount);
-          Layout.IDW.GetLineMetrics(@LineMetrics[0], Length(LineMetrics), ActualLineCount);
+          Layout.IDW.GetLineMetrics(@LineMetrics[0], ToUInt32(Length(LineMetrics)), ActualLineCount);
           for Idx := 0 to ActualLineCount - 1 do
           begin
             if LineMetrics[Idx].length = 0 then
@@ -473,7 +475,7 @@ begin
           end;
 
           Layout.Create(FEditor.TextFormat, P, P2-P, MaxInt, FEditor.LineHeight);
-          LW := Round(Layout.TextMetrics.width);
+          LW := RoundSyn(Layout.TextMetrics.width);
 
           if W + LW > FMaxRowWidth then
           begin

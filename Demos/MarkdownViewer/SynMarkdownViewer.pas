@@ -168,7 +168,7 @@ begin
 
   for Line in FHorzRules do
   begin
-    if Line > Lines.Count then Continue;
+    if Line > Lines.CountNative then Continue;
 
     Row := LineToRow(Line + 1) - 1;
     if InRange(Row, TopLine, TopLine + LinesInWindow) then

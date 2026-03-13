@@ -38,6 +38,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -67,7 +68,7 @@ type
   TProcTableProc = procedure of object;
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynLLVMIRSyn = class(TSynCustomHighlighter)
@@ -87,14 +88,14 @@ type
     fNumberAttri: TSynHighlighterAttributes;
     fTypesAttri: TSynHighlighterAttributes;
     function HashKey(Str: PWideChar): Cardinal;
-    function FuncBoolean(Index: Integer): TtkTokenKind;
-    function FuncConstant(Index: Integer): TtkTokenKind;
-    function FuncInstruction(Index: Integer): TtkTokenKind;
-    function FuncKey(Index: Integer): TtkTokenKind;
-    function FuncType(Index: Integer): TtkTokenKind;
+    function FuncBoolean(Index: TSynNativeInt): TtkTokenKind;
+    function FuncConstant(Index: TSynNativeInt): TtkTokenKind;
+    function FuncInstruction(Index: TSynNativeInt): TtkTokenKind;
+    function FuncKey(Index: TSynNativeInt): TtkTokenKind;
+    function FuncType(Index: TSynNativeInt): TtkTokenKind;
     procedure IdentProc;
     procedure UnknownProc;
-    function AltFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
     procedure InitIdent;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure NullProc;
@@ -121,10 +122,10 @@ type
     procedure SetRange(Value: Pointer); override;
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): UnicodeString; override;
+    function GetKeyWords(TokenKind: TSynNativeInt): UnicodeString; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -185,7 +186,7 @@ const
     'xchg', 'xor', 'zeroext', 'zeroinitializer', 'zext'
   );
 
-  KeyIndices: array[0..1552] of Integer = (
+  KeyIndices: array[0..1552] of TSynNativeInt = (
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 124, -1, -1, 
     64, 40, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 11, -1, -1, -1, -1, -1, 
     -1, -1, -1, -1, -1, -1, 9, -1, -1, -1, -1, -1, 183, -1, -1, -1, 168, -1, -1, 
@@ -333,7 +334,7 @@ end;
 
 procedure TSynLLVMIRSyn.InitIdent;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -572,7 +573,7 @@ begin
 end;
 {$Q+}
 
-function TSynLLVMIRSyn.FuncBoolean(Index: Integer): TtkTokenKind;
+function TSynLLVMIRSyn.FuncBoolean(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkBoolean
@@ -580,7 +581,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynLLVMIRSyn.FuncConstant(Index: Integer): TtkTokenKind;
+function TSynLLVMIRSyn.FuncConstant(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkConstant
@@ -588,7 +589,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynLLVMIRSyn.FuncInstruction(Index: Integer): TtkTokenKind;
+function TSynLLVMIRSyn.FuncInstruction(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkInstruction
@@ -596,7 +597,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynLLVMIRSyn.FuncKey(Index: Integer): TtkTokenKind;
+function TSynLLVMIRSyn.FuncKey(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -604,7 +605,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynLLVMIRSyn.FuncType(Index: Integer): TtkTokenKind;
+function TSynLLVMIRSyn.FuncType(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkType
@@ -612,7 +613,7 @@ begin
     Result := tkIdentifier;
 end;
 
-function TSynLLVMIRSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynLLVMIRSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
@@ -786,7 +787,7 @@ end;
 
 procedure TSynLLVMIRSyn.NumberProc;
 
-  function IsNumberChar(Run: Integer): Boolean;
+  function IsNumberChar(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', 'A'..'F', 'a'..'f', '.', 'x', 'X', '-', '+':
@@ -796,7 +797,7 @@ procedure TSynLLVMIRSyn.NumberProc;
     end;
   end;
 
-  function IsDigitPlusMinusChar(Run: Integer): Boolean;
+  function IsDigitPlusMinusChar(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', '+', '-':
@@ -806,7 +807,7 @@ procedure TSynLLVMIRSyn.NumberProc;
     end;
   end;
 
-  function IsHexDigit(Run: Integer): Boolean;
+  function IsHexDigit(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', 'a'..'f', 'A'..'F':
@@ -816,7 +817,7 @@ procedure TSynLLVMIRSyn.NumberProc;
     end;
   end;
 
-  function IsAlphaUncerscore(Run: Integer): Boolean;
+  function IsAlphaUncerscore(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       'A'..'Z', 'a'..'z', '_':
@@ -827,8 +828,8 @@ procedure TSynLLVMIRSyn.NumberProc;
   end;
 
 var
-  idx1: Integer; // token[1]
-  i: Integer;
+  idx1: TSynNativeInt; // token[1]
+  i: TSynNativeInt;
 begin
   idx1 := Run;
   Inc(Run);
@@ -966,7 +967,7 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynLLVMIRSyn.GetKeyWords(TokenKind: Integer): UnicodeString;
+function TSynLLVMIRSyn.GetKeyWords(TokenKind: TSynNativeInt): UnicodeString;
 begin
   Result := 
     'acq_rel,acquire,add,addrspace,alias,align,alignstack,alloca,alwaysinl' +
@@ -1021,7 +1022,7 @@ begin
   end;
 end;
 
-function TSynLLVMIRSyn.GetTokenKind: Integer;
+function TSynLLVMIRSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

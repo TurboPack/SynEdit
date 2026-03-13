@@ -47,6 +47,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -100,7 +101,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -121,9 +122,9 @@ type
   end;
 
 function LoadDFMFile2Strings(const AFile: string; AStrings: TStrings;
-  var WasText: Boolean): Integer;
+  var WasText: Boolean): TSynNativeInt;
 function SaveStrings2DFMFile(AStrings: TStrings;
-  const AFile: string): Integer;
+  const AFile: string): TSynNativeInt;
 
 implementation
 
@@ -133,7 +134,7 @@ uses
 { A couple of useful Delphi Form functions }
 
 function LoadDFMFile2Strings(const AFile: string; AStrings: TStrings;
-  var WasText: Boolean): Integer;
+  var WasText: Boolean): TSynNativeInt;
 var
   Src, Dest: TStream;
   origFormat: TStreamOriginalFormat;
@@ -163,7 +164,7 @@ begin
   end;
 end;
 
-function SaveStrings2DFMFile(AStrings: TStrings; const AFile: string): Integer;
+function SaveStrings2DFMFile(AStrings: TStrings; const AFile: string): TSynNativeInt;
 var
   Src, Dest: TStream;
 begin
@@ -496,7 +497,7 @@ begin
   end;
 end;
 
-function TSynDfmSyn.GetTokenKind: Integer;
+function TSynDfmSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenID);
 end;

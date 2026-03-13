@@ -61,7 +61,7 @@ type
 
     function CreateCustomFontCollection(
       const collectionLoader: IDWriteFontCollectionLoader; collectionKey: Pointer;
-      collectionKeySize: Cardinal;
+      collectionKeySize: NativeUInt;
       out fontCollection: IDWriteFontCollection): HResult; stdcall;
 
     function RegisterFontCollectionLoader(
@@ -75,12 +75,12 @@ type
       out fontFile: IDWriteFontFile): HResult; stdcall;
 
     function CreateCustomFontFileReference(fontFileReferenceKey: Pointer;
-      fontFileReferenceKeySize: Cardinal; const fontFileLoader: IDWriteFontFileLoader;
+      fontFileReferenceKeySize: NativeUInt; const fontFileLoader: IDWriteFontFileLoader;
       out fontFile: IDWriteFontFile): HResult; stdcall;
 
     function CreateFontFace(fontFaceType: DWRITE_FONT_FACE_TYPE;
-      numberOfFiles: Cardinal; fontFiles: PIDWriteFontFile;
-      faceIndex: Cardinal; fontFaceSimulationFlags: DWRITE_FONT_SIMULATIONS;
+      numberOfFiles: NativeUInt; fontFiles: PIDWriteFontFile;
+      faceIndex: NativeUInt; fontFaceSimulationFlags: DWRITE_FONT_SIMULATIONS;
       out fontFace: IDWriteFontFace): HResult; stdcall;
 
     function CreateRenderingParams(
@@ -111,11 +111,11 @@ type
 
     function GetGdiInterop(out gdiInterop: IDWriteGdiInterop): HResult; stdcall;
 
-    function CreateTextLayout(_string: PWCHAR; stringLength: Cardinal;
+    function CreateTextLayout(_string: PWCHAR; stringLength: NativeUInt;
       const textFormat: IDWriteTextFormat; maxWidth: Single; maxHeight: Single;
       out textLayout: IDWriteTextLayout): HResult; stdcall;
 
-    function CreateGdiCompatibleTextLayout(_string: PWCHAR; stringLength: Cardinal;
+    function CreateGdiCompatibleTextLayout(_string: PWCHAR; stringLength: NativeUInt;
       const textFormat: IDWriteTextFormat; layoutWidth: Single; layoutHeight: Single;
       pixelsPerDip: Single; transform: PDwriteMatrix; useGdiNatural: BOOL;
       out textLayout: IDWriteTextLayout): HResult; stdcall;
@@ -147,7 +147,7 @@ type
     [SID_IDWriteFontFace]
     function GetType: DWRITE_FONT_FACE_TYPE; stdcall;
 
-    function GetFiles(var numberOfFiles: Cardinal;
+    function GetFiles(var numberOfFiles: NativeUInt;
       out fontFiles: IDWriteFontFile): HResult; stdcall;
 
     function GetIndex: UINT32; stdcall;
@@ -160,21 +160,21 @@ type
 
     function GetGlyphCount: UINT16; stdcall;
 
-    function GetDesignGlyphMetrics(glyphIndices: PWord; glyphCount: Cardinal;
+    function GetDesignGlyphMetrics(glyphIndices: PWord; glyphCount: NativeUInt;
       glyphMetrics: PDwriteGlyphMetrics; isSideways: BOOL = False): HResult; stdcall;
 
-    function GetGlyphIndices(var codePoints: Cardinal; codePointCount: Cardinal;
+    function GetGlyphIndices(var codePoints: NativeUInt; codePointCount: NativeUInt;
       var glyphIndices: Word): HResult; stdcall;
 
-    function TryGetFontTable(openTypeTableTag: Cardinal; var tableData: Pointer;
-      var tableSize: Cardinal; var tableContext: Pointer;
+    function TryGetFontTable(openTypeTableTag: NativeUInt; var tableData: Pointer;
+      var tableSize: NativeUInt; var tableContext: Pointer;
       var exists: BOOL): HResult; stdcall;
 
     procedure ReleaseFontTable(tableContext: Pointer); stdcall;
 
     function GetGlyphRunOutline(emSize: Single; const glyphIndices: PWord;
       const glyphAdvances: PSingle; const glyphOffsets: PDwriteGlyphOffset;
-      glyphCount: Cardinal; isSideways: BOOL; isRightToLeft: BOOL;
+      glyphCount: NativeUInt; isSideways: BOOL; isRightToLeft: BOOL;
       geometrySink: IDWriteGeometrySink): HResult; stdcall;
 
     function GetRecommendedRenderingMode(emSize: Single; pixelsPerDip: Single;
@@ -187,7 +187,7 @@ type
 
     function GetGdiCompatibleGlyphMetrics(emSize: single; pixelsPerDip: single;
       transform: PDwriteMatrix; useGdiNatural: BOOL; glyphIndices: PWord;
-      glyphCount: Cardinal; fontFaceMetrics: PDwriteGlyphMetrics;
+      glyphCount: NativeUInt; fontFaceMetrics: PDwriteGlyphMetrics;
       isSideways: BOOL = False): HResult; stdcall;  end;
 {$EXTERNALSYM IDWriteFontFace}
 {$ENDREGION}
@@ -1443,17 +1443,17 @@ type
   TSynTextFormat = record
   private
     FIDW: IDWriteTextFormat;
-    FCharExtra: Cardinal;
+    FCharExtra: NativeUInt;
     FUseGDINatural: Boolean;
-    FCharWidth: Cardinal;
-    FLineHeight: Cardinal;
+    FCharWidth: NativeUInt;
+    FLineHeight: NativeUInt;
   public
-    constructor Create(AFont: TFont; TabWidth: Cardinal = 2;
-      CharExtra: Cardinal = 0; LineSpacingExtra: Cardinal = 0);
+    constructor Create(AFont: TFont; TabWidth: NativeUInt = 2;
+      CharExtra: NativeUInt = 0; LineSpacingExtra: NativeUInt = 0);
     property IDW: IDWriteTextFormat read FIDW;
-    property CharWidth: Cardinal read FCharWidth;
-    property LineHeight: Cardinal read FLineHeight;
-    property CharExtra: Cardinal read FCharExtra;
+    property CharWidth: NativeUInt read FCharWidth;
+    property LineHeight: NativeUInt read FLineHeight;
+    property CharExtra: NativeUInt read FCharExtra;
     property UseGDINatural: Boolean read FUseGDINatural;
   end;
 
@@ -1462,22 +1462,22 @@ type
   TSynTextLayout = record
   private
     FIDW: IDWriteTextLayout;
-    FCount: Integer;
+    FCount: NativeInt;
   public
     TextOptions: D2D1_DRAW_TEXT_OPTIONS;
     property IDW: IDWriteTextLayout read FIDW;
-    constructor Create(TextFormat: TSynTextFormat; Text: PChar; const Count: Cardinal;
-        const LayoutWidth: Cardinal = MaxInt; const layoutHeight: Cardinal = MaxInt;
+    constructor Create(TextFormat: TSynTextFormat; Text: PChar; const Count: NativeUInt;
+        const LayoutWidth: NativeUInt = MaxInt; const layoutHeight: NativeUInt = MaxInt;
         WordWrap: Boolean = False; PixelsPerDip: Single = 1);
     procedure SetFontStyle(FontStyles: System.UITypes.TFontStyles; const Start,
-        Count: Integer);
-    procedure SetFontColor(Color: TD2D1ColorF; const Start, Count: Integer); overload;
-    procedure SetFontColor(Color: TColor; const Start, Count: Integer); overload;
-    procedure SetTypography(Typography: TSynTypography; const Start, Count: Integer);
+        Count: NativeInt);
+    procedure SetFontColor(Color: TD2D1ColorF; const Start, Count: NativeInt); overload;
+    procedure SetFontColor(Color: TColor; const Start, Count: NativeInt); overload;
+    procedure SetTypography(Typography: TSynTypography; const Start, Count: NativeInt);
     procedure SetTextAlignment(TextAlignment: DWRITE_TEXT_ALIGNMENT);
     procedure SetParagraphAlignment(ParagraphAlignment: DWRITE_PARAGRAPH_ALIGNMENT);
-    procedure Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor: TColor; Alpha: Single = 1);
-    procedure DrawClipped(RT: ID2D1RenderTarget; X, Y: Integer; ClipRect: TRect;
+    procedure Draw(RT: ID2D1RenderTarget; X, Y: NativeInt; FontColor: TColor; Alpha: Single = 1);
+    procedure DrawClipped(RT: ID2D1RenderTarget; X, Y: NativeInt; ClipRect: TRect;
       FontColor: TColor; Alpha: Single = 1);
     function TextMetrics: TDwriteTextMetrics;
   end;
@@ -1494,16 +1494,16 @@ type
     FIDW: ID2D1RenderTarget;
     function GetIDW: ID2D1RenderTarget;
   public
-    constructor Create(const Width, Height: Integer);
+    constructor Create(const Width, Height: NativeInt);
   end;
 
-  function SynWicRenderTarget(const Width, Height: Integer): ISynWicRenderTarget;
+  function SynWicRenderTarget(const Width, Height: NativeInt): ISynWicRenderTarget;
 
 type
   TGraphemeEnumerator = record
   private
     FTextLayout: IDWriteTextLayout;
-    FStart: Integer;
+    FStart: NativeInt;
     FString: string;
     FCurrent: string;
   public
@@ -1525,14 +1525,14 @@ function Graphemes(const AValue: string): TGraphemeEnumeratorHelper;
 
 // Support functions
 function D2D1ColorF(const AColor: TColor; Opacity: Single = 1.0): TD2D1ColorF; overload;
-function DWTextRange(startPosition: Cardinal; length: Cardinal): TDwriteTextRange;
-function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: Cardinal): TDwriteFontFeature;
-function DWGetTypography(Features: array of Integer): IDWriteTypography;
+function DWTextRange(startPosition: NativeUInt; length: NativeUInt): TDwriteTextRange;
+function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: NativeUInt): TDwriteFontFeature;
+function DWGetTypography(Features: array of NativeInt): IDWriteTypography;
 function WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
 function ScaledWicBitmap(Source: IWICBitmap;
-  const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
+  const ScaledWidth, ScaledHeight: NativeInt): IWICBitmap;
 procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList; X, Y,
-    Index: Integer; ScaleF: Single = 1);
+    Index: NativeInt; ScaleF: Single = 1);
 function IsFontMonospacedAndValid(Font: TFont): Boolean;
 function FontFamilyName(Font: IDWriteFont): string;
 /// <summary>
@@ -1553,7 +1553,8 @@ Uses
   Vcl.Forms,
   SynUnicode,
   SynEditTypes,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynFunc;
 
 resourcestring
   SYNS_FontFamilyNotFound = 'Font family name not found';
@@ -1573,26 +1574,26 @@ begin
   Result.a := Opacity;
 end;
 
-function DWTextRange(startPosition: Cardinal; length: Cardinal): TDwriteTextRange;
+function DWTextRange(startPosition: NativeUInt; length: NativeUInt): TDwriteTextRange;
 begin
   // startPosition is zero-based
-  Result.startPosition := startPosition - 1;
-  Result.Length := length;
+  Result.startPosition := ToUInt32(startPosition - 1);
+  Result.Length := ToUInt32(length);
 end;
 
-function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: Cardinal): TDwriteFontFeature;
+function DWFontFeature(nameTag: DWRITE_FONT_FEATURE_TAG; parameter: NativeUInt): TDwriteFontFeature;
 begin
   Result.nameTag := nameTag;
-  Result.parameter := parameter;
+  Result.parameter := ToUInt32(parameter);
 end;
 
-function DWGetTypography(Features: array of Integer): IDWriteTypography;
+function DWGetTypography(Features: array of NativeInt): IDWriteTypography;
 var
-  Feature: Integer;
+  Feature: NativeInt;
 begin
   CheckOSError(TSynDWrite.DWriteFactory.CreateTypography(Result));
   for Feature in Features do
-    CheckOSError(Result.AddFontFeature(DWFontFeature(Feature, 1)));
+    CheckOSError(Result.AddFontFeature(DWFontFeature(ToInt32(Feature), 1)));
 end;
 
 function WicBitmapFromBitmap(Bitmap: TBitmap): IWICBitmap;
@@ -1604,18 +1605,18 @@ begin
 end;
 
 function ScaledWicBitmap(Source: IWICBitmap;
-  const ScaledWidth, ScaledHeight: Integer): IWICBitmap;
+  const ScaledWidth, ScaledHeight: NativeInt): IWICBitmap;
 var
   Scaler: IWICBitmapScaler;
 begin
   TSynDWrite.ImagingFactory.CreateBitmapScaler(Scaler);
-  Scaler.Initialize(Source, ScaledWidth, ScaledHeight,
+  Scaler.Initialize(Source, ToUInt32(ScaledWidth), ToUInt32(ScaledHeight),
     WICBitmapInterpolationModeHighQualityCubic);
   Result := IWICBitmap(Scaler);
 end;
 
 procedure ImageListDraw(RT: ID2D1RenderTarget; IL: TCustomImageList;
-  X, Y, Index: Integer; ScaleF: Single = 1);
+  X, Y, Index: NativeInt; ScaleF: Single = 1);
 var
   Bitmap: ID2D1Bitmap;
   BitmapInfo: TBitmapInfo;
@@ -1626,7 +1627,7 @@ var
   R: TRectF;
   DC: HDC;
 begin
-  Icon := ImageList_GetIcon(IL.Handle, Index, ILD_NORMAL);
+  Icon := ImageList_GetIcon(IL.Handle, ToInt32(Index), ILD_NORMAL);
   try
     if not GetIconInfo(Icon, IconInfo) then
       Exit;
@@ -1664,7 +1665,7 @@ begin
   then
     Exit;
 
-  R := RectF(X, Y, X + IL.Width * ScaleF, Y + IL.Height * ScaleF).Round;
+  R := TRectF.FromRect(RectF(X, Y, X + IL.Width * ScaleF, Y + IL.Height * ScaleF).Round);
   RT.DrawBitmap(Bitmap, PD2D1RectF(@R), 1);
 end;
 
@@ -1692,6 +1693,7 @@ var
   Index: Cardinal;
   Exists: BOOL;
   NameLength: Cardinal;
+{$IF COMPILERVERSION < 31}LocalName: string;{$IFEND}
 begin
   Result := '';
 
@@ -1699,10 +1701,15 @@ begin
   CheckOSError(FontFamily.GetFamilyNames(Names));
   if Names.GetCount > 0 then
   begin
-    CheckOSError(Names.FindLocaleName(UserLocaleName, Index, Exists));
+    CheckOSError(Names.FindLocaleName(UserLocaleName{$IF COMPILERVERSION < 31}[0]{$IFEND}, Index, Exists));
     if not Exists then
     begin
+{$IF COMPILERVERSION < 31}
+      LocalName := 'en-us';
+      CheckOSError(Names.FindLocaleName(LocalName[1], Index, Exists));
+{$ELSE}
       CheckOSError(Names.FindLocaleName('en-us', Index, Exists));
+{$IFEND}
       if not Exists then
         Index := 0;
     end;
@@ -1971,7 +1978,7 @@ var
   HTM: TDwriteHitTestMetrics;
 begin
   if FStart >= FString.Length then Exit(False);
-  FTextLayout.HitTestTextPosition(FStart, True, X, Y, HTM);
+  FTextLayout.HitTestTextPosition(ToUInt32(FStart), True, X, Y, HTM);
   FCurrent := Copy(FString, FStart + 1, HTM.Length);
   Inc(FStart, HTM.Length);
   Result := True;
@@ -1997,8 +2004,8 @@ end;
 
 { TSynTextFormat }
 
-constructor TSynTextFormat.Create(AFont: TFont; TabWidth: Cardinal = 2;
-    CharExtra: Cardinal = 0; LineSpacingExtra: Cardinal = 0);
+constructor TSynTextFormat.Create(AFont: TFont; TabWidth: NativeUInt = 2;
+    CharExtra: NativeUInt = 0; LineSpacingExtra: NativeUInt = 0);
 var
   DWFontStyle: DWRITE_FONT_STYLE;
   DWFont: IDWriteFont;
@@ -2013,7 +2020,7 @@ var
 begin
   FUseGDINatural := AFont.Quality = TFontQuality.fqClearTypeNatural;
   GetObject(AFont.Handle, SizeOf(TLogFont), @LogFont);
-  LogFont.lfWeight := GetCorrectFontWeight(AFont);
+  LogFont.lfWeight := ToInt32(GetCorrectFontWeight(AFont));
 
   CheckOSError(TSynDWrite.GDIInterop.CreateFontFromLOGFONT(LogFont, DWFont));
   CheckOSError(DWFont.CreateFontFace(FontFace));
@@ -2025,14 +2032,14 @@ begin
     @FontIndex, 1, @GlyphMetrics);
 
   // Split LineSpacingExtra between top and bottom
-  FLineHeight := Round(
+  FLineHeight := RoundNative(
     (FontMetrics.ascent + FontMetrics.descent + FontMetrics.lineGap) *
     (-AFont.Height) / FontMetrics.designUnitsPerEm) +
-    (LineSpacingExtra div 2) * 2;
-  FCharWidth := Round(-GlyphMetrics.advanceWidth *
-    AFont.Height / FontMetrics.designUnitsPerEm) + (CharExtra div 2) * 2;
-  Baseline := Round(FontMetrics.ascent * (-AFont.Height) /
-    FontMetrics.designUnitsPerEm) + (LineSpacingExtra div 2);
+    ToInt32(LineSpacingExtra div 2) * 2;
+  FCharWidth := RoundNative(-GlyphMetrics.advanceWidth *
+    AFont.Height / FontMetrics.designUnitsPerEm) + ToInt32(CharExtra div 2) * 2;
+  Baseline := RoundNative(FontMetrics.ascent * (-AFont.Height) /
+    FontMetrics.designUnitsPerEm) + ToInt32(LineSpacingExtra div 2);
 
   if TFontStyle.fsItalic in AFont.Style then
     DWFontStyle := DWRITE_FONT_STYLE_ITALIC
@@ -2055,8 +2062,8 @@ end;
 { TSynTextLayout }
 
 constructor TSynTextLayout.Create(TextFormat: TSynTextFormat; Text: PChar;
-    const Count: Cardinal; const LayoutWidth: Cardinal = MaxInt; const
-    layoutHeight: Cardinal = MaxInt; WordWrap: Boolean = False; PixelsPerDip:
+    const Count: NativeUInt; const LayoutWidth: NativeUInt = MaxInt; const
+    layoutHeight: NativeUInt = MaxInt; WordWrap: Boolean = False; PixelsPerDip:
     Single = 1);
 var
   TextLayout1: IDWriteTextLayout1;
@@ -2082,14 +2089,14 @@ begin
     TextOptions := TextOptions + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT;
 end;
 
-procedure TSynTextLayout.Draw(RT: ID2D1RenderTarget; X, Y: Integer; FontColor:
+procedure TSynTextLayout.Draw(RT: ID2D1RenderTarget; X, Y: NativeInt; FontColor:
     TColor; Alpha: Single = 1);
 begin
   RT.DrawTextLayout(D2D1PointF(X, Y), FIDW,
     TSynDWrite.SolidBrush(D2D1ColorF(FontColor, Alpha)), TextOptions);
 end;
 
-procedure TSynTextLayout.DrawClipped(RT: ID2D1RenderTarget; X, Y: Integer;
+procedure TSynTextLayout.DrawClipped(RT: ID2D1RenderTarget; X, Y: NativeInt;
     ClipRect: TRect; FontColor: TColor; Alpha: Single = 1);
 begin
   RT.PushAxisAlignedClip(ClipRect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
@@ -2103,10 +2110,10 @@ begin
 end;
 
 procedure TSynTextLayout.SetFontColor(Color: TD2D1ColorF; const Start,
-  Count: Integer);
+  Count: NativeInt);
 var
   Range: TDwriteTextRange;
-  FirstChar, LastChar: Cardinal;
+  FirstChar, LastChar: NativeUInt;
 begin
   LastChar := Min(FCount, Start + Count - 1);
   FirstChar := Max(Start, 1);
@@ -2117,16 +2124,16 @@ begin
 end;
 
 procedure TSynTextLayout.SetFontColor(Color: TColor; const Start, Count:
-    Integer);
+    NativeInt);
 begin
   SetFontColor(D2D1ColorF(Color), Start, Count);
 end;
 
 procedure TSynTextLayout.SetFontStyle(FontStyles: System.UITypes.TFontStyles;
-    const Start, Count: Integer);
+    const Start, Count: NativeInt);
 var
   Range: TDwriteTextRange;
-  FirstChar, LastChar: Cardinal;
+  FirstChar, LastChar: NativeUInt;
 begin
   LastChar := Min(FCount, Start + Count - 1);
   FirstChar := Max(Start, 1);
@@ -2155,9 +2162,9 @@ begin
 end;
 
 procedure TSynTextLayout.SetTypography(Typography: TSynTypography; const Start,
-    Count: Integer);
+    Count: NativeInt);
 const
-  DefaultTypoFeatures: array[0..7] of Integer =
+  DefaultTypoFeatures: array[0..7] of NativeInt =
   (DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_LIGATURES,             // clig
    DWRITE_FONT_FEATURE_TAG_CONTEXTUAL_ALTERNATES,            // calt
    DWRITE_FONT_FEATURE_TAG_GLYPH_COMPOSITION_DECOMPOSITION,  // ccmp
@@ -2166,7 +2173,7 @@ const
    DWRITE_FONT_FEATURE_TAG_MARK_POSITIONING,                 // mark
    DWRITE_FONT_FEATURE_TAG_MARK_TO_MARK_POSITIONING,         // mkmk
    DWRITE_FONT_FEATURE_TAG_REQUIRED_LIGATURES);              // rlig
-  TypoFeaturesNoLigatures: array[0..2] of Integer =
+  TypoFeaturesNoLigatures: array[0..2] of NativeInt =
   (DWRITE_FONT_FEATURE_TAG_GLYPH_COMPOSITION_DECOMPOSITION,  // ccmp
    DWRITE_FONT_FEATURE_TAG_MARK_POSITIONING,                 // mark
    DWRITE_FONT_FEATURE_TAG_MARK_TO_MARK_POSITIONING);        // salt
@@ -2174,7 +2181,7 @@ const
 var
   DWTypography: IDWriteTypography;
   Range: TDwriteTextRange;
-  FirstChar, LastChar: Cardinal;
+  FirstChar, LastChar: NativeUInt;
 begin
   LastChar := Min(FCount, Start + Count - 1);
   FirstChar := Max(Start, 1);
@@ -2191,12 +2198,12 @@ end;
 
 { TSynWICRenderTarget }
 
-constructor TSynWICRenderTarget.Create(const Width, Height: Integer);
+constructor TSynWICRenderTarget.Create(const Width, Height: NativeInt);
 var
   RenderTargetProp: TD2D1RenderTargetProperties;
 begin
   inherited Create;
-  CheckOSError(TSynDWrite.ImagingFactory.CreateBitmap(Width, Height,
+  CheckOSError(TSynDWrite.ImagingFactory.CreateBitmap(ToInt32(Width), ToInt32(Height),
     @GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnDemand, FWicBitmap));
 
   RenderTargetProp :=
@@ -2218,7 +2225,7 @@ begin
   Result := FIDW;
 end;
 
-function SynWicRenderTarget(const Width, Height: Integer): ISynWicRenderTarget;
+function SynWicRenderTarget(const Width, Height: NativeInt): ISynWicRenderTarget;
 begin
   Result := TSynWicRenderTarget.Create(Width, Height);
 end;

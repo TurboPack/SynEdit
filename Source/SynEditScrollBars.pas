@@ -67,7 +67,8 @@ uses
   SynEditMiscProcs,
   SynEditMiscClasses,
   SynEditStrConst,
-  SynEditKeyConst;
+  SynEditKeyConst,
+  SynFunc;
 
 function GetBarScrollInfo(Handle: THandle; AKind: TScrollBarKind): TScrollInfo;
 begin
@@ -84,10 +85,10 @@ type
   TSynScrollBarState = record
     Kind: TScrollBarKind;
     Active: Boolean;
-    nMin: Integer;
-    nMax: Integer;
-    nPage: Integer;   // Note: Struct define is UINT
-    nPos: Integer;
+    nMin: TSynNativeInt;
+    nMax: TSynNativeInt;
+    nPage: TSynNativeInt;   // Note: Struct define is UINT
+    nPos: TSynNativeInt;
     class operator Equal(a, b: TSynScrollBarState): Boolean;
     class operator NotEqual(a, b: TSynScrollBarState): Boolean;
   end;
@@ -96,8 +97,8 @@ type
   private
     FOwner: TCustomSynEdit;
     FIsScrolling: Boolean;
-    FMouseWheelVertAccumulator: Integer;
-    FMouseWheelHorzAccumulator: Integer;
+    FMouseWheelVertAccumulator: TSynNativeInt;
+    FMouseWheelHorzAccumulator: TSynNativeInt;
     FPrevHorzSBState: TSynScrollBarState;  // Last applied horizontal scrollbar state
     FPrevVertSBState: TSynScrollBarState;  // Last applied vertical scrollbar state
     FNewHorzSBState: TSynScrollBarState;   // New Horizontal ScrollBar state
@@ -137,7 +138,7 @@ end;
 
 function TSynEditScrollBars.GetHorzPageInChars: Integer;
 begin
-  Result := FOwner.TextAreaWidth div FOwner.CharWidth;
+  Result := ToInt32(FOwner.TextAreaWidth div FOwner.CharWidth);
 end;
 
 function TSynEditScrollBars.GetIsScrolling: Boolean;
@@ -147,7 +148,7 @@ end;
 
 procedure TSynEditScrollBars.ApplyButtonState(const AState: TSynScrollBarState);
 var
-  BarKind: Integer;
+  BarKind: UINT;
   Btn1Enabled: Boolean;
   Btn2Enabled: Boolean;
 begin
@@ -177,7 +178,7 @@ end;
 procedure TSynEditScrollBars.SetScrollBarPos(AKind: TScrollBarKind;
   APos: Integer; ARefresh: Boolean);
 var
-  BarKind: Integer;
+  BarKind: UINT;
   ScrollInfo: TScrollInfo;
 begin
   if AKind = sbHorizontal then
@@ -196,8 +197,8 @@ var
   WindowStyle: NativeInt;
   ScrollInfo: TScrollInfo;
   AutoVis: Boolean;
-  BarKind: Integer;
-  BarWSCode: Integer;
+  BarKind: UINT;
+  BarWSCode: TSynNativeInt;
   ScrollbarVisible: Boolean;
   HideEnabled: Boolean;
 begin
@@ -222,10 +223,10 @@ begin
     if not HideEnabled then
       ScrollInfo.fMask := ScrollInfo.fMask or SIF_DISABLENOSCROLL;
 
-    ScrollInfo.nMin := AState.nMin;
-    ScrollInfo.nMax := AState.nMax;
-    ScrollInfo.nPage := AState.nPage;
-    ScrollInfo.nPos := AState.nPos;
+    ScrollInfo.nMin := ToInt32(AState.nMin);
+    ScrollInfo.nMax := ToInt32(AState.nMax);
+    ScrollInfo.nPage := ToInt32(AState.nPage);
+    ScrollInfo.nPos := ToInt32(AState.nPos);
     AutoVis := (AState.nMax > AState.nMin) and
                (AState.nPage <= (AState.nMax - AState.nMin + 1));
 
@@ -253,7 +254,7 @@ end;
 
 procedure TSynEditScrollBars.UpdateScrollBarsState;
 var
-  MaxScroll: Integer;
+  MaxScroll: TSynNativeInt;
 begin
   // Do Horz First
   FNewHorzSBState.Active :=
@@ -269,8 +270,8 @@ begin
     end
     else
     begin
-      MaxScroll := (CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
-        FOwner.CharWidth) + 1);
+      MaxScroll := ToSynNativeInt(CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth,
+        FOwner.CharWidth)) + 1;
       if eoScrollPastEol in FOwner.ScrollOptions then
         MaxScroll := Max(MaxScroll + 1,
           FOwner.LeftChar - 1 + GetHorzPageInChars);  // PastEOL adds 1 to MaxScroll.
@@ -334,7 +335,7 @@ begin
     SB_RIGHT:
       // Simply set LeftChar property to MaxWidth/FCharWidth
       // it would do the range checking and constrain the value if necessary
-      FOwner.LeftChar := CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth);
+      FOwner.LeftChar := ToSynNativeInt(CeilOfIntDiv(TSynEditStringList(FOwner.Lines).MaxWidth, FOwner.CharWidth));
       // Scrolls one char left / right
     SB_LINERIGHT: FOwner.LeftChar := FOwner.LeftChar + 1;
     SB_LINELEFT: FOwner.LeftChar := FOwner.LeftChar - 1;
@@ -377,7 +378,7 @@ var
   rc: TRect;
   pt: TPoint;
   ScrollHint: THintWindow;
-  ButtonH: Integer;
+  ButtonH: TSynNativeInt;
   ScrollInfo: TScrollInfo;
 begin
   AMsg.Result := 0;
@@ -446,8 +447,8 @@ end;
 procedure TSynEditScrollBars.DoMouseWheel(Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint);
 var
-  WheelClicks: Integer;
-  LinesToScroll: Integer;
+  WheelClicks: TSynNativeInt;
+  LinesToScroll: TSynNativeInt;
   CharsToScroll: Integer;
 begin
   if [ssCtrl, ssAlt, ssShift, ssHorizontal] * Shift = [ssCtrl] then
@@ -563,7 +564,7 @@ begin
         ScrollInfo := GetBarScrollInfo(Control.Handle, sbHorizontal);
         BtnEnabled := ([eoDisableScrollArrows, eoScrollPastEol] *
           TCustomSynEdit(Control).ScrollOptions <> [eoDisableScrollArrows]) or
-          (ScrollInfo.nPos <= ScrollInfo.nMax - Integer(ScrollInfo.nPage));
+          (ScrollInfo.nPos <= ScrollInfo.nMax - ToSynNativeInt(ScrollInfo.nPage));
         if (HorzSliderRect.Height > 0) and BtnEnabled then
           Details := LStyle.GetElementDetails(HorzDownState)
         else
@@ -589,14 +590,14 @@ var
   LVertScrollRect, LVertSliderRect: TRect;
   Editor: TCustomSynEdit;
   Ann: TSynScrollbarAnnItem;
-  I, J, Row, RowCount: Integer;
-  Rows: TArray<Integer>;
+  I, J, Row, RowCount: TSynNativeInt;
+  Rows: TArray<TSynNativeInt>;
   Colors: TArray<TColor>;
   Color: TColor;
   AnnWidth: Integer;
   SliderBitmap: TBitmap;
   BtnEnabled: Boolean;
-  MaxScroll: Integer;
+  MaxScroll: TSynNativeInt;
 begin
   if Handle = 0 then Exit;
   if DC = 0 then Exit;
@@ -691,12 +692,12 @@ begin
              while J <= High(Rows) do
              begin
                Row := Rows[J];
-               AnnRect.Top := Muldiv(R.Height, Row - 1, RowCount);
+               AnnRect.SetTop(Muldiv(R.Height, Row - 1, RowCount));
                if Ann.FullRow then
-                 AnnRect.Bottom := Max(Muldiv(R.Height, Row, RowCount),
-                   AnnRect.Top + MulDiv(1, LPPI, 96))
+                 AnnRect.SetBottom(Max(MulDiv(R.Height, Row, RowCount),
+                   AnnRect.Top + MulDiv(1, LPPI, 96)))
                else
-                 AnnRect.Bottom := AnnRect.Top  + MulDiv(1, LPPI, 96);
+                 AnnRect.Bottom := AnnRect.Top + MulDiv(1, LPPI, 96);
 
                if Length(Colors) = 1 then
                  Color := Colors[0]
@@ -710,7 +711,7 @@ begin
                begin
                  Inc(J);
                  Row := Rows[J];
-                 AnnRect.Bottom := Muldiv(R.Height, Row, RowCount);
+                 AnnRect.SetBottom(Muldiv(R.Height, Row, RowCount));
                end;
 
                LBitmap.Canvas.Brush.Color := Color;
@@ -768,7 +769,7 @@ end;
 
 procedure TSynScrollingStyleHook.WMMouseMove(var Msg: TWMMouse);
 begin
- if not (ssLeft in KeysToShiftState(Msg.Keys)) then
+ if not (ssLeft in KeysToShiftState(ToWord(Msg.Keys))) then
    SetLeftButtonDownToFalse;
  inherited;
 end;

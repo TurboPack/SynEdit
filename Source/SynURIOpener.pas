@@ -51,6 +51,7 @@ uses
   Controls,
   SynEditTypes,
   SynEdit,
+  SynFunc,
   SynHighlighterURI,
   SynUnicode,
   Classes;
@@ -61,12 +62,12 @@ type
     FControlDown: Boolean;
     FCtrlActivatesLinks: Boolean;
     FEditor: TCustomSynEdit;
-    FMouseDownX: Integer;
-    FMouseDownY: Integer;
+    FMouseDownX: TSynNativeInt;
+    FMouseDownY: TSynNativeInt;
 
     FURIHighlighter: TSynURISyn;
     FVisitedURIs: TStringList;
-    procedure OpenLink(URI: string; LinkType: Integer);
+    procedure OpenLink(URI: string; LinkType: TSynNativeInt);
     function MouseInSynEdit: Boolean;
   protected
     procedure NewKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -160,7 +161,7 @@ end;
 procedure TSynURIOpener.NewMouseCursor(Sender: TObject;
   const aLineCharPos: TBufferCoord; var aCursor: TCursor);
 var
-  TokenType, Start: Integer;
+  TokenType, Start: TSynNativeInt;
   Token: string;
   Attri: TSynHighlighterAttributes;
 begin
@@ -193,7 +194,7 @@ procedure TSynURIOpener.NewMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   ptLineCol: TBufferCoord;
-  TokenType, Start: Integer;
+  TokenType, Start: TSynNativeInt;
   Token: string;
   Attri: TSynHighlighterAttributes;
 begin
@@ -233,7 +234,7 @@ begin
     URIHighlighter := nil;
 end;
 
-procedure TSynURIOpener.OpenLink(URI: string; LinkType: Integer);
+procedure TSynURIOpener.OpenLink(URI: string; LinkType: TSynNativeInt);
 begin
   FVisitedURIs.Add(URI);
 

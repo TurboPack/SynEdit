@@ -47,6 +47,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -117,7 +118,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -567,7 +568,7 @@ begin
   Result := fTokenId;
 end;
 
-function TSynBatSyn.GetTokenKind: Integer;
+function TSynBatSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

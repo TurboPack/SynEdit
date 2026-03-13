@@ -86,6 +86,7 @@ uses
   SynHighlighterJScript,
   SynHighlighterJSON,
   SynHighlighterKix,
+  SynHighlighterMarkdown,
   SynHighlighterModelica,
   SynHighlighterM3,   
   SynHighlighterPas,
@@ -161,8 +162,8 @@ begin
     TSynCppSyn, TSynEiffelSyn, TSynFortranSyn, TSynGeneralSyn, TSynJavaSyn,
     TSynM3Syn, TSynPasSyn, TSynDelphiSyn, TSynVBSyn, TSynCobolSyn, TSynCSSyn, TSynOmniSyn,
     // internet
-    TSynCssSyn, TSynHTMLSyn, TSynJScriptSyn, TSynPHPSyn, TSynVBScriptSyn,
-    TSynXMLSyn, TSynJSONSyn, TSynVrml97Syn,
+    TSynCssSyn, TSynHTMLSyn, TSynJScriptSyn, TSynMarkdownSyn, TSynPHPSyn,
+    TSynVBScriptSyn, TSynXMLSyn, TSynJSONSyn, TSynVrml97Syn,
     //interpreted
     TSynAWKSyn, TSynBATSyn,
     TSynDWSSyn,

@@ -45,6 +45,7 @@ interface
 uses
   Windows, Controls, Graphics,
   SynEditHighlighter, SynEditTypes,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -69,7 +70,7 @@ type
   TRangeState = (rsUnKnown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynLDRSyn = class(TSynCustomHighlighter)
@@ -89,8 +90,8 @@ type
     fSecondTriAttri: TSynHighlighterAttributes;
     fThirdTriAttri: TSynHighlighterAttributes;
     fTriangleAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function FuncAuthor(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAuthor(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -113,10 +114,10 @@ type
     procedure SetRange(Value: Pointer); override;
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): string; override;
+    function GetKeyWords(TokenKind: TSynNativeInt): string; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -144,7 +145,7 @@ const
     'author' 
   );
 
-  KeyIndices: array[0..1] of Integer = (
+  KeyIndices: array[0..1] of TSynNativeInt = (
     -1, 0 
   );
 
@@ -176,7 +177,7 @@ end;
 
 procedure TSynLDRSyn.InitIdent;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -185,12 +186,12 @@ begin
   fIdentFuncTable[1] := FuncAuthor;
 end;
 
-function TSynLDRSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynLDRSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynLDRSyn.FuncAuthor(Index: Integer): TtkTokenKind;
+function TSynLDRSyn.FuncAuthor(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -276,7 +277,7 @@ end;
 
 function TSynLDRSyn.FirstChar(DatLine: PWideChar): WideChar;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   i := 0;
   while DatLine[i] = ' ' do Inc(i);
@@ -304,7 +305,7 @@ procedure TSynLDRSyn.Number1Proc;
 
   function ArgNumber(DatLine: PWideChar): Byte;
   var
-   i: Integer;
+   i: TSynNativeInt;
    b: Boolean;
   begin
     i := 0;
@@ -390,7 +391,7 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynLDRSyn.GetKeyWords(TokenKind: Integer): string;
+function TSynLDRSyn.GetKeyWords(TokenKind: TSynNativeInt): string;
 begin
   Result := 'Author';
 end;
@@ -421,7 +422,7 @@ begin
   end;
 end;
 
-function TSynLDRSyn.GetTokenKind: Integer;
+function TSynLDRSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

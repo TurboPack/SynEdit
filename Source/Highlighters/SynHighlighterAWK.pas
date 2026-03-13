@@ -47,6 +47,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynUnicode,
+  SynFunc,
   SysUtils,
   Classes;
 
@@ -99,7 +100,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -215,7 +216,7 @@ end;
 
 procedure TSynAWKSyn.IdentProc;
 var
-  i: Integer;
+  i: TSynNativeInt;
   idx: Integer;
   s: string;
 begin
@@ -223,7 +224,7 @@ begin
   while CharInSet(fLine[i], ['a'..'z', 'A'..'Z']) do
     Inc(i);
   SetLength(s, i - Run);
-  StrLCopy(PWideChar(s), fLine + Run, i - Run);
+  StrLCopy(PWideChar(s), fLine + Run, ToInt32(i - Run));
   Run := i;
   if AWKSyntaxList.Find(s, idx) and (AWKSyntaxList.Strings[idx] = s) then
   begin
@@ -311,7 +312,7 @@ procedure TSynAWKSyn.FieldRefProc;
 
 begin
   Inc(Run);
-  if CharInSet(fLine[Run], ['0'..'9']) and not IsAlphaNumChar(Run + 1) then
+  if CharInSet(fLine[Run], ['0'..'9']) and not IsAlphaNumChar(ToInt32(Run + 1)) then
   begin
     fTokenID := tkSymbol;
     Inc(Run);
@@ -516,7 +517,7 @@ begin
   end;
 end;
 
-function TSynAWKSyn.GetTokenKind: Integer;
+function TSynAWKSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

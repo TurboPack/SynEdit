@@ -56,11 +56,12 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Forms,
-  SynEditPrint;
+  SynEditPrint,
+  SynFunc;
 
 type
 //Event raised when page is changed in preview
-  TPreviewPageEvent = procedure(Sender: TObject; PageNumber: Integer) of object;
+  TPreviewPageEvent = procedure(Sender: TObject; PageNumber: NativeInt) of object;
   TSynPreviewScale = (pscWholePage, pscPageWidth, pscUserScaled);
 
   TSynEditPrintPreview = class(TCustomControl)
@@ -77,7 +78,7 @@ type
     FPageSize: TSize;
     FScrollPosition: TPoint;
     FPageBG: TColor;
-    FPageNumber: Integer;
+    FPageNumber: TSynNativeInt;
     FShowScrollHint: Boolean;
     FOnPreviewPage: TPreviewPageEvent;
     FOnScaleChange: TNotifyEvent;
@@ -100,7 +101,7 @@ type
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
     procedure WMMouseHWheel(var Message: TWMMouseWheel); message WM_MOUSEHWHEEL;
     procedure PaintPaper;
-    function GetPageCount: Integer;
+    function GetPageCount: NativeInt;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     function GetPageHeightFromWidth(AWidth: Integer): Integer;
@@ -114,7 +115,11 @@ type
     procedure ScrollVertTo(Value: Integer); virtual;
     procedure UpdateScrollbars; virtual;
     procedure SizeChanged; virtual;
+  {$IF COMPILERVERSION <= 30}
+    procedure ChangeScale(M, D: Integer); override;
+  {$ELSE}
     procedure ChangeScale(M, D: Integer; isDpiChange: Boolean); override;
+  {$ENDIF}
     function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -125,8 +130,8 @@ type
     procedure FirstPage;
     procedure LastPage;
     procedure Print;
-    property PageNumber: Integer read FPageNumber;
-    property PageCount: Integer read GetPageCount;
+    property PageNumber: TSynNativeInt read FPageNumber;
+    property PageCount: NativeInt read GetPageCount;
   published
     property Align default alClient;
     property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle
@@ -167,15 +172,25 @@ const
 
 { TSynEditPrintPreview }
 
+{$IF COMPILERVERSION <= 30}
+procedure TSynEditPrintPreview.ChangeScale(M, D: Integer);
+{$ELSE}
 procedure TSynEditPrintPreview.ChangeScale(M, D: Integer; isDpiChange: Boolean);
+{$ENDIF}
 begin
+{$IF COMPILERVERSION >= 31}
   if isDpiChange then
   begin
+{$ENDIF}
     FMargin_X := MulDiv(FMargin_X, M, D);
     FMargin_Y := MulDiv(FMargin_Y, M, D);
     FShadow_Size := MulDiv(FShadow_Size, M, D);
+{$IF COMPILERVERSION <= 30}
+  inherited ChangeScale(M, D);
+{$ELSE}
   end;
   inherited ChangeScale(M, D, isDpiChange);
+{$ENDIF}
 end;
 
 constructor TSynEditPrintPreview.Create(AOwner: TComponent);
@@ -427,8 +442,8 @@ begin
         si.fMask := si.fMask or SIF_DISABLENOSCROLL;
         si.nMin := 1;
         if Assigned(FSynEditPrint) then begin
-          si.nMax := FSynEditPrint.PageCount;
-          si.nPos := FPageNumber;
+          si.nMax := ToInt32(FSynEditPrint.PageCount);
+          si.nPos := ToInt32(FPageNumber);
         end
         else begin
           si.nMax := 1;
@@ -611,7 +626,7 @@ begin
           end;
       end;
       {Updating scroll position and redrawing}
-    FScrollPosition.Y := -(FPageNumber - 1);
+    FScrollPosition.Y := -(ToInt32(FPageNumber) - 1);
     UpdateScrollbars;
     if Assigned(FOnPreviewPage) then
       FOnPreviewPage(Self, FPageNumber);
@@ -730,7 +745,7 @@ begin
   Shift := KeysToShiftState(Message.Keys);
   Include(Shift, System.Classes.ssHorizontal);
   // HWheel directions are reversed from Wheel - retest
-  WheelDelta := - Message.WheelDelta;
+  WheelDelta := SmallInt(-Message.WheelDelta);
   MousePos := Message.Pos;
   if DoMouseWheel(Shift, WheelDelta, MousePos) then
     Message.Result := 1;
@@ -800,7 +815,7 @@ begin
   end;
 end;
 
-function TSynEditPrintPreview.GetPageCount: Integer;
+function TSynEditPrintPreview.GetPageCount: NativeInt;
 begin
   Result := SynEditPrint.PageCount;
 end;

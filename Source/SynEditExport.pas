@@ -121,7 +121,7 @@ type
     procedure FormatNewLine; virtual; abstract;
     { Returns the size of the formatted text in the output buffer, to be used
       in the format header or footer. }
-    function GetBufferSize: Integer;
+    function GetBufferSize: Int64;
     { The clipboard format the exporter creates as native format. }
     function GetClipboardFormat: UINT; virtual;
     { Has to be overridden in descendant classes to return the correct output
@@ -202,7 +202,8 @@ implementation
 uses
   Math,
   SynEditMiscProcs,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 { TSynCustomExporter }
 
@@ -317,10 +318,10 @@ end;
 procedure TSynCustomExporter.CopyToClipboardFormat(AFormat: UINT);
 var
   hData: THandle;
-  hDataSize: UINT;
+  hDataSize: TSynNativeInt;
   PtrData: PByte;
 begin
-  hDataSize := GetBufferSize + 1;
+  hDataSize := TSynNativeInt(GetBufferSize + 1);
   hData := GlobalAlloc(GMEM_MOVEABLE or GMEM_ZEROINIT or GMEM_SHARE, hDataSize);
   if hData <> 0 then
   try
@@ -333,7 +334,7 @@ begin
       finally
         GlobalUnlock(hData);
       end;
-      Clipboard.SetAsHandle(AFormat, hData);
+      Clipboard.SetAsHandle(ToWord(AFormat), hData);
     end
     else
       Abort;
@@ -376,7 +377,7 @@ end;
 
 procedure TSynCustomExporter.ExportRange(ALines: TStrings; Start, Stop: TBufferCoord);
 var
-  i: Integer;
+  i: TSynNativeInt;
   Line, Token: string;
   Attri: TSynHighlighterAttributes;
 begin
@@ -388,8 +389,8 @@ begin
     then
       Abort;
     Stop.Line := Max(1, Min(Stop.Line, ALines.Count));
-    Stop.Char := Max(1, Min(Stop.Char, Length(ALines[Stop.Line - 1]) + 1));
-    Start.Char := Max(1, Min(Start.Char, Length(ALines[Start.Line - 1]) + 1));
+    Stop.Char := Max(1, Min(Stop.Char, Length(ALines.ItemsNative[Stop.Line - 1]) + 1));
+    Start.Char := Max(1, Min(Start.Char, Length(ALines.ItemsNative[Start.Line - 1]) + 1));
     if (Start.Line = Stop.Line) and (Start.Char >= Stop.Char) then
       Abort;
     // initialization
@@ -401,7 +402,7 @@ begin
     fFirstAttribute := True;
     for i := Start.Line to Stop.Line do
     begin
-      Line := ALines[i - 1];
+      Line := ALines.ItemsNative[i - 1];
       // order is important, since Start.Y might be equal to Stop.Y
       if i = Stop.Line then
         Delete(Line, Stop.Char, MaxInt);
@@ -439,7 +440,7 @@ begin
   AddData(Token);
 end;
 
-function TSynCustomExporter.GetBufferSize: Integer;
+function TSynCustomExporter.GetBufferSize: Int64;
 begin
   Result := fBuffer.Size;
 end;
@@ -456,13 +457,15 @@ end;
 
 procedure TSynCustomExporter.InsertData(APos: Integer; const AText: string);
 var
-  Size, ToMove, SizeNeeded: Integer;
+  ToMove: NativeInt;
+  SizeNeeded: NativeInt;
+  Size: Integer;
   Dest: PByte;
 begin
   Size := StringSize(AText);
   if Size > 0 then
   begin
-    ToMove := fBuffer.Position;
+    ToMove := NativeInt(fBuffer.Position);
     SizeNeeded := ToMove + Size;
     if fBuffer.Size < SizeNeeded then
       // Size is ReadOnly in Delphi 2

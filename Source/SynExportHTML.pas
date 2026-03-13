@@ -348,10 +348,10 @@ function TSynExporterHTML.GetHeader: string;
 var
   Styles: string;
   Header: string;
-  StartHTMLPos: Integer;
-  EndHTMLPos: Integer;
-  StartFragmentPos: Integer;
-  EndFragmentPos: Integer;
+  StartHTMLPos: NativeInt;
+  EndHTMLPos: NativeInt;
+  StartFragmentPos: NativeInt;
+  EndFragmentPos: NativeInt;
 begin
   Header := HTMLStartText;
   if not FCreateHTMLFragment then
@@ -383,7 +383,7 @@ begin
     begin
       StartHTMLPos := DetailLength;
       StartFragmentPos := DetailLength + Header.Length + FragmentStartText.Length;
-      EndFragmentPos := StartFragmentPos + GetBufferSize;
+      EndFragmentPos := NativeInt(StartFragmentPos + GetBufferSize);
       EndHTMLPos := EndFragmentPos + GetFooter.Length;
       Result := Format(DetailSection,
         [StartHTMLPos, EndHTMLPos, StartFragmentPos, EndFragmentPos]);
@@ -404,7 +404,7 @@ end;
 
 function TSynExporterHTML.MakeValidName(Name: string): string;
 var
-  i: Integer;
+  i: NativeInt;
 begin
   Result := LowerCase(Name);
   for i := Length(Result) downto 1 do

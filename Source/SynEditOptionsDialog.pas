@@ -37,7 +37,6 @@ interface
 uses
   Winapi.Windows,
   Winapi.Messages,
-  System.ImageList,
   System.Win.Registry,
   Vcl.Graphics,
   Vcl.Controls,
@@ -273,8 +272,10 @@ implementation
 
 uses
   System.Types,
+  System.UITypes,
   SynEditKeyConst,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynFunc;
 
 { TSynEditOptionsDialog }
 
@@ -536,7 +537,7 @@ begin
       B.Canvas.Pen.Color:= clBlack;
       B.Canvas.Rectangle(0,0,16,16);
       ImageList1.Add(B, nil);
-      ColorPopup.Items[I].ImageIndex:= ColorPopup.Items[I].Tag;
+      ColorPopup.Items[I].ImageIndex := System.UITypes.TImageIndex(ColorPopup.Items[I].Tag);
     end;
   finally
     B.Free;
@@ -622,7 +623,7 @@ end;
 
 procedure TfmEditorOptionsDialog.btnUpdateKeyClick(Sender: TObject);
 var
-  Cmd: Integer;
+  Cmd: NativeInt;
 begin
   if (KeyList.Selected = nil) and (Sender <> btnAddKey) then
   begin
@@ -633,9 +634,9 @@ begin
   if KeyList.Selected = nil then Exit;
   if cKeyCommand.ItemIndex < 0 then Exit;
 
-  Cmd := Integer(cKeyCommand.Items.Objects[cKeyCommand.ItemIndex]);
+  Cmd := NativeInt(cKeyCommand.Items.Objects[cKeyCommand.ItemIndex]);
 
-  TSynEditKeyStroke(OldSelected.Data).Command:= Cmd;
+  TSynEditKeyStroke(OldSelected.Data).Command:= TSynEditorCommand(Cmd);
 
   if eKeyShort1.HotKey <> 0 then
     TSynEditKeyStroke(OldSelected.Data).ShortCut := eKeyShort1.HotKey;

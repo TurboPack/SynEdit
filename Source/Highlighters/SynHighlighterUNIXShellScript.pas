@@ -46,6 +46,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -121,7 +122,7 @@ type
     function IsKeyword(const AKeyword: string): Boolean; override;
     function IsSecondKeyWord(AToken: string): Boolean;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -176,7 +177,7 @@ const
 
 function TSynUNIXShellScriptSyn.IsKeyword(const AKeyword: string): Boolean;
 var
-  First, Last, I, Compare: Integer;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -200,7 +201,7 @@ end; { IsKeyWord }
 
 function TSynUNIXShellScriptSyn.IsSecondKeyWord(AToken: string): Boolean;
 var
-  First, Last, I, Compare: Integer;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -290,7 +291,7 @@ procedure TSynUNIXShellScriptSyn.DotProc;
 
   function TestDot: Boolean;
   var
-    I: Integer;
+    I: TSynNativeInt;
   begin
     Result := False;
     I := Run;
@@ -365,7 +366,7 @@ procedure TSynUNIXShellScriptSyn.LowerProc;
 
   // In UNIX Shell, Heredoc delimiter can be pretty much anything and the list
   // of alpha-numeric characters is extended with a few common special characters
-  function IsAlphaNumChar(Run: Integer): Boolean;
+  function IsAlphaNumChar(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       'A'..'Z', 'a'..'z', '0'..'9', '_', '-', '+', '!', '#', '%':
@@ -376,7 +377,7 @@ procedure TSynUNIXShellScriptSyn.LowerProc;
   end;
 
 var
-  i, Len, SkipRun: Integer;
+  i, Len, SkipRun: TSynNativeInt;
   IndentedHeredoc: Boolean;
   QuoteChar: WideChar;
 {$ENDIF}
@@ -548,7 +549,7 @@ procedure TSynUNIXShellScriptSyn.HeredocProc;
   end;
 
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   if IsLineEnd(Run) and (fTokenPos = Run) then
   begin
@@ -690,7 +691,7 @@ begin
   end;
 end;
 
-function TSynUNIXShellScriptSyn.GetTokenKind: Integer;
+function TSynUNIXShellScriptSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

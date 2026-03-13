@@ -35,6 +35,7 @@ uses
   Vcl.Graphics,
   SynEditTypes,
   SynEditMiscClasses,
+  SynFunc,
   SynUnicode;
 
 type
@@ -106,7 +107,7 @@ type
   private
     fAttributes: TStringList;
     fAttrChangeHooks: TSynNotifyEventChain;
-    fUpdateCount: Integer;
+    fUpdateCount: TSynNativeInt;
     fEnabled: Boolean;
     FAdditionalWordBreakChars: TSysCharSet;
     FAdditionalIdentChars: TSysCharSet;
@@ -122,16 +123,16 @@ type
     fCaseSensitive: Boolean;
     fDefaultFilter: string;
     fLine: PWideChar;
-    fLineLen: Integer;
+    fLineLen: TSynNativeInt;
     fLineStr: string;
-    fLineNumber: Integer;
-    fStringLen: Integer;
+    fLineNumber: TSynNativeInt;
+    fStringLen: NativeInt;
     fToIdent: PWideChar;
-    fTokenPos: Integer;
+    fTokenPos: TSynNativeInt;
     fUpdateChange: Boolean;
     fBrackets: string;
-    Run: Integer;
-    fOldRun: Integer;
+    Run: TSynNativeInt;
+    fOldRun: TSynNativeInt;
     // If FScanningToEOL is True then only ranges need to be scanned.
     FScanningToEOL: Boolean;
     procedure Loaded; override;
@@ -145,10 +146,10 @@ type
       virtual; abstract;
     function GetDefaultFilter: string; virtual;
     function GetSampleSource: string; virtual;
-    procedure DoSetLine(const Value: string; LineNumber: Integer); virtual;
+    procedure DoSetLine(const Value: string; LineNumber: TSynNativeInt); virtual;
     function IsCurrentToken(const Token: string): Boolean; virtual;
     function IsFilterStored: Boolean; virtual;
-    function IsLineEnd(Run: Integer): Boolean; virtual;
+    function IsLineEnd(Run: TSynNativeInt): Boolean; virtual;
     procedure SetAttributesOnChange(AEvent: TNotifyEvent);
     procedure SetDefaultFilter(Value: string); virtual;
     procedure SetSampleSource(Value: string); virtual;
@@ -163,20 +164,20 @@ type
     procedure BeginUpdate;
     procedure EndUpdate;
     function GetEol: Boolean; virtual; abstract;
-    function GetKeyWords(TokenKind: Integer): string; virtual;
+    function GetKeyWords(TokenKind: TSynNativeInt): string; virtual;
     function GetRange: Pointer; virtual;
     function GetToken: string; virtual;
     function GetTokenAttribute: TSynHighlighterAttributes; virtual; abstract;
-    function GetTokenKind: Integer; virtual; abstract;
-    function GetTokenLength: Integer; virtual;
-    function GetTokenPos: Integer; virtual;
+    function GetTokenKind: TSynNativeInt; virtual; abstract;
+    function GetTokenLength: TSynNativeInt; virtual;
+    function GetTokenPos: TSynNativeInt; virtual;
     function IsKeyword(const AKeyword: string): Boolean; virtual;
     procedure Next; virtual;
     procedure NextToEol;
-    procedure SetLine(const Value: string; LineNumber: Integer); virtual;
+    procedure SetLine(const Value: string; LineNumber: TSynNativeInt); virtual;
     procedure SetRange(Value: Pointer); virtual;
     procedure ResetRange; virtual;
-    function UseUserSettings(settingIndex: Integer): Boolean; virtual;
+    function UseUserSettings(settingIndex: TSynNativeInt): Boolean; virtual;
     procedure EnumUserSettings(Settings: TStrings); virtual;
     function LoadFromRegistry(RootKey: HKEY; Key: string): Boolean; virtual;
     function SaveToRegistry(RootKey: HKEY; Key: string): Boolean; virtual;
@@ -189,12 +190,9 @@ type
     function IsIdentChar(AChar: WideChar): Boolean; virtual;
     function IsWhiteChar(AChar: WideChar): Boolean; virtual;
     function IsWordBreakChar(AChar: WideChar): Boolean; virtual;
-    function GetHighlighterAttriAtRowCol(const Lines: TStrings;
-      const Line: Integer; const Char: Integer): TSynHighlighterAttributes;
-    function GetHighlighterAttriAtRowColEx(const Lines: TStrings;
-      const Line, Char: Integer;  var Token: string;
-      var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): Boolean;
-    function FlowControlAtLine(Lines: TStrings; Line: Integer): TSynFlowControl; virtual;
+    function GetHighlighterAttriAtRowCol(const Lines: TStrings; const Line, Char: TSynNativeInt): TSynHighlighterAttributes;
+    function GetHighlighterAttriAtRowColEx(const Lines: TStrings; const Line, Char: TSynNativeInt; var Token: string; var TokenType, Start: TSynNativeInt; var Attri: TSynHighlighterAttributes): Boolean;
+    function FlowControlAtLine(Lines: TStrings; Line: TSynNativeInt): TSynFlowControl; virtual;
     property FriendlyLanguageName: string read GetFriendlyLanguageName;
     property LanguageName: string read GetLanguageName;
   public
@@ -230,9 +228,9 @@ type
   TSynCustomHighlighterClass = class of TSynCustomHighlighter;
 
   TSynHighlighterList = class(TList<TSynCustomHighlighterClass>)
-    function FindByFriendlyName(FriendlyName: string): Integer;
-    function FindByName(Name: string): Integer;
-    function FindByClass(Comp: TComponent): Integer;
+    function FindByFriendlyName(FriendlyName: string): TSynNativeInt;
+    function FindByName(Name: string): TSynNativeInt;
+    function FindByClass(Comp: TComponent): TSynNativeInt;
   end;
 
   procedure RegisterPlaceableHighlighter(highlighter:
@@ -248,9 +246,9 @@ uses
   SynEditTextBuffer;
 
 { THighlighterList }
-function TSynHighlighterList.FindByClass(Comp: TComponent): Integer;
+function TSynHighlighterList.FindByClass(Comp: TComponent): TSynNativeInt;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   Result := -1;
   for i := 0 to Count - 1 do
@@ -263,9 +261,9 @@ begin
   end;
 end;
 
-function TSynHighlighterList.FindByFriendlyName(FriendlyName: string): Integer;
+function TSynHighlighterList.FindByFriendlyName(FriendlyName: string): TSynNativeInt;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   Result := -1;
   for i := 0 to Count - 1 do
@@ -278,9 +276,9 @@ begin
   end;
 end;
 
-function TSynHighlighterList.FindByName(Name: string): Integer;
+function TSynHighlighterList.FindByName(Name: string): TSynNativeInt;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   Result := -1;
   for i := 0 to Count - 1 do
@@ -733,7 +731,7 @@ begin
 end;
 
 function TSynCustomHighlighter.FlowControlAtLine(Lines: TStrings; Line:
-    Integer): TSynFlowControl;
+    TSynNativeInt): TSynFlowControl;
 begin
   Result := fcNone;
 end;
@@ -796,7 +794,7 @@ begin
   Settings.Clear;
 end;
 
-function TSynCustomHighlighter.UseUserSettings(settingIndex: Integer): Boolean;
+function TSynCustomHighlighter.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
 begin
   Result := False;
 end;
@@ -920,25 +918,22 @@ begin
   Result := FExportName;
 end;
 
-function TSynCustomHighlighter.GetHighlighterAttriAtRowCol(
-  const Lines: TStrings; const Line, Char: Integer): TSynHighlighterAttributes;
+function TSynCustomHighlighter.GetHighlighterAttriAtRowCol(const Lines: TStrings; const Line, Char: TSynNativeInt): TSynHighlighterAttributes;
 var
   Token: string;
-  TokenType, Start: Integer;
+  TokenType, Start: TSynNativeInt;
 begin
   GetHighlighterAttriAtRowColEx(Lines, Line, Char, Token, TokenType,
     Start, Result);
 end;
 
-function TSynCustomHighlighter.GetHighlighterAttriAtRowColEx(
-  const Lines: TStrings; const Line, Char: Integer; var Token: string;
-  var TokenType, Start: Integer; var Attri: TSynHighlighterAttributes): Boolean;
+function TSynCustomHighlighter.GetHighlighterAttriAtRowColEx(const Lines: TStrings; const Line, Char: TSynNativeInt; var Token: string; var TokenType, Start: TSynNativeInt; var Attri: TSynHighlighterAttributes): Boolean;
 var
   LineText: string;
 begin
   if  (Line >= 0) and (Line < Lines.Count) then
   begin
-    LineText := Lines[Line];
+    LineText := Lines.ItemsNative[Line];
     if Line = 0 then
       ResetRange
     else
@@ -971,23 +966,23 @@ end;
 
 function TSynCustomHighlighter.GetToken: string;
 var
-  Len: Integer;
+  Len: TSynNativeInt;
 begin
   Len := Run - fTokenPos;
   SetString(Result, fCasedLine + fTokenPos, Len);
 end;
 
-function TSynCustomHighlighter.GetTokenLength: Integer;
+function TSynCustomHighlighter.GetTokenLength: TSynNativeInt;
 begin
   Result := Run - fTokenPos;
 end;
 
-function TSynCustomHighlighter.GetTokenPos: Integer;
+function TSynCustomHighlighter.GetTokenPos: TSynNativeInt;
 begin
   Result := fTokenPos;
 end;
 
-function TSynCustomHighlighter.GetKeyWords(TokenKind: Integer): string;
+function TSynCustomHighlighter.GetKeyWords(TokenKind: TSynNativeInt): string;
 begin
   Result := '';
 end;
@@ -1009,7 +1004,7 @@ end;
 
 function TSynCustomHighlighter.IsCurrentToken(const Token: string): Boolean;
 var
-  I: Integer;
+  I: NativeInt;
   Temp: PWideChar;
 begin
   Temp := fToIdent;
@@ -1051,7 +1046,7 @@ begin
   Result := False;
 end;
 
-function TSynCustomHighlighter.IsLineEnd(Run: Integer): Boolean;
+function TSynCustomHighlighter.IsLineEnd(Run: TSynNativeInt): Boolean;
 begin
   Result := (Run >= fLineLen) or (fLine[Run] = #10) or (fLine[Run] = #13);
 end;
@@ -1158,14 +1153,14 @@ begin
   end;
 end;
 
-procedure TSynCustomHighlighter.SetLine(const Value: string; LineNumber: Integer);
+procedure TSynCustomHighlighter.SetLine(const Value: string; LineNumber: TSynNativeInt);
 begin
   FScanningToEOL := False;
   DoSetLine(Value, LineNumber);
   Next;
 end;
 
-procedure TSynCustomHighlighter.DoSetLine(const Value: string; LineNumber: Integer);
+procedure TSynCustomHighlighter.DoSetLine(const Value: string; LineNumber: TSynNativeInt);
 
   procedure DoWideLowerCase(const value: string; var dest: string);
   begin

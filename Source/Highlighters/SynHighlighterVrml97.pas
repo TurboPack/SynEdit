@@ -72,7 +72,8 @@ uses
   System.Generics.Collections,
   Vcl.Graphics,
   SynEditTypes,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynFunc;
 
 type
   TtkTokenKind = (
@@ -143,7 +144,7 @@ type
     fX3DDocTypeAttri: TSynHighlighterAttributes;
     fX3DHeaderAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AndSymbolProc;
     procedure CommentProc;
@@ -185,7 +186,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -403,7 +404,7 @@ const
     'WorldInfo';
 
 
-procedure TSynVrml97Syn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynVrml97Syn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -634,7 +635,7 @@ end;
 
 function TSynVrml97Syn.NextTokenIs(T: string): Boolean;
 var
-  I, Len: Integer;
+  I, Len: TSynNativeInt;
 begin
   Result := True;
   Len := Length(T);
@@ -831,7 +832,7 @@ procedure TSynVrml97Syn.NumberProc;
   end;
 
 var
-  idx1: Integer; // token[1]
+  idx1: TSynNativeInt; // token[1]
   isHex: Boolean;
 begin
   fTokenID := tkNumber;
@@ -1060,7 +1061,7 @@ begin
   end;
 end;
 
-function TSynVrml97Syn.GetTokenKind: Integer;
+function TSynVrml97Syn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

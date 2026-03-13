@@ -37,6 +37,7 @@ uses
   Graphics,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicode,
   SysUtils,
   Classes;
@@ -48,7 +49,7 @@ type
  TRangeState = (rsUnknown, rsDirective, rsComment);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
  TSynRCSyn = class(TSynCustomHighlighter)
   private
@@ -63,8 +64,8 @@ type
    fSpaceAttri: TSynHighlighterAttributes;
    fStringAttri: TSynHighlighterAttributes;
    fSymbolAttri: TSynHighlighterAttributes;
-   function AltFunc(Index: Integer): TtkTokenKind;
-   function KeyWordFunc(Index: Integer): TtkTokenKind;
+   function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+   function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
    function HashKey(Str: PWideChar): Cardinal;
    function IdentKind(MayBe: PWideChar): TtkTokenKind;
    procedure InitIdent;
@@ -90,16 +91,16 @@ type
   public
    constructor Create(aOwner: TComponent); override;
    destructor Destroy; override;
-   function GetDefaultAttribute(index: integer): TSynHighlighterAttributes; override;
+   function GetDefaultAttribute(index: Integer): TSynHighlighterAttributes; override;
    function GetEol: Boolean; override;
    function GetRange: Pointer; override;
    function GetTokenID: TtkTokenKind;
    function GetTokenAttribute: TSynHighlighterAttributes; override;
-   function GetTokenKind: Integer; override;
+   function GetTokenKind: TSynNativeInt; override;
    procedure Next; override;
    procedure SetRange(value: Pointer); override;
    procedure ResetRange; override;
-   function UseUserSettings(SettingIndex: Integer): Boolean; override;
+   function UseUserSettings(SettingIndex: TSynNativeInt): Boolean; override;
    procedure EnumUserSettings(Settings: TStrings); override;
   published
    property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
@@ -135,7 +136,7 @@ const
     'VALUE', 'VERSION', 'VERSIONINFO', 'VIRTKEY' 
   );
 
-  KeyIndices: array[0..240] of Integer = (
+  KeyIndices: array[0..240] of TSynNativeInt = (
     -1, -1, -1, 35, -1, 57, 54, -1, -1, -1, 74, -1, -1, -1, 64, -1, -1, -1, -1, 
     9, 68, -1, 41, -1, -1, 10, -1, -1, 13, 24, -1, -1, -1, 42, -1, -1, -1, -1, 
     -1, 61, -1, -1, 20, 67, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1, -1, 23, -1, 
@@ -181,7 +182,7 @@ end;
 
 procedure TSynRCSyn.InitIdent;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[I] = -1 then
@@ -192,12 +193,12 @@ begin
       fIdentFuncTable[I] := KeyWordFunc;
 end;
 
-function TSynRCSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynRCSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynRCSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynRCSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -476,7 +477,7 @@ begin
   end;
 end;
 
-function TSynRCSyn.GetTokenKind: Integer;
+function TSynRCSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := ord(GetTokenID);
 end;
@@ -496,7 +497,7 @@ begin
   // ** ??
 end;
 
-function TSynRCSyn.UseUserSettings(SettingIndex: Integer): Boolean;
+function TSynRCSyn.UseUserSettings(SettingIndex: TSynNativeInt): Boolean;
 begin
   Result := False;
 end;

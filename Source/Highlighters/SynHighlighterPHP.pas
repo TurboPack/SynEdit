@@ -50,6 +50,7 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SysUtils,
+  SynFunc,
   SynUnicode,
   Classes,
 //++ CodeFolding
@@ -74,7 +75,7 @@ type
 {$ENDIF}
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
 //  TSynPHPSyn = class(TSynCustomHighlighter)
@@ -96,8 +97,8 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fVariableAttri: TSynHighlighterAttributes;
     fDocumentAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -148,7 +149,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
@@ -156,7 +157,7 @@ type
     procedure ResetRange; override;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
 //-- CodeFolding
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -208,7 +209,7 @@ const
     'use', 'var', 'void', 'while', 'xor', 'yield'
   );
 
-  KeyIndices: array[0..438] of Integer = (
+  KeyIndices: array[0..438] of TSynNativeInt = (
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 31, -1, -1, -1, -1, -1, -1, -1, -1,
     25, -1, 110, -1, -1, 72, 88, -1, 67, -1, -1, -1, -1, -1, -1, -1, -1, 75, -1,
     -1, 38, -1, 80, -1, -1, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, 53, -1, 102,
@@ -263,7 +264,7 @@ end;
 
 procedure TSynPHPSyn.InitIdent;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[I] = -1 then
@@ -274,12 +275,12 @@ begin
       fIdentFuncTable[I] := KeyWordFunc;
 end;
 
-function TSynPHPSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynPHPSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynPHPSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynPHPSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -380,7 +381,7 @@ end;
 procedure TSynPHPSyn.LowerProc;
 {$IFDEF SYN_HEREDOC}
 var
-  I, Len: Integer;
+  I, Len: TSynNativeInt;
 {$ENDIF}
 begin
     case FLine[Run + 1] of
@@ -544,17 +545,17 @@ end;
 
 //-- CodeFolding
 procedure TSynPHPSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: Integer;
+  Line: TSynNativeInt;
 
-  function FindBraces(Line: Integer): Boolean;
+  function FindBraces(Line: TSynNativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    function LineHasChar(AChar: Char; StartCol: TSynNativeInt; out Col: TSynNativeInt): Boolean;
     var
-      I: Integer;
+      I: TSynNativeInt;
     begin
       Result := False;
       Col := 0;
@@ -570,15 +571,15 @@ var
       end;
     end;
 
-    function Indent: Integer;
+    function Indent: TSynNativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: Integer;
-    CloseIdx: Integer;
-    Idx: Integer;
+    OpenIdx: TSynNativeInt;
+    CloseIdx: TSynNativeInt;
+    Idx: TSynNativeInt;
   begin
     LineHasChar('{', 1, OpenIdx);
     LineHasChar('}', 1, CloseIdx);
@@ -606,7 +607,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: Integer): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -642,7 +643,7 @@ begin
       Continue;
     end;
 
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin
@@ -726,7 +727,7 @@ procedure TSynPHPSyn.StringProc;
 
   function IsEscaped: Boolean;
   var
-    iFirstSlashPos: Integer;
+    iFirstSlashPos: TSynNativeInt;
   begin
     iFirstSlashPos := Run -1;
     while (iFirstSlashPos > 0) and (FLine[iFirstSlashPos] = '\') do
@@ -780,9 +781,9 @@ type
   TExpansionSyntax = (esNormal, esComplex, esBrace);
 var
   iSyntax: TExpansionSyntax;
-  iOpenBraces: Integer;
-  iOpenBrackets: Integer;
-  iTempRun: Integer;
+  iOpenBraces: TSynNativeInt;
+  iOpenBrackets: TSynNativeInt;
+  iTempRun: TSynNativeInt;
 begin
   fRange := rsString34; { var expansion only occurs in double quoted strings }
   FTokenID := tkVariable;
@@ -992,7 +993,7 @@ procedure TSynPHPSyn.HeredocProc;
   end;
 
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   if IsLineEnd(Run) and (fTokenPos = Run) then
   begin
@@ -1154,7 +1155,7 @@ begin
   end;
 end;
 
-function TSynPHPSyn.GetTokenKind: Integer;
+function TSynPHPSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
