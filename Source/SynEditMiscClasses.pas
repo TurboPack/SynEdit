@@ -356,7 +356,7 @@ type
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure AutoSizeDigitCount;
-    function FormatLineNumber(Line: TSynNativeInt): string;
+    function FormatLineNumber(ALine: TSynNativeInt): string;
     function RealGutterWidth: TSynNativeInt;
     function BandAtX(X: TSynNativeInt): TSynGutterBand;
     // ++ DPI-Aware
@@ -1216,22 +1216,31 @@ begin
   Inc(FUpdateCount);
 end;
 
-function TSynGutter.FormatLineNumber(Line: TSynNativeInt): string;
+function TSynGutter.FormatLineNumber(ALine: TSynNativeInt): string;
 var
-  I: TSynNativeInt;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
 begin
   if FZeroStart then
-    Dec(Line)
+    Dec(ALine)
   else if FLineNumberStart > 1 then
-    Inc(Line, FLineNumberStart - 1);
-  Result := Format('%*d', [FAutoSizeDigitCount, Line]);
+    Inc(ALine, FLineNumberStart - 1);
+  Result := Format('%*d', [FAutoSizeDigitCount, ALine]);
   if FLeadingZeros then
-    for I := 1 to FAutoSizeDigitCount - 1 do
-    begin
-      if (Result[I] <> ' ') then
-        Break;
-      Result[I] := '0';
+  begin
+    lBuilder := TStringBuilder.Create(Result);
+    try
+      for lCount := 0 to ToInt32(FAutoSizeDigitCount) - 2 do
+      begin
+        if lBuilder[lCount] <> ' ' then
+          Break;
+        lBuilder[lCount] := '0';
+      end;
+      Result := lBuilder.ToString;
+    finally
+      lBuilder.Free;
     end;
+  end;
 end;
 
 function TSynGutter.RealGutterWidth: TSynNativeInt;
@@ -1292,7 +1301,7 @@ begin
   finally
     TempFont.Free;
   end;
-  FCharWidth := FTextFormat.CharWidth;
+  FCharWidth := NativeInt(FTextFormat.CharWidth);
   Changed;
 end;
 
@@ -2455,7 +2464,7 @@ begin
       S := Gutter.FormatLineNumber(Line);
       if Assigned(SynEdit.OnGutterGetText) then
         SynEdit.OnGutterGetText(SynEdit, Line, S);
-      RT.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
+      RT.DrawText(PChar(S), UINT(S.Length), TextFormat.IDW, LineRect,
         TSynDWrite.SolidBrush(FontColor),
         D2D1_DRAW_TEXT_OPTIONS_CLIP +
         IfThen(TOSVersion.Check(6,3), D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT, 0),

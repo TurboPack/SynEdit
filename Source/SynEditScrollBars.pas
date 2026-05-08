@@ -178,7 +178,7 @@ end;
 procedure TSynEditScrollBars.SetScrollBarPos(AKind: TScrollBarKind;
   APos: Integer; ARefresh: Boolean);
 var
-  BarKind: UINT;
+  BarKind: Integer;
   ScrollInfo: TScrollInfo;
 begin
   if AKind = sbHorizontal then
@@ -197,7 +197,7 @@ var
   WindowStyle: NativeInt;
   ScrollInfo: TScrollInfo;
   AutoVis: Boolean;
-  BarKind: UINT;
+  BarKind: Integer;
   BarWSCode: TSynNativeInt;
   ScrollbarVisible: Boolean;
   HideEnabled: Boolean;
@@ -225,7 +225,7 @@ begin
 
     ScrollInfo.nMin := ToInt32(AState.nMin);
     ScrollInfo.nMax := ToInt32(AState.nMax);
-    ScrollInfo.nPage := ToInt32(AState.nPage);
+    ScrollInfo.nPage := ToUInt32(AState.nPage);
     ScrollInfo.nPos := ToInt32(AState.nPos);
     AutoVis := (AState.nMax > AState.nMin) and
                (AState.nPage <= (AState.nMax - AState.nMin + 1));

@@ -2509,11 +2509,8 @@ function TSynUnrealSyn.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
     function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
 
       function ReadCPPB1(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
-      var
-        I: TSynNativeInt;
       begin
-        for I := 1 to Length(name) do
-          if name[I] = ' ' then name[I] := '_';
+        name := name.Replace(' ', '_');
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
              '\SOFTWARE\Borland\C++Builder\'+settingTag+'\Highlight',name, True);
       end; { ReadCPPB1 }

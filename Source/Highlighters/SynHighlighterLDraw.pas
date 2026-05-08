@@ -138,7 +138,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.UITypes, SynEditStrConst;
 
 const
   KeyWords: array[0..0] of string = (
@@ -220,6 +220,11 @@ begin
 end;
 
 constructor TSynLDRSyn.Create(AOwner: TComponent);
+const
+  cFirstTriColor: TColorRec = (R: 206; G: 111; B: 73; A: 0);
+  cFourthTriColor: TColorRec = (R: 54; G: 99; B: 12; A: 0);
+  cSecondTriColor: TColorRec = (R: 54; G: 99; B: 12; A: 0);
+  cThirdTriColor: TColorRec = (R: 206; G: 111; B: 73; A: 0);
 begin
   inherited Create(AOwner);
   fColorAttri := TSynHighLighterAttributes.Create(SYNS_AttrColor, SYNS_FriendlyAttrColor);
@@ -231,11 +236,11 @@ begin
   AddAttribute(fCommentAttri);
 
   fFirstTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrFirstTri, SYNS_FriendlyAttrFirstTri);
-  fFirstTriAttri.Foreground := RGB(206,111,73);
+  fFirstTriAttri.Foreground := cFirstTriColor.Color;
   AddAttribute(fFirstTriAttri);
 
   fFourthTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrFourthTri, SYNS_FriendlyAttrFourthTri);
-  fFourthTriAttri.Foreground := RGB(54,99,12);
+  fFourthTriAttri.Foreground := cFourthTriColor.Color;
   AddAttribute(fFourthTriAttri);
 
   fIdentifierAttri := TSynHighLighterAttributes.Create(SYNS_AttrIdentifier, SYNS_FriendlyAttrIdentifier);
@@ -258,11 +263,11 @@ begin
   AddAttribute(fQuadAttri);
 
   fSecondTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrSecondTri, SYNS_FriendlyAttrSecondTri);
-  fSecondTriAttri.Foreground := RGB(54,99,12);
+  fSecondTriAttri.Foreground := cSecondTriColor.Color;
   AddAttribute(fSecondTriAttri);
 
   fThirdTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrThirdTri, SYNS_FriendlyAttrThirdTri);
-  fThirdTriAttri.Foreground := RGB(206,111,73);
+  fThirdTriAttri.Foreground := cThirdTriColor.Color;
   AddAttribute(fThirdTriAttri);
 
   fTriangleAttri := TSynHighLighterAttributes.Create(SYNS_AttrTriangle, SYNS_FriendlyAttrTriangle);

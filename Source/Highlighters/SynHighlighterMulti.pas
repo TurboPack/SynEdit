@@ -46,6 +46,7 @@ uses
   Winapi.Windows,
   System.Win.Registry,
   System.RegularExpressions,
+  System.Generics.Collections,
   SynEditTypes,
   SynEditHighlighter,
   SynFunc,
@@ -170,7 +171,7 @@ type
   private
     fRangeProc: TRangeProc;
     fDefaultLanguageName: string;
-    fMarkers: TList;
+    fMarkers: TObjectList<TMarker>;
     fMarker: TMarker;
     fNextMarker: TSynNativeInt;
     fCurrScheme: TSynNativeInt;
@@ -257,11 +258,7 @@ end;
 { TSynMultiSyn }
 
 procedure TSynMultiSyn.ClearMarkers;
-var
-  i: TSynNativeInt;
 begin
-  for i := 0 to fMarkers.Count - 1 do
-    TObject(fMarkers[i]).Free;
   fMarkers.Clear;
 end;
 
@@ -270,7 +267,7 @@ begin
   inherited Create(AOwner);
   fSchemes := TSchemes.Create(Self);
   fCurrScheme := -1;
-  fMarkers := TList.Create;
+  fMarkers := TObjectList<TMarker>.Create;
   fRangeProc := NewRangeProc;
 end;
 
@@ -367,7 +364,7 @@ end;
 
 function TSynMultiSyn.GetMarkers(Index: TSynNativeInt): TMarker;
 begin
-  Result := TMarker(fMarkers[Index]);
+  Result := fMarkers[Index];
 end;
 
 procedure TSynMultiSyn.OldRangeProc(Operation: TRangeOperation; var Range: TRangeUNativeInt);
@@ -390,7 +387,7 @@ begin
       iHL := DefaultHighlighter
     else
       iHL := Schemes[fCurrScheme].Highlighter;
-    iSchemeIndex := fCurrScheme + 2;
+    iSchemeIndex := ToUInt32(fCurrScheme) + 2;
     Assert(iSchemeIndex <= MaxSchemeCount);
     if iHL <> nil then
     begin
@@ -408,7 +405,7 @@ begin
   begin
     if Range = 0 then
       Exit;
-    iSchemeRange := NativeUInt(Range);
+    iSchemeRange := ToNativeUInt(Range);
     fCurrScheme := ToSynNativeInt(iSchemeRange and MaxSchemeCount) - 2;
     iSchemeRange := iSchemeRange shr SchemeIndexSize;
     if (CurrScheme < 0) then

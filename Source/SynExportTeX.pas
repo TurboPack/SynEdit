@@ -66,7 +66,7 @@ type
     function GetCommandName(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes): string;
     function GetNewCommands: string;
-    function MakeValidName(Name: string): string;
+    function MakeValidName(const AName: string): string;
   protected
     fCreateTeXFragment: Boolean;
     fTabWidth: Integer;
@@ -135,10 +135,10 @@ const
   f = '%1.2g';
   f2 = '%s,%s,%s';
 var
-  RGBColor: LongWord;
+  RGBColor: DWORD;
   RValue, GValue, BValue: string;
 begin
-  RGBColor := ColorToRGB(AColor);
+  RGBColor := DWORD(ColorToRGB(AColor));
   RValue := DotDecSepFormat(f, [GetRValue(RGBColor) / 255]);
   GValue := DotDecSepFormat(f, [GetGValue(RGBColor) / 255]);
   BValue := DotDecSepFormat(f, [GetBValue(RGBColor) / 255]);
@@ -340,19 +340,24 @@ begin
   Result := Result + Commands;
 end;
 
-function TSynExporterTeX.MakeValidName(Name: string): string;
+function TSynExporterTeX.MakeValidName(const AName: string): string;
 var
   i: Integer;
+  lBuilder: TStringBuilder;
 begin
-  Result := Name;
-  
-  for i := Length(Result) downto 1 do
-  if CharInSet(Result[i], ['1'..'9']) then
-    Result[i] := Char(Ord('A') + Ord(Result[i]) - Ord('1'))
-  else if Result[i] = '0' then
-    Result[i] := 'Z'
-  else if not CharInSet(Result[i], ['a'..'z', 'A'..'Z']) then
-    Delete(Result, i, 1);
+  lBuilder := TStringBuilder.Create(AName);
+  try
+    for i := lBuilder.Length - 1 downto 0 do
+    if CharInSet(lBuilder[i], ['1'..'9']) then
+      lBuilder[i] := Char(Ord('A') + Ord(lBuilder[i]) - Ord('1'))
+    else if lBuilder[i] = '0' then
+      lBuilder[i] := 'Z'
+    else if not CharInSet(lBuilder[i], ['a'..'z', 'A'..'Z']) then
+      lBuilder.Remove(i, 1);
+    Result := lBuilder.ToString;;
+  finally
+    lBuilder.Free;
+  end;
 end;
 
 function TSynExporterTeX.ReplaceReservedChar(AChar: WideChar): string;

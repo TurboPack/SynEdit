@@ -39,7 +39,8 @@ uses
   System.Classes,
   System.Generics.Collections,
   Vcl.Graphics,
-  Vcl.ImgList;
+  Vcl.ImgList,
+  SynFunc;
 
 {$IF CompilerVersion <= 33}
 // some constants missing from old Delphi D2D1 unit
@@ -1466,9 +1467,8 @@ type
   public
     TextOptions: D2D1_DRAW_TEXT_OPTIONS;
     property IDW: IDWriteTextLayout read FIDW;
-    constructor Create(TextFormat: TSynTextFormat; Text: PChar; const Count: NativeUInt;
-        const LayoutWidth: NativeUInt = MaxInt; const layoutHeight: NativeUInt = MaxInt;
-        WordWrap: Boolean = False; PixelsPerDip: Single = 1);
+    constructor Create(ATextFormat: TSynTextFormat; AText: PChar; const ACount: TSynNativeUInt; const ALayoutWidth: TSynNativeUInt = MaxInt; const ALayoutHeight: TSynNativeUInt = MaxInt; AWordWrap: Boolean = False; APixelsPerDip: Single = 1); overload;
+    constructor Create(ATextFormat: TSynTextFormat; AText: PChar; const ACount: TSynNativeInt; const ALayoutWidth: TSynNativeInt = MaxInt; const ALayoutHeight: TSynNativeInt = MaxInt; AWordWrap: Boolean = False; APixelsPerDip: Single = 1); overload;
     procedure SetFontStyle(FontStyles: System.UITypes.TFontStyles; const Start,
         Count: NativeInt);
     procedure SetFontColor(Color: TD2D1ColorF; const Start, Count: NativeInt); overload;
@@ -1553,8 +1553,7 @@ Uses
   Vcl.Forms,
   SynUnicode,
   SynEditTypes,
-  SynEditMiscProcs,
-  SynFunc;
+  SynEditMiscProcs;
 
 resourcestring
   SYNS_FontFamilyNotFound = 'Font family name not found';
@@ -1563,7 +1562,7 @@ resourcestring
 
 function D2D1ColorF(const AColor: TColor; Opacity: Single): TD2D1ColorF;
 var
-  RGB: Cardinal;
+  RGB: Longint;
 const
   CScale = 1 / 255;
 begin
@@ -1637,14 +1636,14 @@ begin
         FillChar(BitmapInfo, SizeOf(BitmapInfo), 0);
         BitmapInfo.bmiHeader.biSize := Sizeof(BitmapInfo.bmiHeader);
         // call with nil to get the Bitmap Info filled.
-        if (GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, nil, BitmapInfo, DIB_RGB_COLORS) = 0) or
+        if (GetDIBits(DC, IconInfo.hbmColor, 0, UINT(IL.Height), nil, BitmapInfo, DIB_RGB_COLORS) = 0) or
           (BitmapInfo.bmiHeader.biBitCount <> 32)
         then
           Exit;  // Exit if it fails or if biBitCount <> 32
         BitmapInfo.bmiHeader.biCompression := BI_RGB; // set to uncompressed
         BitmapInfo.bmiHeader.biHeight := -Abs(BitmapInfo.bmiHeader.biHeight); // Force top-down
         SetLength(Buf, IL.Height * IL.Width * 4);
-        if GetDIBits(DC, IconInfo.hbmColor, 0, IL.Height, @Buf[0], BitmapInfo, DIB_RGB_COLORS) = 0 then
+        if GetDIBits(DC, IconInfo.hbmColor, 0, UINT(IL.Height), @Buf[0], BitmapInfo, DIB_RGB_COLORS) = 0 then
           Exit;
       finally
         DeleteDC(DC);
@@ -1660,8 +1659,8 @@ begin
   BitmapProperties := D2D1BitmapProperties(D2D1PixelFormat(
     DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 0, 0);
 
-  if Failed(RT.CreateBitmap(D2D1SizeU(IL.Width, IL.Height), @Buf[0],
-                4 * IL.Width, BitmapProperties, Bitmap))
+  if Failed(RT.CreateBitmap(D2D1SizeU(UInt32(IL.Width), UInt32(IL.Height)), @Buf[0],
+                UInt32(4 * IL.Width), BitmapProperties, Bitmap))
   then
     Exit;
 
@@ -1738,7 +1737,7 @@ begin
   SetLength(buf, Bitmap.Height * Bitmap.Width * 4);
   // Forces evaluation of Bitmap.Handle before Bitmap.Canvas.Handle
   Hbmp := Bitmap.Handle;
-  GetDIBits(Bitmap.Canvas.Handle, Hbmp, 0, Bitmap.Height, @buf[0], BitmapInfo, DIB_RGB_COLORS);
+  GetDIBits(Bitmap.Canvas.Handle, Hbmp, 0, UInt32(Bitmap.Height), @buf[0], BitmapInfo, DIB_RGB_COLORS);
 
   BitmapProperties.dpiX := 0;
   BitmapProperties.dpiY := 0;
@@ -1749,7 +1748,7 @@ begin
     BitmapProperties.pixelFormat.alphaMode := D2D1_ALPHA_MODE_PREMULTIPLIED;
 
 
-  RT.CreateBitmap(D2D1SizeU(Bitmap.Width, Bitmap.Height), @buf[0], 4*Bitmap.Width, BitmapProperties, Result)
+  RT.CreateBitmap(D2D1SizeU(UInt32(Bitmap.Width), UInt32(Bitmap.Height)), @buf[0], UInt32(4 * Bitmap.Width), BitmapProperties, Result)
 end;
 {$ENDREGION}
 
@@ -1963,7 +1962,7 @@ begin
   CheckOSError(TSynDWrite.DWriteFactory.CreateTextFormat('Segoe UI', nil,
     DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
     MulDiv(9, 96, 72), UserLocaleName, TextFormat));
-  CheckOSError(TSynDWrite.DWriteFactory.CreateTextLayout(PChar(FString), FString.Length,
+  CheckOSError(TSynDWrite.DWriteFactory.CreateTextLayout(PChar(FString), NativeUInt(FString.Length),
     TextFormat, MaxInt, MaxInt, FTextLayout));
 end;
 
@@ -2032,12 +2031,12 @@ begin
     @FontIndex, 1, @GlyphMetrics);
 
   // Split LineSpacingExtra between top and bottom
-  FLineHeight := RoundNative(
+  FLineHeight := NativeUInt(RoundNative(
     (FontMetrics.ascent + FontMetrics.descent + FontMetrics.lineGap) *
     (-AFont.Height) / FontMetrics.designUnitsPerEm) +
-    ToInt32(LineSpacingExtra div 2) * 2;
-  FCharWidth := RoundNative(-GlyphMetrics.advanceWidth *
-    AFont.Height / FontMetrics.designUnitsPerEm) + ToInt32(CharExtra div 2) * 2;
+    ToInt32(LineSpacingExtra div 2) * 2);
+  FCharWidth := NativeUInt(RoundNative(-GlyphMetrics.advanceWidth *
+    AFont.Height / FontMetrics.designUnitsPerEm) + ToInt32(CharExtra div 2) * 2);
   Baseline := RoundNative(FontMetrics.ascent * (-AFont.Height) /
     FontMetrics.designUnitsPerEm) + ToInt32(LineSpacingExtra div 2);
 
@@ -2061,23 +2060,20 @@ end;
 
 { TSynTextLayout }
 
-constructor TSynTextLayout.Create(TextFormat: TSynTextFormat; Text: PChar;
-    const Count: NativeUInt; const LayoutWidth: NativeUInt = MaxInt; const
-    layoutHeight: NativeUInt = MaxInt; WordWrap: Boolean = False; PixelsPerDip:
-    Single = 1);
+constructor TSynTextLayout.Create(ATextFormat: TSynTextFormat; AText: PChar; const ACount: TSynNativeUInt; const ALayoutWidth: TSynNativeUInt = MaxInt; const ALayoutHeight: TSynNativeUInt = MaxInt; AWordWrap: Boolean = False; APixelsPerDip: Single = 1);
 var
   TextLayout1: IDWriteTextLayout1;
 begin
-  FCount := Count;
-  CheckOSError(TSynDWrite.DWriteFactory.CreateGdiCompatibleTextLayout(Text,
-    Count, TextFormat.FIDW, LayoutWidth, LayoutHeight,
-    PixelsPerDip, nil, TextFormat.UseGDINatural, FIDW));
-  if (TextFormat.CharExtra > 0) and
+  FCount := NativeInt(ACount);
+  CheckOSError(TSynDWrite.DWriteFactory.CreateGdiCompatibleTextLayout(AText,
+    ACount, ATextFormat.FIDW, ALayoutWidth, ALayoutHeight,
+    APixelsPerDip, nil, ATextFormat.UseGDINatural, FIDW));
+  if (ATextFormat.CharExtra > 0) and
     Supports(FIDW, IDWriteTextLayout1, TextLayout1)
   then
-    CheckOSError(TextLayout1.SetCharacterSpacing(TextFormat.CharExtra / 2,
-      TextFormat.CharExtra / 2, 0, DWTextRange(1, Count)));
-  if not WordWrap then
+    CheckOSError(TextLayout1.SetCharacterSpacing(ATextFormat.CharExtra / 2,
+      ATextFormat.CharExtra / 2, 0, DWTextRange(1, ACount)));
+  if not AWordWrap then
     FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP)
   else if TOSVersion.Check(6, 3) then  // 8.1 or higher
     FIDW.SetWordWrapping(DWRITE_WORD_WRAPPING_EMERGENCY_BREAK)
@@ -2087,6 +2083,11 @@ begin
   TextOptions := D2D1_DRAW_TEXT_OPTIONS_CLIP;
   if TOSVersion.Check(6, 3) then
     TextOptions := TextOptions + D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT;
+end;
+
+constructor TSynTextLayout.Create(ATextFormat: TSynTextFormat; AText: PChar; const ACount: TSynNativeInt; const ALayoutWidth: TSynNativeInt = MaxInt; const ALayoutHeight: TSynNativeInt = MaxInt; AWordWrap: Boolean = False; APixelsPerDip: Single = 1);
+begin
+  Create(ATextFormat, AText, TSynNativeUInt(ACount), TSynNativeUInt(ALayoutWidth), TSynNativeUInt(ALayoutHeight), AWordWrap, APixelsPerDip);
 end;
 
 procedure TSynTextLayout.Draw(RT: ID2D1RenderTarget; X, Y: NativeInt; FontColor:
@@ -2115,8 +2116,8 @@ var
   Range: TDwriteTextRange;
   FirstChar, LastChar: NativeUInt;
 begin
-  LastChar := Min(FCount, Start + Count - 1);
-  FirstChar := Max(Start, 1);
+  LastChar := NativeUInt(Min(FCount, Start + Count - 1));
+  FirstChar := NativeUInt(Max(Start, 1));
   if FirstChar > LastChar then Exit;
   Range := DWTextRange(FirstChar, LastChar - FirstChar + 1);
 
@@ -2135,8 +2136,8 @@ var
   Range: TDwriteTextRange;
   FirstChar, LastChar: NativeUInt;
 begin
-  LastChar := Min(FCount, Start + Count - 1);
-  FirstChar := Max(Start, 1);
+  LastChar := NativeUInt(Min(FCount, Start + Count - 1));
+  FirstChar := NativeUInt(Max(Start, 1));
   if FirstChar > LastChar then Exit;
   Range := DWTextRange(FirstChar, LastChar - FirstChar + 1);
 
@@ -2183,8 +2184,8 @@ var
   Range: TDwriteTextRange;
   FirstChar, LastChar: NativeUInt;
 begin
-  LastChar := Min(FCount, Start + Count - 1);
-  FirstChar := Max(Start, 1);
+  LastChar := NativeUInt(Min(FCount, Start + Count - 1));
+  FirstChar := NativeUInt(Max(Start, 1));
   if FirstChar > LastChar then Exit;
   Range := DWTextRange(FirstChar, LastChar - FirstChar + 1);
 
@@ -2203,7 +2204,7 @@ var
   RenderTargetProp: TD2D1RenderTargetProperties;
 begin
   inherited Create;
-  CheckOSError(TSynDWrite.ImagingFactory.CreateBitmap(ToInt32(Width), ToInt32(Height),
+  CheckOSError(TSynDWrite.ImagingFactory.CreateBitmap(ToUInt32(Width), ToUInt32(Height),
     @GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnDemand, FWicBitmap));
 
   RenderTargetProp :=

@@ -1508,16 +1508,25 @@ function TSynCppSyn.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
 
   function ReadCPPBSettings(settingIndex: TSynNativeInt): Boolean;
 
-    function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
+    function ReadCPPBSetting(const settingTag: string; attri: TSynHighlighterAttributes; const key: string): Boolean;
 
-      function ReadCPPB1(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
+      function ReadCPPB1(const settingTag: string; attri: TSynHighlighterAttributes; const name: string): Boolean;
       var
-        I: TSynNativeInt;
+        I: Integer;
+        lBuilder: TStringBuilder;
       begin
-        for I := 1 to Length(name) do
-          if name[I] = ' ' then name[I] := '_';
-        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-             '\SOFTWARE\Borland\C++Builder\'+settingTag+'\Highlight',name, True);
+        lBuilder := TStringBuilder.Create(name);
+        try
+          for I := 0 to lBuilder.Length - 1 do
+          begin
+            if lBuilder[I] = ' ' then
+              lBuilder[I] := '_';
+          end;
+          Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
+            '\SOFTWARE\Borland\C++Builder\'+settingTag+'\Highlight', lBuilder.ToString, True);
+        finally
+          lBuilder.Free;
+        end;
       end; { ReadCPPB1 }
 
       function ReadCPPB3OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;

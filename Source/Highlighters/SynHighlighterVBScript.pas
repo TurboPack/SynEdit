@@ -389,7 +389,7 @@ begin
       while J < FoldRanges.Ranges.Count do begin
         FoldRange := FoldRanges.Ranges.List[j];
         Inc(j);
-        case FoldRange.FoldType of
+        case ToInt32(FoldRange.FoldType) of
           // Nested procedure or function
           FT_CodeDeclarationWithBody:
             begin

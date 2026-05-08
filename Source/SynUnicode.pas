@@ -129,7 +129,7 @@ function IsAnsiOnly(const WS: string): Boolean;
 var
   UsedDefaultChar: BOOL;
 begin
-  WideCharToMultiByte(DefaultSystemCodePage, 0, PWideChar(WS), Length(WS), nil, 0,
+  WideCharToMultiByte(UINT(DefaultSystemCodePage), 0, PWideChar(WS), Length(WS), nil, 0,
     nil, @UsedDefaultChar);
   Result := not UsedDefaultChar;
 end;
@@ -376,7 +376,7 @@ function IsWideCharMappableToAnsi(const WC: WideChar): Boolean;
 var
   UsedDefaultChar: BOOL;
 begin
-  WideCharToMultiByte(DefaultSystemCodePage, 0, PWideChar(@WC), 1, nil, 0, nil,
+  WideCharToMultiByte(UINT(DefaultSystemCodePage), 0, PWideChar(@WC), 1, nil, 0, nil,
     @UsedDefaultChar);
   Result := not UsedDefaultChar;
 end;

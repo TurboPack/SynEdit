@@ -932,7 +932,7 @@ begin
   aStream.Read(l, sizeof(l));
   GetMem(Buff, l * sizeof(WideChar));
   try
-    FillMemory(Buff, l, 0);
+    FillMemory(Buff, NativeUInt(l), 0);
     aStream.Read(Buff^, l * sizeof(WideChar));
     fString := Buff;
   finally
@@ -967,7 +967,7 @@ begin
   aStream.Write(l, sizeof(l));
   GetMem(Buff, l * sizeof(WideChar));
   try
-    FillMemory(Buff, l, 0);
+    FillMemory(Buff, NativeUInt(l), 0);
     StrCopy(Buff, PWideChar(Value));
     aStream.Write(Buff^, l * sizeof(WideChar));
   finally

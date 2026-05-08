@@ -286,7 +286,7 @@ begin
     // set unicode text, this also works on Win9X, even if the clipboard-viewer
     // can't show it, Word 2000+ can paste it including the unicode only characters
     Mem := GlobalAlloc(GMEM_MOVEABLE or GMEM_DDESHARE,
-      (SLen + 1) * sizeof(WideChar));
+      SIZE_T((SLen + 1) * SizeOf(WideChar)));
     if Mem <> 0 then
     begin
       P := GlobalLock(Mem);
@@ -322,7 +322,7 @@ var
   PtrData: PByte;
 begin
   hDataSize := TSynNativeInt(GetBufferSize + 1);
-  hData := GlobalAlloc(GMEM_MOVEABLE or GMEM_ZEROINIT or GMEM_SHARE, hDataSize);
+  hData := GlobalAlloc(GMEM_MOVEABLE or GMEM_ZEROINIT or GMEM_SHARE, SIZE_T(hDataSize));
   if hData <> 0 then
   try
     PtrData := GlobalLock(hData);
@@ -371,7 +371,7 @@ begin
     seUTF8:
       Result := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
     seAnsi:
-      Result := string(PAnsiChar(fBuffer.Memory));
+      Result := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
   end;
 end;
 
@@ -644,7 +644,7 @@ begin
     seUTF16LE, seUTF16BE:
       Result := Length(AText);
     seAnsi:
-      Result := Length(AnsiString(AText));
+      Result := TEncoding.ANSI.GetByteCount(AText);
   else
     Result := Length(AText);
   end;
@@ -653,26 +653,28 @@ end;
 
 procedure TSynCustomExporter.WriteString(const AText: string);
 var
-  UTF8Str: UTF8String;
-  AnsiStr: AnsiString;
+  lBytes: TBytes;
 begin
   case Encoding of
     seUTF8:
       begin
-        UTF8Str := UTF8Encode(AText);
-        fBuffer.WriteBuffer(UTF8Str[1], Length(UTF8Str));
+        lBytes := TEncoding.UTF8.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
       end;
     seUTF16LE:
-      fBuffer.WriteBuffer(AText[1], Length(AText) * sizeof(WideChar));
+      begin
+        lBytes := TEncoding.Unicode.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
+      end;
     seUTF16BE:
       begin
-        StrSwapByteOrder(PWideChar(AText));
-        fBuffer.WriteBuffer(AText[1], Length(AText) * sizeof(WideChar));
+        lBytes := TEncoding.BigEndianUnicode.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
       end;
     seAnsi:
       begin
-        AnsiStr := AnsiString(PWideChar(AText));
-        fBuffer.WriteBuffer(AnsiStr[1], Length(AnsiStr));
+        lBytes := TEncoding.ANSI.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
       end;
   end;
 end;

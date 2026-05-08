@@ -46,9 +46,11 @@ type
 {$IFEND}
 
 {$IF COMPILERVERSION < 36}
-  TSynNativeInt = Integer;
+  TSynNativeInt = Int32;
+  TSynNativeUInt = UInt32;
 {$ELSE}
   TSynNativeInt = NativeInt;
+  TSynNativeUInt = NativeUInt;
 {$IFEND}
 
   TPointHelper = record helper for TPoint
@@ -156,14 +158,22 @@ function ToByte(const AValue: Int32): Byte; overload; inline;
 
 function ToInt32(const AValue: Int64): Int32; overload; inline;
 function ToInt32(const AValue: Int32): Int32; overload; inline;
+function ToInt32(const AValue: UInt64): Int32; overload; inline;
 
-function ToSynNativeInt(const AValue: NativeInt): TSynNativeInt; inline;
+function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: Int64): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: UInt64): NativeUInt; overload; inline;
+
+function ToSynNativeInt(const AValue: NativeInt): TSynNativeInt; overload; inline;
+function ToSynNativeInt(const AValue: NativeUInt): TSynNativeInt; overload; inline;
 
 function ToUInt32(const AValue: Int64): UInt32; overload; inline;
 function ToUInt32(const AValue: Int32): UInt32; overload; inline;
+function ToUInt32(const AValue: UInt64): UInt32; overload; inline;
 
 function ToWord(const AValue: Int64): Word; overload; inline;
 function ToWord(const AValue: Int32): Word; overload; inline;
+function ToWord(const AValue: Byte): Word; overload; inline;
 
 implementation
 
@@ -433,9 +443,35 @@ begin
   Result := AValue;
 end;
 
+function ToInt32(const AValue: UInt64): Int32;
+begin
+  Result := Int32(AValue);
+end;
+
+function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;
+begin
+  Result := NativeUInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: Int64): NativeUInt; overload; inline;
+begin
+  Result := NativeUInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: UInt64): NativeUInt; overload; inline;
+begin
+  Result := NativeUInt(AValue);
+end;
+
 function ToSynNativeInt(const AValue: NativeInt): TSynNativeInt;
 begin
   Result := TSynNativeInt(AValue);
+end;
+
+function ToSynNativeInt(const AValue: NativeUInt): TSynNativeInt; overload; inline;
+begin
+  Result := TSynNativeInt(AValue);
+
 end;
 
 function ToUInt32(const AValue: Int64): UInt32;
@@ -445,7 +481,12 @@ end;
 
 function ToUInt32(const AValue: Int32): UInt32;
 begin
-  Result := AValue;
+  Result := UInt32(AValue);
+end;
+
+function ToUInt32(const AValue: UInt64): UInt32;
+begin
+  Result := UInt32(AValue);
 end;
 
 function ToWord(const AValue: Int64): Word;
@@ -454,6 +495,11 @@ begin
 end;
 
 function ToWord(const AValue: Int32): Word;
+begin
+  Result := Word(AValue);
+end;
+
+function ToWord(const AValue: Byte): Word;
 begin
   Result := Word(AValue);
 end;

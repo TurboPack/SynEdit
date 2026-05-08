@@ -459,7 +459,7 @@ begin
         si.fMask := si.fMask or SIF_DISABLENOSCROLL;
         si.nMax := FVirtualSize.Height;
         si.nPos := -FScrollPosition.Y;
-        si.nPage := ClientHeight;
+        si.nPage := UINT(ClientHeight);
         SetScrollInfo(Handle, SB_VERT, si, True);
       end;
     pscUserScaled: begin
@@ -469,12 +469,12 @@ begin
         // show horizontal scrollbar
         si.nMax := FVirtualSize.Width;
         si.nPos := -FScrollPosition.X;
-        si.nPage := ClientWidth;
+        si.nPage := UINT(ClientWidth);
         SetScrollInfo(Handle, SB_HORZ, si, True);
         // show vertical scrollbar
         si.nMax := FVirtualSize.Height;
         si.nPos := -FScrollPosition.Y;
-        si.nPage := ClientHeight;
+        si.nPage := UINT(ClientHeight);
         SetScrollInfo(Handle, SB_VERT, si, True);
       end;
   end;
@@ -725,7 +725,7 @@ var
   WheelDelta: SmallInt;
   MousePos: TSmallPoint;
 begin
-  Shift := KeysToShiftState(Message.Keys);
+  Shift := KeysToShiftState(Word(Message.Keys));
   // Shift-MouseWheel causes horizonal scrolling.  This is a semi-standard
   //   used in several products including VsCode and Edge.
   if ssShift in Shift then
@@ -742,7 +742,7 @@ var
   WheelDelta: SmallInt;
   MousePos: TSmallPoint;
 begin
-  Shift := KeysToShiftState(Message.Keys);
+  Shift := KeysToShiftState(Word(Message.Keys));
   Include(Shift, System.Classes.ssHorizontal);
   // HWheel directions are reversed from Wheel - retest
   WheelDelta := SmallInt(-Message.WheelDelta);

@@ -87,10 +87,10 @@ function StringToLines(const Value: string): TArray<string>;
 
 // Remove all '/' characters from string by changing them into '\.'.
 // Change all '\' characters into '\\' to allow for unique decoding.
-function EncodeString(s: string): string;
+function EncodeString(const AValue: string): string;
 
 // Decodes string, encoded with EncodeString.
-function DecodeString(s: string): string;
+function DecodeString(const AValue: string): string;
 
 type
   THighlighterAttriProc = function(Highlighter: TSynCustomHighlighter;
@@ -122,7 +122,9 @@ function CalcFCS(const ABuf; ABufSize: Cardinal): Word;
 {$ENDIF}
 function DeleteTypePrefixAndSynSuffix(s: string): string;
 
-function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer; overload;
+function CeilOfIntDiv(Dividend, Divisor: UInt32): Int32; overload;
+function CeilOfIntDiv(Dividend, Divisor: Int32): Int32; overload;
+{$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: Int64): UInt64; overload;{$ENDIF}
 {$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: UInt64): UInt64; overload;{$ENDIF}
 
 // In Windows Vista or later use the Consolas font
@@ -139,7 +141,7 @@ procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen:
 function IsColorDark(AColor: TColor): Boolean;
 
 // Substitutes control characters with Unicode control pictures
-procedure SubstituteControlChars(var Input: string);
+procedure SubstituteControlChars(var AInput: string);
 
 // Returns a compiled regular expression
 function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TRegEx;
@@ -525,57 +527,74 @@ end;
 {$IFOPT R+}{$DEFINE RestoreRangeChecking}{$ELSE}{$UNDEF RestoreRangeChecking}{$ENDIF}
 {$R-}
 
-function EncodeString(s: string): string;
+function EncodeString(const AValue: string): string;
 var
-  i, j: TSynNativeInt;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
+  lInner: Integer;
 begin
-  SetLength(Result, 2 * Length(s)); // worst case
-  j := 0;
-  for i := 1 to Length(s) do
-  begin
-    Inc(j);
-    if s[i] = '\' then
+  lBuilder := TStringBuilder.Create;
+  try
+    lBuilder.Length := 2 * Length(AValue); // worst case;
+    lInner := -1;
+    for lCount := 1 to Length(AValue) do
     begin
-      Result[j] := '\';
-      Result[j + 1] := '\';
-      Inc(j);
-    end
-    else if s[i] = '/' then
-    begin
-      Result[j] := '\';
-      Result[j + 1] := '.';
-      Inc(j);
-    end
-    else
-      Result[j] := s[i];
-  end; // for
-  SetLength(Result, j);
+      Inc(lInner);
+      if AValue[lCount] = '\' then
+      begin
+        lBuilder[lInner] := '\';
+        lBuilder[lInner + 1] := '\';
+        Inc(lInner);
+      end
+      else if AValue[lCount] = '/' then
+      begin
+        lBuilder[lInner] := '\';
+        lBuilder[lInner + 1] := '.';
+        Inc(lInner);
+      end
+      else
+        lBuilder[lInner] := AValue[lCount];
+    end; // for
+    lBuilder.Length := lInner + 1;
+    Result := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end; { EncodeString }
 
-function DecodeString(s: string): string;
+function DecodeString(const AValue: string): string;
 var
-  i, j: TSynNativeInt;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
+  lInner: Integer;
 begin
-  SetLength(Result, Length(s)); // worst case
-  j := 0;
-  i := 1;
-  while i <= Length(s) do
-  begin
-    Inc(j);
-    if s[i] = '\' then
+  lBuilder := TStringBuilder.Create;
+  try
+    lBuilder.Length := Length(AValue); // worst case
+    lInner := -1;
+    lCount := 1;
+    while lCount <= Length(AValue) do
     begin
-      Inc(i);
-      if s[i] = '\' then
-        Result[j] := '\'
+      Inc(lInner);
+      if AValue[lCount] = '\' then
+      begin
+        Inc(lCount);
+        if AValue[lCount] = '\' then
+          lBuilder[lInner] := '\'
+        else
+          lBuilder[lInner] := '/';
+      end
       else
-        Result[j] := '/';
-    end
-    else
-      Result[j] := s[i];
-    Inc(i);
-  end; // for
-  SetLength(Result, j);
+        lBuilder[lInner] := AValue[lCount];
+      Inc(lCount);
+    end; // for
+    lBuilder.Length := lInner + 1;
+    Result := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end; { DecodeString }
+
 {$IFDEF RestoreRangeChecking}{$R+}{$ENDIF}
 
 function DeleteTypePrefixAndSynSuffix(s: string): string;
@@ -760,7 +779,7 @@ begin
 end;
 {$ENDIF}
 
-function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer;
+function CeilOfIntDiv(Dividend, Divisor: UInt32): Int32;
 var
   Res: UInt64;
   Remainder: UInt64;
@@ -770,6 +789,16 @@ begin
     Inc(Res);
   Result := Integer(Res);
 end;
+
+function CeilOfIntDiv(Dividend, Divisor: Int32): Int32;
+begin
+  Result := CeilOfIntDiv(Cardinal(Dividend), Cardinal(Divisor));
+end;
+
+{$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: Int64): UInt64;
+begin
+  Result := CeilOfIntDiv(UInt64(Dividend), UInt64(Divisor));
+end;{$ENDIF}
 
 {$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: UInt64): UInt64;
 var
@@ -868,31 +897,38 @@ end;
 
 function IsColorDark(AColor: TColor): Boolean;
 var
-  ACol: Longint;
+  ACol: DWORD;
 begin
-  ACol := ColorToRGB(AColor) and $00FFFFFF;
+  ACol := DWORD(ColorToRGB(AColor) and $00FFFFFF);
   Result := ((2.99 * GetRValue(ACol) + 5.87 * GetGValue(ACol) +
                  1.14 * GetBValue(ACol)) < $400);
 end;
 
-procedure SubstituteControlChars(var Input: string);
+procedure SubstituteControlChars(var AInput: string);
 const
-  ControlChars: set of Byte = [1..31, 127];
-  GraphicChars: array[1..31] of Char = (
+  cGraphicChars: array[1..31] of Char = (
       #$02401, #$02402, #$02403, #$02404, #$02405, #$02406, #$02407, #$02408,
       #$02409, #$0240A, #$0240B, #$0240C, #$0240D, #$0240E, #$0240F, #$02410,
       #$02411, #$02412, #$02413, #$02414, #$02415, #$02416, #$02417, #$02418,
       #$02419, #$0241A, #$0241B, #$0241C, #$0241D, #$0241E, #$0241F);
-  DeleteChar  = #$02421;
+  cDeleteChar  = #$02421;
 var
-  I: TSynNativeInt;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
 begin
-  UniqueString(Input);
-  for I := 1 to Input.Length do
-    case Ord(Input[I]) of
-      1..8, 10..31: Input[I] := GraphicChars[Byte(Ord(Input[I]))];
-      127: Input[I] := DeleteChar;
+  lBuilder := TStringBuilder.Create(AInput);
+  try
+    for lCount := 0 to lBuilder.Length - 1 do
+    begin
+      case Ord(lBuilder[lCount]) of
+        1..8, 10..31: lBuilder[lCount] := cGraphicChars[Byte(Ord(lBuilder[lCount]))];
+        127: lBuilder[lCount] := cDeleteChar;
+      end;
     end;
+    AInput := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end;
 
 function CompiledRegEx(const Pattern: string; Options: TRegExOptions): TRegEx;
@@ -907,7 +943,7 @@ function ColorToHTML(Color: TColor): string;
 var
   R: TColorRef;
 begin
-  R := ColorToRGB(Color);
+  R := TColorRef(ColorToRGB(Color));
   Result := Format('#%.2x%.2x%.2x', [GetRValue(R), GetGValue(R), GetBValue(R)]);
 end;
 

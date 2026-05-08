@@ -925,7 +925,7 @@ begin
     FTokenID := tkValue;
 
     { handle end of line - we wrote last char }
-    case AType of
+    case ToInt32(AType) of
       1, 11: FRange := rsRubyString1;
       2, 12: FRange := rsRubyString2;
     else
@@ -941,7 +941,7 @@ begin
       if FLine[Run] = ']' then
       begin
         Inc(Run, 2);
-        case AType of
+        case ToInt32(AType) of
           11: FRange := rsRubyString1;
           12: FRange := rsRubyString2;
         else
@@ -979,7 +979,7 @@ begin
       if FLine[Run] = '}' then
       begin
         Inc(Run);
-        case AType of
+        case ToInt32(AType) of
           1: FRange := rsRubyString1;
           2: FRange := rsRubyString2;
         else

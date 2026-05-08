@@ -57,7 +57,7 @@ type
       Params: array of Pointer): Boolean;
     function GetStyleName(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes): string;
-    function MakeValidName(Name: string): string;
+    function MakeValidName(const AName: string): string;
     function StyleNameCallback(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes; UniqueAttriName: string;
       Params: array of Pointer): Boolean;
@@ -402,16 +402,24 @@ begin
   end;
 end;
 
-function TSynExporterHTML.MakeValidName(Name: string): string;
+function TSynExporterHTML.MakeValidName(const AName: string): string;
 var
-  i: NativeInt;
+  i: Integer;
+  lBuilder: TStringBuilder;
 begin
-  Result := LowerCase(Name);
-  for i := Length(Result) downto 1 do
-    if CharInSet(Result[i], ['.', '_']) then
-      Result[i] := '-'
-    else if not CharInSet(Result[i], ['a'..'z', '0'..'9', '-']) then
-      Delete(Result, i, 1);
+  lBuilder := TStringBuilder.Create(LowerCase(AName));
+  try
+    for i := lBuilder.Length - 1 downto 0 do
+    begin
+      if CharInSet(lBuilder[i], ['.', '_']) then
+        lBuilder[i] := '-'
+      else if not CharInSet(lBuilder[i], ['a'..'z', '0'..'9', '-']) then
+        lBuilder.Remove(i, 1);
+    end;
+    Result := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end;
 
 function TSynExporterHTML.ReplaceReservedChar(AChar: WideChar): string;

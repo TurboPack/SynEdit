@@ -99,10 +99,10 @@ uses
 function MakeGlobal (const S: string): hGlobal;
 var
   P: PChar;
-  Size: NativeInt;
+  Size: Integer;
 begin
   Size := ByteLength(S) + SizeOf(Char);
-  Result := GlobalAlloc (GHND, Size);
+  Result := GlobalAlloc(GHND, Cardinal(Size));
   if Result = 0 then
     OutOfMemoryError;
   P := GlobalLock (Result);
@@ -113,18 +113,18 @@ begin
   end
 end;
 
-function MakeGlobal (var P; Size: NativeInt): hGlobal;
+function MakeGlobal(var P; Size: NativeInt): hGlobal;
 var
-  D: pointer;
+  D: Pointer;
 begin
-  Result := GlobalAlloc (GHND, Size);
+  Result := GlobalAlloc(GHND, SIZE_T(Size));
   if Result = 0 then
     OutOfMemoryError;
-  D := GlobalLock (Result);
+  D := GlobalLock(Result);
   try
     Move (P, D^, Size)
   finally
-    GlobalUnlock (Result)
+    GlobalUnlock(Result);
   end
 end;
 

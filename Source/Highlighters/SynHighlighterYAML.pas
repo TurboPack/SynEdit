@@ -149,6 +149,7 @@ implementation
 uses
   System.Character,
   System.Math,
+  System.UITypes,
   Winapi.Windows,
   SynEditStrConst,
   SynEditMiscProcs;
@@ -325,6 +326,8 @@ begin
 end;
 
 constructor TSynYAMLSyn.Create(AOwner: TComponent);
+const
+  cNumericColor: TColorRec = (R: 88; G: 0; B: 0; A: 0);
 begin
   inherited Create(AOwner);
   fCaseSensitive := True;
@@ -346,7 +349,7 @@ begin
   AddAttribute(fKeyAttri);
 
   fNumericValueAttri := TSynHighLighterAttributes.Create(SYNS_AttrNumericValue, SYNS_FriendlyAttrNumericValue);
-  fNumericValueAttri.Foreground := RGB(88, 0, 0);
+  fNumericValueAttri.Foreground := cNumericColor.Color;
   AddAttribute(fNumericValueAttri);
 
   fSpaceAttri := TSynHighLighterAttributes.Create(SYNS_AttrSpace, SYNS_FriendlyAttrSpace);

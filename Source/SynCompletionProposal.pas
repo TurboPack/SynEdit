@@ -410,7 +410,7 @@ type
     FAdjustCompletionStart: Boolean;
     FOnCodeCompletion: TCodeCompletionEvent;
     FTimer: TTimer;
-    FTimerInterval: Integer;
+    FTimerInterval: Cardinal;
     FEditor: TCustomSynEdit;
     FOnAfterCodeCompletion: TAfterCodeCompletionEvent;
     FOnCancelled: TNotifyEvent;
@@ -424,8 +424,8 @@ type
     procedure TimerExecute(Sender: TObject);
     function GetPreviousToken(AEditor: TCustomSynEdit): string;
     function GetCurrentInput(AEditor: TCustomSynEdit): string;
-    function GetTimerInterval: Integer;
-    procedure SetTimerInterval(const Value: Integer);
+    function GetTimerInterval: Cardinal;
+    procedure SetTimerInterval(const Value: Cardinal);
     function GetEditor(i: TSynNativeInt): TCustomSynEdit;
     procedure InternalCancelCompletion;
   protected
@@ -453,7 +453,7 @@ type
   published
     property ShortCut: TShortCut read FShortCut write SetShortCut;
     property Editor: TCustomSynEdit read FEditor write SetEditor;
-    property TimerInterval: Integer read GetTimerInterval write SetTimerInterval default 1000;
+    property TimerInterval: Cardinal read GetTimerInterval write SetTimerInterval default 1000;
 
     property OnAfterCodeCompletion: TAfterCodeCompletionEvent read FOnAfterCodeCompletion write FOnAfterCodeCompletion;
     property OnCancelled: TNotifyEvent read FOnCancelled write FOnCancelled;
@@ -2242,7 +2242,7 @@ var
     // Scrollbar needs to be properly scaled in case primary monitor is High-DPI
     // Check for Windows Anniversary Edition
     if (TOSVersion.Major >= 10) and (TOSVersion.Build >= 14393) then
-      FForm.FScrollbar.Width := GetSystemMetricsForDPI(SM_CXVSCROLL, ActivePPI)
+      FForm.FScrollbar.Width := GetSystemMetricsForDPI(SM_CXVSCROLL, Cardinal(ActivePPI))
     else
       FForm.FScrollbar.Width := GetSystemMetrics(SM_CXVSCROLL);
 
@@ -3139,12 +3139,12 @@ begin
   end;
 end;
 
-function TSynCompletionProposal.GetTimerInterval: Integer;
+function TSynCompletionProposal.GetTimerInterval: Cardinal;
 begin
   Result := FTimerInterval;
 end;
 
-procedure TSynCompletionProposal.SetTimerInterval(const Value: Integer);
+procedure TSynCompletionProposal.SetTimerInterval(const Value: Cardinal);
 begin
   FTimerInterval := Value;
   if Assigned(FTimer) then
@@ -3161,7 +3161,7 @@ begin
     begin
       FTimer := TTimer.Create(Self);
       FTimer.Enabled := False;
-      FTimer.Interval := FTimerInterval;
+      FTimer.Interval := Cardinal(FTimerInterval);
       FTimer.OnTimer := TimerExecute;
     end;
   end else begin

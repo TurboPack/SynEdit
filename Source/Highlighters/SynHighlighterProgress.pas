@@ -910,7 +910,7 @@ function TSynProgressSyn.GetRange: Pointer;
 var
   rng: TRangeInfo;
 begin
-  rng.Range := Ord(fRange);
+  rng.Range := ToWord(Ord(fRange));
   rng.Level := 0;
   case fRange of
     rsComment: rng.Level := ToWord(fCommentLevel);

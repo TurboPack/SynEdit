@@ -841,7 +841,7 @@ procedure TSynIniSyn.Next;
 begin
   fTokenPos := Run;
 
-  case fRange of
+  case ToInt32(fRange) of
     rsMultilineString:
       StringEndProc(#39);
     rsMultilineString2:

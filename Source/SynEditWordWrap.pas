@@ -443,11 +443,12 @@ begin
         if HasRTL then
         begin
           // Special case - Let DWrite do the word-wrap
-          Layout.Create(FEditor.TextFormat, PStart, PEnd - PStart, ToUInt32(FMaxRowWidth), FEditor.LineHeight);
+          Layout.Create(FEditor.TextFormat, PStart, TSynNativeUInt(PEnd - PStart),
+            TSynNativeUInt(FMaxRowWidth), TSynNativeUInt(FEditor.LineHeight));
           Layout.IDW.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
           SetLength(LineMetrics, Layout.TextMetrics.lineCount);
           Layout.IDW.GetLineMetrics(@LineMetrics[0], ToUInt32(Length(LineMetrics)), ActualLineCount);
-          for Idx := 0 to ActualLineCount - 1 do
+          for Idx := 0 to TSynNativeInt(ActualLineCount) - 1 do
           begin
             if LineMetrics[Idx].length = 0 then
               PBreak := PStart + MinMax(FMaxRowWidth div FEditor.CharWidth, 1, PEnd - PStart)
@@ -483,7 +484,8 @@ begin
               Break;
           end;
 
-          Layout.Create(FEditor.TextFormat, P, P2-P, MaxInt, FEditor.LineHeight);
+          Layout.Create(FEditor.TextFormat, P, TSynNativeUInt(P2 - P), MaxInt,
+            TSynNativeUInt(FEditor.LineHeight));
           LW := RoundSyn(Layout.TextMetrics.width);
 
           if W + LW > FMaxRowWidth then

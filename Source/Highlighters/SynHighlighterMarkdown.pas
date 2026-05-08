@@ -345,7 +345,7 @@ begin
   if Ret.Success then
   begin
     Fence := Ret.Groups[1].Value;
-    FRange.State := Ord(GetFencedCodeBlockType(Fence[1]));
+    FRange.State := ToWord(Ord(GetFencedCodeBlockType(Fence[1])));
     FRange.Length := ToWord(Length(Fence));
     FTokenID := tkCode;
     Run := Run + Ret.Length;

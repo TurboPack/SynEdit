@@ -1214,7 +1214,7 @@ begin
         if Word(P2^) in [9, 65..90, 97..122] then Break;
       end;
 
-      Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
+      Layout.Create(FTextFormat, P, TSynNativeInt(P2 - P), MaxInt, fTextHeight);
       CheckOSError(Layout.IDW.HitTestPoint(aX - W,
         fTextHeight div 2, IsTrailing, IsInside, HTM));
 
@@ -1312,7 +1312,7 @@ begin
       Inc(P2);
       if Word(P2^) in [9, 65..90, 97..122] then Break;
     end;
-    Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
+    Layout.Create(FTextFormat, P, TSynNativeInt(P2 - P), MaxInt, fTextHeight);
     if P2 < PCol then
     begin
       P := P2;
@@ -1370,7 +1370,7 @@ begin
   while (P < PEnd) and not (Word((P + 1)^) in [9, 32..126]) do
     Inc(P);
 
-  Layout.Create(FTextFormat, PStart, P - PStart + 1, MaxInt, fTextHeight);
+  Layout.Create(FTextFormat, PStart, TSynNativeInt(P - PStart + 1), MaxInt, fTextHeight);
   CheckOSError(Layout.IDW.HitTestTextPosition(ToUInt32(PChar(S) + Index - PStart - 1),
     False, X, Y, HTM));
 
@@ -1663,7 +1663,7 @@ begin
   Font.OnChange := SynFontChanged;
 
   // Create DirectWrite text format
-  FTextFormat.Create(Font, fTabWidth, 0, fExtraLineSpacing);
+  FTextFormat.Create(Font, TSynNativeUInt(fTabWidth), 0, TSynNativeUInt(fExtraLineSpacing));
   fTextHeight := ToSynNativeInt(FTextFormat.LineHeight);
   fCharWidth := ToSynNativeInt(FTextFormat.CharWidth);
 
@@ -2625,8 +2625,8 @@ var
       PrintGlyph := SynSpaceGlyph
     else
       Exit;
-    Layout.IDW.HitTestTextPosition(ToInt32(Pos-1), False, X1, Y1, HitMetrics);
-    Layout.IDW.HitTestTextPosition(ToInt32(Pos-1), True, X2, Y2, HitMetrics);
+    Layout.IDW.HitTestTextPosition(ToUInt32(Pos - 1), False, X1, Y1, HitMetrics);
+    Layout.IDW.HitTestTextPosition(ToUInt32(Pos - 1), True, X2, Y2, HitMetrics);
     WSLayout.Create(FTextFormat, @PrintGlyph, 1, ToInt32(Abs(Round(X2 - X1))), fTextHeight);
 
     Alignment := DWRITE_TEXT_ALIGNMENT_CENTER;
@@ -3097,24 +3097,24 @@ var
        // Skip if selection is not visible
        if PartSel.Last < 1 then Continue;
 
-        Layout.IDW.HitTestTextRange(ToInt32(PartSel.First - 1),
-          ToInt32(PartSel.Last - PartSel.First + 1),
+        Layout.IDW.HitTestTextRange(ToUInt32(PartSel.First - 1),
+          ToUInt32(PartSel.Last - PartSel.First + 1),
           ToInt32(FTextOffset),
           YRowOffset(ARow),
           PDwriteHitTestMetrics(nil)^, 0, RangeCount);
 
         SetLength(HMArr, RangeCount);
-        Layout.IDW.HitTestTextRange(ToInt32(PartSel.First - 1),
-        ToInt32(PartSel.Last - PartSel.First + 1),
+        Layout.IDW.HitTestTextRange(ToUInt32(PartSel.First - 1),
+        ToUInt32(PartSel.Last - PartSel.First + 1),
         ToInt32(FTextOffset + XRowOffset),
         YRowOffset(ARow), HMArr[0], RangeCount, RangeCount);
-        for I := 0 to RangeCount -1  do
+        for I := 0 to NativeInt(RangeCount) - 1  do
         begin
           if not AlphaBlended then
-            Layout.SetFontColor(PartSel.SelFG, HMArr[I].textPosition + 1, HMArr[I].length);
+            Layout.SetFontColor(PartSel.SelFG, NativeInt(HMArr[I].textPosition + 1), NativeInt(HMArr[I].length));
           RT.FillRectangle(Rect(Round(HMArr[I].left),
             YRowOffset(ARow),
-            ToSynNativeInt(SelEndX(HMArr[I].Left, HMArr[I].Width, PartSel.Last, ToSynNativeInt(I), RangeCount)),
+            ToSynNativeInt(SelEndX(HMArr[I].Left, HMArr[I].Width, PartSel.Last, ToSynNativeInt(I), TSynNativeInt(RangeCount))),
             YRowOffset(ARow + 1)), TSynDWrite.SolidBrush(BGColor));
         end;
       end;
@@ -4544,13 +4544,12 @@ begin
     begin
       FilesList := TStringList.Create;
       try
-        iNumberDropped := DragQueryFile(THandle(Msg.wParam), ToUInt32(-1),
-          nil, 0);
+        iNumberDropped := ToInt32( DragQueryFile(THandle(Msg.wParam), ToUInt32(-1), nil, 0));
         DragQueryPoint(THandle(Msg.wParam), Point);
 
         for i := 0 to iNumberDropped - 1 do
         begin
-          DragQueryFileW(THandle(Msg.wParam), i, FileNameW,
+          DragQueryFileW(THandle(Msg.wParam), ToUInt32(i), FileNameW,
             sizeof(FileNameW) div 2);
           FilesList.Add(FileNameW)
         end;
@@ -4616,7 +4615,7 @@ end;
 
 procedure TCustomSynEdit.WMGetText(var Msg: TWMGetText);
 begin
-  Msg.Result := StrLen(StrLCopy(PChar(Msg.Text), PChar(Text), ToUInt32(Msg.TextMax - 1)));
+  Msg.Result := LPARAM(StrLen(StrLCopy(PChar(Msg.Text), PChar(Text), ToUInt32(Msg.TextMax - 1))));
 end;
 
 procedure TCustomSynEdit.WMGetTextLength(var Msg: TWMGetTextLength);
@@ -4656,7 +4655,7 @@ begin
       // ImeCount is always the size in bytes, also for Unicode
       GetMem(PW, ImeCount + sizeof(WideChar));
       try
-        ImmGetCompositionStringW(imc, GCS_RESULTSTR, PW, ImeCount);
+        ImmGetCompositionStringW(imc, GCS_RESULTSTR, PW, DWORD(ImeCount));
         PW[ImeCount div sizeof(WideChar)] := #0;
         CommandProcessor(ecImeStr, #0, PW);
       finally
@@ -4674,19 +4673,14 @@ var
   imc: HIMC;
   LogFontW: TLogFontW;
 begin
-  with Msg do
+  if Msg.WParam = IMN_SETOPENSTATUS then
   begin
-    case WParam of
-      IMN_SETOPENSTATUS:
-        begin
-          imc := ImmGetContext(Handle);
-          if imc <> 0 then
-          begin
-            GetObjectW(Font.Handle, SizeOf(TLogFontW), @LogFontW);
-            ImmSetCompositionFontW(imc, @LogFontW);
-            ImmReleaseContext(Handle, imc);
-          end;
-        end;
+    imc := ImmGetContext(Handle);
+    if imc <> 0 then
+    begin
+      GetObjectW(Font.Handle, SizeOf(TLogFontW), @LogFontW);
+      ImmSetCompositionFontW(imc, @LogFontW);
+      ImmReleaseContext(Handle, imc);
     end;
   end;
   inherited;
@@ -4719,7 +4713,7 @@ var
   pTarget: PChar;
   H: HIMC;
 begin
-  case Message.WParam of
+  case ToInt32(Message.WParam) of
     IMR_RECONVERTSTRING:
       begin
         // Reconversion string
@@ -4750,29 +4744,29 @@ begin
           pReconvert := Pointer(Message.LParam);
           pReconvert.dwSize := Sizeof(TReconvertString);
           pReconvert.dwVersion := 0;
-          pReconvert.dwStrLen := Length(TargetText);
+          pReconvert.dwStrLen := DWORD(Length(TargetText));
           pReconvert.dwStrOffset := Sizeof(TReconvertString);
           pTarget := Pointer(Message.LParam + Sizeof(TReconvertString));
-          move(TargetText[1], pTarget^, TargetByteLength);
+          move(PChar(TargetText)^, pTarget^, TargetByteLength);
           if (Self.SelLength <> 0) then
           begin
             pReconvert.dwTargetStrLen := 0;
             pReconvert.dwTargetStrOffset := 0;
-            pReconvert.dwCompStrLen := Length(TargetText);
+            pReconvert.dwCompStrLen := DWORD(Length(TargetText));
             pReconvert.dwCompStrOffset := 0;
           end
           else
           begin
             pReconvert.dwTargetStrLen := 0;
-            pReconvert.dwTargetStrOffset := ToInt32((Self.CaretX - 1) * sizeof(Char));
+            pReconvert.dwTargetStrOffset := ToUInt32((Self.CaretX - 1) * sizeof(Char));
             H := Imm32GetContext(Handle);
             try
-              ImmSetCompositionString(H, SCS_QUERYRECONVERTSTRING, pReconvert, Sizeof(TReconvertString) + TargetByteLength, nil, 0);
+              ImmSetCompositionString(H, SCS_QUERYRECONVERTSTRING, pReconvert, DWORD(Sizeof(TReconvertString) + TargetByteLength), nil, 0);
               if (pReconvert.dwCompStrLen <> 0) then
               begin
-                Self.CaretX := pReconvert.dwCompStrOffset div sizeof(Char) + 1;
+                Self.CaretX := TSynNativeInt(pReconvert.dwCompStrOffset div sizeof(Char) + 1);
                 Self.SelStart := RowColToCharIndex(Self.CaretXY);
-                Self.SelLength := pReconvert.dwCompStrLen;
+                Self.SelLength := TSynNativeInt(pReconvert.dwCompStrLen);
               end;
             finally
               Imm32ReleaseContext(Handle, H);
@@ -4799,15 +4793,15 @@ begin
           pReconvert := Pointer(Message.LParam);
           pReconvert.dwSize := Sizeof(TReconvertString);
           pReconvert.dwVersion := 0;
-          pReconvert.dwStrLen := Length(TargetText);
+          pReconvert.dwStrLen := DWORD(Length(TargetText));
           pReconvert.dwStrOffset := Sizeof(TReconvertString);
           pReconvert.dwCompStrLen := 0;
           pReconvert.dwCompStrOffset := 0;
           pReconvert.dwTargetStrLen := 0;
-          pReconvert.dwTargetStrOffset := ToInt32((Self.CaretX - 1) * sizeof(Char));
+          pReconvert.dwTargetStrOffset := ToUInt32((Self.CaretX - 1) * sizeof(Char));
           pTarget := Pointer(Message.LParam + Sizeof(TReconvertString));
           if TargetText <> '' then
-            move(TargetText[1], pTarget^, Length(TargetText) * sizeof(Char));
+            move(PChar(TargetText)^, pTarget^, Length(TargetText) * sizeof(Char));
           Message.Result := Sizeof(TReconvertString) + Length(TargetText) * sizeof(Char);
         end;
       end;
@@ -6302,7 +6296,7 @@ begin
       Inc(P2);
       if Word(P2^) in [9, 65..90, 97..122] then Break;
     end;
-    Layout.Create(FTextFormat, P, P2-P, MaxInt, fTextHeight);
+    Layout.Create(FTextFormat, P, TSynNativeInt(P2 - P), MaxInt, fTextHeight);
     Inc(Result, Round(Layout.TextMetrics.widthIncludingTrailingWhitespace));
     P := P2;
   end;
@@ -6677,7 +6671,7 @@ begin
               else begin
                 // delete char accounting for surrogate pairs
                 CaretXNew := CaretX - 1;
-                if (CaretXNew > 1) and Temp[CaretXNew].IsLowSurrogate then
+                if (CaretXNew > 1) and Temp.Chars[ToInt32(CaretXNew - 1)].IsLowSurrogate then
                   Dec(CaretXNew);
                 Delete(Temp, CaretXNew, CaretX - CaretXNew);
                 CaretNew := BufferCoord(CaretXNew, CaretY);
@@ -7519,7 +7513,7 @@ begin
   if (Value <> fTabWidth) then begin
     fTabWidth := Value;
     TSynEditStringList(Lines).TabWidth := Value;
-    FTextFormat.Create(Font, fTabWidth, 0, fExtraLineSpacing);
+    FTextFormat.Create(Font, NativeUInt(fTabWidth), 0, NativeUInt(fExtraLineSpacing));
     Invalidate; // to redraw text containing tab chars
     if WordWrap then
     begin
@@ -8272,31 +8266,45 @@ end;
 
 procedure TCustomSynEdit.ExecCmdCaseChange(const Cmd: TSynEditorCommand);
 
-  function ToggleCase(const aStr: string): string;
+  function ToggleCase(const AStr: string): string;
   var
-    I: TSynNativeInt;
-    sLower: string;
+    lBuilder: TStringBuilder;
+    lCount: Integer;
+    lLower: string;
   begin
-    Result := aStr.ToUpper;
-    sLower := aStr.ToLower;
-    for I := 1 to Length(aStr) do
-    begin
-      if Result[I] = aStr[I] then
-        Result[I] := sLower[I];
+    lBuilder := TStringBuilder.Create(AStr.ToUpper);
+    try
+      lLower := AStr.ToLower;
+      for lCount := 0 to lBuilder.Length - 1 do
+      begin
+        if lBuilder[lCount] = AStr.Chars[lCount] then
+          lBuilder[lCount] := lLower.Chars[lCount];
+      end;
+      Result := lBuilder.ToString;
+    finally
+      lBuilder.Free;
     end;
   end;
 
-  function TitleCase(S:string): string;
+  function TitleCase(const AValue: string): string;
   var
-    I: TSynNativeInt;
+    lBuilder: TStringBuilder;
+    lCount: Integer;
   begin
-    S[1] := S[1].ToUpper;
-    For I := 1 to Length(S) - 1 Do
-      If IsWordBreakChar(S[I]) then
-        S[I+1] := S[I + 1].ToUpper
-      else
-        S[I + 1] := S[I + 1].ToLower;
-    Result := S;
+    lBuilder := TStringBuilder.Create(AValue);
+    try
+      lBuilder[0] := lBuilder[0].ToUpper;
+      for lCount := 0 to lBuilder.Length - 2 do
+      begin
+        If IsWordBreakChar(lBuilder[lCount]) then
+          lBuilder[lCount + 1] := lBuilder[lCount + 1].ToUpper
+        else
+          lBuilder[lCount + 1] := lBuilder[lCount + 1].ToLower;
+      end;
+      Result := lBuilder.ToString;
+    finally
+      lBuilder.Free;
+    end;
   end;
 
 var
@@ -8365,8 +8373,10 @@ begin
         MinLen := DisplayToBufferPos(DisplayCoord(
           BufferToDisplayPos(CaretXY).Column, LineToRow(Line + 1))).Char;
         PrevLine := Lines[Line];
-        if (Length(PrevLine) >= MinLen) then begin
-          P := @PrevLine[MinLen];
+        if (Length(PrevLine) >= MinLen) then
+        begin
+          P := PChar(PrevLine);
+          Inc(P, MinLen - 1);
           // scan over non-whitespaces
           repeat
             if (P^ = #9) or (P^ = #32) or (P^ = #$00A0) then Break;
@@ -8503,7 +8513,8 @@ begin
         PrevLine := ExpandTabs(Lines[iLine], fTabWidth);
         if (PrevLine.Length > 0) and (Length(PrevLine) >= MaxLen) then
         begin
-          p := @PrevLine[MaxLen];
+          p := PChar(PrevLine);
+          Inc(p, MaxLen - 1);
           // scan over whitespaces
           repeat
             if (p^ <> #32) and (p^ <> #$00A0) then Break;
@@ -9645,7 +9656,7 @@ var
 begin
   if Index < 1 then
     Exit(BufferCoord(1, 1));
-  case Lines.CountNative of
+  case ToInt32(Lines.CountNative) of
     0: Exit(BufferCoord(1, 1));
     1: Exit(BufferCoord(Index + 1, 1));
   end;

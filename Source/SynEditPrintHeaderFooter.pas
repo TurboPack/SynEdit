@@ -153,7 +153,7 @@ type
     FMargins: TSynEditPrintMargins;
     FFrameHeight: TSynInt64;
     FRomanNumbers: Boolean;
-    FLineHeights: TArray<Integer>;
+    FLineHeights: TArray<TSynNativeUInt>;
     FLineCount: Integer;
     FMirrorPosition: Boolean;
     FPPI: Integer;
@@ -388,34 +388,24 @@ var
   aSize: Integer;
   aStyle: TFontStyles;
   Len, BufferSize: Integer;
-  Buffer: Pointer;
+  Buffer: TBytes;
 begin
   with AStream do
   begin
     Read(Len, sizeof(Len));
     BufferSize := Len * sizeof(WideChar);
-    GetMem(Buffer, BufferSize + sizeof(WideChar));
-    try
-      Read(Buffer^, BufferSize);
-      PWideChar(Buffer)[BufferSize div sizeof(WideChar)] := #0;
-      FText := PWideChar(Buffer);
-    finally
-      FreeMem(Buffer);
-    end;
+    SetLength(Buffer, BufferSize);
+    Read(Buffer, BufferSize);
+    FText := TEncoding.Unicode.GetString(Buffer);
     Read(FLineNumber, sizeof(FLineNumber));
     // font
     Read(aCharset, sizeof(aCharset));
     Read(aColor, sizeof(aColor));
     Read(aHeight, sizeof(aHeight));
     Read(BufferSize, sizeof(BufferSize));
-    GetMem(Buffer, BufferSize + 1);
-    try
-      Read(Buffer^, BufferSize);
-      PAnsiChar(Buffer)[BufferSize div sizeof(AnsiChar)] := #0;
-      aName := string(PAnsiChar(Buffer));
-    finally
-      FreeMem(Buffer);
-    end;
+    SetLength(Buffer, BufferSize);
+    Read(Buffer, BufferSize);
+    aName := TEncoding.ANSI.GetString(Buffer);
     Read(aPitch, sizeof(aPitch));
     Read(aSize, sizeof(aSize));
     Read(aStyle, sizeof(aStyle));
@@ -460,7 +450,7 @@ begin
     Write(aHeight, SizeOf(aHeight));
     aLen := Length(aName);
     Write(aLen, SizeOf(aLen));
-    Write(PAnsiChar(AnsiString(aName))^, aLen);
+    Write(TEncoding.ANSI.GetBytes(aName), aLen);
     Write(aPitch, SizeOf(aPitch));
     Write(aSize, SizeOf(aSize));
     Write(aStyle, SizeOf(aStyle));
@@ -616,8 +606,8 @@ begin
     end;
 
     TextFormat:= TSynTextFormat.Create(AItem.Font);
-    FLineHeights[CurLine - 1] := ToInt32(Max(FLineHeights[CurLine - 1], TextFormat.LineHeight));
-    FFrameHeight := Max(FFrameHeight, FOrgHeight + FLineHeights[CurLine - 1]);
+    FLineHeights[CurLine - 1] := TSynNativeUInt(Max(FLineHeights[CurLine - 1], TextFormat.LineHeight));
+    FFrameHeight := Max(FFrameHeight, FOrgHeight + TSynInt64(FLineHeights[CurLine - 1]));
   end;
   FFrameHeight := FFrameHeight + 2 * FMargins.PHFInternalMargin;
 end;
@@ -692,7 +682,7 @@ const
     (DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_TEXT_ALIGNMENT_CENTER);
 var
   I: TSynNativeInt;
-  CurLine: Integer;
+  CurLine: NativeInt;
   Y: NativeInt;
   AStr: string;
   AItem: THeaderFooterItem;
@@ -718,14 +708,14 @@ begin
     TextFormat := TSynTextFormat.Create(AItem.Font);
     if AItem.LineNumber <> CurLine then
     begin
-      Y := Y + FLineHeights[CurLine - 1];
+      Y := Y + NativeInt(FLineHeights[CurLine - 1]);
       CurLine := AItem.LineNumber;
     end;
 
     AStr := AItem.GetText(FNumPages, PageNum, FRomanNumbers, FTitle, FTime, FDate);
 
-    Layout := TSynTextLayout.Create(TextFormat, PChar(AStr), AStr.Length,
-      NativeUInt(FMargins.PRightHFTextIndent - FMargins.PLeftHFTextIndent),
+    Layout := TSynTextLayout.Create(TextFormat, PChar(AStr), TSynNativeUInt(AStr.Length),
+      TSynNativeUInt(FMargins.PRightHFTextIndent - FMargins.PLeftHFTextIndent),
       FLineHeights[CurLine - 1]);
     Layout.SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR);
     //Find the alignment of the header/footer item - check for MirrorPosition
@@ -819,7 +809,7 @@ var
   aSize: Integer;
   aStyle: TFontStyles;
   bufSize: Integer;
-  buffer: PAnsiChar;
+  buffer: TBytes;
 begin
   with AStream do begin
     // read header/footer properties first
@@ -833,14 +823,9 @@ begin
     Read(aColor, SizeOf(aColor));
     Read(aHeight, SizeOf(aHeight));
     Read(bufSize, SizeOf(bufSize));
-    GetMem(buffer, bufSize+1);
-    try
-      Read(buffer^, bufSize);
-      buffer[bufSize] := #0;
-      aName := string(buffer);
-    finally
-      FreeMem(buffer);
-    end;
+    SetLength(buffer, bufSize);
+    Read(buffer, bufSize);
+    aName := TEncoding.ANSI.GetString(buffer);
     Read(aPitch, SizeOf(aPitch));
     Read(aSize, SizeOf(aSize));
     Read(aStyle, SizeOf(aStyle));
@@ -865,48 +850,48 @@ end;
 
 procedure THeaderFooter.SaveToStream(AStream: TStream);
 var
-  I: TSynNativeInt;
-  Num: TSynNativeInt;
-  aCharset: TFontCharset;
-  aColor: TColor;
-  aHeight: Integer;
-  aName: TFontName;
-  aPitch: TFontPitch;
-  aSize: Integer;
-  aStyle: TFontStyles;
-  aLen: Integer;
+  lBytes: TBytes;
+  lCharset: TFontCharset;
+  lColor: TColor;
+  lCount: TSynNativeInt;
+  lHeight: Integer;
+  lLen: NativeInt;
+  lName: TFontName;
+  lNum: TSynNativeInt;
+  lPitch: TFontPitch;
+  lSize: Integer;
+  lStyle: TFontStyles;
 begin
-  with AStream do begin
-    // write the header/footer properties first
-    Write(FFrameTypes, SizeOf(FFrameTypes));
-    Write(FShadedColor, SizeOf(FShadedColor));
-    Write(FLineColor, SizeOf(FLineColor));
-    Write(FRomanNumbers, SizeOf(FRomanNumbers));
-    Write(FMirrorPosition, SizeOf(FMirrorPosition));
-    // font
-    aCharset := FDefaultFont.Charset;
-    aColor   := FDefaultFont.Color;
-    aHeight  := FDefaultFont.Height;
-    aName    := FDefaultFont.Name;
-    aPitch   := FDefaultFont.Pitch;
-    aSize    := FDefaultFont.Size;
-    aStyle   := FDefaultFont.Style;
-    Write(aCharset, SizeOf(aCharset));
-    Write(aColor, SizeOf(aColor));
-    Write(aHeight, SizeOf(aHeight));
-    aLen := Length(aName);
-    Write(aLen, SizeOf(aLen));
-    Write(PAnsiChar(AnsiString(aName))^, Length(aName));
-    Write(aPitch, SizeOf(aPitch));
-    Write(aSize, SizeOf(aSize));
-    Write(aStyle, SizeOf(aStyle));
+  // write the header/footer properties first
+  AStream.Write(FFrameTypes, SizeOf(FFrameTypes));
+  AStream.Write(FShadedColor, SizeOf(FShadedColor));
+  AStream.Write(FLineColor, SizeOf(FLineColor));
+  AStream.Write(FRomanNumbers, SizeOf(FRomanNumbers));
+  AStream.Write(FMirrorPosition, SizeOf(FMirrorPosition));
+  // font
+  lCharset := FDefaultFont.Charset;
+  lColor   := FDefaultFont.Color;
+  lHeight  := FDefaultFont.Height;
+  lName    := FDefaultFont.Name;
+  lPitch   := FDefaultFont.Pitch;
+  lSize    := FDefaultFont.Size;
+  lStyle   := FDefaultFont.Style;
+  lBytes := TEncoding.ANSI.GetBytes(lName);
+  AStream.Write(lCharset, SizeOf(lCharset));
+  AStream.Write(lColor, SizeOf(lColor));
+  AStream.Write(lHeight, SizeOf(lHeight));
+  lLen := Length(lBytes);
+  AStream.Write(lLen, SizeOf(lLen));
+  AStream.Write(lBytes, TSynNativeInt(Length(lBytes)));
+  AStream.Write(lPitch, SizeOf(lPitch));
+  AStream.Write(lSize, SizeOf(lSize));
+  AStream.Write(lStyle, SizeOf(lStyle));
 
-    // now write the items
-    Num := Count;
-    Write(Num, SizeOf(Num));
-    for I := 0 to Num - 1 do
-      Get(I).SaveToStream(AStream);
-  end;
+  // now write the items
+  lNum := Count;
+  AStream.Write(lNum, SizeOf(lNum));
+  for lCount := 0 to lNum - 1 do
+    Get(lCount).SaveToStream(AStream);
 end;
 
 { THeader }

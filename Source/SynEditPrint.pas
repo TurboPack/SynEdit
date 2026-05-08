@@ -302,8 +302,8 @@ procedure TSynEditPrint.InitPrint;
 begin
   FPrinterInfo.UpdatePrinter;
   SetPixelsPrInch;
-  FSynTextFormat := TSynTextFormat.Create(FFont, FTabWidth, 0, 0);
-  FLineHeight := FSynTextFormat.LineHeight;
+  FSynTextFormat := TSynTextFormat.Create(FFont, NativeUInt(FTabWidth), 0, 0);
+  FLineHeight := NativeInt(FSynTextFormat.LineHeight);
   FMargins.InitPage(FSynTextFormat, 1, FPrinterInfo, FLineNumbers,
     FLineNumbersInMargin, FLines.Count - 1 + FLineOffset);
   FSynOK := Highlight and Assigned(FHighLighter) and (FLines.Count > 0);
@@ -389,7 +389,7 @@ begin
     begin
       TextLayout := GetTextLayout(i);
       TextLayout.IDW.GetLineMetrics(@LineMetrics, 1, ActualLineCount);
-      LayoutRowCount := ActualLineCount; // to avoid warnings
+      LayoutRowCount := Integer(ActualLineCount); // to avoid warnings
       Inc(RowCount, LayoutRowCount);
     end;
 
@@ -428,7 +428,7 @@ var
   Layout: TSynTextLayout;
 begin
   AStr := IntToStr(LineNumber + FLineOffset) + ': ';
-  Layout := TSynTextLayout.Create(FSynTextFormat, PChar(AStr), AStr.Length);
+  Layout := TSynTextLayout.Create(FSynTextFormat, PChar(AStr), TSynNativeUInt(AStr.Length));
   Layout.Draw(RT, ToInt32(FMargins.PLeft) -
     RoundNative(Layout.TextMetrics.widthIncludingTrailingWhitespace), YPos, FontColor);
 end;
@@ -566,7 +566,7 @@ begin
           end;
 
           TextLayout.IDW.GetLineMetrics(@LineMetrics, 1, ActualLineCount);
-          LayoutRowCount := ActualLineCount; // to avoid warnings
+          LayoutRowCount := NativeInt(ActualLineCount); // to avoid warnings
 
           if YPos + LayoutRowCount * FLineHeight >= ClipR.Top then
           begin
@@ -792,7 +792,7 @@ begin
       iSelLen := MaxInt;
     S := Copy(Lines.ItemsNative[Line], iSelStart, iSelLen);
   end;
-  Result.Create(FSynTextFormat, PChar(S), NativeInt(S.Length), NativeUInt(FMaxWidth), MaxInt, Wrap, 1);
+  Result.Create(FSynTextFormat, PChar(S), TSynNativeUInt(S.Length), TSynNativeUInt(FMaxWidth), MaxInt, Wrap, 1);
 end;
 
 procedure TSynEditPrint.SetSynEdit(const Value: TCustomSynEdit);

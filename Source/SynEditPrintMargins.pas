@@ -355,7 +355,7 @@ begin
   if LineNumbers and (not LineNumbersInMargin) then
   begin
     Str:= IntToStr(MaxLineNum) + ': ';
-    Layout := TSynTextLayout.Create(TextFormat, PChar(Str), Str.Length);
+    Layout := TSynTextLayout.Create(TextFormat, PChar(Str), TSynNativeUInt(Str.Length));
     PLeft := PLeft + RoundSyn(Layout.TextMetrics.widthIncludingTrailingWhitespace);
   end;
   PTop := MulDiv(PrinterInfo.PixFromTop(FTop), 96, PrinterInfo.YPixPrInch);

@@ -106,7 +106,7 @@ type
     function FuncProperty: TtkTokenKind;
     function FuncTypeScoped: TtkTokenKind;
     function FuncType: TtkTokenKind;
-    function HashKey(Str: PWideChar): Cardinal;
+    function HashKey(Str: PWideChar): NativeInt;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
     procedure AddressOpProc;
@@ -243,7 +243,7 @@ begin
   FCaseSensitive := True; // bypass automatic lowercase, we handle it here
 
   FAsmAttri := TSynHighlighterAttributes.Create(SYNS_AttrAssembler, SYNS_FriendlyAttrAssembler);
-  FAsmAttri.Foreground := RGB(128, 0, 0);
+  FAsmAttri.Foreground := TColor(RGB(128, 0, 0));
   AddAttribute(FAsmAttri);
 
   FCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
@@ -322,7 +322,7 @@ end;
   {$OVERFLOWCHECKS OFF}
   {$DEFINE OVERFLOWCHECK_ON}
 {$ENDIF}
-function TSynDWSSyn.HashKey(Str: PWideChar): Cardinal;
+function TSynDWSSyn.HashKey(Str: PWideChar): NativeInt;
 var
   C: Word;
 begin
@@ -336,7 +336,7 @@ begin
       Inc(Str);
    end;
    fStringLen := Str - fToIdent;
-   Result := Result mod ToUInt32(Length(fIdentFuncTable));
+   Result := Result mod Length(fIdentFuncTable);
 end;
 {$IFDEF OVERFLOWCHECK_ON}
   {$OVERFLOWCHECKS ON}
@@ -345,7 +345,7 @@ end;
 
 function TSynDWSSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
-  Key: Cardinal;
+  Key: NativeInt;
 begin
   fToIdent := MayBe;
   Key := HashKey(MayBe);
@@ -357,32 +357,34 @@ end;
 
 procedure TSynDWSSyn.InitIdent;
 
-  procedure SetIdentFunc(h: TSynNativeInt; const func: TIdentFuncTableFunc);
+  procedure SetIdentFunc(h: NativeInt; const func: TIdentFuncTableFunc);
   begin
     fIdentFuncTable[h]:=func;
   end;
 
 var
   I: TSynNativeInt;
+  S: string;
 begin
   for I := Low(cKeywords) to High(cKeywords) do
   begin
-    SetIdentFunc(HashKey(@cKeyWords[I][1]), KeyWordFunc);
+    S := cKeyWords[I];
+    SetIdentFunc(HashKey(PChar(S)), KeyWordFunc);
     fKeyWords.Add(cKeyWords[I]);
    end;
   for I := 0 to High(cKeywordsUnitScoped) do
   begin
-    SetIdentFunc(HashKey(@cKeywordsUnitScoped[I][1]), FuncUnitScoped);
+    SetIdentFunc(HashKey(PWideChar(cKeywordsUnitScoped[I])), FuncUnitScoped);
     FKeywordsUnitScoped.Add(cKeywordsUnitScoped[I]);
   end;
   for I := 0 to High(cKeywordsPropertyScoped) do
   begin
-    SetIdentFunc(HashKey(@cKeywordsPropertyScoped[I][1]), FuncPropertyScoped);
+    SetIdentFunc(HashKey(PWideChar(cKeywordsPropertyScoped[I])), FuncPropertyScoped);
     FKeywordsPropertyScoped.Add(cKeywordsPropertyScoped[I]);
   end;
   for I := 0 to High(cKeywordsTypeScoped) do
   begin
-    SetIdentFunc(HashKey(@cKeywordsTypeScoped[I][1]), FuncTypeScoped);
+    SetIdentFunc(HashKey(PWideChar(cKeywordsTypeScoped[I])), FuncTypeScoped);
     FKeywordsTypeScoped.Add(cKeywordsTypeScoped[I]);
   end;
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
@@ -659,7 +661,7 @@ procedure TSynDWSSyn.LoadDelphiStyle;
    var
      I: TSynNativeInt;
    begin
-     I := HashKey( @AName[1] );
+     I := TSynNativeInt(HashKey(@AName[1]));
      fIdentFuncTable[I]:= KeyWordFunc;
      fKeyWords.Add(AName);
    end;
@@ -1248,7 +1250,7 @@ begin
       while J < FoldRanges.Ranges.Count do begin
         FoldRange := FoldRanges.Ranges.List[j];
         Inc(j);
-        case FoldRange.FoldType of
+        case ToInt32(FoldRange.FoldType) of
           FT_CodeDeclarationWithBody:
             // Nested procedure or function
             begin

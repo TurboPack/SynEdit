@@ -994,9 +994,10 @@ var
   Len: TSynNativeInt;
 begin
   Len := (Run - 1) - fTokenPos;
-  SetLength(Result, Len);
   if Len > 0 then
-    StrLCopy(@Result[1], fCasedLine + fTokenPos, Int32(Len));
+    Result := string(fCasedLine).Substring(ToInt32(fTokenPos), ToInt32(Len))
+  else
+    Result := string.Empty;
 end;
 
 function TSynHP48Syn.IsLineEnd(Run: TSynNativeInt): Boolean;

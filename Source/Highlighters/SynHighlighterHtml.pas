@@ -943,7 +943,7 @@ begin
       end
       else
         for i := Low(EscapeAmps) To High(EscapeAmps) do
-          if (AnsiStrLComp((fLine + Run), EscapeAmps[i], Length(EscapeAmps[i])) = 0) then
+          if (AnsiStrLComp((fLine + Run), EscapeAmps[i], UInt32(Length(EscapeAmps[i]))) = 0) then
           begin
             fAndCode := i;
             fRange := rsAmpersand;
@@ -983,7 +983,7 @@ begin
     Exit;
   end;
 
-  case fAndCode of
+  case ToInt32(fAndCode) of
   Low(EscapeAmps)..High(EscapeAmps):
     begin
       fTokenID := tkAmpersand;

@@ -207,7 +207,7 @@ type
 implementation
 
 uses
- SynEditTextBuffer, SynFunc;
+  System.Character, SynEditTextBuffer, SynFunc;
 
 { TCustomSynAutoCorrect }
 
@@ -593,15 +593,22 @@ var
   p: TBufferCoord;
   Action: TAutoCorrectAction;
 
-  function FirstCapCase(s: string): string;
+  function FirstCapCase(const AValue: string): string;
+  var
+    lBuilder: TStringBuilder;
   begin
-    if s <> '' then
+    if not AValue.IsEmpty then
     begin
-      s := SysUtils.AnsiLowerCase(s);
-      s[1] := SysUtils.AnsiUpperCase(s[1])[1];
-    end;
-
-    Result := s;
+      lBuilder := TStringBuilder.Create(AValue.ToLower);
+      try
+        lBuilder[0] := lBuilder[0].ToUpper;
+        Result := lBuilder.ToString;
+      finally
+        lBuilder.Free;
+      end;
+    end
+    else
+      Result := AValue;
   end;
 
 begin

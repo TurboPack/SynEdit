@@ -116,9 +116,9 @@ end;
 
 function TSynExporterRTF.ColorToRTF(AColor: TColor): string;
 var
-  Col: Integer;
+  Col: DWORD;
 begin
-  Col := ColorToRGB(AColor);
+  Col := DWORD(ColorToRGB(AColor));
   Result := Format('\red%d\green%d\blue%d;', [GetRValue(Col), GetGValue(Col),
     GetBValue(Col)]);
 end;

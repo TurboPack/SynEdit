@@ -1227,11 +1227,8 @@ function TSynPasSyn.UseUserSettings(VersionIndex: TSynNativeInt): Boolean;
       VersionStr: string;
 
       function ReadDelphi2Or3(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
-      var
-        I: TSynNativeInt;
       begin
-        for I := 1 to Length(name) do
-          if name[I] = ' ' then name[I] := '_';
+        name := name.Replace(' ', '_');
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
                 '\Software\Borland\Delphi\'+settingTag+'\Highlight',name,True);
       end; { ReadDelphi2Or3 }
@@ -1625,7 +1622,7 @@ begin
       while J < FoldRanges.Ranges.Count do begin
         FoldRange := FoldRanges.Ranges.List[j];
         Inc(j);
-        case FoldRange.FoldType of
+        case ToInt32(FoldRange.FoldType) of
           // Nested procedure or function
           FT_CodeDeclarationWithBody:
             begin

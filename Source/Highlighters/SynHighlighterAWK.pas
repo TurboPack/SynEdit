@@ -224,7 +224,7 @@ begin
   while CharInSet(fLine[i], ['a'..'z', 'A'..'Z']) do
     Inc(i);
   SetLength(s, i - Run);
-  StrLCopy(PWideChar(s), fLine + Run, ToInt32(i - Run));
+  StrLCopy(PWideChar(s), fLine + Run, ToUInt32(i - Run));
   Run := i;
   if AWKSyntaxList.Find(s, idx) and (AWKSyntaxList.Strings[idx] = s) then
   begin
