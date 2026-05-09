@@ -3320,7 +3320,7 @@ begin
         if (FlowControl <> fcNone) and (FullRowFG = clNone) and
           (CharOffset + LastChar = SLine.Length + 2)
         then
-          Layout.SetFontColor(FDisplayFlowControl.Color, LastChar - FirstChar + 1, 1);
+          Layout.SetFontColor(FDisplayFlowControl.GetColorForControl(FlowControl), LastChar - FirstChar + 1, 1);
       end;
     end;
 

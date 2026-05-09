@@ -12,7 +12,7 @@
   The Original Code is based on the mwSupportClasses.pas file from the
   mwEdit component suite by Martin Waldenburg and other developers, the Initial
   Author of this file is Michael Hieke.
-  Unicode translation by Maël Hörz.
+  Unicode translation by MaÃ«l HÃ¶rz.
   All Rights Reserved.
 
   Contributors to the SynEdit and mwEdit projects are listed in the
@@ -852,11 +852,17 @@ type
   private
     FEnabled: Boolean;
     FColor: TColor;
+    FBreakColor: TColor;
+    FContinueColor: TColor;
+  public
+    function GetColorForControl(FC: TSynFlowControl): TColor;
   published
     constructor Create;
     procedure Assign(aSource: TPersistent); override;
     property Enabled: Boolean read FEnabled write FEnabled default True;
-    property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed
+    property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed (exit)
+    property BreakColor: TColor read FBreakColor write FBreakColor default $0045FF;
+    property ContinueColor: TColor read FContinueColor write FContinueColor default $0045FF;
   end;
 
    {$ENDREGION 'TSynDisplayFlowControl'}
@@ -4256,6 +4262,8 @@ begin
   begin
     FEnabled := TSynDisplayFlowControl(aSource).Enabled;
     FColor := TSynDisplayFlowControl(aSource).Color;
+    FBreakColor := TSynDisplayFlowControl(aSource).BreakColor;
+    FContinueColor := TSynDisplayFlowControl(aSource).ContinueColor;
   end
   else
     inherited;
@@ -4265,7 +4273,19 @@ constructor TSynDisplayFlowControl.Create;
 begin
   inherited;
   FEnabled := True;
-  FColor := $0045FF;  // clWebOrangeRed
+  FColor := $0045FF;  // clWebOrangeRed (exit default)
+  FBreakColor := $0045FF;
+  FContinueColor := $0045FF;
+end;
+
+function TSynDisplayFlowControl.GetColorForControl(FC: TSynFlowControl): TColor;
+begin
+  case FC of
+    fcBreak:    Result := FBreakColor;
+    fcContinue: Result := FContinueColor;
+  else
+    Result := FColor; // fcExit and fcNone
+  end;
 end;
 
 {$ENDREGION 'TSynDisplayFlowControl'}
