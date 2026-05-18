@@ -1755,17 +1755,17 @@ procedure TSynBaseCompletionProposalForm.SetCurrentString(const Value: string);
   var
     CompareString: string;
   begin
-    if UseInsertList then
-      CompareString := FInsertList[AIndex]
-    else
-    begin
-      CompareString := FItemList[AIndex];
-
-      if UsePrettyText then
-        CompareString := StripFormatCommands(CompareString);
-    end;
+    CompareString := FItemList[AIndex];
+    if UsePrettyText then
+      CompareString := StripFormatCommands(CompareString);
 
     Result := CompareString.StartsWith(Value, not FCase);
+    if not Result then
+    begin
+      CompareString := FInsertList[AIndex];
+
+      Result := CompareString.StartsWith(Value, not FCase);
+    end;
   end;
 
   procedure RecalcList;
