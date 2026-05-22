@@ -1484,7 +1484,7 @@ begin
   begin
     try
       RootKey := HKEY_LOCAL_MACHINE;
-      if OpenKeyReadOnly('\SOFTWARE\Borland\C++Builder') then
+      if OpenKeyReadOnly('\SOFTWARE\Embarcadero\BDS') then
       begin
         try
           GetKeyNames(settings);
@@ -1532,7 +1532,7 @@ function TSynCppSyn.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
       function ReadCPPB3OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
       begin
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-                 '\Software\Borland\C++Builder\'+settingTag+'\Editor\Highlight',
+                 '\Software\Embarcadero\BDS\'+settingTag+'\Editor\Highlight',
                  key, False);
       end; { ReadCPPB3OrMore }
 
@@ -1606,7 +1606,7 @@ function TSynCppSyn.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
                   ReadCPPBSetting(s.ItemsNative[settingIndex],fIdentifierAttri,'Identifier') and
                   ReadCPPBSetting(s.ItemsNative[settingIndex],fInvalidAttri,'Illegal Char')  and
                   ReadCPPBSetting(s.ItemsNative[settingIndex],fKeyAttri,'Reserved word')     and
-                  ReadCPPBSetting(s.ItemsNative[settingIndex],fNumberAttri,'Integer')        and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fNumberAttri,'Number')         and
                   ReadCPPBSetting(s.ItemsNative[settingIndex],fFloatAttri,'Float')           and
                   ReadCPPBSetting(s.ItemsNative[settingIndex],fHexAttri,'Hex')               and
                   ReadCPPBSetting(s.ItemsNative[settingIndex],fOctalAttri,'Octal')           and
@@ -1631,6 +1631,7 @@ function TSynCppSyn.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
           fSpaceAttri     .Assign(tmpSpaceAttri);
           fDirecAttri     .Assign(tmpDirecAttri);
         end;
+        fBracketAttri.Assign(fSpaceAttri);
         tmpStringAttri    .Free;
         tmpCharAttri      .Free;
         tmpNumberAttri    .Free;
