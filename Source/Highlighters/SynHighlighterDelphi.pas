@@ -114,8 +114,8 @@ implementation
 
 const
   // SORTED list of keywords for Binary Search (Delphi 13 + Standard Pascal)
-  DelphiKeywords: array[0..138] of string = (
-    'absolute', 'abstract', 'add', 'and', 'ansistring', 'array', 'as', 'asm',
+  DelphiKeywords: array[0..136] of string = (
+    'absolute', 'abstract', 'and', 'ansistring', 'array', 'as', 'asm',
     'assembler', 'automated', 'begin', 'boolean', 'byte', 'bytebool',
     'cardinal', 'case', 'cdecl', 'class', 'const', 'constructor', 'contains',
     'currency', 'default', 'delayed', 'deprecated', 'destructor', 'dispid',
@@ -130,12 +130,11 @@ const
     'packed', 'pascal', 'platform', 'private', 'procedure', 'program',
     'property', 'protected', 'public', 'published', 'raise', 'read',
     'readonly', 'real48', 'record', 'reference', 'register', 'reintroduce',
-    'remove', 'repeat', 'requires', 'resourcestring', 'safecall', 'sealed',
-    'set', 'shl', 'shortint', 'shortstring', 'shr', 'single', 'smallint',
-    'static', 'stdcall', 'stored', 'strict', 'string', 'stringresource',
-    'then', 'threadvar', 'to', 'try', 'type', 'unit', 'unsafe', 'until',
-    'uses', 'var', 'virtual', 'while', 'with', 'word', 'wordbool', 'write',
-    'writeonly', 'xor'
+    'repeat', 'requires', 'resourcestring', 'safecall', 'sealed', 'set', 'shl',
+    'shortint', 'shortstring', 'shr', 'single', 'smallint', 'static',
+    'stdcall', 'stored', 'strict', 'string', 'stringresource', 'then',
+    'threadvar', 'to', 'try', 'type', 'unit', 'unsafe', 'until', 'uses', 'var',
+    'virtual', 'while', 'with', 'word', 'wordbool', 'write', 'writeonly', 'xor'
   );
 
 { TSynDelphiSyn }
