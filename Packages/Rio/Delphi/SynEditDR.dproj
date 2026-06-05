@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
@@ -170,6 +170,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterFoxpro.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGalaxy.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGeneral.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGo.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGWS.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHaskell.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHC11.pas"/>
