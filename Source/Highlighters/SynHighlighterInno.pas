@@ -11,7 +11,7 @@ the specific language governing rights and limitations under the License.
 The Original Code is: SynHighlighterInno.pas, released 2000-05-01.
 The Initial Author of this file is Satya.
 Portions created by Satya are Copyright 2000 Satya.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -27,10 +27,10 @@ If you do not delete the provisions above, a recipient may use your version
 of this file under either the MPL or the GPL.
 -------------------------------------------------------------------------------}
 {
-@abstract(Provides an Inno script file highlighter for SynEdit)
+@abstract(Provides an Inno Setup script highlighter for SynEdit)
 @author(Satya)
 @created(2000-05-01)
-@lastmod(2001-01-23)
+@lastmod(2026-06-05)
 The SynHighlighterInno unit provides an Inno script file highlighter for SynEdit.
 Check out http://www.jrsoftware.org for the free Inno Setup program,
 and http://www.wintax.nl/isx/ for My Inno Setup Extensions.
@@ -53,17 +53,26 @@ uses
   SynFunc;
 
 type
-  TtkTokenKind = (tkComment, tkConstant, tkIdentifier, tkKey, tkKeyOrParameter,
-    tkNull, tkNumber, tkParameter, tkSection, tkSpace, tkString, tkSymbol,
-    tkUnknown);
+  TtkTokenKind = (tkComment, tkConstant, tkFunction, tkIdentifier, tkKey,
+    tkKeyOrParameter, tkNull, tkNumber, tkParameter, tkPreprocessor, tkSection,
+    tkSpace, tkString, tkSymbol, tkUnknown);
+
+  // rsUnknown        : normal Inno directive section (e.g. [Setup], [Files])
+  // rsCode           : inside the [Code] section, Pascal mode
+  // rsCodeBraceComment / rsCodeParenComment : multi-line Pascal comments inside
+  //                    the [Code] section ({ ... } and (* ... *) respectively)
+  TRangeState = (rsUnknown, rsCode, rsCodeBraceComment, rsCodeParenComment);
 
   TSynInnoSyn = class(TSynCustomHighlighter)
   private
+    fRange: TRangeState;
     fTokenID: TtkTokenKind;
     fConstantAttri: TSynHighlighterAttributes;
     fCommentAttri: TSynHighlighterAttributes;
     fSectionAttri: TSynHighlighterAttributes;
     fParamAttri: TSynHighlighterAttributes;
+    fFunctionAttri: TSynHighlighterAttributes;
+    fPreprocessorAttri: TSynHighlighterAttributes;
     fIdentifierAttri: TSynHighlighterAttributes;
     fInvalidAttri: TSynHighlighterAttributes;
     fKeyAttri: TSynHighlighterAttributes;
@@ -72,21 +81,39 @@ type
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
+    FCodeKeywords: TDictionary<string, TtkTokenKind>;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
-    procedure SymbolProc;
+    function InCodeSection: Boolean;
+    // shared
     procedure CRProc;
-    procedure IdentProc;
     procedure LFProc;
     procedure NullProc;
-    procedure NumberProc;
-    procedure SectionProc;
     procedure SpaceProc;
+    procedure NumberProc;
+    procedure PreprocessorProc;
+    procedure SectionProc;
+    procedure UnknownProc;
+    // Inno directive mode
+    procedure NextInno;
+    procedure IdentProc;
+    procedure SymbolProc;
     procedure EqualProc;
     procedure ConstantProc;
     procedure SemiColonProc;
     procedure StringProc;
-    procedure UnknownProc;
+    // Pascal [Code] mode
+    procedure NextCode;
+    procedure CodeIdentProc;
+    procedure CodeSlashProc;
+    procedure CodeBraceProc;
+    procedure CodeParenProc;
+    procedure CodeStringProc;
+    procedure CodeHexProc;
+    procedure CodeSymbolProc;
+    procedure BraceCommentProc;
+    procedure ParenCommentProc;
     procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
+    procedure DoAddCodeKeyword(AKeyword: string; AKind: TSynNativeInt);
   protected
     function GetSampleSource: string; override;
     function IsCurrentToken(const Token: string): Boolean; override;
@@ -100,15 +127,20 @@ type
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
+    function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
+    procedure ResetRange; override;
+    procedure SetRange(Value: Pointer); override;
   published
     property ConstantAttri: TSynHighlighterAttributes read fConstantAttri
       write fConstantAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
+    property FunctionAttri: TSynHighlighterAttributes read fFunctionAttri
+      write fFunctionAttri;
     property IdentifierAttri: TSynHighlighterAttributes read fIdentifierAttri
       write fIdentifierAttri;
     property InvalidAttri: TSynHighlighterAttributes read fInvalidAttri
@@ -118,6 +150,8 @@ type
       write fNumberAttri;
     property ParameterAttri: TSynHighlighterAttributes read fParamAttri
       write fParamAttri;
+    property PreprocessorAttri: TSynHighlighterAttributes read fPreprocessorAttri
+      write fPreprocessorAttri;
     property SectionAttri: TSynHighlighterAttributes read fSectionAttri
       write fSectionAttri;
     property SpaceAttri: TSynHighlighterAttributes read fSpaceAttri
@@ -135,58 +169,160 @@ uses
   SynEditStrConst;
 
 const
-  {Note: new 'Section names' and the new 'Constants' need not be added
-         as they are highlighted automatically}
-
-  {Ref:  Keywords and Parameters are updated as they last appeared in
-         Inno Setup / ISX version 1.3.26}
-
+  // Section directive keys ('Key=' in [Setup], 'Key:' in the list sections).
+  // Updated for Inno Setup 6.x. New section names and {constants} need not be
+  // listed: sections are highlighted by position and constants by syntax.
   Keywords: string =
-    'adminprivilegesrequired,allownoicons,allowrootdirectory,allowuncpath,' +
-    'alwayscreateuninstallicon,alwaysrestart,alwaysshowcomponentslist,' +
-    'alwaysshowdironreadypage,alwaysshowgrouponreadypage,' +
-    'alwaysusepersonalgroup,appcopyright,appid,appmutex,appname,apppublisher,' +
-    'apppublisherurl,appsupporturl,appupdatesurl,appvername,appversion,' +
-    'attribs,backcolor,backcolor2,backcolordirection,backsolid,bits,' +
-    'changesassociations,check,codefile,comment,components,compression,compresslevel,copymode,'+
-    'createappdir,createuninstallregkey,defaultdirname,defaultgroupname,' +
-    'description,destdir,destname,direxistswarning,disableappenddir,' +
+    'adminprivilegesrequired,afterinstall,allowcancelduringinstall,' +
+    'allownetworkdrive,allownoicons,allowrootdirectory,allowuncpath,' +
+    'alwaysrestart,alwaysshowcomponentslist,alwaysshowdironreadypage,' +
+    'alwaysshowgrouponreadypage,alwaysusepersonalgroup,appcomments,' +
+    'appcontact,appcopyright,appid,appmodifypath,appmutex,appname,' +
+    'apppublisher,apppublisherurl,appreadmefile,appsupportphone,' +
+    'appsupporturl,appupdatesurl,appvername,appversion,' +
+    'architecturesallowed,architecturesinstallin64bitmode,attribs,' +
+    'backcolor,backcolor2,backcolordirection,backsolid,beforeinstall,bits,' +
+    'changesassociations,changesenvironment,check,closeapplications,' +
+    'closeapplicationsfilter,codefile,comment,components,compression,' +
+    'compressionthreads,compresslevel,copymode,createallsubdirs,createappdir,' +
+    'createuninstallregkey,defaultdirname,defaultgroupname,description,' +
+    'destdir,destname,direxistswarning,disableappenddir,' +
     'disabledirexistswarning,disabledirpage,disablefinishedpage,' +
     'disableprogramgrouppage,disablereadymemo,disablereadypage,' +
-    'disablestartupprompt,diskclustersize,disksize,diskspacemblabel,' +
-    'diskspanning,dontmergeduplicatefiles,enabledirdoesntexistwarning,' +
-    'extradiskspacerequired,filename,flags,flatcomponentslist,fontinstall,' +
-    'groupdescription,hotkey,iconfilename,iconindex,infoafterfile,infobeforefile,' +
-    'installmode,internalcompresslevel,key,licensefile,messagesfile,minversion,name,' +
-    'onlybelowversion,outputbasefilename,outputdir,overwriteuninstregentries,' +
-    'parameters,password,reservebytes,root,runonceid,section,' +
-    'showcomponentsizes,source,sourcedir,statusmsg,subkey,tasks,type,types,' +
-    'uninstalldisplayicon,uninstalldisplayname,uninstallfilesdir,' +
-    'uninstalliconname,uninstalllogmode,uninstallstyle,uninstallable,' +
-    'updateuninstalllogappname,usepreviousappdir,usepreviousgroup,' +
-    'useprevioustasks,useprevioussetuptype,usesetupldr,valuedata,valuename,' +
-    'valuetype,windowresizable,windowshowcaption,windowstartmaximized,' +
-    'windowvisible,wizardimagebackcolor,wizardimagefile,wizardsmallimagefile,' +
-    'wizardstyle,workingdir';
+    'disablestartupprompt,disablewelcomepage,diskclustersize,diskslicesize,' +
+    'diskspacemblabel,diskspanning,dontmergeduplicatefiles,emptydircheck,' +
+    'enabledirdoesntexistwarning,encryption,excludes,extradiskspacerequired,' +
+    'externalsize,filename,flags,flatcomponentslist,fontinstall,' +
+    'groupdescription,hotkey,iconfilename,iconindex,infoafterfile,' +
+    'infobeforefile,internalcompresslevel,key,languagedetectionmethod,' +
+    'languages,licensefile,lzmaalgorithm,lzmadictionarysize,lzmamatchfinder,' +
+    'lzmanumblockthreads,lzmanumfastbytes,lzmauseseparateprocess,' +
+    'mergeduplicatefiles,messagesfile,minversion,name,onlybelowversion,output,' +
+    'outputbasefilename,outputdir,outputmanifestfile,parameters,password,' +
+    'permissions,privilegesrequired,privilegesrequiredoverridesallowed,' +
+    'reservebytes,restartapplications,restartifneededbyrun,root,runonceid,' +
+    'section,setupiconfile,setupmutex,sharedfilelocation,showcomponentsizes,' +
+    'showlanguagedialog,signtool,signtoolretrycount,signtoolretrydelay,' +
+    'signeduninstaller,slicesperdisk,solidcompression,source,sourcedir,' +
+    'statusmsg,strongassemblyname,subkey,tasks,timestamprounding,' +
+    'timestampsinutc,touchdate,touchtime,type,types,uninstalldisplayicon,' +
+    'uninstalldisplayname,uninstalldisplaysize,uninstallable,' +
+    'uninstallfilesdir,uninstalliconname,uninstalllogmode,' +
+    'uninstallrestartcomputer,updateuninstalllogappname,useapppaths,' +
+    'usepreviousappdir,usepreviousgroup,usepreviouslanguage,' +
+    'usepreviousprivileges,useprevioussetuptype,useprevioustasks,' +
+    'useprevioususerinfo,usesetupldr,valuedata,valuename,valuetype,' +
+    'versioninfocompany,versioninfocopyright,versioninfodescription,' +
+    'versioninfooriginalfilename,versioninfoproductname,' +
+    'versioninfoproducttextversion,versioninfoproductversion,' +
+    'versioninfotextversion,versioninfoversion,windowresizable,' +
+    'windowshowcaption,windowstartmaximized,windowvisible,' +
+    'wizardimagealphaformat,wizardimagefile,wizardimagestretch,' +
+    'wizardresizable,wizardsizepercent,wizardsmallimagefile,wizardstyle,' +
+    'workingdir';
 
+  // Flag and enumeration values used as parameters.
   Parameters: string =
-    'hkcc,hkcr,hkcu,hklm,hku,alwaysoverwrite,alwaysskipifsameorolder,append,' +
-    'binary,classic,closeonexit,comparetimestampalso,confirmoverwrite,' +
+    'hkcc,hkcr,hkcu,hklm,hku,hka,hkcc32,hkcr32,hkcu32,hklm32,hku32,hkcc64,' +
+    'hkcr64,hkcu64,hklm64,hku64,' +
+    'admin,arm64,auto,binary,bzip,classic,commandline,dialog,dword,expandsz,' +
+    'force,ia64,lowest,lzma,lzma2,modern,multisz,none,poweruser,qword,string,' +
+    'x64,x64compatible,x64os,x86,x86compatible,x86os,yes,no,zip,' +
+    '32bit,64bit,allowunsafefiles,append,checkablealone,checkedonce,' +
+    'closeonexit,comparetimestamp,comparetimestampalso,confirmoverwrite,' +
     'createkeyifdoesntexist,createonlyiffileexists,createvalueifdoesntexist,' +
     'deleteafterinstall,deletekey,deletevalue,dirifempty,dontcloseonexit,' +
-    'dontcreatekey,disablenouninstallwarning,dword,exclusive,expandsz,' +
-    'external,files,filesandordirs,fixed,fontisnttruetype,iscustom,isreadme,' +
-    'modern,multisz,new,noerror,none,normal,nowait,onlyifdestfileexists,' +
-    'onlyifdoesntexist,overwrite,overwritereadonly,postinstall,' +
-    'preservestringtype,regserver,regtypelib,restart,restartreplace,' +
-    'runmaximized,runminimized,sharedfile,shellexec,showcheckbox,' +
-    'skipifnotsilent,skipifsilent,silent,skipifdoesntexist,' +
-    'skipifsourcedoesntexist,unchecked,uninsalwaysuninstall,' +
-    'uninsclearvalue,uninsdeleteentry,uninsdeletekey,uninsdeletekeyifempty,' +
-    'uninsdeletesection,uninsdeletesectionifempty,uninsdeletevalue,' +
-    'uninsneveruninstall,useapppaths,verysilent,waituntilidle';
+    'dontcreatekey,dontinheritcheck,dontverifychecksum,' +
+    'excludefromshowinnewinstall,exclusive,external,files,filesandordirs,fixed,' +
+    'fontisnttruetype,foldershortcut,gacinstall,hidewizard,ignoreversion,' +
+    'iscustom,isreadme,noerror,nowait,onlyifdestfileexists,onlyifdoesntexist,' +
+    'overwrite,overwritereadonly,postinstall,preservestringtype,preventpinning,' +
+    'promptifolder,recursesubdirs,regserver,regtypelib,replacesameversion,' +
+    'restart,restartreplace,runascurrentuser,runasoriginaluser,runhidden,' +
+    'runmaximized,runminimized,setntfscompression,sharedfile,shellexec,sign,' +
+    'signonce,silent,skipifdoesntexist,skipifnotsilent,skipifsilent,' +
+    'skipifsourcedoesntexist,solidbreak,sortfilesbyextension,sortfilesbyname,' +
+    'touch,unchecked,uninsalwaysuninstall,uninsclearvalue,uninsdeleteentry,' +
+    'uninsdeletekey,uninsdeletekeyifempty,uninsdeletesection,' +
+    'uninsdeletesectionifempty,uninsdeletevalue,uninsneveruninstall,' +
+    'uninsremovereadonly,uninsrestartdelete,unsetntfscompression,useapppaths,' +
+    'verysilent,waituntilidle,waituntilterminated';
 
   KeyOrParameter: string = 'string';
+
+  // Pascal Script keywords for the [Code] section.
+  CodeKeywords: string =
+    'and,array,as,asm,begin,case,class,const,constructor,destructor,div,do,' +
+    'downto,else,end,except,exit,export,exports,external,false,finalization,' +
+    'finally,for,forward,function,goto,if,implementation,in,inherited,' +
+    'initialization,inline,interface,is,label,library,mod,nil,not,object,of,' +
+    'on,or,out,overload,override,packed,private,procedure,program,property,' +
+    'protected,public,published,raise,record,repeat,resourcestring,set,shl,shr,' +
+    'string,then,threadvar,to,try,type,unit,until,uses,var,virtual,while,with,' +
+    'xor,true,break,continue,result,self,' +
+    // common types
+    'boolean,byte,char,ansichar,widechar,word,integer,cardinal,longint,' +
+    'longword,smallint,shortint,int64,uint64,single,double,extended,real,' +
+    'currency,ansistring,widestring,unicodestring,pchar,pansichar,variant,' +
+    'olevariant,pointer,tobject,tstream,tstrings,tstringlist,tarrayofstring,' +
+    'tarrayofinteger,tarrayofchar,tsetupstep,tuninstallstep,' +
+    'tsetupprocessorarchitecture';
+
+  // A selection of Inno Setup [Code] support functions and the common event
+  // function names.
+  CodeFunctions: string =
+    'abort,abs,addbackslash,addperiod,addquotes,activelanguage,ansilowercase,' +
+    'ansiuppercase,assigned,beep,changefileext,charlength,chr,comparestr,' +
+    'comparetext,convertpercentstr,copy,copyfile,createcustomform,' +
+    'createcustompage,createdir,createinputdirpage,createinputfilepage,' +
+    'createinputoptionpage,createinputquerypage,createoleobject,' +
+    'createoutputmsgmemopage,createoutputmsgpage,createoutputprogresspage,' +
+    'custommessage,delayms,deletefile,deleteinientry,deleteinisection,deltree,' +
+    'direxists,enablefsredirection,exec,execandcapturetext,execandlogoutput,' +
+    'execasoriginaluser,exitsetupmsgbox,exp,expandconstant,expandconstantex,' +
+    'expandfilename,extractfiledir,extractfiledrive,extractfileext,' +
+    'extractfilename,extractfilepath,extractrelativepath,extracttemporaryfile,' +
+    'extracttemporaryfiles,fileclose,filecopy,filecreate,fileexists,fileopen,' +
+    'fileread,filesearch,filesetattr,filesize,filesize64,fmtmessage,' +
+    'floattostr,forcedirectories,format,getarraylength,getcmdtail,' +
+    'getcomputernamestring,getcurrentdir,getdatetimestring,getenv,' +
+    'getexceptionmessage,getinibool,getiniint,getinistring,getmd5offile,' +
+    'getmd5ofstring,getsha1offile,getsha1ofstring,getsha256offile,' +
+    'getsha256ofstring,getshortname,getspaceondisk,getspaceondisk64,' +
+    'getsysnativedir,getsystemdir,getsyswow64dir,gettempdir,getuilanguage,' +
+    'getusernamestring,getversionnumbers,getversionnumbersstring,getwindir,' +
+    'getwindowsversion,getwindowsversionex,getwindowsversionstring,' +
+    'idispatchinvoke,inc,inisectionexists,inivaluexists,inputbox,instr,' +
+    'inttostr,isadmin,isadmininstallmode,isarm64,iswin64,isx64,' +
+    'isx64compatible,isx64os,isx86,length,loadstringfromfile,' +
+    'loadstringsfromfile,log,lowercase,maxint,minimizepathname,msgbox,now,ord,' +
+    'paramcount,paramstr,pos,random,randomize,registerpreviousdata,' +
+    'regdeletekeyincludingsubkeys,regdeletekeyifempty,regdeletevalue,' +
+    'regkeyexists,regquerybinaryvalue,regquerydwordvalue,' +
+    'regquerymultistringvalue,regquerystringvalue,regvalueexists,' +
+    'regwritebinaryvalue,regwritedwordvalue,regwriteexpandstringvalue,' +
+    'regwritemultistringvalue,regwritestringvalue,removebackslash,' +
+    'removebackslashunlessroot,removequotes,renamefile,round,samestr,sametext,' +
+    'savestringtofile,savestringstofile,scalex,scaley,setarraylength,' +
+    'setcurrentdir,setinibool,setiniint,setinistring,setlength,setpreviousdata,' +
+    'shellexec,shellexecasoriginaluser,sleep,sqrt,stringchange,stringchangeex,' +
+    'strtofloat,strtoint,strtoint64,strtoint64def,strtointdef,' +
+    'suppressiblemsgbox,terminated,trim,trimleft,trimright,trunc,uppercase,' +
+    'varisempty,varisnull,wizarddirvalue,wizardform,wizardgroupvalue,' +
+    'wizardiscomponentselected,wizardistaskselected,wizardnoicons,' +
+    'wizardselectedcomponents,wizardselectedtasks,wizardsetuptype,wizardsilent,' +
+    // common event functions
+    'initializesetup,deinitializesetup,initializewizard,curstepchanged,' +
+    'curuninstallstepchanged,nextbuttonclick,backbuttonclick,cancelbuttonclick,' +
+    'shouldskippage,curpagechanged,checkpassword,needrestart,updatereadymemo,' +
+    'getcustomsetupexitcode,preparetoinstall,registerextrafiles,' +
+    'getpreviousdata,checkserial,initializeuninstall,uninstallneedrestart,' +
+    'initializeuninstallprogressform';
+
+function TSynInnoSyn.InCodeSection: Boolean;
+begin
+  Result := fRange <> rsUnknown;
+end;
 
 function TSynInnoSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
 var
@@ -197,10 +333,16 @@ begin
     Inc(Maybe);
   fStringLen := Maybe - fToIdent;
   SetString(S, fToIdent, fStringLen);
-  if FKeywords.ContainsKey(S) then
-    Result := FKeywords[S]
+  if InCodeSection then
+  begin
+    if not FCodeKeywords.TryGetValue(S, Result) then
+      Result := tkIdentifier;
+  end
   else
-    Result := tkIdentifier;
+  begin
+    if not FKeywords.TryGetValue(S, Result) then
+      Result := tkIdentifier;
+  end;
 end;
 
 function TSynInnoSyn.IsCurrentToken(const Token: string): Boolean;
@@ -231,12 +373,12 @@ begin
   inherited Create(AOwner);
   fCaseSensitive := False;
 
-  // Create the keywords dictionary case-insensitive
   FKeywords := TDictionary<string, TtkTokenKind>.Create(TIStringComparer.Ordinal);
+  FCodeKeywords := TDictionary<string, TtkTokenKind>.Create(TIStringComparer.Ordinal);
 
   fCommentAttri := TSynHighlighterAttributes.Create(SYNS_AttrComment, SYNS_FriendlyAttrComment);
   fCommentAttri.Style := [fsItalic];
-  fCommentAttri.Foreground := clGray;
+  fCommentAttri.Foreground := clGreen;
   AddAttribute(fCommentAttri);
 
   fIdentifierAttri := TSynHighlighterAttributes.Create(SYNS_AttrIdentifier, SYNS_FriendlyAttrIdentifier);
@@ -269,11 +411,22 @@ begin
   fSymbolAttri := TSynHighlighterAttributes.Create(SYNS_AttrSymbol, SYNS_FriendlyAttrSymbol);
   AddAttribute(fSymbolAttri);
 
-  //Parameters
+  // Parameters / flag values
   fParamAttri := TSynHighlighterAttributes.Create(SYNS_AttrPreprocessor, SYNS_FriendlyAttrPreprocessor);
   fParamAttri.Style := [fsBold];
   fParamAttri.Foreground := clOlive;
   AddAttribute(fParamAttri);
+
+  // [Code] support functions
+  fFunctionAttri := TSynHighlighterAttributes.Create(SYNS_AttrFunction, SYNS_FriendlyAttrFunction);
+  fFunctionAttri.Foreground := clTeal;
+  AddAttribute(fFunctionAttri);
+
+  // ISPP preprocessor directives (#define, #include, ...)
+  fPreprocessorAttri := TSynHighlighterAttributes.Create(SYNS_AttrPragma, SYNS_FriendlyAttrPragma);
+  fPreprocessorAttri.Style := [fsBold];
+  fPreprocessorAttri.Foreground := clPurple;
+  AddAttribute(fPreprocessorAttri);
 
   fSectionAttri := TSynHighlighterAttributes.Create(SYNS_AttrSection, SYNS_FriendlyAttrSection);
   fSectionAttri.Style := [fsBold];
@@ -285,20 +438,33 @@ begin
   EnumerateKeywords(Ord(tkParameter), Parameters, IsIdentChar, DoAddKeyword);
   EnumerateKeywords(Ord(tkKeyOrParameter), KeyOrParameter, IsIdentChar,
     DoAddKeyword);
+  EnumerateKeywords(Ord(tkKey), CodeKeywords, IsIdentChar, DoAddCodeKeyword);
+  EnumerateKeywords(Ord(tkFunction), CodeFunctions, IsIdentChar,
+    DoAddCodeKeyword);
   fDefaultFilter := SYNS_FilterInno;
+  fRange := rsUnknown;
 end;
 
 destructor TSynInnoSyn.Destroy;
 begin
   fKeywords.Free;
+  fCodeKeywords.Free;
   inherited Destroy;
 end;
 
-procedure TSynInnoSyn.SymbolProc;
+procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 begin
-  fTokenID := tkSymbol;
-  Inc(Run);
+  if not FKeywords.ContainsKey(AKeyword) then
+    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
 end;
+
+procedure TSynInnoSyn.DoAddCodeKeyword(AKeyword: string; AKind: TSynNativeInt);
+begin
+  if not FCodeKeywords.ContainsKey(AKeyword) then
+    FCodeKeywords.Add(AKeyword, TtkTokenKind(AKind));
+end;
+
+{ Shared procedures }
 
 procedure TSynInnoSyn.CRProc;
 begin
@@ -307,11 +473,118 @@ begin
   if fLine[Run] = #10 then Inc(Run);
 end;
 
+procedure TSynInnoSyn.LFProc;
+begin
+  fTokenID := tkSpace;
+  Inc(Run);
+end;
+
+procedure TSynInnoSyn.NullProc;
+begin
+  fTokenID := tkNull;
+  Inc(Run);
+end;
+
+procedure TSynInnoSyn.SpaceProc;
+begin
+  fTokenID := tkSpace;
+  repeat
+    Inc(Run);
+  until (fLine[Run] > #32) or IsLineEnd(Run);
+end;
+
+procedure TSynInnoSyn.NumberProc;
+begin
+  fTokenID := tkNumber;
+  while CharInSet(fLine[Run], ['0'..'9']) do
+    Inc(Run);
+  if (fLine[Run] = '.') and CharInSet(fLine[Run + 1], ['0'..'9']) then
+  begin
+    Inc(Run);
+    while CharInSet(fLine[Run], ['0'..'9']) do
+      Inc(Run);
+  end;
+  if CharInSet(fLine[Run], ['e', 'E']) then
+  begin
+    Inc(Run);
+    if CharInSet(fLine[Run], ['+', '-']) then
+      Inc(Run);
+    while CharInSet(fLine[Run], ['0'..'9']) do
+      Inc(Run);
+  end;
+end;
+
+procedure TSynInnoSyn.PreprocessorProc;
+begin
+  if CharInSet(fLine[Run + 1], ['0'..'9', '$']) then
+  begin
+    // Pascal character-code literal: #13, #$0D
+    fTokenID := tkString;
+    Inc(Run);
+    if fLine[Run] = '$' then
+    begin
+      Inc(Run);
+      while CharInSet(fLine[Run], ['0'..'9', 'a'..'f', 'A'..'F']) do
+        Inc(Run);
+    end
+    else
+      while CharInSet(fLine[Run], ['0'..'9']) do
+        Inc(Run);
+  end
+  else
+  begin
+    // ISPP preprocessor directive: #define, #include, #if, #emit, #sub, ...
+    fTokenID := tkPreprocessor;
+    Inc(Run);
+    while IsIdentChar(fLine[Run]) do
+      Inc(Run);
+  end;
+end;
+
+procedure TSynInnoSyn.SectionProc;
+var
+  Name: string;
+begin
+  // A section header is only valid at column 0; elsewhere '[' is a symbol
+  // (e.g. an array subscript in [Code]).
+  if Run > 0 then
+  begin
+    fTokenID := tkSymbol;
+    Inc(Run);
+    Exit;
+  end;
+
+  fTokenID := tkSection;
+  repeat
+    Inc(Run);
+  until CharInSet(fLine[Run], [']', #0, #10, #13]);
+  SetString(Name, fLine + 1, Run - 1);
+  if fLine[Run] = ']' then
+    Inc(Run);
+  if SameText(Name, 'Code') then
+    fRange := rsCode
+  else
+    fRange := rsUnknown;
+end;
+
+procedure TSynInnoSyn.UnknownProc;
+begin
+  Inc(Run);
+  fTokenID := tkUnknown;
+end;
+
+{ Inno directive mode }
+
+procedure TSynInnoSyn.SymbolProc;
+begin
+  fTokenID := tkSymbol;
+  Inc(Run);
+end;
+
 procedure TSynInnoSyn.EqualProc;
 begin
-// If any word has equal (=) symbol,
-// then the immediately followed text is treated as string
-// (though it does not have quotes)
+  // In [Setup] a 'Key=Value' value runs to the end of the line (or a ';'
+  // comment). It is shown as a string even without quotes.
   fTokenID := tkString;
   repeat
     Inc(Run);
@@ -341,54 +614,11 @@ begin
   end;
 end;
 
-procedure TSynInnoSyn.SectionProc;
-begin
-  // if it is not column 0 mark as tkParameter and get out of here
-  if Run > 0 then
-  begin
-    fTokenID := tkUnknown;
-    Inc(Run);
-    Exit;
-  end;
-
-  // this is column 0 ok it is a Section
-  fTokenID := tkSection;
-  repeat
-    Inc(Run);
-    if fLine[Run] = ']' then
-    begin
-      Inc(Run);
-      Break;
-    end;
-  until IsLineEnd(Run);
-end;
-
-procedure TSynInnoSyn.LFProc;
-begin
-  fTokenID := tkSpace;
-  Inc(Run);
-end;
-
-procedure TSynInnoSyn.NullProc;
-begin
-  fTokenID := tkNull;
-  Inc(Run);
-end;
-
-procedure TSynInnoSyn.NumberProc;
-begin
-  fTokenID := tkNumber;
-  repeat
-    Inc(Run);
-  until not CharInSet(fLine[Run], ['0'..'9']);
-end;
-
 procedure TSynInnoSyn.ConstantProc;
 var
   BraceLevel, LastOpenBrace: TSynNativeInt;
 begin
-  { Much of this is based on code from the SkipPastConst function in IS's
-    CmnFunc2 unit. [jr] }
+  { Based on the SkipPastConst function from IS's CmnFunc2 unit. }
   if fLine[Run + 1] = '{' then
   begin
     { '{{' is not a constant }
@@ -402,44 +632,37 @@ begin
   repeat
     Inc(Run);
     case fLine[Run] of
-      '{': begin
-             if LastOpenBrace <> Run - 1 then
-             begin
-               Inc(BraceLevel);
-               LastOpenBrace := Run;
-             end
-             else
-               { Skip over '{{' when in an embedded constant }
-               Dec(BraceLevel);
-           end;
-      '}': begin
-             Dec (BraceLevel);
-             if BraceLevel = 0 then
-             begin
-               Inc(Run);
-               Break;
-             end;
-           end;
+      '{':
+        begin
+          if LastOpenBrace <> Run - 1 then
+          begin
+            Inc(BraceLevel);
+            LastOpenBrace := Run;
+          end
+          else
+            Dec(BraceLevel);
+        end;
+      '}':
+        begin
+          Dec(BraceLevel);
+          if BraceLevel = 0 then
+          begin
+            Inc(Run);
+            Break;
+          end;
+        end;
     end;
   until IsLineEnd(Run);
-end;
-
-procedure TSynInnoSyn.SpaceProc;
-begin
-  fTokenID := tkSpace;
-  repeat
-    Inc(Run);
-  until (fLine[Run] > #32) or IsLineEnd(Run);
 end;
 
 procedure TSynInnoSyn.SemiColonProc;
 var
   I: TSynNativeInt;
 begin
-  for I := Run-1 downto 0 do
-    if fLine[I] > ' ' then begin
-      // If the semicolon is not the first non-whitespace character on the
-      // line, then it isn't the start of a comment.
+  for I := Run - 1 downto 0 do
+    if fLine[I] > ' ' then
+    begin
+      // Not the first non-whitespace character: not a comment.
       fTokenID := tkUnknown;
       Inc(Run);
       Exit;
@@ -455,37 +678,195 @@ begin
   fTokenID := tkString;
   repeat
     Inc(Run);
-    if fLine[Run] = '"' then begin
+    if fLine[Run] = '"' then
+    begin
       Inc(Run);
-      if fLine[Run] <> '"' then // embedded "" does not end the string
+      if fLine[Run] <> '"' then
         Break;
     end;
   until IsLineEnd(Run);
 end;
 
-procedure TSynInnoSyn.UnknownProc;
+procedure TSynInnoSyn.NextInno;
 begin
+  case fLine[Run] of
+    #0: NullProc;
+    #10: LFProc;
+    #13: CRProc;
+    #1..#9, #11, #12, #14..#32: SpaceProc;
+    'A'..'Z', 'a'..'z', '_': IdentProc;
+    '0'..'9': NumberProc;
+    ';': SemiColonProc;
+    '=': EqualProc;
+    '"': StringProc;
+    '#': PreprocessorProc;
+    '{': ConstantProc;
+    '[': SectionProc;
+    ':', ',', '(', ')': SymbolProc;
+  else
+    UnknownProc;
+  end;
+end;
+
+{ Pascal [Code] mode }
+
+procedure TSynInnoSyn.CodeIdentProc;
+begin
+  fTokenID := IdentKind((fLine + Run));
+  Inc(Run, fStringLen);
+end;
+
+procedure TSynInnoSyn.CodeSlashProc;
+begin
+  if fLine[Run + 1] = '/' then
+  begin
+    fTokenID := tkComment;
+    Inc(Run, 2);
+    while not IsLineEnd(Run) do
+      Inc(Run);
+  end
+  else
+    CodeSymbolProc;
+end;
+
+procedure TSynInnoSyn.BraceCommentProc;
+begin
+  if (Run = fTokenPos) and CharInSet(fLine[Run], [#0, #10, #13]) then
+  begin
+    case fLine[Run] of
+      #0: NullProc;
+      #10: LFProc;
+      #13: CRProc;
+    end;
+    Exit;
+  end;
+
+  fTokenID := tkComment;
+  while not IsLineEnd(Run) do
+  begin
+    if fLine[Run] = '}' then
+    begin
+      Inc(Run);
+      fRange := rsCode;
+      Exit;
+    end;
+    Inc(Run);
+  end;
+end;
+
+procedure TSynInnoSyn.ParenCommentProc;
+begin
+  if (Run = fTokenPos) and CharInSet(fLine[Run], [#0, #10, #13]) then
+  begin
+    case fLine[Run] of
+      #0: NullProc;
+      #10: LFProc;
+      #13: CRProc;
+    end;
+    Exit;
+  end;
+
+  fTokenID := tkComment;
+  while not IsLineEnd(Run) do
+  begin
+    if (fLine[Run] = '*') and (fLine[Run + 1] = ')') then
+    begin
+      Inc(Run, 2);
+      fRange := rsCode;
+      Exit;
+    end;
+    Inc(Run);
+  end;
+end;
+
+procedure TSynInnoSyn.CodeBraceProc;
+begin
+  // Pascal '{ ... }' comment (multi-line).
+  fRange := rsCodeBraceComment;
   Inc(Run);
-  fTokenID := tkUnknown;
+  BraceCommentProc;
+end;
+
+procedure TSynInnoSyn.CodeParenProc;
+begin
+  if fLine[Run + 1] = '*' then
+  begin
+    // Pascal '(* ... *)' comment (multi-line).
+    fRange := rsCodeParenComment;
+    Inc(Run, 2);
+    ParenCommentProc;
+  end
+  else
+    CodeSymbolProc;
+end;
+
+procedure TSynInnoSyn.CodeStringProc;
+begin
+  // Pascal single-quoted string; a doubled '' is an escaped quote.
+  fTokenID := tkString;
+  repeat
+    Inc(Run);
+    if fLine[Run] = '''' then
+    begin
+      Inc(Run);
+      if fLine[Run] <> '''' then
+        Break;
+    end;
+  until IsLineEnd(Run);
+end;
+
+procedure TSynInnoSyn.CodeHexProc;
+begin
+  fTokenID := tkNumber;
+  Inc(Run);
+  while CharInSet(fLine[Run], ['0'..'9', 'a'..'f', 'A'..'F']) do
+    Inc(Run);
+end;
+
+procedure TSynInnoSyn.CodeSymbolProc;
+begin
+  fTokenID := tkSymbol;
+  case fLine[Run] of
+    ':': if fLine[Run + 1] = '=' then Inc(Run);
+    '<': if CharInSet(fLine[Run + 1], ['=', '>']) then Inc(Run);
+    '>': if fLine[Run + 1] = '=' then Inc(Run);
+    '.': if fLine[Run + 1] = '.' then Inc(Run);
+  end;
+  Inc(Run);
+end;
+
+procedure TSynInnoSyn.NextCode;
+begin
+  case fLine[Run] of
+    #0: NullProc;
+    #10: LFProc;
+    #13: CRProc;
+    #1..#9, #11, #12, #14..#32: SpaceProc;
+    'A'..'Z', 'a'..'z', '_': CodeIdentProc;
+    '0'..'9': NumberProc;
+    '''': CodeStringProc;
+    '/': CodeSlashProc;
+    '{': CodeBraceProc;
+    '(': CodeParenProc;
+    '#': PreprocessorProc;
+    '$': CodeHexProc;
+    '[': SectionProc;
+    ':', '=', '<', '>', '.', '+', '-', '*', ';', ',', ')', ']', '@', '^':
+      CodeSymbolProc;
+  else
+    UnknownProc;
+  end;
 end;
 
 procedure TSynInnoSyn.Next;
 begin
   fTokenPos := Run;
-  case fLine[Run] of
-    #13: CRProc;
-    'A'..'Z', 'a'..'z', '_': IdentProc;
-    #10: LFProc;
-    #0: NullProc;
-    '0'..'9': NumberProc;
-    #1..#9, #11, #12, #14..#32: SpaceProc;
-    #59 {';'}: SemiColonProc;
-    #61 {'='}: EqualProc;
-    #34: StringProc;
-    '#', ':', ',', '(', ')': SymbolProc;
-    '{': ConstantProc;
-    #91 {'['} : SectionProc;
-    else UnknownProc;
+  case fRange of
+    rsCodeBraceComment: BraceCommentProc;
+    rsCodeParenComment: ParenCommentProc;
+    rsCode: NextCode;
+  else
+    NextInno;
   end;
   inherited;
 end;
@@ -510,18 +891,26 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
+function TSynInnoSyn.GetRange: Pointer;
+begin
+  Result := Pointer(fRange);
+end;
+
 function TSynInnoSyn.GetTokenAttribute: TSynHighlighterAttributes;
 begin
   case fTokenID of
     tkComment: Result := fCommentAttri;
-    tkParameter: Result := fParamAttri;
-    tkSection: Result := fSectionAttri;
+    tkConstant: Result := fConstantAttri;
+    tkFunction: Result := fFunctionAttri;
     tkIdentifier: Result := fIdentifierAttri;
     tkKey: Result := fKeyAttri;
+    tkKeyOrParameter: Result := fKeyAttri;
     tkNumber: Result := fNumberAttri;
+    tkParameter: Result := fParamAttri;
+    tkPreprocessor: Result := fPreprocessorAttri;
+    tkSection: Result := fSectionAttri;
     tkSpace: Result := fSpaceAttri;
     tkString: Result := fStringAttri;
-    tkConstant: Result := fConstantAttri;
     tkSymbol: Result := fSymbolAttri;
     tkUnknown: Result := fIdentifierAttri;
   else
@@ -549,34 +938,45 @@ begin
   Result := SYNS_LangInno;
 end;
 
-procedure TSynInnoSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
+procedure TSynInnoSyn.ResetRange;
 begin
-  if not FKeywords.ContainsKey(AKeyword) then
-    FKeywords.Add(AKeyword, TtkTokenKind(AKind));
+  fRange := rsUnknown;
+end;
+
+procedure TSynInnoSyn.SetRange(Value: Pointer);
+begin
+  fRange := TRangeState(Value);
 end;
 
 function TSynInnoSyn.GetSampleSource: string;
 begin
   Result :=
-    '; -- Example.iss --' + #13#10 +
-    '[Setup]' + #13#10 +
-    'AppName=My Program' + #13#10 +
-    'AppVersion=1.5' + #13#10 +
-    'WizardStyle=modern' + #13#10 +
-    'DefaultDirName={autopf}\My Program' + #13#10 +
-    'DefaultGroupName=My Program' + #13#10 +
-    'UninstallDisplayIcon={app}\MyProg.exe' + #13#10 +
-    'Compression=lzma2' + #13#10 +
-    'SolidCompression=yes' + #13#10 +
-    'OutputDir=userdocs:Inno Setup Examples Output' + #13#10 +
-    '' + #13#10 +
-    '[Files]' + #13#10 +
-    'Source: "MyProg.exe"; DestDir: "{app}"' + #13#10 +
-    'Source: "MyProg.chm"; DestDir: "{app}"' + #13#10 +
-    'Source: "Readme.txt"; DestDir: "{app}"; Flags: isreadme' + #13#10 +
-    '' + #13#10 +
-    '[Icons]' + #13#10 +
-    'Name: "{group}\My Program"; Filename: "{app}\MyProg.exe"';
+    '; -- Example.iss --'#13#10 +
+    '#define MyAppName "My Program"'#13#10 +
+    '#define MyAppVersion "1.5"'#13#10 +
+    ''#13#10 +
+    '[Setup]'#13#10 +
+    'AppName={#MyAppName}'#13#10 +
+    'AppVersion={#MyAppVersion}'#13#10 +
+    'WizardStyle=modern'#13#10 +
+    'DefaultDirName={autopf}\{#MyAppName}'#13#10 +
+    'ArchitecturesInstallIn64BitMode=x64compatible'#13#10 +
+    'Compression=lzma2'#13#10 +
+    'SolidCompression=yes'#13#10 +
+    ''#13#10 +
+    '[Files]'#13#10 +
+    'Source: "MyProg.exe"; DestDir: "{app}"; Flags: ignoreversion'#13#10 +
+    ''#13#10 +
+    '[Code]'#13#10 +
+    'function InitializeSetup(): Boolean;'#13#10 +
+    'var'#13#10 +
+    '  Confirmed: Boolean;'#13#10 +
+    'begin'#13#10 +
+    '  // ask the user before continuing'#13#10 +
+    '  Confirmed := MsgBox(''Continue the install?'', mbConfirmation, MB_YESNO) = IDYES;'#13#10 +
+    '  { a Pascal block comment }'#13#10 +
+    '  Result := Confirmed;'#13#10 +
+    'end;';
 end;
 
 class function TSynInnoSyn.GetFriendlyLanguageName: string;
