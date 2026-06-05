@@ -101,6 +101,7 @@ contains
   SynHighlighterFoxpro in '..\..\..\Source\Highlighters\SynHighlighterFoxpro.pas',
   SynHighlighterGalaxy in '..\..\..\Source\Highlighters\SynHighlighterGalaxy.pas',
   SynHighlighterGeneral in '..\..\..\Source\Highlighters\SynHighlighterGeneral.pas',
+  SynHighlighterGo in '..\..\..\Source\Highlighters\SynHighlighterGo.pas',
   SynHighlighterGWS in '..\..\..\Source\Highlighters\SynHighlighterGWS.pas',
   SynHighlighterHaskell in '..\..\..\Source\Highlighters\SynHighlighterHaskell.pas',
   SynHighlighterHC11 in '..\..\..\Source\Highlighters\SynHighlighterHC11.pas',
