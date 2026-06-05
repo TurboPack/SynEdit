@@ -93,9 +93,7 @@ type
     fSecondKeys: TStrings;
     procedure BacktickProc;
     procedure BlockCommentProc;
-    procedure BraceOpenProc;
     procedure ColonProc;
-    procedure PointCommaProc;
     procedure CRProc;
     procedure EqualProc;
     procedure IdentProc;
@@ -107,7 +105,6 @@ type
     procedure ReadDelimitedLiteral(AOpenDelim, ACloseDelim: WideChar;
       AAllowNesting: Boolean; ATokenID: TtkTokenKind);
     procedure RegexpProc;
-    procedure RoundOpenProc;
     procedure SlashProc;
     procedure SpaceProc;
     procedure StringProc;
@@ -389,18 +386,6 @@ begin
   inherited Destroy;
 end; { Destroy }
 
-procedure TSynRubySyn.BraceOpenProc;
-begin
-  Inc(Run);
-  fTokenID := tkSymbol;
-end;
-
-procedure TSynRubySyn.PointCommaProc;
-begin
-  Inc(Run);
-  fTokenID := tkSymbol;
-end;
-
 procedure TSynRubySyn.CRProc;
 begin
   fTokenID := tkSpace;
@@ -417,7 +402,7 @@ begin
   while IsIdentChar(fLine[Run]) do Inc(Run);
 
   // Ruby method names and the reserved word defined? may end with ? or !.
-  if FLine[Run] in [WideChar('?'), WideChar('!')] then
+  if CharInSet(FLine[Run], ['?', '!']) then
     Inc(Run);
 
   Token := GetToken;
@@ -437,7 +422,7 @@ begin
 
   if IsSecondKeyWord(Token) then
     fTokenId := tkSecondKey
-  else if (Token <> '') and (Token[1] in ['A'..'Z']) then
+  else if (Token <> '') and (CharInSet(Token[1], ['A'..'Z'])) then
     fTokenId := tkConstant
   else
     fTokenId := tkIdentifier;
@@ -471,7 +456,7 @@ begin
       QuoteChar := FLine[Run + 3];
     end
     else
-    if (FLine[Run + 2] in [WideChar('-'), WideChar('"'), WideChar(''''), WideChar('`')]) then
+    if (CharInSet(FLine[Run + 2], ['-', '"', '''', '`'])) then
     begin
       SkipRun := 1;
       if FLine[Run + 2] <> '-' then
@@ -544,13 +529,13 @@ begin
       'b', 'B':
         begin
           Inc(Run, 2);
-          while FLine[Run] in ['_', '0', '1'] do Inc(Run);
+          while CharInSet(FLine[Run], ['_', '0', '1']) do Inc(Run);
           Exit;
         end;
       'o', 'O':
         begin
           Inc(Run, 2);
-          while FLine[Run] in ['_', '0'..'7'] do Inc(Run);
+          while CharInSet(FLine[Run], ['_', '0'..'7']) do Inc(Run);
           Exit;
         end;
       'd', 'D':
@@ -570,26 +555,20 @@ begin
     while IsRubyDecChar(FLine[Run]) do Inc(Run);
   end;
 
-  if FLine[Run] in ['e', 'E'] then
+  if CharInSet(FLine[Run], ['e', 'E']) then
   begin
     SaveRun := Run;
     Inc(Run);
-    if FLine[Run] in ['+', '-'] then Inc(Run);
-    if FLine[Run] in ['0'..'9'] then
+    if CharInSet(FLine[Run], ['+', '-']) then Inc(Run);
+    if CharInSet(FLine[Run], ['0'..'9']) then
       while IsRubyDecChar(FLine[Run]) do Inc(Run)
     else
       Run := SaveRun;
   end;
 
   // Ruby rational / imaginary suffixes: 1r, 2.5r, 3i
-  if FLine[Run] in ['r', 'i'] then
+  if CharInSet(FLine[Run], ['r', 'i']) then
     Inc(Run);
-end;
-
-procedure TSynRubySyn.RoundOpenProc;
-begin
-  Inc(Run);
-  fTokenId := tkSymbol;
 end;
 
 procedure TSynRubySyn.SlashProc;
@@ -670,12 +649,12 @@ begin
   if IsRubyIdentStart(FLine[Run]) then
   begin
     while IsRubyIdentChar(FLine[Run]) do Inc(Run);
-    if FLine[Run] in [WideChar('?'), WideChar('!')] then Inc(Run);
+    if CharInSet(FLine[Run], ['?', '!']) then Inc(Run);
   end
   else if FLine[fTokenPos] = '$' then
   begin
-    if FLine[Run] in ['0'..'9'] then
-      while FLine[Run] in ['0'..'9'] do Inc(Run)
+    if CharInSet(FLine[Run], ['0'..'9']) then
+      while CharInSet(FLine[Run], ['0'..'9']) do Inc(Run)
     else if not IsLineEnd(Run) then
       Inc(Run);
   end;
@@ -692,7 +671,7 @@ begin
   begin
     Inc(Run);
     while IsRubyIdentChar(FLine[Run]) do Inc(Run);
-    if FLine[Run] in [WideChar('?'), WideChar('!')] then Inc(Run);
+    if CharInSet(FLine[Run], ['?', '!']) then Inc(Run);
     fTokenID := tkAttribute;
   end
   else
@@ -705,7 +684,7 @@ var
 begin
   Result := True;
   for I := 0 to Run - 1 do
-    if not (FLine[I] in [#$0009, #$0020]) then
+    if not (CharInSet(FLine[I], [#$0009, #$0020])) then
     begin
       Result := False;
       Exit;
@@ -717,7 +696,7 @@ var
   I, P: TSynNativeInt;
 begin
   P := Run;
-  while FLine[P] in [#$0009, #$0020] do Inc(P);
+  while CharInSet(FLine[P], [#$0009, #$0020]) do Inc(P);
 
   Result := False;
   for I := 1 to Length(AText) do
@@ -748,6 +727,11 @@ end;
 
 procedure TSynRubySyn.BlockCommentProc;
 begin
+  if IsLineEnd(Run) and (fTokenPos = Run) then
+  begin
+    NextProcedure;
+    Exit;
+  end;
   fTokenID := tkComment;
   if LineStartsWith('=end') then
     fRange := rsUnknown;
@@ -759,7 +743,7 @@ var
   I: TSynNativeInt;
 begin
   I := Run - 1;
-  while (I >= 0) and (FLine[I] in [#$0009, #$0020]) do Dec(I);
+  while (I >= 0) and (CharInSet(FLine[I], [#$0009, #$0020])) do Dec(I);
   if I < 0 then
   begin
     Result := True;
@@ -807,7 +791,7 @@ begin
         if not InCharClass then
         begin
           Inc(Run);
-          while FLine[Run] in ['a'..'z', 'A'..'Z'] do Inc(Run);
+          while CharInSet(FLine[Run], ['a'..'z', 'A'..'Z']) do Inc(Run);
           Exit;
         end;
     end;
@@ -861,7 +845,7 @@ begin
   end;
 
   if ATokenID = tkRegex then
-    while FLine[Run] in ['a'..'z', 'A'..'Z'] do Inc(Run);
+    while CharInSet(FLine[Run], ['a'..'z', 'A'..'Z']) do Inc(Run);
 end;
 
 procedure TSynRubySyn.PercentProc;
@@ -895,7 +879,7 @@ begin
   end;
 
   CloseDelim := MatchingDelimiter(OpenDelim);
-  AllowNesting := OpenDelim in ['(', '[', '{', '<'];
+  AllowNesting := CharInSet(OpenDelim, ['(', '[', '{', '<']);
   if Prefix = 'r' then
     TokenKind := tkRegex
   else if Prefix = 's' then
@@ -963,7 +947,7 @@ begin
   fTokenID := tkString;
 
   if fRange = rsIndentedHeredoc then
-    while FLine[Run] in [#$0009, #$0020] do Inc(Run);
+    while CharInSet(FLine[Run], [#$0009, #$0020]) do Inc(Run);
 
   if ((Run = 0) and (fRange = rsHeredoc)) or (fRange = rsIndentedHeredoc) then
   begin
