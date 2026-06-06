@@ -118,7 +118,6 @@ contains
   SynHighlighterJScript in '..\..\..\Source\Highlighters\SynHighlighterJScript.pas',
   SynHighlighterJSON in '..\..\..\Source\Highlighters\SynHighlighterJSON.pas',
   SynHighlighterKix in '..\..\..\Source\Highlighters\SynHighlighterKix.pas',
-  SynHighlighterKotlin in '..\..\..\Source\Highlighters\SynHighlighterKotlin.pas',
   SynHighlighterLua in '..\..\..\Source\Highlighters\SynHighlighterLua.pas',
   SynHighlighterLDraw in '..\..\..\Source\Highlighters\SynHighlighterLDraw.pas',
   SynHighlighterLLVM in '..\..\..\Source\Highlighters\SynHighlighterLLVM.pas',

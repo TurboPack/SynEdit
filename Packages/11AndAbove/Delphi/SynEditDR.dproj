@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
@@ -230,7 +230,6 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJScript.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJSON.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKix.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKotlin.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLua.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas"/>
