@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
@@ -207,6 +207,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDelphi.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDfm.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDml.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDockerfile.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDOT.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDWS.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterEiffel.pas"/>
@@ -230,6 +231,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJScript.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterJSON.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKix.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKotlin.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLua.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLDraw.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLLVM.pas"/>
