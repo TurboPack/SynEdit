@@ -1,4 +1,4 @@
-﻿{-------------------------------------------------------------------------------
+{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -295,6 +295,8 @@ type
     fTextOffset: TSynNativeInt;
     fTopLine: TSynNativeInt;
     fHighlighter: TSynCustomHighlighter;
+    fBinaryMode: Boolean;
+    fAutoDetectBinary: Boolean;
     fSelectedColor: TSynSelectedColor;
     FIndentGuides: TSynIndentGuides;
     fActiveLineColor: TColor;
@@ -463,6 +465,10 @@ type
     procedure SetGutterWidth(Value: Integer);
     procedure SetHideSelection(const Value: Boolean);
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
+    procedure SetBinaryMode(const Value: Boolean);
+    procedure SetAutoDetectBinary(const Value: Boolean);
+    procedure DoBinaryFileDetected(Sender: TObject);
+    procedure SubstituteBinaryChars(var S: string);
     procedure SetIndentGuides(const Value: TSynIndentGuides);
     procedure SetInsertCaret(const Value: TSynEditCaretType);
     procedure SetInsertMode(const Value: Boolean);
@@ -868,6 +874,18 @@ type
       read FScrollbarAnnotations write SetScrollBarAnnotations;
     property Highlighter: TSynCustomHighlighter read fHighlighter
       write SetHighlighter;
+    // When True the editor renders text in a fast "binary" mode: syntax
+    // highlighting is ignored and line widths are computed as fixed-width (no
+    // DirectWrite glyph shaping / font fallback), and non-printable code points
+    // are shown as '.'. This makes opening .exe/.png and other binary files
+    // instantaneous. Normally toggled automatically on load (see
+    // AutoDetectBinary) but can also be set manually.
+    property BinaryMode: Boolean read fBinaryMode write SetBinaryMode
+      default False;
+    // When True (default) the editor automatically enters/leaves BinaryMode
+    // based on the content detected while loading a file.
+    property AutoDetectBinary: Boolean read fAutoDetectBinary
+      write SetAutoDetectBinary default True;
     property LeftChar: TSynNativeInt read fLeftChar write SetLeftChar;
     property LineHeight: TSynNativeInt read fTextHeight;
     property LinesInWindow: TSynNativeInt read fLinesInWindow;
@@ -1057,6 +1075,7 @@ type
     property Gutter;
     property HideSelection;
     property Highlighter;
+    property AutoDetectBinary;
     property IndentGuides;
     property ImeMode;
     property ImeName;
@@ -1475,7 +1494,9 @@ fLines := TSynEditStringList.Create(TextWidth);
     OnDeleted := ListDeleted;
     OnInserted := ListInserted;
     OnPut := ListPut;
+    OnBinaryFile := DoBinaryFileDetected;
   end;
+  fAutoDetectBinary := True;
   fUndoRedo := CreateSynEditUndo(Self);
   fUndoRedo.OnModifiedChanged := ModifiedChanged;
   fOrigUndoRedo := fUndoRedo;
@@ -3188,9 +3209,14 @@ begin
     else
       SRow := SLine;
 
+    // In binary mode replace non-printable code points so painting and column
+    // math go through the fast fixed-width ASCII path.
+    if fBinaryMode then
+      SubstituteBinaryChars(SRow);
+
     // Flow control symbols
     FlowControl := fcNone;
-    if FDisplayFlowControl.Enabled and Assigned(fHighlighter) and
+    if FDisplayFlowControl.Enabled and Assigned(fHighlighter) and not fBinaryMode and
       not WordWrap and not (scEOL in FVisibleSpecialChars)
     then
     begin
@@ -3242,7 +3268,7 @@ begin
         YRowOffset(Row + 1)), TSynDWrite.SolidBrush(FullRowBG));
 
     // Highlighted tokens
-    if fHighlighter <> nil then
+    if (fHighlighter <> nil) and not fBinaryMode then
     begin
       // Optimization.  In WordWrap mode we carry on where the previous row ended,
       // if they are parts of the same line.  So, each line is scanned once.
@@ -4987,7 +5013,7 @@ begin
     fWordWrapPlugin.LinesInserted(Index, aCount);
 
   vLastScan := Index;
-  if Assigned(fHighlighter) and (Lines.CountNative > 0) then
+  if Assigned(fHighlighter) and not fBinaryMode and (Lines.CountNative > 0) then
   begin
     repeat
       vLastScan := ScanFrom(vLastScan);
@@ -5023,7 +5049,7 @@ begin
   if WordWrap and (fWordWrapPlugin.LinePut(Index, OldLine) <> 0) then
     vEndLine := MaxInt;
   vLastScan := Index;
-  if Assigned(fHighlighter) then
+  if Assigned(fHighlighter) and not fBinaryMode then
   begin
     vLastScan := ScanFrom(Index);
     vEndLine := Max(vEndLine, vLastScan + 1);
@@ -5053,7 +5079,7 @@ procedure TCustomSynEdit.ScanRanges;
 var
   i: TSynNativeInt;
 begin
-  if Assigned(fHighlighter) and (Lines.CountNative > 0) then begin
+  if Assigned(fHighlighter) and not fBinaryMode and (Lines.CountNative > 0) then begin
     fHighlighter.ResetRange;
     i := 0;
     repeat
@@ -5898,6 +5924,75 @@ begin
   end;
 end;
 
+procedure TCustomSynEdit.SubstituteBinaryChars(var S: string);
+{ Replaces every code point outside the printable ASCII range with '.' for
+  display purposes only (the underlying buffer is untouched). This keeps the
+  painted rows pure ASCII so DirectWrite never needs glyph shaping or font
+  fallback while scrolling through binary data, and it makes the rendered
+  width match the fixed-width measurement used in binary mode exactly, so the
+  caret and horizontal scrollbar stay aligned. The substitution is 1:1, so
+  character positions are preserved. }
+var
+  I: Integer;
+  P: PChar;
+begin
+  if S = '' then Exit;
+  UniqueString(S);
+  P := PChar(S);
+  for I := 0 to S.Length - 1 do
+  begin
+    case Word(P[I]) of
+      32..126: ; // printable ASCII - keep as is
+    else
+      P[I] := '.';
+    end;
+  end;
+end;
+
+procedure TCustomSynEdit.SetBinaryMode(const Value: Boolean);
+begin
+  if Value = fBinaryMode then Exit;
+
+  // Binary mode does not touch the Highlighter property. Instead the editor
+  // simply ignores the highlighter while fBinaryMode is True (see ScanRanges,
+  // ListInserted, ListPut and PaintLines). This avoids triggering a rescan of
+  // stale content when toggling, and means the user's chosen highlighter is
+  // automatically active again once a normal text file is loaded.
+  fBinaryMode := Value;
+
+  // All cached line widths were measured with the other mode's metrics, and
+  // the highlighter ranges are no longer relevant (or now need recomputing).
+  TSynEditStringList(fLines).ResetMaxWidth;
+  if not fBinaryMode then
+    ScanRanges;
+
+  if not (csLoading in ComponentState) and HandleAllocated then
+  begin
+    InvalidateLines(-1, -1);
+    InvalidateGutter;
+    Include(fStateFlags, sfScrollbarChanged);
+  end;
+end;
+
+procedure TCustomSynEdit.SetAutoDetectBinary(const Value: Boolean);
+begin
+  fAutoDetectBinary := Value;
+  if Assigned(fLines) then
+    TSynEditStringList(fLines).DetectBinary := Value;
+end;
+
+procedure TCustomSynEdit.DoBinaryFileDetected(Sender: TObject);
+begin
+  if fAutoDetectBinary then
+    // Set the field directly rather than going through SetBinaryMode: this
+    // callback fires from LoadFromStream *before* the new content replaces the
+    // old. The Clear + insert that follows recomputes line widths and (when
+    // leaving binary mode) rescans the new text via ListInserted, so there is
+    // nothing to refresh or rescan here - and crucially we avoid scanning the
+    // stale binary content with a real highlighter.
+    fBinaryMode := TSynEditStringList(Sender).IsBinaryFile;
+end;
+
 procedure TCustomSynEdit.SetBorderStyle(Value: TSynBorderStyle);
 begin
   if fBorderStyle <> Value then
@@ -6255,6 +6350,13 @@ var
   P2, PStart, PEnd: PChar;
   CopyS: string;
 begin
+  // In binary mode every code point is treated as one fixed-width cell. This
+  // avoids creating a DirectWrite text layout (and the associated glyph
+  // shaping / cross-script font fallback) for runs of arbitrary code points,
+  // which is what makes measuring the lines of a binary file extremely slow.
+  if fBinaryMode then
+    Exit(Len * fCharWidth);
+
   if P^ = #0 then Exit(0);
 
   if scControlChars in FVisibleSpecialChars then
