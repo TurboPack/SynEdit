@@ -209,7 +209,7 @@ begin
   FTokenID := tkSpace;
   repeat
     Inc(Run);
-  until not IsWhiteChar(FLine[Run]);
+  until not CharInSet(FLine[Run], [#1..#9, #11, #12, #14..#32]);
 end;
 
 procedure TSynTOMLSyn.CommentProc;
