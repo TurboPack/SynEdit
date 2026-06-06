@@ -12,7 +12,7 @@
   The Original Code is based on parts of mwCustomEdit.pas by Martin Waldenburg,
   part of the mwEdit component suite.
   Portions created by Martin Waldenburg are Copyright (C) 1998 Martin Waldenburg.
-  Unicode translation by Maël Hörz.
+  Unicode translation by MaÃ«l HÃ¶rz.
   All Rights Reserved.
 
   Contributors to the SynEdit and mwEdit projects are listed in the
@@ -98,6 +98,9 @@ type
     FCharIndexesAreValid: Boolean;
     FDetectUTF8: Boolean;
     FUTF8CheckLen: Integer;
+    FDetectBinary: Boolean;
+    FIsBinaryFile: Boolean;
+    FOnBinaryFile: TNotifyEvent;
     FOnChange: TNotifyEvent;
     FOnChanging: TNotifyEvent;
     FOnCleared: TNotifyEvent;
@@ -174,6 +177,15 @@ type
     property TabWidth: Integer read FTabWidth write SetTabWidth;
     property UTF8CheckLen: Integer read FUTF8CheckLen write FUTF8CheckLen;
     property DetectUTF8: Boolean read FDetectUTF8 write FDetectUTF8;
+    // When True (default), LoadFromStream checks the decoded text for NUL
+    // characters and sets IsBinaryFile accordingly, firing OnBinaryFile.
+    property DetectBinary: Boolean read FDetectBinary write FDetectBinary;
+    // Result of the last load when DetectBinary is True.
+    property IsBinaryFile: Boolean read FIsBinaryFile;
+    // Fired at the end of every load (when DetectBinary is True) so that the
+    // editor can switch in/out of a fast binary-display mode. Read IsBinaryFile
+    // in the handler.
+    property OnBinaryFile: TNotifyEvent read FOnBinaryFile write FOnBinaryFile;
     property ChangeFlags[Index: TSynNativeInt]: TSynLineChangeFlags read GetChangeFlags
       write SetChangeFlags;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
@@ -221,6 +233,7 @@ begin
   WriteBOM := False;
 {$ENDIF}
   FDetectUTF8 := True;
+  FDetectBinary := True;
   FTextWidthFunc := TextWidthFunc;
 end;
 
@@ -651,6 +664,28 @@ begin
   end;
 end;
 
+function DetectBinaryContent(const Value: string): Boolean;
+{ Returns True if the decoded text looks like binary data. A NUL character
+  (U+0000) is an extremely reliable signal: well-formed text in any encoding
+  never contains it, while .exe/.png/.zip and similar contain NUL bytes very
+  early (file headers). Checking the *decoded* string rather than the raw
+  bytes keeps this correct for UTF-16/UTF-8 text, which legitimately contains
+  NUL *bytes* but never a NUL *code point*. The scan is bounded so it never
+  adds measurable cost to loading large genuine text files. }
+const
+  CMaxScan = 65536;
+var
+  I, Limit: Integer;
+begin
+  Result := False;
+  Limit := Length(Value);
+  if Limit > CMaxScan then
+    Limit := CMaxScan;
+  for I := 1 to Limit do
+    if Value[I] = #0 then
+      Exit(True);
+end;
+
 procedure TSynEditStringList.LoadFromStream(Stream: TStream;
   Encoding: TEncoding);
 var
@@ -811,6 +846,18 @@ var
   P, Start, Pmax: PChar;
   fCR, fLF, fUnicodeSeparator: Boolean;
 begin
+  // Detect binary content first and notify, so a listener (the editor) can
+  // switch to a fast display mode *before* the InsertItem loop and the
+  // OnInserted notification below. This sits here - rather than only in
+  // LoadFromStream - so that every whole-content path is covered, including
+  // assigning to the Text property.
+  if FDetectBinary then
+  begin
+    FIsBinaryFile := DetectBinaryContent(Value);
+    if Assigned(FOnBinaryFile) then
+      FOnBinaryFile(Self);
+  end;
+
   fUnicodeSeparator := False;
   fCR := False;
   fLF := False;
