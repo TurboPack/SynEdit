@@ -105,6 +105,7 @@ type
 
   TSynBaseCompletionProposalForm = class(TCustomForm)
   private
+    FCanFocus: Boolean;
     FCurrentString: string;
     FOnPaintItem: TSynBaseCompletionProposalPaintItem;
     FOnMeasureItem: TSynBaseCompletionProposalMeasureItem;
@@ -202,6 +203,7 @@ type
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure Resize; override;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    procedure WMMouseActivate(var AMsg: TMessage); message WM_MOUSEACTIVATE;
     procedure WMMouseWheel(var Msg: TMessage); message WM_MOUSEWHEEL;
     procedure WMActivate (var Message: TWMActivate); message WM_ACTIVATE;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
@@ -210,6 +212,8 @@ type
   public
     constructor Create(AOwner: Tcomponent); override;
     destructor Destroy; override;
+
+    function CanFocus: Boolean; override;
 
     function LogicalToPhysicalIndex(Index: Integer): Integer;
     function PhysicalToLogicalIndex(Index: Integer): Integer;
@@ -1175,6 +1179,13 @@ end;
 
 { TSynBaseCompletionProposalForm }
 
+function TSynBaseCompletionProposalForm.CanFocus: Boolean;
+begin
+  Result := FCanFocus;
+  if Result then
+    Result := inherited CanFocus;
+end;
+
 constructor TSynBaseCompletionProposalForm.Create(AOwner: TComponent);
 begin
   CreateNew(AOwner);
@@ -1908,6 +1919,11 @@ begin
   Result := (Owner as TSynBaseCompletionProposal).IsWordBreakChar(AChar);
 end;
 
+procedure TSynBaseCompletionProposalForm.WMMouseActivate(var AMsg: TMessage);
+begin
+  AMsg.Result := MA_NOACTIVATE;
+end;
+
 procedure TSynBaseCompletionProposalForm.WMMouseWheel(var Msg: TMessage);
 var
   nDelta: Integer;
@@ -2377,7 +2393,23 @@ begin
       Form.FScrollbar.Position := Form.Position;
       Form.FScrollbar.Visible := True;
 
-      Form.Show;
+      if not SysLocale.FarEast then
+      begin
+        Form.FCanFocus := True;
+        Form.TabStop := True;
+        Form.Show;
+      end
+      else
+      begin
+        Form.FCanFocus := False;
+        Form.TabStop := False;
+        if not Form.Visible then
+        begin
+          ShowWindow(Form.Handle, SW_SHOWNA);
+          Form.Visible := True;
+        end;
+        Form.Invalidate;
+      end;
 
       CurrentString := CurrentInput;
     end;
@@ -3011,6 +3043,13 @@ var
   ShortCutShift: TShiftState;
   Editor: TCustomSynedit;
 begin
+  if SysLocale.FarEast and (not Form.CanFocus) and
+    ((Key = vkUp) or (Key = vkDown) or (Key = vkReturn)) then
+  begin
+    Form.KeyDown(Key, Shift);
+    Exit;
+  end;
+
   Editor := Sender as TCustomSynEdit;
   ShortCutToKey (fShortCut,ShortCutKey,ShortCutShift);
     if ((DefaultType <> ctCode) or not Editor.ReadOnly) and
