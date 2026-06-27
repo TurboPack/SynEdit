@@ -1921,7 +1921,10 @@ end;
 
 procedure TSynBaseCompletionProposalForm.WMMouseActivate(var AMsg: TMessage);
 begin
-  AMsg.Result := MA_NOACTIVATE;
+  if (not CanFocus) and SysLocale.FarEast then
+    AMsg.Result := MA_NOACTIVATE
+  else
+    inherited;
 end;
 
 procedure TSynBaseCompletionProposalForm.WMMouseWheel(var Msg: TMessage);
@@ -2396,13 +2399,11 @@ begin
       if not SysLocale.FarEast then
       begin
         Form.FCanFocus := True;
-        Form.TabStop := True;
         Form.Show;
       end
       else
       begin
         Form.FCanFocus := False;
-        Form.TabStop := False;
         if not Form.Visible then
         begin
           ShowWindow(Form.Handle, SW_SHOWNA);
@@ -2417,6 +2418,7 @@ begin
     begin
       Form.FScrollbar.Visible := False;
 
+      Form.FCanFocus := False;
       if not Form.Visible then
       begin
         //ShowWindow(Form.Handle, SW_SHOWNOACTIVATE);
@@ -3044,7 +3046,7 @@ var
   Editor: TCustomSynedit;
 begin
   if SysLocale.FarEast and (not Form.CanFocus) and
-    ((Key = vkUp) or (Key = vkDown) or (Key = vkReturn)) then
+    ((Key = vkUp) or (Key = vkDown) or (Key = vkReturn) or (Key = vkEscape)) then
   begin
     Form.KeyDown(Key, Shift);
     Exit;
