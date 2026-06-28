@@ -3045,7 +3045,7 @@ var
   ShortCutShift: TShiftState;
   Editor: TCustomSynedit;
 begin
-  if SysLocale.FarEast and (not Form.CanFocus) and
+  if SysLocale.FarEast and (not Form.CanFocus) and Form.Visible and
     ((Key = vkUp) or (Key = vkDown) or (Key = vkReturn) or (Key = vkEscape)) then
   begin
     Form.KeyDown(Key, Shift);
