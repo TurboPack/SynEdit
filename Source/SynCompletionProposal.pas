@@ -1323,7 +1323,11 @@ var
 begin
   if DisplayType = ctCode then
   begin
-    i := CurrentEditor.Keystrokes.FindKeycode(Key, Shift);
+    if Assigned(CurrentEditor) then
+      i := CurrentEditor.Keystrokes.FindKeycode(Key, Shift)
+    else
+      i := -1;
+
     if i >= 0 then
       Cmd := CurrentEditor.Keystrokes[i].Command
     else
