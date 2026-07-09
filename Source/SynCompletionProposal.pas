@@ -423,8 +423,8 @@ type
     procedure HandleOnValidate(Sender: TObject; Shift: TShiftState; EndToken: WideChar);
     procedure HandleOnKeyPress(Sender: TObject; var Key: WideChar);
     procedure HandleDblClick(Sender: TObject);
-    procedure EditorKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure EditorKeyPress(Sender: TObject; var Key: WideChar);
+    procedure EditorKeyDown(ASender: TObject; var AKey: Word; AShift: TShiftState);
+    procedure EditorKeyPress(ASender: TObject; var AKey: Char);
     procedure TimerExecute(Sender: TObject);
     function GetPreviousToken(AEditor: TCustomSynEdit): string;
     function GetCurrentInput(AEditor: TCustomSynEdit): string;
@@ -3042,30 +3042,39 @@ begin
   FShortCut := Value;
 end;
 
-procedure TSynCompletionProposal.EditorKeyDown(Sender: TObject;
-  var Key: Word; Shift: TShiftState);
+procedure TSynCompletionProposal.EditorKeyDown(ASender: TObject; var AKey: Word; AShift: TShiftState);
 var
-  ShortCutKey: Word;
-  ShortCutShift: TShiftState;
-  Editor: TCustomSynedit;
+  lEditor: TCustomSynedit;
+  lShortCutKey: Word;
+  lShortCutShift: TShiftState;
 begin
-  if Assigned(Form.CurrentEditor) and SysLocale.FarEast and
-    (not Form.CanFocus) and Form.Visible and
-    ((Key = vkUp) or (Key = vkDown) or (Key = vkReturn) or (Key = vkEscape)) then
+  if Assigned(Form.CurrentEditor) and Form.Visible and (not Form.CanFocus) then
   begin
-    Form.KeyDown(Key, Shift);
-    Exit;
+    if (AKey = vkUp) or (AKey = vkDown) or (AKey = vkReturn) or (AKey = vkEscape) then
+    begin
+      Form.KeyDown(AKey, AShift);
+      Exit;
+    end;
+
+    if (AKey = vkBack) and (AShift = []) then
+    begin
+      if not Form.CurrentString.IsEmpty then
+        Form.CurrentString := Form.CurrentString.Substring(0, Form.CurrentString.Length - 1)
+      else if Assigned(Form.OnCancel) then
+        Form.OnCancel(Form);
+      Exit;
+    end;
   end;
 
-  Editor := Sender as TCustomSynEdit;
-  ShortCutToKey (fShortCut,ShortCutKey,ShortCutShift);
-    if ((DefaultType <> ctCode) or not Editor.ReadOnly) and
-       (Shift = ShortCutShift) and (Key = ShortCutKey) then
-    begin
-      Form.CurrentEditor := Editor;
-      Key := 0;
-      DoExecute(Editor);
-    end;
+  lEditor := ASender as TCustomSynEdit;
+  ShortCutToKey(fShortCut, lShortCutKey, lShortCutShift);
+  if ((DefaultType <> ctCode) or not lEditor.ReadOnly) and
+     (AShift = lShortCutShift) and (AKey = lShortCutKey) then
+  begin
+    Form.CurrentEditor := lEditor;
+    AKey := 0;
+    DoExecute(lEditor);
+  end;
 end;
 
 function TSynCompletionProposal.GetCurrentInput(AEditor: TCustomSynEdit): string;
@@ -3118,20 +3127,30 @@ begin
   end;
 end;
 
-procedure TSynCompletionProposal.EditorKeyPress(Sender: TObject; var Key: WideChar);
+procedure TSynCompletionProposal.EditorKeyPress(ASender: TObject; var AKey: Char);
 begin
-  if fNoNextKey  then
+  if fNoNextKey then
   begin
     FNoNextKey := False;
-    Key := #0;
+    AKey := #0;
   end
   else
-  if Assigned(FTimer) then
   begin
-    DeactivateTimer;
-    if Pos(Key, TriggerChars) <> 0 then
-      ActivateTimer(Sender as TCustomSynEdit);
+    if Form.Visible and (not Form.CanFocus) and (Form.DisplayType = ctCode) and
+       (AKey >= #32) then
+    begin
+      if Form.IsWordBreakChar(AKey) and Assigned(Form.OnValidate) then
+        Form.OnValidate(Form, [], AKey)
+      else
+        Form.CurrentString := Form.CurrentString + AKey;
+    end;
 
+    if Assigned(FTimer) then
+    begin
+      DeactivateTimer;
+      if Pos(AKey, TriggerChars) <> 0 then
+        ActivateTimer(ASender as TCustomSynEdit);
+    end;
   end;
 end;
 
@@ -3337,8 +3356,11 @@ begin
   begin
     case DisplayType of
     ctCode:
+      if (Command = ecLostFocus) and ((Screen.ActiveControl = nil) or
+          ((Screen.ActiveControl <> Form) and
+          (not Form.ContainsControl(Screen.ActiveControl)))) then
       begin
-
+        CancelCompletion;
       end;
     ctHint:
       begin
