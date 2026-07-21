@@ -3150,6 +3150,13 @@ begin
       DeactivateTimer;
       if Pos(AKey, TriggerChars) <> 0 then
         ActivateTimer(ASender as TCustomSynEdit);
+    end
+    else if TriggerChars.Contains(AKey) then
+    begin
+      if (ASender is TCustomSynEdit) then
+        DoExecute(ASender as TCustomSynEdit)
+      else if Assigned(Form.CurrentEditor) then
+        DoExecute(Form.CurrentEditor);
     end;
   end;
 end;
