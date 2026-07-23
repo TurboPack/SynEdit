@@ -3150,13 +3150,6 @@ begin
       DeactivateTimer;
       if Pos(AKey, TriggerChars) <> 0 then
         ActivateTimer(ASender as TCustomSynEdit);
-    end
-    else if TriggerChars.Contains(AKey) then
-    begin
-      if (ASender is TCustomSynEdit) then
-        DoExecute(ASender as TCustomSynEdit)
-      else if Assigned(Form.CurrentEditor) then
-        DoExecute(Form.CurrentEditor);
     end;
   end;
 end;
@@ -3396,15 +3389,24 @@ begin
       end;
     end;
   end
-  else
-  if (not Form.Visible) and Assigned(FTimer) then
+  else if not Form.Visible then
   begin
-    if (Command = ecChar) then
-      if (Pos(AChar, TriggerChars) = 0) then
-        FTimer.Enabled := False
+    if Assigned(FTimer) then
+    begin
+      if (Command = ecChar) then
+      begin
+        if (Pos(AChar, TriggerChars) = 0) then
+          FTimer.Enabled := False;
+      end
       else
-    else
-      FTimer.Enabled := False;
+        FTimer.Enabled := False;
+    end
+    else if AfterProcessing and (Command = ecChar) and
+      (Pos(AChar, TriggerChars) > 0) then
+    begin
+      DoExecute(Sender as TCustomSynEdit);
+      FNoNextKey := False;
+    end;
   end;
 
 end;
