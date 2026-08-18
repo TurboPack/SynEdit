@@ -50,12 +50,15 @@ This feature is a **Design-Time Component Editor** that allows you to instantly 
 
 ***Notice:*** These settings are imported from the *registry*, so if you changed your IDE settings and haven't closed the IDE the imported values may be out of date.
 
+***Notice:*** The import **overwrites** the current font, colors, gutter, selection, tab and highlighting settings of the component, and cannot be undone. For this reason it is only available through the context menu verb described below, it is **not** triggered by double-clicking the component, and it always asks for a confirmation before proceeding.
+
 ### **Usage:**
 
 1. Open the Form Designer in Delphi.  
 2. Select a TSynEdit or TSynDelphiSyn component.  
 3. **Right-click** the component to open the context menu.  
-4. Select **"Import IDE Settings"**.
+4. Select **"Import IDE Settings"**.  
+5. Confirm the warning dialog (it defaults to **No**, so pressing Enter or Esc cancels the import).
 
 ### **Importing on TSynEdit:**
 
