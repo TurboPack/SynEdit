@@ -3048,15 +3048,18 @@ var
   lShortCutKey: Word;
   lShortCutShift: TShiftState;
 begin
-  if Assigned(Form.CurrentEditor) and Form.Visible and (not Form.CanFocus) then
+  if Assigned(Form.CurrentEditor) and Form.Visible then
   begin
-    if (AKey = vkUp) or (AKey = vkDown) or (AKey = vkReturn) or (AKey = vkEscape) then
+    if (Form.DisplayType = ctCode) and ((AKey = vkUp) or (AKey = vkDown) or
+      (AKey = vkPrior) or (AKey = vkNext) or (AKey = vkHome) or
+      (AKey = vkEnd) or (AKey = vkReturn) or (AKey = vkEscape)) then
     begin
       Form.KeyDown(AKey, AShift);
+      AKey := 0;
       Exit;
     end;
 
-    if (AKey = vkBack) and (AShift = []) then
+    if (not Form.CanFocus) and (AKey = vkBack) and (AShift = []) then
     begin
       if not Form.CurrentString.IsEmpty then
         Form.CurrentString := Form.CurrentString.Substring(0, Form.CurrentString.Length - 1)
