@@ -277,6 +277,7 @@
         <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
             <Form>SynOmniSynSetup</Form>
         </DCCReference>
+        <DCCReference Include="..\..\..\Source\SynPopupMenu.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
         <DCCReference Include="..\..\..\Source\SynURIOpener.pas"/>

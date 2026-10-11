@@ -119,7 +119,8 @@ uses
   SynSpellCheck,
   SynURIOpener,
   SynEditActionsResource,
-  SynHighlighterDelphi;
+  SynHighlighterDelphi,
+  SynPopupMenu;
 
 procedure Register;
 
@@ -154,6 +155,7 @@ begin
     TSynEditPrint, TSynEditPrintPreview, TSynAutoCorrect,
     TSynEditSearch, TSynEditRegexSearch, TSynEditOptionsDialog, TSynURIOpener]);
   RegisterComponents(SYNS_ComponentsPage, [TSynHighlighterManager]);
+  RegisterComponents(SYNS_ComponentsPage, [TSynPopupMenu]);
   RegisterComponents(SYNS_ComponentsPage, [TSynSpellCheck]);
 
 // SynEdit highlighters

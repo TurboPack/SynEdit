@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Package</AppType>
@@ -218,6 +218,7 @@
         <DCCReference Include="..\..\..\Source\SynOmniSetupDialog.pas">
             <Form>SynOmniSynSetup</Form>
         </DCCReference>
+        <DCCReference Include="..\..\..\Source\SynPopupMenu.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\SynUnicode.pas"/>
         <DCCReference Include="..\..\..\Source\SynURIOpener.pas"/>

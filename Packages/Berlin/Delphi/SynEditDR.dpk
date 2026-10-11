@@ -146,6 +146,7 @@ contains
   SynHighlighterYAML in '..\..\..\Source\Highlighters\SynHighlighterYAML.pas',
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
   SynOmniSetupDialog in '..\..\..\Source\SynOmniSetupDialog.pas' {SynOmniSynSetup},
+  SynPopupMenu in '..\..\..\Source\SynPopupMenu.pas',
   SynSpellCheck in '..\..\..\Source\SynSpellCheck.pas',
   SynUnicode in '..\..\..\Source\SynUnicode.pas',
   SynURIOpener in '..\..\..\Source\SynURIOpener.pas';
