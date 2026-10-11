@@ -1343,6 +1343,10 @@ function TSynPasSyn.UseUserSettings(VersionIndex: TSynNativeInt): Boolean;
     tmpSpaceAttri.Free;
     tmpStringAttri.Free;
     tmpSymbolAttri.Free;
+    tmpDirecAttri.Free;
+    tmpCharAttri.Free;
+    tmpFloatAttri.Free;
+    tmpHexAttri.Free;
   end;
 
 begin
