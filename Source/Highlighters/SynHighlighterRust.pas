@@ -42,7 +42,7 @@ type
   TSynRustSyn = class(TSynCustomHighlighter)
   private
     FRange: TRangeState;
-    FRangeLevel: Integer;
+    FRangeLevel: NativeInt;
     FTokenID: TtkTokenKind;
     FKeywords: TStringList;
     FBuiltins: TStringList;
@@ -394,7 +394,8 @@ end;
 
 function TSynRustSyn.TryStartRawString: Boolean;
 var
-  P, Hashes: Integer;
+  P: TSynNativeInt;
+  Hashes: Integer;
 begin
   Result := False;
   P := Run + 1;
@@ -430,7 +431,7 @@ begin
   while not CharInSet(FLine[Run], [#0, #10, #13]) do
   begin
     // Raw strings have no escapes; close on '"' followed by FRangeLevel '#'.
-    if (FLine[Run] = '"') and RawStringEnd(Run + 1, FRangeLevel) then
+    if (FLine[Run] = '"') and RawStringEnd(ToInt32(Run + 1), ToInt32(FRangeLevel)) then
     begin
       Inc(Run, 1 + FRangeLevel);
       FRange := rsUnknown;

@@ -42,7 +42,7 @@ type
   TSynLuaSyn = class(TSynCustomHighlighter)
   private
     FRange: TRangeState;
-    FLongLevel: Integer;
+    FLongLevel: NativeInt;
     FTokenID: TtkTokenKind;
     FKeywords: TStringList;
     FBuiltins: TStringList;
@@ -316,7 +316,7 @@ begin
   begin
     // A comment. Consume the leading '--'.
     Inc(Run, 2);
-    Level := LongBracketLevel(Run);
+    Level := LongBracketLevel(ToInt32(Run));
     if Level >= 0 then
     begin
       // Long comment: --[[ ... ]] / --[==[ ... ]==]
@@ -352,7 +352,7 @@ begin
   FTokenID := tkComment;
   while not CharInSet(FLine[Run], [#0, #10, #13]) do
   begin
-    if (FLine[Run] = ']') and IsLongBracketEnd(Run, FLongLevel) then
+    if (FLine[Run] = ']') and IsLongBracketEnd(ToInt32(Run), ToInt32(FLongLevel)) then
     begin
       Inc(Run, FLongLevel + 2);
       FRange := rsUnknown;
@@ -378,7 +378,7 @@ begin
   FTokenID := tkString;
   while not CharInSet(FLine[Run], [#0, #10, #13]) do
   begin
-    if (FLine[Run] = ']') and IsLongBracketEnd(Run, FLongLevel) then
+    if (FLine[Run] = ']') and IsLongBracketEnd(ToInt32(Run), ToInt32(FLongLevel)) then
     begin
       Inc(Run, FLongLevel + 2);
       FRange := rsUnknown;
@@ -393,7 +393,7 @@ procedure TSynLuaSyn.BracketProc;
 var
   Level: Integer;
 begin
-  Level := LongBracketLevel(Run);
+  Level := LongBracketLevel(ToInt32(Run));
   if Level >= 0 then
   begin
     // Long string: [[ ... ]] / [==[ ... ]==]

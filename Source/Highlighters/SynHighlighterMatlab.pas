@@ -213,7 +213,7 @@ end;
 
 function TSynMatlabSyn.IsAtLineStart: Boolean;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := 0 to Run - 1 do
     if FLine[I] > ' ' then
@@ -294,7 +294,7 @@ end;
 
 procedure TSynMatlabSyn.CommentProc;
 begin
-  if (FLine[Run + 1] = '{') and IsAtLineStart and RestIsBlank(Run + 2) then
+  if (FLine[Run + 1] = '{') and IsAtLineStart and RestIsBlank(ToInt32(Run + 2)) then
   begin
     // '%{' alone on a line opens a block comment.
     FTokenID := tkComment;
@@ -315,7 +315,7 @@ end;
 
 procedure TSynMatlabSyn.BlockCommentProc;
 var
-  P: Integer;
+  P: TSynNativeInt;
 begin
   if (Run = FTokenPos) and CharInSet(FLine[Run], [#0, #10, #13]) then
   begin
@@ -332,7 +332,7 @@ begin
   P := Run;
   while CharInSet(FLine[P], [#9, ' ']) do
     Inc(P);
-  if (FLine[P] = '%') and (FLine[P + 1] = '}') and RestIsBlank(P + 2) then
+  if (FLine[P] = '%') and (FLine[P + 1] = '}') and RestIsBlank(ToInt32(P + 2)) then
     FRange := rsUnknown;
   while not CharInSet(FLine[Run], [#0, #10, #13]) do
     Inc(Run);

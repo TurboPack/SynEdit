@@ -237,7 +237,7 @@ end;
 
 function TSynHCLSyn.NextNonSpaceIsParen: Boolean;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   I := Run;
   while CharInSet(FLine[I], [#9, ' ']) do
@@ -421,7 +421,7 @@ end;
 
 procedure TSynHCLSyn.HeredocProc;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   if (Run = FTokenPos) and CharInSet(FLine[Run], [#0, #10, #13]) then
   begin

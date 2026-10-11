@@ -43,7 +43,7 @@ type
   TSynTOMLSyn = class(TSynCustomHighlighter)
   private
     FRange: TRangeState;
-    FArrayDepth: Integer;
+    FArrayDepth: NativeInt;
     FInValue: Boolean;
     FTokenID: TtkTokenKind;
     FCommentAttri: TSynHighlighterAttributes;
@@ -176,7 +176,7 @@ end;
 
 function TSynTOMLSyn.IsAtLineStart: Boolean;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := 0 to Run - 1 do
     if FLine[I] > ' ' then

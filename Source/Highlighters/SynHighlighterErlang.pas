@@ -231,7 +231,7 @@ end;
 
 function TSynErlangSyn.IsAtLineStart: Boolean;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := 0 to Run - 1 do
     if FLine[I] > ' ' then

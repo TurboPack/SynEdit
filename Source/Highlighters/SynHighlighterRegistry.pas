@@ -201,7 +201,7 @@ end;
 
 function TSynRegistrySyn.IsAtLineStart: Boolean;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := 0 to Run - 1 do
     if FLine[I] > ' ' then
@@ -341,7 +341,7 @@ end;
 
 procedure TSynRegistrySyn.BackslashProc;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   // a '\' at the end of a value line continues the hex byte list
   FTokenID := tkSymbol;

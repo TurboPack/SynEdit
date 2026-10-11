@@ -42,7 +42,7 @@ type
   TSynKotlinSyn = class(TSynCustomHighlighter)
   private
     FRange: TRangeState;
-    FRangeLevel: Integer;
+    FRangeLevel: NativeInt;
     FTokenID: TtkTokenKind;
     FKeywords: TStringList;
     FTypes: TStringList;

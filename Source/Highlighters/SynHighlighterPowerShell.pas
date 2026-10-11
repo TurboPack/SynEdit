@@ -416,7 +416,7 @@ end;
 
 procedure TSynPowerShellSyn.DashProc;
 var
-  WStart: Integer;
+  WStart: TSynNativeInt;
   W: string;
 begin
   if IsIdentStart(FLine[Run + 1]) then

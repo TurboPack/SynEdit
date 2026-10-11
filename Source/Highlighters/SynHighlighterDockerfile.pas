@@ -226,7 +226,8 @@ end;
 
 procedure TSynDockerfileSyn.CommentProc;
 var
-  I, P: Integer;
+  I: TSynNativeInt;
+  P: TSynNativeInt;
   W: string;
 begin
   // A # comment, or a parser directive: # syntax= / # escape= / # check=
@@ -341,7 +342,7 @@ end;
 
 procedure TSynDockerfileSyn.BackslashProc;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   // a '\' at the end of the line continues the instruction onto the next line
   FTokenID := tkSymbol;

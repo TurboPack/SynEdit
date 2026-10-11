@@ -44,7 +44,7 @@ type
   TSynSwiftSyn = class(TSynCustomHighlighter)
   private
     FRange: TRangeState;
-    FRangeLevel: Integer;
+    FRangeLevel: NativeInt;
     FTokenID: TtkTokenKind;
     FKeywords: TStringList;
     FTypes: TStringList;
@@ -437,7 +437,7 @@ begin
       Inc(Run);
       if AHashCount = 0 then
         Break
-      else if HashRun(Run, AHashCount) then
+      else if HashRun(ToInt32(Run), AHashCount) then
       begin
         Inc(Run, AHashCount);
         Break;
@@ -470,7 +470,7 @@ begin
         Inc(Run);
     end
     else if (FLine[Run] = '"') and (FLine[Run + 1] = '"') and
-      (FLine[Run + 2] = '"') and HashRun(Run + 3, FRangeLevel) then
+      (FLine[Run + 2] = '"') and HashRun(ToInt32(Run + 3), ToInt32(FRangeLevel)) then
     begin
       Inc(Run, 3);
       Inc(Run, FRangeLevel);
@@ -485,7 +485,8 @@ end;
 
 procedure TSynSwiftSyn.HashProc;
 var
-  N, P: Integer;
+  N: Integer;
+  P: TSynNativeInt;
 begin
   N := 0;
   P := Run;
