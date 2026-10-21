@@ -8,7 +8,7 @@ A new updated Delphi syntax highlighter for SynEdit (TSynDelphiSyn) and a design
 
 **Inheritance:** `TSynCustomCodeFoldingHighlighter`
 
-`TSynDelphiSyn` is a specialized syntax highlighter designed to support the modern Object Pascal dialect used in Delphi 13 (Athens). It is based on the standard Pascal highligher `TSynPascalSyn`, but extends it with support for new language features, and expanded keywords.
+`TSynDelphiSyn` is a specialized syntax highlighter designed to support the modern Object Pascal dialect used in Delphi 13 (Florence). It is based on the standard Pascal highligher `TSynPascalSyn`, but extends it with support for new language features, and expanded keywords.
 
 ### **Key Features**
 
