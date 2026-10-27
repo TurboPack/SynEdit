@@ -1,4 +1,4 @@
-{ ------------------------------------------------------------------------------
+﻿{ ------------------------------------------------------------------------------
   The contents of this file are subject to the Mozilla Public License
   Version 1.1 (the "License"); you may not use this file except in compliance
   with the License. You may obtain a copy of the License at
@@ -299,6 +299,8 @@ begin
     System.Move(FList[Index + 1], FList[Index],
       (FCount - Index) * SynEditStringRecSize);
   end;
+  // Moved records own these strings; do not finalize their stale tail copies.
+  FillChar(FList[FCount], SynEditStringRecSize, 0);
   FMaxWidth := -1;
   if Assigned(FOnDeleted) then
     FOnDeleted(Self, Index, 1);
@@ -329,6 +331,7 @@ begin
     if lLinesAfter > 0 then
       System.Move(FList[AIndex + ANumLines], FList[AIndex], lLinesAfter * SynEditStringRecSize);
     Dec(FCount, ANumLines);
+    FillChar(FList[FCount], ANumLines * SynEditStringRecSize, 0);
     if Assigned(FOnDeleted) then
       FOnDeleted(Self, AIndex, ANumLines);
     Changed;
