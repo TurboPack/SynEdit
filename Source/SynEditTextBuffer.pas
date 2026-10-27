@@ -109,6 +109,7 @@ type
     FOnInserted: TStringListChangeEvent;
     FOnPut: TStringListPutEvent;
     FOnInfoLoss: TSynInfoLossEvent;
+    procedure CalcLine(const ALine: TSynNativeInt);
     function GetCapacityNative: TSynNativeInt;
     function GetTextWidth(Index: TSynNativeInt): TSynNativeInt;
     function GetMaxWidth: TSynNativeInt;
@@ -244,6 +245,26 @@ begin
   inherited Destroy;
   FCount := 0;
   SetCapacityNative(0);
+end;
+
+procedure TSynEditStringList.CalcLine(const ALine: TSynNativeInt);
+var
+  lMaxW: TSynNativeInt;
+  lRec: PSynEditStringRec;
+begin
+  lRec := @FList[ALine];
+
+  if sfTextWidthUnknown in lRec^.FFlags then
+  begin
+    lRec^.FTextWidth := FTextWidthFunc(lRec^.FString);
+    Exclude(lRec^.FFlags, sfTextWidthUnknown);
+  end;
+
+  repeat
+    lMaxW := FMaxWidth;
+    if lRec^.FTextWidth <= lMaxW then
+      Break;
+  until AtomicCmpExchange(FMaxWidth, lRec^.FTextWidth, lMaxW) = lMaxW;
 end;
 
 procedure TSynEditStringList.Changed;
@@ -439,12 +460,8 @@ begin
 end;
 
 function TSynEditStringList.GetMaxWidth: TSynNativeInt;
-{$IF (COMPILERVERSION <= 29) AND DEFINED(PACKAGE)}
 var
-  I: TSynNativeInt;
-  LMaxW: TSynNativeInt;
-  PRec: PSynEditStringRec;
-{$IFEND}
+  lCount: TSynNativeInt;
 begin
   if FMaxWidth > 0 then
     Result := FMaxWidth
@@ -453,26 +470,16 @@ begin
   else
   begin
 {$IF (COMPILERVERSION > 29) OR (NOT DEFINED(PACKAGE))}
-    TParallel.&For(0, FCount - 1, procedure(I: TSynNativeInt)
-    var
-      LMaxW: TSynNativeInt;
-      PRec: PSynEditStringRec;
-{$ELSE}
-    for I := 0 to FCount - 1 do
+    // TThreadPool.Default cannot be shut down cleanly on DLL unload (loader lock)
+    if not IsLibrary then
+      TParallel.&For(0, FCount - 1, procedure(AValue: TSynNativeInt)
+        begin
+          CalcLine(AValue);
+        end)
+    else
 {$IFEND}
-    begin
-      PRec := @FList[I];
-      if sfTextWidthUnknown in PRec^.FFlags then
-      begin
-        PRec^.FTextWidth := FTextWidthFunc(PRec^.FString);
-        Exclude(PRec^.FFlags, sfTextWidthUnknown);
-      end;
-      repeat
-        LMaxW := FMaxWidth;
-        if PRec^.FTextWidth <= LMaxW then
-          Break;
-      until AtomicCmpExchange(FMaxWidth, PRec^.FTextWidth, LMaxW) = LMaxW;
-    end{$IF (COMPILERVERSION > 29) OR (NOT DEFINED(PACKAGE))}){$IFEND};
+    for lCount := 0 to FCount - 1 do
+      CalcLine(lCount);
     Result := Max(FMaxWidth, 0);
   end;
 end;
