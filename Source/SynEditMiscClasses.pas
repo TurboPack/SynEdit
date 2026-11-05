@@ -1313,7 +1313,14 @@ end;
 
 procedure TSynGutter.SetDigitCount(Value: TSynNativeInt);
 begin
-  Value := MinMax(Value, 2, 12);
+  // Upper bound raised from 12: with OnGutterGetText the line number band can
+  // hold arbitrary text (hex offsets, symbol names), and gbkLineNumbers.RealWidth
+  // is computed from DigitCount rather than from the text the event returns, so
+  // anything longer is clipped. A 16 digit offset needs DigitCount = 16.
+  // Nothing here depends on the value: it only feeds a Max(), a Format('%*d')
+  // and one multiplication. Raised rather than removed so that a typo cannot
+  // blow up the gutter.
+  Value := MinMax(Value, 2, 24);
   if FDigitCount <> Value then
   begin
     FDigitCount := Value;
