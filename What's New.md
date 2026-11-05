@@ -136,3 +136,57 @@ For every row below, the importer reads:
 | String | StringAttri |
 | Character | CharAttri |
 | Symbol | SymbolAttri |
+
+---
+
+# **TSynAsmX86\_64**
+
+A syntax highlighter for x86-64 assembler, aimed at disassembler and inline
+assembler views (Keystone / Capstone / iced based tools) where the existing
+`TSynAsmSyn` is too coarse.
+
+**Unit:** `Source\Highlighters\SynHighlighterAsmX86_64.pas`
+
+**Inheritance:** `TSynCustomHighlighter`
+
+**Language name:** `x86-64Assembly` - distinct from `TSynAsmSyn`, which keeps
+`x86Assembly`, so both highlighters can be registered side by side.
+
+### **Key Features**
+
+* **Separate token classes instead of one keyword colour**: general mnemonics,
+  general purpose registers, float/vector registers, operand size specifiers,
+  jumps, conditional instructions and AVX instructions each get their own
+  attribute, so a disassembly listing stays readable without reading it.
+* **Labels**: a trailing colon marks a declaration; a bare identifier is shown
+  as a label only when a matching declaration exists in the text.
+* **Literals**: decimal, hexadecimal, octal, float and character literals have
+  their own attributes.
+* **Keyword lookup**: a single case-insensitive `TDictionary`, the same
+  mechanism `TSynAsmSyn` uses. 1801 keywords across the seven classes.
+
+### **Attributes**
+
+| Property | Description |
+| :---- | :---- |
+| KeyAttri | General mnemonics (mov, add, call, ...). |
+| RegisterAttri | General purpose registers (rax, r8d, ...). |
+| FloatRegisterAttri | Float and vector registers (xmm0, ymm1, st0, ...). |
+| TypeSizeAttri | Operand size specifiers (byte, word, dword, qword). |
+| JumpAttri | Jump instructions (jmp, je, loop, ...). |
+| ConditionalAttri | Conditional instructions (cmovz, setne, ...). |
+| AVXAttri | AVX / AVX-512 instructions (vaddps, vpternlogd, ...). |
+| LabelDeclarationAttri | A label declaration (name followed by a colon). |
+| LabelAttri | A reference to a declared label. |
+| CommentAttri | Comments (; and // style). |
+| IdentifierAttri | Everything else that is an identifier. |
+| NumberAttri | Decimal literals. |
+| HexAttri | Hexadecimal literals. |
+| OctalAttri | Octal literals. |
+| FloatAttri | Floating-point literals. |
+| CharAttri | Character literals. |
+| StringAttri | String literals. |
+| MathAttri | Arithmetic operators. |
+| BracketAttri | Brackets around memory operands. |
+| SymbolAttri | Remaining punctuation. |
+| SpaceAttri | Whitespace. |

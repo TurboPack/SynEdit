@@ -221,6 +221,7 @@ const
   SYNS_LangPascal               =  'ObjectPascal';
   SYNS_LangDWScript             =  'DWScriptPascal';
   SYNS_LangX86Asm               =  'x86Assembly';
+  SYNS_LangX86_64Asm            =  'x86-64Assembly';
   SYNS_LangPython               =  'Python';
   SYNS_LangTclTk                =  'TclTk';
   SYNS_LangSQL                  =  'SQL';
@@ -475,6 +476,7 @@ resourcestring
   SYNS_FilterBatch              =  'MS-DOS Batch Files (*.bat;*.cmd)|*.bat;*.cmd';
   SYNS_FilterDFM                =  'Borland Form Files (*.dfm;*.xfm)|*.dfm;*.xfm';
   SYNS_FilterX86Assembly        =  'x86 Assembly Files (*.asm)|*.asm';
+  SYNS_FilterX86_64Assembly     =  'x86-64 Assembly Files (*.asm)|*.asm';
   SYNS_FilterGembase            =  'GEMBASE Files (*.dml;*.gem)|*.dml;*.gem';
   SYNS_FilterINI                =  'INI/TOML Files (*.ini;*.toml)|*.ini;*.toml';
   SYNS_FilterSML                =  'Standard ML Files (*.sml)|*.sml';
@@ -533,6 +535,7 @@ resourcestring
   SYNS_FriendlyLangPascal               =  'Object Pascal';
   SYNS_FriendlyLangDWScript             =  'DWScript Pascal';
   SYNS_FriendlyLangX86Asm               =  'x86 Assembly';
+  SYNS_FriendlyLangX86_64Asm            =  'x86-64 Assembly';
   SYNS_FriendlyLangPython               =  'Python';
   SYNS_FriendlyLangTclTk                =  'Tcl/Tk';
   SYNS_FriendlyLangSQL                  =  'SQL';

@@ -150,6 +150,7 @@
         <DCCReference Include="..\..\..\Source\SynFunc.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsm.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAWK.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterBaan.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterBat.pas"/>
