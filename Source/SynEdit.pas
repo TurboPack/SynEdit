@@ -2555,6 +2555,20 @@ var
     IsFullySelected: Boolean;
     SpecialFG, SpecialBG: TColor;
   begin
+    // Seed them before the event is called: a handler is allowed to set only
+    // one of the two, and the other one would otherwise keep whatever was on
+    // the stack, which in practice renders as black. Under an active VCL style
+    // Font.Color and Color are not the colours the control is drawn with, so
+    // take the styled ones there, each gated on its StyleElements flag.
+    SpecialFG := Font.Color;
+    SpecialBG := Color;
+    if StyleServices.Enabled and not StyleServices.IsSystemStyle then
+    begin
+      if seFont in StyleElements then
+        SpecialFG := StyleServices.GetSystemColor(clWindowText);
+      if seClient in StyleElements then
+        SpecialBG := StyleServices.GetStyleColor(scEdit);
+    end;
     IsLineSpecial := DoOnSpecialLineColors(Line, SpecialFG, SpecialBG);
     IsFullySelected := IsRowFullySelected(Row, RowStart);
 
