@@ -435,7 +435,7 @@ begin
     '        STAA    SCCR2'#13#10 +
     'loop:'#13#10 +
     '        LDAA    #$05'#13#10 +
-    '	BRA_	loop		;Do it again'#13#10 +
+    '	BRA	loop		;Do it again'#13#10 +
     '	ORG	$FFFE		;Reset vector interrupt setup'#13#10 +
     '	END';
 end;

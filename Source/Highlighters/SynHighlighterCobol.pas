@@ -362,8 +362,9 @@ const
 	'xml-declaration, xml-event, xml-ntext, xml-schema, xml-text, yyyyddd, yyyymmdd, ' +
 	'zero-fill';
   PreprocessorWords: string =
-    'basis, cbl, control, copy, delete, eject, erase,  ready, reload, ' +
-    'replace, skip1, skip2, skip3';
+    'basis, cbl, control, copy, delete, eject, erase, insert, ready, ' +
+    'reload, replace, reset, service, skip1, skip2, skip3, title, ' +
+    'trace, use';
 
   StringWords: string =
     'file-limit, file-limits, high-value, high-values, limit, limits, low-value, low-values, ' +
