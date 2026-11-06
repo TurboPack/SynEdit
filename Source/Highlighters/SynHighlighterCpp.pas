@@ -1480,7 +1480,7 @@ end;
 procedure TSynCppSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
-  with TRegistry.Create do
+  with TRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
   begin
     try
       RootKey := HKEY_LOCAL_MACHINE;
