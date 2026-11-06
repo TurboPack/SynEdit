@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, Vcl.Graphics, Generics.Collections,
-  SynEditTypes, SynEditHighlighter, SynUnicode;
+  SynEditTypes, SynEditHighlighter, SynFunc, SynUnicode;
 
 type
   TtkTokenKind = (
@@ -106,7 +106,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsWordBreakChar(AChar: WideChar): Boolean; override;
   public
@@ -119,7 +119,7 @@ type
     function GetRange: Pointer; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
-    procedure SetLine(const NewValue: String; LineNumber: Integer); override;
+    procedure SetLine(const NewValue: String; LineNumber: TSynNativeInt); override;
 
     procedure Next; override;
 
@@ -304,6 +304,7 @@ end;
 procedure TSynWebStencilsSyn.CleanupVariablesForScope(AScope: Integer);
 var
   Pair: TPair<string, Integer>;
+  Key: string;
   ToRemove: TList<string>;
 begin
   ToRemove := TList<string>.Create;
@@ -314,14 +315,14 @@ begin
         ToRemove.Add(Pair.Key);
     end;
 
-    for var Key in ToRemove do
+    for Key in ToRemove do
       FDeclaredVariables.Remove(Key);
   finally
     ToRemove.Free;
   end;
 end;
 
-procedure TSynWebStencilsSyn.SetLine(const NewValue: String; LineNumber: Integer);
+procedure TSynWebStencilsSyn.SetLine(const NewValue: String; LineNumber: TSynNativeInt);
 begin
   // Reset state for new line BEFORE calling inherited
   FLastIdentifier := '';
@@ -1237,7 +1238,7 @@ begin
   end;
 end;
 
-function TSynWebStencilsSyn.GetTokenKind: Integer;
+function TSynWebStencilsSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(FTokenID);
 end;
