@@ -335,13 +335,13 @@ end;
 
 function TSynAsmX86_64.IsLabel(MayBe: PWideChar): Boolean;
 var
-  i : Integer;
+  i : TSynNativeInt;
   LabelText : UnicodeString; // D7: PWideChar + ':' is no implicit concat there
 begin
   result := False;
   LabelText := MayBe;
   LabelText := LabelText + ':';
-  for i := 0 to TSynEdit( Owner ).Lines.Count-1 do
+  for i := 0 to TSynEdit( Owner ).Lines.CountNative-1 do
     begin
     if ( CompareText( TSynEdit( Owner ).Lines[ i ], LabelText ) = 0 ) then
       begin
@@ -461,8 +461,8 @@ end;
 
 procedure TSynAsmX86_64.NumberProc;
 var
-  idx1: Integer; // token[1]
-  i: Integer;
+  idx1: TSynNativeInt; // token[1]
+  i: TSynNativeInt;
 begin
   idx1 := Run;
   Inc(Run);
