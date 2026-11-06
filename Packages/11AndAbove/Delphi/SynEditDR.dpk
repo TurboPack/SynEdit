@@ -81,6 +81,7 @@ contains
   SynFunc in '..\..\..\Source\SynFunc.pas',
   SynHighlighterADSP21xx in '..\..\..\Source\Highlighters\SynHighlighterADSP21xx.pas',
   SynHighlighterAsm in '..\..\..\Source\Highlighters\SynHighlighterAsm.pas',
+  SynHighlighterAsmX86_64 in '..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas',
   SynHighlighterAutoIt in '..\..\..\Source\Highlighters\SynHighlighterAutoIt.pas',
   SynHighlighterAWK in '..\..\..\Source\Highlighters\SynHighlighterAWK.pas',
   SynHighlighterBaan in '..\..\..\Source\Highlighters\SynHighlighterBaan.pas',

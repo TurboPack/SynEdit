@@ -492,6 +492,9 @@
         <DelphiCompile Include="..\..\..\Source\SynURIOpener.pas">
             <BuildOrder>116</BuildOrder>
         </DelphiCompile>
+        <DelphiCompile Include="..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas">
+            <BuildOrder>118</BuildOrder>
+        </DelphiCompile>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
