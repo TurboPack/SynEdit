@@ -364,11 +364,12 @@ begin
   if FKeywords.TryGetValue(S, Result) then
     Exit;
 
-  // Not a keyword: a trailing colon declares a label, otherwise it is only a
-  // label if a declaration for it exists somewhere in the text.
-  if Pos(' ', S) > 0 then
+  // Not a keyword. These checks look at the rest of the line, not at the
+  // identifier: ':' is no identifier char, so only FToIdent can end in one. A
+  // space in the rest of the line also skips the IsLabel scan of the whole text.
+  if Pos(' ', string(FToIdent)) > 0 then
     Result := tkIdentifier
-  else if (S <> '') and (S[Length(S)] = ':') then
+  else if Copy(string(FToIdent), Length(string(FToIdent)), 1) = ':' then
     Result := tkLabelDeclaration
   else if IsLabel(FToIdent) then
     Result := tkLabel
