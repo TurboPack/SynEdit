@@ -511,7 +511,7 @@ resourcestring
   SYNS_FilterLLVMIR             =  'LLVM IR files (*.ll)|*.ll';
   SYNS_FilterURI                =  'All Files (*.*)|*.*';
   SYNS_FilterVrml97             =  'Vrml97/X3D World (*.wrl;*.wrml;*.vrl;*.vrml;*.x3d)|*.wrl;*.wrml;*.vrl;*.vrml;*.x3d';
-  SYNS_FilterYAML               =  'YAML files (*.yaml)|*.yaml';
+  SYNS_FilterYAML               =  'YAML files (*.yaml;*.yml)|*.yaml;*.yml';
 
   // friendly language names
   SYNS_FriendlyLangHP48                 =  'HP48';

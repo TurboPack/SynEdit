@@ -219,14 +219,19 @@ const
     'write', 'writeln', 'zIndex'
   );
 
-  KeyWords: array[0..61] of string = (
+  // IsKeyword searches this array with a binary search over CompareStr, which
+  // is ordinal: upper case sorts before lower case. 'NaN' therefore has to come
+  // before 'abstract'. While it sat between 'long' and 'native' the search
+  // never reached it, so it was the one keyword that could not be highlighted.
+  KeyWords: array[0..62] of string = (
+    'NaN',
     'abstract', 'boolean', 'break', 'byte', 'callee', 'case',
-    'catch', 'char', 'const', 'constructor', 'continue',
+    'catch', 'char', 'class', 'const', 'constructor', 'continue',
     'debugger', 'default', 'delete', 'do', 'double', 'else',
     'enum', 'export', 'extends', 'false', 'final', 'finally',
     'float', 'for', 'function', 'goto', 'if', 'implements',
     'import', 'in', 'instanceof', 'int', 'interface', 'long',
-    'NaN', 'native', 'new', 'null', 'package', 'private',
+    'native', 'new', 'null', 'package', 'private',
     'protected', 'prototype', 'public', 'return', 'short',
     'start', 'static', 'super', 'switch', 'synchronized',
     'this', 'throw', 'throws', 'transient', 'true', 'try',

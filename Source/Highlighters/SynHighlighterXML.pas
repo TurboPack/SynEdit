@@ -824,7 +824,10 @@ begin
   case fLine[Run] of
     '0'..'9', 'a'..'z', 'A'..'Z', '_', '.', ':', '-':
       Result := True;
-    else if fLine[Run] > 'À' then // TODO: this here is very vague, see above
+    // WideChar(#$00C0) rather than the literal character: the file has no BOM,
+    // so Delphi reads it in the system ANSI codepage and the literal would
+    // mean a different character there.
+    else if fLine[Run] > WideChar(#$00C0) then // TODO: this here is very vague, see above
       Result := True
     else
       Result := False;
