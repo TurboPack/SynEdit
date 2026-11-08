@@ -339,11 +339,16 @@ var
   LabelText : UnicodeString; // D7: PWideChar + ':' is no implicit concat there
 begin
   result := False;
+  // A label reference is found by looking for its declaration in the text, so
+  // this needs the editor. Dropped on a form the owner is the form, and an
+  // exporter may create the highlighter without any owner.
+  if not ( Owner is TCustomSynEdit ) then
+    Exit;
   LabelText := MayBe;
   LabelText := LabelText + ':';
-  for i := 0 to TSynEdit( Owner ).Lines.CountNative-1 do
+  for i := 0 to TCustomSynEdit( Owner ).Lines.CountNative-1 do
     begin
-    if ( CompareText( TSynEdit( Owner ).Lines[ i ], LabelText ) = 0 ) then
+    if ( CompareText( TCustomSynEdit( Owner ).Lines[ i ], LabelText ) = 0 ) then
       begin
       result := True;
       break;
