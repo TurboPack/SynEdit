@@ -42,7 +42,7 @@ type
   );
 
   TSynWebStencilsSyn = class(TSynCustomHighlighter)
-  private
+  strict private
     FEscapeChar: Char;
     FEscapeDoubling: Boolean;
     FRange: TRangeState;
@@ -76,7 +76,6 @@ type
     FImportAliasAttri: TSynHighlighterAttributes;
     FImportVarAttri: TSynHighlighterAttributes;
 
-    function IsKeyword(const AKeyword: string): Boolean;
     function IsDeclaredVariable(const AName: string): Boolean;
     procedure InitKeywords;
     procedure CleanupVariablesForScope(AScope: Integer);
@@ -99,24 +98,25 @@ type
     procedure ParenOpenProc;
     procedure ParenCloseProc;
 
-    function IsFilterStored: Boolean; override;
-  protected
+  strict protected
     function GetSampleSource: UnicodeString; override;
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
-    function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: TSynNativeInt; override;
-    function IsIdentChar(AChar: WideChar): Boolean; override;
-    function IsWordBreakChar(AChar: WideChar): Boolean; override;
+    function IsFilterStored: Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function GetEol: Boolean; override;
 
     class function GetLanguageName: string; override;
     class function GetFriendlyLanguageName: UnicodeString; override;
 
     function GetRange: Pointer; override;
+    function GetTokenAttribute: TSynHighlighterAttributes; override;
+    function GetTokenKind: TSynNativeInt; override;
+    function IsIdentChar(AChar: WideChar): Boolean; override;
+    function IsKeyword(const AKeyword: string): Boolean; override;
+    function IsWordBreakChar(AChar: WideChar): Boolean; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
     procedure SetLine(const NewValue: String; LineNumber: TSynNativeInt); override;
@@ -482,7 +482,7 @@ end;
 
 procedure TSynWebStencilsSyn.DirectiveProc;
 var
-  StartPos: Integer;
+  StartPos: TSynNativeInt;
   DirectiveName: string;
   IsFunction: Boolean;
 begin
@@ -833,7 +833,7 @@ end;
 
 procedure TSynWebStencilsSyn.IdentProc;
 var
-  StartPos: Integer;
+  StartPos: TSynNativeInt;
   TempStr: string;
   InStencilContext: Boolean;
   IsPrecedingDot: Boolean;
@@ -1057,7 +1057,7 @@ begin
         // Space only breaks stencil expressions if we're actually in one
         // and the next character isn't part of the stencil expression
         if FInStencilExpression and (FParenLevel = 0) and
-           (Run <= FLineLen) and not (FLine[Run] in ['@', '.']) then
+           (Run <= FLineLen) and not CharInSet(FLine[Run], ['@', '.']) then
           FInStencilExpression := False;
       end;
     '"', '''':
