@@ -145,10 +145,10 @@ const
 
   FloatRegisters: UnicodeString =
     'xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7,xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15,' +
-    'xmm16,xmm17,xmm18,xmm19,xmm20,xmm21,xmm22,xmm23,xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31' +
+    'xmm16,xmm17,xmm18,xmm19,xmm20,xmm21,xmm22,xmm23,xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31,' +
     'ymm0,ymm1,ymm2,ymm3,ymm4,ymm5,ymm6,ymm7,ymm8,ymm9,ymm10,ymm11,ymm12,ymm13,ymm14,ymm15,' +
-    'ymm16,ymm17,ymm18,ymm19,ymm20,ymm21,ymm22,ymm23,ymm24,ymm25,ymm26,ymm27,ymm28,ymm29,ymm30,ymm31' +
-    'zmm0,zmm1,zmm2,zmm3,zmm4,zmm5,zmm6,zmm7,zmm8,zmm9,zmm10,zmm11,zmm12,zmm13,zmm14,zmm15' +
+    'ymm16,ymm17,ymm18,ymm19,ymm20,ymm21,ymm22,ymm23,ymm24,ymm25,ymm26,ymm27,ymm28,ymm29,ymm30,ymm31,' +
+    'zmm0,zmm1,zmm2,zmm3,zmm4,zmm5,zmm6,zmm7,zmm8,zmm9,zmm10,zmm11,zmm12,zmm13,zmm14,zmm15,' +
     'zmm16,zmm17,zmm18,zmm19,zmm20,zmm21,zmm22,zmm23,zmm24,zmm25,zmm26,zmm27,zmm28,zmm29,zmm30,zmm31';
 
   TypeSizes: UnicodeString =
@@ -211,7 +211,7 @@ const
     'vcvtps2phx,vcvtpd2ph,vcvtsi2sh,vcvtusi2sh,vcvtss2sh,vcvtsd2sh,vcvtph2w,vcvttph2w,vcvtph2uw,vcvttph2uw,' +
     'vcvtph2dq,vcvttph2dq,vcvtph2udq,vcvttph2udq,vcvtph2qq,vcvttph2qq,vcvtph2uqq,vcvttph2uqq,vcvtph2psx,' +
     'vcvtph2pd,vcvtsh2si,vcvttsh2si,vcvtsh2usi,vcvttsh2usi,vcvtsh2ss,vcvtsh2sd,vgetexpph,vgetexpsh,vgetmantph,' +
-    'vgetmantsh,vmovsh,vmovw'+
+    'vgetmantsh,vmovsh,vmovw,'+
 
     'vaddpd,vaddps,vaddsd,vaddss,vandpd,vandps,vandnpd,vandnps,vcmppd,vcmpps,vcmpsd,' +
     'vcmpss,vcomisd,vcomiss,vdivpd,vdivps,vdivsd,vdivss,vcvtdq2pd,vcvtdq2ps,vcvtpd2dq,' +
@@ -249,7 +249,7 @@ const
     'vfnmadd231sd,vfnmadd132ss,vfnmadd213ss,vfnmadd231ss,vfnmsub132pd,vfnmsub213pd,' +
     'vfnmsub231pd,vfnmsub132ps,vfnmsub213ps,vfnmsub231ps,vfnmsub132sd,vfnmsub213sd,' +
     'vfnmsub231sd,vfnmsub132ss,vfnmsub213ss,vfnmsub231ss,vgatherdps,vgatherdpd,vgatherqps,' +
-    'vgatherqpd,vpgatherdd,vpgatherdq,vpgatherqd,vpgatherqq,vpsravw,vpsravd,vpsravq' +
+    'vgatherqpd,vpgatherdd,vpgatherdq,vpgatherqd,vpgatherqq,vpsravw,vpsravd,vpsravq,' +
 
     'vaddsubpd,vaddsubps,vblendpd,vblendps,vblendvpd,vblendvps,vcmpeq_ospd,vcmpeq_uqpd,' +
     'vcmpeq_uspd,vcmpeqpd,vcmpfalse_ospd,vcmpfalsepd,vcmpge_oqpd,vcmpgepd,vcmpgt_oqpd,' +
@@ -313,7 +313,7 @@ const
     'shlq,shr,shrd,shrdq,shrq,shufpd,vshufpd,shufps,vshufps,sidt,sldt,sldtq,smsw,smswq,sqrtpd,sqrtps,sqrtsd,' +
     'sqrtss,stc,std,sti,stmxcsr,stos,stosb,stosd,stosq,stosw,str,strq,sub,subpd,subps,subq,subsd,subss,' +
     'sysenter,sysexit,test,testq,ucomisd,ucomiss,ud2,unpckhpd,unpckhps,unpcklpd,unpcklps,verr,verw,wait,' +
-    'vwait,wbinvd,wrmsr,xadd,xaddq,xchg,xchgq,xchgqa,xlat,xlatb,xor,xorpd,xorps,xorq,int3' +
+    'vwait,wbinvd,wrmsr,xadd,xaddq,xchg,xchgq,xchgqa,xlat,xlatb,xor,xorpd,xorps,xorq,int3,' +
 
 
     'addsubpd,addsubps,blendpd,blendps,blendvpd,blendvps,dppd,dpps,extractps,' +
@@ -364,11 +364,12 @@ begin
   if FKeywords.TryGetValue(S, Result) then
     Exit;
 
-  // Not a keyword: a trailing colon declares a label, otherwise it is only a
-  // label if a declaration for it exists somewhere in the text.
-  if Pos(' ', S) > 0 then
+  // Not a keyword. These checks look at the rest of the line, not at the
+  // identifier: ':' is no identifier char, so only FToIdent can end in one. A
+  // space in the rest of the line also skips the IsLabel scan of the whole text.
+  if Pos(' ', string(FToIdent)) > 0 then
     Result := tkIdentifier
-  else if (S <> '') and (S[Length(S)] = ':') then
+  else if Copy(string(FToIdent), Length(string(FToIdent)), 1) = ':' then
     Result := tkLabelDeclaration
   else if IsLabel(FToIdent) then
     Result := tkLabel
