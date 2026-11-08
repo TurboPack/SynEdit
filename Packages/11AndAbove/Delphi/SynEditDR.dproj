@@ -272,6 +272,7 @@
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVBScript.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterVrml97.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebStencils.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterXML.pas"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterYAML.pas"/>
         <DCCReference Include="..\..\..\Source\SynMacroRecorder.pas"/>

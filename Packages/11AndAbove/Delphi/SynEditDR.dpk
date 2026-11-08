@@ -160,6 +160,7 @@ contains
   SynHighlighterVBScript in '..\..\..\Source\Highlighters\SynHighlighterVBScript.pas',
   SynHighlighterVrml97 in '..\..\..\Source\Highlighters\SynHighlighterVrml97.pas',
   SynHighlighterWebIDL in '..\..\..\Source\Highlighters\SynHighlighterWebIDL.pas',
+  SynHighlighterWebStencils in '..\..\..\Source\Highlighters\SynHighlighterWebStencils.pas',
   SynHighlighterXML in '..\..\..\Source\Highlighters\SynHighlighterXML.pas',
   SynHighlighterYAML in '..\..\..\Source\Highlighters\SynHighlighterYAML.pas',
   SynMacroRecorder in '..\..\..\Source\SynMacroRecorder.pas',
