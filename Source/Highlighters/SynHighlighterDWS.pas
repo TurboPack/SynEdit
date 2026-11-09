@@ -325,18 +325,22 @@ end;
 function TSynDWSSyn.HashKey(Str: PWideChar): NativeInt;
 var
   C: Word;
+  Hash: Cardinal;
 begin
-  Result:=0;
+  // Cardinal on purpose: the hash is meant to wrap around. A signed value turns
+  // negative on overflow, the mod keeps the sign, and the table gets indexed
+  // below zero.
+  Hash:=0;
   while IsIdentChar(Str^) do
   begin
       C:=Ord(Str^);
       if C in [Ord('A')..Ord('Z')] then
          C := ToWord(C + (Ord('a')-Ord('A')));
-      Result := Result * 692 + C * 171;
+      Hash := Hash * 692 + C * 171;
       Inc(Str);
    end;
    fStringLen := Str - fToIdent;
-   Result := Result mod Length(fIdentFuncTable);
+   Result := Hash mod Cardinal(Length(fIdentFuncTable));
 end;
 {$IFDEF OVERFLOWCHECK_ON}
   {$OVERFLOWCHECKS ON}
