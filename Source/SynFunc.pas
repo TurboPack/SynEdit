@@ -160,6 +160,8 @@ function ToInt32(const AValue: Int64): Int32; overload; inline;
 function ToInt32(const AValue: Int32): Int32; overload; inline;
 function ToInt32(const AValue: UInt64): Int32; overload; inline;
 
+function ToNativeInt(const AValue: NativeUInt): NativeInt; overload; inline;
+
 function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;
 function ToNativeUInt(const AValue: Int64): NativeUInt; overload; inline;
 function ToNativeUInt(const AValue: UInt64): NativeUInt; overload; inline;
@@ -446,6 +448,11 @@ end;
 function ToInt32(const AValue: UInt64): Int32;
 begin
   Result := Int32(AValue);
+end;
+
+function ToNativeInt(const AValue: NativeUInt): NativeInt; overload; inline;
+begin
+  Result := NativeInt(AValue);
 end;
 
 function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;

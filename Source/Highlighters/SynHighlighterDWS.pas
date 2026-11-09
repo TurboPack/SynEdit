@@ -325,7 +325,7 @@ end;
 function TSynDWSSyn.HashKey(Str: PWideChar): NativeInt;
 var
   C: Word;
-  Hash: Cardinal;
+  Hash: NativeUInt;
 begin
   // Cardinal on purpose: the hash is meant to wrap around. A signed value turns
   // negative on overflow, the mod keeps the sign, and the table gets indexed
@@ -340,7 +340,7 @@ begin
       Inc(Str);
    end;
    fStringLen := Str - fToIdent;
-   Result := Hash mod Cardinal(Length(fIdentFuncTable));
+   Result := ToNativeInt(Hash mod NativeUInt(Length(fIdentFuncTable)));
 end;
 {$IFDEF OVERFLOWCHECK_ON}
   {$OVERFLOWCHECKS ON}
