@@ -177,6 +177,7 @@ begin
     TSynEditPrint, TSynEditPrintPreview, TSynAutoCorrect,
     TSynEditSearch, TSynEditRegexSearch, TSynEditOptionsDialog, TSynURIOpener]);
   RegisterComponents(SYNS_ComponentsPage, [TSynHighlighterManager]);
+  RegisterComponents(SYNS_ComponentsPage, [TSynHotKey]);
   RegisterComponents(SYNS_ComponentsPage, [TSynPopupMenu]);
   RegisterComponents(SYNS_ComponentsPage, [TSynSpellCheck]);
 
