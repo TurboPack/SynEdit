@@ -49,7 +49,8 @@ implementation
 Uses
   Winapi.ActiveX,
   SynEditMiscClasses,
-  SynSpellCheck;
+  SynSpellCheck,
+  SynSpellCheckWinAPI;
 
 {$R *.dfm}
 

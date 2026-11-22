@@ -87,7 +87,7 @@ implementation
 
 uses
   dlgSearchText, dlgReplaceText, dlgConfirmReplace,
-  SynEditMiscProcs, uSearchHighlighter, SynEditKeyCmds;
+  SynEditMiscProcs, uSearchHighlighter, SynEditKeyCmds, SynEditSelections;
 
 // options - to be saved to the registry
 type
