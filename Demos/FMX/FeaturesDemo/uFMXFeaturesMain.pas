@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 SynEdit FMX - Features Demo
 
 A comprehensive feature showcase demonstrating all configurable properties and
@@ -29,7 +29,7 @@ uses
   FMX.SynMacroRecorder,
   SynMacroRecorderShared,
   dlgFMXSearchText,
-  dlgFMXReplaceText;
+  dlgFMXReplaceText, FMX.Memo.Types, FMX.ScrollBox, FMX.EditBox;
 
 type
   TFMXFeaturesForm = class(TForm)
