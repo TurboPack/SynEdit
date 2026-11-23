@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{9A0FC835-15A4-43BB-A8B8-BBFA79CD96E2}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="FMX\EditApp\FMXEditApp.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="FMX\FeaturesDemo\FMXFeaturesDemo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="FMX\HighlighterDemo\FMXHighlighterDemo.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="FMXEditApp">
+        <MSBuild Projects="FMX\EditApp\FMXEditApp.dproj"/>
+    </Target>
+    <Target Name="FMXEditApp:Clean">
+        <MSBuild Projects="FMX\EditApp\FMXEditApp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FMXEditApp:Make">
+        <MSBuild Projects="FMX\EditApp\FMXEditApp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FMXFeaturesDemo">
+        <MSBuild Projects="FMX\FeaturesDemo\FMXFeaturesDemo.dproj"/>
+    </Target>
+    <Target Name="FMXFeaturesDemo:Clean">
+        <MSBuild Projects="FMX\FeaturesDemo\FMXFeaturesDemo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FMXFeaturesDemo:Make">
+        <MSBuild Projects="FMX\FeaturesDemo\FMXFeaturesDemo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FMXHighlighterDemo">
+        <MSBuild Projects="FMX\HighlighterDemo\FMXHighlighterDemo.dproj"/>
+    </Target>
+    <Target Name="FMXHighlighterDemo:Clean">
+        <MSBuild Projects="FMX\HighlighterDemo\FMXHighlighterDemo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FMXHighlighterDemo:Make">
+        <MSBuild Projects="FMX\HighlighterDemo\FMXHighlighterDemo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="FMXEditApp;FMXFeaturesDemo;FMXHighlighterDemo"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="FMXEditApp:Clean;FMXFeaturesDemo:Clean;FMXHighlighterDemo:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="FMXEditApp:Make;FMXFeaturesDemo:Make;FMXHighlighterDemo:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

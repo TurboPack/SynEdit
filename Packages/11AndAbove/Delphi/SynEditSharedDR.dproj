@@ -138,6 +138,7 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="rtl.dcp"/>
+        <DCCReference Include="..\..\..\Source\SynFunc.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditTypes.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditStrConst.pas"/>
         <DCCReference Include="..\..\..\Source\SynEditKeyConstShared.pas"/>

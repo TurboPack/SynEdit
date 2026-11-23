@@ -94,6 +94,7 @@ uses
   CheckLst,
   SynEditHighlighter,
   SynEditStrConst,
+  SynFunc,
   SysUtils;
 
 type
@@ -124,14 +125,14 @@ var
   procedure CheckExisting;
   var
     I: Integer;
-    J: Integer;
+    J: TSynNativeInt;
   begin
     for I := 0 to form.ComponentCount-1 do begin
       J := highlight.FindByClass(form.Components[I]);
       if J >= 0 then begin
         J := synForm.clbHighlighters.Items.IndexOf(highlight[J].GetFriendlyLanguageName);
         if J >= 0 then
-          synForm.clbHighlighters.Checked[J] := True;
+          synForm.clbHighlighters.Checked[ToInt32(J)] := True;
       end;
     end; //for
   end;
@@ -152,7 +153,7 @@ var
   procedure PlaceNew;
   var
     I: Integer;
-    high: Integer;
+    high: TSynNativeInt;
     comp: Integer;
     xpos, ypos: Integer;
     xstart: Integer;
@@ -420,7 +421,7 @@ end;
 
 procedure TSynHighlighterForm.LoadForm;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   clbHighlighters.Clear;
   for I := 0 to Highlight.Count-1 do begin

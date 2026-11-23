@@ -34,6 +34,7 @@ requires
   rtl;
 
 contains
+  SynFunc in '..\..\..\Source\SynFunc.pas',
   SynEditTypes in '..\..\..\Source\SynEditTypes.pas',
   SynEditStrConst in '..\..\..\Source\SynEditStrConst.pas',
   SynEditKeyConstShared in '..\..\..\Source\SynEditKeyConstShared.pas',

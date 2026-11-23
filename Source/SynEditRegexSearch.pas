@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -11,7 +11,7 @@ the specific language governing rights and limitations under the License.
 The Original Code is: SynEditRegexSearch.pas, released 2002-07-26.
 
 Original Code by Eduardo Mauro, Gerald Nunn and Fl�vio Etrusco.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -42,6 +42,7 @@ uses
   SynEditTypes,
   RegularExpressions,
   RegularExpressionsCore,
+  SynFunc,
   SynUnicodeShared,
   Classes;
 
@@ -52,18 +53,18 @@ type
     fMatchCollection: TMatchCollection;
     fOptions: TRegExOptions;
     fPattern: string;
-    fResultCount: Integer;
+    fResultCount: TSynNativeInt;
   protected
     function GetPattern: string; override;
     procedure SetPattern(const Value: string); override;
     procedure SetOptions(const Value: TSynSearchOptions); override;
-    function GetLength(Index: Integer): Integer; override;
-    function GetResult(Index: Integer): Integer; override;
-    function GetResultCount: Integer; override;
+    function GetLength(Index: TSynNativeInt): TSynNativeInt; override;
+    function GetResult(Index: TSynNativeInt): TSynNativeInt; override;
+    function GetResultCount: TSynNativeInt; override;
   public
     constructor Create(AOwner: TComponent); override;
-    function FindAll(const NewText: string; StartChar: Integer = 1;
-      EndChar: Integer = 0): Integer; override;
+    function FindAll(const NewText: string; StartChar: TSynNativeInt = 1;
+      EndChar: TSynNativeInt = 0): TSynNativeInt; override;
     function PreprocessReplaceExpression(const AReplace: string): string; override;
     function Replace(const aOccurrence, aReplacement: string): string; override;
   end;
@@ -81,10 +82,10 @@ type
   { TPerlRegExHelper }
 
   TPerlRegExHelper = class helper for TPerlRegEx
-    procedure AddRawOptions(PCREOptions: Integer);
+    procedure AddRawOptions(PCREOptions: TSynNativeInt);
   end;
 
-procedure TPerlRegExHelper.AddRawOptions(PCREOptions: Integer);
+procedure TPerlRegExHelper.AddRawOptions(PCREOptions: TSynNativeInt);
 begin
   with Self do FPCREOptions := FPCREOptions or PCREOptions;
 end;
@@ -92,10 +93,10 @@ end;
 type
   TRegExHelper = record helper for TRegEx
   public
-    procedure AddRawOptions(PCREOptions: Integer);
+    procedure AddRawOptions(PCREOptions: TSynNativeInt);
   end;
 
-procedure TRegExHelper.AddRawOptions(PCREOptions: Integer);
+procedure TRegExHelper.AddRawOptions(PCREOptions: TSynNativeInt);
 begin
   with Self do FRegEx.AddRawOptions(PCREOptions);
 end;
@@ -110,17 +111,17 @@ begin
 end;
 
 function TSynEditRegexSearch.FindAll(const NewText: string;
-  StartChar: Integer = 1; EndChar: Integer = 0): Integer;
+  StartChar: TSynNativeInt = 1; EndChar: TSynNativeInt = 0): TSynNativeInt;
 begin
   if NewText = '' then
     Exit(0);
 
-  fMatchCollection :=  RegEx.Matches(NewText, StartChar);
+  fMatchCollection :=  RegEx.Matches(NewText, ToInt32(StartChar));
 
   Result := fMatchCollection.Count;
   if (EndChar > 0) and (EndChar < NewText.Length + 1) then
     // Exclude results beyond EndChar
-    while (Result > 0) and ((fMatchCollection[Result - 1].Index + fMatchCollection[Result - 1].Length) > EndChar) do
+    while (Result > 0) and ((fMatchCollection[ToInt32(Result - 1)].Index + fMatchCollection[ToInt32(Result - 1)].Length) > EndChar) do
       Dec(Result);
   fResultCount := Result;
 end;
@@ -138,9 +139,9 @@ begin
   Result := RegEx.Replace(aOccurrence, aReplacement);
 end;
 
-function TSynEditRegexSearch.GetLength(Index: Integer): Integer;
+function TSynEditRegexSearch.GetLength(Index: TSynNativeInt): TSynNativeInt;
 begin
-  Result := fMatchCollection[Index].Length;
+  Result := fMatchCollection[ToInt32(Index)].Length;
 end;
 
 function TSynEditRegexSearch.GetPattern: string;
@@ -148,12 +149,12 @@ begin
   Result := fPattern;
 end;
 
-function TSynEditRegexSearch.GetResult(Index: Integer): Integer;
+function TSynEditRegexSearch.GetResult(Index: TSynNativeInt): TSynNativeInt;
 begin
-  Result := fMatchCollection[Index].Index;
+  Result := fMatchCollection[ToInt32(Index)].Index;
 end;
 
-function TSynEditRegexSearch.GetResultCount: Integer;
+function TSynEditRegexSearch.GetResultCount: TSynNativeInt;
 begin
   Result := fResultCount;
 end;

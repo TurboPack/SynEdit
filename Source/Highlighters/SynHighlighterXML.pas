@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -10,7 +10,7 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is: SynHighlighterXML.pas, released 2000-11-20.
 The Initial Author of this file is Jeff Rafter.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -58,9 +58,10 @@ uses
   {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
   Registry,
   {$ENDIF}
+  SynFunc,
+  SynEditCodeFolding,
   SynEditTypes,
   SynEditHighlighter,
-  SynEditCodeFolding,
   SynUnicodeShared,
   SysUtils,
   Classes;
@@ -147,7 +148,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -736,7 +737,7 @@ end;
 
 function TSynXMLSyn.NextTokenIs(Token: string): Boolean;
 var
-  I, Len: Integer;
+  I, Len: TSynNativeInt;
 begin
   Result := True;
   Len := Length(Token);
@@ -800,7 +801,7 @@ begin
   end;
 end;
 
-function TSynXMLSyn.GetTokenKind: Integer;
+function TSynXMLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -832,7 +833,10 @@ begin
   case fLine[Run] of
     '0'..'9', 'a'..'z', 'A'..'Z', '_', '.', ':', '-':
       Result := True;
-    else if fLine[Run] > '�' then // TODO: this here is very vague, see above
+    // WideChar(#$00C0) rather than the literal character: the file has no BOM,
+    // so Delphi reads it in the system ANSI codepage and the literal would
+    // mean a different character there.
+    else if fLine[Run] > WideChar(#$00C0) then // TODO: this here is very vague, see above
       Result := True
     else
       Result := False;

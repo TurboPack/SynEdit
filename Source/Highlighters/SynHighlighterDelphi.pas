@@ -11,7 +11,7 @@ interface
 
 uses
   SysUtils, Classes, System.UITypes, SynEditTypes, SynEditHighlighter,
-  SynEditCodeFolding, SynEditStrConst, System.Math, System.RegularExpressions;
+  SynEditCodeFolding, SynEditStrConst, SynFunc, System.Math, System.RegularExpressions;
 
 type
   TRangeState = (rsANil, rsAnsi, rsAnsiAsm, rsAsm, rsBor, rsBorAsm, rsProperty,
@@ -38,7 +38,7 @@ type
     fIdentifierAttri: TSynHighlighterAttributes;
     fSpaceAttri: TSynHighlighterAttributes;
     fTypeAttri: TSynHighlighterAttributes;
-  strict private class var
+  private class var
     // Regex for Code Folding
     fRE_BlockBegin: TRegEx;
     fRE_BlockEnd: TRegEx;
@@ -47,6 +47,7 @@ type
     fRE_Implementation: TRegEx;
     fRE_Begin: TRegEx;
 
+  strict private
     // Parsers
     procedure AddressOpProc;
     procedure AsciiCharProc;
@@ -81,20 +82,20 @@ type
     function IsKeyword(const AKeyword: string): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
-    class constructor Create;
+    {$IF COMPILERVERSION >= 34}class constructor Create;{$IFEND}
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure ResetRange; override;
     procedure SetRange(Value: Pointer); override;
 
     // Code Folding Support
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri write fCommentAttri;
@@ -115,8 +116,8 @@ implementation
 
 const
   // SORTED list of keywords for Binary Search (Delphi 13 + Standard Pascal)
-  DelphiKeywords: array[0..138] of string = (
-    'absolute', 'abstract', 'add', 'and', 'ansistring', 'array', 'as', 'asm',
+  DelphiKeywords: array[0..136] of string = (
+    'absolute', 'abstract', 'and', 'ansistring', 'array', 'as', 'asm',
     'assembler', 'automated', 'begin', 'boolean', 'byte', 'bytebool',
     'cardinal', 'case', 'cdecl', 'class', 'const', 'constructor', 'contains',
     'currency', 'default', 'delayed', 'deprecated', 'destructor', 'dispid',
@@ -131,17 +132,16 @@ const
     'packed', 'pascal', 'platform', 'private', 'procedure', 'program',
     'property', 'protected', 'public', 'published', 'raise', 'read',
     'readonly', 'real48', 'record', 'reference', 'register', 'reintroduce',
-    'remove', 'repeat', 'requires', 'resourcestring', 'safecall', 'sealed',
-    'set', 'shl', 'shortint', 'shortstring', 'shr', 'single', 'smallint',
-    'static', 'stdcall', 'stored', 'strict', 'string', 'stringresource',
-    'then', 'threadvar', 'to', 'try', 'type', 'unit', 'unsafe', 'until',
-    'uses', 'var', 'virtual', 'while', 'with', 'word', 'wordbool', 'write',
-    'writeonly', 'xor'
+    'repeat', 'requires', 'resourcestring', 'safecall', 'sealed', 'set', 'shl',
+    'shortint', 'shortstring', 'shr', 'single', 'smallint', 'static',
+    'stdcall', 'stored', 'strict', 'string', 'stringresource', 'then',
+    'threadvar', 'to', 'try', 'type', 'unit', 'unsafe', 'until', 'uses', 'var',
+    'virtual', 'while', 'with', 'word', 'wordbool', 'write', 'writeonly', 'xor'
   );
 
 { TSynDelphiSyn }
 
-class constructor TSynDelphiSyn.Create;
+{$IF COMPILERVERSION >= 34}class constructor TSynDelphiSyn.Create;
 begin
   // These are now initialized ONCE for the entire application lifetime
   // and are scoped specifically to TSynDelphiSyn.
@@ -151,7 +151,7 @@ begin
   FRE_Interface := TRegEx.Create('^interface\b', [roIgnoreCase]);
   FRE_Implementation := TRegEx.Create('^implementation\b', [roIgnoreCase]);
   FRE_Begin := TRegEx.Create('\bbegin\b', [roIgnoreCase]);
-end;
+end;{$IFEND}
 
 constructor TSynDelphiSyn.Create(AOwner: TComponent);
 begin
@@ -279,7 +279,7 @@ begin
   end;
 end;
 
-function TSynDelphiSyn.GetTokenKind: Integer;
+function TSynDelphiSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -290,7 +290,7 @@ end;
 
 function TSynDelphiSyn.IsKeyword(const AKeyword: string): Boolean;
 var
-  L, H, I, C: Integer;
+  L, H, I, C: TSynNativeInt;
 begin
   Result := inherited IsKeyword(AKeyword);
   L := Low(DelphiKeywords);
@@ -608,7 +608,13 @@ begin
   // Handle Multiline String State
   if fRange = rsMultilineString then
   begin
-    StringProc;
+    case fLine[Run] of
+      #0: NullProc;
+      #10: LFProc;
+      #13: CRProc;
+    else
+      StringProc;
+    end;
     Exit;
   end;
 
@@ -684,11 +690,11 @@ end;
 // =============================================================================
 
 procedure TSynDelphiSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: Integer;
-  PendingProcLine: Integer;
+  Line: TSynNativeInt;
+  PendingProcLine: TSynNativeInt;
   HasImplementation: Boolean;
 
   function IsStartKeyword(const S: string): Boolean;
@@ -706,7 +712,7 @@ begin
   HasImplementation := False;
   for Line := FromLine to ToLine do
   begin
-    CurLine := Trim(LinesToScan[Line]);
+    CurLine := Trim(LinesToScan.ItemsNative[Line]);
     if CurLine = '' then
     begin
       FoldRanges.NoFoldInfo(Line + 1);
@@ -762,6 +768,14 @@ begin
 end;
 
 initialization
+{$IF COMPILERVERSION < 34}
+  // These are now initialized ONCE for the entire application lifetime
+  // and are scoped specifically to TSynDelphiSyn.
+  TSynDelphiSyn.FRE_BlockBegin := TRegEx.Create('\b(begin|record|class|case|try)\b', [roIgnoreCase]);
+  TSynDelphiSyn.FRE_BlockEnd := TRegEx.Create('\bend\b', [roIgnoreCase]);
+  TSynDelphiSyn.FRE_Code := TRegEx.Create('^\s*(function|procedure|constructor|destructor)\b', [roIgnoreCase]);
+  TSynDelphiSyn.FRE_Implementation := TRegEx.Create('^implementation\b', [roIgnoreCase]);
+{$IFEND}
 
 finalization
 

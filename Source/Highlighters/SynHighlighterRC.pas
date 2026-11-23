@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -10,7 +10,7 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is: SynHighlighterRC.pas, released 2004-06-12.
 The initial author of this file is Yiannis Mandravellos.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -39,6 +39,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicodeShared,
   SysUtils,
   Classes;
@@ -50,7 +51,7 @@ type
  TRangeState = (rsUnknown, rsDirective, rsComment);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
  TSynRCSyn = class(TSynCustomHighlighter)
   private
@@ -65,8 +66,8 @@ type
    fSpaceAttri: TSynHighlighterAttributes;
    fStringAttri: TSynHighlighterAttributes;
    fSymbolAttri: TSynHighlighterAttributes;
-   function AltFunc(Index: Integer): TtkTokenKind;
-   function KeyWordFunc(Index: Integer): TtkTokenKind;
+   function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+   function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
    function HashKey(Str: PWideChar): Cardinal;
    function IdentKind(MayBe: PWideChar): TtkTokenKind;
    procedure InitIdent;
@@ -92,17 +93,17 @@ type
   public
    constructor Create(aOwner: TComponent); override;
    destructor Destroy; override;
-   function GetDefaultAttribute(index: integer): TSynHighlighterAttributes; override;
+   function GetDefaultAttribute(index: Integer): TSynHighlighterAttributes; override;
    function GetEol: Boolean; override;
    function GetRange: Pointer; override;
    function GetTokenID: TtkTokenKind;
    function GetTokenAttribute: TSynHighlighterAttributes; override;
-   function GetTokenKind: Integer; override;
+   function GetTokenKind: TSynNativeInt; override;
    procedure Next; override;
    procedure SetRange(value: Pointer); override;
    procedure ResetRange; override;
    {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
-   function UseUserSettings(SettingIndex: Integer): Boolean; override;
+   function UseUserSettings(SettingIndex: TSynNativeInt): Boolean; override;
    procedure EnumUserSettings(Settings: TStrings); override;
    {$ENDIF}
   published
@@ -139,7 +140,7 @@ const
     'VALUE', 'VERSION', 'VERSIONINFO', 'VIRTKEY' 
   );
 
-  KeyIndices: array[0..240] of Integer = (
+  KeyIndices: array[0..240] of TSynNativeInt = (
     -1, -1, -1, 35, -1, 57, 54, -1, -1, -1, 74, -1, -1, -1, 64, -1, -1, -1, -1, 
     9, 68, -1, 41, -1, -1, 10, -1, -1, 13, 24, -1, -1, -1, 42, -1, -1, -1, -1, 
     -1, 61, -1, -1, 20, 67, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1, -1, 23, -1, 
@@ -185,7 +186,7 @@ end;
 
 procedure TSynRCSyn.InitIdent;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[I] = -1 then
@@ -196,12 +197,12 @@ begin
       fIdentFuncTable[I] := KeyWordFunc;
 end;
 
-function TSynRCSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynRCSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynRCSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynRCSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -480,7 +481,7 @@ begin
   end;
 end;
 
-function TSynRCSyn.GetTokenKind: Integer;
+function TSynRCSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := ord(GetTokenID);
 end;
@@ -501,7 +502,7 @@ begin
   // ** ??
 end;
 
-function TSynRCSyn.UseUserSettings(SettingIndex: Integer): Boolean;
+function TSynRCSyn.UseUserSettings(SettingIndex: TSynNativeInt): Boolean;
 begin
   Result := False;
 end;

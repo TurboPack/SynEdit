@@ -40,6 +40,7 @@ uses
   {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicodeShared,
   //++ CodeFolding
   SynEditCodeFolding,
@@ -96,13 +97,13 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
 //-- CodeFolding
   published
     property AttributeAttri: TSynHighlighterAttributes read FAttributeAttri
@@ -482,7 +483,7 @@ begin
   end;
 end;
 
-function TSynJSONSyn.GetTokenKind: Integer;
+function TSynJSONSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(FTokenID);
 end;
@@ -494,17 +495,17 @@ end;
 
 //++ CodeFolding
 procedure TSynJSONSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: Integer;
+  Line: TSynNativeInt;
 
-  function FindBraces(Line: Integer; OpenBrace, CloseBrace: Char; FoldType: Integer): Boolean;
+  function FindBraces(Line: TSynNativeInt; OpenBrace, CloseBrace: Char; FoldType: TSynNativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    function LineHasChar(AChar: Char; StartCol: TSynNativeInt; out Col: TSynNativeInt): Boolean;
     var
-      I: Integer;
+      I: TSynNativeInt;
     begin
       Result := False;
       Col := 0;
@@ -520,15 +521,15 @@ var
       end;
     end;
 
-    function Indent: Integer;
+    function Indent: TSynNativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: Integer;
-    CloseIdx: Integer;
-    Idx: Integer;
+    OpenIdx: TSynNativeInt;
+    CloseIdx: TSynNativeInt;
+    Idx: TSynNativeInt;
   begin
     LineHasChar(OpenBrace, 1, OpenIdx);
     LineHasChar(CloseBrace, 1, CloseIdx);
@@ -559,7 +560,7 @@ var
 begin
   for Line := FromLine to ToLine do
   begin
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.ItemsNative[Line];
 
     // Skip empty lines
     if CurLine = '' then begin

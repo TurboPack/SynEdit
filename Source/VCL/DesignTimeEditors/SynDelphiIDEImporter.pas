@@ -3,12 +3,19 @@
 interface
 
 uses
-  Classes, SysUtils, Vcl.Dialogs, Vcl.Graphics, System.Win.Registry,
+  Classes, SysUtils, System.UITypes, Vcl.Dialogs, Vcl.Graphics, System.Win.Registry,
   DesignIntf, DesignEditors, ToolsAPI,
   SynEdit, SynHighlighterDelphi, SynEditHighlighter, SynEditTypes;
 
 type
-  TSynIDEImportEditor = class(TComponentEditor)
+  // Descends from TDefaultEditor (not TComponentEditor) on purpose: TComponentEditor.Edit
+  // executes the first verb, so a plain double click in the form designer would silently
+  // overwrite the imported settings of the component (font, colors, gutter, selection, tabs
+  // and highlighting attributes). TDefaultEditor.Edit instead creates/jumps to the default
+  // event handler, which is the behaviour expected from a double click.
+  TSynIDEImportEditor = class(TDefaultEditor)
+  private
+    function ConfirmImport(const AWhatWillBeOverwritten: string): Boolean;
   public
     function GetVerbCount: Integer; override;
     function GetVerb(Index: Integer): string; override;
@@ -302,23 +309,37 @@ end;
 //   Editor Integration
 // =============================================================================
 
+function TSynIDEImportEditor.ConfirmImport(const AWhatWillBeOverwritten: string): Boolean;
+begin
+  Result := MessageDlg(
+    Format('Import the Delphi IDE settings into "%s"?'#13#10#13#10 +
+           'This overwrites the current %s of the component and cannot be undone.',
+           [Component.Name, AWhatWillBeOverwritten]),
+    mtWarning, [mbYes, mbNo], 0, mbNo) = mrYes;
+end;
+
 procedure TSynIDEImportEditor.ExecuteVerb(Index: Integer);
 begin
-  if Index = 0 then
-  begin
-    if Component is TSynEdit then
-    begin
-      ImportToSynEdit(TSynEdit(Component));
-      ShowMessage('Imported Editor Options (Font, Gutter, Selection, Tabs) from IDE.');
-    end
-    else if Component is TSynDelphiSyn then
-    begin
-      ImportToHighlighter(TSynDelphiSyn(Component));
-      ShowMessage('Imported Syntax Colors from IDE.');
-    end;
-    
-    if Assigned(Designer) then Designer.Modified;
-  end;
+  if Index <> 0 then
+    Exit;
+
+  if Component is TSynEdit then begin
+    if not ConfirmImport('font, colors, gutter, selection and tab settings') then
+      Exit;
+    ImportToSynEdit(TSynEdit(Component));
+    ShowMessage('Imported Editor Options (Font, Gutter, Selection, Tabs) from IDE.');
+  end
+  else if Component is TSynDelphiSyn then begin
+    if not ConfirmImport('syntax highlighting colors and font styles') then
+      Exit;
+    ImportToHighlighter(TSynDelphiSyn(Component));
+    ShowMessage('Imported Syntax Colors from IDE.');
+  end
+  else
+    Exit;
+
+  if Assigned(Designer) then
+    Designer.Modified;
 end;
 
 function TSynIDEImportEditor.GetVerb(Index: Integer): string;

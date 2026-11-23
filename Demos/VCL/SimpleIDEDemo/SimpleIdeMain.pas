@@ -99,7 +99,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure SynEditorSpecialLineColors(Sender: TObject; Line: Integer;
+    procedure SynEditorSpecialLineColors(Sender: TObject; Line: NativeInt;
       var Special: Boolean; var FG, BG: TColor);
     procedure ActionDebugRunExecute(Sender: TObject);
     procedure ActionDebugRunUpdate(Sender: TObject);
@@ -122,11 +122,11 @@ type
     procedure ActionMacroPlaybackExecute(Sender: TObject);
     procedure ActionMacroPlaybackUpdate(Sender: TObject);
     procedure ClickDebugBand(Sender: TObject; Button: TMouseButton;
-        X, Y, Row, Line: Integer);
+        X, Y, Row, Line: NativeInt);
     procedure SynEditorTSynGutterBands1MouseCursor(Sender: TObject; X, Y, Row,
-        Line: Integer; var Cursor: TCursor);
+        Line: NativeInt; var Cursor: TCursor);
     procedure SynEditorTSynGutterBands1PaintLines(RT: ID2D1RenderTarget; ClipR:
-        TRect; const FirstRow, LastRow: Integer; var DoDefaultPainting: Boolean);
+        TRect; const FirstRow, LastRow: NativeInt; var DoDefaultPainting: Boolean);
   private
     FCurrentLine: Integer;
     FDebugger: TSampleDebugger;
@@ -248,7 +248,7 @@ end;
 procedure TSimpleIDEMainForm.DebuggerBreakpointChange(Sender: TObject;
   ALine: Integer);
 begin
-  if (ALine >= 1) and (ALine <= SynEditor.Lines.Count) then
+  if (ALine >= 1) and (ALine <= SynEditor.Lines.CountNative) then
   begin
     SynEditor.InvalidateGutterLine(ALine);
     SynEditor.InvalidateLine(ALine);

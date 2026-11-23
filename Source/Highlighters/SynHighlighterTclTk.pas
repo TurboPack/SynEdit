@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterTclTk.pas, released 2000-05-05.
 The Original Code is based on the siTclTkSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Igor Shitikov.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -52,6 +52,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicodeShared,
   SysUtils,
   Classes;
@@ -125,7 +126,7 @@ type
     function GetTokenID: TtkTokenKind;
     function IsKeyword(const AKeyword: string): Boolean; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
@@ -240,7 +241,7 @@ const
 function TSynTclTkSyn.InternalIsKeyword(const AKeyword: string;
   KeyWordList: TStrings; ACaseSensitive: Boolean = False): Boolean;
 var
-  First, Last, I, Compare: Integer;
+  First, Last, I, Compare: TSynNativeInt;
   Token: string;
 begin
   First := 0;
@@ -253,7 +254,7 @@ begin
   while First <= Last do
   begin
     I := (First + Last) shr 1;
-    Compare := CompareStr(KeyWordList[i], Token);
+    Compare := CompareStr(KeyWordList.ItemsNative[i], Token);
     if Compare = 0 then
     begin
       Result := True;
@@ -274,7 +275,7 @@ end;
 
 constructor TSynTclTkSyn.Create(AOwner: TComponent);
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   inherited Create(AOwner);
 
@@ -666,7 +667,7 @@ begin
   end;
 end;
 
-function TSynTclTkSyn.GetTokenKind: Integer;
+function TSynTclTkSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -764,7 +765,7 @@ end;
 function TSynTclTkSyn.IsKeywordListStored: Boolean;
 var
   Keys: TStringList;
-  DefKey: Integer;
+  DefKey: TSynNativeInt;
   Index: Integer;
 begin
   Keys := TStringList.Create;
@@ -864,7 +865,7 @@ end;
 function TSynTclTkSyn.IsSecondKeywordListStored: Boolean;
 var
   Keys: TStringList;
-  DefKey: Integer;
+  DefKey: TSynNativeInt;
   Index: Integer;
 begin
   Keys := TStringList.Create;

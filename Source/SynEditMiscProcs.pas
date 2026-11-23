@@ -48,6 +48,7 @@ uses
   System.RegularExpressions,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicodeShared;
 
 const
@@ -55,43 +56,46 @@ const
 
 type
   PIntArray = ^TIntArray;
-  TIntArray = array [0 .. MaxIntArraySize - 1] of Integer;
+  TIntArray = array [0 .. MaxIntArraySize - 1] of TSynNativeInt;
 
 { Similar to System.Math.EnsureRange but ma can be less than mi }
-function MinMax(x, mi, ma: Integer): Integer;
-procedure SwapInt(var l, r: Integer);
+function MinMax(x, mi, ma: Integer): Integer; overload;
+function MinMax(x, mi, ma: Int64): Int64; overload;
+
+procedure SwapInt(var l, r: Integer); overload;
+procedure SwapInt(var l, r: Int64); overload;
 
 // Expand tabs to spaces
-function ExpandTabs(const Line: string; TabWidth: Integer): string;
-function ExpandTabsEx(const Line: string; TabWidth: Integer;
+function ExpandTabs(const Line: string; TabWidth: TSynNativeInt): string;
+function ExpandTabsEx(const Line: string; TabWidth: TSynNativeInt;
   var HasTabs: Boolean): string;
-function GetExpandedLength(const aStr: string; aTabWidth: Integer): Integer;
+function GetExpandedLength(const aStr: string; aTabWidth: TSynNativeInt): TSynNativeInt;
 function LeftSpaces(const Line: string; ExpandTabs: Boolean;
-  TabWidth: Integer = 2): Integer;
+  TabWidth: TSynNativeInt = 2): TSynNativeInt;
 
 
-function CharIndex2CaretPos(Index, TabWidth: Integer;
-  const Line: string): Integer;
-function CaretPos2CharIndex(Position, TabWidth: Integer; const Line: string;
-  var InsideTabChar: Boolean): Integer;
+function CharIndex2CaretPos(Index, TabWidth: TSynNativeInt;
+  const Line: string): TSynNativeInt;
+function CaretPos2CharIndex(Position, TabWidth: TSynNativeInt; const Line: string;
+  var InsideTabChar: Boolean): TSynNativeInt;
 
 // search for the first char of set AChars in Line, starting at index Start
-function StrScanForCharInCategory(const Line: string; Start: Integer;
-  IsOfCategory: TCategoryMethod): Integer;
+function StrScanForCharInCategory(const Line: string; Start: TSynNativeInt;
+  IsOfCategory: TCategoryMethod): TSynNativeInt;
 // the same, but searching backwards
-function StrRScanForCharInCategory(const Line: string; Start: Integer;
-  IsOfCategory: TCategoryMethod): Integer;
+function StrRScanForCharInCategory(const Line: string; Start: TSynNativeInt;
+  IsOfCategory: TCategoryMethod): TSynNativeInt;
 
 function GetEOL(P: PChar): PWideChar;
-function CountLines(const S: string): Integer;
+function CountLines(const S: string): TSynNativeInt;
 function StringToLines(const Value: string): TArray<string>;
 
 // Remove all '/' characters from string by changing them into '\.'.
 // Change all '\' characters into '\\' to allow for unique decoding.
-function EncodeString(s: string): string;
+function EncodeString(const AValue: string): string;
 
 // Decodes string, encoded with EncodeString.
-function DecodeString(s: string): string;
+function DecodeString(const AValue: string): string;
 
 type
   THighlighterAttriProc = function(Highlighter: TSynCustomHighlighter;
@@ -108,13 +112,13 @@ function EnumHighlighterAttris(Highlighter: TSynCustomHighlighter;
 type
   // Procedural type for adding keyword entries when enumerating keyword
   // lists using the EnumerateKeywords procedure below.
-  TEnumerateKeywordEvent = procedure(AKeyword: string; AKind: Integer)
+  TEnumerateKeywordEvent = procedure(AKeyword: string; AKind: TSynNativeInt)
     of object;
 
   //  This procedure will call AKeywordProc for all keywords in KeywordList. A
   //  keyword is considered any number of successive chars that are contained in
   //  Identifiers, with chars not contained in Identifiers before and after them.
-  procedure EnumerateKeywords(AKind: Integer; KeywordList: string;
+  procedure EnumerateKeywords(AKind: TSynNativeInt; KeywordList: string;
     IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
 
 {$IFDEF SYN_HEREDOC}
@@ -122,19 +126,23 @@ type
 function CalcFCS(const ABuf; ABufSize: Cardinal): Word;
 {$ENDIF}
 function DeleteTypePrefixAndSynSuffix(s: string): string;
-function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer;
+
+function CeilOfIntDiv(Dividend, Divisor: UInt32): Int32; overload;
+function CeilOfIntDiv(Dividend, Divisor: Int32): Int32; overload;
+{$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: Int64): UInt64; overload;{$ENDIF}
+{$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: UInt64): UInt64; overload;{$ENDIF}
 
 {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 // In Windows Vista or later use the Consolas font
 function DefaultFontName: string;
 
-function GetCorrectFontWeight(Font: TFont): Integer;
+function GetCorrectFontWeight(Font: TFont): TSynNativeInt;
 {$ENDIF}
 
 // Calculates the difference between two lines
 // Returns the starting point of the difference and the lengths of the change
 procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen:
-    Integer);
+    TSynNativeInt);
 
 {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 // Tests whether a color is dark
@@ -145,7 +153,7 @@ function ColorToHTML(Color: TColor): string;
 {$ENDIF}
 
 // Substitutes control characters with Unicode control pictures
-procedure SubstituteControlChars(var Input: string);
+procedure SubstituteControlChars(var AInput: string);
 
 // Returns a compiled regular expression
 function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TRegEx;
@@ -153,14 +161,14 @@ function CompiledRegEx(const Pattern: string; Options: TRegExOptions = []): TReg
 // Bracket functions (Brackets have the form '()[]{}')
 function IsBracket(Chr: Char; const Brackets: string): Boolean;
 function IsOpeningBracket(Chr: Char; const Brackets: string): Boolean;
-function BracketAtPos(Idx: Integer; const Brackets, Line: string): Boolean;
+function BracketAtPos(Idx: TSynNativeInt; const Brackets, Line: string): Boolean;
 function MatchingBracket(Bracket: Char; const Brackets: string): Char;
 
 // Detect right-to-left characters
 function IsRTLChar(Chr: Char): Boolean; inline;
 
 {$IF CompilerVersion <= 32}
-function GrowCollection(OldCapacity, NewCount: Integer): Integer;
+function GrowCollection(OldCapacity, NewCount: TSynNativeInt): TSynNativeInt;
 {$ENDIF}
 
 implementation
@@ -182,6 +190,12 @@ begin
   Result := Max(x, mi);
 end;
 
+function MinMax(x, mi, ma: Int64): Int64;
+begin
+  x := Min(x, ma);
+  Result := Max(x, mi);
+end;
+
 procedure SwapInt(var l, r: Integer);
 var
   tmp: Integer;
@@ -191,8 +205,17 @@ begin
   l := tmp;
 end;
 
+procedure SwapInt(var l, r: Int64);
+var
+  tmp: Int64;
+begin
+  tmp := r;
+  r := l;
+  l := tmp;
+end;
+
 // Please don't change this function; no stack frame and efficient register use.
-function GetHasTabs(pLine: PWideChar; var CharsBefore: Integer): Boolean;
+function GetHasTabs(pLine: PWideChar; var CharsBefore: TSynNativeInt): Boolean;
 begin
   CharsBefore := 0;
   if Assigned(pLine) then
@@ -210,10 +233,10 @@ begin
     Result := False;
 end;
 
-function ExpandTabsEx(const Line: string; TabWidth: Integer;
+function ExpandTabsEx(const Line: string; TabWidth: TSynNativeInt;
   var HasTabs: Boolean): string;
 var
-  i, DestLen, TabCount: Integer;
+  i, DestLen, TabCount: TSynNativeInt;
   pSrc, pDest: PWideChar;
 begin
   Result := Line; // increment reference count only
@@ -274,14 +297,14 @@ begin
     HasTabs := False;
 end;
 
-function ExpandTabs(const Line: string; TabWidth: Integer): string;
+function ExpandTabs(const Line: string; TabWidth: TSynNativeInt): string;
 var
   HasTabs: Boolean;
 begin
   Result := ExpandTabsEx(Line, TabWidth, HasTabs);
 end;
 
-function GetExpandedLength(const aStr: string; aTabWidth: Integer): Integer;
+function GetExpandedLength(const aStr: string; aTabWidth: TSynNativeInt): TSynNativeInt;
 var
   iRun: PWideChar;
 begin
@@ -298,7 +321,7 @@ begin
 end;
 
 function LeftSpaces(const Line: string; ExpandTabs: Boolean;
-  TabWidth: Integer = 2): Integer;
+  TabWidth: TSynNativeInt = 2): TSynNativeInt;
 var
   P: PChar;
 begin
@@ -314,10 +337,10 @@ begin
   end;
 end;
 
-function CharIndex2CaretPos(Index, TabWidth: Integer;
-  const Line: string): Integer;
+function CharIndex2CaretPos(Index, TabWidth: TSynNativeInt;
+  const Line: string): TSynNativeInt;
 var
-  iChar: Integer;
+  iChar: TSynNativeInt;
   pNext: PWideChar;
 begin
   // possible sanity check here: Index := Max(Index, Length(Line));
@@ -366,10 +389,10 @@ begin
     Result := 1;
 end;
 
-function CaretPos2CharIndex(Position, TabWidth: Integer; const Line: string;
-  var InsideTabChar: Boolean): Integer;
+function CaretPos2CharIndex(Position, TabWidth: TSynNativeInt; const Line: string;
+  var InsideTabChar: Boolean): TSynNativeInt;
 var
-  iPos: Integer;
+  iPos: TSynNativeInt;
   pNext: PWideChar;
 begin
   InsideTabChar := False;
@@ -416,8 +439,8 @@ begin
     Result := Position;
 end;
 
-function StrScanForCharInCategory(const Line: string; Start: Integer;
-  IsOfCategory: TCategoryMethod): Integer;
+function StrScanForCharInCategory(const Line: string; Start: TSynNativeInt;
+  IsOfCategory: TCategoryMethod): TSynNativeInt;
 var
   p: PWideChar;
 begin
@@ -437,10 +460,10 @@ begin
   Result := 0;
 end;
 
-function StrRScanForCharInCategory(const Line: string; Start: Integer;
-  IsOfCategory: TCategoryMethod): Integer;
+function StrRScanForCharInCategory(const Line: string; Start: TSynNativeInt;
+  IsOfCategory: TCategoryMethod): TSynNativeInt;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   Result := 0;
   if (Start > 0) and (Start <= Length(Line)) then
@@ -462,7 +485,7 @@ begin
       Inc(Result);
 end;
 
-function CountLines(const S: string): Integer;
+function CountLines(const S: string): TSynNativeInt;
 // At least one line possibly empty
 var
   P, PEnd: PChar;
@@ -487,7 +510,7 @@ end;
 
 function StringToLines(const Value: string): TArray<string>;
 var
-  Count: Integer;
+  Count: TSynNativeInt;
   P, PStart, PEnd: PChar;
   S: string;
 begin
@@ -515,57 +538,74 @@ end;
 {$IFOPT R+}{$DEFINE RestoreRangeChecking}{$ELSE}{$UNDEF RestoreRangeChecking}{$ENDIF}
 {$R-}
 
-function EncodeString(s: string): string;
+function EncodeString(const AValue: string): string;
 var
-  i, j: Integer;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
+  lInner: Integer;
 begin
-  SetLength(Result, 2 * Length(s)); // worst case
-  j := 0;
-  for i := 1 to Length(s) do
-  begin
-    Inc(j);
-    if s[i] = '\' then
+  lBuilder := TStringBuilder.Create;
+  try
+    lBuilder.Length := 2 * Length(AValue); // worst case;
+    lInner := -1;
+    for lCount := 1 to Length(AValue) do
     begin
-      Result[j] := '\';
-      Result[j + 1] := '\';
-      Inc(j);
-    end
-    else if s[i] = '/' then
-    begin
-      Result[j] := '\';
-      Result[j + 1] := '.';
-      Inc(j);
-    end
-    else
-      Result[j] := s[i];
-  end; // for
-  SetLength(Result, j);
+      Inc(lInner);
+      if AValue[lCount] = '\' then
+      begin
+        lBuilder[lInner] := '\';
+        lBuilder[lInner + 1] := '\';
+        Inc(lInner);
+      end
+      else if AValue[lCount] = '/' then
+      begin
+        lBuilder[lInner] := '\';
+        lBuilder[lInner + 1] := '.';
+        Inc(lInner);
+      end
+      else
+        lBuilder[lInner] := AValue[lCount];
+    end; // for
+    lBuilder.Length := lInner + 1;
+    Result := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end; { EncodeString }
 
-function DecodeString(s: string): string;
+function DecodeString(const AValue: string): string;
 var
-  i, j: Integer;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
+  lInner: Integer;
 begin
-  SetLength(Result, Length(s)); // worst case
-  j := 0;
-  i := 1;
-  while i <= Length(s) do
-  begin
-    Inc(j);
-    if s[i] = '\' then
+  lBuilder := TStringBuilder.Create;
+  try
+    lBuilder.Length := Length(AValue); // worst case
+    lInner := -1;
+    lCount := 1;
+    while lCount <= Length(AValue) do
     begin
-      Inc(i);
-      if s[i] = '\' then
-        Result[j] := '\'
+      Inc(lInner);
+      if AValue[lCount] = '\' then
+      begin
+        Inc(lCount);
+        if AValue[lCount] = '\' then
+          lBuilder[lInner] := '\'
+        else
+          lBuilder[lInner] := '/';
+      end
       else
-        Result[j] := '/';
-    end
-    else
-      Result[j] := s[i];
-    Inc(i);
-  end; // for
-  SetLength(Result, j);
+        lBuilder[lInner] := AValue[lCount];
+      Inc(lCount);
+    end; // for
+    lBuilder.Length := lInner + 1;
+    Result := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end; { DecodeString }
+
 {$IFDEF RestoreRangeChecking}{$R+}{$ENDIF}
 
 function DeleteTypePrefixAndSynSuffix(s: string): string;
@@ -583,9 +623,9 @@ begin
 end;
 
 function GetHighlighterIndex(Highlighter: TSynCustomHighlighter;
-  HighlighterList: TList): Integer;
+  HighlighterList: TList): TSynNativeInt;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   Result := 1;
   for i := 0 to HighlighterList.Count - 1 do
@@ -673,7 +713,7 @@ begin
   end
 end;
 
-procedure EnumerateKeywords(AKind: Integer; KeywordList: string;
+procedure EnumerateKeywords(AKind: TSynNativeInt; KeywordList: string;
   IsIdentChar: TCategoryMethod; AKeywordProc: TEnumerateKeywordEvent);
 var
   pStart, pEnd: PWideChar;
@@ -750,16 +790,37 @@ begin
 end;
 {$ENDIF}
 
-function CeilOfIntDiv(Dividend, Divisor: Cardinal): Integer;
+function CeilOfIntDiv(Dividend, Divisor: UInt32): Int32;
 var
   Res: UInt64;
   Remainder: UInt64;
 begin
-  DivMod(Dividend,  Divisor, Res, Remainder);
+  DivMod(Dividend, Divisor, Res, Remainder);
   if Remainder > 0 then
     Inc(Res);
   Result := Integer(Res);
 end;
+
+function CeilOfIntDiv(Dividend, Divisor: Int32): Int32;
+begin
+  Result := CeilOfIntDiv(Cardinal(Dividend), Cardinal(Divisor));
+end;
+
+{$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: Int64): UInt64;
+begin
+  Result := CeilOfIntDiv(UInt64(Dividend), UInt64(Divisor));
+end;{$ENDIF}
+
+{$IFDEF CPU64BITS}function CeilOfIntDiv(Dividend, Divisor: UInt64): UInt64;
+var
+  Res: UInt64;
+  Remainder: UInt64;
+begin
+  DivMod(Dividend, Divisor, Res, Remainder);
+  if Remainder > 0 then
+    Inc(Res);
+  Result := Res;
+end;{$ENDIF}
 
 {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function DefaultFontName: string;
@@ -788,7 +849,7 @@ begin;
   Result := 0;
 end;
 
-function GetCorrectFontWeight(Font: TFont): Integer;
+function GetCorrectFontWeight(Font: TFont): TSynNativeInt;
 var
   DC: HDC;
   LogFont: TLogFont;
@@ -809,7 +870,7 @@ end;
 {$ENDIF}
 
 {$IF CompilerVersion <= 32}
-function GrowCollection(OldCapacity, NewCount: Integer): Integer;
+function GrowCollection(OldCapacity, NewCount: TSynNativeInt): TSynNativeInt;
 begin
   Result := OldCapacity;
   repeat
@@ -826,7 +887,7 @@ begin
 end;
 {$ENDIF}
 
-procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen: Integer);
+procedure LineDiff(const Line, OldLine: string; out StartPos, OldLen, NewLen: TSynNativeInt);
 begin
   OldLen := OldLine.Length;
   NewLen := Line.Length;
@@ -850,32 +911,39 @@ end;
 {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
 function IsColorDark(AColor: TColor): Boolean;
 var
-  ACol: Longint;
+  ACol: DWORD;
 begin
-  ACol := ColorToRGB(AColor) and $00FFFFFF;
+  ACol := DWORD(ColorToRGB(AColor) and $00FFFFFF);
   Result := ((2.99 * GetRValue(ACol) + 5.87 * GetGValue(ACol) +
                  1.14 * GetBValue(ACol)) < $400);
 end;
 {$ENDIF}
 
-procedure SubstituteControlChars(var Input: string);
+procedure SubstituteControlChars(var AInput: string);
 const
-  ControlChars: set of Byte = [1..31, 127];
-  GraphicChars: array[1..31] of Char = (
+  cGraphicChars: array[1..31] of Char = (
       #$02401, #$02402, #$02403, #$02404, #$02405, #$02406, #$02407, #$02408,
       #$02409, #$0240A, #$0240B, #$0240C, #$0240D, #$0240E, #$0240F, #$02410,
       #$02411, #$02412, #$02413, #$02414, #$02415, #$02416, #$02417, #$02418,
       #$02419, #$0241A, #$0241B, #$0241C, #$0241D, #$0241E, #$0241F);
-  DeleteChar  = #$02421;
+  cDeleteChar  = #$02421;
 var
-  I: Integer;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
 begin
-  UniqueString(Input);
-  for I := 1 to Input.Length do
-    case Ord(Input[I]) of
-      1..8, 10..31: Input[I] := GraphicChars[Byte(Ord(Input[I]))];
-      127: Input[I] := DeleteChar;
+  lBuilder := TStringBuilder.Create(AInput);
+  try
+    for lCount := 0 to lBuilder.Length - 1 do
+    begin
+      case Ord(lBuilder[lCount]) of
+        1..8, 10..31: lBuilder[lCount] := cGraphicChars[Byte(Ord(lBuilder[lCount]))];
+        127: lBuilder[lCount] := cDeleteChar;
+      end;
     end;
+    AInput := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end;
 
 function CompiledRegEx(const Pattern: string; Options: TRegExOptions): TRegEx;
@@ -891,7 +959,7 @@ function ColorToHTML(Color: TColor): string;
 var
   R: TColorRef;
 begin
-  R := ColorToRGB(Color);
+  R := TColorRef(ColorToRGB(Color));
   Result := Format('#%.2x%.2x%.2x', [GetRValue(R), GetGValue(R), GetBValue(R)]);
 end;
 {$ENDIF}
@@ -903,13 +971,13 @@ end;
 
 function IsOpeningBracket(Chr: Char; const Brackets: string): Boolean;
 var
-  Idx: Integer;
+  Idx: TSynNativeInt;
 begin
   Idx := Brackets.IndexOf(Chr);
   Result := (Idx >= 0) and not Odd(Idx);
 end;
 
-function BracketAtPos(Idx: Integer; const Brackets, Line: string): Boolean;
+function BracketAtPos(Idx: TSynNativeInt; const Brackets, Line: string): Boolean;
 begin
   Result := InRange(Idx, 1, Line.Length) and IsBracket(Line[Idx], Brackets);
 end;

@@ -99,7 +99,7 @@ uses
   Vcl.Controls,
   SynEditTypes,
   SynEditKeyCmds,
-  SynEditKeyCmdsEditor,
+  Vcl.SynEditKeyCmdsEditor,
   SynEdit,
   SynEditPrint,
   SynEditPrintMargins,

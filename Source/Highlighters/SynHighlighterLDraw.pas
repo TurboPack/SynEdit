@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -13,7 +13,7 @@ The original code is: SynHighlighterLDraw.pas, released 2003-04-12.
 Description: LDraw Parser/Highlighter
 The initial author of this file is Orion Pobursky.
 Copyright (c) 2003, all rights reserved.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
 Contributors.txt file.
@@ -48,6 +48,7 @@ uses
   {$ENDIF}
   System.UITypes,
   SynEditHighlighter, SynEditTypes,
+  SynFunc,
   SynUnicodeShared,
   SysUtils,
   Classes;
@@ -72,7 +73,7 @@ type
   TRangeState = (rsUnKnown);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 type
   TSynLDRSyn = class(TSynCustomHighlighter)
@@ -92,8 +93,8 @@ type
     fSecondTriAttri: TSynHighlighterAttributes;
     fThirdTriAttri: TSynHighlighterAttributes;
     fTriangleAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function FuncAuthor(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAuthor(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -116,10 +117,10 @@ type
     procedure SetRange(Value: Pointer); override;
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): string; override;
+    function GetKeyWords(TokenKind: TSynNativeInt): string; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -147,7 +148,7 @@ const
     'author' 
   );
 
-  KeyIndices: array[0..1] of Integer = (
+  KeyIndices: array[0..1] of TSynNativeInt = (
     -1, 0 
   );
 
@@ -179,7 +180,7 @@ end;
 
 procedure TSynLDRSyn.InitIdent;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -188,12 +189,12 @@ begin
   fIdentFuncTable[1] := FuncAuthor;
 end;
 
-function TSynLDRSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynLDRSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynLDRSyn.FuncAuthor(Index: Integer): TtkTokenKind;
+function TSynLDRSyn.FuncAuthor(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -222,6 +223,11 @@ begin
 end;
 
 constructor TSynLDRSyn.Create(AOwner: TComponent);
+const
+  cFirstTriColor: TColorRec = (R: 206; G: 111; B: 73; A: 0);
+  cFourthTriColor: TColorRec = (R: 54; G: 99; B: 12; A: 0);
+  cSecondTriColor: TColorRec = (R: 54; G: 99; B: 12; A: 0);
+  cThirdTriColor: TColorRec = (R: 206; G: 111; B: 73; A: 0);
 begin
   inherited Create(AOwner);
   fColorAttri := TSynHighLighterAttributes.Create(SYNS_AttrColor, SYNS_FriendlyAttrColor);
@@ -233,11 +239,11 @@ begin
   AddAttribute(fCommentAttri);
 
   fFirstTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrFirstTri, SYNS_FriendlyAttrFirstTri);
-  fFirstTriAttri.Foreground := RGB(206,111,73);
+  fFirstTriAttri.Foreground := cFirstTriColor.Color;
   AddAttribute(fFirstTriAttri);
 
   fFourthTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrFourthTri, SYNS_FriendlyAttrFourthTri);
-  fFourthTriAttri.Foreground := RGB(54,99,12);
+  fFourthTriAttri.Foreground := cFourthTriColor.Color;
   AddAttribute(fFourthTriAttri);
 
   fIdentifierAttri := TSynHighLighterAttributes.Create(SYNS_AttrIdentifier, SYNS_FriendlyAttrIdentifier);
@@ -260,11 +266,11 @@ begin
   AddAttribute(fQuadAttri);
 
   fSecondTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrSecondTri, SYNS_FriendlyAttrSecondTri);
-  fSecondTriAttri.Foreground := RGB(54,99,12);
+  fSecondTriAttri.Foreground := cSecondTriColor.Color;
   AddAttribute(fSecondTriAttri);
 
   fThirdTriAttri := TSynHighLighterAttributes.Create(SYNS_AttrThirdTri, SYNS_FriendlyAttrThirdTri);
-  fThirdTriAttri.Foreground := RGB(206,111,73);
+  fThirdTriAttri.Foreground := cThirdTriColor.Color;
   AddAttribute(fThirdTriAttri);
 
   fTriangleAttri := TSynHighLighterAttributes.Create(SYNS_AttrTriangle, SYNS_FriendlyAttrTriangle);
@@ -279,7 +285,7 @@ end;
 
 function TSynLDRSyn.FirstChar(DatLine: PWideChar): WideChar;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   i := 0;
   while DatLine[i] = ' ' do Inc(i);
@@ -307,7 +313,7 @@ procedure TSynLDRSyn.Number1Proc;
 
   function ArgNumber(DatLine: PWideChar): Byte;
   var
-   i: Integer;
+   i: TSynNativeInt;
    b: Boolean;
   begin
     i := 0;
@@ -393,7 +399,7 @@ begin
   Result := Run = fLineLen + 1;
 end;
 
-function TSynLDRSyn.GetKeyWords(TokenKind: Integer): string;
+function TSynLDRSyn.GetKeyWords(TokenKind: TSynNativeInt): string;
 begin
   Result := 'Author';
 end;
@@ -424,7 +430,7 @@ begin
   end;
 end;
 
-function TSynLDRSyn.GetTokenKind: Integer;
+function TSynLDRSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

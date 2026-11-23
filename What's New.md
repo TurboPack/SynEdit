@@ -190,7 +190,7 @@ A new updated Delphi syntax highlighter for SynEdit (TSynDelphiSyn) and a design
 
 **Inheritance:** `TSynCustomCodeFoldingHighlighter`
 
-`TSynDelphiSyn` is a specialized syntax highlighter designed to support the modern Object Pascal dialect used in Delphi 13 (Athens). It is based on the standard Pascal highligher `TSynPascalSyn`, but extends it with support for new language features, and expanded keywords.
+`TSynDelphiSyn` is a specialized syntax highlighter designed to support the modern Object Pascal dialect used in Delphi 13 (Florence). It is based on the standard Pascal highligher `TSynPascalSyn`, but extends it with support for new language features, and expanded keywords.
 
 ### **Key Features**
 
@@ -233,12 +233,15 @@ This feature is a **Design-Time Component Editor** that allows you to instantly 
 
 ***Notice:*** These settings are imported from the *registry*, so if you changed your IDE settings and haven't closed the IDE the imported values may be out of date.
 
+***Notice:*** The import **overwrites** the current font, colors, gutter, selection, tab and highlighting settings of the component, and cannot be undone. For this reason it is only available through the context menu verb described below, it is **not** triggered by double-clicking the component, and it always asks for a confirmation before proceeding.
+
 ### **Usage:**
 
 1. Open the Form Designer in Delphi.  
 2. Select a TSynEdit or TSynDelphiSyn component.  
 3. **Right-click** the component to open the context menu.  
-4. Select **"Import IDE Settings"**.
+4. Select **"Import IDE Settings"**.  
+5. Confirm the warning dialog (it defaults to **No**, so pressing Enter or Esc cancels the import).
 
 ### **Importing on TSynEdit:**
 
@@ -316,3 +319,57 @@ For every row below, the importer reads:
 | String | StringAttri |
 | Character | CharAttri |
 | Symbol | SymbolAttri |
+
+---
+
+# **TSynAsmX86\_64**
+
+A syntax highlighter for x86-64 assembler, aimed at disassembler and inline
+assembler views (Keystone / Capstone / iced based tools) where the existing
+`TSynAsmSyn` is too coarse.
+
+**Unit:** `Source\Highlighters\SynHighlighterAsmX86_64.pas`
+
+**Inheritance:** `TSynCustomHighlighter`
+
+**Language name:** `x86-64Assembly` - distinct from `TSynAsmSyn`, which keeps
+`x86Assembly`, so both highlighters can be registered side by side.
+
+### **Key Features**
+
+* **Separate token classes instead of one keyword colour**: general mnemonics,
+  general purpose registers, float/vector registers, operand size specifiers,
+  jumps, conditional instructions and AVX instructions each get their own
+  attribute, so a disassembly listing stays readable without reading it.
+* **Labels**: a trailing colon marks a declaration; a bare identifier is shown
+  as a label only when a matching declaration exists in the text.
+* **Literals**: decimal, hexadecimal, octal, float and character literals have
+  their own attributes.
+* **Keyword lookup**: a single case-insensitive `TDictionary`, the same
+  mechanism `TSynAsmSyn` uses. 1801 keywords across the seven classes.
+
+### **Attributes**
+
+| Property | Description |
+| :---- | :---- |
+| KeyAttri | General mnemonics (mov, add, call, ...). |
+| RegisterAttri | General purpose registers (rax, r8d, ...). |
+| FloatRegisterAttri | Float and vector registers (xmm0, ymm1, st0, ...). |
+| TypeSizeAttri | Operand size specifiers (byte, word, dword, qword). |
+| JumpAttri | Jump instructions (jmp, je, loop, ...). |
+| ConditionalAttri | Conditional instructions (cmovz, setne, ...). |
+| AVXAttri | AVX / AVX-512 instructions (vaddps, vpternlogd, ...). |
+| LabelDeclarationAttri | A label declaration (name followed by a colon). |
+| LabelAttri | A reference to a declared label. |
+| CommentAttri | Comments (; and // style). |
+| IdentifierAttri | Everything else that is an identifier. |
+| NumberAttri | Decimal literals. |
+| HexAttri | Hexadecimal literals. |
+| OctalAttri | Octal literals. |
+| FloatAttri | Floating-point literals. |
+| CharAttri | Character literals. |
+| StringAttri | String literals. |
+| MathAttri | Arithmetic operators. |
+| BracketAttri | Brackets around memory operands. |
+| SymbolAttri | Remaining punctuation. |
+| SpaceAttri | Whitespace. |

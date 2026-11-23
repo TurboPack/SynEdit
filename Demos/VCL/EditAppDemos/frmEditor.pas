@@ -59,7 +59,7 @@ type
     procedure SynEditorEnter(Sender: TObject);
     procedure SynEditorExit(Sender: TObject);
     procedure SynEditorReplaceText(Sender: TObject; const ASearch,
-      AReplace: string; Line, Column: Integer;
+      AReplace: string; Line, Column: NativeInt;
       var Action: TSynReplaceAction);
     procedure SynEditorStatusChange(Sender: TObject;
       Changes: TSynStatusChanges);
@@ -594,7 +594,7 @@ var
 begin
   Assert(fEditor <> nil);
   Empty := True;
-  for i := SynEditor.Lines.Count - 1 downto 0 do
+  for i := SynEditor.Lines.CountNative - 1 downto 0 do
     if SynEditor.Lines[i] <> '' then begin
       Empty := False;
       Break;

@@ -65,7 +65,7 @@ Type
 
 // Re-export shared functions (API contract preserved)
 function MakeGlobal(const S: string): HGLOBAL; overload;
-function MakeGlobal(var P; Size: Integer): HGLOBAL; overload;
+function MakeGlobal (var P; Size: NativeInt): hGlobal; overload;
 function HasFormat(DataObject: IDataObject; Format: TClipFormat): Boolean;
 function GetInternalClipText: TArray<string>;
 
@@ -81,7 +81,8 @@ implementation
 uses
   SynEdit,
   SynEditTypes,
-  SynExportHTML;
+  Vcl.SynExportHTML,
+  SynFunc;
 
 // Re-export thin wrappers that delegate to shared unit
 function MakeGlobal(const S: string): HGLOBAL;
@@ -111,7 +112,7 @@ var
 
   function DelimitedText(Delimiter: string): string;
   var
-    Index: Integer;
+    Index: TSynNativeInt;
     Sel: TSynSelection;
   begin
     Result := '';
@@ -140,7 +141,7 @@ begin
 
   if Ed.Selections.Count > 1 then
   begin
-    FFormatEtc.Add(SynEditClipboardFormat); // InternalFormat
+    FFormatEtc.Add(ToWord(SynEditClipboardFormat)); // InternalFormat
     FInternalText := DelimitedText(IntClipFormatDelimiter);
   end;
 
@@ -148,7 +149,7 @@ begin
     Assigned(TCustomSynEdit(ASynEdit).Highlighter) and (FText <> '')
   then
   begin
-    FFormatEtc.Add(HTMLClipboardFormat); // HTMLFormat
+    FFormatEtc.Add(ToWord(HTMLClipboardFormat)); // HTMLFormat
     HtmlStream := TMemoryStream.Create;
     StreamHtml(ASynEdit, HtmlStream);
   end;
@@ -261,6 +262,5 @@ function TSynEditDataObject.EnumDAdvise (out enumAdvise: IEnumStatData): HResult
 begin
   Result := OLE_E_ADVISENOTSUPPORTED;
 end;
-
 
 end.

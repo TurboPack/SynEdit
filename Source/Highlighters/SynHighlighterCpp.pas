@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@ The Original Code is: SynHighlighterCpp.pas, released 2000-04-10.
 The Original Code is based on the dcjCppSyn.pas file from the
 mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Trier.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -47,6 +47,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SysUtils,
   SynUnicodeShared,
   Classes,
@@ -74,7 +75,7 @@ type
     rsMultiLineString, rsMultiLineDirective);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
 //  TSynCppSyn = class(TSynCustomHighlighter)
   TSynCppSyn = class(TSynCustomCodeFoldingHighlighter)
@@ -100,9 +101,9 @@ type
     fSymbolAttri: TSynHighlighterAttributes;
     fBracketAttri: TSynHighlighterAttributes;
     FNewPreprocesorStyle: Boolean;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
-    function FuncAsm(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
+    function FuncAsm(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -161,19 +162,19 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
     {$IF Defined(MSWINDOWS) and not Defined(SYN_SHARED)}
-    function UseUserSettings(settingIndex: Integer): Boolean; override;
+    function UseUserSettings(settingIndex: TSynNativeInt): Boolean; override;
     procedure EnumUserSettings(settings: TStrings); override;
     {$ENDIF}
     property ExtTokenID: TxtkTokenKind read GetExtTokenID;
     property NewPreprocesorStyle: Boolean read FNewPreprocesorStyle write SetNewPreprocesorStyle;
 //++ CodeFolding
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
 //-- CodeFolding
   published
     property AsmAttri: TSynHighlighterAttributes read fAsmAttri write fAsmAttri;
@@ -229,7 +230,7 @@ const
     'while', 'wchar_t', 'xor', 'xor_eq'
   );
 
-  KeyIndices: array[0..640] of Integer = (
+  KeyIndices: array[0..640] of TSynNativeInt = (
     68, -1, -1, -1, -1, -1, -1, -1, -1, 110, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, 1, -1, -1, 17, -1, -1, -1, -1, 97, -1, -1, -1, -1,
     -1, 62, -1, 28, -1, -1, -1, -1, -1, -1, 64, 21, 90, -1, -1, -1, -1, 108, -1,
@@ -294,7 +295,7 @@ end;
 
 procedure TSynCppSyn.InitIdent;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -309,12 +310,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynCppSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynCppSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynCppSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynCppSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -322,7 +323,7 @@ begin
     Result := tkIdentifier
 end;
 
-function TSynCppSyn.FuncAsm(Index: Integer): TtkTokenKind;
+function TSynCppSyn.FuncAsm(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
   begin
@@ -792,7 +793,7 @@ end;
 
 procedure TSynCppSyn.NumberProc;
 
-  function IsNumberChar(Run: Integer): Boolean;
+  function IsNumberChar(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', 'A'..'F', 'a'..'f', '.', 'u', 'U', 'l', 'L', 'x', 'X', '-', '+':
@@ -802,7 +803,7 @@ procedure TSynCppSyn.NumberProc;
     end;
   end;
 
-  function IsDigitPlusMinusChar(Run: Integer): Boolean;
+  function IsDigitPlusMinusChar(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', '+', '-':
@@ -812,7 +813,7 @@ procedure TSynCppSyn.NumberProc;
     end;
   end;
 
-  function IsHexDigit(Run: Integer): Boolean;
+  function IsHexDigit(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       '0'..'9', 'a'..'f', 'A'..'F':
@@ -822,7 +823,7 @@ procedure TSynCppSyn.NumberProc;
     end;
   end;
 
-  function IsAlphaUncerscore(Run: Integer): Boolean;
+  function IsAlphaUncerscore(Run: TSynNativeInt): Boolean;
   begin
     case fLine[Run] of
       'A'..'Z', 'a'..'z', '_':
@@ -833,8 +834,8 @@ procedure TSynCppSyn.NumberProc;
   end;
 
 var
-  idx1: Integer; // token[1]
-  i: Integer;
+  idx1: TSynNativeInt; // token[1]
+  i: TSynNativeInt;
 begin
   idx1 := Run;
   Inc(Run);
@@ -1034,17 +1035,17 @@ begin
 end;
 
 procedure TSynCppSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
   CurLine: string;
-  Line: Integer;
+  Line: TSynNativeInt;
 
-  function FindBraces(Line: Integer): Boolean;
+  function FindBraces(Line: TSynNativeInt): Boolean;
   // Covers the following line patterns: {, }, {}, }{, {}{, }{}
 
-    function LineHasChar(AChar: Char; StartCol: Integer; out Col: Integer): Boolean;
+    function LineHasChar(AChar: Char; StartCol: TSynNativeInt; out Col: TSynNativeInt): Boolean;
     var
-      I: Integer;
+      I: TSynNativeInt;
     begin
       Result := False;
       Col := 0;
@@ -1060,15 +1061,15 @@ var
       end;
     end;
 
-    function Indent: Integer;
+    function Indent: TSynNativeInt;
     begin
       Result := LeftSpaces(CurLine, True, TabWidth(LinesToScan));
     end;
 
   var
-    OpenIdx: Integer;
-    CloseIdx: Integer;
-    Idx: Integer;
+    OpenIdx: TSynNativeInt;
+    CloseIdx: TSynNativeInt;
+    Idx: TSynNativeInt;
   begin
     LineHasChar('{', 1, OpenIdx);
     LineHasChar('}', 1, CloseIdx);
@@ -1096,7 +1097,7 @@ var
     end;
   end;
 
-  function FoldRegion(Line: Integer): Boolean;
+  function FoldRegion(Line: TSynNativeInt): Boolean;
   var
     S: string;
   begin
@@ -1133,12 +1134,12 @@ begin
     end;
 
     // Find Fold regions
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.ItemsNative[Line];
     if FoldRegion(Line) then
       Continue;
 
     // Find an braces on this line  (Fold Type 1)
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan.ItemsNative[Line];
     if not FindBraces(Line) then
       FoldRanges.NoFoldInfo(Line + 1);
   end; // while Line
@@ -1467,7 +1468,7 @@ begin
   end;
 end;
 
-function TSynCppSyn.GetTokenKind: Integer;
+function TSynCppSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(GetTokenID);
 end;
@@ -1486,11 +1487,11 @@ end;
 procedure TSynCppSyn.EnumUserSettings(settings: TStrings);
 begin
   { returns the user settings that exist in the registry }
-  with TRegistry.Create do
+  with TRegistry.Create(KEY_READ or KEY_WOW64_32KEY) do
   begin
     try
       RootKey := HKEY_LOCAL_MACHINE;
-      if OpenKeyReadOnly('\SOFTWARE\Borland\C++Builder') then
+      if OpenKeyReadOnly('\SOFTWARE\Embarcadero\BDS') then
       begin
         try
           GetKeyNames(settings);
@@ -1504,7 +1505,7 @@ begin
   end;
 end;
 
-function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
+function TSynCppSyn.UseUserSettings(settingIndex: TSynNativeInt): Boolean;
 // Possible parameter values:
 //   index into TStrings returned by EnumUserSettings
 // Possible return values:
@@ -1512,24 +1513,33 @@ function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
 //   false: problem reading settings or invalid version specified - old settings
 //          were preserved
 
-  function ReadCPPBSettings(settingIndex: Integer): Boolean;
+  function ReadCPPBSettings(settingIndex: TSynNativeInt): Boolean;
 
-    function ReadCPPBSetting(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
+    function ReadCPPBSetting(const settingTag: string; attri: TSynHighlighterAttributes; const key: string): Boolean;
 
-      function ReadCPPB1(settingTag: string; attri: TSynHighlighterAttributes; name: string): Boolean;
+      function ReadCPPB1(const settingTag: string; attri: TSynHighlighterAttributes; const name: string): Boolean;
       var
         I: Integer;
+        lBuilder: TStringBuilder;
       begin
-        for I := 1 to Length(name) do
-          if name[I] = ' ' then name[I] := '_';
-        Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-             '\SOFTWARE\Borland\C++Builder\'+settingTag+'\Highlight',name, True);
+        lBuilder := TStringBuilder.Create(name);
+        try
+          for I := 0 to lBuilder.Length - 1 do
+          begin
+            if lBuilder[I] = ' ' then
+              lBuilder[I] := '_';
+          end;
+          Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
+            '\SOFTWARE\Borland\C++Builder\'+settingTag+'\Highlight', lBuilder.ToString, True);
+        finally
+          lBuilder.Free;
+        end;
       end; { ReadCPPB1 }
 
       function ReadCPPB3OrMore(settingTag: string; attri: TSynHighlighterAttributes; key: string): Boolean;
       begin
         Result := attri.LoadFromBorlandRegistry(HKEY_CURRENT_USER,
-                 '\Software\Borland\C++Builder\'+settingTag+'\Editor\Highlight',
+                 '\Software\Embarcadero\BDS\'+settingTag+'\Editor\Highlight',
                  key, False);
       end; { ReadCPPB3OrMore }
 
@@ -1595,23 +1605,23 @@ function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
         tmpInvalidAttri   .Assign(fInvalidAttri);
         tmpSpaceAttri     .Assign(fSpaceAttri);
         tmpDirecAttri     .Assign(fDirecAttri);
-        if s[settingIndex][1] = '1'
-          then Result := ReadCPPBSetting(s[settingIndex],fAsmAttri,'Plain text')
-          else Result := ReadCPPBSetting(s[settingIndex],fAsmAttri,'Assembler');
+        if s.ItemsNative[settingIndex][1] = '1'
+          then Result := ReadCPPBSetting(s.ItemsNative[settingIndex],fAsmAttri,'Plain text')
+          else Result := ReadCPPBSetting(s.ItemsNative[settingIndex],fAsmAttri,'Assembler');
         Result := Result                                                         and
-                  ReadCPPBSetting(s[settingIndex],fCommentAttri,'Comment')       and
-                  ReadCPPBSetting(s[settingIndex],fIdentifierAttri,'Identifier') and
-                  ReadCPPBSetting(s[settingIndex],fInvalidAttri,'Illegal Char')  and
-                  ReadCPPBSetting(s[settingIndex],fKeyAttri,'Reserved word')     and
-                  ReadCPPBSetting(s[settingIndex],fNumberAttri,'Integer')        and
-                  ReadCPPBSetting(s[settingIndex],fFloatAttri,'Float')           and
-                  ReadCPPBSetting(s[settingIndex],fHexAttri,'Hex')               and
-                  ReadCPPBSetting(s[settingIndex],fOctalAttri,'Octal')           and
-                  ReadCPPBSetting(s[settingIndex],fSpaceAttri,'Whitespace')      and
-                  ReadCPPBSetting(s[settingIndex],fStringAttri,'String')         and
-                  ReadCPPBSetting(s[settingIndex],fCharAttri,'Character')             and
-                  ReadCPPBSetting(s[settingIndex],fSymbolAttri,'Symbol')         and
-                  ReadCPPBSetting(s[settingIndex],fDirecAttri,'Preprocessor');
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fCommentAttri,'Comment')       and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fIdentifierAttri,'Identifier') and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fInvalidAttri,'Illegal Char')  and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fKeyAttri,'Reserved word')     and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fNumberAttri,'Number')         and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fFloatAttri,'Float')           and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fHexAttri,'Hex')               and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fOctalAttri,'Octal')           and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fSpaceAttri,'Whitespace')      and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fStringAttri,'String')         and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fCharAttri,'Character')             and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fSymbolAttri,'Symbol')         and
+                  ReadCPPBSetting(s.ItemsNative[settingIndex],fDirecAttri,'Preprocessor');
         if not Result then begin
           fStringAttri    .Assign(tmpStringAttri);
           fCharAttri      .Assign(tmpCharAttri);
@@ -1628,6 +1638,7 @@ function TSynCppSyn.UseUserSettings(settingIndex: Integer): Boolean;
           fSpaceAttri     .Assign(tmpSpaceAttri);
           fDirecAttri     .Assign(tmpDirecAttri);
         end;
+        fBracketAttri.Assign(fSpaceAttri);
         tmpStringAttri    .Free;
         tmpCharAttri      .Free;
         tmpNumberAttri    .Free;

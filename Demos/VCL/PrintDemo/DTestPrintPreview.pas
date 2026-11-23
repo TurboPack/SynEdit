@@ -89,7 +89,7 @@ type
     procedure SynEditPrintPreviewMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure SynEditPrintPreviewPreviewPage(Sender: TObject;
-      PageNumber: Integer);
+      PageNumber: NativeInt);
   private
     { Private declarations }
   public

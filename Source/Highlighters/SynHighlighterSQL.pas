@@ -53,7 +53,8 @@ uses
   System.Generics.Collections,
   System.UITypes,
   SynEditTypes,
-  SynEditHighlighter;
+  SynEditHighlighter,
+  SynFunc;
 
 type
   TtkTokenKind = (tkComment, tkDatatype, tkDefaultPackage, tkException,
@@ -61,7 +62,8 @@ type
     tkSQLPlus, tkString, tkSymbol, tkTableName, tkUnknown, tkVariable,
     tkConditionalComment, tkDelimitedIdentifier, tkProcName, tkConsoleOutput);
 
-  TRangeState = (rsUnknown, rsComment, rsString, rsConditionalComment, rsConsoleOutput);
+  TRangeState = (rsUnknown, rsComment, rsString, rsConditionalComment, rsConsoleOutput,
+    rsOracleQQuoteString);
 
   TSQLDialect = (sqlStandard, sqlInterbase6, sqlMSSQL7, sqlMySQL, sqlOracle,
     sqlSybase, sqlIngres, sqlMSSQL2K, sqlPostgres, sqlNexus, sqlInformix);
@@ -70,6 +72,7 @@ type
   TSynSQLSyn = class(TSynCustomHighlighter)
   private
     fRange: TRangeState;
+    FOracleQQuoteClosingDelimiter: WideChar;
     fTokenID: TtkTokenKind;
     FKeywords: TDictionary<string, TtkTokenKind>;
     FProcNames: TStrings;
@@ -97,7 +100,7 @@ type
     fVariableAttri: TSynHighlighterAttributes;
 
     function IdentKind: TtkTokenKind;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     procedure SetDialect(Value: TSQLDialect);
     procedure SetTableNames(const Value: TStrings);
     procedure SetFunctionNames(const Value: TStrings);
@@ -125,6 +128,7 @@ type
     procedure SlashProc;
     procedure SpaceProc;
     procedure QuoteProc;
+    procedure OracleQQuoteProc;
     procedure BacktickProc;
     procedure BracketProc;
     procedure SymbolProc;
@@ -133,6 +137,8 @@ type
     procedure UnknownProc;
     procedure AnsiCProc;
     procedure SetProcNames(const Value: TStrings);
+    function IsOracleQQuoteStart: Boolean;
+    class function GetOracleQQuoteClosingDelimiter(const OpeningDelimiter: WideChar): WideChar; static;
   protected
     function GetSampleSource: string; override;
     function IsFilterStored: Boolean; override;
@@ -146,11 +152,11 @@ type
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes;
       override;
     function GetEol: Boolean; override;
-    function GetKeyWords(TokenKind: Integer): string; override;
+    function GetKeyWords(TokenKind: TSynNativeInt): string; override;
     function GetRange: Pointer; override;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
     function GetTokenID: TtkTokenKind;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     function IsKeyword(const AKeyword: string): Boolean; override;
     procedure Next; override;
@@ -1351,7 +1357,7 @@ var
   S: string;
   p: PChar;
 
-  function IsIdentCharFromIndex(Index: Integer): Boolean;
+  function IsIdentCharFromIndex(Index: NativeInt): Boolean;
   begin
     case FLineStr[Index] of
       'a'..'z', 'A'..'Z', '0'..'9', '_':
@@ -1368,7 +1374,7 @@ var
         Result := False;
     end;
     if not Result then
-      Result := Char.IsLetterOrDigit(FLineStr, Index - 1) or
+      Result := Char.IsLetterOrDigit(FLineStr, ToInt32(Index - 1)) or
         CharInSet(FLineStr[Index], AdditionalIdentChars) and
         not IsWordBreakChar(FLineStr[Index]);
   end;
@@ -1538,6 +1544,59 @@ begin
         Inc(Run);
         fRange := rsUnknown;
       end;
+    end;
+  end;
+end;
+
+class function TSynSQLSyn.GetOracleQQuoteClosingDelimiter(
+  const OpeningDelimiter: WideChar): WideChar;
+begin
+  case OpeningDelimiter of
+    '[': Result := ']';
+    '(': Result := ')';
+    '{': Result := '}';
+    '<': Result := '>';
+  else
+    Result := OpeningDelimiter;
+  end;
+end;
+
+function TSynSQLSyn.IsOracleQQuoteStart: Boolean;
+begin
+  Result :=
+    (SQLDialect = sqlOracle) and
+    CharInSet(fLine[Run], ['q', 'Q']) and
+    (fLine[Run + 1] = #39) and
+    (fLine[Run + 2] <> #0) and
+    (fLine[Run + 2] <> #39) and
+    not Char(fLine[Run + 2]).IsWhiteSpace;
+end;
+
+procedure TSynSQLSyn.OracleQQuoteProc;
+begin
+  if fLine[Run] = #0 then
+    NullProc
+  else
+  begin
+    fTokenID := tkString;
+
+    if fRange <> rsOracleQQuoteString then
+    begin
+      fRange := rsOracleQQuoteString;
+      FOracleQQuoteClosingDelimiter := GetOracleQQuoteClosingDelimiter(fLine[Run + 2]);
+      Inc(Run, 3);
+    end;
+
+    while not IsLineEnd(Run) do
+    begin
+      if (fLine[Run] = FOracleQQuoteClosingDelimiter) and (fLine[Run + 1] = #39) then
+      begin
+        Inc(Run, 2);
+        fRange := rsUnknown;
+        FOracleQQuoteClosingDelimiter := #0;
+        Exit;
+      end;
+      Inc(Run);
     end;
   end;
 end;
@@ -1821,7 +1880,7 @@ end;
 
 procedure TSynSQLSyn.VariableProc;
 var
-  I: Integer;
+  I: TSynNativeInt;
   FoundDoubleMinus: Boolean;
 begin
   // MS SQL Server uses @@ to indicate system functions/variables
@@ -1905,6 +1964,8 @@ begin
       end;
     rsString:
       AsciiCharProc;
+    rsOracleQQuoteString:
+      OracleQQuoteProc;
   else
     case fLine[Run] of
       #0: NullProc;
@@ -1924,7 +1985,11 @@ begin
       '`': BacktickProc;
       '[': BracketProc;
       ':', '@': VariableProc;
-      'A'..'Z', 'a'..'z', '_': IdentProc;
+      'A'..'Z', 'a'..'z', '_':
+        if IsOracleQQuoteStart then
+          OracleQQuoteProc
+        else
+          IdentProc;
       '0'..'9': NumberProc;
       #1..#9, #11, #12, #14..#32: SpaceProc;
       '^', '%', '*', '!': SymbolAssignProc;
@@ -1932,7 +1997,7 @@ begin
       else
       begin
         // This will work with ansi and unicode letters, including surrogate pairs
-        if (not FLine[Run].IsLowSurrogate) and Char.IsLetter(FLineStr, Run) then  // Index is 0 based here
+        if (not Char(FLine[Run]).IsLowSurrogate) and Char.IsLetter(FLineStr, ToInt32(Run)) then  // Index is 0 based here
           IdentProc
         else
           UnknownProc;
@@ -1964,7 +2029,7 @@ end;
 
 function TSynSQLSyn.GetRange: Pointer;
 begin
-  Result := Pointer(fRange);
+  Result := Pointer((Ord(fRange) and $FF) or (Ord(FOracleQQuoteClosingDelimiter) shl 8));
 end;
 
 function TSynSQLSyn.GetTokenID: TtkTokenKind;
@@ -2000,7 +2065,7 @@ begin
   end;
 end;
 
-function TSynSQLSyn.GetTokenKind: Integer;
+function TSynSQLSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -2008,11 +2073,16 @@ end;
 procedure TSynSQLSyn.ResetRange;
 begin
   fRange := rsUnknown;
+  FOracleQQuoteClosingDelimiter := #0;
 end;
 
 procedure TSynSQLSyn.SetRange(Value: Pointer);
+var
+  EncodedRange: NativeUInt;
 begin
-  fRange := TRangeState(Value);
+  EncodedRange := NativeUInt(Value);
+  fRange := TRangeState(EncodedRange and $FF);
+  FOracleQQuoteClosingDelimiter := WideChar((EncodedRange shr 8) and $FFFF);
 end;
 
 function TSynSQLSyn.IsFilterStored: Boolean;
@@ -2047,7 +2117,7 @@ begin
   Result := SYNS_LangSQL;
 end;
 
-procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynSQLSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 var
   S: string;
 begin
@@ -2073,7 +2143,7 @@ var
 begin
   for i := 0 to fTableNames.Count - 1 do
   begin
-    S := AnsiLowerCase(fTableNames[i]);
+    S := AnsiLowerCase(fTableNames[I]);
     if not FKeywords.ContainsKey(S) then
       FKeywords.Add(S, tkTableName);
   end;
@@ -2084,9 +2154,9 @@ var
   i: Integer;
   S: string;
 begin
-  for i := 0 to (fFunctionNames.Count - 1) do
+  for i := 0 to fFunctionNames.Count - 1 do
   begin
-    S := AnsiLowerCase(fFunctionNames[i]);
+    S := AnsiLowerCase(fFunctionNames[I]);
     if not FKeywords.ContainsKey(S) then
       FKeywords.Add(S, tkFunction);
   end;
@@ -2097,9 +2167,9 @@ var
   i: Integer;
   S: string;
 begin
-  for i := 0 to (fProcNames.Count - 1) do
+  for i := 0 to fProcNames.Count - 1 do
   begin
-    S := AnsiLowerCase(fProcNames[i]);
+    S := AnsiLowerCase(fProcNames[I]);
     if not FKeywords.ContainsKey(S) then
       FKeywords.Add(S, tkProcName);
   end;
@@ -2107,7 +2177,7 @@ end;
 
 procedure TSynSQLSyn.InitializeKeywordLists;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   FKeywords.Clear;
   fToIdent := nil;
@@ -2275,7 +2345,7 @@ begin
   Result := SYNS_FriendlyLangSQL;
 end;
 
-function TSynSQLSyn.GetKeyWords(TokenKind: Integer): string;
+function TSynSQLSyn.GetKeyWords(TokenKind: TSynNativeInt): string;
 begin
   Result := '';
 

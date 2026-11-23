@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -16,7 +16,7 @@ The Original Code is based on the SynHighlighterHTML.pas, released 2000-04-10 -
 this in turn was based on the hkHTMLSyn.pas file from the mwEdit component suite
 by Martin Waldenburg and other developers, the Initial Author of this file is
 Hideo Koiso.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -63,9 +63,10 @@ uses
   System.Generics.Defaults,
   System.Generics.Collections,
   System.UITypes,
+  SynEditCodeFolding,
   SynEditTypes,
   SynEditHighlighter,
-  SynEditCodeFolding;
+  SynFunc;
 
 type
   TtkTokenKind = (tkComment, tkAtRule, tkProperty, tkSelector, tkSelectorAttrib,
@@ -96,7 +97,7 @@ type
     fImportantPropertyAttri: TSynHighlighterAttributes;
     fAtRuleAttri: TSynHighlighterAttributes;
     FKeywords: TDictionary<string, TtkTokenKind>;
-    procedure DoAddKeyword(AKeyword: string; AKind: Integer);
+    procedure DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure AtRuleProc;
     procedure SelectorProc;
@@ -141,7 +142,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -517,7 +518,7 @@ begin
     Result := tkUndefProperty;
 end;
 
-procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: Integer);
+procedure TSynCssSyn.DoAddKeyword(AKeyword: string; AKind: TSynNativeInt);
 begin
   if not FKeywords.ContainsKey(AKeyword) then
     FKeywords.Add(AKeyword, TtkTokenKind(AKind));
@@ -1041,7 +1042,7 @@ begin
   end;
 end;
 
-function TSynCssSyn.GetTokenKind: Integer;
+function TSynCssSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;

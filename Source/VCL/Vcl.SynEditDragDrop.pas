@@ -74,6 +74,10 @@ type
 
 implementation
 
+uses
+  SynFunc;
+
+
 { TDropTarget }
 
 function TSynDropTarget.DragEnter(const DataObj: IDataObject;
@@ -81,7 +85,7 @@ function TSynDropTarget.DragEnter(const DataObj: IDataObject;
 begin
   Result := S_OK;
   try
-    DragEnter(DataObj, KeysToShiftState(grfKeyState), Pt, dwEffect, Result);
+    DragEnter(DataObj, KeysToShiftState(ToWord(grfKeyState)), Pt, dwEffect, Result);
   except
     Result := E_UNEXPECTED;
   end
@@ -102,7 +106,7 @@ function TSynDropTarget.DragOver(grfKeyState: Integer; pt: TPoint;
 begin
   Result := S_OK;
   try
-    DragOver(KeysToShiftState(grfKeyState), Pt, dwEffect, Result);
+    DragOver(KeysToShiftState(ToWord(grfKeyState)), Pt, dwEffect, Result);
   except
     Result := E_UNEXPECTED;
   end
@@ -113,7 +117,7 @@ function TSynDropTarget.Drop(const DataObj: IDataObject; grfKeyState: Integer;
 begin
   Result := S_OK;
   try
-    Drop(DataObj, KeysToShiftState(grfKeyState), Pt, dwEffect, Result);
+    Drop(DataObj, KeysToShiftState(ToWord(grfKeyState)), Pt, dwEffect, Result);
   except
     Result := E_UNEXPECTED;
   end

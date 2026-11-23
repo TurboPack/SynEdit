@@ -86,7 +86,8 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
   SynEditPrintTypes,
-  SynEditPrinterInfo,
+  Vcl.SynEditPrinterInfo,
+  SynFunc,
   SynUnicodeShared,
   SynDWrite,
   System.Classes,
@@ -147,16 +148,16 @@ type
             // left
     PTop,   // Top position of text in device units (pixels) - this is the top
             // margin minus the top unprintable distance
-    PBottom: Integer; // Bottom position of text in device units (pixels) -
+    PBottom: TSynInt64; // Bottom position of text in device units (pixels) -
                       // calculated form top
     PHeader,          // Header in device units (pixels)
-    PFooter: Integer; // Footer in device units (pixels) - calculated from top
-    PLeftHFTextIndent: Integer;  // Left position of text in header and footer in device
+    PFooter: TSynInt64; // Footer in device units (pixels) - calculated from top
+    PLeftHFTextIndent: TSynInt64;  // Left position of text in header and footer in device
                                  // units (pixels). Calculated as Left margin + LeftHFTextIndent
-    PRightHFTextIndent: Integer; // Right position of text in header and footer in device
+    PRightHFTextIndent: TSynInt64; // Right position of text in header and footer in device
                                  // units (pixels). Calculated from left
-    PHFInternalMargin: Integer;  // Internal margin in device units (pixels)
-    PGutter: Integer; // Binding gutter in device units (pixels)
+    PHFInternalMargin: TSynInt64;  // Internal margin in device units (pixels)
+    PGutter: TSynInt64; // Binding gutter in device units (pixels)
     constructor Create;
     procedure InitPage(TextFormat: TSynTextFormat; PageNum: Integer; PrinterInfo:
         TSynEditPrinterInfo; LineNumbers, LineNumbersInMargin: Boolean; MaxLineNum:
@@ -354,17 +355,17 @@ begin
   if LineNumbers and (not LineNumbersInMargin) then
   begin
     Str:= IntToStr(MaxLineNum) + ': ';
-    Layout := TSynTextLayout.Create(TextFormat, PChar(Str), Str.Length);
-    PLeft := PLeft + Round(Layout.TextMetrics.widthIncludingTrailingWhitespace);
+    Layout := TSynTextLayout.Create(TextFormat, PChar(Str), TSynNativeUInt(Str.Length));
+    PLeft := PLeft + RoundSyn(Layout.TextMetrics.widthIncludingTrailingWhitespace);
   end;
   PTop := MulDiv(PrinterInfo.PixFromTop(FTop), 96, PrinterInfo.YPixPrInch);
   PBottom := MulDiv(PrinterInfo.PrintableHeight - PrinterInfo.PixFromBottom(FBottom), 96, PrinterInfo.YPixPrInch);
   PHeader := MulDiv(PrinterInfo.PixFromTop(FHeader), 96, PrinterInfo.YPixPrInch);
   PFooter := MulDiv(PrinterInfo.PrintableHeight - PrinterInfo.PixFromBottom(FFooter), 96, PrinterInfo.YPixPrInch);
-  PHFInternalMargin := MulDiv(Round(PrinterInfo.YPixPrmm * FHFInternalMargin), 96, PrinterInfo.XPixPrInch);
-  PGutter := MulDiv(Round(PrinterInfo.XPixPrmm * FGutter), 96, PrinterInfo.XPixPrInch);
-  PRightHFTextIndent := PRight - MulDiv(Round(PrinterInfo.XPixPrmm * FRightHFTextIndent), 96, PrinterInfo.XPixPrInch);
-  PLeftHFTextIndent := PLeft + MulDiv(Round(PrinterInfo.XPixPrmm * FLeftHFTextIndent), 96, PrinterInfo.XPixPrInch);
+  PHFInternalMargin := MulDiv(RoundSyn(PrinterInfo.YPixPrmm * FHFInternalMargin), 96, PrinterInfo.XPixPrInch);
+  PGutter := MulDiv(RoundSyn(PrinterInfo.XPixPrmm * FGutter), 96, PrinterInfo.XPixPrInch);
+  PRightHFTextIndent := PRight - MulDiv(RoundSyn(PrinterInfo.XPixPrmm * FRightHFTextIndent), 96, PrinterInfo.XPixPrInch);
+  PLeftHFTextIndent := PLeft + MulDiv(RoundSyn(PrinterInfo.XPixPrmm * FLeftHFTextIndent), 96, PrinterInfo.XPixPrInch);
 end;
 
 // -----------------------------------------------------------------------------

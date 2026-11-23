@@ -1,4 +1,4 @@
-{ -------------------------------------------------------------------------------
+﻿{ -------------------------------------------------------------------------------
   The contents of this file are subject to the Mozilla Public License
   Version 1.1 (the "License"); you may not use this file except in compliance
   with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@
   The Original Code is based on the mwSupportClasses.pas file from the
   mwEdit component suite by Martin Waldenburg and other developers, the Initial
   Author of this file is Michael Hieke.
-  Unicode translation by Ma�l H�rz.
+  Unicode translation by Maël Hörz.
   All Rights Reserved.
 
   Contributors to the SynEdit and mwEdit projects are listed in the
@@ -55,12 +55,13 @@ uses
   Vcl.ImgList,
   Vcl.ExtCtrls,
   Vcl.StdActns,
-  SynDWrite,
+  Vcl.SynDWrite,
   SynEditTypes,
   SynEditSelections,
   SynEditKeyCmds,
   SynEditKeyConstShared,
-  SynUnicodeShared;
+  SynUnicodeShared,
+  SynFunc;
 
 type
   {$REGION 'Selected Color'}
@@ -82,11 +83,11 @@ type
 
   TSynStructureColors = class(TOwnedCollection)
   private
-    function GetColors(Index: Integer): TSynStructureColor;
+    function GetColors(Index: TSynNativeInt): TSynStructureColor;
   protected
     procedure Update(Item: TCollectionItem); override;
   public
-    property Colors[Index: Integer]: TSynStructureColor read GetColors; default;
+    property Colors[Index: TSynNativeInt]: TSynStructureColor read GetColors; default;
   end;
 
   TSynIndentGuides = class(TPersistent)
@@ -135,15 +136,15 @@ type
   TSynGutterBorderStyle = (gbsNone, gbsMiddle, gbsRight);
 
   TGutterBandPaintEvent = procedure(RT: ID2D1RenderTarget; ClipR: TRect;
-    const FirstRow, LastRow: Integer; var DoDefaultPainting: Boolean) of object;
+    const FirstRow, LastRow: TSynNativeInt; var DoDefaultPainting: Boolean) of object;
 
   TGutterBandClickEvent = procedure(Sender: TObject; Button: TMouseButton;
-    X, Y, Row, Line: Integer) of object;
+    X, Y, Row, Line: TSynNativeInt) of object;
 
   TGutterBandContextPopupEvent = procedure(Sender: TObject; MousePos: TPoint;
-    Row, Line: Integer; var Handled: Boolean) of object;
+    Row, Line: TSynNativeInt; var Handled: Boolean) of object;
 
-  TGutterMouseCursorEvent = procedure(Sender: TObject; X, Y, Row, Line: Integer;
+  TGutterMouseCursorEvent = procedure(Sender: TObject; X, Y, Row, Line: TSynNativeInt;
     var Cursor: TCursor) of object;
 
   TSynGutter = class;
@@ -168,20 +169,20 @@ type
     FModifiedColor: TColor;
     FSavedModifiedColor: TColor;
     FOriginalColor: TColor;
-    FWidth: Integer;
+    FWidth: TSynNativeInt;
     procedure SetModifiedColor(const Value: TColor);
     procedure SetOriginalColor(const Value: TColor);
     procedure SetSavedColor(const Value: TColor);
     procedure SetSavedModifiedColor(const Value: TColor);
     procedure SetVisible(const Value: Boolean);
-    procedure SetWidth(const Value: Integer);
+    procedure SetWidth(const Value: TSynNativeInt);
   protected
     function GetOwner: TPersistent; override;
   public
     constructor Create(Gutter: TSynGutter);
     procedure Assign(Source: TPersistent); override;
   published
-    property Width: Integer read FWidth write SetWidth default 4;
+    property Width: TSynNativeInt read FWidth write SetWidth default 4;
     property Visible: Boolean read FVisible write SetVisible default False;
     property SavedColor: TColor read FSavedColor write SetSavedColor
       default $0033AA33;
@@ -199,7 +200,7 @@ type
   private
     FKind: TSynGutterBandKind;
     FVisible: Boolean;
-    FWidth: Integer;
+    FWidth: TSynNativeInt;
     FBackground: TSynGutterBandBackground;
     FOnPaintLines: TGutterBandPaintEvent;
     FOnClick: TGutterBandClickEvent;
@@ -208,48 +209,48 @@ type
     function GetSynGutter: TSynGutter;
     function GetEditor: TComponent;
     procedure DoPaintLines(RT: ID2D1RenderTarget; ClipR: TRect; const FirstRow,
-      LastRow: Integer);
+      LastRow: TSynNativeInt);
     procedure PaintMarks(RT: ID2D1RenderTarget; ClipR: TRect;
-      const FirstRow, LastRow: Integer);
+      const FirstRow, LastRow: TSynNativeInt);
     procedure PaintLineNumbers(RT: ID2D1RenderTarget; ClipR: TRect;
-      const FirstRow, LastRow: Integer);
+      const FirstRow, LastRow: TSynNativeInt);
     procedure PaintFoldShapes(RT: ID2D1RenderTarget; ClipR: TRect;
-      const FirstRow, LastRow: Integer);
+      const FirstRow, LastRow: TSynNativeInt);
     procedure PaintMargin(RT: ID2D1RenderTarget; ClipR: TRect;
-      const FirstRow, LastRow: Integer);
+      const FirstRow, LastRow: TSynNativeInt);
     procedure PaintTrackChanges(RT: ID2D1RenderTarget; ClipR: TRect;
-      const FirstRow, LastRow: Integer);
+      const FirstRow, LastRow: TSynNativeInt);
     procedure SetBackground(const Value: TSynGutterBandBackground);
     procedure SetVisible(const Value: Boolean);
-    procedure SetWidth(const Value: Integer);
+    procedure SetWidth(const Value: TSynNativeInt);
     procedure SetKind(Kind: TSynGutterBandKind);
     procedure SetOnPaintLines(const Value: TGutterBandPaintEvent);
     function IsWidthStored: Boolean;
-    function GetWidth: Integer;
+    function GetWidth: TSynNativeInt;
     function GetVisible: Boolean;
-    function GetLeftX: Integer;
-    function FoldShapeRect(Row, Line: Integer): TRect;
+    function GetLeftX: TSynNativeInt;
+    function FoldShapeRect(Row, Line: TSynNativeInt): TRect;
     function IsVisibleStored: Boolean;
   protected
     function GetDisplayName: string; override;
   public
     constructor Create(Collection: TCollection); override;
     procedure Assign(Source: TPersistent); override;
-    function RealWidth: Integer;
+    function RealWidth: NativeInt;
     procedure PaintLines(RT: ID2D1RenderTarget; ClipR: TRect; const FirstRow, LastRow:
-        Integer);
+        TSynNativeInt);
     procedure DoClick(Sender: TObject; Button: TMouseButton;
-      X, Y, Row, Line: Integer);
-    procedure DoMouseCursor(Sender: TObject; X, Y, Row, Line: Integer;
+      X, Y, Row, Line: TSynNativeInt);
+    procedure DoMouseCursor(Sender: TObject; X, Y, Row, Line: TSynNativeInt;
       var Cursor: TCursor);
-    property LeftX: Integer read GetLeftX;
+    property LeftX: TSynNativeInt read GetLeftX;
     property Editor: TComponent read GetEditor;
     property Gutter: TSynGutter read GetSynGutter;
   published
     property Kind: TSynGutterBandKind read FKind write SetKind;
     property Visible: Boolean read GetVisible write SetVisible
       stored IsVisibleStored;
-    property Width: Integer read GetWidth write SetWidth stored IsWidthStored;
+    property Width: TSynNativeInt read GetWidth write SetWidth stored IsWidthStored;
     property Background: TSynGutterBandBackground read FBackground
       write SetBackground default gbbGutter;
     property OnPaintLines: TGutterBandPaintEvent read FOnPaintLines
@@ -263,11 +264,11 @@ type
 
   TSynBandsCollection = class(TOwnedCollection)
   private
-    function GetBands(Index: Integer): TSynGutterBand;
+    function GetBands(Index: TSynNativeInt): TSynGutterBand;
   protected
     procedure Update(Item: TCollectionItem); override;
   public
-    property Bands[Index: Integer]: TSynGutterBand read GetBands; default;
+    property Bands[Index: TSynNativeInt]: TSynGutterBand read GetBands; default;
   end;
   {$ENDREGION 'Bands'}
 
@@ -277,13 +278,13 @@ type
   TSynGutter = class(TPersistent)
   private
     FOwner: TPersistent; // Synedit
-    FUpdateCount: Integer;
+    FUpdateCount: TSynNativeInt;
     FCurrentPPI: Integer;
     FFont: TFont;
-    FCharWidth: Integer;
+    FCharWidth: NativeInt;
     FColor: TColor;
     FBorderColor: TColor;
-    FDigitCount: Integer;
+    FDigitCount: TSynNativeInt;
     FLeadingZeros: Boolean;
     FZeroStart: Boolean;
     FOnChange: TNotifyEvent;
@@ -292,13 +293,13 @@ type
     FShowLineNumbers: Boolean;
     FUseFontStyle: Boolean;
     FAutoSize: Boolean;
-    FAutoSizeDigitCount: Integer;
+    FAutoSizeDigitCount: TSynNativeInt;
     FBorderStyle: TSynGutterBorderStyle;
-    FLineNumberStart: Integer;
+    FLineNumberStart: TSynNativeInt;
     FGradient: Boolean;
     FGradientStartColor: TColor;
     FGradientEndColor: TColor;
-    FGradientSteps: Integer;
+    FGradientSteps: TSynNativeInt;
     FInternalImage: TSynInternalImage;
     FTrackChanges: TSynTrackChanges;
     FBands: TSynBandsCollection;
@@ -306,7 +307,7 @@ type
     procedure SetAutoSize(const Value: Boolean);
     procedure SetBorderColor(const Value: TColor);
     procedure SetColor(const Value: TColor);
-    procedure SetDigitCount(Value: Integer);
+    procedure SetDigitCount(Value: TSynNativeInt);
     procedure SetLeadingZeros(const Value: Boolean);
     procedure SetShowLineNumbers(const Value: Boolean);
     procedure SetUseFontStyle(Value: Boolean);
@@ -315,11 +316,11 @@ type
     procedure SetFont(Value: TFont);
     procedure FontChanged(Sender: TObject);
     procedure SetBorderStyle(const Value: TSynGutterBorderStyle);
-    procedure SetLineNumberStart(const Value: Integer);
+    procedure SetLineNumberStart(const Value: TSynNativeInt);
     procedure SetGradient(const Value: Boolean);
     procedure SetGradientStartColor(const Value: TColor);
     procedure SetGradientEndColor(const Value: TColor);
-    procedure SetGradientSteps(const Value: Integer);
+    procedure SetGradientSteps(const Value: TSynNativeInt);
     procedure SetBands(const Value: TSynBandsCollection);
     function GetInternalImage: TSynInternalImage;
     function GetBandByKind(Kind: TSynGutterBandKind): TSynGutterBand;
@@ -335,9 +336,9 @@ type
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure AutoSizeDigitCount;
-    function FormatLineNumber(Line: Integer): string;
-    function RealGutterWidth: Integer;
-    function BandAtX(X: Integer): TSynGutterBand;
+    function FormatLineNumber(ALine: TSynNativeInt): string;
+    function RealGutterWidth: TSynNativeInt;
+    function BandAtX(X: TSynNativeInt): TSynGutterBand;
     // ++ DPI-Aware
     procedure ChangeScale(M, D: Integer); virtual;
     // -- DPI-Aware
@@ -352,7 +353,7 @@ type
     property BorderColor: TColor read FBorderColor write SetBorderColor
       default clWindow;
     property Cursor: TCursor read FCursor write FCursor default crDefault;
-    property DigitCount: Integer read FDigitCount write SetDigitCount default 4;
+    property DigitCount: TSynNativeInt read FDigitCount write SetDigitCount default 4;
     property Font: TFont read FFont write SetFont;
     property ShowLineNumbers: Boolean read FShowLineNumbers
       write SetShowLineNumbers default False;
@@ -363,14 +364,14 @@ type
     property Visible: Boolean read FVisible write SetVisible default True;
     property ZeroStart: Boolean read FZeroStart write SetZeroStart
       default False;
-    property LineNumberStart: Integer read FLineNumberStart
+    property LineNumberStart: TSynNativeInt read FLineNumberStart
       write SetLineNumberStart default 1;
     property Gradient: Boolean read FGradient write SetGradient default False;
     property GradientStartColor: TColor read FGradientStartColor
       write SetGradientStartColor default clWindow;
     property GradientEndColor: TColor read FGradientEndColor
       write SetGradientEndColor default clBtnFace;
-    property GradientSteps: Integer read FGradientSteps write SetGradientSteps
+    property GradientSteps: TSynNativeInt read FGradientSteps write SetGradientSteps
       default 48;
     property TrackChanges: TSynTrackChanges read FTrackChanges
       write FTrackChanges;
@@ -387,19 +388,19 @@ type
     FDrawBookmarksFirst: Boolean;
     FEnableKeys: Boolean;
     FGlyphsVisible: Boolean;
-    FLeftMargin: Integer;
+    FLeftMargin: TSynNativeInt;
     FOwner: TComponent;
-    FXoffset: Integer;
+    FXoffset: TSynNativeInt;
     FOnChange: TNotifyEvent;
     procedure SetBookmarkImages(const Value: TCustomImageList);
     procedure SetDrawBookmarksFirst(Value: Boolean);
     procedure SetGlyphsVisible(Value: Boolean);
-    procedure SetLeftMargin(Value: Integer);
-    procedure SetXOffset(Value: Integer);
+    procedure SetLeftMargin(Value: TSynNativeInt);
+    procedure SetXOffset(Value: TSynNativeInt);
   public
     constructor Create(AOwner: TComponent);
     procedure Assign(Source: TPersistent); override;
-    procedure ChangeScale(M, D: Integer); virtual;
+    procedure ChangeScale(M, D: TSynNativeInt); virtual;
   published
     property BookmarkImages: TCustomImageList read FBookmarkImages
       write SetBookmarkImages;
@@ -409,8 +410,8 @@ type
       default True;
     property GlyphsVisible: Boolean read FGlyphsVisible write SetGlyphsVisible
       default True;
-    property LeftMargin: Integer read FLeftMargin write SetLeftMargin default 2;
-    property Xoffset: Integer read FXoffset write SetXOffset default 12;
+    property LeftMargin: TSynNativeInt read FLeftMargin write SetLeftMargin default 2;
+    property Xoffset: TSynNativeInt read FXoffset write SetXOffset default 12;
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
@@ -428,7 +429,7 @@ type
   private
     FVisible: Boolean;
     FInternalGlyph, FGlyph: TBitmap;
-    FPPI: Cardinal;
+    FPPI: Integer;
     FOnChange: TNotifyEvent;
     procedure SetGlyph(Value: TBitmap);
     procedure Changed;
@@ -461,15 +462,15 @@ type
   TSynInternalImage = class(TObject)
   private
     FImages: TBitmap;
-    FWidth: Integer;
-    FHeight: Integer;
-    FPPI: Integer;
-    FCount: Integer;
+    FWidth: TSynNativeInt;
+    FHeight: TSynNativeInt;
+    FPPI: TSynNativeInt;
+    FCount: TSynNativeInt;
   public
-    constructor Create(aModule: THandle; const Name: string; Count: Integer);
+    constructor Create(aModule: THandle; const Name: string; Count: TSynNativeInt);
     destructor Destroy; override;
-    procedure Draw(RT: ID2D1RenderTarget; Number, X, Y, LineHeight: Integer);
-    procedure ChangeScale(M, D: Integer); virtual;
+    procedure Draw(RT: ID2D1RenderTarget; Number, X, Y, LineHeight: TSynNativeInt);
+    procedure ChangeScale(M, D: TSynNativeInt); virtual;
   end;
 
   {$ENDREGION 'TSynInternalImage'}
@@ -545,13 +546,13 @@ type
 
   TSynIndicator = record
     Id: TGUID;
-    CharStart, CharEnd: Integer;
-    Tag: NativeInt;  // for storing user data
+    CharStart, CharEnd: TSynNativeInt;
+    Tag: TSynNativeInt;  // for storing user data
     KeepOnLineChange: Boolean; // do not remove when line change but adjust CharStart/End
-    constructor Create(aId: TGUID; aCharStart, aCharEnd: Integer;
-      aTag: NativeInt = 0; aKeepOnLineChange: Boolean = False);
-    class function New(aId: TGUID; aCharStart, aCharEnd: Integer;
-      aTag: NativeInt = 0; aKeepOnLineChange: Boolean = False): TSynIndicator; static;
+    constructor Create(aId: TGUID; aCharStart, aCharEnd: TSynNativeInt;
+      aTag: TSynNativeInt = 0; aKeepOnLineChange: Boolean = False);
+    class function New(aId: TGUID; aCharStart, aCharEnd: TSynNativeInt;
+      aTag: TSynNativeInt = 0; aKeepOnLineChange: Boolean = False): TSynIndicator; static;
     class operator Equal(const A, B: TSynIndicator): Boolean;
   end;
 
@@ -559,26 +560,26 @@ type
   private
     FOwner: TCustomControl;
     FRegister: TDictionary<TGUID, TSynIndicatorSpec>;
-    FList: TDictionary<Integer, TArray<TSynIndicator>>;
-    procedure InvalidateIndicator(Line: Integer; const Indicator: TSynIndicator);
+    FList: TDictionary<TSynNativeInt, TArray<TSynIndicator>>;
+    procedure InvalidateIndicator(Line: TSynNativeInt; const Indicator: TSynIndicator);
   public
     constructor Create(Owner: TCustomControl);
     destructor Destroy; override;
     procedure RegisterSpec(Id: TGUID; Spec: TSynIndicatorSpec);
     function GetSpec(const Id: TGUID): TSynIndicatorSpec;
-    procedure Add(Line: Integer; const Indicator: TSynIndicator; Invalidate: Boolean = True);
+    procedure Add(Line: TSynNativeInt; const Indicator: TSynIndicator; Invalidate: Boolean = True);
     // Clears all indicators
     procedure Clear; overload;
     // Clears all indicators with a given Id
-    procedure Clear(const Id: TGUID; Invalidate: Boolean = True; Line: Integer = -1);
+    procedure Clear(const Id: TGUID; Invalidate: Boolean = True; Line: TSynNativeInt = -1);
         overload;
     // Clears just one indicator
-    procedure Clear(Line: Integer; const Indicator: TSynIndicator); overload;
+    procedure Clear(Line: TSynNativeInt; const Indicator: TSynIndicator); overload;
     // Returns the indicators of a given line
-    function LineIndicators(Line: Integer): TArray<TSynIndicator>;
+    function LineIndicators(Line: TSynNativeInt): TArray<TSynIndicator>;
     // Get all indicatoros of with a given Id or an array of Ids
-    function GetById(const Id: TGUID): TArray<TPair<Integer, TSynIndicator>>; overload;
-    function GetById(const Ids: TArray<TGUID>): TArray<TPair<Integer, TSynIndicator>>; overload;
+    function GetById(const Id: TGUID): TArray<TPair<TSynNativeInt, TSynIndicator>>; overload;
+    function GetById(const Ids: TArray<TGUID>): TArray<TPair<TSynNativeInt, TSynIndicator>>; overload;
     // Return the indicator at a given buffer or window position
     function IndicatorAtPos(Pos: TBufferCoord; const Id: TGUID; var Indicator: TSynIndicator): Boolean; overload;
     function IndicatorAtPos(Pos: TBufferCoord; const Ids: TArray<TGUID>; var Indicator: TSynIndicator): Boolean; overload;
@@ -586,11 +587,11 @@ type
     function IndicatorAtMousePos(MousePos: TPoint; const Id: TGUID; var Indicator: TSynIndicator): Boolean; overload;
     function IndicatorAtMousePos(MousePos: TPoint; var Indicator: TSynIndicator): Boolean; overload;
     // Should only used by Synedit
-    procedure LinesInserted(FirstLine, Count: Integer);
-    procedure LinesDeleted(FirstLine, Count: Integer);
-    procedure LinePut(aIndex: Integer; const OldLine: string);
+    procedure LinesInserted(FirstLine, Count: TSynNativeInt);
+    procedure LinesDeleted(FirstLine, Count: TSynNativeInt);
+    procedure LinePut(aIndex: TSynNativeInt; const OldLine: string);
     class procedure Paint(RT: ID2D1RenderTarget; Spec: TSynIndicatorSpec; const
-        ClipR: TRect; StartOffset: Integer);
+        ClipR: TRect; StartOffset: TSynNativeInt);
   end;
   {$ENDREGION 'TSynIndicators'}
 
@@ -625,7 +626,7 @@ type
     procedure Blink(Sender: TObject);
     procedure InvertCarets;
   public
-    CaretSize: Integer; // is DPI scaled
+    CaretSize: TSynNativeInt; // is DPI scaled
     Shape: TCaretShape;
     CaretRects: TList<TRect>;
     constructor Create(Canvas: TCanvas);
@@ -668,7 +669,7 @@ type
     sbpSecondRight, sbpRight, sbpFullWidth);
 
   TScrollbarAnnotationInfoEvent = procedure(Sender: TObject;
-    AnnType: TSynScrollbarAnnType; var Rows: TArray<Integer>;
+    AnnType: TSynScrollbarAnnType; var Rows: TArray<TSynNativeInt>;
     var Colors: TArray<TColor>) of object;
 
   TSynScrollbarAnnItem = class(TCollectionItem)
@@ -682,7 +683,7 @@ type
   public
     constructor Create(Collection: TCollection); override;
     procedure Assign(Source: TPersistent); override;
-    procedure GetInfo(out Rows: TArray<Integer>; out Colors: TArray<TColor>);
+    procedure GetInfo(out Rows: TArray<TSynNativeInt>; out Colors: TArray<TColor>);
   published
     property AnnType: TSynScrollbarAnnType read FAnnType write FAnnType;
     property AnnPos: TSynScrollbarAnnPos read FAnnPos write FAnnPos;
@@ -697,13 +698,12 @@ type
 
   TSynScrollbarAnnotations = class(TOwnedCollection)
   private
-    function GetAnnotations(Index: Integer): TSynScrollbarAnnItem;
+    function GetAnnotations(Index: TSynNativeInt): TSynScrollbarAnnItem;
   protected
     procedure Update(Item: TCollectionItem); override;
   public
     procedure SetDefaultAnnotations;
-    property Annotations[Index: Integer]: TSynScrollbarAnnItem
-      read GetAnnotations; default;
+    property Annotations[Index: TSynNativeInt]: TSynScrollbarAnnItem read GetAnnotations; default;
   end;
 
   {$ENDREGION 'Scrollbar Annotations'}
@@ -714,11 +714,17 @@ type
   private
     FEnabled: Boolean;
     FColor: TColor;
+    FBreakColor: TColor;
+    FContinueColor: TColor;
+  public
+    function GetColorForControl(FC: TSynFlowControl): TColor;
   published
     constructor Create;
     procedure Assign(aSource: TPersistent); override;
     property Enabled: Boolean read FEnabled write FEnabled default True;
-    property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed
+    property Color: TColor read FColor write FColor default $0045FF; //clWebOrangeRed (exit)
+    property BreakColor: TColor read FBreakColor write FBreakColor default $0045FF;
+    property ContinueColor: TColor read FContinueColor write FContinueColor default $0045FF;
   end;
 
    {$ENDREGION 'TSynDisplayFlowControl'}
@@ -737,10 +743,10 @@ type
     FHideSelection: Boolean;
     FWantTabs: Boolean;
     FWordWrap: Boolean;
-    FMaxUndo: Integer;
-    FExtraLineSpacing: Integer;
+    FMaxUndo: TSynNativeInt;
+    FExtraLineSpacing: TSynNativeInt;
     FTabWidth: Integer;
-    FRightEdge: Integer;
+    FRightEdge: TSynNativeInt;
     FSelectedColor: TSynSelectedColor;
     FIndentGuides: TSynIndentGuides;
     FDisplayFlowControl: TSynDisplayFlowControl;
@@ -773,10 +779,10 @@ type
     property BookmarkOptions: TSynBookmarkOpt read FBookmarks write SetBookmarks;
     property Color: TColor read FColor write FColor default clWindow;
     property Font: TFont read FFont write SetFont;
-    property ExtraLineSpacing: Integer read FExtraLineSpacing
+    property ExtraLineSpacing: TSynNativeInt read FExtraLineSpacing
       write FExtraLineSpacing default 2;
     property Gutter: TSynGutter read FSynGutter write SetSynGutter;
-    property RightEdge: Integer read FRightEdge write FRightEdge default 80;
+    property RightEdge: TSynNativeInt read FRightEdge write FRightEdge default 80;
     property RightEdgeColor: TColor read FRightEdgeColor write FRightEdgeColor
       default clSilver;
     property WantTabs: Boolean read FWantTabs write FWantTabs default True;
@@ -787,7 +793,7 @@ type
       write FOverwriteCaret default ctBlock;
     property HideSelection: Boolean read FHideSelection write FHideSelection
       default False;
-    property MaxUndo: Integer read FMaxUndo write FMaxUndo default 0;
+    property MaxUndo: TSynNativeInt read FMaxUndo write FMaxUndo default 0;
     property SelectedColor: TSynSelectedColor read FSelectedColor;
     property IndentGuides: TSynIndentGuides read FIndentGuides;
     property DisplayFlowControl: TSynDisplayFlowControl read FDisplayFlowControl;
@@ -847,7 +853,7 @@ begin
 end;
 
 constructor TSynGutter.Create;
-  procedure AddBand(AKind: TSynGutterBandKind; AWidth: Integer;
+  procedure AddBand(AKind: TSynGutterBandKind; AWidth: TSynNativeInt;
     IsVisible: Boolean);
   begin
     with FBands.Add as TSynGutterBand do
@@ -864,7 +870,11 @@ begin
   FFont := TFont.Create;
   FFont.Name := DefaultFontName;
   FFont.Style := [];
+{$IF COMPILERVERSION <= 33}
+  FFont.PixelsPerInch := Screen.PixelsPerInch;
+{$ELSE}
   FFont.PixelsPerInch := Screen.DefaultPixelsPerInch;
+{$ENDIF}
   FFont.Size := 8;
   {$IF CompilerVersion >= 36}
   FFont.IsScreenFont := True;
@@ -967,14 +977,14 @@ end;
 
 procedure TSynGutter.AutoSizeDigitCount;
 var
-  nDigits: Integer;
+  nDigits: TSynNativeInt;
   SynEdit: TCustomSynEdit;
-  LinesCount: Integer;
+  LinesCount: TSynNativeInt;
 begin
   SynEdit := TCustomSynEdit(FOwner);
   if Assigned(SynEdit) and FAutoSize then
   begin
-    LinesCount := SynEdit.Lines.Count;
+    LinesCount := SynEdit.Lines.CountNative;
     if FZeroStart then
       Dec(LinesCount)
     else if FLineNumberStart > 1 then
@@ -991,9 +1001,9 @@ begin
     FAutoSizeDigitCount := FDigitCount;
 end;
 
-function TSynGutter.BandAtX(X: Integer): TSynGutterBand;
+function TSynGutter.BandAtX(X: TSynNativeInt): TSynGutterBand;
 var
-  I, L: Integer;
+  I, L: TSynNativeInt;
   Band: TSynGutterBand;
 begin
   Result := nil;
@@ -1014,27 +1024,36 @@ begin
   Inc(FUpdateCount);
 end;
 
-function TSynGutter.FormatLineNumber(Line: Integer): string;
+function TSynGutter.FormatLineNumber(ALine: TSynNativeInt): string;
 var
-  I: Integer;
+  lBuilder: TStringBuilder;
+  lCount: Integer;
 begin
   if FZeroStart then
-    Dec(Line)
+    Dec(ALine)
   else if FLineNumberStart > 1 then
-    Inc(Line, FLineNumberStart - 1);
-  Result := Format('%*d', [FAutoSizeDigitCount, Line]);
+    Inc(ALine, FLineNumberStart - 1);
+  Result := Format('%*d', [FAutoSizeDigitCount, ALine]);
   if FLeadingZeros then
-    for I := 1 to FAutoSizeDigitCount - 1 do
-    begin
-      if (Result[I] <> ' ') then
-        Break;
-      Result[I] := '0';
+  begin
+    lBuilder := TStringBuilder.Create(Result);
+    try
+      for lCount := 0 to ToInt32(FAutoSizeDigitCount) - 2 do
+      begin
+        if lBuilder[lCount] <> ' ' then
+          Break;
+        lBuilder[lCount] := '0';
+      end;
+      Result := lBuilder.ToString;
+    finally
+      lBuilder.Free;
     end;
+  end;
 end;
 
-function TSynGutter.RealGutterWidth: Integer;
+function TSynGutter.RealGutterWidth: TSynNativeInt;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   Result := 0;
   if FVisible and Assigned(FOwner) then
@@ -1090,13 +1109,20 @@ begin
   finally
     TempFont.Free;
   end;
-  FCharWidth := FTextFormat.CharWidth;
+  FCharWidth := NativeInt(FTextFormat.CharWidth);
   Changed;
 end;
 
-procedure TSynGutter.SetDigitCount(Value: Integer);
+procedure TSynGutter.SetDigitCount(Value: TSynNativeInt);
 begin
-  Value := MinMax(Value, 2, 12);
+  // Upper bound raised from 12: with OnGutterGetText the line number band can
+  // hold arbitrary text (hex offsets, symbol names), and gbkLineNumbers.RealWidth
+  // is computed from DigitCount rather than from the text the event returns, so
+  // anything longer is clipped. A 16 digit offset needs DigitCount = 16.
+  // Nothing here depends on the value: it only feeds a Max(), a Format('%*d')
+  // and one multiplication. Raised rather than removed so that a typo cannot
+  // blow up the gutter.
+  Value := MinMax(Value, 2, 24);
   if FDigitCount <> Value then
   begin
     FDigitCount := Value;
@@ -1157,7 +1183,7 @@ begin
   Changed;
 end;
 
-procedure TSynGutter.SetLineNumberStart(const Value: Integer);
+procedure TSynGutter.SetLineNumberStart(const Value: TSynNativeInt);
 begin
   if Value <> FLineNumberStart then
   begin
@@ -1214,7 +1240,7 @@ begin
   end;
 end;
 
-procedure TSynGutter.SetGradientSteps(const Value: Integer);
+procedure TSynGutter.SetGradientSteps(const Value: TSynNativeInt);
 begin
   if Value <> FGradientSteps then
   begin
@@ -1227,7 +1253,7 @@ end;
 
 function TSynGutter.GetBandByKind(Kind: TSynGutterBandKind): TSynGutterBand;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   Result := nil;
   for I := 0 to Bands.Count - 1 do
@@ -1258,7 +1284,7 @@ end;
 
 {$REGION 'TSynBookmarkOpt'}
 
-procedure TSynBookmarkOpt.ChangeScale(M, D: Integer);
+procedure TSynBookmarkOpt.ChangeScale(M, D: TSynNativeInt);
 begin
   FLeftMargin := MulDiv(FLeftMargin, M, D);
   FXoffset := MulDiv(FXoffset, M, D);
@@ -1327,7 +1353,7 @@ begin
   end;
 end;
 
-procedure TSynBookmarkOpt.SetLeftMargin(Value: Integer);
+procedure TSynBookmarkOpt.SetLeftMargin(Value: TSynNativeInt);
 begin
   if FLeftMargin <> Value then
   begin
@@ -1337,7 +1363,7 @@ begin
   end;
 end;
 
-procedure TSynBookmarkOpt.SetXOffset(Value: Integer);
+procedure TSynBookmarkOpt.SetXOffset(Value: TSynNativeInt);
 begin
   if FXoffset <> Value then
   begin
@@ -1368,7 +1394,11 @@ begin
     FInternalGlyph.AlphaFormat := afDefined;
   end;
 
+{$IF COMPILERVERSION <= 33}
+  FPPI := Screen.PixelsPerInch;
+{$ELSE}
   FPPI := Screen.DefaultPixelsPerInch;
+{$ENDIF}
 
   FVisible := True;
   FGlyph := TBitmap.Create;
@@ -1445,26 +1475,23 @@ end;
 
 {$ENDREGION}
 
-
-
-
 {$REGION 'TSynInternalImage'}
 
 type
   TInternalResource = class(TObject)
   public
-    UsageCount: Integer;
+    UsageCount: TSynNativeInt;
     Name: string;
     Bitmap: TBitmap;
   end;
 
-procedure TSynInternalImage.ChangeScale(M, D: Integer);
+procedure TSynInternalImage.ChangeScale(M, D: TSynNativeInt);
 begin
   FPPI := M; // As Delphi does
 end;
 
 constructor TSynInternalImage.Create(aModule: THandle; const Name: string;
-  Count: Integer);
+  Count: TSynNativeInt);
 begin
   inherited Create;
   FPPI := 96;
@@ -1483,9 +1510,9 @@ begin
 end;
 
 procedure TSynInternalImage.Draw(RT: ID2D1RenderTarget;
-  Number, X, Y, LineHeight: Integer);
+  Number, X, Y, LineHeight: TSynNativeInt);
 var
-  ScaledW, ScaledH: Integer;
+  ScaledW, ScaledH: TSynNativeInt;
   rcSrc, rcDest: TRectF;
   BM: ID2D1Bitmap;
 begin
@@ -1494,9 +1521,15 @@ begin
     ScaledW := MulDiv(FWidth, FPPI, 96);
     ScaledH := MulDiv(FHeight, FPPI, 96);
 
+  {$IF COMPILERVERSION <= 30}
+    rcSrc := TRectF.Create(Rect(Number * FWidth, 0, (Number + 1) * FWidth, FHeight));
+    rcDest := TRectF.Create(Rect(0, 0, ScaledW, ScaledH));
+    rcDest := rcDest.FitInto(TRectF.Create(Rect(X, Y, X + ScaledW, Y + LineHeight)));
+  {$ELSE}
     rcSrc := Rect(Number * FWidth, 0, (Number + 1) * FWidth, FHeight);
     rcDest := Rect(0, 0, ScaledW, ScaledH);
-    rcDest := rcDest.FitInto(Rect(X, Y, X + ScaledW, Y + LineHeight)).Round;
+    rcDest := rcDest.FitInto(Rect(X, Y, X + ScaledW, Y + LineHeight));
+  {$ENDIF}
 
     BM := D2D1BitmapFromBitmap(FImages, RT);
     RT.DrawBitmap(BM, PD2D1RectF(@rcDest), 1,
@@ -1759,10 +1792,11 @@ begin
 end;
 
 procedure TSynGutterBand.DoClick(Sender: TObject; Button: TMouseButton;
-  X, Y, Row, Line: Integer);
+  X, Y, Row, Line: TSynNativeInt);
 var
   SynEdit: TCustomSynEdit;
-  Index, I, BmkX, BmkY: Integer;
+  Index: TSynNativeInt;
+  I, BmkX, BmkY: Integer;
   rcFold: TRect;
 begin
   SynEdit := TCustomSynEdit(Editor);
@@ -1798,10 +1832,10 @@ begin
 end;
 
 procedure TSynGutterBand.DoMouseCursor(Sender: TObject;
-  X, Y, Row, Line: Integer; var Cursor: TCursor);
+  X, Y, Row, Line: TSynNativeInt; var Cursor: TCursor);
 var
   SynEdit: TCustomSynEdit;
-  Index: Integer;
+  Index: TSynNativeInt;
   rcFold: TRect;
 begin
   if Visible and (FKind = gbkFold) then
@@ -1820,7 +1854,7 @@ begin
 end;
 
 procedure TSynGutterBand.DoPaintLines(RT: ID2D1RenderTarget; ClipR: TRect;
-    const FirstRow, LastRow: Integer);
+    const FirstRow, LastRow: TSynNativeInt);
 // Drawing of builtin bands
 begin
   case FKind of
@@ -1837,14 +1871,15 @@ begin
   end;
 end;
 
-function TSynGutterBand.FoldShapeRect(Row, Line: Integer): TRect;
+function TSynGutterBand.FoldShapeRect(Row, Line: TSynNativeInt): TRect;
 // Given that WordWrap and CodeFolding are mutally exclusive Row = Line
 // But at some point this could be relaxed
 var
   SynEdit: TCustomSynEdit;
-  L, Index: Integer;
-  ShapeSize: Integer;
-  Margin: Integer;
+  L: TSynNativeInt;
+  Index: TSynNativeInt;
+  ShapeSize: TSynNativeInt;
+  Margin: TSynNativeInt;
 begin
   Result := TRect.Empty;
   if not Visible or (FKind <> gbkFold) then
@@ -1863,7 +1898,7 @@ begin
     Result.TopLeft := Point(L + Margin, (Row - SynEdit.TopLine) *
       SynEdit.LineHeight + (SynEdit.LineHeight - ShapeSize) div 2);
     Result.BottomRight := Result.TopLeft;
-    Result.BottomRight.Offset(ShapeSize, ShapeSize);
+    Result.BottomRight.Offset(Point(ShapeSize, ShapeSize));
   end;
 end;
 
@@ -1881,9 +1916,9 @@ begin
     Result := nil;
 end;
 
-function TSynGutterBand.GetLeftX: Integer;
+function TSynGutterBand.GetLeftX: TSynNativeInt;
 var
-  I, L: Integer;
+  I, L: TSynNativeInt;
   Band: TSynGutterBand;
 begin
   Result := -1;
@@ -1921,7 +1956,7 @@ begin
   end;
 end;
 
-function TSynGutterBand.GetWidth: Integer;
+function TSynGutterBand.GetWidth: TSynNativeInt;
 begin
   case FKind of
     gbkLineNumbers, gbkFold, gbkTrackChanges:
@@ -1943,19 +1978,19 @@ begin
 end;
 
 procedure TSynGutterBand.PaintFoldShapes(RT: ID2D1RenderTarget; ClipR: TRect;
-    const FirstRow, LastRow: Integer);
+    const FirstRow, LastRow: TSynNativeInt);
 var
   SynEdit: TCustomSynEdit;
-  vLine: Integer;
-  cRow: Integer;
+  vLine: TSynNativeInt;
+  cRow: TSynNativeInt;
   rcFold: TRect;
-  X, Y: Integer;
+  X, Y: TSynNativeInt;
   FoldRange: TSynFoldRange;
-  Index: Integer;
-  Margin: Integer;
-  PMMargin: Integer;
-  ShapeSize: Integer;
-  PPI: Integer;
+  Index: TSynNativeInt;
+  Margin: TSynNativeInt;
+  PMMargin: TSynNativeInt;
+  ShapeSize: TSynNativeInt;
+  PPI: TSynNativeInt;
   Brush: ID2D1Brush;
 begin
   SynEdit := TCustomSynEdit(Editor);
@@ -1976,7 +2011,7 @@ begin
     for cRow := FirstRow to LastRow do
     begin
       vLine := SynEdit.RowToLine(cRow);
-      if (vLine > SynEdit.Lines.Count) { and not (SynEdit.Lines.Count = 0) }
+      if (vLine > SynEdit.Lines.CountNative) { and not (SynEdit.Lines.CountNative = 0) }
       then
         Break;
 
@@ -1984,7 +2019,7 @@ begin
         SynEdit.LineHeight + (SynEdit.LineHeight - ShapeSize) div 2);
       rcFold.BottomRight := rcFold.TopLeft;
       // Direct2D includes both the first and the last point in the rectangle!
-      rcFold.BottomRight.Offset(ShapeSize - 1, ShapeSize - 1);
+      rcFold.BottomRight.Offset(Point(ShapeSize - 1, ShapeSize - 1));
 
       // Any fold ranges beginning on this line?
       if SynEdit.AllFoldRanges.FoldStartAtLine(vLine, Index) then
@@ -2048,13 +2083,13 @@ begin
 end;
 
 procedure TSynGutterBand.PaintLineNumbers(RT: ID2D1RenderTarget; ClipR: TRect;
-    const FirstRow, LastRow: Integer);
+    const FirstRow, LastRow: TSynNativeInt);
 var
   SynEdit: TCustomSynEdit;
-  Row, Line: Integer;
-  LineTop: Integer;
+  Row, Line: TSynNativeInt;
+  LineTop: TSynNativeInt;
   LineRect: TRect;
-  PPI: Integer;
+  PPI: TSynNativeInt;
   S: string;
   TextFormat: TSynTextFormat;
   WordWrapGlyph: ID2D1Bitmap;
@@ -2098,14 +2133,23 @@ begin
     then
     begin
       // paint wrapped line glyphs
+    {$IF COMPILERVERSION <= 30}
+      RectF := TRectF.Create(LineRect);
+      RectF := TRectF.Create(Rect(0, 0, 0, 0));
+    {$ELSE}
       RectF := LineRect;
       RectF := Rect(0, 0, 0, 0);
+    {$ENDIF}
       RectF.Size := SynEdit.WordWrapGlyph.Size;
       RectF.Offset(LineRect.Left + LineRect.Width - RectF.Width,
         LineRect.Top + (LineRect.Height - RectF.Height) / 2);
       if not LineRect.Contains(RectF.Round) then
       begin
+      {$IF COMPILERVERSION <= 30}
+        RectF := RectF.FitInto(TRectF.Create(LineRect));
+      {$ELSE}
         RectF := RectF.FitInto(LineRect);
+      {$ENDIF}
         RectF.Offset(LineRect.Right - RectF.Right, 0);
       end;
       RT.DrawBitmap(WordWrapGlyph, PD2D1RectF(@RectF), 1000);
@@ -2116,7 +2160,7 @@ begin
       S := Gutter.FormatLineNumber(Line);
       if Assigned(SynEdit.OnGutterGetText) then
         SynEdit.OnGutterGetText(SynEdit, Line, S);
-      RT.DrawText(PChar(S), S.Length, TextFormat.IDW, LineRect,
+      RT.DrawText(PChar(S), UINT(S.Length), TextFormat.IDW, LineRect,
         TSynDWrite.SolidBrush(FontColor),
         D2D1_DRAW_TEXT_OPTIONS_CLIP +
         IfThen(TOSVersion.Check(6,3), D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT, 0),
@@ -2132,7 +2176,7 @@ begin
 end;
 
 procedure TSynGutterBand.PaintLines(RT: ID2D1RenderTarget; ClipR: TRect; const
-    FirstRow, LastRow: Integer);
+    FirstRow, LastRow: TSynNativeInt);
 var
   DoDefault: Boolean;
 begin
@@ -2144,9 +2188,9 @@ begin
 end;
 
 procedure TSynGutterBand.PaintMargin(RT: ID2D1RenderTarget; ClipR: TRect; const
-    FirstRow, LastRow: Integer);
+    FirstRow, LastRow: TSynNativeInt);
 var
-  Offset: Integer;
+  Offset: TSynNativeInt;
 begin
   if (Gutter.BorderStyle <> gbsNone) then
   begin
@@ -2164,14 +2208,14 @@ begin
 end;
 
 procedure TSynGutterBand.PaintMarks(RT: ID2D1RenderTarget; ClipR: TRect; const
-    FirstRow, LastRow: Integer);
+    FirstRow, LastRow: TSynNativeInt);
 var
   SynEdit: TCustomSynEdit;
 
-  procedure DrawMark(aMark: TSynEditMark; var aGutterOff: Integer;
-    aMarkRow: Integer);
+  procedure DrawMark(aMark: TSynEditMark; var aGutterOff: TSynNativeInt;
+    aMarkRow: TSynNativeInt);
   var
-    VOffset: Integer;
+    VOffset: TSynNativeInt;
     ScaleF: Single;
   begin
     if (not aMark.InternalImage) and
@@ -2206,13 +2250,13 @@ var
   end;
 
 var
-  vFirstLine: Integer;
-  vLastLine: Integer;
-  cMark: Integer;
-  vMarkRow: Integer;
-  aGutterOffs: TArray<Integer>;
+  vFirstLine: TSynNativeInt;
+  vLastLine: TSynNativeInt;
+  cMark: TSynNativeInt;
+  vMarkRow: TSynNativeInt;
+  aGutterOffs: TArray<TSynNativeInt>;
   bHasOtherMarks: Boolean;
-  Index: Integer;
+  Index: TSynNativeInt;
 begin
   SynEdit := TCustomSynEdit(Editor);
   Assert(Assigned(SynEdit));
@@ -2230,7 +2274,7 @@ begin
     for cMark := 0 to SynEdit.Marks.Count - 1 do
       with SynEdit.Marks[cMark] do
         if Visible and (Line >= vFirstLine) and (Line <= vLastLine) and
-          (Line <= SynEdit.Lines.Count) and
+          (Line <= SynEdit.Lines.CountNative) and
           not (SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
           (Line, Index)) then
         begin
@@ -2251,7 +2295,7 @@ begin
           if Visible and
             (IsBookmark <> SynEdit.BookMarkOptions.DrawBookmarksFirst) and
             (Line >= vFirstLine) and (Line <= vLastLine) and
-            (Line <= SynEdit.Lines.Count) and
+            (Line <= SynEdit.Lines.CountNative) and
             not (SynEdit.UseCodeFolding and SynEdit.AllFoldRanges.FoldHidesLine
             (Line, Index)) then
           begin
@@ -2265,13 +2309,13 @@ begin
 end;
 
 procedure TSynGutterBand.PaintTrackChanges(RT: ID2D1RenderTarget; ClipR: TRect;
-  const FirstRow, LastRow: Integer);
+  const FirstRow, LastRow: TSynNativeInt);
 var
   SynEdit: TCustomSynEdit;
-  Row, Line: Integer;
-  LineTop: Integer;
+  Row, Line: TSynNativeInt;
+  LineTop: TSynNativeInt;
   LineRect: TRect;
-  PPI: Integer;
+  PPI: TSynNativeInt;
   Color: TColor;
   Flags: TSynLineChangeFlags;
 begin
@@ -2283,7 +2327,7 @@ begin
   for Row := FirstRow to LastRow do
   begin
     Line := SynEdit.RowToLine(Row);
-    if (Line < 1) or (Line > SynEdit.Lines.Count) then Continue;
+    if (Line < 1) or (Line > SynEdit.Lines.CountNative) then Continue;
 
     LineTop := (Row - SynEdit.TopLine) * SynEdit.LineHeight;
     Flags := TSynEditStringList(SynEdit.Lines).ChangeFlags[Line - 1];
@@ -2306,9 +2350,9 @@ begin
   end;
 end;
 
-function TSynGutterBand.RealWidth: Integer;
+function TSynGutterBand.RealWidth: NativeInt;
 var
-  PPI: Integer;
+  PPI: TSynNativeInt;
 begin
   Assert(Assigned(Editor));
   Assert(Assigned(Gutter));
@@ -2356,7 +2400,7 @@ begin
   Changed(False);
 end;
 
-procedure TSynGutterBand.SetWidth(const Value: Integer);
+procedure TSynGutterBand.SetWidth(const Value: TSynNativeInt);
 begin
   if not(FKind in [gbkLineNumbers, gbkFold]) then
   begin
@@ -2370,9 +2414,9 @@ end;
 
 {$REGION 'TSynBandsCollection'}
 
-function TSynBandsCollection.GetBands(Index: Integer): TSynGutterBand;
+function TSynBandsCollection.GetBands(Index: TSynNativeInt): TSynGutterBand;
 begin
-  Result := TSynGutterBand(Items[Index]);
+  Result := TSynGutterBand(Items[ToInt32(Index)]);
 end;
 
 procedure TSynBandsCollection.Update(Item: TCollectionItem);
@@ -2391,10 +2435,12 @@ end;
 {$REGION 'TTrackChanges'}
 
 procedure TSynTrackChanges.Assign(Source: TPersistent);
+var
+  Src: TSynTrackChanges;
 begin
   if Source is TSynTrackChanges then
   begin
-    var Src := TSynTrackChanges(Source);
+    Src := TSynTrackChanges(Source);
     if Assigned(FOwner) then
       FOwner.BeginUpdate;
     try
@@ -2479,7 +2525,7 @@ begin
   end;
 end;
 
-procedure TSynTrackChanges.SetWidth(const Value: Integer);
+procedure TSynTrackChanges.SetWidth(const Value: TSynNativeInt);
 begin
   if FWidth <> Value then
   begin
@@ -2515,9 +2561,9 @@ end;
 
 { TSynStructureColors }
 
-function TSynStructureColors.GetColors(Index: Integer): TSynStructureColor;
+function TSynStructureColors.GetColors(Index: TSynNativeInt): TSynStructureColor;
 begin
-  Result := TSynStructureColor(Items[Index]);
+  Result := TSynStructureColor(Items[ToInt32(Index)]);
 end;
 
 { TSynStructureColors }
@@ -2643,7 +2689,7 @@ end;
 
 {$REGION 'TSynIndicators'}
 
-procedure TSynIndicators.Add(Line: Integer; const Indicator: TSynIndicator;
+procedure TSynIndicators.Add(Line: TSynNativeInt; const Indicator: TSynIndicator;
     Invalidate: Boolean = True);
 var
   Arr: TArray<TSynIndicator>;
@@ -2662,12 +2708,12 @@ begin
 end;
 
 procedure TSynIndicators.Clear(const Id: TGUID; Invalidate: Boolean = True;
-    Line: Integer = -1);
+    Line: TSynNativeInt = -1);
 
-  procedure ProcessLine(ALine: Integer);
+  procedure ProcessLine(ALine: TSynNativeInt);
   var
     Indicators: TArray<TSynIndicator>;
-    I: Integer;
+    I: NativeInt;
   begin
     if FList.TryGetValue(ALine, Indicators) then
     begin
@@ -2686,7 +2732,7 @@ procedure TSynIndicators.Clear(const Id: TGUID; Invalidate: Boolean = True;
   end;
 
 var
-  ALine: Integer;
+  ALine: TSynNativeInt;
 begin
   if Line < 0  then
     for ALine in FList.Keys.ToArray do
@@ -2695,10 +2741,10 @@ begin
     ProcessLine(Line);
 end;
 
-procedure TSynIndicators.Clear(Line: Integer; const Indicator: TSynIndicator);
+procedure TSynIndicators.Clear(Line: TSynNativeInt; const Indicator: TSynIndicator);
 var
   Indicators: TArray<TSynIndicator>;
-  I: Integer;
+  I: NativeInt;
 begin
   if FList.TryGetValue(Line, Indicators) then
   begin
@@ -2720,7 +2766,7 @@ constructor TSynIndicators.Create(Owner: TCustomControl);
 begin
   inherited Create;
   FOwner := Owner;
-  FList := TDictionary<Integer, TArray<TSynIndicator>>.Create;
+  FList := TDictionary<TSynNativeInt, TArray<TSynIndicator>>.Create;
 end;
 
 destructor TSynIndicators.Destroy;
@@ -2731,26 +2777,26 @@ begin
 end;
 
 function TSynIndicators.GetById(
-  const Id: TGUID): TArray<TPair<Integer, TSynIndicator>>;
+  const Id: TGUID): TArray<TPair<TSynNativeInt, TSynIndicator>>;
 begin
   Result := GetById([Id]);
 end;
 
 function TSynIndicators.GetById(
-  const Ids: TArray<TGUID>): TArray<TPair<Integer, TSynIndicator>>;
+  const Ids: TArray<TGUID>): TArray<TPair<TSynNativeInt, TSynIndicator>>;
 var
-  IndicatorList: TList<TPair<Integer, TSynIndicator>>;
-  Line: Integer;
+  IndicatorList: TList<TPair<TSynNativeInt, TSynIndicator>>;
+  Line: TSynNativeInt;
   Indicator: TSynIndicator;
   Id: TGUID;
 begin
-  IndicatorList := TList<TPair<Integer, TSynIndicator>>.Create;
+  IndicatorList := TList<TPair<TSynNativeInt, TSynIndicator>>.Create;
   try
     for Line in FList.Keys do
       for Indicator in FList[Line] do
         for Id in Ids do
           if Id = Indicator.Id then
-            IndicatorList.Add(TPair<Integer, TSynIndicator>.Create(Line, Indicator));
+            IndicatorList.Add(TPair<TSynNativeInt, TSynIndicator>.Create(Line, Indicator));
     Result := IndicatorList.ToArray;
   finally
     IndicatorList.Free;
@@ -2814,19 +2860,19 @@ begin
   Result := IndicatorAtPos(Pos, [Id], Indicator);
 end;
 
-procedure TSynIndicators.InvalidateIndicator(Line: Integer;  const Indicator: TSynIndicator);
+procedure TSynIndicators.InvalidateIndicator(Line: TSynNativeInt;  const Indicator: TSynIndicator);
 begin
   TCustomSynEdit(FOwner).InvalidateRange(BufferCoord(Indicator.CharStart, Line),
     BufferCoord(Indicator.CharEnd, Line), Rect(0, 0, 1, 0));
 end;
 
-function TSynIndicators.LineIndicators(Line: Integer): TArray<TSynIndicator>;
+function TSynIndicators.LineIndicators(Line: TSynNativeInt): TArray<TSynIndicator>;
 begin
   // Sets Result to [] if not found
   FList.TryGetValue(Line, Result);
 end;
 
-procedure TSynIndicators.LinePut(aIndex: Integer; const OldLine: string);
+procedure TSynIndicators.LinePut(aIndex: TSynNativeInt; const OldLine: string);
 {  aIndex 0-based Indicator lines 1-based}
 
   function AdjustIndicator(const Indicator:
@@ -2834,7 +2880,7 @@ procedure TSynIndicators.LinePut(aIndex: Integer; const OldLine: string);
   // Returns False if the indicator is removed
   var
     Line: string;
-    StartPos, Len1, Len2: Integer;
+    StartPos, Len1, Len2: TSynNativeInt;
   begin
     Result := False;
     AdjIndicator := Indicator;
@@ -2891,15 +2937,15 @@ begin
     FList[aIndex + 1] := AdjIndicators;
 end;
 
-procedure TSynIndicators.LinesDeleted(FirstLine, Count: Integer);
+procedure TSynIndicators.LinesDeleted(FirstLine, Count: TSynNativeInt);
 { Adjust Indicator lines for deletion -
   FirstLine 0-based Indicator lines 1-based}
 var
-  Keys: TArray<Integer>;
-  Line: Integer;
+  Keys: TArray<TSynNativeInt>;
+  Line: TSynNativeInt;
 begin
   Keys := FList.Keys.ToArray;
-  TArray.Sort<Integer>(Keys);
+  TArray.Sort<TSynNativeInt>(Keys);
   for Line in Keys do
   begin
     if InRange(Line, FirstLine + 1, FirstLine + Count) then
@@ -2912,15 +2958,16 @@ begin
   end;
 end;
 
-procedure TSynIndicators.LinesInserted(FirstLine, Count: Integer);
+procedure TSynIndicators.LinesInserted(FirstLine, Count: TSynNativeInt);
 { Adjust Indicator lines for insertion -
   FirstLine 0-based. Indicator lines 1-based.}
 var
-  Keys: TArray<Integer>;
-  I, Line: Integer;
+  Keys: TArray<TSynNativeInt>;
+  I: NativeInt;
+  Line: TSynNativeInt;
 begin
   Keys := FList.Keys.ToArray;
-  TArray.Sort<Integer>(Keys);
+  TArray.Sort<TSynNativeInt>(Keys);
   for I := Length(Keys) - 1 downto 0 do
   begin
     Line := Keys[I];
@@ -2933,11 +2980,11 @@ begin
 end;
 
 class procedure TSynIndicators.Paint(RT: ID2D1RenderTarget;
-  Spec: TSynIndicatorSpec; const ClipR: TRect; StartOffset: Integer);
+  Spec: TSynIndicatorSpec; const ClipR: TRect; StartOffset: TSynNativeInt);
 var
   Geometry: ID2D1PathGeometry;
   Sink: ID2D1GeometrySink;
-  Delta: Integer;
+  Delta: TSynNativeInt;
   P: TPoint;
   R: TRect;
 begin
@@ -2957,7 +3004,7 @@ begin
         Dec(R.Right);
         CheckOSError(TSynDWrite.D2DFactory.CreatePathGeometry(Geometry));
         CheckOSError(Geometry.Open(Sink));
-        Delta := Round(R.Height / 6);
+        Delta := RoundSyn(R.Height / 6);
         if Spec.Style = sisSquiggleMicrosoftWord then
         begin
           P := Point(R.Left, R.Bottom - Delta);
@@ -2977,10 +3024,10 @@ begin
           while P.X < R.Right do
           begin
             Sink.BeginFigure(P, D2D1_FIGURE_BEGIN_HOLLOW);
-            P.Offset(Delta, -Delta);
+            P.Offset(Point(Delta, -Delta));
             Sink.AddLine(P);
             Sink.EndFigure(D2D1_FIGURE_END_OPEN);
-            P.Offset(Delta - 1, Delta)
+            P.Offset(Point(Delta - 1, Delta));
           end;
         end;
         CheckOSError(Sink.Close);
@@ -3049,8 +3096,8 @@ end;
 
 { TSynIndicator }
 
-constructor TSynIndicator.Create(aId: TGUID; aCharStart, aCharEnd: Integer;
-    aTag: NativeInt = 0; aKeepOnLineChange: Boolean = False);
+constructor TSynIndicator.Create(aId: TGUID; aCharStart, aCharEnd: TSynNativeInt;
+    aTag: TSynNativeInt = 0; aKeepOnLineChange: Boolean = False);
 begin
   Self.Id := aId;
   Self.CharStart := aCharStart;
@@ -3065,8 +3112,8 @@ begin
     and (A.CharEnd = B.CharEnd);
 end;
 
-class function TSynIndicator.New(aId: TGUID; aCharStart, aCharEnd: Integer;
-    aTag: NativeInt = 0; aKeepOnLineChange: Boolean = False): TSynIndicator;
+class function TSynIndicator.New(aId: TGUID; aCharStart, aCharEnd: TSynNativeInt;
+    aTag: TSynNativeInt = 0; aKeepOnLineChange: Boolean = False): TSynIndicator;
 begin
   Result.Create(aId, aCharStart, aCharEnd, aTag, aKeepOnLineChange);
 end;
@@ -3260,18 +3307,18 @@ begin
   FBookmarkColor := clDefault;
 end;
 
-procedure TSynScrollbarAnnItem.GetInfo(out Rows: TArray<Integer>;
+procedure TSynScrollbarAnnItem.GetInfo(out Rows: TArray<TSynNativeInt>;
   out Colors: TArray<TColor>);
 var
   Editor: TCustomSynEdit;
-  I, Line, Row: Integer;
+  I, Line, Row: TSynNativeInt;
   Caret: TBufferCoord;
-  RowList: TList<Integer>;
+  RowList: TList<TSynNativeInt>;
   ColorList: TList<TColor>;
   Color: TColor;
   Mark: TSynEditMark;
   Flags: TSynLineChangeFlags;
-  RowCount: Integer;
+  RowCount: TSynNativeInt;
 begin
   Editor := TCustomSynEdit(Collection.Owner);
 
@@ -3279,7 +3326,7 @@ begin
      FOnGetInfo(Editor, FAnnType, Rows, Colors)
   else
   begin
-    RowList := TList<Integer>.Create;
+    RowList := TList<TSynNativeInt>.Create;
     try
       case FAnnType of
         sbaCarets:
@@ -3350,10 +3397,9 @@ end;
 
 { TScrollbarAnnotations }
 
-function TSynScrollbarAnnotations.GetAnnotations(
-  Index: Integer): TSynScrollbarAnnItem;
+function TSynScrollbarAnnotations.GetAnnotations(Index: TSynNativeInt): TSynScrollbarAnnItem;
 begin
-  Result := TSynScrollbarAnnItem(Items[Index]);
+  Result := TSynScrollbarAnnItem(Items[ToInt32(Index)]);
 end;
 
 {$ENDREGION 'Scrollbar Annotations'}
@@ -3398,6 +3444,8 @@ begin
   begin
     FEnabled := TSynDisplayFlowControl(aSource).Enabled;
     FColor := TSynDisplayFlowControl(aSource).Color;
+    FBreakColor := TSynDisplayFlowControl(aSource).BreakColor;
+    FContinueColor := TSynDisplayFlowControl(aSource).ContinueColor;
   end
   else
     inherited;
@@ -3407,7 +3455,19 @@ constructor TSynDisplayFlowControl.Create;
 begin
   inherited;
   FEnabled := True;
-  FColor := $0045FF;  // clWebOrangeRed
+  FColor := $0045FF;  // clWebOrangeRed (exit default)
+  FBreakColor := $0045FF;
+  FContinueColor := $0045FF;
+end;
+
+function TSynDisplayFlowControl.GetColorForControl(FC: TSynFlowControl): TColor;
+begin
+  case FC of
+    fcBreak:    Result := FBreakColor;
+    fcContinue: Result := FContinueColor;
+  else
+    Result := FColor; // fcExit and fcNone
+  end;
 end;
 
 {$ENDREGION 'TSynDisplayFlowControl'}
@@ -3417,7 +3477,7 @@ end;
 
 procedure TSynEditorOptionsContainer.Assign(Source: TPersistent);
 var
-  PPI: Integer;
+  PPI: TSynNativeInt;
 begin
   if Source is TCustomSynEdit then
   begin
@@ -3478,7 +3538,7 @@ end;
 
 procedure TSynEditorOptionsContainer.AssignTo(Dest: TPersistent);
 var
-  PPI: Integer;
+  PPI: TSynNativeInt;
 begin
   if Dest is TCustomSynEdit then
   begin

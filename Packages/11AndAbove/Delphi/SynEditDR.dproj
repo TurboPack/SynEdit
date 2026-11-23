@@ -14,16 +14,6 @@
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Android' and '$(Base)'=='true') or '$(Base_Android)'!=''">
-        <Base_Android>true</Base_Android>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Android64' and '$(Base)'=='true') or '$(Base_Android64)'!=''">
-        <Base_Android64>true</Base_Android64>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
         <Base_Win32>true</Base_Win32>
         <CfgParent>Base</CfgParent>
@@ -72,14 +62,21 @@
         <SanitizedProjectName>SynEditDR</SanitizedProjectName>
         <DCC_BpiOutput>..\cpp\$(Platform)\$(Config)</DCC_BpiOutput>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+        <DCC_COMBINING_SIGNED_UNSIGNED64>true</DCC_COMBINING_SIGNED_UNSIGNED64>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_Description>TurboPack SynEdit Delphi VCL runtime package</DCC_Description>
+        <DCC_Description>TurboPack SynEdit Delphi runtime package</DCC_Description>
+        <DCC_EXPLICIT_STRING_CAST>true</DCC_EXPLICIT_STRING_CAST>
+        <DCC_EXPLICIT_STRING_CAST_LOSS>true</DCC_EXPLICIT_STRING_CAST_LOSS>
         <DCC_HppOutput>..\cpp\$(Platform)\$(Config)</DCC_HppOutput>
+        <DCC_IMMUTABLE_STRINGS>true</DCC_IMMUTABLE_STRINGS>
+        <DCC_IMPLICIT_CONVERSION_LOSS>true</DCC_IMPLICIT_CONVERSION_LOSS>
+        <DCC_IMPLICIT_INTEGER_CAST_LOSS>true</DCC_IMPLICIT_INTEGER_CAST_LOSS>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <DCC_ObjOutput>..\cpp\$(Platform)\$(Config)</DCC_ObjOutput>
         <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
-        <DCC_UnitSearchPath>..\..\..\Source\VCL;..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UNSAFE_VOID_POINTER>true</DCC_UNSAFE_VOID_POINTER>
+        <DCC_UnitSearchPath>..\..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_WriteableConstants>true</DCC_WriteableConstants>
         <DllSuffix>$(Auto)</DllSuffix>
         <GenDll>true</GenDll>
@@ -88,12 +85,6 @@
         <SkipResGeneration>false</SkipResGeneration>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1031</VerInfo_Locale>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_Android)'!=''">
-        <EnabledSysJars>activity-1.7.2.dex.jar;ads-adservices-1.0.0-beta05.dex.jar;ads-adservices-java-1.0.0-beta05.dex.jar;age-signals-0.0.4.dex.jar;annotation-experimental-1.4.1.dex.jar;annotation-jvm-1.8.1.dex.jar;annotations-23.0.0.dex.jar;appcompat-1.2.0.dex.jar;appcompat-resources-1.2.0.dex.jar;billing-9.1.0.dex.jar;biometric-1.1.0.dex.jar;browser-1.8.0.dex.jar;checker-qual-3.12.0.dex.jar;cloud-messaging.dex.jar;collection-jvm-1.4.2.dex.jar;concurrent-futures-1.1.0.dex.jar;core-1.17.0.dex.jar;core-common-2.0.4.dex.jar;core-common-2.2.0.dex.jar;core-ktx-1.17.0.dex.jar;core-runtime-2.2.0.dex.jar;core-viewtree-1.0.0.dex.jar;cursoradapter-1.0.0.dex.jar;customview-1.0.0.dex.jar;datastore-1.0.0.dex.jar;datastore-core-1.0.0.dex.jar;documentfile-1.0.0.dex.jar;drawerlayout-1.0.0.dex.jar;error_prone_annotations-2.11.0.dex.jar;exifinterface-1.3.6.dex.jar;failureaccess-1.0.1.dex.jar;firebase-annotations-16.2.0.dex.jar;firebase-common-20.3.1.dex.jar;firebase-components-17.1.0.dex.jar;firebase-datatransport-18.1.7.dex.jar;firebase-encoders-17.0.0.dex.jar;firebase-encoders-json-18.0.0.dex.jar;firebase-encoders-proto-16.0.0.dex.jar;firebase-iid-interop-17.1.0.dex.jar;firebase-installations-17.1.3.dex.jar;firebase-installations-interop-17.1.0.dex.jar;firebase-measurement-connector-19.0.0.dex.jar;firebase-messaging-23.1.2.dex.jar;fmx.dex.jar;fragment-1.2.5.dex.jar;google-play-licensing.dex.jar;guava-31.1-android.dex.jar;interpolator-1.0.0.dex.jar;j2objc-annotations-1.3.dex.jar;javax.inject-1.dex.jar;jspecify-1.0.0.dex.jar;jsr305-3.0.2.dex.jar;kotlin-stdlib-2.1.21.dex.jar;kotlinx-coroutines-android-1.8.1.dex.jar;kotlinx-coroutines-core-jvm-1.8.1.dex.jar;legacy-support-core-utils-1.0.0.dex.jar;lifecycle-common-2.6.2.dex.jar;lifecycle-livedata-2.6.2.dex.jar;lifecycle-livedata-core-2.6.2.dex.jar;lifecycle-runtime-2.6.2.dex.jar;lifecycle-service-2.6.2.dex.jar;lifecycle-viewmodel-2.6.2.dex.jar;lifecycle-viewmodel-savedstate-2.6.2.dex.jar;listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.dex.jar;loader-1.0.0.dex.jar;localbroadcastmanager-1.0.0.dex.jar;okio-jvm-3.4.0.dex.jar;play-services-ads-25.3.0.dex.jar;play-services-ads-api-25.3.0.dex.jar;play-services-ads-identifier-18.0.0.dex.jar;play-services-appset-16.0.1.dex.jar;play-services-base-18.5.0.dex.jar;play-services-basement-18.9.0.dex.jar;play-services-cloud-messaging-17.0.1.dex.jar;play-services-location-21.0.1.dex.jar;play-services-maps-20.0.0.dex.jar;play-services-measurement-base-20.1.2.dex.jar;play-services-measurement-sdk-api-20.1.2.dex.jar;play-services-stats-17.0.2.dex.jar;play-services-tasks-18.2.0.dex.jar;print-1.0.0.dex.jar;profileinstaller-1.3.0.dex.jar;room-common-2.2.5.dex.jar;room-runtime-2.2.5.dex.jar;savedstate-1.2.1.dex.jar;sqlite-2.1.0.dex.jar;sqlite-framework-2.1.0.dex.jar;startup-runtime-1.1.1.dex.jar;tracing-1.2.0.dex.jar;transport-api-3.0.0.dex.jar;transport-backend-cct-3.1.8.dex.jar;transport-runtime-3.1.8.dex.jar;user-messaging-platform-4.0.0.dex.jar;vectordrawable-1.1.0.dex.jar;vectordrawable-animated-1.1.0.dex.jar;versionedparcelable-1.1.1.dex.jar;viewpager-1.0.0.dex.jar;webkit-1.12.1.dex.jar;work-runtime-2.7.0.dex.jar</EnabledSysJars>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_Android64)'!=''">
-        <EnabledSysJars>activity-1.7.2.dex.jar;ads-adservices-1.0.0-beta05.dex.jar;ads-adservices-java-1.0.0-beta05.dex.jar;age-signals-0.0.4.dex.jar;annotation-experimental-1.4.1.dex.jar;annotation-jvm-1.8.1.dex.jar;annotations-23.0.0.dex.jar;appcompat-1.2.0.dex.jar;appcompat-resources-1.2.0.dex.jar;billing-9.1.0.dex.jar;biometric-1.1.0.dex.jar;browser-1.8.0.dex.jar;checker-qual-3.12.0.dex.jar;cloud-messaging.dex.jar;collection-jvm-1.4.2.dex.jar;concurrent-futures-1.1.0.dex.jar;core-1.17.0.dex.jar;core-common-2.0.4.dex.jar;core-common-2.2.0.dex.jar;core-ktx-1.17.0.dex.jar;core-runtime-2.2.0.dex.jar;core-viewtree-1.0.0.dex.jar;cursoradapter-1.0.0.dex.jar;customview-1.0.0.dex.jar;datastore-1.0.0.dex.jar;datastore-core-1.0.0.dex.jar;documentfile-1.0.0.dex.jar;drawerlayout-1.0.0.dex.jar;error_prone_annotations-2.11.0.dex.jar;exifinterface-1.3.6.dex.jar;failureaccess-1.0.1.dex.jar;firebase-annotations-16.2.0.dex.jar;firebase-common-20.3.1.dex.jar;firebase-components-17.1.0.dex.jar;firebase-datatransport-18.1.7.dex.jar;firebase-encoders-17.0.0.dex.jar;firebase-encoders-json-18.0.0.dex.jar;firebase-encoders-proto-16.0.0.dex.jar;firebase-iid-interop-17.1.0.dex.jar;firebase-installations-17.1.3.dex.jar;firebase-installations-interop-17.1.0.dex.jar;firebase-measurement-connector-19.0.0.dex.jar;firebase-messaging-23.1.2.dex.jar;fmx.dex.jar;fragment-1.2.5.dex.jar;google-play-licensing.dex.jar;guava-31.1-android.dex.jar;interpolator-1.0.0.dex.jar;j2objc-annotations-1.3.dex.jar;javax.inject-1.dex.jar;jspecify-1.0.0.dex.jar;jsr305-3.0.2.dex.jar;kotlin-stdlib-2.1.21.dex.jar;kotlinx-coroutines-android-1.8.1.dex.jar;kotlinx-coroutines-core-jvm-1.8.1.dex.jar;legacy-support-core-utils-1.0.0.dex.jar;lifecycle-common-2.6.2.dex.jar;lifecycle-livedata-2.6.2.dex.jar;lifecycle-livedata-core-2.6.2.dex.jar;lifecycle-runtime-2.6.2.dex.jar;lifecycle-service-2.6.2.dex.jar;lifecycle-viewmodel-2.6.2.dex.jar;lifecycle-viewmodel-savedstate-2.6.2.dex.jar;listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.dex.jar;loader-1.0.0.dex.jar;localbroadcastmanager-1.0.0.dex.jar;okio-jvm-3.4.0.dex.jar;play-services-ads-25.3.0.dex.jar;play-services-ads-api-25.3.0.dex.jar;play-services-ads-identifier-18.0.0.dex.jar;play-services-appset-16.0.1.dex.jar;play-services-base-18.5.0.dex.jar;play-services-basement-18.9.0.dex.jar;play-services-cloud-messaging-17.0.1.dex.jar;play-services-location-21.0.1.dex.jar;play-services-maps-20.0.0.dex.jar;play-services-measurement-base-20.1.2.dex.jar;play-services-measurement-sdk-api-20.1.2.dex.jar;play-services-stats-17.0.2.dex.jar;play-services-tasks-18.2.0.dex.jar;print-1.0.0.dex.jar;profileinstaller-1.3.0.dex.jar;room-common-2.2.5.dex.jar;room-runtime-2.2.5.dex.jar;savedstate-1.2.1.dex.jar;sqlite-2.1.0.dex.jar;sqlite-framework-2.1.0.dex.jar;startup-runtime-1.1.1.dex.jar;tracing-1.2.0.dex.jar;transport-api-3.0.0.dex.jar;transport-backend-cct-3.1.8.dex.jar;transport-runtime-3.1.8.dex.jar;user-messaging-platform-4.0.0.dex.jar;vectordrawable-1.1.0.dex.jar;vectordrawable-animated-1.1.0.dex.jar;versionedparcelable-1.1.1.dex.jar;viewpager-1.0.0.dex.jar;webkit-1.12.1.dex.jar;work-runtime-2.7.0.dex.jar</EnabledSysJars>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
@@ -114,10 +105,16 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <DCC_DebugInformation>2</DCC_DebugInformation>
+        <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
+        <DCC_MapFile>3</DCC_MapFile>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
+        <DCC_DebugInformation>2</DCC_DebugInformation>
+        <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
+        <DCC_MapFile>3</DCC_MapFile>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -173,23 +170,44 @@
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPythonBehaviour.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDBEdit.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAutoIt.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckWinAPI.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckWindowsProvider.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrect.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDockerfile.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterENV.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterErlang.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrectEditor.pas">
             <Form>frmAutoCorrectEditor</Form>
         </DCCReference>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGo.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHCL.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKotlin.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLua.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMakefile.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMarkdown.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMatlab.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterNSIS.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPowerShell.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRegistry.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRust.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSwift.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTOML.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTypeScript.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynURIOpener.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas">
             <Form>SynOmniSynSetup</Form>
         </DCCReference>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebStencils.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditWordWrap.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditOptionsDialog.pas">
             <Form>fmEditorOptionsDialog</Form>
         </DCCReference>
+        <DCCReference Include="..\..\..\Source\SynPopupMenu.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdEditor.pas">
             <Form>SynEditKeystrokeEditorForm</Form>
         </DCCReference>
@@ -247,13 +265,6 @@
             </Delphi.Personality>
             <ModelSupport>False</ModelSupport>
             <Platforms>
-                <Platform value="Android">False</Platform>
-                <Platform value="Android64">False</Platform>
-                <Platform value="iOSDevice64">False</Platform>
-                <Platform value="iOSSimARM64">False</Platform>
-                <Platform value="Linux64">False</Platform>
-                <Platform value="OSX64">False</Platform>
-                <Platform value="OSXARM64">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
                 <Platform value="Win64x">False</Platform>

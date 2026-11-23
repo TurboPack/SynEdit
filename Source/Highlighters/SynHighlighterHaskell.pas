@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -13,7 +13,7 @@ The Original Code is based on the SynHighlighterCpp.pas, released 2000-04-10
 which in turn was based on the dcjCppSyn.pas file from the mwEdit component
 suite by Martin Waldenburg and other developers, the Initial Author of this file
 is Michael Trier.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the
@@ -52,6 +52,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicodeShared,
   SysUtils,
   Classes;
@@ -76,7 +77,7 @@ type
     rsAsmBlock, rsDirective, rsDirectiveComment, rsString34, rsString39);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Index: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Index: TSynNativeInt): TtkTokenKind of object;
 
   TSynHaskellSyn = class(TSynCustomHighlighter)
   private
@@ -92,8 +93,8 @@ type
     fSpaceAttri: TSynHighlighterAttributes;
     fStringAttri: TSynHighlighterAttributes;
     fSymbolAttri: TSynHighlighterAttributes;
-    function AltFunc(Index: Integer): TtkTokenKind;
-    function KeyWordFunc(Index: Integer): TtkTokenKind;
+    function AltFunc(Index: TSynNativeInt): TtkTokenKind;
+    function KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
     function HashKey(Str: PWideChar): Cardinal;
     function IdentKind(MayBe: PWideChar): TtkTokenKind;
     procedure InitIdent;
@@ -148,7 +149,7 @@ type
     function GetRange: Pointer; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
     procedure SetRange(Value: Pointer); override;
@@ -191,7 +192,7 @@ const
     'module', 'otherwise', 'String', 'then', 'True', 'type', 'where' 
   );
 
-  KeyIndices: array[0..28] of Integer = (
+  KeyIndices: array[0..28] of TSynNativeInt = (
     2, 23, 10, 16, 7, -1, 22, 8, 14, 17, 5, 4, 11, -1, 1, 9, 12, 0, -1, 6, -1, 
     3, 15, 18, 20, -1, 13, 19, 21 
   );
@@ -224,7 +225,7 @@ end;
 
 procedure TSynHaskellSyn.InitIdent;
 var
-  i: Integer;
+  i: TSynNativeInt;
 begin
   for i := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     if KeyIndices[i] = -1 then
@@ -235,12 +236,12 @@ begin
       fIdentFuncTable[i] := KeyWordFunc;
 end;
 
-function TSynHaskellSyn.AltFunc(Index: Integer): TtkTokenKind;
+function TSynHaskellSyn.AltFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkIdentifier;
 end;
 
-function TSynHaskellSyn.KeyWordFunc(Index: Integer): TtkTokenKind;
+function TSynHaskellSyn.KeyWordFunc(Index: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Index]) then
     Result := tkKey
@@ -882,7 +883,7 @@ begin
   end;
 end;
 
-function TSynHaskellSyn.GetTokenKind: Integer;
+function TSynHaskellSyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(GetTokenID);
 end;

@@ -9,7 +9,7 @@ package SynEditDR;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS OFF}
+{$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION ON}
@@ -66,17 +66,38 @@ contains
   Vcl.SynEditPythonBehaviour in '..\..\..\Source\VCL\Vcl.SynEditPythonBehaviour.pas',
   Vcl.SynDBEdit in '..\..\..\Source\VCL\Vcl.SynDBEdit.pas',
   SynSpellCheckTypes in '..\..\..\Source\SynSpellCheckTypes.pas',
+  SynHighlighterAsmX86_64 in '..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas',
+  SynHighlighterAutoIt in '..\..\..\Source\Highlighters\SynHighlighterAutoIt.pas',
   SynSpellCheckWinAPI in '..\..\..\Source\SynSpellCheckWinAPI.pas',
   SynSpellCheckHunspellProvider in '..\..\..\Source\SynSpellCheckHunspellProvider.pas',
   SynSpellCheckWindowsProvider in '..\..\..\Source\SynSpellCheckWindowsProvider.pas',
   Vcl.SynSpellCheck in '..\..\..\Source\VCL\Vcl.SynSpellCheck.pas',
   Vcl.SynAutoCorrect in '..\..\..\Source\VCL\Vcl.SynAutoCorrect.pas',
+  SynHighlighterDockerfile in '..\..\..\Source\Highlighters\SynHighlighterDockerfile.pas',
+  SynHighlighterENV in '..\..\..\Source\Highlighters\SynHighlighterENV.pas',
+  SynHighlighterErlang in '..\..\..\Source\Highlighters\SynHighlighterErlang.pas',
   Vcl.SynAutoCorrectEditor in '..\..\..\Source\VCL\Vcl.SynAutoCorrectEditor.pas' {frmAutoCorrectEditor},
+  SynHighlighterGo in '..\..\..\Source\Highlighters\SynHighlighterGo.pas',
+  SynHighlighterHCL in '..\..\..\Source\Highlighters\SynHighlighterHCL.pas',
+  SynHighlighterKotlin in '..\..\..\Source\Highlighters\SynHighlighterKotlin.pas',
+  SynHighlighterLua in '..\..\..\Source\Highlighters\SynHighlighterLua.pas',
+  SynHighlighterMakefile in '..\..\..\Source\Highlighters\SynHighlighterMakefile.pas',
+  SynHighlighterMarkdown in '..\..\..\Source\Highlighters\SynHighlighterMarkdown.pas',
+  SynHighlighterMatlab in '..\..\..\Source\Highlighters\SynHighlighterMatlab.pas',
   Vcl.SynMacroRecorder in '..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas',
+  SynHighlighterNSIS in '..\..\..\Source\Highlighters\SynHighlighterNSIS.pas',
+  SynHighlighterPowerShell in '..\..\..\Source\Highlighters\SynHighlighterPowerShell.pas',
+  SynHighlighterRegistry in '..\..\..\Source\Highlighters\SynHighlighterRegistry.pas',
+  SynHighlighterRust in '..\..\..\Source\Highlighters\SynHighlighterRust.pas',
+  SynHighlighterSwift in '..\..\..\Source\Highlighters\SynHighlighterSwift.pas',
+  SynHighlighterTOML in '..\..\..\Source\Highlighters\SynHighlighterTOML.pas',
+  SynHighlighterTypeScript in '..\..\..\Source\Highlighters\SynHighlighterTypeScript.pas',
   Vcl.SynURIOpener in '..\..\..\Source\VCL\Vcl.SynURIOpener.pas',
   Vcl.SynOmniSetupDialog in '..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas' {SynOmniSynSetup},
+  SynHighlighterWebStencils in '..\..\..\Source\Highlighters\SynHighlighterWebStencils.pas',
   Vcl.SynEditWordWrap in '..\..\..\Source\VCL\Vcl.SynEditWordWrap.pas',
   Vcl.SynEditOptionsDialog in '..\..\..\Source\VCL\Vcl.SynEditOptionsDialog.pas' {fmEditorOptionsDialog},
+  SynPopupMenu in '..\..\..\Source\SynPopupMenu.pas',
   Vcl.SynEditKeyCmdEditor in '..\..\..\Source\VCL\Vcl.SynEditKeyCmdEditor.pas' {SynEditKeystrokeEditorForm},
   Vcl.SynEditKeyCmdsEditor in '..\..\..\Source\VCL\Vcl.SynEditKeyCmdsEditor.pas' {SynEditKeystrokesEditorForm};
 

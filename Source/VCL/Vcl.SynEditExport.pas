@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -15,7 +15,7 @@ mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Hieke.
 Portions created by Michael Hieke are Copyright 2000 Michael Hieke.
 Portions created by James D. Jacobson are Copyright 1999 Martin Waldenburg.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -121,7 +121,7 @@ type
     procedure FormatNewLine; virtual; abstract;
     { Returns the size of the formatted text in the output buffer, to be used
       in the format header or footer. }
-    function GetBufferSize: Integer;
+    function GetBufferSize: Int64;
     { The clipboard format the exporter creates as native format. }
     function GetClipboardFormat: UINT; virtual;
     { Has to be overridden in descendant classes to return the correct output
@@ -203,7 +203,8 @@ uses
   Math,
   SynEditMiscProcs,
   SynEditMiscClasses,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 { TSynCustomExporter }
 
@@ -286,7 +287,7 @@ begin
     // set unicode text, this also works on Win9X, even if the clipboard-viewer
     // can't show it, Word 2000+ can paste it including the unicode only characters
     Mem := GlobalAlloc(GMEM_MOVEABLE or GMEM_DDESHARE,
-      (SLen + 1) * sizeof(WideChar));
+      SIZE_T((SLen + 1) * SizeOf(WideChar)));
     if Mem <> 0 then
     begin
       P := GlobalLock(Mem);
@@ -318,11 +319,11 @@ end;
 procedure TSynCustomExporter.CopyToClipboardFormat(AFormat: UINT);
 var
   hData: THandle;
-  hDataSize: UINT;
+  hDataSize: TSynNativeInt;
   PtrData: PByte;
 begin
-  hDataSize := GetBufferSize + 1;
-  hData := GlobalAlloc(GMEM_MOVEABLE or GMEM_ZEROINIT or GMEM_SHARE, hDataSize);
+  hDataSize := TSynNativeInt(GetBufferSize + 1);
+  hData := GlobalAlloc(GMEM_MOVEABLE or GMEM_ZEROINIT or GMEM_SHARE, SIZE_T(hDataSize));
   if hData <> 0 then
   try
     PtrData := GlobalLock(hData);
@@ -334,7 +335,7 @@ begin
       finally
         GlobalUnlock(hData);
       end;
-      Clipboard.SetAsHandle(AFormat, hData);
+      Clipboard.SetAsHandle(ToWord(AFormat), hData);
     end
     else
       Abort;
@@ -371,13 +372,13 @@ begin
     seUTF8:
       Result := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
     seAnsi:
-      Result := string(PAnsiChar(fBuffer.Memory));
+      Result := UTF8ToUnicodeString(PAnsiChar(fBuffer.Memory));
   end;
 end;
 
 procedure TSynCustomExporter.ExportRange(ALines: TStrings; Start, Stop: TBufferCoord);
 var
-  i: Integer;
+  i: TSynNativeInt;
   Line, Token: string;
   Attri: TSynHighlighterAttributes;
 begin
@@ -389,8 +390,8 @@ begin
     then
       Abort;
     Stop.Line := Max(1, Min(Stop.Line, ALines.Count));
-    Stop.Char := Max(1, Min(Stop.Char, Length(ALines[Stop.Line - 1]) + 1));
-    Start.Char := Max(1, Min(Start.Char, Length(ALines[Start.Line - 1]) + 1));
+    Stop.Char := Max(1, Min(Stop.Char, Length(ALines.ItemsNative[Stop.Line - 1]) + 1));
+    Start.Char := Max(1, Min(Start.Char, Length(ALines.ItemsNative[Start.Line - 1]) + 1));
     if (Start.Line = Stop.Line) and (Start.Char >= Stop.Char) then
       Abort;
     // initialization
@@ -402,7 +403,7 @@ begin
     fFirstAttribute := True;
     for i := Start.Line to Stop.Line do
     begin
-      Line := ALines[i - 1];
+      Line := ALines.ItemsNative[i - 1];
       // order is important, since Start.Y might be equal to Stop.Y
       if i = Stop.Line then
         Delete(Line, Stop.Char, MaxInt);
@@ -440,7 +441,7 @@ begin
   AddData(Token);
 end;
 
-function TSynCustomExporter.GetBufferSize: Integer;
+function TSynCustomExporter.GetBufferSize: Int64;
 begin
   Result := fBuffer.Size;
 end;
@@ -457,13 +458,15 @@ end;
 
 procedure TSynCustomExporter.InsertData(APos: Integer; const AText: string);
 var
-  Size, ToMove, SizeNeeded: Integer;
+  ToMove: NativeInt;
+  SizeNeeded: NativeInt;
+  Size: Integer;
   Dest: PByte;
 begin
   Size := StringSize(AText);
   if Size > 0 then
   begin
-    ToMove := fBuffer.Position;
+    ToMove := NativeInt(fBuffer.Position);
     SizeNeeded := ToMove + Size;
     if fBuffer.Size < SizeNeeded then
       // Size is ReadOnly in Delphi 2
@@ -642,7 +645,7 @@ begin
     seUTF16LE, seUTF16BE:
       Result := Length(AText);
     seAnsi:
-      Result := Length(AnsiString(AText));
+      Result := TEncoding.ANSI.GetByteCount(AText);
   else
     Result := Length(AText);
   end;
@@ -651,26 +654,28 @@ end;
 
 procedure TSynCustomExporter.WriteString(const AText: string);
 var
-  UTF8Str: UTF8String;
-  AnsiStr: AnsiString;
+  lBytes: TBytes;
 begin
   case Encoding of
     seUTF8:
       begin
-        UTF8Str := UTF8Encode(AText);
-        fBuffer.WriteBuffer(UTF8Str[1], Length(UTF8Str));
+        lBytes := TEncoding.UTF8.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
       end;
     seUTF16LE:
-      fBuffer.WriteBuffer(AText[1], Length(AText) * sizeof(WideChar));
+      begin
+        lBytes := TEncoding.Unicode.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
+      end;
     seUTF16BE:
       begin
-        StrSwapByteOrder(PWideChar(AText));
-        fBuffer.WriteBuffer(AText[1], Length(AText) * sizeof(WideChar));
+        lBytes := TEncoding.BigEndianUnicode.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
       end;
     seAnsi:
       begin
-        AnsiStr := AnsiString(PWideChar(AText));
-        fBuffer.WriteBuffer(AnsiStr[1], Length(AnsiStr));
+        lBytes := TEncoding.ANSI.GetBytes(AText);
+        fBuffer.WriteBuffer(lBytes, Length(lBytes));
       end;
   end;
 end;

@@ -59,6 +59,7 @@ uses
   SynEditOptionsDialog,
   SynHighlighterADSP21xx,
   SynHighlighterAsm,
+  SynHighlighterAsmX86_64,
   SynHighlighterAWK,
   SynHighlighterBaan,
   SynHighlighterBat,
@@ -87,6 +88,7 @@ uses
   SynHighlighterJScript,
   SynHighlighterJSON,
   SynHighlighterKix,
+  SynHighlighterMarkdown,
   SynHighlighterModelica,
   SynHighlighterM3,   
   SynHighlighterPas,
@@ -116,10 +118,32 @@ uses
   SynHighlighterST,
   SynHighlighterLDraw,
   SynHighlighterOmni,
+  SynHighlighterAutoIt,
+  SynHighlighterDockerfile,
+  SynHighlighterENV,
+  SynHighlighterErlang,
+  SynHighlighterGo,
+  SynHighlighterHCL,
+  SynHighlighterKotlin,
+  SynHighlighterLLVM,
+  SynHighlighterLua,
+  SynHighlighterMakefile,
+  SynHighlighterMatlab,
+  SynHighlighterNSIS,
+  SynHighlighterPowerShell,
+  SynHighlighterRegistry,
+  SynHighlighterRexx,
+  SynHighlighterRust,
+  SynHighlighterSwift,
+  SynHighlighterTOML,
+  SynHighlighterTypeScript,
+  SynHighlighterWebIDL,
+  SynHighlighterWebStencils,
   SynSpellCheck,
   SynURIOpener,
   SynEditActionsResource,
-  SynHighlighterDelphi;
+  SynHighlighterDelphi,
+  SynPopupMenu;
 
 procedure Register;
 
@@ -154,6 +178,8 @@ begin
     TSynEditPrint, TSynEditPrintPreview, TSynAutoCorrect,
     TSynEditSearch, TSynEditRegexSearch, TSynEditOptionsDialog, TSynURIOpener]);
   RegisterComponents(SYNS_ComponentsPage, [TSynHighlighterManager]);
+  RegisterComponents(SYNS_ComponentsPage, [TSynHotKey]);
+  RegisterComponents(SYNS_ComponentsPage, [TSynPopupMenu]);
   RegisterComponents(SYNS_ComponentsPage, [TSynSpellCheck]);
 
 // SynEdit highlighters
@@ -161,22 +187,27 @@ begin
     //classic
     TSynCppSyn, TSynEiffelSyn, TSynFortranSyn, TSynGeneralSyn, TSynJavaSyn,
     TSynM3Syn, TSynPasSyn, TSynDelphiSyn, TSynVBSyn, TSynCobolSyn, TSynCSSyn, TSynOmniSyn,
+    TSynErlangSyn, TSynGoSyn, TSynKotlinSyn, TSynRustSyn, TSynSwiftSyn,
     // internet
-    TSynCssSyn, TSynHTMLSyn, TSynJScriptSyn, TSynPHPSyn, TSynVBScriptSyn,
-    TSynXMLSyn, TSynJSONSyn, TSynVrml97Syn,
+    TSynCssSyn, TSynHTMLSyn, TSynJScriptSyn, TSynMarkdownSyn, TSynPHPSyn,
+    TSynVBScriptSyn, TSynXMLSyn, TSynJSONSyn, TSynVrml97Syn, TSynTypeScriptSyn,
+    TSynWebIDLSyn, TSynWebStencilsSyn,
     //interpreted
     TSynAWKSyn, TSynBATSyn,
     TSynDWSSyn,
     TSynKixSyn, TSynPerlSyn, TSynPythonSyn,
     TSynTclTkSyn, TSynGWScriptSyn, TSynRubySyn, TSynUNIXShellScriptSyn,
+    TSynAutoItSyn, TSynLuaSyn, TSynMatlabSyn, TSynNSISSyn, TSynPowerShellSyn, TSynRexxSyn,
     //database
     TSynCACSyn, TSynCacheSyn, TSynFoxproSyn, TSynSQLSyn, TSynSDDSyn,
     //assembler
-    TSynADSP21xxSyn, TSynAsmSyn, TSynHC11Syn, TSynHP48Syn, TSynSTSyn,
+    TSynADSP21xxSyn, TSynAsmSyn, TSynAsmX86_64, TSynHC11Syn, TSynHP48Syn, TSynSTSyn,
+    TSynLLVMIRSyn,
     //data modeling
     TSynDmlSyn, TSynModelicaSyn, TSynSMLSyn,
     //data
-    TSynDfmSyn, TSynIniSyn, TSynInnoSyn,
+    TSynDfmSyn, TSynIniSyn, TSynInnoSyn, TSynDockerfileSyn, TSynENVSyn, TSynHCLSyn,
+    TSynMakefileSyn, TSynRegistrySyn, TSynTOMLSyn,
     // other
     TSynBaanSyn, TSynGalaxySyn, TSynProgressSyn, TSynMsgSyn,
     TSynIdlSyn, TSynUnrealSyn, TSynCPMSyn, TSynTeXSyn, TSynYAMLSyn,

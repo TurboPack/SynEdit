@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -12,8 +12,8 @@ mwEdit component suite by Martin Waldenburg and other developers, the Initial
 Author of this file is Michael Hieke.
 Portions created by Michael Hieke are Copyright 2000 Michael Hieke.
 Portions created by James D. Jacobson are Copyright 1999 Martin Waldenburg.
-Changes to emit XHTML 1.0 Strict complying code by Ma�l H�rz.
-Unicode translation by Ma�l H�rz.
+Changes to emit XHTML 1.0 Strict complying code by Maël Hörz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -37,7 +37,7 @@ interface
 uses
   Windows,
   Graphics,
-  SynEditExport,
+  Vcl.SynEditExport,
   SynEditHighlighter,
   SynUnicodeShared,
   System.Generics.Collections,
@@ -57,7 +57,7 @@ type
       Params: array of Pointer): Boolean;
     function GetStyleName(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes): string;
-    function MakeValidName(Name: string): string;
+    function MakeValidName(const AName: string): string;
     function StyleNameCallback(Highlighter: TSynCustomHighlighter;
       Attri: TSynHighlighterAttributes; UniqueAttriName: string;
       Params: array of Pointer): Boolean;
@@ -349,10 +349,10 @@ function TSynExporterHTML.GetHeader: string;
 var
   Styles: string;
   Header: string;
-  StartHTMLPos: Integer;
-  EndHTMLPos: Integer;
-  StartFragmentPos: Integer;
-  EndFragmentPos: Integer;
+  StartHTMLPos: NativeInt;
+  EndHTMLPos: NativeInt;
+  StartFragmentPos: NativeInt;
+  EndFragmentPos: NativeInt;
 begin
   Header := HTMLStartText;
   if not FCreateHTMLFragment then
@@ -384,7 +384,7 @@ begin
     begin
       StartHTMLPos := DetailLength;
       StartFragmentPos := DetailLength + Header.Length + FragmentStartText.Length;
-      EndFragmentPos := StartFragmentPos + GetBufferSize;
+      EndFragmentPos := NativeInt(StartFragmentPos + GetBufferSize);
       EndHTMLPos := EndFragmentPos + GetFooter.Length;
       Result := Format(DetailSection,
         [StartHTMLPos, EndHTMLPos, StartFragmentPos, EndFragmentPos]);
@@ -403,16 +403,24 @@ begin
   end;
 end;
 
-function TSynExporterHTML.MakeValidName(Name: string): string;
+function TSynExporterHTML.MakeValidName(const AName: string): string;
 var
   i: Integer;
+  lBuilder: TStringBuilder;
 begin
-  Result := LowerCase(Name);
-  for i := Length(Result) downto 1 do
-    if CharInSet(Result[i], ['.', '_']) then
-      Result[i] := '-'
-    else if not CharInSet(Result[i], ['a'..'z', '0'..'9', '-']) then
-      Delete(Result, i, 1);
+  lBuilder := TStringBuilder.Create(LowerCase(AName));
+  try
+    for i := lBuilder.Length - 1 downto 0 do
+    begin
+      if CharInSet(lBuilder[i], ['.', '_']) then
+        lBuilder[i] := '-'
+      else if not CharInSet(lBuilder[i], ['a'..'z', '0'..'9', '-']) then
+        lBuilder.Remove(i, 1);
+    end;
+    Result := lBuilder.ToString;
+  finally
+    lBuilder.Free;
+  end;
 end;
 
 function TSynExporterHTML.ReplaceReservedChar(AChar: WideChar): string;

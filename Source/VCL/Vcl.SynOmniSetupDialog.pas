@@ -140,7 +140,8 @@ uses
   System.SysUtils,
   System.Math,
   System.IniFiles,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 procedure TSynOmniSynSetup.edLanguagelNameChange(Sender: TObject);
 begin
@@ -284,8 +285,9 @@ end;
 procedure TSynOmniSynSetup.LoadHighLighterFromFile(const AName: string);
 var
   Loaded: Boolean;
+  OmniHL: TSynOmniSyn;
 begin
-  var OmniHL := TSynOmniSyn.Create(nil);
+  OmniHL := TSynOmniSyn.Create(nil);
   try
     try
       Loaded := OmniHL.LoadFromIniFile(AName);
@@ -428,9 +430,10 @@ end;
 
 procedure TSynOmniSynSetup.SaveHighLighterToFile(const AName: string);
 var
+  OmniHL: TSynOmniSyn;
   Saved: Boolean;
 begin
-  var OmniHL := TSynOmniSyn.Create(nil);
+  OmniHL := TSynOmniSyn.Create(nil);
   try
     SaveToHighligther(OmniHL);
     try

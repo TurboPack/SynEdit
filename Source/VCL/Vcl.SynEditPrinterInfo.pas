@@ -41,7 +41,8 @@ interface
 
 uses
   Windows,
-  Printers;
+  Printers,
+  SynFunc;
 
 type
   //Printer info class - getting dimensions of paper
@@ -75,10 +76,10 @@ type
     function GetYPixPrmm: Single;
   public
     procedure UpdatePrinter;
-    function PixFromLeft(mmValue: Double): Integer;
-    function PixFromRight(mmValue: Double): Integer;
-    function PixFromTop(mmValue: Double): Integer;
-    function PixFromBottom(mmValue: Double): Integer;
+    function PixFromLeft(mmValue: Double): TSynInt64;
+    function PixFromRight(mmValue: Double): TSynInt64;
+    function PixFromTop(mmValue: Double): TSynInt64;
+    function PixFromBottom(mmValue: Double): TSynInt64;
     property PhysicalWidth: Integer read GetPhysicalWidth;
     property PhysicalHeight: Integer read GetPhysicalHeight;
     property PrintableWidth: Integer read GetPrintableWidth;
@@ -97,32 +98,32 @@ implementation
 
 { TSynEditPrinterInfo }
 
-function TSynEditPrinterInfo.PixFromBottom(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromBottom(mmValue: Double): TSynInt64;
 begin
   if not FIsUpdated then
     UpdatePrinter;
-  Result := Round(mmValue * FYPixPrmm - FBottomGutter);
+  Result := TSynInt64(Round(mmValue * FYPixPrmm - FBottomGutter));
 end;
 
-function TSynEditPrinterInfo.PixFromLeft(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromLeft(mmValue: Double): TSynInt64;
 begin
   if not FIsUpdated then
     UpdatePrinter;
-  Result := Round(mmValue * FXPixPrmm - FLeftGutter);
+  Result := TSynInt64(Round(mmValue * FXPixPrmm - FLeftGutter));
 end;
 
-function TSynEditPrinterInfo.PixFromRight(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromRight(mmValue: Double): TSynInt64;
 begin
   if not FIsUpdated then
     UpdatePrinter;
-  Result := Round(mmValue * FXPixPrmm - FRightGutter);
+  Result := TSynInt64(Round(mmValue * FXPixPrmm - FRightGutter));
 end;
 
-function TSynEditPrinterInfo.PixFromTop(mmValue: Double): Integer;
+function TSynEditPrinterInfo.PixFromTop(mmValue: Double): TSynInt64;
 begin
   if not FIsUpdated then
     UpdatePrinter;
-  Result := Round(mmValue * FYPixPrmm - FTopGutter);
+  Result := TSynInt64(Round(mmValue * FYPixPrmm - FTopGutter));
 end;
 
 procedure TSynEditPrinterInfo.FillDefault;

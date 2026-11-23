@@ -59,7 +59,7 @@ begin
   if ATerm = '' then Exit;
 
   Indicator.Id := SearchHighlightIndicatorId;
-  for I := 0 to Editor.Lines.Count - 1 do begin
+  for I := 0 to Editor.Lines.CountNative - 1 do begin
     SearchEngine.Options := SearchOptions;
     SearchEngine.Pattern := ATerm;
     LineS := Editor.Lines[i];

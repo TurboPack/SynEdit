@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in compliance
 with the License. You may obtain a copy of the License at
@@ -10,7 +10,7 @@ the specific language governing rights and limitations under the License.
 
 The Original Code is: SynHighlighterURI.pas, released 2003-04-10.
 The initial author of this file is Ma�l H�rz.
-Unicode translation by Ma�l H�rz.
+Unicode translation by Maël Hörz.
 All Rights Reserved.
 
 Contributors to the SynEdit project are listed in the Contributors.txt file.
@@ -74,6 +74,7 @@ uses
   System.UITypes,
   SynEditTypes,
   SynEditHighlighter,
+  SynFunc,
   SynUnicodeShared,
   SysUtils,
   Classes;
@@ -84,7 +85,7 @@ type
     tkProsperoLink, tkTelnetLink, tkWaisLink, tkWebLink, tkUnknown, tkNullChar);
 
   PIdentFuncTableFunc = ^TIdentFuncTableFunc;
-  TIdentFuncTableFunc = function (Key: Integer): TtkTokenKind of object;
+  TIdentFuncTableFunc = function (Key: TSynNativeInt): TtkTokenKind of object;
 
   TAlreadyVisitedURIFunc = function (URI: string): Boolean of object;
 
@@ -99,7 +100,7 @@ type
     fVisitedURIAttri: TSynHighlighterAttributes;
     fAlreadyVisitedURI: TAlreadyVisitedURIFunc;
 
-    function HashKey(Str: PWideChar): Integer;
+    function HashKey(Str: PWideChar): TSynNativeInt;
     procedure InitIdent;
 
     procedure CRProc;
@@ -109,18 +110,18 @@ type
     procedure SpaceProc;
     procedure UnknownProc;
 
-    function AltFunc(Key: Integer): TtkTokenKind;
-    function FuncFtp(Key: Integer): TtkTokenKind;
-    function FuncGopher(Key: Integer): TtkTokenKind;
-    function FuncHttp(Key: Integer): TtkTokenKind;
-    function FuncHttps(Key: Integer): TtkTokenKind;
-    function FuncMailto(Key: Integer): TtkTokenKind;
-    function FuncNews(Key: Integer): TtkTokenKind;
-    function FuncNntp(Key: Integer): TtkTokenKind;
-    function FuncProspero(Key: Integer): TtkTokenKind;
-    function FuncTelnet(Key: Integer): TtkTokenKind;
-    function FuncWais(Key: Integer): TtkTokenKind;
-    function FuncWeb(Key: Integer): TtkTokenKind;
+    function AltFunc(Key: TSynNativeInt): TtkTokenKind;
+    function FuncFtp(Key: TSynNativeInt): TtkTokenKind;
+    function FuncGopher(Key: TSynNativeInt): TtkTokenKind;
+    function FuncHttp(Key: TSynNativeInt): TtkTokenKind;
+    function FuncHttps(Key: TSynNativeInt): TtkTokenKind;
+    function FuncMailto(Key: TSynNativeInt): TtkTokenKind;
+    function FuncNews(Key: TSynNativeInt): TtkTokenKind;
+    function FuncNntp(Key: TSynNativeInt): TtkTokenKind;
+    function FuncProspero(Key: TSynNativeInt): TtkTokenKind;
+    function FuncTelnet(Key: TSynNativeInt): TtkTokenKind;
+    function FuncWais(Key: TSynNativeInt): TtkTokenKind;
+    function FuncWeb(Key: TSynNativeInt): TtkTokenKind;
 
     function IsAlphaNum(AChar: WideChar): Boolean;
     function IsMark(AChar: WideChar): Boolean;
@@ -153,7 +154,7 @@ type
     function GetEol: Boolean; override;
     function GetTokenID: TtkTokenKind;
     function GetTokenAttribute: TSynHighlighterAttributes; override;
-    function GetTokenKind: Integer; override;
+    function GetTokenKind: TSynNativeInt; override;
     function IsIdentChar(AChar: WideChar): Boolean; override;
     procedure Next; override;
   published
@@ -177,7 +178,7 @@ const
     'news://', 'www', 'nntp://', 'ftp://', 'wais://', '', 'telnet://', 'mailto:'
   );
 
-function TSynURISyn.HashKey(Str: PWideChar): Integer;
+function TSynURISyn.HashKey(Str: PWideChar): TSynNativeInt;
 begin
   Result := 0;
   while CharInSet(Str^, ['A'..'Z', 'a'..'z']) do
@@ -209,7 +210,7 @@ end;
 
 procedure TSynURISyn.InitIdent;
 var
-  I: Integer;
+  I: TSynNativeInt;
 begin
   for I := Low(fIdentFuncTable) to High(fIdentFuncTable) do
     fIdentFuncTable[I] := AltFunc;
@@ -230,7 +231,7 @@ end;
 
 function TSynURISyn.IsCurrentToken(const Token: string): Boolean;
 var
-  I: Integer;
+  I: NativeInt;
   Temp: PWideChar;
 begin
   Temp := fMayBeProtocol;
@@ -251,7 +252,7 @@ begin
     Result := False;
 end;
 
-function TSynURISyn.AltFunc(Key: Integer): TtkTokenKind;
+function TSynURISyn.AltFunc(Key: TSynNativeInt): TtkTokenKind;
 begin
   Result := tkUnknown;
 end;
@@ -384,7 +385,7 @@ begin
   Result := fTokenId;
 end;
 
-function TSynURISyn.GetTokenKind: Integer;
+function TSynURISyn.GetTokenKind: TSynNativeInt;
 begin
   Result := Ord(fTokenId);
 end;
@@ -432,7 +433,7 @@ end;
 
 procedure TSynURISyn.ProtocolProc;
 var
-  Key: Integer;
+  Key: TSynNativeInt;
 begin
   if IsValidEmailAddress then
     fTokenID := tkMailtoLink
@@ -449,7 +450,7 @@ begin
   end;
 end;
 
-function TSynURISyn.FuncFtp(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncFtp(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkFtpLink
@@ -457,7 +458,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncGopher(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncGopher(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkGopherLink
@@ -465,7 +466,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncHttp(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncHttp(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkHttpLink
@@ -473,7 +474,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncHttps(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncHttps(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkHttpsLink
@@ -481,7 +482,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncMailto(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncMailto(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkMailtoLink
@@ -489,7 +490,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncNews(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncNews(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkNewsLink
@@ -497,7 +498,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncNntp(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncNntp(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkNntpLink
@@ -505,7 +506,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncProspero(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncProspero(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkProsperoLink
@@ -513,7 +514,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncTelnet(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncTelnet(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkTelnetLink
@@ -521,7 +522,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncWais(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncWais(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidURI then
     Result := tkWaisLink
@@ -529,7 +530,7 @@ begin
     Result := tkUnknown;
 end;
 
-function TSynURISyn.FuncWeb(Key: Integer): TtkTokenKind;
+function TSynURISyn.FuncWeb(Key: TSynNativeInt): TtkTokenKind;
 begin
   if IsCurrentToken(KeyWords[Key]) and IsValidWebLink then
     Result := tkWebLink
@@ -596,7 +597,7 @@ end;
 
 function TSynURISyn.IsValidEmailAddress: Boolean;
 var
-  StartPos, AtPos, DotPos: Integer;
+  StartPos, AtPos, DotPos: TSynNativeInt;
 begin
   StartPos := Run;
 
@@ -627,7 +628,7 @@ end;
 
 function TSynURISyn.IsValidURI: Boolean;
 var
-  ProtocolEndPos, DotPos: Integer;
+  ProtocolEndPos, DotPos: TSynNativeInt;
 
   function IsRelativePath: Boolean;
   begin
@@ -659,7 +660,7 @@ end;
 
 function TSynURISyn.IsValidWebLink: Boolean;
 var
-  WWWEndPos, DotPos, SecondDotPos: Integer;
+  WWWEndPos, DotPos, SecondDotPos: TSynNativeInt;
 
   function IsRelativePath: Boolean;
   begin
