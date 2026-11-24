@@ -188,14 +188,14 @@
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditReg.dcr"/>
         <DCCReference Include="designide.dcp"/>
         <DCCReference Include="SynEditDR.dcp"/>
+        <DCCReference Include="..\..\..\Source\VCL\DesignTimeEditors\SynDelphiIDEImporter.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterManager.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditActionsResource.pas">
             <Form>SynEditActions</Form>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPropertyReg.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditReg.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterManager.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\DesignTimeEditors\SynDelphiIDEImporter.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

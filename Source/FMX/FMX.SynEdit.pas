@@ -493,7 +493,9 @@ end;
 constructor TCustomFMXSynEdit.Create(AOwner: TComponent);
 begin
   inherited;
+{$WARN SYMBOL_DEPRECATED OFF}
   FLines := TSynEditStringList.Create(nil);
+{$WARN SYMBOL_DEPRECATED DEFAULT}
   FLines.OnChange := LinesChanged;
   FFont := TFont.Create;
   FFont.Family := 'Consolas';
@@ -766,7 +768,7 @@ begin
   if not FMaxScrollWidthValid then
   begin
     FMaxScrollWidth := 1;
-    for I := 0 to FLines.Count - 1 do
+    for I := 0 to FLines.CountNative - 1 do
     begin
       Len := Length(ExpandTabs(FLines[I], FTabWidth));
       if Len > FMaxScrollWidth then
@@ -844,14 +846,14 @@ begin
     DC.Column := Col;
     DC.Row := Row;
     Result := FWordWrapHelper.DisplayToBufferPos(DC);
-    Result.Line := Max(1, Min(Result.Line, FLines.Count));
+    Result.Line := Max(1, Min(Result.Line, FLines.CountNative));
     Result.Char := Max(1, Result.Char);
   end
   else
   begin
     Result.Char := Max(1, FLeftChar + Trunc((X - FTextAreaLeft) / FCharWidth));
     Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
-    Result.Line := Max(1, Min(RowToLine(Row), FLines.Count));
+    Result.Line := Max(1, Min(RowToLine(Row), FLines.CountNative));
   end;
 end;
 
@@ -1013,7 +1015,7 @@ begin
         TColorToAlphaColor(FActiveLineColor));
     end;
 
-    if Line > FLines.Count then Continue;
+    if Line > FLines.CountNative then Continue;
     SLine := FLines[Line - 1];
     HasTabs := Pos(#9, SLine) > 0;
     SExpanded := ExpandTabs(SLine, FTabWidth);
@@ -1550,7 +1552,7 @@ procedure TCustomFMXSynEdit.ScanRanges;
 var
   I: Integer;
 begin
-  if Assigned(FHighlighter) and (FLines.Count > 0) then
+  if Assigned(FHighlighter) and (FLines.CountNative > 0) then
   begin
     FHighlighter.ResetRange;
     I := 0;
@@ -1559,7 +1561,7 @@ begin
       FHighlighter.NextToEol;
       TSynEditStringList(FLines).Ranges[I] := FHighlighter.GetRange;
       Inc(I);
-    until I >= FLines.Count;
+    until I >= FLines.CountNative;
   end;
 end;
 
@@ -1568,7 +1570,7 @@ var
   iRange: TSynEditRange;
 begin
   Result := Index;
-  if Result >= FLines.Count then Exit;
+  if Result >= FLines.CountNative then Exit;
 
   if Result = 0 then
     FHighlighter.ResetRange
@@ -1583,7 +1585,7 @@ begin
       Exit;
     TSynEditStringList(FLines).Ranges[Result] := iRange;
     Inc(Result);
-  until Result = FLines.Count;
+  until Result = FLines.CountNative;
   Dec(Result);
 end;
 
@@ -1687,7 +1689,7 @@ begin
     SearchOptions := [ssoMatchCase];
     Engine.Options := SearchOptions;
 
-    for Line := 0 to FLines.Count - 1 do
+    for Line := 0 to FLines.CountNative - 1 do
     begin
       LineText := FLines[Line];
       if LineText.Length < Engine.Pattern.Length then Continue;
@@ -1739,7 +1741,7 @@ begin
   try
     for Line := BlockBegin.Line to BlockEnd.Line do
     begin
-      if (Line < 1) or (Line > FLines.Count) then Continue;
+      if (Line < 1) or (Line > FLines.CountNative) then Continue;
       LineText := FLines[Line - 1];
       Sel.Caret := BufferCoord(LineText.Length + 1, Line);
       Sel.Start := Sel.Caret;
@@ -1839,14 +1841,14 @@ begin
     ecLineEnd:
       begin
         var LineLen := 0;
-        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
+        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.CountNative) then
           LineLen := Length(FLines[FSelection.Caret.Line - 1]);
         MoveCaretAndSelection(BufferCoord(LineLen + 1, FSelection.Caret.Line), False);
       end;
     ecSelLineEnd:
       begin
         var LineLen := 0;
-        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
+        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.CountNative) then
           LineLen := Length(FLines[FSelection.Caret.Line - 1]);
         MoveCaretAndSelection(BufferCoord(LineLen + 1, FSelection.Caret.Line), True);
       end;
@@ -1856,10 +1858,10 @@ begin
       MoveCaretAndSelection(BufferCoord(1, 1), True);
     ecEditorBottom:
       MoveCaretAndSelection(
-        BufferCoord(1, Max(1, FLines.Count)), False);
+        BufferCoord(1, Max(1, FLines.CountNative)), False);
     ecSelEditorBottom:
       MoveCaretAndSelection(
-        BufferCoord(1, Max(1, FLines.Count)), True);
+        BufferCoord(1, Max(1, FLines.CountNative)), True);
     ecWordLeft, ecSelWordLeft:
       begin
         var BC := GetCaretXY;
@@ -1883,7 +1885,7 @@ begin
     ecWordRight, ecSelWordRight:
       begin
         var BC := GetCaretXY;
-        if (BC.Line >= 1) and (BC.Line <= FLines.Count) then
+        if (BC.Line >= 1) and (BC.Line <= FLines.CountNative) then
         begin
           var S := FLines[BC.Line - 1];
           if BC.Char <= Length(S) then
@@ -1897,7 +1899,7 @@ begin
             MoveCaretAndSelection(BufferCoord(NewChar, BC.Line),
               Command = ecSelWordRight);
           end
-          else if BC.Line < FLines.Count then
+          else if BC.Line < FLines.CountNative then
             MoveCaretAndSelection(BufferCoord(1, BC.Line + 1),
               Command = ecSelWordRight);
         end;
@@ -1992,7 +1994,7 @@ begin
       begin
         // Remove up to TabWidth spaces from the beginning of the current line
         FirstAffectedLine := FSelection.Caret.Line - 1;
-        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
+        if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.CountNative) then
         begin
           var Line := FLines[FSelection.Caret.Line - 1];
           var SpacesToRemove := 0;
@@ -2108,7 +2110,7 @@ begin
 
   // Incremental range scan after text mutations
   if (FirstAffectedLine >= 0) and Assigned(FHighlighter) and
-    (FLines.Count > 0) then
+    (FLines.CountNative > 0) then
     ScanFrom(Max(0, FirstAffectedLine));
 
   // Reset caret blink after any command
@@ -2141,13 +2143,13 @@ begin
   end
   else
   begin
-    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.Count) then
+    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.CountNative) then
       LineLen := Length(FLines[NewCaret.Line - 1])
     else
       LineLen := 0;
     if NewCaret.Char <= LineLen then
       Inc(NewCaret.Char)
-    else if NewCaret.Line < FLines.Count then
+    else if NewCaret.Line < FLines.CountNative then
     begin
       Inc(NewCaret.Line);
       NewCaret.Char := 1;
@@ -2176,10 +2178,10 @@ begin
     Inc(DC.Row, DY);
     DC.Row := Max(1, Min(DC.Row, FWordWrapHelper.RowCount));
     NewCaret := FWordWrapHelper.DisplayToBufferPos(DC);
-    NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.Count)));
+    NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.CountNative)));
     NewCaret.Char := Max(1, NewCaret.Char);
     // Clamp to line length
-    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.Count) then
+    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.CountNative) then
     begin
       LineLen := Length(FLines[NewCaret.Line - 1]);
       if not (eoScrollPastEol in FScrollOptions) then
@@ -2191,7 +2193,7 @@ begin
   begin
     NewCaret := GetCaretXY;
     Inc(NewCaret.Line, DY);
-    NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.Count)));
+    NewCaret.Line := Max(1, Min(NewCaret.Line, Max(1, FLines.CountNative)));
 
     // Sticky column
     if (eoKeepCaretX in FOptions) and (FSelection.LastPosX >= 0) then
@@ -2200,7 +2202,7 @@ begin
       FSelection.LastPosX := NewCaret.Char;
 
     // Clamp to line length
-    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.Count) then
+    if (NewCaret.Line >= 1) and (NewCaret.Line <= FLines.CountNative) then
     begin
       LineLen := Length(FLines[NewCaret.Line - 1]);
       if not (eoScrollPastEol in FScrollOptions) then
@@ -2241,7 +2243,7 @@ var
   SLine: string;
 begin
   // Ensure we have enough lines
-  while FLines.Count < FSelection.Caret.Line do
+  while FLines.CountNative < FSelection.Caret.Line do
     FLines.Add('');
 
   SLine := FLines[FSelection.Caret.Line - 1];
@@ -2270,7 +2272,7 @@ procedure TCustomFMXSynEdit.DoDeleteChar;
 var
   SLine: string;
 begin
-  if (FSelection.Caret.Line < 1) or (FSelection.Caret.Line > FLines.Count) then Exit;
+  if (FSelection.Caret.Line < 1) or (FSelection.Caret.Line > FLines.CountNative) then Exit;
   SLine := FLines[FSelection.Caret.Line - 1];
 
   if FSelection.Caret.Char <= Length(SLine) then
@@ -2278,7 +2280,7 @@ begin
     System.Delete(SLine, FSelection.Caret.Char, 1);
     FLines[FSelection.Caret.Line - 1] := SLine;
   end
-  else if FSelection.Caret.Line < FLines.Count then
+  else if FSelection.Caret.Line < FLines.CountNative then
   begin
     // Join with next line
     FLines[FSelection.Caret.Line - 1] := SLine + FLines[FSelection.Caret.Line];
@@ -2292,7 +2294,7 @@ var
 begin
   if (FSelection.Caret.Char > 1) then
   begin
-    if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.Count) then
+    if (FSelection.Caret.Line >= 1) and (FSelection.Caret.Line <= FLines.CountNative) then
     begin
       SLine := FLines[FSelection.Caret.Line - 1];
       if FSelection.Caret.Char - 1 <= Length(SLine) then
@@ -2322,7 +2324,7 @@ var
 begin
   if (FSelection.Caret.Line < 1) then Exit;
 
-  while FLines.Count < FSelection.Caret.Line do
+  while FLines.CountNative < FSelection.Caret.Line do
     FLines.Add('');
 
   SLine := FLines[FSelection.Caret.Line - 1];
@@ -2403,7 +2405,7 @@ begin
     if Length(Lines) = 1 then
     begin
       // Single line insert
-      while FLines.Count < FSelection.Caret.Line do
+      while FLines.CountNative < FSelection.Caret.Line do
         FLines.Add('');
       var SLine := FLines[FSelection.Caret.Line - 1];
       // Pad with spaces if caret is past end of line
@@ -2417,7 +2419,7 @@ begin
     else
     begin
       // Multi-line insert
-      while FLines.Count < FSelection.Caret.Line do
+      while FLines.CountNative < FSelection.Caret.Line do
         FLines.Add('');
       var SLine := FLines[FSelection.Caret.Line - 1];
       // Pad with spaces if caret is past end of line
@@ -2477,9 +2479,9 @@ var
   I: Integer;
   SB: TStringBuilder;
 begin
-  if (AStart.Line < 1) or (AStart.Line > FLines.Count) then Exit('');
-  if AEnd.Line > FLines.Count then
-    AEnd := BufferCoord(Length(FLines[FLines.Count - 1]) + 1, FLines.Count);
+  if (AStart.Line < 1) or (AStart.Line > FLines.CountNative) then Exit('');
+  if AEnd.Line > FLines.CountNative then
+    AEnd := BufferCoord(Length(FLines[FLines.CountNative - 1]) + 1, FLines.CountNative);
 
   if AStart.Line = AEnd.Line then
     Result := Copy(FLines[AStart.Line - 1], AStart.Char,
@@ -2505,10 +2507,10 @@ end;
 
 procedure TCustomFMXSynEdit.SelectAll;
 begin
-  if FLines.Count > 0 then
+  if FLines.CountNative > 0 then
   begin
     FSelection.Start := BufferCoord(1, 1);
-    var LastLine := FLines.Count;
+    var LastLine := FLines.CountNative;
     FSelection.Stop := BufferCoord(Length(FLines[LastLine - 1]) + 1, LastLine);
     FSelection.Caret.Char := FSelection.Stop.Char;
     FSelection.Caret.Line := FSelection.Stop.Line;
@@ -2709,7 +2711,7 @@ var
 begin
   if (ABookmark < 0) or (ABookmark > 9) then Exit;
   // Clamp line to valid range
-  Y := Max(1, Min(Y, Max(1, FLines.Count)));
+  Y := Max(1, Min(Y, Max(1, FLines.CountNative)));
   X := Max(1, X);
 
   if FBookmarks[ABookmark] <> nil then
@@ -3296,7 +3298,7 @@ end;
 
 function TCustomFMXSynEdit.GetLineCount: Integer;
 begin
-  Result := FLines.Count;
+  Result := FLines.CountNative;
 end;
 
 function TCustomFMXSynEdit.GetCanUndo: Boolean;
@@ -3376,7 +3378,7 @@ begin
   else
   begin
     var Line := RowToLine(ARow);
-    if (Line >= 1) and (Line <= FLines.Count) then
+    if (Line >= 1) and (Line <= FLines.CountNative) then
       Result := FLines[Line - 1].Length
     else
       Result := 0;
@@ -3388,9 +3390,9 @@ begin
   if FWordWrap and Assigned(FWordWrapHelper) then
     Result := FWordWrapHelper.RowCount
   else if FUseCodeFolding then
-    Result := LineToRow(FLines.Count)
+    Result := LineToRow(FLines.CountNative)
   else
-    Result := FLines.Count;
+    Result := FLines.CountNative;
 end;
 
 { --- Word Wrap --- }
@@ -3481,14 +3483,14 @@ end;
 procedure TCustomFMXSynEdit.FullFoldScan;
 begin
   if FUseCodeFolding then
-    ReScanForFoldRanges(0, FLines.Count - 1);
+    ReScanForFoldRanges(0, FLines.CountNative - 1);
 end;
 
 procedure TCustomFMXSynEdit.ReScanForFoldRanges(FromLine, ToLine: Integer);
 var
   AdjustedToLine: Integer;
 begin
-  AdjustedToLine := Max(Min(ToLine, FLines.Count - 1), FromLine);
+  AdjustedToLine := Max(Min(ToLine, FLines.CountNative - 1), FromLine);
   FAllFoldRanges.StartScanning;
   ScanForFoldRanges(FAllFoldRanges, FLines, FromLine, AdjustedToLine);
   if not FLines.Updating and FAllFoldRanges.StopScanning(FLines) then
@@ -3788,7 +3790,7 @@ begin
     begin
       ptStart.Char := 1;
       ptStart.Line := 1;
-      ptEnd.Line := FLines.Count;
+      ptEnd.Line := FLines.CountNative;
       if ptEnd.Line > 0 then
         ptEnd.Char := Length(FLines[ptEnd.Line - 1]) + 1
       else

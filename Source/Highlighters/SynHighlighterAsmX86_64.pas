@@ -38,7 +38,7 @@ uses
   Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
-  SynUnicode,
+  SynUnicodeShared,
   SynFunc;
 
 type
@@ -130,7 +130,7 @@ type
 implementation
 
 uses
-  SynEdit, SynEditMiscProcs, SynEditStrConst;
+  SynEditMiscProcs, SynEditStrConst, Vcl.SynEdit;
 
 const
   Registers: UnicodeString =

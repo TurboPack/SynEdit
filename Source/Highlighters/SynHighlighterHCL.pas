@@ -27,11 +27,10 @@ uses
   Winapi.Windows,
   System.Classes,
   System.SysUtils,
-  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynFunc,
-  SynUnicode;
+  SynUnicodeShared;
 
 type
   TtkTokenKind = (tkComment, tkBlockType, tkKeyword, tkType, tkFunction,

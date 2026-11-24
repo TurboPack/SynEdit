@@ -3,8 +3,8 @@ unit SynHighlighterWebStencils;
 interface
 
 uses
-  System.SysUtils, System.Classes, Vcl.Graphics, Generics.Collections,
-  SynEditTypes, SynEditHighlighter, SynFunc, SynUnicode;
+  System.SysUtils, System.Classes, Generics.Collections,
+  SynEditTypes, SynEditHighlighter, SynFunc, SynUnicodeShared;
 
 type
   TtkTokenKind = (

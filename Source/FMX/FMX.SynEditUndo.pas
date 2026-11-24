@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit - FMX Edition
 
 The contents of this file are subject to the Mozilla Public License
@@ -157,7 +157,7 @@ begin
   FEditor.Selections.LinesInserted(Index, Count);
   // Consider a file with one empty line as empty
   if (FUndoList.Count = 0) and
-    (FEditor.Lines.Count = 1) and (FEditor.Lines[0] = '')
+    (FEditor.Lines.CountNative = 1) and (FEditor.Lines[0] = '')
   then
     Exit;
   if Count > 0 then

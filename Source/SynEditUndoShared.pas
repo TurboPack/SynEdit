@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit
 
 The contents of this file are subject to the Mozilla Public License
@@ -512,7 +512,7 @@ var
 
 begin
   SynLines := Lines as TSynEditStringList;
-  for Index := 0 to SynLines.Count - 1 do
+  for Index := 0 to SynLines.CountNative - 1 do
   begin
     Flags := SynLines.ChangeFlags[Index];
     if Flags = [sfSaved] then
@@ -558,7 +558,7 @@ var
 
 begin
   SynLines := Lines as TSynEditStringList;
-  for Index := 0 to SynLines.Count - 1 do
+  for Index := 0 to SynLines.CountNative - 1 do
     SynLines.ChangeFlags[Index] := [];
   for Item in FUndoList do
     if Item is TSynLinesInsertedUndoItem then

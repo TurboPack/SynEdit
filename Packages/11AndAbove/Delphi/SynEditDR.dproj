@@ -140,19 +140,36 @@
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="SynEditSharedDR.dcp"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEdit.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditScrollTypes.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynUnicode.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDWrite.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditMiscClasses.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditScrollBars.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyConst.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKbdHandler.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditUndo.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynCompletionProposal.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditDragDrop.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditDataObject.pas"/>
+        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas"/>
+        <DCCReference Include="..\..\..\Source\SynPopupMenu.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckWinAPI.pas"/>
+        <DCCReference Include="..\..\..\Source\SynSpellCheckWindowsProvider.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAccessibility.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrect.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrectEditor.pas">
+            <Form>frmAutoCorrectEditor</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynCompletionProposal.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDBEdit.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDWrite.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEdit.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditDataObject.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditDragDrop.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditExport.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKbdHandler.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdEditor.pas">
+            <Form>SynEditKeystrokeEditorForm</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdsEditor.pas">
+            <Form>SynEditKeystrokesEditorForm</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyConst.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditMiscClasses.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditOptionsDialog.pas">
+            <Form>fmEditorOptionsDialog</Form>
+        </DCCReference>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPlugins.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrint.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrinterInfo.pas"/>
@@ -163,57 +180,21 @@
         </DCCReference>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrintPreview.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPrintTypes.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditExport.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPythonBehaviour.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditScrollBars.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditScrollTypes.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditUndo.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditWordWrap.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportHTML.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportRTF.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportTeX.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditPythonBehaviour.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynDBEdit.pas"/>
-        <DCCReference Include="..\..\..\Source\SynSpellCheckTypes.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAutoIt.pas"/>
-        <DCCReference Include="..\..\..\Source\SynSpellCheckWinAPI.pas"/>
-        <DCCReference Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas"/>
-        <DCCReference Include="..\..\..\Source\SynSpellCheckWindowsProvider.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrect.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterDockerfile.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterENV.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterErlang.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynAutoCorrectEditor.pas">
-            <Form>frmAutoCorrectEditor</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterGo.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterHCL.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterKotlin.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterLua.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMakefile.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMarkdown.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterMatlab.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterNSIS.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterPowerShell.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRegistry.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterRust.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterSwift.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTOML.pas"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterTypeScript.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynURIOpener.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas">
             <Form>SynOmniSynSetup</Form>
         </DCCReference>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterWebStencils.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditWordWrap.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditOptionsDialog.pas">
-            <Form>fmEditorOptionsDialog</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\..\Source\SynPopupMenu.pas"/>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdEditor.pas">
-            <Form>SynEditKeystrokeEditorForm</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynEditKeyCmdsEditor.pas">
-            <Form>SynEditKeystrokesEditorForm</Form>
-        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynUnicode.pas"/>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynURIOpener.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

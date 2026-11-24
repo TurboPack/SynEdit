@@ -34,7 +34,7 @@ interface
 
 uses
   System.Classes, System.Generics.Collections, System.RegularExpressions,
-  System.StrUtils, System.SysUtils, Vcl.Graphics, SynEditHighlighter, SynFunc;
+  System.StrUtils, System.SysUtils, SynEditHighlighter, SynFunc;
 
 type
   TtkTokenKind = (tkUnknown, tkBlockQuote, tkCode, tkDelete, tkEmphasis,
@@ -145,6 +145,9 @@ procedure SetEntities(Dict: TDictionary<String, String>);
 
 implementation
 
+uses
+  System.UITypes;
+
 var
   EntityReferenceDict: TDictionary<String, String>;
   RegexAtxHeading: TRegEx;
@@ -212,59 +215,59 @@ begin
 
   FBlockQuoteAttri := TSynHighlighterAttributes.Create('BlockQuote',
     'Block Quote');
-  FBlockQuoteAttri.Foreground := clWebDimGray;
+  FBlockQuoteAttri.Foreground := TColors.DimGray;
   AddAttribute(FBlockQuoteAttri);
 
   FCodeAttri := TSynHighlighterAttributes.Create('Code', 'Code');
-  FCodeAttri.Foreground := clWebFirebrick;
+  FCodeAttri.Foreground := TColors.Firebrick;
   AddAttribute(FCodeAttri);
 
   FDeleteAttri := TSynHighlighterAttributes.Create('Delete', 'Delete');
-  FDeleteAttri.Foreground := clWebDimGray;
+  FDeleteAttri.Foreground := TColors.DimGray;
   AddAttribute(FDeleteAttri);
 
   FEmphasisAttri := TSynHighlighterAttributes.Create('Emphasis', 'Emphasis');
-  FEmphasisAttri.Foreground := clWebDeepPink;
+  FEmphasisAttri.Foreground := TColors.DeepPink;
   AddAttribute(FEmphasisAttri);
 
   FEntityReferenceAttri := TSynHighlighterAttributes.Create('EntityReference',
     'Entity Reference');
-  FEntityReferenceAttri.Foreground := clGreen;
+  FEntityReferenceAttri.Foreground := TColors.Green;
   AddAttribute(FEntityReferenceAttri);
 
   FHeadingAttri := TSynHighlighterAttributes.Create('Heading', 'Heading');
-  FHeadingAttri.Foreground := clWebMediumBlue;
+  FHeadingAttri.Foreground := TColors.MediumBlue;
   AddAttribute(FHeadingAttri);
 
   FHtmlAttrNameAttri := TSynHighlighterAttributes.Create('HtmlAttrName',
     'HTML Attribute Name');
-  FHtmlAttrNameAttri.Foreground := clWebMediumBlue;
+  FHtmlAttrNameAttri.Foreground := TColors.MediumBlue;
   AddAttribute(FHtmlAttrNameAttri);
 
   FHtmlAttrValueAttri := TSynHighlighterAttributes.Create('HtmlAttrValue',
     'HTML Attribute Value');
-  FHtmlAttrValueAttri.Foreground := clWebCrimson;
+  FHtmlAttrValueAttri.Foreground := TColors.Crimson;
   AddAttribute(FHtmlAttrValueAttri);
 
   FHtmlCommentAttri := TSynHighlighterAttributes.Create('HtmlComment',
     'HTML Comment');
-  FHtmlCommentAttri.Foreground := clWebDimGray;
+  FHtmlCommentAttri.Foreground := TColors.DimGray;
   AddAttribute(FHtmlCommentAttri);
 
   FHtmlTagAttri := TSynHighlighterAttributes.Create('HtmlTag', 'HTML Tag');
-  FHtmlTagAttri.Foreground := clWebDarkViolet;
+  FHtmlTagAttri.Foreground := TColors.DarkViolet;
   AddAttribute(FHtmlTagAttri);
 
   FLinkAttri := TSynHighlighterAttributes.Create('Link', 'Link');
-  FLinkAttri.Foreground := clBlue;
+  FLinkAttri.Foreground := TColors.Blue;
   AddAttribute(FLinkAttri);
 
   FListAttri := TSynHighlighterAttributes.Create('List', 'List');
-  FListAttri.Foreground := clWebDeepPink;
+  FListAttri.Foreground := TColors.DeepPink;
   AddAttribute(FListAttri);
 
   FSpaceAttri := TSynHighlighterAttributes.Create('Space', 'Space');
-  FSpaceAttri.Foreground := clWebCornFlowerBlue;
+  FSpaceAttri.Foreground := TColors.CornFlowerBlue;
   AddAttribute(FSpaceAttri);
 
   FTextAttri := TSynHighlighterAttributes.Create('Text', 'Text');
