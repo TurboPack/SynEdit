@@ -39,7 +39,6 @@ requires
 
 contains
   SynHighlighterAsmX86_64 in '..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas',
-  SynPopupMenu in '..\..\..\Source\SynPopupMenu.pas',
   SynSpellCheckHunspellProvider in '..\..\..\Source\SynSpellCheckHunspellProvider.pas',
   SynSpellCheckTypes in '..\..\..\Source\SynSpellCheckTypes.pas',
   SynSpellCheckWinAPI in '..\..\..\Source\SynSpellCheckWinAPI.pas',
@@ -78,6 +77,7 @@ contains
   Vcl.SynExportTeX in '..\..\..\Source\VCL\Vcl.SynExportTeX.pas',
   Vcl.SynMacroRecorder in '..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas',
   Vcl.SynOmniSetupDialog in '..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas' {SynOmniSynSetup},
+  Vcl.SynPopupMenu in '..\..\..\Source\VCL\Vcl.SynPopupMenu.pas',
   Vcl.SynSpellCheck in '..\..\..\Source\VCL\Vcl.SynSpellCheck.pas',
   Vcl.SynUnicode in '..\..\..\Source\VCL\Vcl.SynUnicode.pas',
   Vcl.SynURIOpener in '..\..\..\Source\VCL\Vcl.SynURIOpener.pas';

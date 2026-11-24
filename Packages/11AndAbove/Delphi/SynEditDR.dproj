@@ -141,7 +141,6 @@
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="SynEditSharedDR.dcp"/>
         <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas"/>
-        <DCCReference Include="..\..\..\Source\SynPopupMenu.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckTypes.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckWinAPI.pas"/>
@@ -190,6 +189,9 @@
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynExportTeX.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas"/>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas">
+            <Form>SynOmniSynSetup</Form>
+        </DCCReference>
+        <DCCReference Include="..\..\..\Source\VCL\Vcl.SynPopupMenu.pas">
             <Form>SynOmniSynSetup</Form>
         </DCCReference>
         <DCCReference Include="..\..\..\Source\VCL\Vcl.SynSpellCheck.pas"/>

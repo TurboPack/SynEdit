@@ -1,9 +1,9 @@
-unit SynPopupMenu;
+unit Vcl.SynPopupMenu;
 
 interface
 
 uses
-  Classes, Menus;
+  System.Classes, Vcl.Menus;
 
 type
   TSynDefaultPopupMenu = (dpmDisabled, dpmBefore, dpmAfter);
@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  Windows, ActnList, StdActns, SynEdit, SynEditMiscClasses;
+  Winapi.Windows, Vcl.ActnList, Vcl.StdActns, Vcl.SynEdit, Vcl.SynEditMiscClasses;
 
 { TSynPopupMenu }
 
