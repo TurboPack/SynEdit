@@ -38,7 +38,6 @@ requires
   SynEditSharedDR;
 
 contains
-  SynHighlighterAsmX86_64 in '..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas',
   SynSpellCheckHunspellProvider in '..\..\..\Source\SynSpellCheckHunspellProvider.pas',
   SynSpellCheckTypes in '..\..\..\Source\SynSpellCheckTypes.pas',
   SynSpellCheckWinAPI in '..\..\..\Source\SynSpellCheckWinAPI.pas',

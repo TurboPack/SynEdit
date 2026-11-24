@@ -35,7 +35,6 @@ uses
   System.Classes,
   System.Generics.Defaults,
   System.Generics.Collections,
-  Vcl.Graphics,
   SynEditTypes,
   SynEditHighlighter,
   SynUnicodeShared,
@@ -130,7 +129,7 @@ type
 implementation
 
 uses
-  SynEditMiscProcs, SynEditStrConst, Vcl.SynEdit;
+  SynEditMiscProcs, SynEditStrConst, SynEditShared;
 
 const
   Registers: UnicodeString =
@@ -337,23 +336,24 @@ function TSynAsmX86_64.IsLabel(MayBe: PWideChar): Boolean;
 var
   i : TSynNativeInt;
   LabelText : UnicodeString; // D7: PWideChar + ':' is no implicit concat there
+  lSynEdit: ISynEdit;
 begin
   result := False;
   // A label reference is found by looking for its declaration in the text, so
   // this needs the editor. Dropped on a form the owner is the form, and an
   // exporter may create the highlighter without any owner.
-  if not ( Owner is TCustomSynEdit ) then
+  if not Supports(Owner, ISynEdit, lSynEdit) then
     Exit;
   LabelText := MayBe;
   LabelText := LabelText + ':';
-  for i := 0 to TCustomSynEdit( Owner ).Lines.CountNative-1 do
+  for i := 0 to lSynEdit.Lines.CountNative - 1 do
+  begin
+    if CompareText(lSynEdit.Lines[ i ], LabelText ) = 0 then
     begin
-    if ( CompareText( TCustomSynEdit( Owner ).Lines[ i ], LabelText ) = 0 ) then
-      begin
       result := True;
       break;
-      end;
     end;
+  end;
 end;
 
 function TSynAsmX86_64.IdentKind(MayBe: PWideChar): TtkTokenKind;

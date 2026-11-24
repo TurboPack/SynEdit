@@ -140,7 +140,6 @@
         <DCCReference Include="vclx.dcp"/>
         <DCCReference Include="rtl.dcp"/>
         <DCCReference Include="SynEditSharedDR.dcp"/>
-        <DCCReference Include="..\..\..\Source\Highlighters\SynHighlighterAsmX86_64.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckHunspellProvider.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckTypes.pas"/>
         <DCCReference Include="..\..\..\Source\SynSpellCheckWinAPI.pas"/>

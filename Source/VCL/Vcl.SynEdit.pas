@@ -71,6 +71,7 @@ uses
   SynEditHighlighter,
   Vcl.SynEditKbdHandler,
   SynEditCodeFolding,
+  SynEditShared,
   SynFunc;
 
 const
@@ -231,7 +232,7 @@ type
   TCustomSynEditSearchNotFoundEvent = procedure(Sender: TObject;
     FindText: string) of object;
 
-  TCustomSynEdit = class(TCustomControl)
+  TCustomSynEdit = class(TCustomControl, ISynEdit)
   private
     procedure CMHintShow(var Message: TCMHintShow); message CM_HINTSHOW;
     procedure WMCancelMode(var Message: TMessage); message WM_CANCELMODE;
@@ -277,7 +278,7 @@ type
     fCharWidth: TSynNativeInt;
     fFontQuality: TFontQuality;
     fInserting: Boolean;
-    fLines: TSynEditStringList;
+    FLines: TSynEditStringList;
     fOrigLines: TSynEditStringList;
     fOrigUndoRedo: ISynEditUndo;
     fLinesInWindow: TSynNativeInt;
@@ -425,6 +426,7 @@ type
     function GetDisplayY: TSynNativeInt;
     function GetDisplayXY: TDisplayCoord;
     function GetDisplayRowCount: TSynNativeInt;
+    function GetLines: TSynEditStringList;
     function GetLineText: string;
     function GetMaxUndo: TSynNativeInt;
     function GetModified: Boolean;
@@ -476,7 +478,7 @@ type
     procedure SetInsertMode(const Value: Boolean);
     procedure SetKeystrokes(const Value: TSynEditKeyStrokes);
     procedure SetLeftChar(Value: TSynNativeInt);
-    procedure SetLines(Value: TSynEditStringList);
+    procedure SetLines(const AValue: TSynEditStringList);
     procedure SetLineText(Value: string);
     procedure SetMaxUndo(const Value: TSynNativeInt);
     procedure SetModified(Value: Boolean);
@@ -898,7 +900,7 @@ type
     property LineHeight: TSynNativeInt read fTextHeight;
     property LinesInWindow: TSynNativeInt read fLinesInWindow;
     property LineText: string read GetLineText write SetLineText;
-    property Lines: TSynEditStringList read fLines write SetLines;
+    property Lines: TSynEditStringList read GetLines write SetLines;
     property Marks: TSynEditMarkList read fMarkList;
     property Modified: Boolean read GetModified write SetModified;
     property ReadOnly: Boolean read GetReadOnly write SetReadOnly default False;
@@ -4017,9 +4019,9 @@ begin
   end;
 end;
 
-procedure TCustomSynEdit.SetLines(Value: TSynEditStringList);
+procedure TCustomSynEdit.SetLines(const AValue: TSynEditStringList);
 begin
-  Lines.Assign(Value);
+  FLines.Assign(AValue);
 end;
 
 procedure TCustomSynEdit.SetLineText(Value: string);
@@ -10284,6 +10286,11 @@ begin
   else begin
     Result := fWordWrapPlugin.RowCount;
   end;
+end;
+
+function TCustomSynEdit.GetLines: TSynEditStringList;
+begin
+  Result := FLines;
 end;
 
 function TCustomSynEdit.LineToRow(aLine: TSynNativeInt): TSynNativeInt;

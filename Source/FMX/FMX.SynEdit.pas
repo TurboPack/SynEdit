@@ -36,6 +36,7 @@ uses
   SynEditTextBuffer,
   SynEditMiscProcs,
   SynEditCodeFolding,
+  SynEditShared,
   FMX.SynEditKbdHandler,
   FMX.SynEditMiscClasses,
   FMX.SynEditWordWrap;
@@ -53,7 +54,7 @@ type
     FoldRanges: TSynFoldRanges; LinesToScan: TStrings;
     FromLine: Integer; ToLine: Integer) of object;
 
-  TCustomFMXSynEdit = class(TControl)
+  TCustomFMXSynEdit = class(TControl, ISynEdit)
   private
     FLines: TSynEditStringList;
     FHighlighter: TSynCustomHighlighter;
@@ -215,6 +216,8 @@ type
     procedure StopDragScroll;
     function IsPointInSelection(const BC: TBufferCoord): Boolean;
     procedure EnsureOleDropTarget;
+    function GetLines: TSynEditStringList;
+    procedure SetLines(const AValue: TSynEditStringList);
   protected
     // Plugin hooks (protected for testability)
     procedure DoPluginAfterPaint(Canvas: TCanvas; const AClip: TRectF;
@@ -309,7 +312,7 @@ type
     property UseCodeFolding: Boolean read FUseCodeFolding write SetUseCodeFolding;
     property WordWrap: Boolean read FWordWrap write SetWordWrap default False;
     property AllFoldRanges: TSynFoldRanges read FAllFoldRanges;
-    property Lines: TSynEditStringList read FLines;
+    property Lines: TSynEditStringList read GetLines write SetLines;
     property LineCount: Integer read GetLineCount;
     property CaretX: Integer read GetCaretX write SetCaretX;
     property CaretY: Integer read GetCaretY write SetCaretY;
@@ -3899,6 +3902,16 @@ begin
     if phAfterPaint in Plugin.Handlers then
       Plugin.AfterPaint(Canvas, AClip, FirstLine, LastLine);
   end;
+end;
+
+function TCustomFMXSynEdit.GetLines: TSynEditStringList;
+begin
+  Result := FLines;
+end;
+
+procedure TCustomFMXSynEdit.SetLines(const AValue: TSynEditStringList);
+begin
+  FLines.Assign(AValue);
 end;
 
 { TSynFMXEditPlugin }
