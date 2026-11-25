@@ -53,8 +53,8 @@ uses
   SynEditHighlighter,
   SynFunc,
   SynUnicodeShared,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 Type
   TtkTokenKind = (tkCharacter, tkComment, tkIdentifier, tkKey, tkNull, tkNumber,

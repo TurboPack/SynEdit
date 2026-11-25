@@ -24,7 +24,6 @@ unit SynHighlighterMakefile;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -98,7 +97,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterMakefile = 'Makefiles (*.mak;*.mk;makefile;Makefile;GNUmakefile)|*.mak;*.mk;makefile;Makefile;GNUmakefile';
@@ -445,7 +444,7 @@ end;
 
 function TSynMakefileSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 procedure TSynMakefileSyn.Next;

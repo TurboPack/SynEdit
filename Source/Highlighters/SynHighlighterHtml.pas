@@ -55,8 +55,8 @@ uses
   SynEditCodeFolding,
   SynUnicodeShared,
   SynFunc,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 const
   MAX_ESCAPEAMPS = 249;
@@ -378,7 +378,7 @@ type
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
   published
     property AndAttri: TSynHighlighterAttributes read fAndAttri write fAndAttri;
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
@@ -1325,15 +1325,15 @@ begin
 end;
 
 procedure TSynHTMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
-  Line: Integer;
+  Line: NativeInt;
   CurLine: string;
   Opens, Closes: Integer;
 begin
   for Line := FromLine to ToLine do
   begin
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan[ToInt32(Line)];
     if Trim(CurLine) = '' then
     begin
       FoldRanges.NoFoldInfo(Line + 1);

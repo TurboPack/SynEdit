@@ -24,7 +24,6 @@ unit SynHighlighterTOML;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -106,7 +105,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterTOML = 'TOML Files (*.toml)|*.toml';
@@ -170,7 +169,7 @@ end;
 
 function TSynTOMLSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_') or (AChar = '-');
+  Result := AChar.IsLetterOrDigit or (AChar = '_') or (AChar = '-');
 end;
 
 function TSynTOMLSyn.IsAtLineStart: Boolean;

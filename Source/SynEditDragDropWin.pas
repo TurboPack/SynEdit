@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit
 
 The contents of this file are subject to the Mozilla Public License
@@ -19,9 +19,9 @@ unit SynEditDragDropWin;
 
 {$I SynEdit.inc}
 
-{$IFDEF MSWINDOWS}
-
 interface
+
+{$IFDEF MSWINDOWS}
 
 uses
   Winapi.Windows,
@@ -58,7 +58,7 @@ type
   TSynEnumFormatEtc = class(TInterfacedObject, IEnumFORMATETC)
   private
     FList: TArray<TClipFormat>;
-    FIndex: Integer;
+    FIndex: NativeInt;
   protected
     function GetFormatEtc(ClipFormat: TClipFormat): TFormatEtc;
     {IEnumFORMATETC}
@@ -68,7 +68,7 @@ type
     function Reset: HResult; stdcall;
     function Clone(out Enum: IEnumFormatEtc): HResult; stdcall;
   public
-    constructor Create(FormatList: TArray<TClipFormat>; Index: Integer = 0);
+    constructor Create(FormatList: TArray<TClipFormat>; Index: NativeInt = 0);
   end;
 
 /// Returns the normal response for a wanted effect:
@@ -80,7 +80,7 @@ function StandardEffect(Keys: TShiftState): Integer;
 function MakeGlobal(const S: string): HGLOBAL; overload;
 
 /// Allocate an HGLOBAL and copy a raw buffer into it.
-function MakeGlobal(var P; Size: Integer): HGLOBAL; overload;
+function MakeGlobal(var P; Size: NativeUInt): HGLOBAL; overload;
 
 /// Check whether an IDataObject supports a given clipboard format.
 function HasFormat(DataObject: IDataObject; Format: TClipFormat): Boolean;
@@ -101,6 +101,9 @@ function GenerateHTMLFragment(const AText: string;
 
 implementation
 
+uses
+  SynFunc;
+
 {$IFDEF MSWINDOWS}
 
 { no implementation uses — all imports in interface }
@@ -120,7 +123,7 @@ var
   Size: Integer;
 begin
   Size := ByteLength(S) + SizeOf(Char);
-  Result := GlobalAlloc(GHND, Size);
+  Result := GlobalAlloc(GHND, ToNativeUInt(Size));
   if Result = 0 then
     OutOfMemoryError;
   P := GlobalLock(Result);
@@ -131,7 +134,7 @@ begin
   end;
 end;
 
-function MakeGlobal(var P; Size: Integer): HGLOBAL;
+function MakeGlobal(var P; Size: NativeUInt): HGLOBAL;
 var
   D: Pointer;
 begin
@@ -140,7 +143,7 @@ begin
     OutOfMemoryError;
   D := GlobalLock(Result);
   try
-    Move(P, D^, Size);
+    Move(P, D^, ToNativeInt(Size));
   finally
     GlobalUnlock(Result);
   end;
@@ -236,11 +239,11 @@ function GenerateHTMLFragment(const AText: string;
 var
   Lines: TArray<string>;
   HTML: TStringBuilder;
-  I: Integer;
+  I: NativeInt;
   Token: string;
   Attr: TSynHighlighterAttributes;
   SpanStyle: string;
-  FragmentStart, FragmentEnd: Integer;
+  FragmentStart, FragmentEnd: NativeInt;
   Header: string;
   UTF8Fragment: TBytes;
 const
@@ -379,7 +382,7 @@ end;
 //=== ENUM FORMATETC ===========================================================
 
 constructor TSynEnumFormatEtc.Create(FormatList: TArray<TClipFormat>;
-  Index: Integer);
+  Index: NativeInt);
 begin
   inherited Create;
   FList := FormatList;

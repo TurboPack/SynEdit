@@ -1211,7 +1211,7 @@ end;
 function TSynCodeFolding.ScaledGutterShapeSize(PPI: TSynNativeInt): TSynNativeInt;
 { Always returns an odd number }
 begin
-  Result := MulDiv(fGutterShapeSize, PPI, 96);
+  Result := SynFunc.MulDiv(fGutterShapeSize, PPI, 96);
   if not Odd(Result) then
     Dec(Result);
 end;

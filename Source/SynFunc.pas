@@ -52,6 +52,8 @@ type
   TSynNativeUInt = NativeUInt;
 {$IFEND}
 
+  COLORREF = Int32;
+
   TPointHelper = record helper for TPoint
   public
     constructor Create(const AX, AY : Int64); overload;
@@ -152,8 +154,8 @@ function RoundSyn(const AValue: Real): TSynNativeInt; inline;
 
 function StringOfChar(AChar: Char; const ACount: Int64): string; overload; inline;
 
-function ToByte(const AValue: Int64): Byte; overload; inline;
-function ToByte(const AValue: Int32): Byte; overload; inline;
+function ToUInt8(const AValue: Int64): Byte; overload; inline;
+function ToUInt8(const AValue: Int32): Byte; overload; inline;
 
 function ToInt32(const AValue: Int64): Int32; overload; inline;
 function ToInt32(const AValue: Int32): Int32; overload; inline;
@@ -172,9 +174,11 @@ function ToUInt32(const AValue: Int64): UInt32; overload; inline;
 function ToUInt32(const AValue: Int32): UInt32; overload; inline;
 function ToUInt32(const AValue: UInt64): UInt32; overload; inline;
 
-function ToWord(const AValue: Int64): Word; overload; inline;
-function ToWord(const AValue: Int32): Word; overload; inline;
-function ToWord(const AValue: Byte): Word; overload; inline;
+function ToUInt16(const AValue: Int64): UInt16; overload; inline;
+function ToUInt16(const AValue: Int32): UInt16; overload; inline;
+function ToUInt16(const AValue: Byte): UInt16; overload; inline;
+
+function RGB(r, g, b: Byte): COLORREF;
 
 implementation
 
@@ -392,7 +396,7 @@ begin
   if ADenominator <> 0 then
   begin
     lValue := ANumber * ANumerator;
-    Result := Round(lValue / ADenominator);
+    Result := ToInt32(Round(lValue / ADenominator));
   end
   else
     Result := ANumber;
@@ -443,12 +447,12 @@ begin
   Result := System.StringOfChar(AChar, Int32(ACount));
 end;
 
-function ToByte(const AValue: Int64): Byte;
+function ToUInt8(const AValue: Int64): Byte;
 begin
   Result := Byte(AValue);
 end;
 
-function ToByte(const AValue: Int32): Byte;
+function ToUInt8(const AValue: Int32): Byte;
 begin
   Result := Byte(AValue);
 end;
@@ -514,19 +518,24 @@ begin
   Result := UInt32(AValue);
 end;
 
-function ToWord(const AValue: Int64): Word;
+function ToUInt16(const AValue: Int64): UInt16;
 begin
   Result := Word(AValue);
 end;
 
-function ToWord(const AValue: Int32): Word;
+function ToUInt16(const AValue: Int32): UInt16;
 begin
   Result := Word(AValue);
 end;
 
-function ToWord(const AValue: Byte): Word;
+function ToUInt16(const AValue: Byte): UInt16;
 begin
   Result := Word(AValue);
+end;
+
+function RGB(r, g, b: Byte): COLORREF;
+begin
+  Result := (r or (g shl 8) or (b shl 16));
 end;
 
 end.

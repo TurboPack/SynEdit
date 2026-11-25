@@ -63,8 +63,8 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynUnicodeShared,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TtkTokenKind = (tkAposAttrValue, tkAposEntityRef, tkAttribute, tkCDATA,
@@ -153,7 +153,7 @@ type
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
   published
     property ElementAttri: TSynHighlighterAttributes read fElementAttri
       write fElementAttri;
@@ -981,14 +981,14 @@ begin
 end;
 
 procedure TSynXMLSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
-  Line: Integer;
+  Line: TSynNativeInt;
   CurLine: string;
   Opens, Closes: Integer;
   InTag, IsClosing: Boolean;
   InQuote: WideChar;
-  PendingOpenLine: Integer;
+  PendingOpenLine: NativeInt;
   ContinuedOpen: Boolean;
 begin
   InTag := False;
@@ -998,7 +998,7 @@ begin
 
   for Line := FromLine to ToLine do
   begin
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan[ToInt32(Line)];
     if Trim(CurLine) = '' then
     begin
       FoldRanges.NoFoldInfo(Line + 1);

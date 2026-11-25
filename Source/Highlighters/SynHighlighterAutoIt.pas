@@ -24,7 +24,6 @@ unit SynHighlighterAutoIt;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -110,7 +109,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterAutoIt = 'AutoIt Files (*.au3)|*.au3';
@@ -583,7 +582,7 @@ end;
 
 function TSynAutoItSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 procedure TSynAutoItSyn.Next;

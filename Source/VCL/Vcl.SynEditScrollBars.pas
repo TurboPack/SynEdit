@@ -770,7 +770,7 @@ end;
 
 procedure TSynScrollingStyleHook.WMMouseMove(var Msg: TWMMouse);
 begin
- if not (ssLeft in KeysToShiftState(ToWord(Msg.Keys))) then
+ if not (ssLeft in KeysToShiftState(ToUInt16(Msg.Keys))) then
    SetLeftButtonDownToFalse;
  inherited;
 end;

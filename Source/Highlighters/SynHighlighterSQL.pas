@@ -1388,7 +1388,7 @@ begin
     // Special case for sqlStandard which allows hyphen as an identifier.
     if (p^ = '-') and ((p + 1)^ = '-') then
       Break;
-    p := CharNext(p);
+    p := StrNextChar(p);
   end;
   fStringLen := p - fToIdent;
   if FScanningToEOL then

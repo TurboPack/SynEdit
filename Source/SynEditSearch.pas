@@ -42,7 +42,7 @@ uses
   SynUnicodeShared,
   SynFunc,
   System.Generics.Collections,
-  Classes;
+  System.Classes;
 
 type
   TSynEditSearch = class(TSynEditSearchCustom)

@@ -48,9 +48,9 @@ uses
   SynEditTypes,
   SynEditHighlighter,
   SynFunc,
-  SysUtils,
+  System.SysUtils,
   SynUnicodeShared,
-  Classes,
+  System.Classes,
   SynEditCodeFolding;
 
 type

@@ -24,7 +24,6 @@ unit SynHighlighterENV;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -98,7 +97,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterENV = 'Environment Files (*.env;*.env.*)|*.env;*.env.*';
@@ -150,7 +149,7 @@ end;
 
 function TSynENVSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 function TSynENVSyn.IsAtLineStart: Boolean;

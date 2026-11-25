@@ -39,7 +39,7 @@ uses
   SynEditHighlighter,
   SynFunc,
   SynUnicodeShared,
-  Classes;
+  System.Classes;
 
 type
   TtkTokenKind = (tkBrace, tkBracket, tkNull, tkSpace, tkText, tkComment,

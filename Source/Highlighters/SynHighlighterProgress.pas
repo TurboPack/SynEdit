@@ -910,12 +910,12 @@ function TSynProgressSyn.GetRange: Pointer;
 var
   rng: TRangeInfo;
 begin
-  rng.Range := ToWord(Ord(fRange));
+  rng.Range := ToUInt16(Ord(fRange));
   rng.Level := 0;
   case fRange of
-    rsComment: rng.Level := ToWord(fCommentLevel);
-    rsInclude: rng.Level := ToWord(fIncludeLevel);
-    rsPreProcessor: rng.Level := ToWord(fPreProcessorLevel);
+    rsComment: rng.Level := ToUInt16(fCommentLevel);
+    rsInclude: rng.Level := ToUInt16(fIncludeLevel);
+    rsPreProcessor: rng.Level := ToUInt16(fPreProcessorLevel);
   end;
   Result := rng.Ptr;
 end;

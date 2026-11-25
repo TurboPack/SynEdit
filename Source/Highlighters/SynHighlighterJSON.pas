@@ -45,8 +45,8 @@ uses
   //++ CodeFolding
   SynEditCodeFolding,
   //++ CodeFolding
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TtkTokenKind = (tkString, tkReserved, tkNull, tkNumber, tkSpace,

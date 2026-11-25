@@ -24,7 +24,6 @@ unit SynHighlighterNSIS;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -109,7 +108,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterNSIS = 'NSIS Script Files (*.nsi;*.nsh)|*.nsi;*.nsh';
@@ -255,7 +254,7 @@ end;
 
 function TSynNSISSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_') or (AChar = '.');
+  Result := AChar.IsLetterOrDigit or (AChar = '_') or (AChar = '.');
 end;
 
 function TSynNSISSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
@@ -300,7 +299,7 @@ procedure TSynNSISSyn.BangProc;
 begin
   // '!define', '!include', ... compile-time commands. A bare '!' (e.g. as a
   // logical-not operator in an !if expression) is treated as a symbol.
-  if IsCharAlpha(FLine[Run + 1]) then
+  if FLine[Run + 1].IsLetter then
   begin
     FTokenID := tkPreprocessor;
     Inc(Run);

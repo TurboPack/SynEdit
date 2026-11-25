@@ -24,7 +24,6 @@ unit SynHighlighterSwift;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -112,7 +111,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterSwift = 'Swift Files (*.swift)|*.swift';
@@ -214,7 +213,7 @@ end;
 
 function TSynSwiftSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_') or (AChar = '$');
+  Result := AChar.IsLetterOrDigit or (AChar = '_') or (AChar = '$');
 end;
 
 function TSynSwiftSyn.HashRun(APos, ACount: Integer): Boolean;
@@ -511,7 +510,7 @@ begin
       StringProc(N);
     end;
   end
-  else if IsCharAlpha(FLine[P]) then
+  else if FLine[P].IsLetter then
   begin
     // compiler directive / literal: #if, #available, #selector, #file, ...
     FTokenID := tkDirective;

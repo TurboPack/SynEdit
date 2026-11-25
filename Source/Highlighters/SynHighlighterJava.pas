@@ -50,9 +50,9 @@ uses
   {$IFDEF MSWINDOWS}
   Winapi.Windows,
   {$ENDIF}
-  SysUtils,
+  System.SysUtils,
   SynUnicodeShared,
-  Classes,
+  System.Classes,
 //++ CodeFolding
   SynEditCodeFolding;
 //++ CodeFolding
@@ -188,6 +188,7 @@ type
 implementation
 
 uses
+  System.Character,
   SynEditStrConst,
   SynEditMiscProcs;
 
@@ -978,7 +979,7 @@ begin
     rsComment: CommentProc;
     rsDocument: CommentProc;
     else
-    if IsCharAlphaNumeric(fLine[Run]) and not CharInSet(fLine[Run], ['0'..'9']) then //Fiala
+    if fLine[Run].IsLetterOrDigit and not CharInSet(fLine[Run], ['0'..'9']) then //Fiala
       IdentProc
     else
     begin
@@ -1104,7 +1105,7 @@ end;
 
 function TSynJavaSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or CharInSet(AChar, ['_', '$']);       //Fiala
+  Result := AChar.IsLetterOrDigit or CharInSet(AChar, ['_', '$']);       //Fiala
 (*
   case AChar of
     '_', '$', '0'..'9', 'a'..'z', 'A'..'Z', 'L'..'�', '�'..'�', '�'..'�':

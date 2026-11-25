@@ -322,7 +322,8 @@ uses
   Winapi.Windows,
   {$ENDIF}
   SynEditKeyConstShared,
-  SynEditStrConst;
+  SynEditStrConst,
+  SynFunc;
 
 {$IFNDEF MSWINDOWS}
 const
@@ -343,7 +344,7 @@ end;
 
 procedure ShortCutToKey(ShortCut: TShortCut; var Key: Word; var Shift: TShiftState);
 begin
-  Key := ShortCut and not (scShift + scCtrl + scAlt);
+  Key := ToUInt16(ShortCut and not (scShift + scCtrl + scAlt));
   Shift := [];
   if ShortCut and scShift <> 0 then Include(Shift, ssShift);
   if ShortCut and scCtrl <> 0 then Include(Shift, ssCtrl);
@@ -926,9 +927,9 @@ begin
   AddKey(ecSetMarker9, Ord('9'), [ssCtrl,ssShift]);
   AddKey(ecZoomIn, SYNEDIT_ADD, [ssAlt]);
   AddKey(ecZoomOut, SYNEDIT_SUBTRACT, [ssAlt]);
-  AddKey(ecZoomReset, VK_NUMPAD0, [ssAlt]);
-  AddKey(ecMatchBracket, VK_OEM_6, [ssCtrl]); // VK_OEM_6 is ']' in US keyboards
-  AddKey(ecSelMatchBracket, VK_OEM_6, [ssCtrl,ssShift]);
+  AddKey(ecZoomReset, vkNumpad0, [ssAlt]);
+  AddKey(ecMatchBracket, vkRightBracket, [ssCtrl]); // VK_OEM_6 is ']' in US keyboards
+  AddKey(ecSelMatchBracket, vkRightBracket, [ssCtrl,ssShift]);
   AddKey(ecLowerCase, Ord('K'), [ssCtrl], Ord('L'), [ssCtrl]);
   AddKey(ecUpperCase, Ord('K'), [ssCtrl], Ord('U'), [ssCtrl]);
   AddKey(ecTitleCase, Ord('K'), [ssCtrl], Ord('T'), [ssCtrl]);

@@ -24,7 +24,6 @@ unit SynHighlighterDockerfile;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -106,7 +105,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterDockerfile = 'Dockerfile (Dockerfile*;*.dockerfile)|Dockerfile;Dockerfile.*;*.dockerfile;Containerfile';
@@ -186,7 +185,7 @@ end;
 
 function TSynDockerfileSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 procedure TSynDockerfileSyn.CRProc;

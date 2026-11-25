@@ -24,7 +24,6 @@ unit SynHighlighterHCL;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -110,7 +109,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterHCL = 'HCL/Terraform Files (*.tf;*.tfvars;*.hcl)|*.tf;*.tfvars;*.hcl';
@@ -231,7 +230,7 @@ end;
 
 function TSynHCLSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 function TSynHCLSyn.NextNonSpaceIsParen: Boolean;

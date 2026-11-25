@@ -24,7 +24,6 @@ unit SynHighlighterMatlab;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -106,7 +105,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterMatlab = 'MATLAB Files (*.m)|*.m';
@@ -207,7 +206,7 @@ end;
 
 function TSynMatlabSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 function TSynMatlabSyn.IsAtLineStart: Boolean;

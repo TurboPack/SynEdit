@@ -48,8 +48,8 @@ uses
   SynEditHighlighter,
   SynFunc,
   SynUnicodeShared,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TtkTokenKind = (tkComment, tkIdentifier, tkKey, tkNull, tkNumber, tkSecondKey,
@@ -183,7 +183,7 @@ begin
   First := 0;
   Last := High(ShellScriptKeys);
   Result := False;
-  Token := SysUtils.AnsiLowerCase(AKeyword);
+  Token := System.SysUtils.AnsiLowerCase(AKeyword);
 
   while First <= Last do
   begin
@@ -207,7 +207,7 @@ begin
   First := 0;
   Last := High(ShellScriptSecondKeys);
   Result := False;
-  Token := SysUtils.AnsiLowerCase(AToken);
+  Token := System.SysUtils.AnsiLowerCase(AToken);
   while First <= Last do
   begin
     I := (First + Last) shr 1;

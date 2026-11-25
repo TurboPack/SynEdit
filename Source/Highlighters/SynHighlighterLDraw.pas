@@ -50,8 +50,8 @@ uses
   SynEditHighlighter, SynEditTypes,
   SynFunc,
   SynUnicodeShared,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TtkTokenKind = (

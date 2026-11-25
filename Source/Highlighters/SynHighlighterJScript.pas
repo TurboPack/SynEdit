@@ -49,10 +49,10 @@ uses
   {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
-  SysUtils,
+  System.SysUtils,
   SynFunc,
   SynUnicodeShared,
-  Classes,
+  System.Classes,
 //++ CodeFolding
   SynEditCodeFolding;
 //++ CodeFolding

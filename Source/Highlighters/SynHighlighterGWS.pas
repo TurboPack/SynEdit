@@ -43,8 +43,8 @@ uses
   SynEditHighlighter,
   SynUnicodeShared,
   SynFunc,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 Type
   TtkTokenKind = (

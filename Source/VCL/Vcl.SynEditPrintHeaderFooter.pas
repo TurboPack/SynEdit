@@ -472,7 +472,7 @@ begin
   FFont.Pitch := TFontPitch(StrToIntDef(GetFirstEl(s, '/'), 0));
   FFont.PixelsPerInch := StrToIntDef(GetFirstEl(s, '/'), 0);
   FFont.Size := StrToIntDef(GetFirstEl(s, '/'), 0);
-  byte(sty) := ToByte(StrToIntDef(GetFirstEl(s, '/'), 0));
+  byte(sty) := ToUInt8(StrToIntDef(GetFirstEl(s, '/'), 0));
   FFont.Style := sty;
   FLineNumber := StrToIntDef(GetFirstEl(s, '/'), 0);
   FAlignment := TAlignment(StrToIntDef(GetFirstEl(s, '/'), 0));

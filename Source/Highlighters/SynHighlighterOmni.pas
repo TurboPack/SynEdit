@@ -286,7 +286,8 @@ uses
   System.Win.Registry,
   {$ENDIF}
   System.TypInfo,
-  SyStem.IniFiles,
+  System.IniFiles,
+  System.Character,
   SynEditStrConst,
   SynEditMiscProcs,
   System.UITypes;
@@ -310,7 +311,7 @@ end;
 
 function TSynOmniSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (Pos(AChar, FKeywordChars) > 0)
+  Result := AChar.IsLetterOrDigit or (Pos(AChar, FKeywordChars) > 0)
     or (FPHPVariable and (AChar='$')) or ((csAutoit in FComments) and (AChar = '#'));
 end;
 
@@ -443,7 +444,7 @@ begin
     FTokenID := tkString;
     repeat
       Inc(Run);
-    until not IsCharAlphaNumeric(FLine[Run]);
+    until not FLine[Run].IsLetterOrDigit;
   end
   else
   if FDetectPreprocessor then
@@ -720,7 +721,7 @@ begin
     FTokenID := tkVariable;
     repeat
       Inc(Run);
-    until not (IsCharAlphaNumeric(FLine[Run]) or (FLine[Run] = '_'));
+    until not (FLine[Run].IsLetterOrDigit or (FLine[Run] = '_'));
   end
   else
 (*
@@ -752,7 +753,7 @@ begin
       Inc(Run);
     end;
     { zkontroluju, jestli je to po��d ��slo t�eba takov� $Default bralo prvn� 4 znaky jako hex }
-    if IsCharAlpha(FLine[Run]) then
+    if FLine[Run].IsLetter then
       FTokenID := tkUnknown;
   end
   else
@@ -1257,7 +1258,7 @@ begin
   ch := FLine[Run];
   { in MathLab is v' vector and not string }
   if FVectorSupport and (ch = '''') then
-    if (Run > 0) and IsCharAlphaW(FLine[Run - 1]) then
+    if (Run > 0) and FLine[Run - 1].IsLetter then
     begin
       Inc(Run);
       Exit;
@@ -1356,10 +1357,10 @@ begin
   end
   else
   {PowerShell attribute in square brackets}
-  if (csPwShell in FComments) and (Run>0) and (FLine[Run-1] = '[') and IsCharAlpha(FLine[Run]) then
+  if (csPwShell in FComments) and (Run>0) and (FLine[Run-1] = '[') and FLine[Run].IsLetter then
   begin
     FTokenID := tkAttribute;
-    while IsCharAlphaNumeric(FLine[Run]) do Inc(Run);
+    while FLine[Run].IsLetterOrDigit do Inc(Run);
   end
   else
   begin

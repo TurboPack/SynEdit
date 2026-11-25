@@ -48,8 +48,8 @@ uses
   SynEditHighlighter,
   SynUnicodeShared,
   SynFunc,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TtkTokenKind = (tkComment, tkIdentifier, tkInterFunc, tkKey, tkNull,

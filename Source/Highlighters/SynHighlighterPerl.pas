@@ -54,10 +54,10 @@ uses
   {$IFDEF MSWINDOWS}
   Winapi.Windows,                                                               //Fiala
   {$ENDIF}
-  SysUtils,
+  System.SysUtils,
   SynFunc,
   SynUnicodeShared,
-  Classes,
+  System.Classes,
 //++ CodeFolding
   SynEditCodeFolding;
 //++ CodeFolding
@@ -177,6 +177,7 @@ type
 implementation
 
 uses
+  System.Character,
   SynEditStrConst,
   SynEditMiscProcs;
 
@@ -1239,7 +1240,7 @@ end;
 
 function TSynPerlSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or CharInSet(AChar, ['_', '$', '@', '%']) //Fiala
+  Result := AChar.IsLetterOrDigit or CharInSet(AChar, ['_', '$', '@', '%']) //Fiala
 end;
 
 class function TSynPerlSyn.GetLanguageName: string;

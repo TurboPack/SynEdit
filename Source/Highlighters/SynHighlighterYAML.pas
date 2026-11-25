@@ -74,7 +74,7 @@ type
 type
   TSynYAMLSyn = class(TSynCustomCodeFoldingHighlighter)
   private
-    fRange: Longword;
+    fRange: UInt32;
     fTokenID: TtkTokenKind;
     fCommentAttri: TSynHighlighterAttributes;
     fDocDelimiterAttri: TSynHighlighterAttributes;
@@ -251,23 +251,23 @@ begin
 
   if fLine^ = '%' then begin
     LongRec(fRange).Lo := rsDirective;
-    LongRec(fRange).Hi := ToWord(NewIndent);
+    LongRec(fRange).Hi := ToUInt16(NewIndent);
   end else if FLineStr.StartsWith(sDocStart) or FLineStr.StartsWith(sDocEnd) then begin
     LongRec(fRange).Lo := rsDocDelimiter;
-    LongRec(fRange).Hi := ToWord(NewIndent);
+    LongRec(fRange).Hi := ToUInt16(NewIndent);
   end else if (LongRec(fRange).Lo = rsLiteralStart) then begin
     LongRec(fRange).Lo := rsLiteral;
-    LongRec(fRange).Hi := ToWord(NewIndent);
+    LongRec(fRange).Hi := ToUInt16(NewIndent);
   end else if (LongRec(fRange).Lo = rsLiteral) then begin
     if (LongRec(fRange).Hi > NewIndent) then begin
       LongRec(fRange).Lo := rsUnknown;
-      LongRec(fRange).Hi := ToWord(NewIndent);
+      LongRec(fRange).Hi := ToUInt16(NewIndent);
     end else
-      LongRec(fRange).Hi := ToWord(Min(LongRec(fRange).Hi, NewIndent));
+      LongRec(fRange).Hi := ToUInt16(Min(LongRec(fRange).Hi, NewIndent));
   end else begin
     if not (LongRec(fRange).Lo in [rsString1, rsString2]) then
       LongRec(fRange).Lo := rsUnknown;
-    LongRec(fRange).Hi := ToWord(NewIndent);
+    LongRec(fRange).Hi := ToUInt16(NewIndent);
   end;
 end;
 
@@ -719,7 +719,7 @@ end;
 
 procedure TSynYAMLSyn.SetRange(Value: Pointer);
 begin
-  fRange := Longword(NativeUInt(Value));
+  fRange := ToUInt32(NativeUInt(Value));
 end;
 
 function TSynYAMLSyn.GetRange: Pointer;

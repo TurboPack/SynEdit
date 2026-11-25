@@ -415,20 +415,20 @@ end;
     FIsWordBreakFunction: TSynIsWordBreakFunction;
     function GetPattern: string; virtual; abstract;
     procedure SetPattern(const Value: string); virtual; abstract;
-    function GetLength(Index: Integer): Integer; virtual; abstract;
-    function GetResult(Index: Integer): Integer; virtual; abstract;
-    function GetResultCount: Integer; virtual; abstract;
+    function GetLength(Index: TSynNativeInt): TSynNativeInt; virtual; abstract;
+    function GetResult(Index: TSynNativeInt): TSynNativeInt; virtual; abstract;
+    function GetResultCount: TSynNativeInt; virtual; abstract;
     procedure SetOptions(const Value: TSynSearchOptions); virtual; abstract;
   public
-    function FindAll(const NewText: string; StartChar: Integer = 1;
-      EndChar: Integer = 0): Integer; virtual; abstract;
+    function FindAll(const NewText: string; StartChar: TSynNativeInt = 1;
+      EndChar: TSynNativeInt = 0): TSynNativeInt; virtual; abstract;
     function PreprocessReplaceExpression(const AReplace: string): string; virtual;
     function Replace(const aOccurrence, aReplacement: string): string;
       virtual; abstract;
     property Pattern: string read GetPattern write SetPattern;
-    property ResultCount: Integer read GetResultCount;
-    property Results[Index: Integer]: Integer read GetResult;
-    property Lengths[Index: Integer]: Integer read GetLength;
+    property ResultCount: TSynNativeInt read GetResultCount;
+    property Results[Index: TSynNativeInt]: TSynNativeInt read GetResult;
+    property Lengths[Index: TSynNativeInt]: TSynNativeInt read GetLength;
     property Options: TSynSearchOptions write SetOptions;
     property IsWordBreakFunction: TSynIsWordBreakFunction write FIsWordBreakFunction;
   end;
@@ -583,7 +583,7 @@ end;
 
 procedure TSynMethodChain.Remove(AEvent: TMethod);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if not Assigned(@AEvent) then
     raise ESynMethodChain.CreateFmt

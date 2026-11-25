@@ -722,7 +722,9 @@ end;
 
 procedure TSynEditStringList.SaveToStream(Stream: TStream; Encoding: TEncoding);
 var
+  {$IFDEF MSWINDOWS}
   Cancel: Boolean;
+  {$ENDIF}
   S: string;
   Buffer, Preamble: TBytes;
 begin
@@ -731,11 +733,10 @@ begin
 
   S := GetTextStr;
 
-  Cancel := False;
   {$IFDEF MSWINDOWS}
-  if (Encoding = TEncoding.ANSI) and Assigned(FOnInfoLoss) and not IsAnsiOnly(S)
-  then
+  if (Encoding = TEncoding.ANSI) and Assigned(FOnInfoLoss) and not IsAnsiOnly(S) then
   begin
+    Cancel := False;
     FOnInfoLoss(Encoding, Cancel);
     if Cancel then
       Exit;

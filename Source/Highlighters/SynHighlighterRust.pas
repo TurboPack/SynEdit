@@ -24,7 +24,6 @@ unit SynHighlighterRust;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -114,7 +113,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterRust = 'Rust Files (*.rs)|*.rs';
@@ -692,7 +691,7 @@ end;
 
 function TSynRustSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 procedure TSynRustSyn.Next;

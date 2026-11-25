@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit
 
 The contents of this file are subject to the Mozilla Public License
@@ -29,7 +29,7 @@ uses
 type
   TSynSelStorage = record
     Selections: TArray<TSynSelection>;
-    BaseIndex, ActiveIndex: Integer;
+    BaseIndex, ActiveIndex: NativeInt;
     procedure Clear;
   end;
 
@@ -38,29 +38,29 @@ type
     type
       TKeepSelection = (ksKeepBase, ksKeepActive);
   private
-    function GetCount: Integer;
+    function GetCount: NativeInt;
     function GetActiveSelection: TSynSelection;
     function GetBaseSelection: TSynSelection;
     procedure SetActiveSelection(const Value: TSynSelection);
     procedure SetBaseSelection(const Value: TSynSelection);
     function GetSelection(Index: Integer): TSynSelection;
-    procedure SetActiveSelIndex(const Index: Integer);
+    procedure SetActiveSelIndex(const Index: NativeInt);
     function GetIsEmpty: Boolean;
   protected
     FOwner: TObject;
     FSelections: TList<TSynSelection>;
-    FBaseSelIndex: Integer;
-    FActiveSelIndex: Integer;
+    FBaseSelIndex: NativeInt;
+    FActiveSelIndex: NativeInt;
     // === Abstract methods — editor coupling points ===
     procedure CaretsChanged; virtual; abstract;
     procedure DoInvalidateSelection(const Sel: TSynSelection); virtual; abstract;
     procedure DoRestoreSelection(const Sel: TSynSelection;
       EnsureVisible: Boolean); virtual; abstract;
-    function GetLineText(ALine: Integer): string; virtual; abstract;
+    function GetLineText(ALine: NativeInt): string; virtual; abstract;
     // Word-wrap / column selection support
     function GetWordWrap: Boolean; virtual; abstract;
     function GetScrollPastEOL: Boolean; virtual; abstract;
-    function GetRowLength(ARow: Integer): Integer; virtual; abstract;
+    function GetRowLength(ARow: NativeInt): NativeInt; virtual; abstract;
     function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord; virtual; abstract;
     function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord; virtual; abstract;
     function SelectionToDisplayRow(var Sel: TSynSelection): Integer; virtual; abstract;
@@ -71,7 +71,7 @@ type
     procedure Clear(KeepSelection: TKeepSelection = ksKeepActive);
     function AddCaret(const ACaret: TBufferCoord;
       IsBase: Boolean = False): Boolean;
-    procedure DeleteSelection(Index: Integer);
+    procedure DeleteSelection(Index: NativeInt);
     function FindCaret(const ACaret: TBufferCoord): Integer;
     function FindSelection(const BC: TBufferCoord;
       var Index: Integer): Boolean;
@@ -83,7 +83,7 @@ type
       const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
     function RowHasCaret(ARow, ALine: Integer): Boolean;
     // Invalidation
-    procedure InvalidateSelection(Index: Integer);
+    procedure InvalidateSelection(Index: NativeInt);
     procedure InvalidateAll;
     // Column selection anchor
     function ColumnSelectionStart: TBufferCoord;
@@ -99,13 +99,13 @@ type
     procedure LinesDeleted(FirstLine, aCount: Integer);
     procedure LinePut(aIndex: Integer; const OldLine: string);
     // Properties
-    property BaseSelectionIndex: Integer read FBaseSelIndex;
+    property BaseSelectionIndex: NativeInt read FBaseSelIndex;
     property ActiveSelection: TSynSelection read GetActiveSelection
       write SetActiveSelection;
     property BaseSelection: TSynSelection read GetBaseSelection
       write SetBaseSelection;
-    property Count: Integer read GetCount;
-    property ActiveSelIndex: Integer read FActiveSelIndex
+    property Count: NativeInt read GetCount;
+    property ActiveSelIndex: NativeInt read FActiveSelIndex
       write SetActiveSelIndex;
     property IsEmpty: Boolean read GetIsEmpty;
     property Selection[Index: Integer]: TSynSelection
@@ -113,6 +113,9 @@ type
   end;
 
 implementation
+
+uses
+  SynFunc;
 
 { TSynSelStorage }
 
@@ -177,7 +180,7 @@ end;
 
 procedure TSynSelectionsBase.Clear(KeepSelection: TKeepSelection);
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   if FSelections.Count = 1 then Exit;
 
@@ -207,7 +210,8 @@ end;
 procedure TSynSelectionsBase.ForEachSelection(
   const Callback: TProc<TSynSelection>);
 var
-  OldActiveSelIndex, I: Integer;
+  OldActiveSelIndex: NativeInt;
+  I: NativeInt;
 begin
   OldActiveSelIndex := FActiveSelIndex;
 
@@ -231,7 +235,7 @@ end;
 procedure TSynSelectionsBase.ColumnSelection(Anchor, ACaret: TBufferCoord;
   LastPosX: Integer);
 
-  procedure SetLineSelection(Index, Line, FromChar, ToChar: Integer;
+  procedure SetLineSelection(Index, Line, FromChar, ToChar: NativeInt;
     ScrollPastEOL: Boolean);
   var
     LineString: string;
@@ -249,10 +253,10 @@ procedure TSynSelectionsBase.ColumnSelection(Anchor, ACaret: TBufferCoord;
     InvalidateSelection(Index);
   end;
 
-  procedure SetRowSelection(Index, Row, FromChar, ToChar: Integer;
+  procedure SetRowSelection(Index, Row, FromChar, ToChar: NativeInt;
     ScrollPastEOL: Boolean);
   var
-    Len: Integer;
+    Len: NativeInt;
   begin
     Len := GetRowLength(Row);
     if not ScrollPastEOL then
@@ -270,10 +274,10 @@ procedure TSynSelectionsBase.ColumnSelection(Anchor, ACaret: TBufferCoord;
 
 var
   DC: TDisplayCoord;
-  FromChar, ToChar: Integer;
-  FromRow, ToRow: Integer;
-  Line, Row: Integer;
-  Index: Integer;
+  FromChar, ToChar: NativeInt;
+  FromRow, ToRow: NativeInt;
+  Line, Row: NativeInt;
+  Index: NativeInt;
   Increment: Integer;
   ScrollPastEOL: Boolean;
 begin
@@ -347,7 +351,7 @@ begin
   CaretsChanged;
 end;
 
-procedure TSynSelectionsBase.DeleteSelection(Index: Integer);
+procedure TSynSelectionsBase.DeleteSelection(Index: NativeInt);
 var
   Sel: TSynSelection;
 begin
@@ -416,14 +420,14 @@ begin
   Result := FSelections[FBaseSelIndex];
 end;
 
-function TSynSelectionsBase.GetCount: Integer;
+function TSynSelectionsBase.GetCount: NativeInt;
 begin
   Result := FSelections.Count;
 end;
 
 function TSynSelectionsBase.GetIsEmpty: Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   Result := True;
   for Index := 0 to FSelections.Count - 1 do
@@ -438,24 +442,24 @@ end;
 
 procedure TSynSelectionsBase.InvalidateAll;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   for Index := 0 to FSelections.Count - 1 do
     InvalidateSelection(Index);
 end;
 
-procedure TSynSelectionsBase.InvalidateSelection(Index: Integer);
+procedure TSynSelectionsBase.InvalidateSelection(Index: NativeInt);
 begin
   DoInvalidateSelection(FSelections[Index]);
 end;
 
 procedure TSynSelectionsBase.LinePut(aIndex: Integer; const OldLine: string);
 var
-  I: Integer;
+  I: NativeInt;
   Line: string;
-  OldLen, NewLen: Integer;
-  StartPos: Integer;
-  Delta: Integer;
+  OldLen, NewLen: TSynNativeInt;
+  StartPos: TSynNativeInt;
+  Delta: NativeInt;
 begin
   if FSelections.Count <= 1 then Exit;
 
@@ -479,7 +483,7 @@ end;
 
 procedure TSynSelectionsBase.LinesDeleted(FirstLine, aCount: Integer);
 var
-  I: Integer;
+  I: NativeInt;
   MinBC: TBufferCoord;
 begin
   if FSelections.Count <= 1 then Exit;
@@ -506,7 +510,7 @@ end;
 
 procedure TSynSelectionsBase.LinesInserted(FirstLine, aCount: Integer);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if FSelections.Count <= 1 then Exit;
 
@@ -544,7 +548,7 @@ procedure TSynSelectionsBase.Merge;
 
 var
   Sel, NextSel: TSynSelection;
-  I: Integer;
+  I: NativeInt;
   BC: TBufferCoord;
 begin
   if FSelections.Count = 1 then Exit;
@@ -660,7 +664,7 @@ begin
   FSelections[FActiveSelIndex] := Value;
 end;
 
-procedure TSynSelectionsBase.SetActiveSelIndex(const Index: Integer);
+procedure TSynSelectionsBase.SetActiveSelIndex(const Index: NativeInt);
 var
   Sel: TSynSelection;
 begin

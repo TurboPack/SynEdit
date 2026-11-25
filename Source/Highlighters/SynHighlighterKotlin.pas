@@ -24,7 +24,6 @@ unit SynHighlighterKotlin;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -109,7 +108,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterKotlin = 'Kotlin Files (*.kt;*.kts)|*.kt;*.kts';
@@ -209,7 +208,7 @@ end;
 
 function TSynKotlinSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 function TSynKotlinSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;

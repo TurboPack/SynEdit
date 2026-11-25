@@ -141,7 +141,7 @@ begin
 
   if Ed.Selections.Count > 1 then
   begin
-    FFormatEtc.Add(ToWord(SynEditClipboardFormat)); // InternalFormat
+    FFormatEtc.Add(ToUInt16(SynEditClipboardFormat)); // InternalFormat
     FInternalText := DelimitedText(IntClipFormatDelimiter);
   end;
 
@@ -149,7 +149,7 @@ begin
     Assigned(TCustomSynEdit(ASynEdit).Highlighter) and (FText <> '')
   then
   begin
-    FFormatEtc.Add(ToWord(HTMLClipboardFormat)); // HTMLFormat
+    FFormatEtc.Add(ToUInt16(HTMLClipboardFormat)); // HTMLFormat
     HtmlStream := TMemoryStream.Create;
     StreamHtml(ASynEdit, HtmlStream);
   end;

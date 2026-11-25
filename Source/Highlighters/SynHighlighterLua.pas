@@ -24,7 +24,6 @@ unit SynHighlighterLua;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -104,7 +103,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterLua = 'Lua Files (*.lua)|*.lua';
@@ -559,7 +558,7 @@ end;
 
 function TSynLuaSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 procedure TSynLuaSyn.Next;

@@ -54,8 +54,8 @@ uses
   SynEditHighlighter,
   SynFunc,
   SynUnicodeShared,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TtkTokenKind = (tkSymbol, tkKey, tkComment, tkIdentifier, tkNull, tkNumber, tkSecondKey,
@@ -250,7 +250,7 @@ begin
   if ACaseSensitive then
     Token := AKeyword
   else
-    Token := SysUtils.AnsiLowerCase(AKeyword);
+    Token := System.SysUtils.AnsiLowerCase(AKeyword);
   while First <= Last do
   begin
     I := (First + Last) shr 1;
@@ -690,7 +690,7 @@ begin
     begin
       Value.BeginUpdate;
       for I := 0 to Value.Count - 1 do
-        Value[I] := SysUtils.AnsiUpperCase(Value[I]);
+        Value[I] := System.SysUtils.AnsiUpperCase(Value[I]);
       Value.EndUpdate;
     end;
   fKeyWords.Assign(Value);
@@ -705,7 +705,7 @@ begin
     begin
       Value.BeginUpdate;
       for I := 0 to Value.Count - 1 do
-        Value[I] := SysUtils.AnsiUpperCase(Value[I]);
+        Value[I] := System.SysUtils.AnsiUpperCase(Value[I]);
       Value.EndUpdate;
     end;
   fSecondKeys.Assign(Value);

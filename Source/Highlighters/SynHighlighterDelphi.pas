@@ -10,8 +10,9 @@ unit SynHighlighterDelphi;
 interface
 
 uses
-  SysUtils, Classes, System.UITypes, SynEditTypes, SynEditHighlighter,
-  SynEditCodeFolding, SynEditStrConst, SynFunc, System.Math, System.RegularExpressions;
+  System.SysUtils, System.Classes, System.UITypes, SynEditTypes,
+  SynEditHighlighter, SynEditCodeFolding, SynEditStrConst, SynFunc, System.Math,
+  System.RegularExpressions;
 
 type
   TRangeState = (rsANil, rsAnsi, rsAnsiAsm, rsAsm, rsBor, rsBorAsm, rsProperty,

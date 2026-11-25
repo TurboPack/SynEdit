@@ -3754,7 +3754,7 @@ begin
       Exit;
     end;
     FPasteArray := [];
-    if (FSelections.Count > 1) and Clipboard.HasFormat(ToWord(SynEditClipboardFormat)) then
+    if (FSelections.Count > 1) and Clipboard.HasFormat(ToUInt16(SynEditClipboardFormat)) then
     begin
       FPasteArray := GetInternalClipText;
       if Length(FPasteArray) <> FSelections.Count then

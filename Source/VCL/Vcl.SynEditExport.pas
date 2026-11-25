@@ -335,7 +335,7 @@ begin
       finally
         GlobalUnlock(hData);
       end;
-      Clipboard.SetAsHandle(ToWord(AFormat), hData);
+      Clipboard.SetAsHandle(ToUInt16(AFormat), hData);
     end
     else
       Abort;

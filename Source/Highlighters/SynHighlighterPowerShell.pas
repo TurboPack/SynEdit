@@ -24,7 +24,6 @@ unit SynHighlighterPowerShell;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -114,7 +113,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterPowerShell = 'PowerShell Files (*.ps1;*.psm1;*.psd1)|*.ps1;*.psm1;*.psd1';
@@ -217,12 +216,12 @@ end;
 
 function TSynPowerShellSyn.IsIdentStart(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlpha(AChar) or (AChar = '_');
+  Result := AChar.IsLetter or (AChar = '_');
 end;
 
 function TSynPowerShellSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 procedure TSynPowerShellSyn.CRProc;

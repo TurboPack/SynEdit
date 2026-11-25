@@ -24,7 +24,6 @@ unit SynHighlighterRegistry;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -109,7 +108,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterRegistry = 'Registry Files (*.reg)|*.reg';
@@ -195,7 +194,7 @@ end;
 
 function TSynRegistrySyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_');
+  Result := AChar.IsLetterOrDigit or (AChar = '_');
 end;
 
 function TSynRegistrySyn.IsAtLineStart: Boolean;

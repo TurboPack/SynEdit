@@ -76,8 +76,8 @@ uses
   SynEditHighlighter,
   SynFunc,
   SynUnicodeShared,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TtkTokenKind = (tkNull, tkSpace, tkFtpLink, tkGopherLink,
@@ -170,7 +170,7 @@ const
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   KeyWords: array[0..15] of string = (
@@ -413,7 +413,7 @@ end;
 
 function TSynURISyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar);
+  Result := AChar.IsLetterOrDigit;
 end;
 
 procedure TSynURISyn.SetAlreadyVisitedURIFunc(Value: TAlreadyVisitedURIFunc);
@@ -541,7 +541,7 @@ end;
 
 function TSynURISyn.IsAlphaNum(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar);
+  Result := AChar.IsLetterOrDigit;
 end;
 
 function TSynURISyn.IsMark(AChar: WideChar): Boolean;

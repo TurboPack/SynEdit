@@ -24,7 +24,6 @@ unit SynHighlighterTypeScript;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -115,7 +114,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterTypeScript = 'TypeScript Files (*.ts;*.tsx;*.mts;*.cts)|*.ts;*.tsx;*.mts;*.cts';
@@ -239,7 +238,7 @@ end;
 
 function TSynTypeScriptSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_') or (AChar = '$');
+  Result := AChar.IsLetterOrDigit or (AChar = '_') or (AChar = '$');
 end;
 
 function TSynTypeScriptSyn.IdentKind(MayBe: PWideChar): TtkTokenKind;
@@ -409,7 +408,7 @@ begin
       Inc(Run);
   end;
   // flags (g i m s u y d ...)
-  while IsCharAlpha(FLine[Run]) do
+  while FLine[Run].IsLetter do
     Inc(Run);
 end;
 

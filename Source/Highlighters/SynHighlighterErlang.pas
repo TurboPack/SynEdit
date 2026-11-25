@@ -24,7 +24,6 @@ unit SynHighlighterErlang;
 interface
 
 uses
-  Winapi.Windows,
   System.Classes,
   System.SysUtils,
   SynEditTypes,
@@ -113,7 +112,7 @@ type
 implementation
 
 uses
-  SynEditStrConst;
+  System.Character, SynEditStrConst;
 
 const
   SYNS_FilterErlang = 'Erlang Files (*.erl;*.hrl)|*.erl;*.hrl';
@@ -225,7 +224,7 @@ end;
 
 function TSynErlangSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or (AChar = '_') or (AChar = '@');
+  Result := AChar.IsLetterOrDigit or (AChar = '_') or (AChar = '@');
 end;
 
 function TSynErlangSyn.IsAtLineStart: Boolean;

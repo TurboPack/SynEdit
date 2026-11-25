@@ -149,6 +149,7 @@ implementation
 
 uses
   SynEditMiscProcs,
+  SynFunc,
   SynUnicodeShared;
 
 { TSynMacroEvent }
@@ -173,7 +174,7 @@ end;
 
 procedure TSynBasicEvent.InitEventParameters(aStr: string);
 begin
-  RepeatCount := StrToIntDef(Trim(aStr), 1);
+  RepeatCount := ToUInt8(StrToIntDef(Trim(aStr), 1));
 end;
 
 procedure TSynBasicEvent.Initialize(aCmd: TSynEditorCommand; aChar: WideChar;
@@ -225,7 +226,7 @@ begin
   else
     Key := ' ';
   Delete(aStr, 1, 1);
-  RepeatCount := StrToIntDef(Trim(aStr), 1);
+  RepeatCount := ToUInt8(StrToIntDef(Trim(aStr), 1));
 end;
 
 procedure TSynCharEvent.Initialize(aCmd: TSynEditorCommand; aChar: WideChar;
@@ -281,7 +282,7 @@ begin
   valStr := Copy(aStr, o + 1, c - o - 1);
   Value := StringReplace(valStr, '''''', '''', [rfReplaceAll]);
   Delete(aStr, 1, c);
-  RepeatCount := StrToIntDef(Trim(aStr), 1);
+  RepeatCount := ToUInt8(StrToIntDef(Trim(aStr), 1));
 end;
 
 procedure TSynStringEvent.Initialize(aCmd: TSynEditorCommand; aChar: WideChar;
@@ -375,7 +376,7 @@ begin
     Position := BufferCoord(x, y);
     Delete(aStr, 1, c);
     aStr := Trim(aStr);
-    RepeatCount := StrToIntDef(aStr, 1);
+    RepeatCount := ToUInt8(StrToIntDef(aStr, 1));
   end;
 end;
 

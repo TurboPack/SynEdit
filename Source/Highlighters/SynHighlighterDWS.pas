@@ -337,7 +337,7 @@ begin
   begin
       C:=Ord(Str^);
       if C in [Ord('A')..Ord('Z')] then
-         C := ToWord(C + (Ord('a')-Ord('A')));
+         C := ToUInt16(C + (Ord('a')-Ord('A')));
       Hash := Hash * 692 + C * 171;
       Inc(Str);
    end;

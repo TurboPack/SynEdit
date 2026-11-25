@@ -148,7 +148,7 @@ type
     procedure SetRange(Value: Pointer); override;
     procedure ResetRange; override;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine: Integer; ToLine: Integer); override;
+      LinesToScan: TStrings; FromLine: TSynNativeInt; ToLine: TSynNativeInt); override;
   published
     property CommentAttri: TSynHighlighterAttributes read fCommentAttri
       write fCommentAttri;
@@ -1186,9 +1186,9 @@ begin
 end;
 
 procedure TSynCssSyn.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: TSynNativeInt);
 var
-  Line: Integer;
+  Line: NativeInt;
   CurLine: string;
   Opens, Closes: Integer;
   InComment: Boolean;
@@ -1197,7 +1197,7 @@ begin
 
   for Line := FromLine to ToLine do
   begin
-    CurLine := LinesToScan[Line];
+    CurLine := LinesToScan[ToInt32(Line)];
     if Trim(CurLine) = '' then
     begin
       FoldRanges.NoFoldInfo(Line + 1);

@@ -51,10 +51,10 @@ uses
   {$ENDIF}
   SynEditTypes,
   SynEditHighlighter,
-  SysUtils,
+  System.SysUtils,
   SynFunc,
   SynUnicodeShared,
-  Classes,
+  System.Classes,
 //++ CodeFolding
   SynEditCodeFolding;
 //++ CodeFolding
@@ -184,12 +184,9 @@ type
 implementation
 
 uses
+  System.Character,
   SynEditMiscProcs,
-  SynEditStrConst
-  {$IFDEF MSWINDOWS}
-  , Winapi.Windows
-  {$ENDIF}
-  ;
+  SynEditStrConst;
 
 const
 
@@ -1229,7 +1226,7 @@ end;
 
 function TSynPHPSyn.IsIdentChar(AChar: WideChar): Boolean;
 begin
-  Result := IsCharAlphaNumeric(AChar) or CharInSet(AChar, ['_', '$']);
+  Result := AChar.IsLetterOrDigit or CharInSet(AChar, ['_', '$']);
 end;
 
 function TSynPHPSyn.IsWordBreakChar(AChar: WideChar): Boolean;

@@ -40,7 +40,7 @@ uses
   SynEditTypes,
   SynEditRegexSearch,
   SynFunc,
-  Classes;
+  System.Classes;
 
 type
   TSynEditWildcardSearch = class(TSynEditRegexSearch)
