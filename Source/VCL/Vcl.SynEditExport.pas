@@ -41,14 +41,14 @@ unit Vcl.SynEditExport;
 interface
 
 uses
-  Windows,
-  Graphics,
-  Clipbrd,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Clipbrd,
   SynEditHighlighter,
   SynEditTypes,
   SynUnicodeShared,
-  Classes,
-  SysUtils;
+  System.Classes,
+  System.SysUtils;
 
 type
   ESynEncoding = class(ESynError);
@@ -200,9 +200,9 @@ resourcestring
 implementation
 
 uses
-  Math,
+  System.Math,
   SynEditMiscProcs,
-  SynEditMiscClasses,
+  Vcl.SynEditMiscClasses,
   SynEditStrConst,
   SynFunc;
 

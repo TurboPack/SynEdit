@@ -41,19 +41,19 @@ unit Vcl.SynEditPrintMarginsDialog;
 interface
 
 uses
-  Windows,
-  Graphics,
-  Forms,
-  Controls,
-  StdCtrls,
-  Buttons,
-  ExtCtrls,
-  Dialogs,
-  SynEditPrint,
-  SynEditPrintTypes,
-  SynEditPrintMargins,
-  SysUtils,
-  Classes;
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.Forms,
+  Vcl.Controls,
+  Vcl.StdCtrls,
+  Vcl.Buttons,
+  Vcl.ExtCtrls,
+  Vcl.Dialogs,
+  Vcl.SynEditPrint,
+  Vcl.SynEditPrintTypes,
+  Vcl.SynEditPrintMargins,
+  System.SysUtils,
+  System.Classes;
 
 type
   TSynEditPrintMarginsDlg = class(TForm)
@@ -101,7 +101,7 @@ implementation
 {$R *.dfm}
 
 uses
-  UITypes;
+  System.UITypes;
 
 { TSynEditPrintMarginsDlg }
 

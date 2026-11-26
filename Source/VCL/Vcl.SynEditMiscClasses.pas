@@ -648,13 +648,13 @@ type
     procedure DoInvalidateSelection(const Sel: TSynSelection); override;
     procedure DoRestoreSelection(const Sel: TSynSelection;
       EnsureVisible: Boolean); override;
-    function GetLineText(ALine: Integer): string; override;
+    function GetLineText(ALine: NativeInt): string; override;
     function GetWordWrap: Boolean; override;
     function GetScrollPastEOL: Boolean; override;
-    function GetRowLength(ARow: Integer): Integer; override;
+    function GetRowLength(ARow: NativeInt): NativeInt; override;
     function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord; override;
     function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord; override;
-    function SelectionToDisplayRow(var Sel: TSynSelection): Integer; override;
+    function SelectionToDisplayRow(var Sel: TSynSelection): NativeInt; override;
   public
     constructor Create(Owner: TPersistent);
   end;
@@ -824,7 +824,7 @@ uses
   Vcl.Themes,
   SynEditMiscProcs,
   SynEditCodeFolding,
-  SynEdit,
+  Vcl.SynEdit,
   SynEditTextBuffer;
 
 {$REGION 'TSynSelectedColor - now in SynEditTypes.pas'}
@@ -1796,7 +1796,7 @@ procedure TSynGutterBand.DoClick(Sender: TObject; Button: TMouseButton;
 var
   SynEdit: TCustomSynEdit;
   Index: TSynNativeInt;
-  I, BmkX, BmkY: Integer;
+  I, BmkX, BmkY: TSynNativeInt;
   rcFold: TRect;
 begin
   SynEdit := TCustomSynEdit(Editor);
@@ -3184,7 +3184,7 @@ begin
       [eoTrimTrailingSpaces];
 end;
 
-function TSynSelections.GetLineText(ALine: Integer): string;
+function TSynSelections.GetLineText(ALine: NativeInt): string;
 begin
   Result := TCustomSynEdit(FOwner).Lines[ALine - 1];
 end;
@@ -3199,7 +3199,7 @@ begin
   Result := eoScrollPastEol in TCustomSynEdit(FOwner).ScrollOptions;
 end;
 
-function TSynSelections.GetRowLength(ARow: Integer): Integer;
+function TSynSelections.GetRowLength(ARow: NativeInt): NativeInt;
 begin
   Result := TCustomSynEdit(FOwner).RowLength[ARow];
 end;
@@ -3214,7 +3214,7 @@ begin
   Result := TCustomSynEdit(FOwner).DisplayToBufferPos(P);
 end;
 
-function TSynSelections.SelectionToDisplayRow(var Sel: TSynSelection): Integer;
+function TSynSelections.SelectionToDisplayRow(var Sel: TSynSelection): NativeInt;
 begin
   Result := TCustomSynEdit(FOwner).SelectionToDisplayCoord(Sel).Row;
 end;
@@ -3697,9 +3697,9 @@ end;
 
 function IsColorDark(AColor: TColor): Boolean;
 var
-  ACol: Longint;
+  ACol: UInt32;
 begin
-  ACol := ColorToRGB(AColor) and $00FFFFFF;
+  ACol := ToUInt32(ColorToRGB(AColor) and $00FFFFFF);
   Result := ((2.99 * GetRValue(ACol) + 5.87 * GetGValue(ACol) +
                  1.14 * GetBValue(ACol)) < $400);
 end;
@@ -3708,7 +3708,7 @@ function ColorToHTML(Color: TColor): string;
 var
   R: TColorRef;
 begin
-  R := ColorToRGB(Color);
+  R := ToUInt32((Color));
   Result := Format('#%.2x%.2x%.2x', [GetRValue(R), GetGValue(R), GetBValue(R)]);
 end;
 

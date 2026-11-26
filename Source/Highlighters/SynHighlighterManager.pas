@@ -45,7 +45,7 @@ unit SynHighlighterManager;
 interface
 
 uses
-  Classes;
+  System.Classes;
 
 type
   {:Highlighter manager.<p>
@@ -88,14 +88,14 @@ uses
   {$IFDEF MSWINDOWS}
   Winapi.Windows,
   {$ENDIF}
-  Forms,
-  Controls,
-  StdCtrls,
-  CheckLst,
+  Vcl.Forms,
+  Vcl.Controls,
+  Vcl.StdCtrls,
+  Vcl.CheckLst,
   SynEditHighlighter,
   SynEditStrConst,
   SynFunc,
-  SysUtils;
+  System.SysUtils;
 
 type
   TSynHighlighterForm = class(TForm)
@@ -272,7 +272,7 @@ begin
       end;
     end;
   end;
-  SysUtils.Abort;
+  System.SysUtils.Abort;
 end;
 
 { TSynHighlighterForm }

@@ -39,7 +39,7 @@ uses
   Winapi.Windows,
   SynEditTypes,
   SynEditTextBuffer,
-  SynEdit,
+  Vcl.SynEdit,
   SynFunc;
 
 const
@@ -97,7 +97,7 @@ uses
 {$IFEND}
   SynUnicodeShared,
   SynEditMiscProcs,
-  SynDWrite;
+  Vcl.SynDWrite;
 
 
 { TSynWordWrapPlugin }

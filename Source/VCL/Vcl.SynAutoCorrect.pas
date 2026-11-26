@@ -92,22 +92,22 @@ unit Vcl.SynAutoCorrect;
 interface
 
 uses
-  Windows,
-  Registry,
-  Messages,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
+  Winapi.Windows,
+  System.Win.Registry,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
   SynEditMiscProcs,
   SynEditTypes,
   SynEditKeyCmds,
-  SynEdit,
-  SynEditMiscClasses,
+  Vcl.SynEdit,
+  Vcl.SynEditMiscClasses,
   SynUnicodeShared,
-  Classes,
-  SysUtils,
-  IniFiles;
+  System.Classes,
+  System.SysUtils,
+  System.IniFiles;
 
 type
   TAsSynAutoCorrectOption = (ascoCorrectOnMouseDown, ascoIgnoreCase,
@@ -458,8 +458,8 @@ begin
 
   if not MatchCase then
   begin
-    EditLine := SysUtils.AnsiUpperCase(EditLine);
-    SearchString := SysUtils.AnsiUpperCase(SearchString);
+    EditLine := System.SysUtils.AnsiUpperCase(EditLine);
+    SearchString := System.SysUtils.AnsiUpperCase(SearchString);
   end;
 
   BufLen := Length(EditLine);
@@ -629,12 +629,12 @@ begin
         Correction := ReplaceDefText;
         FoundText := Copy(EditLine,StartPos+1,EndPos);
 
-        if FoundText = SysUtils.AnsiUpperCase(FoundText) then
-          Correction := SysUtils.AnsiUpperCase(Correction)
+        if FoundText = System.SysUtils.AnsiUpperCase(FoundText) then
+          Correction := System.SysUtils.AnsiUpperCase(Correction)
         else
         begin
-          if FoundText = SysUtils.AnsiLowerCase(FoundText) then
-            Correction := SysUtils.AnsiLowerCase(Correction)
+          if FoundText = System.SysUtils.AnsiLowerCase(FoundText) then
+            Correction := System.SysUtils.AnsiLowerCase(Correction)
           else
           begin
             if FoundText = FirstCapCase(FoundText) then

@@ -35,8 +35,8 @@ uses
   System.Generics.Collections,
   Vcl.Graphics,
   Vcl.ActnList,
-  SynEdit,
-  SynEditMiscClasses,
+  Vcl.SynEdit,
+  Vcl.SynEditMiscClasses,
   SynSpellCheckTypes,
   SynSpellCheckWinAPI,
   SynFunc;
@@ -238,7 +238,7 @@ uses
   System.Win.ComObj,
   SynEditTypes,
   SynUnicodeShared,
-  SynDWrite,
+  Vcl.SynDWrite,
   SynEditMiscProcs,
   SynEditHighlighter,
   SynEditTextBuffer;
@@ -575,11 +575,11 @@ function TSynSpellCheck.SpellCheckLine(Editor: TCustomSynEdit; Line:
     end;
   end;
 
-  procedure ProviderCheckToken(const Token: string; TokenPos: Integer = 0);
+  procedure ProviderCheckToken(const Token: string; TokenPos: NativeInt = 0);
   var
     Words: TArray<TWordInfo>;
     Info: TWordInfo;
-    WordStartChar, WordEndChar: Integer;
+    WordStartChar, WordEndChar: NativeInt;
   begin
     Words := ExtractWords(Token);
     for Info in Words do

@@ -56,7 +56,7 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.Forms,
-  SynEditPrint,
+  Vcl.SynEditPrint,
   SynFunc;
 
 type
@@ -162,7 +162,7 @@ implementation
 
 uses
   Winapi.D2D1,
-  SynDWrite,
+  Vcl.SynDWrite,
   SynEditStrConst;
 
 const

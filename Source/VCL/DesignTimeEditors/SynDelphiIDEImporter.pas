@@ -3,9 +3,9 @@
 interface
 
 uses
-  Classes, SysUtils, System.UITypes, Vcl.Dialogs, Vcl.Graphics, System.Win.Registry,
-  DesignIntf, DesignEditors, ToolsAPI,
-  SynEdit, SynHighlighterDelphi, SynEditHighlighter, SynEditTypes;
+  System.Classes, System.SysUtils, System.UITypes, Vcl.Dialogs, Vcl.Graphics,
+  System.Win.Registry, DesignIntf, DesignEditors, ToolsAPI, Vcl.SynEdit,
+  SynHighlighterDelphi, SynEditHighlighter, SynEditTypes;
 
 type
   // Descends from TDefaultEditor (not TComponentEditor) on purpose: TComponentEditor.Edit
@@ -27,7 +27,7 @@ procedure Register;
 implementation
 
 uses
-  Windows;
+  Winapi.Windows;
 
 // =============================================================================
 //   Helpers

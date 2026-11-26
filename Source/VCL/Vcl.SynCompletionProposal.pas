@@ -51,7 +51,7 @@ uses
   Vcl.ImgList,
   SynEditTypes,
   SynEditKeyCmds,
-  SynEdit,
+  Vcl.SynEdit,
   SynFunc,
   SynUnicodeShared;
 

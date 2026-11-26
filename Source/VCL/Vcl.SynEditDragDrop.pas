@@ -28,9 +28,9 @@ unit Vcl.SynEditDragDrop;
 
 interface
 
-Uses
-  Windows, ActiveX, SysUtils, Classes, Messages, Controls, Forms, ExtCtrls,
-  SynEditDragDropWin;
+uses
+  Winapi.Windows, Winapi.ActiveX, System.SysUtils, System.Classes,
+  Winapi.Messages, Vcl.Controls, Vcl.Forms, Vcl.ExtCtrls, SynEditDragDropWin;
 
 // Re-export shared drop effect constants (API contract preserved)
 const

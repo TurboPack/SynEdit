@@ -154,8 +154,10 @@ function RoundSyn(const AValue: Real): TSynNativeInt; inline;
 
 function StringOfChar(AChar: Char; const ACount: Int64): string; overload; inline;
 
-function ToUInt8(const AValue: Int64): Byte; overload; inline;
-function ToUInt8(const AValue: Int32): Byte; overload; inline;
+function ToUInt8(const AValue: Int64): UInt8; overload; inline;
+function ToUInt8(const AValue: Int32): UInt8; overload; inline;
+
+function ToUInt64(const AValue: Int64): UInt64; overload; inline;
 
 function ToInt32(const AValue: Int64): Int32; overload; inline;
 function ToInt32(const AValue: Int32): Int32; overload; inline;
@@ -447,14 +449,19 @@ begin
   Result := System.StringOfChar(AChar, Int32(ACount));
 end;
 
-function ToUInt8(const AValue: Int64): Byte;
+function ToUInt8(const AValue: Int64): UInt8;
 begin
-  Result := Byte(AValue);
+  Result := UInt8(AValue);
 end;
 
-function ToUInt8(const AValue: Int32): Byte;
+function ToUInt8(const AValue: Int32): UInt8;
 begin
-  Result := Byte(AValue);
+  Result := UInt8(AValue);
+end;
+
+function ToUInt64(const AValue: Int64): UInt64;
+begin
+  Result := UInt64(AValue);
 end;
 
 function ToInt32(const AValue: Int64): Int32;

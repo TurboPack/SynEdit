@@ -43,7 +43,7 @@ type
     function GetBaseSelection: TSynSelection;
     procedure SetActiveSelection(const Value: TSynSelection);
     procedure SetBaseSelection(const Value: TSynSelection);
-    function GetSelection(Index: Integer): TSynSelection;
+    function GetSelection(Index: NativeInt): TSynSelection;
     procedure SetActiveSelIndex(const Index: NativeInt);
     function GetIsEmpty: Boolean;
   protected
@@ -63,7 +63,7 @@ type
     function GetRowLength(ARow: NativeInt): NativeInt; virtual; abstract;
     function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord; virtual; abstract;
     function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord; virtual; abstract;
-    function SelectionToDisplayRow(var Sel: TSynSelection): Integer; virtual; abstract;
+    function SelectionToDisplayRow(var Sel: TSynSelection): NativeInt; virtual; abstract;
   public
     constructor Create(Owner: TObject);
     destructor Destroy; override;
@@ -72,16 +72,15 @@ type
     function AddCaret(const ACaret: TBufferCoord;
       IsBase: Boolean = False): Boolean;
     procedure DeleteSelection(Index: NativeInt);
-    function FindCaret(const ACaret: TBufferCoord): Integer;
+    function FindCaret(const ACaret: TBufferCoord): NativeInt;
     function FindSelection(const BC: TBufferCoord;
-      var Index: Integer): Boolean;
+      var Index: NativeInt): Boolean;
     procedure MouseSelection(const Sel: TSynSelection);
-    procedure ColumnSelection(Anchor, ACaret: TBufferCoord;
-      LastPosX: Integer = 0);
+    procedure ColumnSelection(Anchor, ACaret: TBufferCoord; LastPosX: NativeInt = 0);
     procedure Merge;
     function PartSelectionsForRow(
       const RowStart, RowEnd: TBufferCoord): TSynSelectionArray;
-    function RowHasCaret(ARow, ALine: Integer): Boolean;
+    function RowHasCaret(ARow, ALine: NativeInt): Boolean;
     // Invalidation
     procedure InvalidateSelection(Index: NativeInt);
     procedure InvalidateAll;
@@ -95,9 +94,9 @@ type
     // Multi-caret command execution
     procedure ForEachSelection(const Callback: TProc<TSynSelection>);
     // Line-change adjustment
-    procedure LinesInserted(FirstLine, aCount: Integer);
-    procedure LinesDeleted(FirstLine, aCount: Integer);
-    procedure LinePut(aIndex: Integer; const OldLine: string);
+    procedure LinesInserted(FirstLine, aCount: NativeInt);
+    procedure LinesDeleted(FirstLine, aCount: NativeInt);
+    procedure LinePut(aIndex: NativeInt; const OldLine: string);
     // Properties
     property BaseSelectionIndex: NativeInt read FBaseSelIndex;
     property ActiveSelection: TSynSelection read GetActiveSelection
@@ -108,7 +107,7 @@ type
     property ActiveSelIndex: NativeInt read FActiveSelIndex
       write SetActiveSelIndex;
     property IsEmpty: Boolean read GetIsEmpty;
-    property Selection[Index: Integer]: TSynSelection
+    property Selection[Index: NativeInt]: TSynSelection
       read GetSelection; default;
   end;
 
@@ -152,7 +151,7 @@ function TSynSelectionsBase.AddCaret(const ACaret: TBufferCoord;
   IsBase: Boolean): Boolean;
 var
   Sel: TSynSelection;
-  Index: Integer;
+  Index: NativeInt;
 begin
   Result := False;
   if FindSelection(ACaret, Index) then
@@ -232,8 +231,7 @@ begin
   Merge;
 end;
 
-procedure TSynSelectionsBase.ColumnSelection(Anchor, ACaret: TBufferCoord;
-  LastPosX: Integer);
+procedure TSynSelectionsBase.ColumnSelection(Anchor, ACaret: TBufferCoord; LastPosX: NativeInt = 0);
 
   procedure SetLineSelection(Index, Line, FromChar, ToChar: NativeInt;
     ScrollPastEOL: Boolean);
@@ -377,9 +375,9 @@ begin
   CaretsChanged;
 end;
 
-function TSynSelectionsBase.FindCaret(const ACaret: TBufferCoord): Integer;
+function TSynSelectionsBase.FindCaret(const ACaret: TBufferCoord): NativeInt;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   if FSelections.Count = 0 then Exit(-1);
 
@@ -397,7 +395,7 @@ begin
 end;
 
 function TSynSelectionsBase.FindSelection(const BC: TBufferCoord;
-  var Index: Integer): Boolean;
+  var Index: NativeInt): Boolean;
 begin
   if FSelections.BinarySearch(TSynSelection.Create(BC, BC, BC), Index) then
     Exit(True);
@@ -435,7 +433,7 @@ begin
       Exit(False);
 end;
 
-function TSynSelectionsBase.GetSelection(Index: Integer): TSynSelection;
+function TSynSelectionsBase.GetSelection(Index: NativeInt): TSynSelection;
 begin
   Result := FSelections[Index];
 end;
@@ -453,7 +451,7 @@ begin
   DoInvalidateSelection(FSelections[Index]);
 end;
 
-procedure TSynSelectionsBase.LinePut(aIndex: Integer; const OldLine: string);
+procedure TSynSelectionsBase.LinePut(aIndex: NativeInt; const OldLine: string);
 var
   I: NativeInt;
   Line: string;
@@ -481,7 +479,7 @@ begin
   end;
 end;
 
-procedure TSynSelectionsBase.LinesDeleted(FirstLine, aCount: Integer);
+procedure TSynSelectionsBase.LinesDeleted(FirstLine, aCount: NativeInt);
 var
   I: NativeInt;
   MinBC: TBufferCoord;
@@ -508,7 +506,7 @@ begin
     end;
 end;
 
-procedure TSynSelectionsBase.LinesInserted(FirstLine, aCount: Integer);
+procedure TSynSelectionsBase.LinesInserted(FirstLine, aCount: NativeInt);
 var
   I: NativeInt;
 begin
@@ -632,7 +630,7 @@ begin
   DoRestoreSelection(Sel, EnsureVisible);
 end;
 
-function TSynSelectionsBase.RowHasCaret(ARow, ALine: Integer): Boolean;
+function TSynSelectionsBase.RowHasCaret(ARow, ALine: NativeInt): Boolean;
 
   function IsCaretOnRow(Sel: TSynSelection): Boolean;
   begin
@@ -644,7 +642,7 @@ function TSynSelectionsBase.RowHasCaret(ARow, ALine: Integer): Boolean;
 
 var
   Sel: TSynSelection;
-  Index: Integer;
+  Index: NativeInt;
 begin
   FindSelection(BufferCoord(1, ALine), Index);
 

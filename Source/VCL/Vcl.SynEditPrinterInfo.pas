@@ -40,8 +40,8 @@ unit Vcl.SynEditPrinterInfo;
 interface
 
 uses
-  Windows,
-  Printers,
+  Winapi.Windows,
+  Vcl.Printers,
   SynFunc;
 
 type
@@ -237,8 +237,8 @@ begin
     FillDefault;
     Exit;
   end;
-  FPhysicalWidth := GetDeviceCaps(Printer.Handle, Windows.PhysicalWidth);
-  FPhysicalHeight := GetDeviceCaps(Printer.Handle, Windows.PhysicalHeight);
+  FPhysicalWidth := GetDeviceCaps(Printer.Handle, Winapi.Windows.PhysicalWidth);
+  FPhysicalHeight := GetDeviceCaps(Printer.Handle, Winapi.Windows.PhysicalHeight);
   FPrintableWidth := Printer.PageWidth; {or GetDeviceCaps(Printer.Handle, HorzRes);}
   FPrintableHeight := Printer.PageHeight; {or GetDeviceCaps(Printer.Handle, VertRes);}
   FLeftGutter := GetDeviceCaps(Printer.Handle, PhysicalOffsetX);

@@ -66,7 +66,7 @@ uses
   SynEditSelections,
   Vcl.SynEditMiscClasses,
   SynEditTextBuffer,
-  SynDWrite,
+  Vcl.SynDWrite,
   SynEditKeyCmds,
   SynEditHighlighter,
   Vcl.SynEditKbdHandler,
@@ -2537,7 +2537,7 @@ var
   function IsRowFullySelected(Row: TSynNativeInt; const RowStart: TBufferCoord): Boolean;
   var
     RowStop: TBufferCoord;
-    Index: TSynNativeInt;
+    Index: NativeInt;
     Sel: TSynSelection;
   begin
     if (eoNoSelection in FOptions) or (not Focused and FHideSelection) then
@@ -7132,8 +7132,6 @@ end;
 procedure TCustomSynEdit.ExecuteMultiCaretCommand(Command: TSynEditorCommand;
   AChar: WideChar; Data: Pointer; CommandInfo: TSynCommandInfo);
 var
-  OldActiveSelIndex: TSynNativeInt;
-  I: TSynNativeInt;
   OldTopLine, OldLeftChar: TSynNativeInt;
 begin
   DoOnPaintTransient(ttBefore);

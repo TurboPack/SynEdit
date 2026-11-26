@@ -42,8 +42,9 @@ unit Vcl.SynEditPythonBehaviour;
 interface
 
 uses
-  Windows, Messages, Graphics, Controls, Forms, Dialogs, SynEdit, SynEditKeyCmds,
-  SynUnicodeShared, SysUtils, Classes, SynEditTypes;
+  Winapi.Windows, Winapi.Messages, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
+  Vcl.Dialogs, Vcl.SynEdit, SynEditKeyCmds, SynUnicodeShared, System.SysUtils,
+  System.Classes, SynEditTypes;
 
 type
   TSynEditPythonBehaviour = class(TComponent)

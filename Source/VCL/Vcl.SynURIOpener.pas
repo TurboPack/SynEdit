@@ -47,14 +47,14 @@ unit Vcl.SynURIOpener;
 interface
 
 uses
-  Windows,
-  Controls,
+  Winapi.Windows,
+  Vcl.Controls,
   SynEditTypes,
-  SynEdit,
+  Vcl.SynEdit,
   SynFunc,
   SynHighlighterURI,
   SynUnicodeShared,
-  Classes;
+  System.Classes;
 
 type
   TSynURIOpener = class(TComponent)
@@ -99,11 +99,11 @@ type
 implementation
 
 uses
-  ShellAPI,
-  Forms,
+  Winapi.ShellAPI,
+  Vcl.Forms,
   SynEditHighlighter,
   SynEditKeyConstShared,
-  SysUtils;
+  System.SysUtils;
 
 type
   TAccessCustomSynEdit = class(TCustomSynEdit);

@@ -63,10 +63,10 @@ uses
   Vcl.Themes,
   Vcl.Graphics,
   Vcl.GraphUtil,
-  SynEdit,
+  Vcl.SynEdit,
   SynEditTextBuffer,
   SynEditMiscProcs,
-  SynEditMiscClasses,
+  Vcl.SynEditMiscClasses,
   SynEditStrConst,
   SynEditKeyConstShared,
   SynFunc;

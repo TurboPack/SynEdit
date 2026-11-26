@@ -43,12 +43,12 @@ unit Vcl.SynExportTeX;
 interface
 
 uses
-  Windows,
-  Graphics,
-  SynEditExport,
+  Winapi.Windows,
+  Vcl.Graphics,
+  Vcl.SynEditExport,
   SynEditHighlighter,
   SynUnicodeShared,
-  Classes;
+  System.Classes;
 
 type
   TSynExporterTeX = class(TSynCustomExporter)
@@ -114,7 +114,7 @@ implementation
 uses
   SynEditMiscProcs,
   SynEditStrConst,
-  SysUtils;
+  System.SysUtils;
 
 
 // DotDecSepFormat always formats with a dot as decimal separator.
@@ -127,7 +127,7 @@ var
 begin
   pSettings := FormatSettings;
   pSettings.DecimalSeparator := '.';
-  Result := SysUtils.Format(Format, Args, pSettings);
+  Result := System.SysUtils.Format(Format, Args, pSettings);
 end;
 
 function ColorToTeX(AColor: TColor): string;

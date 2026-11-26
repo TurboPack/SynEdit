@@ -31,10 +31,11 @@ unit Vcl.SynEditUndo;
 interface
 
 uses
-  SynEdit,
+  Vcl.SynEdit,
   SynEditTypes,
   SynEditSelections,
-  SynEditKeyCmds;
+  SynEditKeyCmds,
+  SynFunc;
 
 { Factory Method}
 
@@ -49,7 +50,7 @@ uses
   System.Generics.Collections,
   Vcl.Controls,
   SynEditMiscProcs,
-  SynEditMiscClasses,
+  Vcl.SynEditMiscClasses,
   SynEditTextBuffer,
   SynEditUndoShared;
 
@@ -73,10 +74,10 @@ type
     FDeletedLines: TArray<string>;
     FDeletedChangeFlags: TArray<TSynLineChangeFlags>;
   protected
-    procedure LinesInserted(FirstLine, Count: Integer); override;
-    procedure LinesBeforeDeleted(FirstLine, Count: Integer); override;
-    procedure LinesDeleted(FirstLine, Count: Integer); override;
-    procedure LinePut(aIndex: Integer; const OldLine: string); override;
+    procedure LinesInserted(FirstLine, Count: TSynNativeInt); override;
+    procedure LinesBeforeDeleted(FirstLine, Count: TSynNativeInt); override;
+    procedure LinesDeleted(FirstLine, Count: TSynNativeInt); override;
+    procedure LinePut(aIndex: TSynNativeInt; const OldLine: string); override;
   public
     constructor Create(SynEditUndo: TSynEditUndo; Editor: TCustomSynEdit);
   end;
@@ -171,7 +172,7 @@ begin
     [phLinePut, phLinesInserted, phLinesBeforeDeleted, phLinesDeleted]);
 end;
 
-procedure TSynUndoPlugin.LinePut(aIndex: Integer; const OldLine: string);
+procedure TSynUndoPlugin.LinePut(aIndex: TSynNativeInt; const OldLine: string);
 var
   Line: string;
   Item: TSynLinePutUndoItem;
@@ -189,9 +190,9 @@ begin
   end;
 end;
 
-procedure TSynUndoPlugin.LinesBeforeDeleted(FirstLine, Count: Integer);
+procedure TSynUndoPlugin.LinesBeforeDeleted(FirstLine, Count: TSynNativeInt);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if Editor.IsChained or FSynEditUndo.IsLocked or FSynEditUndo.FInsideUndoRedo
   then
@@ -207,7 +208,7 @@ begin
   end;
 end;
 
-procedure TSynUndoPlugin.LinesDeleted(FirstLine, Count: Integer);
+procedure TSynUndoPlugin.LinesDeleted(FirstLine, Count: TSynNativeInt);
 var
   Item: TSynLinesDeletedUndoItem;
 begin
@@ -223,7 +224,7 @@ begin
   end;
 end;
 
-procedure TSynUndoPlugin.LinesInserted(FirstLine, Count: Integer);
+procedure TSynUndoPlugin.LinesInserted(FirstLine, Count: TSynNativeInt);
 var
   Item: TSynLinesInsertedUndoItem;
 begin
@@ -232,7 +233,7 @@ begin
     Exit;
 
   if (FSynEditUndo.FUndoList.Count = 0) and
-    (Editor.Lines.Count = 1)  and (Editor.Lines[0] = '')
+    (Editor.Lines.CountNative = 1)  and (Editor.Lines[0] = '')
   then
     Exit;
 

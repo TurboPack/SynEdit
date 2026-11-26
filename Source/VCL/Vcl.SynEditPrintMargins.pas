@@ -85,11 +85,11 @@ interface
 uses
   Winapi.Windows,
   Vcl.Graphics,
-  SynEditPrintTypes,
+  Vcl.SynEditPrintTypes,
   Vcl.SynEditPrinterInfo,
   SynFunc,
   SynUnicodeShared,
-  SynDWrite,
+  Vcl.SynDWrite,
   System.Classes,
   System.SysUtils;
 

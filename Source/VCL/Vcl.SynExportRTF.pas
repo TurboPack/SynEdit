@@ -40,8 +40,8 @@ interface
 uses
   Winapi.Windows,
   Vcl.Graphics,
-  RichEdit,
-  SynEditExport,
+  Winapi.RichEdit,
+  Vcl.SynEditExport,
   SynUnicodeShared,
   System.Classes,
   System.Generics.Collections;

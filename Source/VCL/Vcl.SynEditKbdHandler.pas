@@ -36,15 +36,15 @@ unit Vcl.SynEditKbdHandler;
 interface
 
 uses
-  Windows,
-  Messages,
-  Graphics,
-  Controls,
-  Forms,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
   SynEditTypes,
   SynFunc,
-  SysUtils,
-  Classes;
+  System.SysUtils,
+  System.Classes;
 
 type
   TMouseCursorEvent =  procedure(Sender: TObject; const aLineCharPos: TBufferCoord;

@@ -90,17 +90,17 @@ uses
   System.Generics.Collections,
   Vcl.Graphics,
   Vcl.Printers,
-  SynEdit,
+  Vcl.SynEdit,
   SynEditTypes,
   Vcl.SynEditPrintTypes,
   Vcl.SynEditPrintHeaderFooter,
-  SynEditPrinterInfo,
-  SynEditPrintMargins,
+  Vcl.SynEditPrinterInfo,
+  Vcl.SynEditPrintMargins,
   SynEditMiscProcs,
   SynEditHighlighter,
   SynFunc,
   SynUnicodeShared,
-  SynDWrite;
+  Vcl.SynDWrite;
 
 type
   TPageLine = class
@@ -221,7 +221,7 @@ uses
   Winapi.MultiMon,
   System.Math,
   System.UITypes,
-  SynEditMiscClasses;
+  Vcl.SynEditMiscClasses;
 
 resourcestring
   SYNS_NoPrinter = 'No printer available';

@@ -39,21 +39,21 @@ unit Vcl.SynEditKeyCmdEditor;
 interface
 
 uses
-  Windows,
-  Messages,
-  Graphics,
-  Menus,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ComCtrls,
-  ExtCtrls,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Menus,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.ExtCtrls,
   SynEditTypes,
   SynEditKeyCmds,
-  SynEditMiscClasses,
-  SysUtils,
-  Classes;
+  Vcl.SynEditMiscClasses,
+  System.SysUtils,
+  System.Classes;
 
 type
   TSynEditKeystrokeEditorForm = class(TForm)
@@ -96,7 +96,7 @@ implementation
 {$R *.dfm}
 
 uses
-  UITypes;
+  System.UITypes;
 
 { TSynEditKeystrokeEditorForm }
 

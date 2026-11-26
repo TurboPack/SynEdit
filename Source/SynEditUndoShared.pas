@@ -48,7 +48,7 @@ type
   TSynLinePutUndoItem = class(TSynUndoItem)
   private
     FLines: TStrings;
-    FIndex: Integer;
+    FIndex: NativeInt;
     FStartPos: TSynNativeInt;
     FOldValue: string;
     FNewValue: string;
@@ -58,34 +58,31 @@ type
     function GroupWith(Item: TSynLinePutUndoItem): Boolean;
     procedure Undo(Editor: TObject); override;
     procedure Redo(Editor: TObject); override;
-    constructor Create(Lines: TStrings; Index: Integer;
-      const OldLine: string; Command: TSynEditorCommand);
+    constructor Create(Lines: TStrings; Index: NativeInt; const OldLine: string; Command: TSynEditorCommand);
   end;
 
   TSynLinesInsertedUndoItem = class(TSynUndoItem)
   private
     FLines: TStrings;
-    FIndex: Integer;
+    FIndex: NativeInt;
     FSavedLines: TArray<string>;
     FChangeFlags: TArray<TSynLineChangeFlags>;
   public
     procedure Undo(Editor: TObject); override;
     procedure Redo(Editor: TObject); override;
-    constructor Create(Lines: TStrings; Index, Count: Integer);
+    constructor Create(Lines: TStrings; Index, Count: NativeInt);
   end;
 
   TSynLinesDeletedUndoItem = class(TSynUndoItem)
   private
     FLines: TStrings;
-    FIndex: Integer;
+    FIndex: NativeInt;
     FSavedLines: TArray<string>;
     FChangeFlags: TArray<TSynLineChangeFlags>;
   public
     procedure Undo(Editor: TObject); override;
     procedure Redo(Editor: TObject); override;
-    constructor Create(Lines: TStrings; Index: Integer;
-      const DeletedLines: TArray<string>;
-      const DeletedChangeFlags: TArray<TSynLineChangeFlags>);
+    constructor Create(Lines: TStrings; Index: NativeInt; const DeletedLines: TArray<string>; const DeletedChangeFlags: TArray<TSynLineChangeFlags>);
   end;
 
   TSynEditUndoList = class(TObjectStack<TSynUndoItem>)
@@ -577,8 +574,7 @@ end;
 
 {$REGION 'TSynLinePutUndoItem'}
 
-constructor TSynLinePutUndoItem.Create(Lines: TStrings; Index: Integer;
-  const OldLine: string; Command: TSynEditorCommand);
+constructor TSynLinePutUndoItem.Create(Lines: TStrings; Index: NativeInt; const OldLine: string; Command: TSynEditorCommand);
 var
   Len1, Len2: TSynNativeInt;
   Line: string;
@@ -586,7 +582,7 @@ begin
   FLines := Lines;
   FCommandProcessed := Command;
   FIndex := Index;
-  Line := Lines[Index];
+  Line := Lines[ToInt32(Index)];
 
   LineDiff(Line, OldLine, FStartPos, Len1, Len2);
 
@@ -614,10 +610,10 @@ var
   Char: NativeInt;
   TempCF: TSynLineChangeFlags;
 begin
-  Line := FLines[FIndex];
+  Line := FLines[ToInt32(FIndex)];
   Delete(Line, FStartPos, FNewValue.Length);
   Insert(FOldValue, Line, FStartPos);
-  FLines[FIndex] := Line;
+  FLines[ToInt32(FIndex)] := Line;
   TempCF := FChangeFlags;
   FChangeFlags := TSynEditStringList(FLines).ChangeFlags[FIndex] -
     [sfSaved];
@@ -644,10 +640,10 @@ var
   Char: NativeInt;
   TempCF: TSynLineChangeFlags;
 begin
-  Line := FLines[FIndex];
+  Line := FLines[ToInt32(FIndex)];
   Delete(Line, FStartPos, FOldValue.Length);
   Insert(FNewValue, Line, FStartPos);
-  FLines[FIndex] := Line;
+  FLines[ToInt32(FIndex)] := Line;
   TempCF := FChangeFlags;
   FChangeFlags := TSynEditStringList(FLines).ChangeFlags[FIndex] -
     [sfSaved];
@@ -672,10 +668,9 @@ end;
 
 {$REGION 'TSynLinesInsertedUndoItem'}
 
-constructor TSynLinesInsertedUndoItem.Create(Lines: TStrings;
-  Index, Count: Integer);
+constructor TSynLinesInsertedUndoItem.Create(Lines: TStrings; Index, Count: NativeInt);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   inherited Create;
   FLines := Lines;
@@ -683,7 +678,7 @@ begin
   SetLength(FSavedLines, Count);
   for I := 0 to Count - 1 do
   begin
-    FSavedLines[I] := Lines[Index + I];
+    FSavedLines[I] := Lines[ToInt32(Index + I)];
     TSynEditStringList(Lines).ChangeFlags[Index + I] := [sfModified];
   end;
 end;
@@ -714,9 +709,7 @@ end;
 
 {$REGION 'TSynLinesDeletedUndoItem'}
 
-constructor TSynLinesDeletedUndoItem.Create(Lines: TStrings;
-  Index: Integer; const DeletedLines: TArray<string>;
-  const DeletedChangeFlags: TArray<TSynLineChangeFlags>);
+constructor TSynLinesDeletedUndoItem.Create(Lines: TStrings; Index: NativeInt; const DeletedLines: TArray<string>; const DeletedChangeFlags: TArray<TSynLineChangeFlags>);
 begin
   inherited Create;
   FLines := Lines;

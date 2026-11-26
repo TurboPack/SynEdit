@@ -25,7 +25,7 @@ package SynEditDR;
 {$IMAGEBASE $400000}
 {$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'TurboPack SynEdit Delphi VCL runtime package'}
+{$DESCRIPTION 'TurboPack SynEdit Delphi runtime package'}
 {$LIBSUFFIX AUTO}
 {$RUNONLY}
 {$IMPLICITBUILD OFF}
@@ -76,7 +76,7 @@ contains
   Vcl.SynExportTeX in '..\..\..\Source\VCL\Vcl.SynExportTeX.pas',
   Vcl.SynMacroRecorder in '..\..\..\Source\VCL\Vcl.SynMacroRecorder.pas',
   Vcl.SynOmniSetupDialog in '..\..\..\Source\VCL\Vcl.SynOmniSetupDialog.pas' {SynOmniSynSetup},
-  Vcl.SynPopupMenu in '..\..\..\Source\VCL\Vcl.SynPopupMenu.pas',
+  Vcl.SynPopupMenu in '..\..\..\Source\VCL\Vcl.SynPopupMenu.pas' {SynOmniSynSetup},
   Vcl.SynSpellCheck in '..\..\..\Source\VCL\Vcl.SynSpellCheck.pas',
   Vcl.SynUnicode in '..\..\..\Source\VCL\Vcl.SynUnicode.pas',
   Vcl.SynURIOpener in '..\..\..\Source\VCL\Vcl.SynURIOpener.pas';

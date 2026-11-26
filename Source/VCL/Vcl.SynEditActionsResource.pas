@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.Actions, Vcl.ActnList, Vcl.StdActns,
-  SynEditMiscClasses, SynSpellCheck;
+  Vcl.SynEditMiscClasses, Vcl.SynSpellCheck;
 
 type
   TSynEditActions = class(TDataModule)

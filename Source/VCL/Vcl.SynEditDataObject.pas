@@ -65,7 +65,7 @@ Type
 
 // Re-export shared functions (API contract preserved)
 function MakeGlobal(const S: string): HGLOBAL; overload;
-function MakeGlobal (var P; Size: NativeInt): hGlobal; overload;
+function MakeGlobal (var P; Size: NativeUInt): hGlobal; overload;
 function HasFormat(DataObject: IDataObject; Format: TClipFormat): Boolean;
 function GetInternalClipText: TArray<string>;
 
@@ -79,7 +79,7 @@ const
 implementation
 
 uses
-  SynEdit,
+  Vcl.SynEdit,
   SynEditTypes,
   Vcl.SynExportHTML,
   SynFunc;
@@ -90,7 +90,7 @@ begin
   Result := SynEditDragDropWin.MakeGlobal(S);
 end;
 
-function MakeGlobal(var P; Size: Integer): HGLOBAL;
+function MakeGlobal(var P; Size: NativeUInt): HGLOBAL;
 begin
   Result := SynEditDragDropWin.MakeGlobal(P, Size);
 end;
@@ -174,7 +174,7 @@ begin
     else if FormatEtcIn.cfFormat = SynEditClipboardFormat then
       Medium.hGlobal := SynEditDragDropWin.MakeGlobal(FInternalText)
     else if (FormatEtcIn.cfFormat = HTMLClipboardFormat) then
-      Medium.hGlobal := SynEditDragDropWin.MakeGlobal(HtmlStream.Memory^, HtmlStream.Position);
+      Medium.hGlobal := SynEditDragDropWin.MakeGlobal(HtmlStream.Memory^, ToNativeUInt(HtmlStream.Position));
   except
     Result := E_UNEXPECTED;
   end

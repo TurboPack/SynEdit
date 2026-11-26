@@ -50,9 +50,9 @@ uses
   Vcl.ImgList,
   Vcl.Menus,
   SynEditTypes,
-  SynEdit,
+  Vcl.SynEdit,
   SynEditHighlighter,
-  SynEditMiscClasses,
+  Vcl.SynEditMiscClasses,
   SynEditKeyCmds,
   System.Classes,
   System.SysUtils;

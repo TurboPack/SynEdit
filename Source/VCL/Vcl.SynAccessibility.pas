@@ -27,7 +27,7 @@ uses
   Winapi.ActiveX,
   System.Classes,
   System.Types,
-  SynEdit;
+  Vcl.SynEdit;
 
 {$REGION 'Header Tranlsation of UIAutomationCore.h'}
 

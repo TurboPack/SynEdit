@@ -99,7 +99,7 @@ uses
   Winapi.Windows,
   Winapi.D2D1,
   Vcl.Graphics,
-  SynEditPrintTypes,
+  Vcl.SynEditPrintTypes,
   Vcl.SynEditPrintMargins,
   SynFunc,
   SynUnicodeShared,
@@ -210,7 +210,7 @@ implementation
 uses
   System.UITypes,
   System.Math,
-  SynDWrite,
+  Vcl.SynDWrite,
   SynEditMiscProcs;
 
 // Helper routine for AsString processing.
