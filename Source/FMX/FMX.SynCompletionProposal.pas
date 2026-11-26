@@ -153,7 +153,7 @@ type
     FOnAfterCodeCompletion: TAfterCodeCompletionEvent;
     FOnCancel: TNotifyEvent;
     FActive: Boolean;
-    FCompletionStart: Integer;
+    FCompletionStart: NativeInt;
     procedure SetEditor(Value: TComponent);
     procedure TimerExecute(Sender: TObject);
     procedure EditorKeyDown(Sender: TObject; var Key: Word;
@@ -174,8 +174,7 @@ type
     procedure CancelCompletion;
     function IsActive: Boolean;
     property Form: TSynFMXCompletionProposalForm read FForm;
-    property CompletionStart: Integer read FCompletionStart
-      write FCompletionStart;
+    property CompletionStart: NativeInt read FCompletionStart write FCompletionStart;
   published
     property Editor: TComponent read FEditor write SetEditor;
     property Options: TSynCompletionOptions read FOptions write FOptions
@@ -202,7 +201,8 @@ uses
   FMX.Platform,
   FMX.Forms,
   FMX.TextLayout,
-  SynEditKeyConstShared;
+  SynEditKeyConstShared,
+  SynFunc;
 
 { --------------------------------------------------------------------------- }
 { TSynFMXCompletionProposalForm                                               }
@@ -265,7 +265,7 @@ end;
 
 function TSynFMXCompletionProposalForm.GetTopIndex: Integer;
 begin
-  Result := Round(FScrollBar.Value);
+  Result := Round32(FScrollBar.Value);
 end;
 
 procedure TSynFMXCompletionProposalForm.SetTopIndex(Value: Integer);
@@ -314,7 +314,7 @@ begin
 
   // Calculate visible lines
   AvailableWidth := Width - FScrollBar.Width;
-  FLinesInWindow := Max(1, Trunc((Height - 2) / FItemHeight));
+  FLinesInWindow := ToInt32(Max(1, Trunc((Height - 2) / FItemHeight)));
 
   TopIdx := GetTopIndex;
 
@@ -367,7 +367,7 @@ var
   ClickedIdx: Integer;
 begin
   inherited;
-  ClickedIdx := GetTopIndex + Trunc((Y - 1) / FItemHeight);
+  ClickedIdx := ToInt32(GetTopIndex + Trunc((Y - 1) / FItemHeight));
   if (ClickedIdx >= 0) and (ClickedIdx < FAssignedList.Count) then
   begin
     Position := ClickedIdx;
@@ -459,8 +459,8 @@ begin
   end;
 
   // Update scrollbar
-  FLinesInWindow := Max(1, Trunc((Height - 2) / FItemHeight));
-  FScrollBar.Max := Max(0, FAssignedList.Count - FLinesInWindow);
+  FLinesInWindow := ToInt32(Max(1, Trunc((Height - 2) / FItemHeight)));
+  FScrollBar.Max := ToInt32(Max(0, FAssignedList.Count - FLinesInWindow));
   FScrollBar.Value := 0;
 
   // Reset position
@@ -614,14 +614,14 @@ function TSynFMXCompletionProposal.GetCurrentInput: string;
 var
   Ed: TCustomFMXSynEdit;
   Line: string;
-  I: Integer;
+  I: NativeInt;
 begin
   Result := '';
   if not (FEditor is TCustomFMXSynEdit) then
     Exit;
 
   Ed := TCustomFMXSynEdit(FEditor);
-  if (Ed.CaretY < 1) or (Ed.CaretY > Ed.Lines.Count) then
+  if (Ed.CaretY < 1) or (Ed.CaretY > Ed.Lines.CountNative) then
     Exit;
 
   Line := Ed.Lines[Ed.CaretY - 1];
@@ -751,7 +751,7 @@ begin
         begin
           if Shift = [] then
           begin
-            if (Ed.CaretY >= 1) and (Ed.CaretY <= Ed.Lines.Count) and
+            if (Ed.CaretY >= 1) and (Ed.CaretY <= Ed.Lines.CountNative) and
               (Ed.CaretX <= Ed.Lines[Ed.CaretY - 1].Length) then
             begin
               C := Ed.Lines[Ed.CaretY - 1][Ed.CaretX];
@@ -795,7 +795,7 @@ begin
   else
   begin
     // Popup is not open -- check for shortcut to activate
-    ShortCutKey := FShortCut and not (scShift or scCtrl or scAlt);
+    ShortCutKey := ToUInt16(FShortCut and not (scShift or scCtrl or scAlt));
     ShortCutShift := [];
     if FShortCut and scShift <> 0 then Include(ShortCutShift, ssShift);
     if FShortCut and scCtrl <> 0 then Include(ShortCutShift, ssCtrl);
@@ -816,7 +816,7 @@ begin
           FTimer := TTimer.Create(Self);
           FTimer.OnTimer := TimerExecute;
         end;
-        FTimer.Interval := FTimerInterval;
+        FTimer.Interval := ToUInt32(FTimerInterval);
         FTimer.Enabled := True;
       end;
     end;
@@ -830,7 +830,7 @@ var
   Value: string;
   Index: Integer;
   Line: string;
-  LineIdx: Integer;
+  LineIdx: NativeInt;
 begin
   if not (FEditor is TCustomFMXSynEdit) then
     Exit;
@@ -876,7 +876,7 @@ begin
     // Replace the text from CompletionStart to CaretX with the selected value
     // by directly manipulating the line text.
     LineIdx := Ed.CaretY - 1;
-    if (LineIdx >= 0) and (LineIdx < Ed.Lines.Count) then
+    if (LineIdx >= 0) and (LineIdx < Ed.Lines.CountNative) then
     begin
       Line := Ed.Lines[LineIdx];
       // Remove old text (from CompletionStart to CaretX-1) and insert new value
@@ -974,8 +974,8 @@ begin
   Pt.Y := Pt.Y + Ed.LineHeight;
   Pt := Ed.LocalToScreen(Pt);
 
-  X := Round(Pt.X);
-  Y := Round(Pt.Y);
+  X := Round32(Pt.X);
+  Y := Round32(Pt.Y);
 
   Execute(CurrentInput, X, Y);
 end;

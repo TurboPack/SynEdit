@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit - FMX Edition
 
 The contents of this file are subject to the Mozilla Public License
@@ -30,7 +30,7 @@ type
 
   TFMXWordWrapHelper = class
   private
-    FLineOffsets: TList<Integer>;
+    FLineOffsets: TList<NativeInt>;
     FRowLengths: TList<Integer>;
     FLineCount: Integer;
     FMaxCharsPerRow: Integer;
@@ -42,10 +42,10 @@ type
     destructor Destroy; override;
     procedure SetWrapWidth(AMaxCharsPerRow, ATabWidth: Integer);
     procedure Reset(Lines: TStrings);
-    function LineToRow(aLine: Integer): Integer;
-    function RowToLine(aRow: Integer): Integer;
-    function RowCount: Integer;
-    function GetRowLength(aRow: Integer): Integer;
+    function LineToRow(aLine: NativeInt): NativeInt;
+    function RowToLine(aRow: NativeInt): NativeInt;
+    function RowCount: NativeInt;
+    function GetRowLength(aRow: NativeInt): NativeInt;
     function BufferToDisplayPos(const aPos: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const aPos: TDisplayCoord): TBufferCoord;
     property MaxCharsPerRow: Integer read FMaxCharsPerRow;
@@ -58,7 +58,7 @@ implementation
 constructor TFMXWordWrapHelper.Create;
 begin
   inherited;
-  FLineOffsets := TList<Integer>.Create;
+  FLineOffsets := TList<NativeInt>.Create;
   FRowLengths := TList<Integer>.Create;
   FMaxCharsPerRow := 80;
   FTabWidth := 8;
@@ -213,7 +213,7 @@ begin
   end;
 end;
 
-function TFMXWordWrapHelper.LineToRow(aLine: Integer): Integer;
+function TFMXWordWrapHelper.LineToRow(aLine: NativeInt): NativeInt;
 begin
   Assert(aLine > 0);
   if FLineCount < aLine then
@@ -225,9 +225,9 @@ begin
     Result := FLineOffsets[aLine - 2] + 1;
 end;
 
-function TFMXWordWrapHelper.RowToLine(aRow: Integer): Integer;
+function TFMXWordWrapHelper.RowToLine(aRow: NativeInt): NativeInt;
 var
-  cLine: Integer;
+  cLine: NativeInt;
 begin
   Assert(aRow > 0);
   if aRow > FRowLengths.Count then
@@ -241,12 +241,12 @@ begin
   Result := 1;
 end;
 
-function TFMXWordWrapHelper.RowCount: Integer;
+function TFMXWordWrapHelper.RowCount: NativeInt;
 begin
   Result := FRowLengths.Count;
 end;
 
-function TFMXWordWrapHelper.GetRowLength(aRow: Integer): Integer;
+function TFMXWordWrapHelper.GetRowLength(aRow: NativeInt): NativeInt;
 begin
   if (aRow <= 0) or (aRow > FRowLengths.Count) then
     Exit(0);
@@ -256,8 +256,8 @@ end;
 function TFMXWordWrapHelper.BufferToDisplayPos(
   const aPos: TBufferCoord): TDisplayCoord;
 var
-  vStartRow: Integer;
-  cRow: Integer;
+  vStartRow: NativeInt;
+  cRow: NativeInt;
   vRowLen: Integer;
 begin
   Assert(aPos.Char > 0);
@@ -296,8 +296,8 @@ end;
 function TFMXWordWrapHelper.DisplayToBufferPos(
   const aPos: TDisplayCoord): TBufferCoord;
 var
-  cRow: Integer;
-  FirstRow: Integer;
+  cRow: NativeInt;
+  FirstRow: NativeInt;
 begin
   Assert(aPos.Column > 0);
   Assert(aPos.Row > 0);

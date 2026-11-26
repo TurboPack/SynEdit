@@ -13,11 +13,10 @@ http://www.mozilla.org/MPL/
 
 unit SynSpellCheckWinAPI;
 
-{$I SynEdit.inc}
-
-{$IFDEF MSWINDOWS}
-
 interface
+
+{$I SynEdit.inc}
+{$IFDEF MSWINDOWS}
 
 uses
   Winapi.Windows,

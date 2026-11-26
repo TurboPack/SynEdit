@@ -109,10 +109,10 @@ type
   { Page boundary tracking }
   TPageLine = class
   public
-    FirstLine: Integer;
-    FirstRow: Integer;
-    LastLine: Integer;
-    LastRow: Integer;
+    FirstLine: NativeInt;
+    FirstRow: NativeInt;
+    LastLine: NativeInt;
+    LastRow: NativeInt;
   end;
 
   { Main FMX print controller }
@@ -160,41 +160,41 @@ type
     procedure SetMaxLeftChar(const Value: Integer);
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure InitRanges;
-    function GetPageCount: Integer;
+    function GetPageCount: NativeInt;
     procedure SetFooter(const Value: TFooter);
     procedure SetHeader(const Value: THeader);
     procedure SetMargins(const Value: TSynEditPrintMargins);
     procedure SetPrintProvider(const Value: ISynPrintProvider);
     procedure SetPrinterInfo(const Value: ISynPrinterInfo);
-    function GetLineText(LineIndex: Integer): string;
+    function GetLineText(LineIndex: NativeInt): string;
     function MeasureLineRows(const S: string): Integer;
   protected
     property MaxLeftChar: Integer read FMaxLeftChar write SetMaxLeftChar;
-    procedure DoPrintStatus(Status: TSynPrintStatus; PageNumber: Integer;
+    procedure DoPrintStatus(Status: TSynPrintStatus; PageNumber: NativeInt;
       var Abort: Boolean); virtual;
-    procedure DoPrintLine(LineNumber, PageNumber: Integer); virtual;
+    procedure DoPrintLine(LineNumber, PageNumber: NativeInt); virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
     { Initialization and page calculation }
     procedure InitPrint;
-    function CalcPages: Integer;
-    function GetPageCount2: Integer;
+    function CalcPages: NativeInt;
+    function GetPageCount2: NativeInt;
 
     { Printing }
     procedure Print;
-    procedure PrintRange(StartPage, EndPage: Integer);
+    procedure PrintRange(StartPage, EndPage: NativeInt);
 
     { Preview rendering }
     procedure PrintToCanvas(ACanvas: TCanvas; const RenderRect: TRectF;
       PageNo: Integer);
 
     { Page rendering }
-    procedure PrintPage(Canvas: TCanvas; PageNumber: Integer);
+    procedure PrintPage(Canvas: TCanvas; PageNumber: NativeInt);
 
     { Line number rendering }
-    procedure WriteLineNumber(Canvas: TCanvas; LineNumber, YPos: Integer);
+    procedure WriteLineNumber(Canvas: TCanvas; LineNumber, YPos: NativeInt);
 
     { Word wrap helper }
     procedure HandleWrap(const S: string; MaxWidth: Integer;
@@ -214,7 +214,7 @@ type
       write SetPrintProvider;
     property PrinterInfo: ISynPrinterInfo read FPrinterInfo
       write SetPrinterInfo;
-    property PageCount: Integer read GetPageCount;
+    property PageCount: NativeInt read GetPageCount;
   published
     property Copies: Integer read FCopies write FCopies;
     property Header: THeader read FHeader write SetHeader;
@@ -252,6 +252,7 @@ uses
 {$IFDEF MSWINDOWS}
   FMX.Printer,
 {$ENDIF}
+  SynFunc,
   SynUnicodeShared,
   FMX.SynEditRenderer;
 
@@ -265,8 +266,8 @@ procedure TSynFMXPrintProvider.BeginDoc(const ATitle: string);
 begin
   Printer.Title := ATitle;
   Printer.BeginDoc;
-  FPageWidth := Round(Printer.PageWidth);
-  FPageHeight := Round(Printer.PageHeight);
+  FPageWidth := Round32(Printer.PageWidth);
+  FPageHeight := Round32(Printer.PageHeight);
 end;
 
 procedure TSynFMXPrintProvider.EndDoc;
@@ -391,12 +392,12 @@ begin
   end;
 end;
 
-function TSynFMXEditPrint.GetLineText(LineIndex: Integer): string;
+function TSynFMXEditPrint.GetLineText(LineIndex: NativeInt): string;
 var
-  iSelStart, iSelLen: Integer;
+  iSelStart, iSelLen: NativeInt;
 begin
   if not FSelectedOnly then
-    Result := FLines[LineIndex]
+    Result := FLines[ToInt32(LineIndex)]
   else
   begin
     if LineIndex = FBlockBegin.Line - 1 then
@@ -407,7 +408,7 @@ begin
       iSelLen := FBlockEnd.Char - iSelStart
     else
       iSelLen := MaxInt;
-    Result := Copy(FLines[LineIndex], iSelStart, iSelLen);
+    Result := Copy(FLines[ToInt32(LineIndex)], iSelStart, iSelLen);
   end;
 end;
 
@@ -439,7 +440,7 @@ begin
     if (TotalHeight <= 0) or (FLineHeight <= 0) then
       Result := 1
     else
-      Result := Max(1, Round(TotalHeight / FLineHeight));
+      Result := Max(1, Round32(TotalHeight / FLineHeight));
   finally
     Layout.Free;
   end;
@@ -466,11 +467,11 @@ end;
 
 procedure TSynFMXEditPrint.DoCalcPages;
 var
-  I: Integer;
+  I: NativeInt;
   PageLine: TPageLine;
   LayoutRowCount: Integer;
   RowCount: Integer;
-  iStartLine, iEndLine: Integer;
+  iStartLine, iEndLine: NativeInt;
 begin
   InitRanges;
   FPages.Clear;
@@ -499,7 +500,7 @@ begin
   RowCount := 0;
   for I := iStartLine to iEndLine do
   begin
-    if FLines[I] = '' then
+    if FLines[ToInt32(I)] = '' then
     begin
       Inc(RowCount);
       LayoutRowCount := 1;
@@ -535,13 +536,13 @@ begin
   FPagesCounted := True;
 end;
 
-function TSynFMXEditPrint.CalcPages: Integer;
+function TSynFMXEditPrint.CalcPages: NativeInt;
 begin
   InitPrint;
   Result := FPages.Count;
 end;
 
-function TSynFMXEditPrint.GetPageCount: Integer;
+function TSynFMXEditPrint.GetPageCount: NativeInt;
 begin
   if FPagesCounted then
     Result := FPages.Count
@@ -551,13 +552,13 @@ begin
   end;
 end;
 
-function TSynFMXEditPrint.GetPageCount2: Integer;
+function TSynFMXEditPrint.GetPageCount2: NativeInt;
 begin
   Result := GetPageCount;
 end;
 
 procedure TSynFMXEditPrint.WriteLineNumber(Canvas: TCanvas;
-  LineNumber, YPos: Integer);
+  LineNumber, YPos: NativeInt);
 var
   AStr: string;
   TextWidth: Single;
@@ -575,12 +576,12 @@ begin
     TTextAlign.Trailing, TTextAlign.Leading);
 end;
 
-procedure TSynFMXEditPrint.PrintPage(Canvas: TCanvas; PageNumber: Integer);
+procedure TSynFMXEditPrint.PrintPage(Canvas: TCanvas; PageNumber: NativeInt);
 var
-  I: Integer;
+  I: NativeInt;
   LineText: string;
   YPos: Integer;
-  LayoutRowCount: Integer;
+  LayoutRowCount: NativeInt;
   Attr: TSynHighlighterAttributes;
   TokenColor: TAlphaColor;
   TokenFont: TFont;
@@ -649,7 +650,7 @@ begin
           { Apply syntax highlighting color and style attributes }
           if FHighlight and FSynOK then
           begin
-            FHighlighter.SetRange(FLines.Objects[I]);
+            FHighlighter.SetRange(FLines.Objects[ToInt32(I)]);
             FHighlighter.SetLine(LineText, I + 1);
 
             while not FHighlighter.GetEol do
@@ -702,7 +703,7 @@ begin
                   TokenFont := FFont;
 
                 Layout.AddAttribute(
-                  TTextRange.Create(FHighlighter.GetTokenPos,
+                  TTextRange.Create(ToInt32(FHighlighter.GetTokenPos),
                     Length(FHighlighter.GetToken)),
                   TTextAttribute.Create(TokenFont, TokenColor));
               end;
@@ -798,9 +799,9 @@ begin
   PrintRange(1, -1);
 end;
 
-procedure TSynFMXEditPrint.PrintRange(StartPage, EndPage: Integer);
+procedure TSynFMXEditPrint.PrintRange(StartPage, EndPage: NativeInt);
 var
-  Page, Copy: Integer;
+  Page, Copy: NativeInt;
   Title: string;
   Provider: ISynPrintProvider;
   SaveState: TCanvasSaveState;
@@ -884,14 +885,14 @@ begin
   end;
 end;
 
-procedure TSynFMXEditPrint.DoPrintLine(LineNumber, PageNumber: Integer);
+procedure TSynFMXEditPrint.DoPrintLine(LineNumber, PageNumber: NativeInt);
 begin
   if Assigned(FOnPrintLine) then
     FOnPrintLine(Self, LineNumber, PageNumber);
 end;
 
 procedure TSynFMXEditPrint.DoPrintStatus(Status: TSynPrintStatus;
-  PageNumber: Integer; var Abort: Boolean);
+  PageNumber: NativeInt; var Abort: Boolean);
 begin
   Abort := False;
   if FPrinting and Assigned(FOnPrintStatus) then

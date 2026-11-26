@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit - FMX Edition
 
 The contents of this file are subject to the Mozilla Public License
@@ -41,15 +41,15 @@ type
   { Bookmark/mark for FMX SynEdit }
   TSynFMXEditMark = class
   private
-    FLine: Integer;
-    FChar: Integer;
+    FLine: NativeInt;
+    FChar: NativeInt;
     FBookmarkNum: Integer;
     FVisible: Boolean;
     function GetIsBookmark: Boolean;
   public
     constructor Create;
-    property Line: Integer read FLine write FLine;
-    property Char: Integer read FChar write FChar;
+    property Line: NativeInt read FLine write FLine;
+    property Char: NativeInt read FChar write FChar;
     property BookmarkNumber: Integer read FBookmarkNum write FBookmarkNum;
     property IsBookmark: Boolean read GetIsBookmark;
     property Visible: Boolean read FVisible write FVisible;
@@ -74,11 +74,11 @@ type
 
   { Gutter band paint event }
   TFMXGutterBandPaintEvent = procedure(Canvas: TCanvas; ClipR: TRectF;
-    const FirstRow, LastRow: Integer; var DoDefaultPaint: Boolean) of object;
+    const FirstRow, LastRow: NativeInt; var DoDefaultPaint: Boolean) of object;
 
   { Gutter band click event }
   TFMXGutterBandClickEvent = procedure(Sender: TObject; Button: TMouseButton;
-    X, Y: Single; Row, Line: Integer) of object;
+    X, Y: Single; Row, Line: NativeInt) of object;
 
   { Individual gutter band }
   TSynFMXGutterBand = class
@@ -94,21 +94,20 @@ type
     procedure SetWidth(Value: Single);
     // Built-in paint methods (implementation uses FMX.SynEdit)
     procedure PaintLineNumbers(Canvas: TCanvas; const ClipR: TRectF;
-      FirstRow, LastRow: Integer);
+      FirstRow, LastRow: NativeInt);
     procedure PaintMarks(Canvas: TCanvas; const ClipR: TRectF;
-      FirstRow, LastRow: Integer);
+      FirstRow, LastRow: NativeInt);
     procedure PaintFoldShapes(Canvas: TCanvas; const ClipR: TRectF;
-      FirstRow, LastRow: Integer);
+      FirstRow, LastRow: NativeInt);
     procedure PaintMarginLine(Canvas: TCanvas; const ClipR: TRectF;
-      FirstRow, LastRow: Integer);
+      FirstRow, LastRow: NativeInt);
   public
     constructor Create(AGutter: TSynFMXGutter; AKind: TSynFMXGutterBandKind;
       AWidth: Single; AVisible: Boolean);
     function RealWidth: Single;
     function LeftX: Single;
-    procedure PaintLines(Canvas: TCanvas; const ClipR: TRectF;
-      FirstRow, LastRow: Integer);
-    procedure DoClick(Button: TMouseButton; X, Y: Single; Row, Line: Integer);
+    procedure PaintLines(Canvas: TCanvas; const ClipR: TRectF; FirstRow, LastRow: NativeInt);
+    procedure DoClick(Button: TMouseButton; X, Y: Single; Row, Line: NativeInt);
     property Kind: TSynFMXGutterBandKind read FKind;
     property Width: Single read FWidth write SetWidth;
     property Visible: Boolean read FVisible write SetVisible;
@@ -167,13 +166,13 @@ type
     procedure DoInvalidateSelection(const Sel: TSynSelection); override;
     procedure DoRestoreSelection(const Sel: TSynSelection;
       EnsureVisible: Boolean); override;
-    function GetLineText(ALine: Integer): string; override;
+    function GetLineText(ALine: NativeInt): string; override;
     function GetWordWrap: Boolean; override;
     function GetScrollPastEOL: Boolean; override;
-    function GetRowLength(ARow: Integer): Integer; override;
+    function GetRowLength(ARow: NativeInt): NativeInt; override;
     function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord; override;
     function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord; override;
-    function SelectionToDisplayRow(var Sel: TSynSelection): Integer; override;
+    function SelectionToDisplayRow(var Sel: TSynSelection): NativeInt; override;
   public
     constructor Create(Owner: TObject);
   end;
@@ -204,7 +203,7 @@ end;
 
 function TSynFMXEditMarkList.GetMarksForLine(ALine: Integer): TArray<TSynFMXEditMark>;
 var
-  I, Count: Integer;
+  I, Count: NativeInt;
 begin
   Count := 0;
   SetLength(Result, Self.Count);
@@ -219,7 +218,7 @@ end;
 
 procedure TSynFMXEditMarkList.ClearLine(ALine: Integer);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := Count - 1 downto 0 do
     if (Items[I].Line = ALine) and not Items[I].IsBookmark then
@@ -260,7 +259,7 @@ end;
 function TSynFMXGutterBand.RealWidth: Single;
 var
   Editor: TCustomFMXSynEdit;
-  DigitCount, LC: Integer;
+  DigitCount, LC: NativeInt;
 begin
   if not FVisible then
     Exit(0);
@@ -270,7 +269,7 @@ begin
   case FKind of
     gbkLineNumbers:
     begin
-      LC := Max(Editor.Lines.Count, 1);
+      LC := Max(Editor.Lines.CountNative, 1);
       DigitCount := Max(2, Length(IntToStr(LC)));
       Result := Round((DigitCount + 1) * Editor.CharWidth) + 4;
     end;
@@ -290,7 +289,7 @@ end;
 
 function TSynFMXGutterBand.LeftX: Single;
 var
-  I: Integer;
+  I: NativeInt;
   Band: TSynFMXGutterBand;
 begin
   Result := 0;
@@ -304,7 +303,7 @@ begin
 end;
 
 procedure TSynFMXGutterBand.PaintLines(Canvas: TCanvas; const ClipR: TRectF;
-  FirstRow, LastRow: Integer);
+  FirstRow, LastRow: NativeInt);
 var
   DoDefault: Boolean;
 begin
@@ -321,11 +320,11 @@ begin
     end;
 end;
 
-procedure TSynFMXGutterBand.DoClick(Button: TMouseButton; X, Y: Single;
-  Row, Line: Integer);
+procedure TSynFMXGutterBand.DoClick(Button: TMouseButton; X, Y: Single; Row, Line: NativeInt);
 var
   Editor: TCustomFMXSynEdit;
-  Index, I, BmkX, BmkY: Integer;
+  Index: NativeInt;
+  I, BmkX, BmkY: NativeInt;
 begin
   if Assigned(FOnClick) then
     FOnClick(Self, Button, X, Y, Row, Line);
@@ -360,11 +359,11 @@ begin
 end;
 
 procedure TSynFMXGutterBand.PaintLineNumbers(Canvas: TCanvas;
-  const ClipR: TRectF; FirstRow, LastRow: Integer);
+  const ClipR: TRectF; FirstRow, LastRow: NativeInt);
 var
   Editor: TCustomFMXSynEdit;
   Renderer: TSynFMXRenderer;
-  Row, Line: Integer;
+  Row, Line: NativeInt;
   Y: Single;
   R: TRectF;
   NumStr: string;
@@ -375,7 +374,7 @@ begin
   for Row := FirstRow to LastRow do
   begin
     Line := Editor.RowToLine(Row);
-    if Line > Editor.Lines.Count then Break;
+    if Line > Editor.Lines.CountNative then Break;
     Y := (Row - Editor.TopLine) * Editor.LineHeight;
     // In word wrap mode, only show number on first display row of each line
     if Editor.WordWrap then
@@ -390,11 +389,11 @@ begin
 end;
 
 procedure TSynFMXGutterBand.PaintMarks(Canvas: TCanvas;
-  const ClipR: TRectF; FirstRow, LastRow: Integer);
+  const ClipR: TRectF; FirstRow, LastRow: NativeInt);
 var
   Editor: TCustomFMXSynEdit;
   Renderer: TSynFMXRenderer;
-  Row, Line, I: Integer;
+  Row, Line, I: NativeInt;
   Y, CX, CY, Radius: Single;
   Mark: TSynFMXEditMark;
 begin
@@ -407,7 +406,7 @@ begin
   for Row := FirstRow to LastRow do
   begin
     Line := Editor.RowToLine(Row);
-    if Line > Editor.Lines.Count then Break;
+    if Line > Editor.Lines.CountNative then Break;
     Y := (Row - Editor.TopLine) * Editor.LineHeight;
 
     for I := 0 to Editor.Marks.Count - 1 do
@@ -432,11 +431,12 @@ begin
 end;
 
 procedure TSynFMXGutterBand.PaintFoldShapes(Canvas: TCanvas;
-  const ClipR: TRectF; FirstRow, LastRow: Integer);
+  const ClipR: TRectF; FirstRow, LastRow: NativeInt);
 var
   Editor: TCustomFMXSynEdit;
   Renderer: TSynFMXRenderer;
-  Row, Line, Index: Integer;
+  Row, Line: NativeInt;
+  Index: NativeInt;
   Y, X, ShapeSize, Margin: Single;
   rcFold: TRectF;
   FoldRange: TSynFoldRange;
@@ -452,7 +452,7 @@ begin
   for Row := FirstRow to LastRow do
   begin
     Line := Editor.RowToLine(Row);
-    if Line > Editor.Lines.Count then Break;
+    if Line > Editor.Lines.CountNative then Break;
 
     Y := (Row - Editor.TopLine) * Editor.LineHeight;
     rcFold := RectF(
@@ -518,7 +518,7 @@ begin
 end;
 
 procedure TSynFMXGutterBand.PaintMarginLine(Canvas: TCanvas;
-  const ClipR: TRectF; FirstRow, LastRow: Integer);
+  const ClipR: TRectF; FirstRow, LastRow: NativeInt);
 var
   Renderer: TSynFMXRenderer;
 begin
@@ -548,7 +548,7 @@ end;
 function TSynFMXGutterBands.BandByKind(
   AKind: TSynFMXGutterBandKind): TSynFMXGutterBand;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := 0 to Count - 1 do
     if Items[I].Kind = AKind then
@@ -580,7 +580,7 @@ end;
 
 function TSynFMXGutter.RealGutterWidth: Single;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if not FVisible then
     Exit(0);
@@ -591,7 +591,7 @@ end;
 
 function TSynFMXGutter.BandAtX(X: Single): TSynFMXGutterBand;
 var
-  I: Integer;
+  I: NativeInt;
   Left: Single;
   W: Single;
 begin
@@ -656,7 +656,7 @@ begin
     Sel.Caret, Sel.Start, Sel.Stop);
 end;
 
-function TSynFMXSelections.GetLineText(ALine: Integer): string;
+function TSynFMXSelections.GetLineText(ALine: NativeInt): string;
 begin
   Result := TCustomFMXSynEdit(FOwner).Lines[ALine - 1];
 end;
@@ -671,7 +671,7 @@ begin
   Result := eoScrollPastEol in TCustomFMXSynEdit(FOwner).ScrollOptions;
 end;
 
-function TSynFMXSelections.GetRowLength(ARow: Integer): Integer;
+function TSynFMXSelections.GetRowLength(ARow: NativeInt): NativeInt;
 begin
   Result := TCustomFMXSynEdit(FOwner).GetRowLength(ARow);
 end;
@@ -688,8 +688,7 @@ begin
   Result := TCustomFMXSynEdit(FOwner).DisplayToBufferPos(P);
 end;
 
-function TSynFMXSelections.SelectionToDisplayRow(
-  var Sel: TSynSelection): Integer;
+function TSynFMXSelections.SelectionToDisplayRow(var Sel: TSynSelection): NativeInt;
 begin
   Result := BufferToDisplayPos(Sel.Caret).Row;
 end;

@@ -49,9 +49,9 @@ type
 
   { Event types }
   TSynPrintStatusEvent = procedure(Sender: TObject; Status: TSynPrintStatus;
-    PageNumber: Integer; var Abort: Boolean) of object;
+    PageNumber: NativeInt; var Abort: Boolean) of object;
   TSynPrintLineEvent = procedure(Sender: TObject; LineNumber,
-    PageNumber: Integer) of object;
+    PageNumber: NativeInt) of object;
 
   { Line info record - maps source lines to printed pages }
   TLineInfo = record
@@ -60,11 +60,11 @@ type
   end;
 
 { Converts an integer to Roman numeral string }
-function IntToRoman(Value: Integer): string;
+function IntToRoman(Value: NativeInt): string;
 
 implementation
 
-function IntToRoman(Value: Integer): string;
+function IntToRoman(Value: NativeInt): string;
 begin
   Result := '';
   while Value >= 1000 do begin

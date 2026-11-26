@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit - FMX Edition
 
 The contents of this file are subject to the Mozilla Public License
@@ -39,7 +39,7 @@ type
       ASpellCheck: TSynFMXSpellCheck); reintroduce;
     destructor Destroy; override;
     procedure AfterPaint(Canvas: TCanvas; const AClip: TRectF;
-      FirstLine, LastLine: Integer); override;
+      FirstLine, LastLine: NativeInt); override;
   end;
 
   TSynFMXSpellCheck = class(TComponent)
@@ -56,14 +56,14 @@ type
     procedure SetEditor(Value: TComponent);
     procedure SetLanguage(const Value: string);
     procedure SetEnabled(Value: Boolean);
-    function GetLineText(ALine: Integer): string;
+    function GetLineText(ALine: NativeInt): string;
     function GetLineCount: Integer;
     function GetEditorLines: TStrings;
     function GetEditorBlockBegin: TBufferCoord;
     function GetEditorBlockEnd: TBufferCoord;
-    procedure DoCheckText(const AText: string; ALine: Integer;
-      AStartOffset: Integer = 0);
-    procedure DoCheckLine(ALine: Integer);
+    procedure DoCheckText(const AText: string; ALine: NativeInt;
+      AStartOffset: NativeInt = 0);
+    procedure DoCheckLine(ALine: NativeInt);
     procedure InvalidateEditor;
   protected
     procedure Notification(AComponent: TComponent;
@@ -75,7 +75,7 @@ type
     procedure CheckFile;
     procedure CheckSelection;
     procedure ClearErrors;
-    function ErrorAtPos(ALine, AChar: Integer): Integer;
+    function ErrorAtPos(ALine, AChar: Integer): NativeInt;
     property Errors: TList<TSynSpellError> read FErrors;
     property Provider: ISynSpellCheckProvider read FProvider write FProvider;
     property UnderlineColor: TAlphaColor read FUnderlineColor
@@ -97,7 +97,8 @@ implementation
 uses
   System.Character,
   SynEditHighlighter,
-  SynEditTextBuffer;
+  SynEditTextBuffer,
+  SynFunc;
 
 type
   TSynHighlighterAccess = class(TSynCustomHighlighter);
@@ -119,7 +120,7 @@ begin
 end;
 
 procedure TSynFMXSpellPaintPlugin.AfterPaint(Canvas: TCanvas;
-  const AClip: TRectF; FirstLine, LastLine: Integer);
+  const AClip: TRectF; FirstLine, LastLine: NativeInt);
 var
   Error: TSynSpellError;
   Pt1, Pt2: TPointF;
@@ -262,14 +263,14 @@ begin
     Result := BufferCoord(0, 0);
 end;
 
-function TSynFMXSpellCheck.GetLineText(ALine: Integer): string;
+function TSynFMXSpellCheck.GetLineText(ALine: NativeInt): string;
 var
   Lines: TStrings;
 begin
   Result := '';
   Lines := GetEditorLines;
   if Assigned(Lines) and (ALine >= 1) and (ALine <= Lines.Count) then
-    Result := Lines[ALine - 1];
+    Result := Lines[ToInt32(ALine - 1)];
 end;
 
 function TSynFMXSpellCheck.GetLineCount: Integer;
@@ -282,8 +283,8 @@ begin
     Result := Lines.Count;
 end;
 
-procedure TSynFMXSpellCheck.DoCheckText(const AText: string; ALine: Integer;
-  AStartOffset: Integer);
+procedure TSynFMXSpellCheck.DoCheckText(const AText: string; ALine: NativeInt;
+  AStartOffset: NativeInt);
 var
   Words: TArray<TWordInfo>;
   Info: TWordInfo;
@@ -312,13 +313,13 @@ begin
   end;
 end;
 
-procedure TSynFMXSpellCheck.DoCheckLine(ALine: Integer);
+procedure TSynFMXSpellCheck.DoCheckLine(ALine: NativeInt);
 var
   Ed: TCustomFMXSynEdit;
   HL: TSynCustomHighlighter;
   Attr, DefComment, DefString, DefIdent: TSynHighlighterAttributes;
   LineText, Token: string;
-  TokenPos: Integer;
+  TokenPos: NativeInt;
   ShouldCheck: Boolean;
 begin
   LineText := GetLineText(ALine);
@@ -385,7 +386,7 @@ end;
 
 procedure TSynFMXSpellCheck.CheckLine(ALine: Integer);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if not FEnabled or not Assigned(FEditor) or not Assigned(FProvider) then
     Exit;
@@ -425,7 +426,7 @@ end;
 procedure TSynFMXSpellCheck.CheckSelection;
 var
   BB, BE: TBufferCoord;
-  Line, I: Integer;
+  Line, I: NativeInt;
   Err: TSynSpellError;
 begin
   if not FEnabled or not Assigned(FEditor) or not Assigned(FProvider) then
@@ -473,9 +474,9 @@ begin
   InvalidateEditor;
 end;
 
-function TSynFMXSpellCheck.ErrorAtPos(ALine, AChar: Integer): Integer;
+function TSynFMXSpellCheck.ErrorAtPos(ALine, AChar: Integer): NativeInt;
 var
-  I: Integer;
+  I: NativeInt;
   Err: TSynSpellError;
 begin
   for I := 0 to FErrors.Count - 1 do

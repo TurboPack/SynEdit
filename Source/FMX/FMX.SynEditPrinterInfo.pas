@@ -114,10 +114,8 @@ implementation
 uses
 {$IFDEF MSWINDOWS}
   Winapi.Windows,
-  FMX.Printer;
-{$ELSE}
-  FMX.Printer;
 {$ENDIF}
+  FMX.Printer, SynFunc;
 
 const
   mmPerInch = 25.4;
@@ -287,25 +285,25 @@ end;
 function TSynFMXPrinterInfo.PixFromLeft(mmValue: Double): Integer;
 begin
   EnsureUpdated;
-  Result := Round(mmValue * FXPixPerMM - FLeftGutter);
+  Result := Round32(mmValue * FXPixPerMM - FLeftGutter);
 end;
 
 function TSynFMXPrinterInfo.PixFromRight(mmValue: Double): Integer;
 begin
   EnsureUpdated;
-  Result := Round(mmValue * FXPixPerMM - FRightGutter);
+  Result := Round32(mmValue * FXPixPerMM - FRightGutter);
 end;
 
 function TSynFMXPrinterInfo.PixFromTop(mmValue: Double): Integer;
 begin
   EnsureUpdated;
-  Result := Round(mmValue * FYPixPerMM - FTopGutter);
+  Result := Round32(mmValue * FYPixPerMM - FTopGutter);
 end;
 
 function TSynFMXPrinterInfo.PixFromBottom(mmValue: Double): Integer;
 begin
   EnsureUpdated;
-  Result := Round(mmValue * FYPixPerMM - FBottomGutter);
+  Result := Round32(mmValue * FYPixPerMM - FBottomGutter);
 end;
 
 end.

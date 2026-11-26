@@ -55,10 +55,10 @@ type
   private
     FEditor: TCustomFMXSynEdit;
     // Event handlers for TSynEditStringList
-    procedure LinePut(Sender: TObject; Index: Integer; const OldLine: string);
-    procedure LinesBeforeDeleted(Sender: TObject; Index, Count: Integer);
-    procedure LinesDeleted(Sender: TObject; Index, Count: Integer);
-    procedure LinesInserted(Sender: TObject; Index, Count: Integer);
+    procedure LinePut(Sender: TObject; Index: NativeInt; const OldLine: string);
+    procedure LinesBeforeDeleted(Sender: TObject; Index, Count: NativeInt);
+    procedure LinesDeleted(Sender: TObject; Index, Count: NativeInt);
+    procedure LinesInserted(Sender: TObject; Index, Count: NativeInt);
   protected
     function CreateCaretUndoItem(Editor: TObject): TSynUndoItem; override;
     procedure RestoreCaretAndSelection(Editor: TObject;
@@ -100,7 +100,7 @@ end;
 
 { Event handlers - hook into TSynEditStringList }
 
-procedure TSynEditUndo.LinePut(Sender: TObject; Index: Integer;
+procedure TSynEditUndo.LinePut(Sender: TObject; Index: NativeInt;
   const OldLine: string);
 var
   Line: string;
@@ -118,9 +118,9 @@ begin
   end;
 end;
 
-procedure TSynEditUndo.LinesBeforeDeleted(Sender: TObject; Index, Count: Integer);
+procedure TSynEditUndo.LinesBeforeDeleted(Sender: TObject; Index, Count: NativeInt);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if IsLocked or FInsideUndoRedo then Exit;
   SetLength(FDeletedLines, Count);
@@ -133,7 +133,7 @@ begin
   end;
 end;
 
-procedure TSynEditUndo.LinesDeleted(Sender: TObject; Index, Count: Integer);
+procedure TSynEditUndo.LinesDeleted(Sender: TObject; Index, Count: NativeInt);
 var
   Item: TSynLinesDeletedUndoItem;
 begin
@@ -148,7 +148,7 @@ begin
   end;
 end;
 
-procedure TSynEditUndo.LinesInserted(Sender: TObject; Index, Count: Integer);
+procedure TSynEditUndo.LinesInserted(Sender: TObject; Index, Count: NativeInt);
 var
   Item: TSynLinesInsertedUndoItem;
 begin

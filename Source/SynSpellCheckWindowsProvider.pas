@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit
 
 The contents of this file are subject to the Mozilla Public License
@@ -13,11 +13,10 @@ http://www.mozilla.org/MPL/
 
 unit SynSpellCheckWindowsProvider;
 
-{$I SynEdit.inc}
-
-{$IFDEF MSWINDOWS}
-
 interface
+
+{$I SynEdit.inc}
+{$IFDEF MSWINDOWS}
 
 uses
   Winapi.Windows,
@@ -51,7 +50,11 @@ type
     class function SupportedLanguages: TArray<string>;
   end;
 
+{$ENDIF MSWINDOWS}
+
 implementation
+
+{$IFDEF MSWINDOWS}
 
 uses
   System.Win.ComObj;

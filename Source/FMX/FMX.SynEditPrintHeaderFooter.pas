@@ -74,16 +74,16 @@ type
   private
     FText: string;
     FFont: TFont;
-    FLineNumber: Integer;
+    FLineNumber: NativeInt;
     FAlignment: TAlignment;
-    FIndex: Integer;
+    FIndex: NativeInt;
     function GetAsString: string;
     procedure SetAsString(const Value: string);
     procedure SetFont(const Value: TFont);
   public
     constructor Create;
     destructor Destroy; override;
-    function GetText(NumPages, PageNum: Integer; Roman: Boolean;
+    function GetText(NumPages, PageNum: NativeInt; Roman: Boolean;
       Title, ATime, ADate: string): string;
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
@@ -91,7 +91,7 @@ type
     property Alignment: TAlignment read FAlignment write FAlignment;
     property AsString: string read GetAsString write SetAsString;
     property Font: TFont read FFont write SetFont;
-    property LineNumber: Integer read FLineNumber write FLineNumber;
+    property LineNumber: NativeInt read FLineNumber write FLineNumber;
     property Text: string read FText write FText;
   end;
 
@@ -105,7 +105,7 @@ type
     FItems: TList;
     FDefaultFont: TFont;
     FDate, FTime: string;
-    FNumPages: Integer;
+    FNumPages: NativeInt;
     FTitle: string;
     FMargins: TSynEditPrintMargins;
     FFrameHeight: Integer;
@@ -122,14 +122,14 @@ type
     constructor Create;
     destructor Destroy; override;
     function Add(Text: string; Font: TFont; Alignment: TAlignment;
-      LineNumber: Integer): Integer;
+      LineNumber: NativeInt): NativeInt;
     procedure Delete(Index: Integer);
     procedure Clear;
-    function Count: Integer;
-    function Get(Index: Integer): THeaderFooterItem;
-    procedure InitPrint(NumPages: Integer; Title: string;
+    function Count: NativeInt;
+    function Get(Index: NativeInt): THeaderFooterItem;
+    procedure InitPrint(NumPages: NativeInt; Title: string;
       Margins: TSynEditPrintMargins);
-    procedure Print(Canvas: TCanvas; PageNum: Integer);
+    procedure Print(Canvas: TCanvas; PageNum: NativeInt);
     procedure Assign(Source: TPersistent); override;
     procedure FixLines;
     property AsString: string read GetAsString write SetAsString;
@@ -164,6 +164,7 @@ implementation
 
 uses
   SynEditMiscProcs,
+  SynFunc,
   FMX.SynEditRenderer;
 
 { Helper: extract first element from a delimited string }
@@ -210,7 +211,7 @@ begin
     IntToStr(Ord(FAlignment));
 end;
 
-function THeaderFooterItem.GetText(NumPages, PageNum: Integer;
+function THeaderFooterItem.GetText(NumPages, PageNum: NativeInt;
   Roman: Boolean; Title, ATime, ADate: string): string;
 var
   Len, Start, Run: Integer;
@@ -326,25 +327,19 @@ end;
 procedure THeaderFooterItem.LoadFromStream(AStream: TStream);
 var
   Len, BufferSize: Integer;
-  Buffer: Pointer;
   aSize: Integer;
   aStyle: TFontStyles;
   aName: string;
   aNameLen: Integer;
-  aNameBuf: PAnsiChar;
+  Buffer: TBytes;
 begin
   with AStream do
   begin
     Read(Len, SizeOf(Len));
     BufferSize := Len * SizeOf(WideChar);
-    GetMem(Buffer, BufferSize + SizeOf(WideChar));
-    try
-      Read(Buffer^, BufferSize);
-      PWideChar(Buffer)[BufferSize div SizeOf(WideChar)] := #0;
-      FText := PWideChar(Buffer);
-    finally
-      FreeMem(Buffer);
-    end;
+    SetLength(Buffer, BufferSize);
+    Read(Buffer, BufferSize);
+    FText := TEncoding.Unicode.GetString(Buffer);
     Read(FLineNumber, SizeOf(FLineNumber));
     { Font: read charset (skip), color (skip), height (skip) }
     Read(Len, SizeOf(Len)); { charset }
@@ -352,14 +347,9 @@ begin
     Read(Len, SizeOf(Len)); { height }
     { Font name }
     Read(aNameLen, SizeOf(aNameLen));
-    GetMem(aNameBuf, aNameLen + 1);
-    try
-      Read(aNameBuf^, aNameLen);
-      aNameBuf[aNameLen] := #0;
-      aName := string(aNameBuf);
-    finally
-      FreeMem(aNameBuf);
-    end;
+    SetLength(Buffer, aNameLen);
+    Read(Buffer, aNameLen);
+    aName := TEncoding.ANSI.GetString(Buffer);
     Read(Len, SizeOf(Len)); { pitch }
     Read(aSize, SizeOf(aSize));
     Read(aStyle, SizeOf(aStyle));
@@ -375,7 +365,7 @@ var
   aLen: Integer;
   aStyle: TFontStyles;
   aSize: Integer;
-  aNameAnsi: AnsiString;
+  aName: string;
   Zero: Integer;
 begin
   with AStream do
@@ -388,12 +378,12 @@ begin
     Zero := 0;
     Write(Zero, SizeOf(Zero)); { charset }
     Write(Zero, SizeOf(Zero)); { color }
-    aSize := Round(FFont.Size);
+    aSize := Round32(FFont.Size);
     Write(aSize, SizeOf(aSize)); { height }
-    aNameAnsi := AnsiString(FFont.Family);
-    aLen := Length(aNameAnsi);
+    aName := FFont.Family;
+    aLen := Length(aName);
     Write(aLen, SizeOf(aLen));
-    Write(PAnsiChar(aNameAnsi)^, aLen);
+    Write(TEncoding.ANSI.GetBytes(aName), aLen);
     Write(Zero, SizeOf(Zero)); { pitch }
     Write(aSize, SizeOf(aSize)); { size }
     aStyle := FFont.Style;
@@ -416,7 +406,7 @@ begin
   GetFirstEl(S, '/'); { pitch - skip }
   GetFirstEl(S, '/'); { ppi - skip }
   FFont.Size := StrToIntDef(GetFirstEl(S, '/'), 10);
-  Byte(Sty) := StrToIntDef(GetFirstEl(S, '/'), 0);
+  Byte(Sty) := ToUInt8(StrToIntDef(GetFirstEl(S, '/'), 0));
   FFont.Style := Sty;
   FLineNumber := StrToIntDef(GetFirstEl(S, '/'), 0);
   FAlignment := TAlignment(StrToIntDef(GetFirstEl(S, '/'), 0));
@@ -452,7 +442,7 @@ begin
 end;
 
 function TSynEditPrintHeaderFooter.Add(Text: string; Font: TFont;
-  Alignment: TAlignment; LineNumber: Integer): Integer;
+  Alignment: TAlignment; LineNumber: NativeInt): NativeInt;
 var
   AItem: THeaderFooterItem;
 begin
@@ -470,7 +460,7 @@ end;
 
 procedure TSynEditPrintHeaderFooter.Delete(Index: Integer);
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := 0 to FItems.Count - 1 do
   begin
@@ -485,7 +475,7 @@ end;
 
 procedure TSynEditPrintHeaderFooter.Clear;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   for I := 0 to FItems.Count - 1 do
     THeaderFooterItem(FItems[I]).Free;
@@ -499,7 +489,7 @@ end;
 
 procedure TSynEditPrintHeaderFooter.FixLines;
 var
-  I, CurLine: Integer;
+  I, CurLine: NativeInt;
 begin
   SetLength(FLineHeights, 0);
   CurLine := 0;
@@ -518,7 +508,7 @@ end;
 
 procedure TSynEditPrintHeaderFooter.CalcHeight;
 var
-  I, CurLine: Integer;
+  I, CurLine: NativeInt;
   AItem: THeaderFooterItem;
   FOrgHeight: Integer;
   ItemHeight: Integer;
@@ -546,13 +536,12 @@ end;
 
 function CompareItems(Item1, Item2: Pointer): Integer;
 begin
-  Result := THeaderFooterItem(Item1).LineNumber -
-    THeaderFooterItem(Item2).LineNumber;
+  Result := CompareValue(THeaderFooterItem(Item1).LineNumber, THeaderFooterItem(Item2).LineNumber);
   if Result = 0 then
-    Result := NativeInt(Item1) - NativeInt(Item2);
+    Result := CompareValue(NativeInt(Item1), NativeInt(Item2));
 end;
 
-procedure TSynEditPrintHeaderFooter.InitPrint(NumPages: Integer;
+procedure TSynEditPrintHeaderFooter.InitPrint(NumPages: NativeInt;
   Title: string; Margins: TSynEditPrintMargins);
 begin
   FDate := DateToStr(Now);
@@ -608,9 +597,9 @@ begin
 end;
 
 procedure TSynEditPrintHeaderFooter.Print(Canvas: TCanvas;
-  PageNum: Integer);
+  PageNum: NativeInt);
 var
-  I, Y, CurLine: Integer;
+  I, Y, CurLine: NativeInt;
   AStr: string;
   AItem: THeaderFooterItem;
   TheAlignment: TAlignment;
@@ -672,7 +661,7 @@ end;
 procedure TSynEditPrintHeaderFooter.Assign(Source: TPersistent);
 var
   Src: TSynEditPrintHeaderFooter;
-  I: Integer;
+  I: NativeInt;
 begin
   if (Source <> nil) and (Source is TSynEditPrintHeaderFooter) then
   begin
@@ -695,19 +684,19 @@ begin
     inherited Assign(Source);
 end;
 
-function TSynEditPrintHeaderFooter.Count: Integer;
+function TSynEditPrintHeaderFooter.Count: NativeInt;
 begin
   Result := FItems.Count;
 end;
 
-function TSynEditPrintHeaderFooter.Get(Index: Integer): THeaderFooterItem;
+function TSynEditPrintHeaderFooter.Get(Index: NativeInt): THeaderFooterItem;
 begin
   Result := THeaderFooterItem(FItems[Index]);
 end;
 
 function TSynEditPrintHeaderFooter.GetAsString: string;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   Result := '';
   for I := 0 to FItems.Count - 1 do
@@ -739,11 +728,11 @@ end;
 
 procedure TSynEditPrintHeaderFooter.LoadFromStream(AStream: TStream);
 var
-  Num, I: Integer;
+  Num, I: NativeInt;
   aSize: Integer;
   aStyle: TFontStyles;
   aNameLen: Integer;
-  aNameBuf: PAnsiChar;
+  aNameBuf: TBytes;
   aName: string;
   Zero: Integer;
 begin
@@ -759,14 +748,9 @@ begin
     Read(Zero, SizeOf(Zero)); { color }
     Read(Zero, SizeOf(Zero)); { height }
     Read(aNameLen, SizeOf(aNameLen));
-    GetMem(aNameBuf, aNameLen + 1);
-    try
-      Read(aNameBuf^, aNameLen);
-      aNameBuf[aNameLen] := #0;
-      aName := string(aNameBuf);
-    finally
-      FreeMem(aNameBuf);
-    end;
+    SetLength(aNameBuf, aNameLen);
+    Read(aNameBuf, aNameLen);
+    aName := TEncoding.ANSI.GetString(aNameBuf);
     Read(Zero, SizeOf(Zero)); { pitch }
     Read(aSize, SizeOf(aSize));
     Read(aStyle, SizeOf(aStyle));
@@ -786,10 +770,10 @@ end;
 
 procedure TSynEditPrintHeaderFooter.SaveToStream(AStream: TStream);
 var
-  I, Num: Integer;
+  I, Num: NativeInt;
   aSize: Integer;
   aStyle: TFontStyles;
-  aNameAnsi: AnsiString;
+  aName: string;
   aLen: Integer;
   Zero: Integer;
 begin
@@ -804,12 +788,12 @@ begin
     Zero := 0;
     Write(Zero, SizeOf(Zero)); { charset }
     Write(Zero, SizeOf(Zero)); { color }
-    aSize := Round(FDefaultFont.Size);
+    aSize := Round32(FDefaultFont.Size);
     Write(aSize, SizeOf(aSize)); { height }
-    aNameAnsi := AnsiString(FDefaultFont.Family);
-    aLen := Length(aNameAnsi);
+    aName := FDefaultFont.Family;
+    aLen := Length(aName);
     Write(aLen, SizeOf(aLen));
-    Write(PAnsiChar(aNameAnsi)^, aLen);
+    Write(TEncoding.ANSI.GetBytes(aName), aLen);
     Write(Zero, SizeOf(Zero)); { pitch }
     Write(aSize, SizeOf(aSize));
     aStyle := FDefaultFont.Style;

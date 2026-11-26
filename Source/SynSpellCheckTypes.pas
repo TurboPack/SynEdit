@@ -32,9 +32,9 @@ type
 {$REGION 'Spell Error Record'}
 
   TSynSpellError = record
-    Line: Integer;       // 1-based line
-    StartChar: Integer;  // 1-based char
-    EndChar: Integer;    // 1-based char (exclusive)
+    Line: NativeInt;       // 1-based line
+    StartChar: NativeInt;  // 1-based char
+    EndChar: NativeInt;    // 1-based char (exclusive)
     Word: string;
   end;
 

@@ -36,8 +36,8 @@ type
     FOnUserCommand: TSynFMXUserCommandEvent;
     FMacroName: string;
     FSaveMarkerPos: Boolean;
-    function GetEvent(aIndex: Integer): TSynMacroEvent;
-    function GetEventCount: Integer;
+    function GetEvent(aIndex: NativeInt): TSynMacroEvent;
+    function GetEventCount: NativeInt;
     function GetIsEmpty: Boolean;
     function GetAsString: string;
     procedure SetAsString(const Value: string);
@@ -69,10 +69,10 @@ type
     // Event management
     procedure AddEvent(aCmd: TSynEditorCommand; aChar: WideChar;
       aData: Pointer);
-    procedure InsertEvent(aIndex: Integer; aCmd: TSynEditorCommand;
+    procedure InsertEvent(aIndex: NativeInt; aCmd: TSynEditorCommand;
       aChar: WideChar; aData: Pointer);
     procedure AddCustomEvent(aEvent: TSynMacroEvent);
-    procedure InsertCustomEvent(aIndex: Integer; aEvent: TSynMacroEvent);
+    procedure InsertCustomEvent(aIndex: NativeInt; aEvent: TSynMacroEvent);
     procedure DeleteEvent(aIndex: Integer);
     // Serialization
     procedure LoadFromStream(aSrc: TStream);
@@ -84,8 +84,8 @@ type
     property Editor: TComponent read FEditor write SetEditor;
     property State: TSynMacroState read FState;
     property IsEmpty: Boolean read GetIsEmpty;
-    property EventCount: Integer read GetEventCount;
-    property Events[aIndex: Integer]: TSynMacroEvent read GetEvent;
+    property EventCount: NativeInt read GetEventCount;
+    property Events[aIndex: NativeInt]: TSynMacroEvent read GetEvent;
     property AsString: string read GetAsString write SetAsString;
     property MacroName: string read FMacroName write FMacroName;
     property SaveMarkerPos: Boolean read FSaveMarkerPos
@@ -114,7 +114,8 @@ implementation
 
 uses
   FMX.SynEdit,
-  SynEditMiscProcs;
+  SynEditMiscProcs,
+  SynFunc;
 
 { Helper to convert TShiftState to shortcut modifier flags }
 function MakeShortCut(Key: Word; Shift: TShiftState): TShortCut;
@@ -290,7 +291,7 @@ end;
 
 procedure TCustomFMXSynMacroRecorder.PlaybackMacro(aEditor: TComponent);
 var
-  cEvent: Integer;
+  cEvent: NativeInt;
   Ed: TCustomFMXSynEdit;
 begin
   if FState <> msStopped then
@@ -357,7 +358,7 @@ end;
 
 procedure TCustomFMXSynMacroRecorder.Clear;
 var
-  I: Integer;
+  I: NativeInt;
   Obj: TObject;
 begin
   if Assigned(FEvents) then
@@ -378,7 +379,7 @@ begin
   InsertEvent(EventCount, aCmd, aChar, aData);
 end;
 
-procedure TCustomFMXSynMacroRecorder.InsertEvent(aIndex: Integer;
+procedure TCustomFMXSynMacroRecorder.InsertEvent(aIndex: NativeInt;
   aCmd: TSynEditorCommand; aChar: WideChar; aData: Pointer);
 var
   iEvent: TSynMacroEvent;
@@ -398,7 +399,7 @@ begin
   InsertCustomEvent(EventCount, aEvent);
 end;
 
-procedure TCustomFMXSynMacroRecorder.InsertCustomEvent(aIndex: Integer;
+procedure TCustomFMXSynMacroRecorder.InsertCustomEvent(aIndex: NativeInt;
   aEvent: TSynMacroEvent);
 begin
   if FEvents = nil then
@@ -416,12 +417,12 @@ begin
 end;
 
 function TCustomFMXSynMacroRecorder.GetEvent(
-  aIndex: Integer): TSynMacroEvent;
+  aIndex: NativeInt): TSynMacroEvent;
 begin
   Result := TSynMacroEvent(FEvents[aIndex]);
 end;
 
-function TCustomFMXSynMacroRecorder.GetEventCount: Integer;
+function TCustomFMXSynMacroRecorder.GetEventCount: NativeInt;
 begin
   if FEvents = nil then
     Result := 0
@@ -452,7 +453,7 @@ begin
   FEvents := TList.Create;
   aSrc.Read(cnt, SizeOf(cnt));
   i := 0;
-  FEvents.Capacity := aSrc.Size div SizeOf(TSynEditorCommand);
+  FEvents.Capacity := ToNativeInt(aSrc.Size div SizeOf(TSynEditorCommand));
   while (aSrc.Position < aSrc.Size) and (i < cnt) do
   begin
     aSrc.Read(iCommand, SizeOf(TSynEditorCommand));
@@ -466,7 +467,7 @@ end;
 
 procedure TCustomFMXSynMacroRecorder.SaveToStream(aDest: TStream);
 var
-  cEvent, eCnt: Integer;
+  cEvent, eCnt: NativeInt;
 begin
   eCnt := EventCount;
   aDest.Write(eCnt, SizeOf(eCnt));
@@ -501,7 +502,7 @@ end;
 
 function TCustomFMXSynMacroRecorder.GetAsString: string;
 var
-  i: Integer;
+  i: NativeInt;
   eStr: string;
 begin
   Result := 'macro ' + MacroName + #13#10 + 'begin' + #13#10;
@@ -540,7 +541,7 @@ begin
       if IdentToEditorCommand(Copy(cmdStr, 1, p - 1), Cmd) then
       begin
         Delete(cmdStr, 1, p);
-        iEvent := CreateMacroEvent(Cmd);
+        iEvent := CreateMacroEvent(ToUInt16(Cmd));
         try
           FEvents.Add(iEvent);
           iEvent.InitEventParameters(cmdStr);

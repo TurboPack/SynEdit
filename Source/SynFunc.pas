@@ -151,6 +151,9 @@ function Rect(ALeft, ATop, ARight, ABottom: Int64): TRect; overload; inline;
 
 function RoundNative(const AValue: Real): NativeInt; inline;
 function RoundSyn(const AValue: Real): TSynNativeInt; inline;
+function Round32(const AValue: Real): Int32; inline;
+
+function Trunc32(const AValue: Real): Int32;  inline;
 
 function StringOfChar(AChar: Char; const ACount: Int64): string; overload; inline;
 
@@ -163,10 +166,14 @@ function ToInt32(const AValue: Int64): Int32; overload; inline;
 function ToInt32(const AValue: Int32): Int32; overload; inline;
 function ToInt32(const AValue: UInt64): Int32; overload; inline;
 
-function ToNativeInt(const AValue: NativeUInt): NativeInt; overload; inline;
+function ToNativeInt(const AValue: Int32): NativeInt; overload; inline;
+function ToNativeInt(const AValue: Int64): NativeInt; overload; inline;
+function ToNativeInt(const AValue: UInt32): NativeInt; overload; inline;
+function ToNativeInt(const AValue: UInt64): NativeInt; overload; inline;
 
 function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;
 function ToNativeUInt(const AValue: Int64): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: UInt32): NativeUInt; overload; inline;
 function ToNativeUInt(const AValue: UInt64): NativeUInt; overload; inline;
 
 function ToSynNativeInt(const AValue: NativeInt): TSynNativeInt; overload; inline;
@@ -439,12 +446,22 @@ begin
   Result := NativeInt(Round(AValue));
 end;
 
-function RoundSyn(const AValue: Real): TSynNativeInt; inline;
+function RoundSyn(const AValue: Real): TSynNativeInt;
 begin
   Result := TSynNativeInt(Round(AValue));
 end;
 
-function StringOfChar(AChar: Char; const ACount: Int64): string; overload; inline;
+function Round32(const AValue: Real): Int32;
+begin
+  Result := Int32(Round(AValue));
+end;
+
+function Trunc32(const AValue: Real): Int32;
+begin
+  Result := Int32(Trunc(AValue));
+end;
+
+function StringOfChar(AChar: Char; const ACount: Int64): string;
 begin
   Result := System.StringOfChar(AChar, Int32(ACount));
 end;
@@ -479,22 +496,42 @@ begin
   Result := Int32(AValue);
 end;
 
-function ToNativeInt(const AValue: NativeUInt): NativeInt; overload; inline;
+function ToNativeInt(const AValue: Int32): NativeInt;
 begin
   Result := NativeInt(AValue);
 end;
 
-function ToNativeUInt(const AValue: Int32): NativeUInt; overload; inline;
+function ToNativeInt(const AValue: Int64): NativeInt;
+begin
+  Result := NativeInt(AValue);
+end;
+
+function ToNativeInt(const AValue: UInt32): NativeInt;
+begin
+  Result := NativeInt(AValue);
+end;
+
+function ToNativeInt(const AValue: UInt64): NativeInt;
+begin
+  Result := NativeInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: Int32): NativeUInt;
 begin
   Result := NativeUInt(AValue);
 end;
 
-function ToNativeUInt(const AValue: Int64): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: Int64): NativeUInt;
 begin
   Result := NativeUInt(AValue);
 end;
 
-function ToNativeUInt(const AValue: UInt64): NativeUInt; overload; inline;
+function ToNativeUInt(const AValue: UInt32): NativeUInt;
+begin
+  Result := NativeUInt(AValue);
+end;
+
+function ToNativeUInt(const AValue: UInt64): NativeUInt;
 begin
   Result := NativeUInt(AValue);
 end;
@@ -504,10 +541,9 @@ begin
   Result := TSynNativeInt(AValue);
 end;
 
-function ToSynNativeInt(const AValue: NativeUInt): TSynNativeInt; overload; inline;
+function ToSynNativeInt(const AValue: NativeUInt): TSynNativeInt;
 begin
   Result := TSynNativeInt(AValue);
-
 end;
 
 function ToUInt32(const AValue: Int64): UInt32;

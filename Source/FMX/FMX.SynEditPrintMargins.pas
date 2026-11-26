@@ -145,6 +145,9 @@ type
 
 implementation
 
+uses
+  SynFunc;
+
 const
   mmPerInch = 25.4;
   mmPerCm = 10;
@@ -372,7 +375,7 @@ begin
     finally
       Layout.Free;
     end;
-    PLeft := PLeft + Round(LineNumWidth);
+    PLeft := PLeft + Round32(LineNumWidth);
   end;
 
   PTop := MulDiv(PrinterInfo.PixFromTop(FTop), 96, PrinterInfo.YPixPerInch);
@@ -382,15 +385,15 @@ begin
     PrinterInfo.YPixPerInch);
   PFooter := MulDiv(PrinterInfo.PrintableHeight -
     PrinterInfo.PixFromBottom(FFooter), 96, PrinterInfo.YPixPerInch);
-  PHFInternalMargin := MulDiv(Round(PrinterInfo.YPixPerMM * FHFInternalMargin),
+  PHFInternalMargin := MulDiv(Round32(PrinterInfo.YPixPerMM * FHFInternalMargin),
     96, PrinterInfo.XPixPerInch);
-  PGutter := MulDiv(Round(PrinterInfo.XPixPerMM * FGutter), 96,
+  PGutter := MulDiv(Round32(PrinterInfo.XPixPerMM * FGutter), 96,
     PrinterInfo.XPixPerInch);
   PRightHFTextIndent := PRight -
-    MulDiv(Round(PrinterInfo.XPixPerMM * FRightHFTextIndent), 96,
+    MulDiv(Round32(PrinterInfo.XPixPerMM * FRightHFTextIndent), 96,
       PrinterInfo.XPixPerInch);
   PLeftHFTextIndent := PLeft +
-    MulDiv(Round(PrinterInfo.XPixPerMM * FLeftHFTextIndent), 96,
+    MulDiv(Round32(PrinterInfo.XPixPerMM * FLeftHFTextIndent), 96,
       PrinterInfo.XPixPerInch);
 end;
 

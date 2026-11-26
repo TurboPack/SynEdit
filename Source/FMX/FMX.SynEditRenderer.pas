@@ -75,6 +75,9 @@ function MeasureTextWidth(AFont: TFont; const AText: string): Single;
 
 implementation
 
+uses
+  SynFunc;
+
 function TColorToAlphaColor(AColor: TColor): TAlphaColor;
 {$IFDEF MSWINDOWS}
 var
@@ -118,9 +121,9 @@ begin
     finally
       Layout.EndUpdate;
     end;
-    Result := Round(Layout.TextHeight);
+    Result := Round32(Layout.TextHeight);
     if Result < 1 then
-      Result := Round(AFont.Size * 1.5);
+      Result := Round32(AFont.Size * 1.5);
   finally
     Layout.Free;
   end;

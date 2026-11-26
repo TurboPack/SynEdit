@@ -1,4 +1,4 @@
-{-------------------------------------------------------------------------------
+﻿{-------------------------------------------------------------------------------
 TurboPack SynEdit - FMX Edition
 
 The contents of this file are subject to the Mozilla Public License
@@ -74,7 +74,8 @@ uses
   FMX.Types,
   FMX.Forms,
   FMX.Platform.Win,
-  SynEditDragDropWin;
+  SynEditDragDropWin,
+  SynFunc;
 
 type
   /// Fixed OLE IDropTarget that replaces FMX's built-in TWinDropTarget.
@@ -192,7 +193,7 @@ begin
       AData.FontFamily, AData.FontSize, AData.BackgroundColor,
       AData.UseBackground);
     if Length(FHtmlData) > 0 then
-      FFormats.Add(HTMLClipboardFormat);
+      FFormats.Add(ToUInt16(HTMLClipboardFormat));
   end;
 end;
 
@@ -214,7 +215,7 @@ begin
       Medium.hGlobal := MakeGlobal(FText)
     else if (FormatEtcIn.cfFormat = HTMLClipboardFormat)
       and (Length(FHtmlData) > 0) then
-      Medium.hGlobal := MakeGlobal(FHtmlData[0], Length(FHtmlData));
+      Medium.hGlobal := MakeGlobal(FHtmlData[0], ToNativeUInt(Length(FHtmlData)));
   except
     Result := E_UNEXPECTED;
   end;

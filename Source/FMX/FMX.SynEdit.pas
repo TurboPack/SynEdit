@@ -48,11 +48,11 @@ type
   TSynReplaceAction = (raCancel, raSkip, raReplace, raReplaceAll);
 
   TReplaceTextEvent = procedure(Sender: TObject; const ASearch, AReplace:
-    string; Line, Column: Integer; var Action: TSynReplaceAction) of object;
+    string; Line, Column: NativeInt; var Action: TSynReplaceAction) of object;
 
   TScanForFoldRangesEvent = procedure(Sender: TObject;
     FoldRanges: TSynFoldRanges; LinesToScan: TStrings;
-    FromLine: Integer; ToLine: Integer) of object;
+    FromLine: NativeInt; ToLine: NativeInt) of object;
 
   TCustomFMXSynEdit = class(TControl, ISynEdit)
   private
@@ -64,8 +64,8 @@ type
     FInsertMode: Boolean;
     FSelection: TSynSelection;
     FSelections: TSynFMXSelections;
-    FTopLine: Integer;
-    FLeftChar: Integer;
+    FTopLine: NativeInt;
+    FLeftChar: NativeInt;
     FRightEdge: Integer;
     FRightEdgeColor: TColor;
     FActiveLineColor: TColor;
@@ -112,7 +112,7 @@ type
     // Plugins
     FPlugins: TList;
     // Cached max scroll width
-    FMaxScrollWidth: Integer;
+    FMaxScrollWidth: NativeInt;
     FMaxScrollWidthValid: Boolean;
     // Drag-and-drop state
     FIsDragSource: Boolean;
@@ -131,22 +131,22 @@ type
     procedure SetHighlighter(const Value: TSynCustomHighlighter);
     procedure SetTabWidth(Value: Integer);
     procedure SetReadOnly(Value: Boolean);
-    procedure SetCaretX(Value: Integer);
-    procedure SetCaretY(Value: Integer);
-    procedure SetTopLine(Value: Integer);
-    procedure SetLeftChar(Value: Integer);
+    procedure SetCaretX(Value: NativeInt);
+    procedure SetCaretY(Value: NativeInt);
+    procedure SetTopLine(Value: NativeInt);
+    procedure SetLeftChar(Value: NativeInt);
     procedure SetRightEdge(Value: Integer);
     procedure SetRightEdgeColor(Value: TColor);
     procedure SetOptions(Value: TSynEditorOptions);
     procedure SetScrollOptions(Value: TSynEditorScrollOptions);
     procedure SetActiveLineColor(Value: TColor);
-    function GetLineCount: Integer;
+    function GetLineCount: NativeInt;
     function GetCanUndo: Boolean;
     function GetCanRedo: Boolean;
     function GetModified: Boolean;
-    function GetMaxScrollWidth: Integer;
-    function GetCaretX: Integer;
-    function GetCaretY: Integer;
+    function GetMaxScrollWidth: NativeInt;
+    function GetCaretX: NativeInt;
+    function GetCaretY: NativeInt;
     function GetCaretXY: TBufferCoord;
     procedure SetCaretXY(const Value: TBufferCoord);
     function GetBlockBegin: TBufferCoord;
@@ -169,8 +169,8 @@ type
     procedure ShowCaret;
     procedure HideCaret;
     // Paint helpers
-    procedure PaintGutter(Canvas: TCanvas; FirstLine, LastLine: Integer);
-    procedure PaintTextLines(Canvas: TCanvas; FirstLine, LastLine: Integer);
+    procedure PaintGutter(Canvas: TCanvas; FirstLine, LastLine: NativeInt);
+    procedure PaintTextLines(Canvas: TCanvas; FirstLine, LastLine: NativeInt);
     procedure PaintCaret(Canvas: TCanvas);
     // Editing helpers
     procedure InsertCharAtCursor(AChar: WideChar);
@@ -185,20 +185,20 @@ type
       SelectionCmd: Boolean);
     // Range scanning for multi-line highlighters
     procedure ScanRanges;
-    function ScanFrom(Index: Integer): Integer;
+    function ScanFrom(Index: NativeInt): NativeInt;
     // Code folding private
     procedure SetUseCodeFolding(const Value: Boolean);
     procedure OnCodeFoldingChange(Sender: TObject);
-    procedure ReScanForFoldRanges(FromLine, ToLine: Integer);
+    procedure ReScanForFoldRanges(FromLine, ToLine: NativeInt);
     procedure FullFoldScan;
     procedure ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-      LinesToScan: TStrings; FromLine, ToLine: Integer);
+      LinesToScan: TStrings; FromLine, ToLine: NativeInt);
     // Gutter
     procedure GutterChanged(Sender: TObject);
     // Search/Replace private
     procedure SetSearchEngine(Value: TSynEditSearchCustom);
     function DoOnReplaceText(const ASearch, AReplace: string;
-      Line, Column: Integer): TSynReplaceAction;
+      Line, Column: NativeInt): TSynReplaceAction;
     // Multi-caret private
     function ColumnSelectionStart: TBufferCoord;
     procedure ExecuteMultiCaretCommand(Command: TSynEditorCommand;
@@ -208,7 +208,7 @@ type
     // Word wrap private
     procedure SetWordWrap(Value: Boolean);
     function GetWrapAreaWidth: Integer;
-    function GetDisplayRowCount: Integer;
+    function GetDisplayRowCount: NativeInt;
     // Drag-and-drop private
     procedure DoDragDropOperation;
     procedure ComputeDragScroll(X, Y: Single);
@@ -221,7 +221,7 @@ type
   protected
     // Plugin hooks (protected for testability)
     procedure DoPluginAfterPaint(Canvas: TCanvas; const AClip: TRectF;
-      FirstLine, LastLine: Integer);
+      FirstLine, LastLine: NativeInt);
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure Paint; override;
     procedure Resize; override;
@@ -283,19 +283,19 @@ type
     procedure UncollapseAll;
     procedure CollapseNearest;
     procedure UncollapseNearest;
-    procedure Collapse(FoldRangeIndex: Integer; Invalidate: Boolean = True);
-    procedure Uncollapse(FoldRangeIndex: Integer; Invalidate: Boolean = True);
+    procedure Collapse(FoldRangeIndex: NativeInt; Invalidate: Boolean = True);
+    procedure Uncollapse(FoldRangeIndex: NativeInt; Invalidate: Boolean = True);
     procedure CollapseLevel(Level: Integer);
     procedure UncollapseLevel(Level: Integer);
     // Search/Replace
     function SearchReplace(const ASearch, AReplace: string;
       AOptions: TSynSearchOptions): Integer;
     // Bookmarks
-    procedure SetBookmark(ABookmark: Integer; X, Y: Integer);
-    procedure ClearBookmark(ABookmark: Integer);
+    procedure SetBookmark(ABookmark: Integer; X, Y: NativeInt);
+    procedure ClearBookmark(ABookmark: NativeInt);
     procedure GotoBookmark(ABookmark: Integer);
-    function GetBookmark(ABookmark: Integer; var X, Y: Integer): Boolean;
-    function IsBookmarkSet(ABookmark: Integer): Boolean;
+    function GetBookmark(ABookmark: NativeInt; var X, Y: NativeInt): Boolean;
+    function IsBookmarkSet(ABookmark: NativeInt): Boolean;
     // Plugin management
     procedure RegisterPlugin(APlugin: TSynFMXEditPlugin);
     procedure UnregisterPlugin(APlugin: TSynFMXEditPlugin);
@@ -303,25 +303,25 @@ type
     procedure AddKeyDownHandler(aHandler: TKeyEvent);
     procedure RemoveKeyDownHandler(aHandler: TKeyEvent);
     // Row/Line mapping and coordinate conversion
-    function LineToRow(aLine: Integer): Integer;
-    function RowToLine(aRow: Integer): Integer;
+    function LineToRow(aLine: NativeInt): NativeInt;
+    function RowToLine(aRow: NativeInt): NativeInt;
     function BufferToDisplayPos(const P: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const P: TDisplayCoord): TBufferCoord;
-    function GetRowLength(ARow: Integer): Integer;
+    function GetRowLength(ARow: NativeInt): NativeInt;
     property CodeFolding: TSynCodeFolding read FCodeFolding write FCodeFolding;
     property UseCodeFolding: Boolean read FUseCodeFolding write SetUseCodeFolding;
     property WordWrap: Boolean read FWordWrap write SetWordWrap default False;
     property AllFoldRanges: TSynFoldRanges read FAllFoldRanges;
     property Lines: TSynEditStringList read GetLines write SetLines;
-    property LineCount: Integer read GetLineCount;
-    property CaretX: Integer read GetCaretX write SetCaretX;
-    property CaretY: Integer read GetCaretY write SetCaretY;
+    property LineCount: NativeInt read GetLineCount;
+    property CaretX: NativeInt read GetCaretX write SetCaretX;
+    property CaretY: NativeInt read GetCaretY write SetCaretY;
     property CaretXY: TBufferCoord read GetCaretXY write SetCaretXY;
     property BlockBegin: TBufferCoord read GetBlockBegin write SetBlockBegin;
     property BlockEnd: TBufferCoord read GetBlockEnd write SetBlockEnd;
     property Selections: TSynFMXSelections read FSelections;
-    property TopLine: Integer read FTopLine write SetTopLine;
-    property LeftChar: Integer read FLeftChar write SetLeftChar;
+    property TopLine: NativeInt read FTopLine write SetTopLine;
+    property LeftChar: NativeInt read FLeftChar write SetLeftChar;
     property Modified: Boolean read GetModified;
     property InsertMode: Boolean read FInsertMode write FInsertMode;
     property CanUndo: Boolean read GetCanUndo;
@@ -333,8 +333,8 @@ type
     property LineHeight: Single read FLineHeight;
     property LinesInWindow: Integer read FLinesInWindow;
     property CharsInWindow: Integer read FCharsInWindow;
-    property MaxScrollWidth: Integer read GetMaxScrollWidth;
-    property DisplayRowCount: Integer read GetDisplayRowCount;
+    property MaxScrollWidth: NativeInt read GetMaxScrollWidth;
+    property DisplayRowCount: NativeInt read GetDisplayRowCount;
     property Marks: TSynFMXEditMarkList read FMarkList;
     property Gutter: TSynFMXGutter read FGutter;
     property GutterWidth: Single read FGutterWidth;
@@ -386,7 +386,7 @@ type
       AHandlers: TPlugInHandlers = []); virtual;
     destructor Destroy; override;
     procedure AfterPaint(Canvas: TCanvas; const AClip: TRectF;
-      FirstLine, LastLine: Integer); virtual;
+      FirstLine, LastLine: NativeInt); virtual;
     procedure LinesInserted(FirstLine, Count: Integer); virtual;
     procedure LinesDeleted(FirstLine, Count: Integer); virtual;
     procedure LinePut(aIndex: Integer; const OldLine: string); virtual;
@@ -450,6 +450,7 @@ uses
   Winapi.Windows,
   {$ENDIF}
   SynEditDragDropShared,
+  SynFunc,
   FMX.SynEditDragDrop,
   FMX.SynEditRenderer,
   FMX.SynEditScrollBars,
@@ -641,11 +642,11 @@ begin
     VScrollWidth := 0;
   end;
   if FLineHeight > 0 then
-    FLinesInWindow := Max(1, Trunc((Height - HScrollHeight) / FLineHeight))
+    FLinesInWindow := ToInt32(Max(1, Trunc((Height - HScrollHeight) / FLineHeight)))
   else
     FLinesInWindow := 1;
   if FCharWidth > 0 then
-    FCharsInWindow := Max(1, Trunc((Width - FGutterWidth - VScrollWidth) / FCharWidth))
+    FCharsInWindow := ToInt32(Max(1, Trunc((Width - FGutterWidth - VScrollWidth) / FCharWidth)))
   else
     FCharsInWindow := 1;
   UpdateScrollBars;
@@ -657,9 +658,9 @@ begin
     if (NewHScrollHeight <> HScrollHeight) or (NewVScrollWidth <> VScrollWidth) then
     begin
       if FLineHeight > 0 then
-        FLinesInWindow := Max(1, Trunc((Height - NewHScrollHeight) / FLineHeight));
+        FLinesInWindow := ToInt32(Max(1, Trunc((Height - NewHScrollHeight) / FLineHeight)));
       if FCharWidth > 0 then
-        FCharsInWindow := Max(1, Trunc((Width - FGutterWidth - NewVScrollWidth) / FCharWidth));
+        FCharsInWindow := ToInt32(Max(1, Trunc((Width - FGutterWidth - NewVScrollWidth) / FCharWidth)));
     end;
   end;
   // Re-wrap if word wrap width changed
@@ -705,9 +706,9 @@ begin
     (FScrollBars as ISynEditScrollBars).UpdateScrollBars;
 end;
 
-procedure TCustomFMXSynEdit.SetTopLine(Value: Integer);
+procedure TCustomFMXSynEdit.SetTopLine(Value: NativeInt);
 var
-  MaxTop: Integer;
+  MaxTop: NativeInt;
 begin
   if Value < 1 then Value := 1;
   MaxTop := Max(1, GetDisplayRowCount - FLinesInWindow + 1);
@@ -721,7 +722,7 @@ begin
   end;
 end;
 
-procedure TCustomFMXSynEdit.SetLeftChar(Value: Integer);
+procedure TCustomFMXSynEdit.SetLeftChar(Value: NativeInt);
 begin
   if FWordWrap then Value := 1;
   if Value < 1 then Value := 1;
@@ -735,7 +736,7 @@ end;
 
 procedure TCustomFMXSynEdit.EnsureCursorPosVisible;
 var
-  CaretRow: Integer;
+  CaretRow: NativeInt;
   DC: TDisplayCoord;
 begin
   if FWordWrap and Assigned(FWordWrapHelper) then
@@ -764,9 +765,9 @@ begin
   end;
 end;
 
-function TCustomFMXSynEdit.GetMaxScrollWidth: Integer;
+function TCustomFMXSynEdit.GetMaxScrollWidth: NativeInt;
 var
-  I, Len: Integer;
+  I, Len: NativeInt;
 begin
   if not FMaxScrollWidthValid then
   begin
@@ -844,18 +845,18 @@ var
 begin
   if FWordWrap and Assigned(FWordWrapHelper) then
   begin
-    Col := Max(1, 1 + Trunc((X - FTextAreaLeft) / FCharWidth));
-    Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+    Col := ToInt32(Max(1, 1 + Trunc((X - FTextAreaLeft) / FCharWidth)));
+    Row := ToInt32(Max(1, FTopLine + Trunc(Y / FLineHeight)));
     DC.Column := Col;
     DC.Row := Row;
     Result := FWordWrapHelper.DisplayToBufferPos(DC);
-    Result.Line := Max(1, Min(Result.Line, FLines.CountNative));
-    Result.Char := Max(1, Result.Char);
+    Result.Line := ToInt32(Max(1, Min(Result.Line, FLines.CountNative)));
+    Result.Char := ToInt32(Max(1, Result.Char));
   end
   else
   begin
-    Result.Char := Max(1, FLeftChar + Trunc((X - FTextAreaLeft) / FCharWidth));
-    Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+    Result.Char := ToInt32(Max(1, FLeftChar + Trunc((X - FTextAreaLeft) / FCharWidth)));
+    Row := ToInt32(Max(1, FTopLine + Trunc(Y / FLineHeight)));
     Result.Line := Max(1, Min(RowToLine(Row), FLines.CountNative));
   end;
 end;
@@ -864,7 +865,7 @@ end;
 
 procedure TCustomFMXSynEdit.Paint;
 var
-  FirstLine, LastLine: Integer;
+  FirstLine, LastLine: NativeInt;
   Renderer: TSynFMXRenderer;
   BGColor: TAlphaColor;
   R: TRectF;
@@ -911,10 +912,10 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.PaintGutter(Canvas: TCanvas;
-  FirstLine, LastLine: Integer);
+  FirstLine, LastLine: NativeInt);
 var
   Renderer: TSynFMXRenderer;
-  I: Integer;
+  I: NativeInt;
   Band: TSynFMXGutterBand;
   BandR: TRectF;
   BandLeft, BandW: Single;
@@ -961,33 +962,34 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.PaintTextLines(Canvas: TCanvas;
-  FirstLine, LastLine: Integer);
+  FirstLine, LastLine: NativeInt);
 var
   Renderer: TSynFMXRenderer;
-  Row, Line, PrevLine: Integer;
+  Row, Line, PrevLine: NativeInt;
   Y, X: Single;
   SLine, SExpanded: string;
-  TokenPos: Integer;
+  TokenPos: NativeInt;
+  Skip: Int32;
   Attr: TSynHighlighterAttributes;
   ForeColor, BackColor: TAlphaColor;
   Style: TFontStyles;
-  SelStart, SelEnd: Integer;
+  SelStart, SelEnd: NativeInt;
   LineR: TRectF;
   Token: string;
   SelBC1, SelBC2: TBufferCoord;
   HasTabs: Boolean;
   ColMap: TArray<Integer>; // maps raw char index (0-based) to expanded column
   J, ExpandedCol: Integer;
-  RawTokenPos, RawTokenLen: Integer;
-  ExpandedTokenPos, ExpandedTokenLen: Integer;
+  RawTokenPos, RawTokenLen: NativeInt;
+  ExpandedTokenPos, ExpandedTokenLen: NativeInt;
   // Word wrap per-row variables
   IsWrapping: Boolean;
-  EffLeftChar: Integer;     // effective left char for this row (1-based expanded)
-  EffCharsInWin: Integer;   // effective chars visible in this row
-  RowExpandedStart: Integer; // 0-based expanded column where this row starts
-  RowExpandedEnd: Integer;   // 0-based expanded column where this row ends
-  RowBufferStart: Integer;   // 1-based raw char where this row starts
-  RowBufferLen: Integer;     // raw char count for this row
+  EffLeftChar: NativeInt;    // effective left char for this row (1-based expanded)
+  EffCharsInWin: NativeInt;   // effective chars visible in this row
+  RowExpandedStart: NativeInt; // 0-based expanded column where this row starts
+  RowExpandedEnd: NativeInt;   // 0-based expanded column where this row ends
+  RowBufferStart: NativeInt;   // 1-based raw char where this row starts
+  RowBufferLen: NativeInt;     // raw char count for this row
   WrapBC: TBufferCoord;
 begin
   Renderer := TSynFMXRenderer(FRenderer);
@@ -1125,7 +1127,7 @@ begin
       begin
         var PSNorm := PS.Normalized;
         // Clip selection to current line boundaries
-        var ClipStart, ClipEnd: Integer;
+        var ClipStart, ClipEnd: NativeInt;
         if PSNorm.Start.Line < Line then
           ClipStart := 1
         else
@@ -1134,7 +1136,7 @@ begin
           ClipEnd := Length(SLine) + 1
         else
           ClipEnd := PSNorm.Stop.Char;
-        var PSStart, PSEnd: Integer;
+        var PSStart, PSEnd: NativeInt;
         if HasTabs then
         begin
           PSStart := ColMap[Min(ClipStart - 1, Length(SLine))] + 1;
@@ -1232,7 +1234,7 @@ begin
         // Clip to visible area
         if X < FTextAreaLeft then
         begin
-          var Skip := Trunc((FTextAreaLeft - X) / FCharWidth);
+          Skip := Trunc32((FTextAreaLeft - X) / FCharWidth);
           Token := Copy(Token, Skip + 1, MaxInt);
           TokenPos := TokenPos + Skip;
           X := FTextAreaLeft + (TokenPos + 1 - EffLeftChar) * FCharWidth;
@@ -1294,7 +1296,7 @@ begin
       SExpanded := ExpandTabs(SLine, FTabWidth);
       X := FTextAreaLeft;
       var VisText := Copy(SExpanded, EffLeftChar, EffCharsInWin + 1);
-      var VisStart := EffLeftChar; // 1-based position of first visible char
+      var VisStart: NativeInt := EffLeftChar; // 1-based position of first visible char
       var VisLen := Length(VisText);
 
       if (SelStart > 0) and (SelEnd > SelStart) and
@@ -1347,7 +1349,7 @@ var
   Renderer: TSynFMXRenderer;
   Pt: TPointF;
   R: TRectF;
-  I: Integer;
+  I: NativeInt;
 begin
   Renderer := TSynFMXRenderer(FRenderer);
   for I := 0 to FSelections.Count - 1 do
@@ -1526,9 +1528,9 @@ begin
       if ssCtrl in Shift then
       begin
         if ssShift in Shift then
-          Cmd := ecSetMarker0 + Key - Ord('0')
+          Cmd := ToUInt16(ecSetMarker0 + Key - Ord('0'))
         else
-          Cmd := ecGotoMarker0 + Key - Ord('0');
+          Cmd := ToUInt16(ecGotoMarker0 + Key - Ord('0'));
       end;
   end;
 
@@ -1568,7 +1570,7 @@ begin
   end;
 end;
 
-function TCustomFMXSynEdit.ScanFrom(Index: Integer): Integer;
+function TCustomFMXSynEdit.ScanFrom(Index: NativeInt): NativeInt;
 var
   iRange: TSynEditRange;
 begin
@@ -1637,7 +1639,7 @@ end;
 procedure TCustomFMXSynEdit.ExecuteMultiCaretCommand(
   Command: TSynEditorCommand; AChar: WideChar);
 var
-  OldTopLine, OldLeftChar: Integer;
+  OldTopLine, OldLeftChar: NativeInt;
 begin
   BeginUpdate;
   try
@@ -1671,8 +1673,8 @@ procedure TCustomFMXSynEdit.SelectAllMatchingText;
 var
   Engine: TSynEditSearchCustom;
   SearchOptions: TSynSearchOptions;
-  Line: Integer;
-  ResNo: Integer;
+  Line: NativeInt;
+  ResNo: NativeInt;
   SelList: TList<TSynSelection>;
   Sel: TSynSelection;
   SelStorage: TSynSelStorage;
@@ -1734,7 +1736,7 @@ procedure TCustomFMXSynEdit.CaretsAtLineEnds;
 var
   SelList: TList<TSynSelection>;
   Sel: TSynSelection;
-  Line: Integer;
+  Line: NativeInt;
   LineText: string;
   SelStorage: TSynSelStorage;
 begin
@@ -1770,7 +1772,7 @@ end;
 procedure TCustomFMXSynEdit.ExecuteCommand(Command: TSynEditorCommand;
   AChar: WideChar);
 var
-  FirstAffectedLine: Integer;
+  FirstAffectedLine: NativeInt;
 begin
   FirstAffectedLine := -1;
 
@@ -2074,7 +2076,7 @@ begin
         var BmIdx := Command - ecSetMarker0;
         if IsBookmarkSet(BmIdx) then
         begin
-          var BX, BY: Integer;
+          var BX, BY: NativeInt;
           GetBookmark(BmIdx, BX, BY);
           if BY = FSelection.Caret.Line then
             ClearBookmark(BmIdx)
@@ -2287,7 +2289,7 @@ begin
   begin
     // Join with next line
     FLines[FSelection.Caret.Line - 1] := SLine + FLines[FSelection.Caret.Line];
-    FLines.Delete(FSelection.Caret.Line);
+    FLines.DeleteNative(FSelection.Caret.Line);
   end;
 end;
 
@@ -2313,7 +2315,7 @@ begin
     // Join with previous line
     var PrevLen := Length(FLines[FSelection.Caret.Line - 2]);
     FLines[FSelection.Caret.Line - 2] := FLines[FSelection.Caret.Line - 2] + FLines[FSelection.Caret.Line - 1];
-    FLines.Delete(FSelection.Caret.Line - 1);
+    FLines.DeleteNative(FSelection.Caret.Line - 1);
     Dec(FSelection.Caret.Line);
     FSelection.Caret.Char := PrevLen + 1;
   end;
@@ -2345,7 +2347,7 @@ begin
   end;
 
   FLines[FSelection.Caret.Line - 1] := LeftPart;
-  FLines.Insert(FSelection.Caret.Line, Indent + RightPart);
+  FLines.InsertNative(FSelection.Caret.Line, Indent + RightPart);
   Inc(FSelection.Caret.Line);
   FSelection.Caret.Char := Length(Indent) + 1;
   FSelection.LastPosX := -1;
@@ -2434,7 +2436,7 @@ begin
 
       FLines[FSelection.Caret.Line - 1] := LeftPart + Lines[0];
       for var I := 1 to Length(Lines) - 1 do
-        FLines.Insert(FSelection.Caret.Line - 1 + I, Lines[I]);
+        FLines.InsertNative(FSelection.Caret.Line - 1 + I, Lines[I]);
       // Append right part to last line
       var LastIdx := FSelection.Caret.Line - 1 + Length(Lines) - 1;
       FLines[LastIdx] := FLines[LastIdx] + RightPart;
@@ -2479,7 +2481,7 @@ end;
 
 function TCustomFMXSynEdit.GetTextRange(AStart, AEnd: TBufferCoord): string;
 var
-  I: Integer;
+  I: NativeInt;
   SB: TStringBuilder;
 begin
   if (AStart.Line < 1) or (AStart.Line > FLines.CountNative) then Exit('');
@@ -2708,7 +2710,7 @@ end;
 
 { --- Bookmarks --- }
 
-procedure TCustomFMXSynEdit.SetBookmark(ABookmark: Integer; X, Y: Integer);
+procedure TCustomFMXSynEdit.SetBookmark(ABookmark: Integer; X, Y: NativeInt);
 var
   Mark: TSynFMXEditMark;
 begin
@@ -2739,9 +2741,9 @@ begin
   Repaint;
 end;
 
-procedure TCustomFMXSynEdit.ClearBookmark(ABookmark: Integer);
+procedure TCustomFMXSynEdit.ClearBookmark(ABookmark: NativeInt);
 var
-  Idx: Integer;
+  Idx: NativeInt;
 begin
   if (ABookmark < 0) or (ABookmark > 9) then Exit;
   if FBookmarks[ABookmark] = nil then Exit;
@@ -2766,8 +2768,8 @@ begin
   EnsureCursorPosVisible;
 end;
 
-function TCustomFMXSynEdit.GetBookmark(ABookmark: Integer;
-  var X, Y: Integer): Boolean;
+function TCustomFMXSynEdit.GetBookmark(ABookmark: NativeInt;
+  var X, Y: NativeInt): Boolean;
 begin
   Result := False;
   if (ABookmark < 0) or (ABookmark > 9) then Exit;
@@ -2777,7 +2779,7 @@ begin
   Result := True;
 end;
 
-function TCustomFMXSynEdit.IsBookmarkSet(ABookmark: Integer): Boolean;
+function TCustomFMXSynEdit.IsBookmarkSet(ABookmark: NativeInt): Boolean;
 begin
   Result := (ABookmark >= 0) and (ABookmark <= 9) and
     (FBookmarks[ABookmark] <> nil);
@@ -2789,7 +2791,7 @@ procedure TCustomFMXSynEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: Single);
 var
   BC: TBufferCoord;
-  Row, Line: Integer;
+  Row, Line: NativeInt;
   Band: TSynFMXGutterBand;
 begin
   inherited;
@@ -2801,7 +2803,7 @@ begin
     // Check for gutter click
     if X < FGutterWidth then
     begin
-      Row := Max(1, FTopLine + Trunc(Y / FLineHeight));
+      Row := ToInt32(Max(1, FTopLine + Trunc(Y / FLineHeight)));
       Line := RowToLine(Row);
       Band := FGutter.BandAtX(X);
       if Assigned(Band) then
@@ -2935,7 +2937,7 @@ end;
 
 function TCustomFMXSynEdit.IsPointInSelection(const BC: TBufferCoord): Boolean;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   Result := FSelections.FindSelection(BC, Index)
     and not FSelections[Index].IsEmpty;
@@ -2961,7 +2963,7 @@ begin
   DragData.Text := GetSelText;
   DragData.Highlighter := FHighlighter;
   DragData.FontFamily := FFont.Family;
-  DragData.FontSize := Round(FFont.Size);
+  DragData.FontSize := Round32(FFont.Size);
   DragData.BackgroundColor := TAlphaColors.White;
   DragData.UseBackground := not (eoNoHTMLBackground in FOptions);
 
@@ -3174,7 +3176,7 @@ begin
   FReadOnly := Value;
 end;
 
-procedure TCustomFMXSynEdit.SetCaretX(Value: Integer);
+procedure TCustomFMXSynEdit.SetCaretX(Value: NativeInt);
 begin
   if Value < 1 then Value := 1;
   if FSelection.Caret.Char <> Value then
@@ -3187,7 +3189,7 @@ begin
   end;
 end;
 
-procedure TCustomFMXSynEdit.SetCaretY(Value: Integer);
+procedure TCustomFMXSynEdit.SetCaretY(Value: NativeInt);
 begin
   if Value < 1 then Value := 1;
   if FSelection.Caret.Line <> Value then
@@ -3199,12 +3201,12 @@ begin
   end;
 end;
 
-function TCustomFMXSynEdit.GetCaretX: Integer;
+function TCustomFMXSynEdit.GetCaretX: NativeInt;
 begin
   Result := FSelection.Caret.Char;
 end;
 
-function TCustomFMXSynEdit.GetCaretY: Integer;
+function TCustomFMXSynEdit.GetCaretY: NativeInt;
 begin
   Result := FSelection.Caret.Line;
 end;
@@ -3299,7 +3301,7 @@ begin
   Repaint;
 end;
 
-function TCustomFMXSynEdit.GetLineCount: Integer;
+function TCustomFMXSynEdit.GetLineCount: NativeInt;
 begin
   Result := FLines.CountNative;
 end;
@@ -3336,7 +3338,7 @@ end;
 
 { --- Row/Line mapping --- }
 
-function TCustomFMXSynEdit.LineToRow(aLine: Integer): Integer;
+function TCustomFMXSynEdit.LineToRow(aLine: NativeInt): NativeInt;
 begin
   if FWordWrap and Assigned(FWordWrapHelper) then
     Result := FWordWrapHelper.LineToRow(aLine)
@@ -3346,7 +3348,7 @@ begin
     Result := aLine;
 end;
 
-function TCustomFMXSynEdit.RowToLine(aRow: Integer): Integer;
+function TCustomFMXSynEdit.RowToLine(aRow: NativeInt): NativeInt;
 begin
   if FWordWrap and Assigned(FWordWrapHelper) then
     Result := FWordWrapHelper.RowToLine(aRow)
@@ -3374,7 +3376,7 @@ begin
     Result := BufferCoord(P.Column, RowToLine(P.Row));
 end;
 
-function TCustomFMXSynEdit.GetRowLength(ARow: Integer): Integer;
+function TCustomFMXSynEdit.GetRowLength(ARow: NativeInt): NativeInt;
 begin
   if FWordWrap and Assigned(FWordWrapHelper) then
     Result := FWordWrapHelper.GetRowLength(ARow)
@@ -3388,7 +3390,7 @@ begin
   end;
 end;
 
-function TCustomFMXSynEdit.GetDisplayRowCount: Integer;
+function TCustomFMXSynEdit.GetDisplayRowCount: NativeInt;
 begin
   if FWordWrap and Assigned(FWordWrapHelper) then
     Result := FWordWrapHelper.RowCount
@@ -3403,7 +3405,7 @@ end;
 function TCustomFMXSynEdit.GetWrapAreaWidth: Integer;
 begin
   if FCharWidth > 0 then
-    Result := Max(1, Trunc((Width - FGutterWidth) / FCharWidth))
+    Result := ToInt32(Max(1, Trunc((Width - FGutterWidth) / FCharWidth)))
   else
     Result := 80;
 end;
@@ -3489,9 +3491,9 @@ begin
     ReScanForFoldRanges(0, FLines.CountNative - 1);
 end;
 
-procedure TCustomFMXSynEdit.ReScanForFoldRanges(FromLine, ToLine: Integer);
+procedure TCustomFMXSynEdit.ReScanForFoldRanges(FromLine, ToLine: NativeInt);
 var
-  AdjustedToLine: Integer;
+  AdjustedToLine: NativeInt;
 begin
   AdjustedToLine := Max(Min(ToLine, FLines.CountNative - 1), FromLine);
   FAllFoldRanges.StartScanning;
@@ -3504,7 +3506,7 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.ScanForFoldRanges(FoldRanges: TSynFoldRanges;
-  LinesToScan: TStrings; FromLine, ToLine: Integer);
+  LinesToScan: TStrings; FromLine, ToLine: NativeInt);
 begin
   if FHighlighter is TSynCustomCodeFoldingHighlighter then
     TSynCustomCodeFoldingHighlighter(FHighlighter).ScanForFoldRanges(
@@ -3514,7 +3516,7 @@ begin
     FOnScanForFoldRanges(Self, FoldRanges, LinesToScan, FromLine, ToLine);
 end;
 
-procedure TCustomFMXSynEdit.Collapse(FoldRangeIndex: Integer; Invalidate: Boolean);
+procedure TCustomFMXSynEdit.Collapse(FoldRangeIndex: NativeInt; Invalidate: Boolean);
 var
   Range: TSynFoldRange;
 begin
@@ -3534,7 +3536,7 @@ begin
   end;
 end;
 
-procedure TCustomFMXSynEdit.Uncollapse(FoldRangeIndex: Integer; Invalidate: Boolean);
+procedure TCustomFMXSynEdit.Uncollapse(FoldRangeIndex: NativeInt; Invalidate: Boolean);
 begin
   if not FUseCodeFolding then Exit;
 
@@ -3547,12 +3549,13 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.CollapseAll;
+var
+  Index: NativeInt;
 begin
   if not FUseCodeFolding then Exit;
   FAllFoldRanges.CollapseAll;
 
   // Surface caret from hidden folds
-  var Index: Integer;
   while FAllFoldRanges.FoldHidesLine(FSelection.Caret.Line, Index) do
   begin
     var Range := FAllFoldRanges[Index];
@@ -3566,7 +3569,7 @@ end;
 
 procedure TCustomFMXSynEdit.UncollapseAll;
 var
-  I: Integer;
+  I: NativeInt;
 begin
   if not FUseCodeFolding then Exit;
   for I := FAllFoldRanges.Count - 1 downto 0 do
@@ -3579,7 +3582,7 @@ end;
 
 procedure TCustomFMXSynEdit.CollapseNearest;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   if not FUseCodeFolding then Exit;
   if FAllFoldRanges.FoldAroundLineEx(FSelection.Caret.Line, False, True, True, Index) then
@@ -3589,7 +3592,7 @@ end;
 
 procedure TCustomFMXSynEdit.UncollapseNearest;
 var
-  Index: Integer;
+  Index: NativeInt;
 begin
   if not FUseCodeFolding then Exit;
   if FAllFoldRanges.CollapsedFoldStartAtLine(FSelection.Caret.Line, Index) then
@@ -3598,12 +3601,13 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.CollapseLevel(Level: Integer);
+var
+  Index: NativeInt;
 begin
   if not FUseCodeFolding then Exit;
   FAllFoldRanges.CollapseLevel(Level);
 
   // Surface caret
-  var Index: Integer;
   while FAllFoldRanges.FoldHidesLine(FSelection.Caret.Line, Index) do
   begin
     var Range := FAllFoldRanges[Index];
@@ -3640,7 +3644,7 @@ begin
 end;
 
 function TCustomFMXSynEdit.DoOnReplaceText(const ASearch, AReplace: string;
-  Line, Column: Integer): TSynReplaceAction;
+  Line, Column: NativeInt): TSynReplaceAction;
 begin
   Result := raCancel;
   if Assigned(FOnReplaceText) then
@@ -3656,9 +3660,13 @@ var
   function ProcessTextRange(const AStart: TBufferCoord;
     var AEnd: TBufferCoord): Integer;
   var
-    lnStart, lnEnd, nInLine, nFound, nSearchLen, nReplaceLen, n: Integer;
-    iResultOffset: Integer;
-    CurrentLine: Integer;
+    lnStart, lnEnd, nReplaceLen: NativeInt;
+    nInLine: NativeInt;
+    n: NativeInt;
+    nFound: NativeInt;
+    nSearchLen: NativeInt;
+    iResultOffset: NativeInt;
+    CurrentLine: NativeInt;
     Line: string;
     nAction: TSynReplaceAction;
   begin
@@ -3891,9 +3899,9 @@ begin
 end;
 
 procedure TCustomFMXSynEdit.DoPluginAfterPaint(Canvas: TCanvas;
-  const AClip: TRectF; FirstLine, LastLine: Integer);
+  const AClip: TRectF; FirstLine, LastLine: NativeInt);
 var
-  I: Integer;
+  I: NativeInt;
   Plugin: TSynFMXEditPlugin;
 begin
   for I := 0 to FPlugins.Count - 1 do
@@ -3934,7 +3942,7 @@ begin
 end;
 
 procedure TSynFMXEditPlugin.AfterPaint(Canvas: TCanvas; const AClip: TRectF;
-  FirstLine, LastLine: Integer);
+  FirstLine, LastLine: NativeInt);
 begin
 end;
 

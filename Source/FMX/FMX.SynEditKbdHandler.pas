@@ -26,15 +26,15 @@ type
   TMethodList = class
   private
     fData: TList;
-    function GetItem(Index: Integer): TMethod;
-    function GetCount: Integer;
+    function GetItem(Index: NativeInt): TMethod;
+    function GetCount: NativeInt;
   public
     constructor Create;
     destructor Destroy; override;
     procedure Add(aHandler: TMethod);
     procedure Remove(aHandler: TMethod);
-    property Items[Index: Integer]: TMethod read GetItem; default;
-    property Count: Integer read GetCount;
+    property Items[Index: NativeInt]: TMethod read GetItem; default;
+    property Count: NativeInt read GetCount;
   end;
 
   TSynEditKbdHandler = class(TObject)
@@ -108,12 +108,12 @@ begin
   end;
 end;
 
-function TMethodList.GetCount: Integer;
+function TMethodList.GetCount: NativeInt;
 begin
   Result := fData.Count div 2;
 end;
 
-function TMethodList.GetItem(Index: Integer): TMethod;
+function TMethodList.GetItem(Index: NativeInt): TMethod;
 begin
   Index := Index * 2;
   Result.Code := fData[Index];
@@ -147,7 +147,7 @@ end;
 procedure TSynEditKbdHandler.ExecuteKeyDown(Sender: TObject; var Key: Word;
   var KeyChar: WideChar; Shift: TShiftState);
 var
-  idx: Integer;
+  idx: NativeInt;
 begin
   if fInKeyDown then
     Exit;
@@ -167,7 +167,7 @@ end;
 procedure TSynEditKbdHandler.ExecuteKeyUp(Sender: TObject; var Key: Word;
   var KeyChar: WideChar; Shift: TShiftState);
 var
-  idx: Integer;
+  idx: NativeInt;
 begin
   if fInKeyUp then
     Exit;
@@ -186,7 +186,7 @@ end;
 
 procedure TSynEditKbdHandler.ExecuteKeyPress(Sender: TObject; var Key: Char);
 var
-  idx: Integer;
+  idx: NativeInt;
 begin
   if fInKeyPress then
     Exit;

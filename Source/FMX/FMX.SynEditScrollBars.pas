@@ -30,7 +30,7 @@ function CreateSynEditScrollBars(Editor: TControl): ISynEditScrollBars;
 implementation
 
 uses
-  FMX.SynEdit;
+  SynFunc, FMX.SynEdit;
 
 type
   TSynFMXScrollBars = class(TInterfacedObject, ISynEditScrollBars)
@@ -88,7 +88,7 @@ begin
   if FUpdating then Exit;
   FIsScrolling := True;
   try
-    FEditor.TopLine := Round(FVScrollBar.Value);
+    FEditor.TopLine := Round32(FVScrollBar.Value);
   finally
     FIsScrolling := False;
   end;
@@ -99,7 +99,7 @@ begin
   if FUpdating then Exit;
   FIsScrolling := True;
   try
-    FEditor.LeftChar := Round(FHScrollBar.Value);
+    FEditor.LeftChar := Round32(FHScrollBar.Value);
   finally
     FIsScrolling := False;
   end;
@@ -107,7 +107,9 @@ end;
 
 function TSynFMXScrollBars.UpdateScrollBars: Boolean;
 var
-  MaxLines, MaxCols, VisLines, VisCols: Integer;
+  VisLines, VisCols: Integer;
+  MaxLines: NativeInt;
+  MaxCols: NativeInt;
   ShowVert, ShowHorz: Boolean;
 begin
   Result := False;
