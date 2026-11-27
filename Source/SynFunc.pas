@@ -42,7 +42,7 @@ type
   TSynInt64 = Integer;
 {$ELSE}
   TSynInt64 = Int64;
-{$IFEND}
+{$ENDIF}
 
 {$IF COMPILERVERSION < 36}
   TSynNativeInt = Int32;
@@ -50,7 +50,7 @@ type
 {$ELSE}
   TSynNativeInt = NativeInt;
   TSynNativeUInt = NativeUInt;
-{$IFEND}
+{$ENDIF}
 
   COLORREF = Int32;
 

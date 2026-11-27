@@ -207,7 +207,7 @@ implementation
 uses
 {$IF (COMPILERVERSION > 29) OR (NOT DEFINED(PACKAGE))}
   System.Threading,
-{$IFEND}
+{$ENDIF}
   System.Math;
 
 resourcestring
@@ -480,7 +480,7 @@ begin
           CalcLine(AValue);
         end)
     else
-{$IFEND}
+{$ENDIF}
     for lCount := 0 to FCount - 1 do
       CalcLine(lCount);
     Result := Max(FMaxWidth, 0);

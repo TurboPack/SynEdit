@@ -83,7 +83,7 @@ type
     function IsKeyword(const AKeyword: string): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
-    {$IF COMPILERVERSION >= 34}class constructor Create;{$IFEND}
+    {$IF COMPILERVERSION >= 34}class constructor Create;{$ENDIF}
     function GetDefaultAttribute(Index: Integer): TSynHighlighterAttributes; override;
     function GetEol: Boolean; override;
     function GetRange: Pointer; override;
@@ -152,7 +152,7 @@ begin
   FRE_Interface := TRegEx.Create('^interface\b', [roIgnoreCase]);
   FRE_Implementation := TRegEx.Create('^implementation\b', [roIgnoreCase]);
   FRE_Begin := TRegEx.Create('\bbegin\b', [roIgnoreCase]);
-end;{$IFEND}
+end;{$ENDIF}
 
 constructor TSynDelphiSyn.Create(AOwner: TComponent);
 begin

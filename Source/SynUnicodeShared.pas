@@ -321,7 +321,7 @@ function GetEncoding(Stream: TStream; out WithBOM: Boolean): TEncoding;
 
   function TBytesEqual(A, B: TBytes; const Len: Int64): Boolean;
   var
-    I: {$IF COMPILERVERSION < 29}Integer{$ELSE}Int64{$IFEND};
+    I: {$IF COMPILERVERSION < 29}Integer{$ELSE}Int64{$ENDIF};
   begin
     Result := True;
     for I := 0 to Len - 1 do
